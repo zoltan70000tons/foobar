@@ -1,0 +1,34 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@inertiajs/react": "^1.0.0",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
+        "@vitejs/plugin-react": "^4.2.0",
+        "autoprefixer": "^10.4.12",
+        "axios": "^1.6.4",
+        "jest": "^29.7.0",
+        "laravel-vite-plugin": "^1.0",
+        "postcss": "^8.4.31",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "sass": "^1.77.6",
+        "ts-loader": "^9.5.1",
+        "typescript": "^5.5.3",
+        "vite": "^5.0"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.11.4",
+        "@emotion/styled": "^11.11.5",
+        "@fontsource/roboto": "^5.0.13",
+        "@mui/icons-material": "^5.15.21",
+        "@mui/material": "^5.15.21",
+        "@reduxjs/toolkit": "^2.2.6",
+        "react-redux": "^9.1.2"
+    }
+}
