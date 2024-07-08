@@ -1,6 +1,9 @@
-# 70K Tons Booking Backend
+# 70K Tons Booking Engine - Backend
 
-This is a web application developed with Laravel and React. It uses Vite for module management and frontend code compilation.
+This is Booking Engine Admin. 
+
+#### Boilerplate - boilerplate-70k-back
+[boilerplate-70k-back](https://github.com/70000TONS-IT/boilerplate-70k-back)
 
 #### Requirements
 
