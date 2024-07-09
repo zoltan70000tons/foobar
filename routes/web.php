@@ -24,8 +24,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/register-organization', function () {
+Route::get('/create-organization', function () {
     return Inertia::render('RegisterOrganization');
 })->name('organization.register');
+
+Route::get('/{id}/join-organization', function () {
+    return Inertia::render('JoinOrganization');
+})->name('organization.join');
 
 require __DIR__.'/auth.php';
