@@ -2,6 +2,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { Container } from '@mui/material';
+import ListOrganizations from './Organization/Partials/Register';
+import RegisterOrganization from './Organization/Partials/Register';
 
 export default function Dashboard({ auth }: PageProps) {
   return (
@@ -13,7 +15,9 @@ export default function Dashboard({ auth }: PageProps) {
 
       <Container>
         <p>You're logged in!</p>
+      <RegisterOrganization mustVerifyEmail={true} />
       </Container>
+      
     </AuthenticatedLayout>
   );
 }
