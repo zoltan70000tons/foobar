@@ -86,4 +86,33 @@ class AuthController extends Controller
         // check if the token is valid
         return $this->successResponse('Token is valid');
     }
+
+
+    /**
+     * Handle an incoming registration request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'password' => 'required|string|min:5|confirmed',
+            'policy' => 'required|boolean',
+        ]);
+
+        $user = User::create([
+            'email' => $request->email,
+            'name' => $request->name,
+            'password' => Hash::make($request->password),
+            'policy' => $request->policy,
+        ]);
+
+        // return $this->successResponse($user->createToken($request->email)->plainTextToken);
+        
+        // return response with user data and token
+        return $this->successResponse('Account created successfully. You can now login.');
+    }
 }
