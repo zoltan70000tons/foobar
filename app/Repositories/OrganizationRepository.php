@@ -49,8 +49,9 @@ class OrganizationRepository implements OrganizationRepositoryInterface
             $org = new Organization();
             $org->name = $data['name'];
             $org->terms = $data['terms'] ?? 0;
+            $org->slug = generateSlug($data['name']);
             $org->save();
-                       
+
             Role::create(['name' => 'admin', 'team_id' => $org->id]);
             $org->users()->attach($user->id);
             setPermissionsTeamId($org->id);

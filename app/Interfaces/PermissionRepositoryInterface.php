@@ -11,4 +11,5 @@ interface PermissionRepositoryInterface
     function delete($id);
     function findByUser($id);
     function findbyRole($id);
+    function findbyOrganization($id);
 }

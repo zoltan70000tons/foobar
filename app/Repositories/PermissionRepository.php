@@ -6,11 +6,13 @@ use App\Classes\ApiResponserHelper;
 use App\Http\Resources\PermissionResource;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Models\User;
+use App\Traits\JsonResponseTrait;
 use Spatie\Permission\Models\Permission;
 
 
 class PermissionRepository implements PermissionRepositoryInterface
 {
+    use JsonResponseTrait;
     /**
      * Create a new class instance.
      */
@@ -37,7 +39,7 @@ class PermissionRepository implements PermissionRepositoryInterface
     {
         try {
             $permission = Permission::create($data);
-            return ApiResponserHelper::sendResponse(PermissionResource::collection($data), 'Permission created successfully', 200);
+            return $this->successResponse($permission, 'Permissions created successfully');
         } catch (\Exception $e) {
             return ApiResponserHelper::rollback($e);
         }   
@@ -60,6 +62,13 @@ class PermissionRepository implements PermissionRepositoryInterface
 
     public function findByRole($id)
     {
+    }
+
+    public function findbyOrganization($id)
+    {
+        $permissions =Permission::all();
+       //$permissions = Permission::where(['organization_id' => $id])->get();
+        return $this->successResponse($permissions, 'Permissions listed successfully');
     }
 
 

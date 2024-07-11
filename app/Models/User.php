@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -49,7 +49,12 @@ class User extends Authenticatable
 
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class)->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(Organization::class)->withPivot('user_id')->withTimestamps();
+    }
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
     }
 
 }

@@ -5,11 +5,14 @@ namespace App\Repositories;
 use App\Classes\ApiResponserHelper;
 use App\Http\Resources\RoleResource;
 use App\Interfaces\RoleRepositoryInterface;
+use App\Traits\JsonResponseTrait;
+use GrahamCampbell\ResultType\Success;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleRepository implements RoleRepositoryInterface
 {
+    use JsonResponseTrait;
     /**
      * Create a new class instance.
      */
@@ -32,7 +35,7 @@ class RoleRepository implements RoleRepositoryInterface
     {
         try {
             $role = Role::create($data);
-            return ApiResponserHelper::sendResponse(RoleResource::collection($data), 'Role created successfully', 200);
+            return $this->successResponse($role, 'Role created successfully');
         } catch (\Exception $e) {
             return ApiResponserHelper::rollback($e);
         }   
@@ -53,7 +56,7 @@ class RoleRepository implements RoleRepositoryInterface
             $permission = Permission::findById($permissionId);
             $role = Role::findById($roleId);
             $permission->assignRole($role);
-            return ApiResponserHelper::sendResponse(RoleResource::collection([]), 'Permission added to role successfully', 200);
+            return $this->successResponse([], 'Permission added to role successfully');
         } catch (\Exception $e) {
             return ApiResponserHelper::rollback($e);
         }
@@ -62,5 +65,11 @@ class RoleRepository implements RoleRepositoryInterface
     public function removePermission($role, $permission)
     {
         $role->revokePermissionTo($permission);
+    }
+
+    public function listByOrganization($id)
+    {
+        $roles =Role::all();
+         return $this->successResponse($roles, 'Roles listed successfully');
     }
 }

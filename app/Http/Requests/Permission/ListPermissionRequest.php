@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Organization;
+namespace App\Http\Requests\Permission;
 
 use App\Traits\JsonResponseTrait;
 use Illuminate\Contracts\Validation\Validator;
@@ -8,10 +8,10 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class ListOrganizationRequest extends FormRequest
+class ListPermissionRequest extends FormRequest
 {
     use JsonResponseTrait;
-    /**
+   /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -19,7 +19,7 @@ class ListOrganizationRequest extends FormRequest
         return true;
     }
 
-    /**
+      /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -27,16 +27,18 @@ class ListOrganizationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:30|unique:organizations,name',
-            'user_name' => 'required|string|max:30',
-            'email' => 'required|string',
-            'password' => 'required|string',
-            'terms'  => 'nullable|boolean',
+                'id' => 'required|int'
         ];
     }
 
     public function failedValidation(Validator $validator)
     {
-        return $this->errorResponse('Failed to list organization', 500, $validator->errors());
+        throw new HttpResponseException(response()->json(
+            [
+                'success' => false,
+                'message' => 'Validation errors',
+                'data' => $validator->errors(),
+            ]
+        ));
     }
 }

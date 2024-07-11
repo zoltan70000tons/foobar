@@ -17,3 +17,5 @@ Route::apiResource('/roles', RoleController::class);
 Route::apiResource('/permissions', PermissionController::class);
 Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
 Route::apiResource('/organizations', OrganizationController::class);
+Route::get('/organization/permissions', 'App\Http\Controllers\Permission\PermissionController@listByOrganization');
+Route::get('/organization/roles', 'App\Http\Controllers\Role\RoleController@listByOrganization');

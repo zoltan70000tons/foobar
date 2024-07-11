@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Permission;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Permission\CreatePermissionRequest;
+use App\Http\Requests\Permission\ListPermissionRequest;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Repositories\PermissionRepository;
 
@@ -35,5 +36,11 @@ class PermissionController extends Controller
 
     public function delete()
     {
+    }
+
+    public function listByOrganization(ListPermissionRequest $request)
+    {
+      $id = $request->id;
+      return $this->permissionRepositoryInterface->findbyOrganization($id);
     }
 }

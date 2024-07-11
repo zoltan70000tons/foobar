@@ -11,4 +11,5 @@ interface RoleRepositoryInterface
     function delete($id);
     function addPermissionsToRole(int $roleId, int $permissionId);
     function removePermission($role, $permission);
+    function listByOrganization($id);
 }
