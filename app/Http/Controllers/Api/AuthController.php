@@ -33,7 +33,25 @@ class AuthController extends Controller
             return $this->errorResponse('The provided credentials are incorrect.', 401);
         }
 
-        return $this->successResponse($user->createToken($request->email)->plainTextToken);
+        // return $this->successResponse($user->createToken($request->email)->plainTextToken);
+        
+        // return response with user data and token
+        return $this->successResponse([
+            'user' => $user,
+            'access_token' => $user->createToken($request->email)->plainTextToken
+        ]);
+    }
+
+
+    /**
+     * Return the authenticated user
+     * 
+     */
+    public function user(Request $request)
+    {
+        return $this->successResponse([
+          'user' => $request->user()
+        ]);
     }
 
 
@@ -45,14 +63,27 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // Delete the current token request
+        // $request->user()->currentAccessToken()->delete();
 
-        if (! $request->user()->tokens()->delete()) {
-            throw ValidationException::withMessages([
-                'message' => 'Unable to logout',
-            ]);
-        }
+        // Delete all tokens
+        $request->user()->tokens()->delete();
 
-        return $this->successResponse('Token deleted successfully');
+        return $this->successResponse('Logged out successfully');
+    }
+
+    /**
+     * Verify token request
+     * The request is made from the middleware front end client side.
+     * We want to verify if the token is valid.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function verifyToken(Request $request)
+    {
+        // check if the token is valid
+        return $this->successResponse('Token is valid');
     }
 }
