@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, Box, Select, MenuItem, InputLabel, FormControl, Grid } from '@mui/material';
 import { useForm, Head, Link } from '@inertiajs/react';
 import axios from 'axios';
+import apiRoutes from '@/Helpers/ApiRoutes';
 
 export default function Invite() {
-  const baseURL = "http://localhost:8000/api/organization/roles";
   const { data, setData, post, errors } = useForm({
     email: '',
     role: '',
@@ -13,7 +13,7 @@ export default function Invite() {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    axios.get(baseURL,{ params: { id: '1' } })  // Todo change to actual organization
+    axios.get(apiRoutes.orgRolesUrl,{ params: { org_id: '23' } })  // Todo change to actual organization
       .then(response => {
         setRoles(response.data.data);  
       })

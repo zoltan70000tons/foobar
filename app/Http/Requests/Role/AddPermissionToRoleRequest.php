@@ -25,10 +25,24 @@ class AddPermissionToRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'roleId' => 'required|int',
-                'permissionId' => 'required|int'
+            'role_id' => 'required|int',
+            'permission_id' => 'nullable|int',
+            'permissions' => 'nullable|array',
         ];
     }
+
+    protected function withValidator(Validator $validator)
+{
+    $validator->after(function ($validator) {
+        $data = $this->input('permissions');
+        $permission_id = $this->input('permission_id');
+
+        if (is_null($data) && is_null($permission_id)) {
+            $validator->errors()->add('permissions', 'The permissions field is required when permission_id is not present.');
+            $validator->errors()->add('permission_id', 'The permission_id field is required when data is not present.');
+        }
+    });
+}
 
     public function failedValidation(Validator $validator)
     {

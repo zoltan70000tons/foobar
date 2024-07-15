@@ -27,7 +27,8 @@ class ListPermissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'id' => 'required|int'
+                'id' => 'required|int',
+                'role_id' => 'sometimes|nullable|int'
         ];
     }
 

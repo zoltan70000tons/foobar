@@ -8,7 +8,7 @@ use App\Interfaces\PermissionRepositoryInterface;
 use App\Models\User;
 use App\Traits\JsonResponseTrait;
 use Spatie\Permission\Models\Permission;
-
+use Spatie\Permission\Models\Role;
 
 class PermissionRepository implements PermissionRepositoryInterface
 {
@@ -42,7 +42,7 @@ class PermissionRepository implements PermissionRepositoryInterface
             return $this->successResponse($permission, 'Permissions created successfully');
         } catch (\Exception $e) {
             return ApiResponserHelper::rollback($e);
-        }   
+        }
     }
 
     public function update($data, $id)
@@ -64,12 +64,22 @@ class PermissionRepository implements PermissionRepositoryInterface
     {
     }
 
-    public function findbyOrganization($id)
+    public function findbyOrganization($id, $role_id = null)
     {
-        $permissions =Permission::all();
-       //$permissions = Permission::where(['organization_id' => $id])->get();
+        if ($role_id) {
+            $role = Role::with('permissions')
+                ->where(['team_id' => $id, 'id' => $role_id])
+                ->firstOrFail();
+            $organizationPermissions = Permission::all();
+            $permissions = $organizationPermissions->map(function ($permission) use ($role) {
+                return [
+                    'name' => $permission->name,
+                    'granted' => $role->permissions->contains('name', $permission->name),
+                ];
+            });
+        } else {
+            $permissions = Permission::all();
+        }
         return $this->successResponse($permissions, 'Permissions listed successfully');
     }
-
-
 }

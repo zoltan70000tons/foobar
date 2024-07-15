@@ -46,6 +46,12 @@ php artisan key:generate
 ```bash
 php artisan migrate
 ```
+
+#### Run seeders to fill database data:
+```bash
+php artisan migrate
+```
+
 #### Start the server:
 
 ```bash

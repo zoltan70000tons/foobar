@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Role;
+namespace App\Http\Requests\Team;
 
 use App\Traits\JsonResponseTrait;
 use Illuminate\Contracts\Validation\Validator;
@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class ListRoleRequest extends FormRequest
+class ListMembersRequest extends FormRequest
 {
     use JsonResponseTrait;
    /**
@@ -27,9 +27,7 @@ class ListRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'org_id' => 'required|nullable|int',
-                'role_id' => 'nullable|int',
-                'user_id' => 'nullable|int',
+                'org_id' => 'required|int',
         ];
     }
 

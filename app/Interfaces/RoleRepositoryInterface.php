@@ -9,7 +9,8 @@ interface RoleRepositoryInterface
     function create(array $data);
     function update(array $data,$id);
     function delete($id);
-    function addPermissionsToRole(int $roleId, int $permissionId);
+    function addPermissionsToRole(int $role_id, int $permission_id = null, $data=null);
     function removePermission($role, $permission);
-    function listByOrganization($id);
+    function listByOrganization($org_id, $role_id = null,$user_id=null);
+
 }

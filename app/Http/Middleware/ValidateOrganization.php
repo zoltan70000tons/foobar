@@ -20,7 +20,9 @@ class ValidateOrganization
         $routeParameters = $request->route()->parameters();
         if (array_key_exists('slug', $routeParameters)){
             $slug = $routeParameters['slug'];
-            $org = Organization::where('slug', $slug)->first();
+            $slug = strtolower($slug);
+            $org = Organization::whereRaw('LOWER(slug) = ?', [$slug])->first();
+            //$org = Organization::where('slug', $slug)->first();
             if ($org) {
                 if ($user->organizations->contains($org->id)) {
                     return $next($request);

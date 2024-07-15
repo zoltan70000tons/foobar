@@ -4,6 +4,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import apiRoutes from "@/Helpers/ApiRoutes";
 import axios from "axios";
 
 const List = () => {
@@ -12,12 +13,8 @@ const List = () => {
   const [open, setOpen] = useState(false);
   const [newPermission, setNewPermission] = useState("");
 
-  //TODO configure this in .env
-  const baseURL = "http://localhost:8000/api/organization/permissions";
-  const createURL = "http://localhost:8000/api/permissions";
-  
   useEffect(() => {
-    axios.get(baseURL, { params: { id: '1' } }).then((response) => {
+    axios.get(apiRoutes.permissionUrl, { params: { id: '1' } }).then((response) => {
       const permissionsData = response.data.data.map((permission: any) => ({
         id: permission.id,
         permission: permission.name,
@@ -51,7 +48,7 @@ const List = () => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.post(createURL, { name: newPermission });
+      const response = await axios.post(apiRoutes.orgPermissionUrl, { name: newPermission });
       const newPermissionData = response.data.data;
       console.log(newPermissionData);
       setRows([...rows, { id: newPermissionData.id, permission: newPermissionData.name }]);
@@ -127,7 +124,7 @@ const List = () => {
           <DataGrid
             rows={rows}
             columns={columns}
-            getRowId={(row) => row.id} // Especificar cómo obtener el ID de cada fila
+            getRowId={(row) => row.id}
             initialState={{
               pagination: {
                 paginationModel: { page: 0, pageSize: 5 },
@@ -142,11 +139,11 @@ const List = () => {
       <Modal
         open={open}
         onClose={handleClose}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
+        aria-labelledby="edit-permissions"
+        aria-describedby="edit-modal-permissions"
       >
         <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4 }}>
-          <Typography variant="h6" component="h2" id="simple-modal-title">
+          <Typography variant="h6" component="h2" id="edit-modal-permission">
             Add New Permission
           </Typography>
           <TextField

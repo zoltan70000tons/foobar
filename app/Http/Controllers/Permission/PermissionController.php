@@ -41,6 +41,7 @@ class PermissionController extends Controller
     public function listByOrganization(ListPermissionRequest $request)
     {
       $id = $request->id;
-      return $this->permissionRepositoryInterface->findbyOrganization($id);
+      $role_id = $request->role_id;
+      return $this->permissionRepositoryInterface->findbyOrganization($id,$role_id);
     }
 }

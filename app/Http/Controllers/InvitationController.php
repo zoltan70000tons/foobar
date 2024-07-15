@@ -11,7 +11,7 @@ class InvitationController extends Controller
 {
     public function __construct()
     {
-        $user = auth()->user(); // O User::find($id) para un usuario específico
+        $user = auth()->user(); 
         $teams = $user->teams;
         dd($teams);
     }
