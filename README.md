@@ -49,7 +49,7 @@ php artisan migrate
 
 #### Run seeders to fill database data:
 ```bash
-php artisan migrate
+php artisan db:seed
 ```
 
 #### Start the server:
