@@ -52,7 +52,7 @@ export default function Dashboard({ auth }: PageProps) {
                     color="secondary"
                     href={`/${organization.slug}/team/permissions`}
                   >
-                    Permisos
+                    Permissions
                   </Button> 
 
                   {/* <Button
