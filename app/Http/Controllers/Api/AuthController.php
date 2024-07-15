@@ -99,7 +99,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:'.User::class.'|min:1',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => 'required|string|min:5|confirmed',
+            'password' => 'required|string|min:6|confirmed',
             'policy' => 'required|boolean',
         ]);
 
@@ -110,9 +110,54 @@ class AuthController extends Controller
             'policy' => $request->policy,
         ]);
 
-        // return $this->successResponse($user->createToken($request->email)->plainTextToken);
-        
         // return response with user data and token
         return $this->successResponse('Account created successfully. You can now login.');
     }
+
+    /**
+     * Check the user confimation status
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkConfirmation(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->email_verified_at) {
+            return $this->successResponse('Email is confirmed');
+        }
+
+        return $this->errorResponse('Email is not confirmed', 401);
+    }
+
+    /**
+     * Reset password with validated old one
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     * 
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required|string|min:6',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($request->old_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'old_password' => ['The provided password does not match our records.'],
+            ]);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return $this->successResponse('Password changed successfully');
+    }
+
+
 }

@@ -37,5 +37,6 @@ Route::middleware(Authenticate::using('sanctum'))->group(function () {
   Route::post('/logout', [AuthController::class, 'logout']);
   Route::post('/verify-token', [AuthController::class, 'verifyToken']);
   Route::get('/user', [AuthController::class, 'user']);
+  Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
