@@ -15,9 +15,10 @@ import { Link } from '@inertiajs/react';
 
 export const mainListItems = (
   <React.Fragment>
-    <ListItemButton>
+
+<ListItemButton component={Link} href={route('dashboard')} method="get">
       <ListItemIcon>
-        <DashboardIcon />
+      <DashboardIcon />
       </ListItemIcon>
       <ListItemText primary="Dashboard" />
     </ListItemButton>

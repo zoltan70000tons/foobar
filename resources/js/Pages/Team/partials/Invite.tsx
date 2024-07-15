@@ -13,7 +13,7 @@ export default function Invite() {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    axios.get(apiRoutes.orgRolesUrl,{ params: { org_id: '23' } })  // Todo change to actual organization
+    axios.get(apiRoutes.orgRolesUrl,{ params: { org_id: '1' } })  // Todo change to actual organization
       .then(response => {
         setRoles(response.data.data);  
       })

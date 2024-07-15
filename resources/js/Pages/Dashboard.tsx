@@ -1,9 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import { Container, Toolbar, Paper,Grid} from '@mui/material';
+import { Container, Toolbar, Paper,Grid, Box, Typography, Button} from '@mui/material';
 
 export default function Dashboard({ auth }: PageProps) {
+  const { user } = auth;
+  console.log(auth);
+
   return (
     <AuthenticatedLayout
       user={auth.user}
@@ -23,7 +26,60 @@ export default function Dashboard({ auth }: PageProps) {
                     height: 240,
                   }}
                 >
-                  {/* <Chart /> */}
+                   {user.organizations.map((organization) => (
+                <Box key={organization.id} sx={{ mb: 2 }}>
+                  <Typography variant="h6">{organization.name}</Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mr: 2 }}
+                    href={`/${organization.slug}/team`}
+                  >
+                    Team
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mr: 2 }}
+                    href={`/${organization.slug}/team/roles`}
+                  >
+                    Roles
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    href={`/${organization.slug}/team/permissions`}
+                  >
+                    Permisos
+                  </Button> 
+
+                  {/* <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mr: 2 }}
+                    href={`/${organization.slug}/team`}
+                  >
+                    Equipo
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mr: 2 }}
+                    href={`/${organization.slug}/team/roles`}
+                  >
+                    Roles
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="default"
+                    href={`/${organization.slug}/team/permissions`}
+                  >
+                    Permisos
+                  </Button> */}
+                </Box>
+              ))}
                 </Paper>
               </Grid>
               {/* Recent Deposits */}
@@ -36,7 +92,7 @@ export default function Dashboard({ auth }: PageProps) {
                     height: 240,
                   }}
                 >
-                  {/* <Deposits /> */}
+                  
                 </Paper>
               </Grid>
               {/* Recent Orders */}

@@ -52,10 +52,14 @@ class OrganizationRepository implements OrganizationRepositoryInterface
             $org->slug = generateSlug($data['name']);
             $org->save();
 
-            Role::create(['name' => 'admin', 'team_id' => $org->id]);
+            Role::create(['name' => 'Admin', 'team_id' => $org->id, 'system' => true]);
+            Role::create(['name' => 'Manager', 'team_id' => $org->id, 'system' => true]);
+            Role::create(['name' => 'Editor', 'team_id' => $org->id, 'system' => true]);
+            Role::create(['name' => 'Agent', 'team_id' => $org->id, 'system' => true]);
+            Role::create(['name' => 'Customer', 'team_id' => $org->id, 'system' => true]);
             $org->users()->attach($user->id);
             setPermissionsTeamId($org->id);
-            $role = Role::findByName('admin','web');
+            $role = Role::findByName('Admin','web');
             $user->assignRole($role);
 
             DB::commit();
