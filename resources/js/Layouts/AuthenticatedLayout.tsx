@@ -76,11 +76,9 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     <Link href={route('profile.edit')}>Profile</Link>
                   </MenuItem>
                   <MenuItem>
-                    <Button
-                      variant="outlined"
-                    >
-                      <Link href={route('logout')} method="post" >Log Out</Link>
-                    </Button>
+
+                    <Link href={route('logout')} method="post" as="button" type="button">Log Out</Link>
+
                   </MenuItem>
                 </Menu>
               </Box>
