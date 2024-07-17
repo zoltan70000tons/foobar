@@ -41,6 +41,10 @@ cp .env.example .env
 php artisan key:generate
 ```
 
+### Env file - IMPORTANT
+We are using ENV file from keepass. 
+Always use latest version, while copying **do not copy APP_KEY** keep APP_KEY as it is generated on your local environment
+
 #### Set up the database in the .env file and run the migrations:
 
 ```bash
