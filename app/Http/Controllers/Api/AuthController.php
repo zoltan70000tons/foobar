@@ -22,6 +22,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+      try {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -30,16 +31,21 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            return $this->errorResponse('The provided credentials are incorrect.', 401);
+            return response()->json(['message' => 'The provided credentials are incorrect.'], 401);
         }
 
-        // return $this->successResponse($user->createToken($request->email)->plainTextToken);
-        
-        // return response with user data and token
-        return $this->successResponse([
+        // Ensure the user model uses Laravel Sanctum or Passport
+        $token = $user->createToken('authToken')->plainTextToken;
+
+        return response()->json([
             'user' => $user,
-            'access_token' => $user->createToken($request->email)->plainTextToken
+            'access_token' => $token,
         ]);
+      } catch (\Exception $e) {
+          // Log the error for further debugging
+          Log::error('Login error: ' . $e->getMessage());
+          return response()->json(['message' => 'An error occurred during login.'], 500);
+      }
     }
 
 
