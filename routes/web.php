@@ -51,7 +51,7 @@ Route::get('/join-organization', function () {
 
 Route::get('/register-organization', function () {
     return Inertia::render('RegisterOrganization');
-})->name('organization.join');
+})->name('organization.register');
 
 
 

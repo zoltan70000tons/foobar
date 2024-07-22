@@ -75,11 +75,6 @@ export default function JoinOrganization() {
     return newErrors;
   };
 
-  useEffect(() => {
-    const newErrors = validateAll();
-    setValidationErrors(newErrors);
-    setIsButtonDisabled(Object.keys(newErrors).length > 0);
-  }, [data]);
 
   return (
     <Box

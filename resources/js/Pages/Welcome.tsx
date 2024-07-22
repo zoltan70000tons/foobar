@@ -1,55 +1,37 @@
-import * as React from 'react';
-import { Link, Head } from '@inertiajs/react';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import Navbar from '@/Components/Navbar';
-import { Container, Stack, Button } from '@mui/material';
+import { Container, Toolbar, Paper,Grid} from '@mui/material';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }: PageProps<{ laravelVersion: string, phpVersion: string }>) {
+export default function Welcome({}: PageProps) {
+
   return (
-    <>
+    <GuestLayout
+      header={"Welcome"}
+    >
       <Head title="Welcome" />
-      <header>
-        <nav>
-          <Container>
-            <Stack direction="row" spacing={2}>
-              {auth.user ? (
-                <Link
-                  href={route('dashboard')}
+      <Toolbar />
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}>
+              {/* Recent Deposits */}
+              <Grid item xs={12} md={4} lg={3}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 240,
+                  }}
                 >
-                  <Button variant="contained">Dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href={route('login')}
-                  >
-                    <Button variant="contained">Log in</Button>
-                  </Link>
-                  <Link
-                    href={route('register')}
-                  >
-                    <Button variant="contained">Register</Button>
-                  </Link>
-                </>
-              )}
-            </Stack>
+                  
+                </Paper>
+              </Grid>
+              <Grid item xs={12}>
+                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                </Paper>
+              </Grid>
+            </Grid>
           </Container>
-        </nav>
-      </header>
-      <Container
-        sx={{
-          minHeight: "100vh",
-          widht: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center"
-        }}
-      >
-        <h1>70 000 TONS OF METAL ADMIN</h1>
-      </Container>
-      <Container>
-        Laravel {laravelVersion} (PHP v{phpVersion})
-      </Container>
-    </>
+    </GuestLayout>
   );
 }

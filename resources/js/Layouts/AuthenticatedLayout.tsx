@@ -17,6 +17,7 @@ import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import theme from '@/Theme/theme';
 
 import { mainListItems, secondaryListItems, accountListItems } from './ListItems';
 // import Chart from './Chart';
@@ -86,8 +87,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
+const defaultTheme = theme;
 
 export default function AuthenticatedLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
   const [open, setOpen] = useState(true);
