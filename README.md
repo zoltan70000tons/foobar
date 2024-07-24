@@ -2,6 +2,8 @@
 
 This is Booking Engine Admin. 
 
+[![Laravel Forge Site Deployment Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fforge.laravel.com%2Fsite-badges%2F5c3b2739-8e31-43ca-80ee-54fb3370dca4%3Fdate%3D1%26label%3D1%26commit%3D1&style=flat-square)](https://forge.laravel.com/servers/826351/sites/2418314)
+
 #### Boilerplate - boilerplate-70k-back
 [boilerplate-70k-back](https://github.com/70000TONS-IT/boilerplate-70k-back)
 
