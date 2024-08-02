@@ -9,10 +9,9 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Auth\Middleware\Authenticate;
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+use App\Http\Controllers\AuthCustomer\AuthenticatedSessionController;
+use App\Http\Controllers\AuthCustomer\RegisteredUserController;
+use App\Http\Controllers\AuthCustomer\PasswordController;
 
 Route::apiResource('/events', EventController::class);
 
@@ -43,14 +42,13 @@ Route::put('/organization/members/updateRole', 'App\Http\Controllers\Api\TeamCon
  * We want to prevent the user from accessing the ADMIN routes.
  * So only /api routes should be accesible for role USER
  */
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/register', [RegisteredUserController::class, 'store']);
 
 
-Route::middleware(Authenticate::using('sanctum'))->group(function () {
-  Route::post('/logout', [AuthController::class, 'logout']);
-  Route::post('/verify-token', [AuthController::class, 'verifyToken']);
+// group of routes for the auth routes.
+Route::middleware(['auth:sanctum'])->group(function () {
+  Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
   Route::get('/user', [AuthController::class, 'user']);
-  Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+  Route::post('/reset-password-inside', [PasswordController::class, 'update']);
 });
-
