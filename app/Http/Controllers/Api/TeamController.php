@@ -11,21 +11,22 @@ use App\Repositories\TeamRepository;
 class TeamController extends Controller
 {
 protected TeamRepositoryInterface $teamRepositoryInterface;
+protected $organizationId;
 
 public function __construct(TeamRepository $teamRepository) {
     $this->teamRepositoryInterface = $teamRepository;
+    $this->organizationId = config('settings.organization_id');
+
 }
 
 public function listMembersByOrganization(ListMembersRequest $request){
-    $org_id = $request->org_id;
-    return $this->teamRepositoryInterface->getAllMembers($org_id);
+    return $this->teamRepositoryInterface->getAllMembers($this->organizationId);
 }
 
 public function updateMemberRoles(UpdateMemberRoleRequest $request){
-    $org_id = $request->org_id;
     $user_id = $request->user_id;
     $roles = $request->roles;
-    return $this->teamRepositoryInterface->updateMemberRoles($user_id, $org_id, $roles);
+    return $this->teamRepositoryInterface->updateMemberRoles($user_id, $this->organizationId, $roles);
 }
    
 }

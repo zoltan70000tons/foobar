@@ -2,6 +2,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { Container, Toolbar, Paper,Grid, Box, Typography, Button} from '@mui/material';
+import RecentOrders from './Dashboard/RecentOrders';
+import TeamCard from './Dashboard/TeamCard';
 
 export default function Dashboard({ auth }: PageProps) {
   const { user } = auth;
@@ -26,9 +28,11 @@ export default function Dashboard({ auth }: PageProps) {
                     height: 240,
                   }}
                 >
+
+                  <TeamCard />
                    {user.organizations.map((organization) => (
                 <Box key={organization.id} sx={{ mb: 2 }}>
-                  <Typography variant="h6">{organization.name}</Typography>
+                  {/* <Typography variant="h6">{organization.name}</Typography>
                   <Button
                     variant="contained"
                     color="primary"
@@ -53,7 +57,7 @@ export default function Dashboard({ auth }: PageProps) {
                     href={`/${organization.slug}/team/permissions`}
                   >
                     Permissions
-                  </Button> 
+                  </Button>  */}
 
                   {/* <Button
                     variant="contained"
@@ -98,7 +102,7 @@ export default function Dashboard({ auth }: PageProps) {
               {/* Recent Orders */}
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  {/* <Orders /> */}
+                  <RecentOrders />
                 </Paper>
               </Grid>
             </Grid>

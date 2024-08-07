@@ -14,6 +14,7 @@ import {
   Select,
   MenuItem,
   OutlinedInput,
+  ButtonGroup,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,6 +25,8 @@ import { useTheme } from "@emotion/react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from '@mui/icons-material/Save';
 import apiRoutes from "@/Helpers/ApiRoutes";
+import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
+import { Link } from "@inertiajs/react";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -57,6 +60,8 @@ const List = () => {
   const [permissions, setPermissions] = useState([]);
   const theme = useTheme();
   const [permissionName, setPermissionName] = useState([]);
+
+  useAxiosWithToken();
 
   useEffect(() => {
     axios.get(apiRoutes.orgRolesUrl, { params: {  org_id:1} }).then((response) => {
@@ -205,18 +210,36 @@ const List = () => {
       sortable: false,
     },
   ];
+  
+  const buttons = [
+    <Link href="/70k/team/" key="Team" >
+      <Button >Team</Button>
+    </Link>,
+    <Link href="/70k/team/roles" key="Roles">
+      <Button variant="contained">Roles</Button>
+    </Link>,
+    <Link href="/70k/team/permissions" key="Permissions">
+      <Button >Permissions</Button>
+    </Link>
+  ];
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpen}
-        sx={{ mb: 2 }}
-      >
-        Add Role
-      </Button>
+       <Box>
+       <ButtonGroup style={{marginBottom: '1rem'}} disableElevation size="small" aria-label="Small button group" variant="outlined">
+        {buttons}
+      </ButtonGroup>
+       </Box>
+       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpen}
+        >
+          Add Role
+        </Button>
+      </Box>
       <div style={{ height: 400, width: "100%", position: "relative" }}>
         {loading ? (
           <Box

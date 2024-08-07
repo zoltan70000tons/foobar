@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Traits\JsonResponseTrait;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class TeamRepository implements TeamRepositoryInterface
 {
@@ -17,7 +18,6 @@ class TeamRepository implements TeamRepositoryInterface
      */
     public function __construct()
     {
-        //
     }
 
     public function getAllMembers($org_id, $team = null)
@@ -50,12 +50,17 @@ class TeamRepository implements TeamRepositoryInterface
     public function updateMemberRoles($user_id, $org_id, $roles)
     {
         try {
+            $currentUser = Auth::user();
+            //dd($currentUser);
+            if (count($roles) > 1) {
+                throw new \Exception('It is not allowed to have more than one role');
+            }
             setPermissionsTeamId($org_id);
             $user = User::find($user_id);
             $user->syncRoles($roles);
             return $this->successResponse($roles, 'Roles updated successfully');
         } catch (\Exception $ex) {
-            dd($ex->getMessage());
+            return $this->errorResponse($ex->getMessage());
         }
     }
 }

@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Container, IconButton, Button, Modal, TextField, Box, Typography, CircularProgress } from "@mui/material";
+import { Container, IconButton, Button, Modal, TextField, Box, Typography, CircularProgress, ButtonGroup } from "@mui/material";
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import apiRoutes from "@/Helpers/ApiRoutes";
 import axios from "axios";
+import useAxiosWithToken from "@/Hooks/useAxiosWithToken";
+import { Link } from "@inertiajs/react";
 
 const List = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newPermission, setNewPermission] = useState("");
+
+  useAxiosWithToken();
 
   useEffect(() => {
     axios.get(apiRoutes.permissionUrl, { params: { id: '1' } }).then((response) => {
@@ -90,17 +94,36 @@ const List = () => {
     },
   ];
 
+  const buttons = [
+    <Link href="/70k/team/" key="Team" >
+      <Button >Team</Button>
+    </Link>,
+    <Link href="/70k/team/roles" key="Roles">
+      <Button>Roles</Button>
+    </Link>,
+    <Link href="/70k/team/permissions" key="Permissions">
+      <Button variant="contained">Permissions</Button>
+    </Link>
+  ];
+
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpen}
-        sx={{ mb: 2 }}
-      >
-        Add Permission
-      </Button>
+       <Box>
+       <ButtonGroup style={{marginBottom: '1rem'}} disableElevation size="small" aria-label="Small button group" variant="outlined">
+        {buttons}
+      </ButtonGroup>
+       </Box>
+       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpen}
+        >
+          Add Permission
+        </Button>
+      </Box>
       <div style={{ height: 400, width: "100%", position: "relative" }}>
         {loading ? (
           <Box

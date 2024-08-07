@@ -13,18 +13,11 @@ use App\Http\Controllers\AuthCustomer\AuthenticatedSessionController;
 use App\Http\Controllers\AuthCustomer\RegisteredUserController;
 use App\Http\Controllers\AuthCustomer\PasswordController;
 
-Route::apiResource('/events', EventController::class);
+use App\Http\Controllers\AuthTokenController;
+
+Route::post('/sanctum/token', [AuthTokenController::class, 'issueToken']);
 
 
-Route::apiResource('/events', EventController::class);
-Route::apiResource('/roles', RoleController::class);
-Route::apiResource('/permissions', PermissionController::class);
-Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
-Route::apiResource('/organizations', OrganizationController::class);
-Route::get('/organization/permissions', 'App\Http\Controllers\Permission\PermissionController@listByOrganization');
-Route::get('/organization/roles', 'App\Http\Controllers\Role\RoleController@listByOrganization');
-Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization');
-Route::put('/organization/members/updateRole', 'App\Http\Controllers\Api\TeamController@updateMemberRoles');
 /**
  * Auth API Routes
  * 
@@ -51,4 +44,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
   Route::get('/user', [AuthController::class, 'user']);
   Route::post('/reset-password-inside', [PasswordController::class, 'update']);
+  Route::apiResource('/events', EventController::class);
+  Route::apiResource('/events', EventController::class);
+  Route::apiResource('/roles', RoleController::class);
+  Route::apiResource('/permissions', PermissionController::class);
+  Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
+  Route::apiResource('/organizations', OrganizationController::class);
+  Route::get('/organization/permissions', 'App\Http\Controllers\Permission\PermissionController@listByOrganization');
+  Route::get('/organization/roles', 'App\Http\Controllers\Role\RoleController@listByOrganization');
+  Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization');
+  Route::put('/organization/members/updateRole', 'App\Http\Controllers\Api\TeamController@updateMemberRoles');
+
 });

@@ -76,7 +76,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
         indicatorColor="secondary"
       >
         <Tab value="one" label="Account" />
-        <Tab value="two" label="Roles" />
+        <Tab value="two" label="Manage Role" />
         {/* <Tab value="three" label="Permissions" /> */}
       </Tabs>
       <Divider />

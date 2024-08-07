@@ -11,20 +11,26 @@ export default function Login({ status, canResetPassword }: { status?: string, c
     remember: false,
   });
 
-  useEffect(() => {
-    return () => {
-      reset('password');
-    };
-  }, []);
-
-  const submit: FormEventHandler = (e) => {
+  const submit: FormEventHandler = async (e) => {
     e.preventDefault();
-    post(route('login'));
+    
+    try {
+      const response = await post(route('login'), {
+        onSuccess: () => {
+          // Maneja el token almacenado en el backend (si es necesario)
+          const token = response.props.token;
+          localStorage.setItem('token', token);
+          
+          // Redirige o actualiza el estado como sea necesario
+        },
+      });
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
 
   return (
     <GuestLayout>
-      <Head title="Log in" />
       <Container
         component="main"
         maxWidth="xs"
@@ -37,6 +43,8 @@ export default function Login({ status, canResetPassword }: { status?: string, c
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           {status && <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">{status}</Alert>}
+          {errors.email && <Alert icon={<CheckIcon fontSize="inherit" />} severity="error">{errors.email}</Alert>}
+          {errors.password && <Alert icon={<CheckIcon fontSize="inherit" />} severity="error">{errors.password}</Alert>}
           <form
             autoComplete="true"
             onSubmit={submit}
@@ -53,7 +61,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
               <TextField
                 required
                 fullWidth
-                error={errors.email ? true : false}
+                error={Boolean(errors.email)}
                 id="outlined-error"
                 label="Email"
                 type="email"
@@ -63,7 +71,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
               <TextField
                 required
                 fullWidth
-                error={errors.password ? true : false}
+                error={Boolean(errors.password)}
                 id="standard-password-input"
                 label="Password"
                 type="password"

@@ -8,15 +8,19 @@ use App\Http\Requests\Role\addPermissionToRoleRequest;
 use App\Http\Requests\Role\ListRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Interfaces\RoleRepositoryInterface;
+use App\Models\Organization;
 use App\Repositories\RoleRepository;
 
 
 class RoleController extends Controller
 {
     private RoleRepositoryInterface $rolesRepositoryInterface;
+    private $organizationId ;
 
     public function __construct(RoleRepository $rolesRepositoryInterface) {
         $this->rolesRepositoryInterface = $rolesRepositoryInterface;
+        $this->organizationId = config('settings.organization_id');
+
     }
 
     public function index(CreateRoleRequest $request){
@@ -36,10 +40,9 @@ class RoleController extends Controller
       
     public function listByOrganization(ListRoleRequest $request)
     {
-        $org_id =$request->org_id;
         $role_id = $request->role_id;
         $user_id =$request->user_id;
-      return $this->rolesRepositoryInterface->listByOrganization($org_id,$role_id,$user_id);
+      return $this->rolesRepositoryInterface->listByOrganization($this->organizationId,$role_id,$user_id);
     }
 
 

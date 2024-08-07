@@ -14,12 +14,14 @@ use Spatie\Permission\Models\Role;
 class RoleRepository implements RoleRepositoryInterface
 {
     use JsonResponseTrait;
+    protected $organizationId;
     /**
      * Create a new class instance.
      */
     public function __construct()
     {
-        //
+        $this->organizationId = config('settings.organization_id');
+        setPermissionsTeamId($this->organizationId);
     }
 
     public function getAll()
@@ -33,17 +35,17 @@ class RoleRepository implements RoleRepositoryInterface
     public function create($data)
     {
         try {
+            $data['guard_name'] = 'web';
             $role = Role::create($data);
             return $this->successResponse($role, 'Role created successfully');
         } catch (\Exception $e) {
-            return ApiResponserHelper::rollback($e);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
     public function update($data, $id)
     {
         try {
-            $permiss = Role::findByName('test')->permissions;
             $grantedPermissions = array_filter($data['permissions'], function ($permission) {
                 return isset($permission['granted']) && $permission['granted'] === true;
             });
@@ -54,7 +56,7 @@ class RoleRepository implements RoleRepositoryInterface
             $s = $role->syncPermissions($grantedPermissionNames);
             return $this->successResponse([], 'Role updated successfully');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -85,7 +87,7 @@ class RoleRepository implements RoleRepositoryInterface
             }
             return $this->successResponse([], 'Permission added to role successfully');
         } catch (\Exception $e) {
-            dd($e->getMessage() . '  ' . $e->getLine());
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -97,7 +99,7 @@ class RoleRepository implements RoleRepositoryInterface
     public function listByOrganization($org_id, $role_id = null, $user_id = null)
     {
         try {
-            setPermissionsTeamId(1);
+            setPermissionsTeamId($org_id);
             if ($role_id) {
                 $roles = Role::where(['team_id' => $org_id, 'id' => $role_id,])->orderBy('system', 'desc')->get();
             } else {
@@ -111,15 +113,18 @@ class RoleRepository implements RoleRepositoryInterface
             }
             return $this->successResponse($roles, 'Roles listed successfully');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            //return ApiResponserHelper::rollback($e);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
     public function listPermissionByRole($id)
     {
-        $role = Role::findById($id);
-        $permissions = $role->permissions()->get();
-        return $this->successResponse($permissions, 'Permissions listed successfully');
+        try {
+            $role = Role::findById($id);
+            $permissions = $role->permissions()->get();
+            return $this->successResponse($permissions, 'Permissions listed successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
     }
 }

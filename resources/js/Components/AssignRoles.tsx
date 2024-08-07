@@ -50,22 +50,21 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   const theme = useTheme();
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [permissionName, setPermissionName] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);  // Añadir estado de carga
+  const [loading, setLoading] = useState(true); 
   const [saveLoading, setSaveLoading] = useState(false);
 
   useEffect(() => {
-    // Función para obtener los permisos del usuario
     const fetchPermissions = async () => {
       try {
         const response = await axios.get(`/api/organization/roles`, { params: { org_id: orgId, user_id: userId } });
         const permissionsData = response.data.data;
         const grantedPermissions = permissionsData.filter(permission => permission.granted).map(permission => permission.name);
         setPermissions(permissionsData);
-        setPermissionName(grantedPermissions);  // Inicializa los permisos seleccionados
+        setPermissionName(grantedPermissions); 
       } catch (error) {
         console.error("Error fetching permissions", error);
       } finally {
-        setLoading(false);  // Desactivar carga una vez que los datos están listos
+        setLoading(false); 
       }
     };
 
@@ -85,18 +84,18 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   const handleSubmit = async () => {
     try {
       setSaveLoading(true);
-      console.log('org_id', orgId);
       await axios.put(`/api/organization/members/updateRole`, { roles: permissionName, user_id: userId , org_id:1});
       setSaveLoading(false);
     } catch (error) {
       console.error("Error saving roles", error);
+      setSaveLoading(false);
     }
   };
 
   return (
     <Box sx={{ m: 1, width: '100%' }} component="form" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
       <FormControl fullWidth>
-        <InputLabel id="multiple-chip-label">Roles</InputLabel>
+        <InputLabel id="multiple-chip-label">Role</InputLabel>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress />
@@ -105,7 +104,6 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
           <Select
             labelId="multiple-chip-label"
             id="multiple-chip"
-            multiple
             value={permissionName}
             onChange={handleChangeChips}
             input={<OutlinedInput id="select-multiple-chip" label="Roles" />}
@@ -143,9 +141,6 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
             >
               Save
             </LoadingButton>
-        {/* <Button type="submit" variant="contained" color="primary">
-          Guardar
-        </Button> */}
       </Box>
     </Box>
   );
