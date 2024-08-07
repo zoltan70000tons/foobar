@@ -6,6 +6,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import '@fontsource/roboto'; 
 
+import { PermissionsProvider } from '../js/Providers/PermissionContext'
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
@@ -13,8 +14,12 @@ createInertiaApp({
   resolve: (name) => resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
   setup({ el, App, props }) {
     const root = createRoot(el);
-
-    root.render(<App {...props} />);
+    const { auth } = props.initialPage.props;
+    root.render(
+      <PermissionsProvider user={auth.user}>
+        <App {...props} />
+      </PermissionsProvider>
+    );
   },
   progress: {
     color: '#4B5563',

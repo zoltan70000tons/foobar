@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Role;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Permission\ListUserPermissionRequest;
 use App\Http\Requests\Role\CreateRoleRequest;
 use App\Http\Requests\Role\addPermissionToRoleRequest;
 use App\Http\Requests\Role\ListRoleRequest;
@@ -49,5 +50,10 @@ class RoleController extends Controller
     public function update(UpdateRoleRequest $request){
       $fields = $request->all();
       return $this->rolesRepositoryInterface->update($fields,$fields['id']);
+    }
+
+    public function getPermissions(ListUserPermissionRequest $request){
+        $fields = $request->all();
+        return $this->rolesRepositoryInterface->listByUser($fields['id']);
     }
 }

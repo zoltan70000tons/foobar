@@ -118,22 +118,6 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
 
                 <Grid item xs={6}>
                   <CustomInput
-                    select
-                    name="gender"
-                    value={userState.gender}
-                    onChange={handleUserChange}
-                    title="Gender"
-                    dis={edit.disabled}
-                    content={genderSelect.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  />
-                </Grid>
-
-                <Grid item xs={6}>
-                  <CustomInput
                     name="phone"
                     value={userState.phone}
                     onChange={handleUserChange}

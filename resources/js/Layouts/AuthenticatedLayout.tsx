@@ -20,6 +20,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import theme from '@/Theme/theme';
 
 import { mainListItems, secondaryListItems, accountListItems } from './ListItems';
+import LoadingOverlay from '@/Components/LoadingOverlay';
 // import Chart from './Chart';
 // import Deposits from './Deposits';
 // import Orders from './Orders';
@@ -89,12 +90,12 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 const defaultTheme = theme;
 
-export default function AuthenticatedLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+export default function AuthenticatedLayout({ user, header, children}: PropsWithChildren<{ user: User, header?: ReactNode }>) {
   const [open, setOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
   };
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: 'flex' }}>

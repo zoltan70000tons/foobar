@@ -15,6 +15,7 @@ const apiRoutes = {
   permissionUrl: `${API_BASE_URL}/organization/permissions`,
   addPermissionToRoleUrl: `${API_BASE_URL}/permissions/addToRole`,
   orgPermissionUrl: `${API_BASE_URL}/permissions`,
+  getPermissions: `${API_BASE_URL}/users/getPermissions`,
 
 };
 

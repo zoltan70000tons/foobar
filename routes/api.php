@@ -54,5 +54,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::get('/organization/roles', 'App\Http\Controllers\Role\RoleController@listByOrganization');
   Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization');
   Route::put('/organization/members/updateRole', 'App\Http\Controllers\Api\TeamController@updateMemberRoles');
+  Route::get('/users/getPermissions', 'App\Http\Controllers\Role\RoleController@getPermissions');
 
 });

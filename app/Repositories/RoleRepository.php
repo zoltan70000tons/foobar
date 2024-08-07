@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Classes\ApiResponserHelper;
 use App\Http\Resources\RoleResource;
 use App\Interfaces\RoleRepositoryInterface;
+use App\Models\User;
 use App\Traits\JsonResponseTrait;
 use GrahamCampbell\ResultType\Success;
 use PhpParser\Node\Stmt\TryCatch;
@@ -123,6 +124,17 @@ class RoleRepository implements RoleRepositoryInterface
             $role = Role::findById($id);
             $permissions = $role->permissions()->get();
             return $this->successResponse($permissions, 'Permissions listed successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    public function listByUser($id){
+        try {
+            $user = User::find($id); 
+            $permissions = $user->getAllPermissions()->pluck('name');
+            $roles = $user->getRoleNames();
+            return $this->successResponse(array('permissions' => $permissions, 'roles' => $roles), 'Roles listed successfully');
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

@@ -4,6 +4,7 @@ import { PageProps } from '@/types';
 import { Container, Toolbar, Paper,Grid} from '@mui/material';
 import List  from '@/Pages/Team/partials/List';
 import Invite from '@/Pages/Team/partials/Invite';
+import LoadingOverlay from '@/Components/LoadingOverlay';
 
 
 export default function Teams({ auth }: PageProps) {

@@ -26,8 +26,9 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from '@mui/icons-material/Save';
 import apiRoutes from "@/Helpers/ApiRoutes";
 import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { Link } from "@inertiajs/react";
-
+import LoadingOverlay from '../../../Components/LoadingOverlay'; 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -57,6 +58,7 @@ const List = () => {
   const [editRole, setEditRole] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const theme = useTheme();
   const [permissionName, setPermissionName] = useState([]);
@@ -91,11 +93,11 @@ const List = () => {
 
       setPermissions(allPermissions);
       setPermissionName(grantedPermissions);
-      setLoading(false);
     } catch (error) {
       console.error("Error loading permissions:", error);
     }
     setEditOpen(true);
+    setLoading(false);
   };
 
   const handleDelete = (id) => {
@@ -125,6 +127,10 @@ const List = () => {
 
   const handleEditChange = (event) => {
     setEditRole({ ...editRole, role: event.target.value });
+  };
+
+  const handleManagePermissions = (event) => {
+    //setNewRole(event.target.value);
   };
 
   const handleSave = async () => {
@@ -196,7 +202,7 @@ const List = () => {
             onClick={() => handleEdit(params.row)}
             disabled={params.row.system} // Disable button if system is true
           >
-            <EditIcon />
+            <SettingsIcon />
           </IconButton>
           <IconButton
             color="secondary"
@@ -205,6 +211,7 @@ const List = () => {
           >
             <DeleteIcon />
           </IconButton>
+
         </div>
       ),
       sortable: false,
@@ -242,23 +249,7 @@ const List = () => {
       </Box>
       <div style={{ height: 400, width: "100%", position: "relative" }}>
         {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              zIndex: 1,
-            }}
-          >
-            <CircularProgress />
-          </Box>
+          <></>
         ) : (
           <DataGrid
             rows={rows}
@@ -402,6 +393,7 @@ const List = () => {
           </Box>
         </Box>
       </Modal>
+      <LoadingOverlay open={loading}/>
     </Container>
   );
 };

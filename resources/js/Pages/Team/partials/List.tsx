@@ -8,6 +8,7 @@ import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
 import { Link } from '@inertiajs/react';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
+import LoadingOverlay from '@/Components/LoadingOverlay';
 
 interface User {
   id: number;
@@ -66,13 +67,13 @@ const List: React.FC = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Container maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+  //       <CircularProgress />
+  //     </Container>
+  //   );
+  // }
 
   const buttons = [
     <Link href="/70k/team/" key="Team" >
@@ -94,18 +95,24 @@ const List: React.FC = () => {
         </ButtonGroup>
       </Box>
       <div style={{ height: 400, width: "100%" }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { page: 0, pageSize: 5 },
-            },
-          }}
-          pageSizeOptions={[5, 10]}
-          checkboxSelection
-        />
+      {loading ? (
+          <></>
+        ) : (
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            initialState={{
+              pagination: {
+                paginationModel: { page: 0, pageSize: 5 },
+              },
+            }}
+            pageSizeOptions={[5, 10]}
+            checkboxSelection
+          />
+        )}
       </div>
+      <LoadingOverlay open={loading}/>
     </Container>
   );
 };
