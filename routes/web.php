@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\BookingController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,9 +15,6 @@ Route::get('/', function () {
     ]);
 });
 
-//Grupo de ruta para hacer cabina dividida en camas individuales. ;)
-Route::post('/book-bed', [BookingController::class, 'bookBed']);
-
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -28,21 +24,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+    
     Route::get('/{slug}/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
     Route::post('/{slug}/invitations', [InvitationController::class, 'store'])->name('invitations.store');
-
-
+    
     // Grupo de rutas con el prefijo {slug}
     Route::prefix('{slug}')->group(function () {
         Route::get('/team', function () {
             return Inertia::render('Teams');
         })->name('teams');
-
+        
         Route::get('/team/roles', function () {
             return Inertia::render('ManageRole');
         })->name('roles');
-
+        
         Route::get('/team/permissions', function () {
             return Inertia::render('ManagePermission');
         })->name('permissions');
@@ -60,4 +55,4 @@ Route::get('/register-organization', function () {
 
 
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
