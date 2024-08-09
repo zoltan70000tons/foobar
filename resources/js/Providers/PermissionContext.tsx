@@ -1,38 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import apiRoutes from '@/Helpers/ApiRoutes';
-import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
+import React, { createContext, useContext } from 'react';
 
 const PermissionsContext = createContext();
 
-export const PermissionsProvider = ({ children, user }) => {
-  const [permissions, setPermissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useAxiosWithToken();
-
-  useEffect(() => {
-    if (user) {
-      axios.get(`${apiRoutes.getPermissions}?id=${user.id}`)
-        .then(response => {
-          setPermissions(response.data.data.permissions || []);
-          console.log(response.data.data.permissions);
-          setLoading(false);
-        })
-        .catch(err => {
-          setError(err);
-          setLoading(false);
-        });
-    }
-  }, [user]);
+export const PermissionsProvider = ({ children, auth }) => {
+  const { permissions, roles } = auth || { permissions: [], roles: [] };
 
   const hasPermission = (permission) => {
     return permissions.includes(permission);
   };
 
+  const hasRole = (role) => {
+    return roles.includes(role);
+  };
+
   return (
-    <PermissionsContext.Provider value={{ permissions, hasPermission, loading, error }}>
+    <PermissionsContext.Provider value={{ permissions, roles, hasPermission, hasRole }}>
       {children}
     </PermissionsContext.Provider>
   );

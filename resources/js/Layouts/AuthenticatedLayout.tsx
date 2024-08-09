@@ -21,6 +21,7 @@ import theme from '@/Theme/theme';
 
 import { mainListItems, secondaryListItems, accountListItems } from './ListItems';
 import LoadingOverlay from '@/Components/LoadingOverlay';
+import { usePage } from '@inertiajs/react';
 // import Chart from './Chart';
 // import Deposits from './Deposits';
 // import Orders from './Orders';
@@ -92,6 +93,9 @@ const defaultTheme = theme;
 
 export default function AuthenticatedLayout({ user, header, children}: PropsWithChildren<{ user: User, header?: ReactNode }>) {
   const [open, setOpen] = useState(true);
+  const { auth } = usePage().props;
+
+
   const [loading, setLoading] = useState(false);
   const toggleDrawer = () => {
     setOpen(!open);

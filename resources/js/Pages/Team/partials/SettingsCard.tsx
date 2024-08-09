@@ -2,27 +2,33 @@ import React, { useState } from "react";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import InputAdornment from "@mui/material/InputAdornment";
-import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import CardContent from "@mui/material/CardContent";
-import { Grid, Chip } from "@mui/material";
+import { Grid } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import Button from "@mui/material/Button";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import CustomInput from "./CustomInput";
 import AssignRoles from "@/Components/AssignRoles";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { useForm } from "@inertiajs/react";
 
 interface User {
   id: number;
-  name: string;
   email: string;
   status: string;
   roles: string[];
   organization_id: number;
   organization_name: string;
+  survivor_number?: string;
+  lastname?: string;
+  middlename?: string;
+  username?: string;
+  firstname?: string;
+  phone_number?: string;
 }
 
 interface SettingsCardProps {
@@ -30,16 +36,27 @@ interface SettingsCardProps {
 }
 
 const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
-  const [userState, setUserState] = useState<User>(user);
+  const { hasPermission } = usePermissions();
+  const { data, setData, post, errors, processing } = useForm({
+    id: user.id,
+    email: user.email,
+    phone_number: user.phone_number,
+    pass: '',
+    survivor_number: user.survivor_number || '',
+    lastname: user.lastname || '',
+    middlename: user.middlename || '',
+    username: user.user_name || '',
+    firstname: user.firstname || ''
+  });
+
+  const canEdit = hasPermission('Edit User');
 
   const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserState({ ...userState, [event.target.name]: event.target.value });
+    setData(event.target.name, event.target.value);
   };
 
   const [edit, setEdit] = useState({
-    disabled: true,
-    isEdit: true,
-    showPassword: false
+    disabled: !canEdit,
   });
 
   const [tabValue, setTabValue] = useState("one");
@@ -48,24 +65,20 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     setTabValue(newValue);
   };
 
-  const changeButton = (event: any) => {
+
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    setEdit({
-      ...edit,
-      disabled: !edit.disabled,
-      isEdit: !edit.isEdit,
-      showPassword: false
-    });
+    if (canEdit) {
+      post(route('member.update', user.id), {
+        onSuccess: () => {
+          console.log("User updated successfully");
+        },
+        onError: () => {
+          console.error("Error updating user");
+        },
+      });
+    }
   };
-
-  const handlePasswordVisibility = () => {
-    setEdit({ ...edit, showPassword: !edit.showPassword });
-  };
-
-  const genderSelect = [
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" }
-  ];
 
   return (
     <Card variant="outlined" sx={{ height: "100%", width: "100%" }}>
@@ -77,49 +90,70 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
       >
         <Tab value="one" label="Account" />
         <Tab value="two" label="Manage Role" />
-        {/* <Tab value="three" label="Permissions" /> */}
       </Tabs>
       <Divider />
 
       {tabValue === "one" && (
-        <form>
+        <form onSubmit={handleSubmit}>
           <CardContent sx={{ p: 3, maxHeight: { md: "40vh" }, textAlign: { xs: "center", md: "start" } }}>
             <FormControl fullWidth>
-              <Grid container direction={{ xs: "column", md: "row" }} columnSpacing={5} rowSpacing={3}>
-                <Grid item xs={6}>
+              <Grid container spacing={3}>
+                {/* First row */}
+                <Grid item xs={12} md={4}>
                   <CustomInput
-                    name="firstName"
-                    value={userState.name}
+                    name="firstname"
+                    value={data.firstname}
                     title="First Name"
                     onChange={handleUserChange}
                     dis={edit.disabled}
                   />
                 </Grid>
 
-                <Grid item xs={6}>
+                <Grid item xs={12} md={4}>
                   <CustomInput
-                    name="lastName"
-                    value={userState.name}
+                    name="lastname"
+                    value={data.lastname}
                     onChange={handleUserChange}
                     title="Last Name"
                     dis={edit.disabled}
                   />
                 </Grid>
 
-                <Grid item xs={6}>
+                <Grid item xs={12} md={4}>
                   <CustomInput
-                    name="midName"
-                    value={userState.name}
+                    name="middlename"
+                    value={data.middlename}
                     onChange={handleUserChange}
                     title="Middle Name"
                     dis={edit.disabled}
                   />
                 </Grid>
 
-                <Grid item xs={6}>
+                {/* Second row */}
+                <Grid item xs={12} md={4}>
                   <CustomInput
-                    name="phone"
-                    value={userState.phone}
+                    name="username"
+                    value={data.username}
+                    title="Username"
+                    dis={true}  
+                    InputProps={{ readOnly: true }} 
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <CustomInput
+                    name="survivornumber"
+                    value={data.survivor_number}
+                    title="Survivor Number"
+                    dis={true}  
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <CustomInput
+                    name="phone_number"
+                    value={data.phone_number}
                     onChange={handleUserChange}
                     title="Phone Number"
                     dis={edit.disabled}
@@ -129,48 +163,33 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                   />
                 </Grid>
 
-                <Grid item xs={6}>
+                {/* Third row */}
+                <Grid item xs={12} md={4}>
                   <CustomInput
                     name="email"
-                    value={userState.email}
-                    onChange={handleUserChange}
+                    value={data.email}
                     title="Email Address"
-                    dis={edit.disabled}
+                    dis={true}  // Make this field read-only
+                    InputProps={{ readOnly: true }} // Additional property to make it read-only
                   />
                 </Grid>
 
-                <Grid item xs={6}>
-                  <CustomInput
-                    name="pass"
-                    value={userState.pass}
-                    onChange={handleUserChange}
-                    title="Password"
-                    dis={edit.disabled}
-                    type={edit.showPassword ? "text" : "password"}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={handlePasswordVisibility} edge="end" disabled={edit.disabled}>
-                            {edit.showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                </Grid>
 
-                <Grid container justifyContent={{ xs: "center", md: "flex-end" }} item xs={6}>
-                  <Button
-                    sx={{ p: "1rem 2rem", my: 2, height: "3rem" }}
-                    component="button"
-                    size="large"
-                    variant="contained"
-                    color="secondary"
-                    onClick={changeButton}
-                  >
-                    {edit.isEdit ? "EDIT" : "UPDATE"}
-                  </Button>
-                </Grid>
+                {canEdit && (
+                  <Grid item xs={12}>
+                    <Button
+                      sx={{ p: "1rem 2rem", my: 2, height: "3rem" }}
+                      component="button"
+                      size="large"
+                      variant="contained"
+                      color="primary"
+                      type="submit"
+                      disabled={processing}
+                    >
+                      {processing ? "Saving..." : "EDIT"}
+                    </Button>
+                  </Grid>
+                )}
               </Grid>
             </FormControl>
           </CardContent>

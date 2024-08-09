@@ -18,7 +18,7 @@ import Skeleton from '@mui/material/Skeleton';
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission, loading, error } = usePermissions();
   const { user } = auth;
-
+  console.log(auth);
   //if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -32,15 +32,7 @@ export default function Dashboard({ auth }: PageProps) {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={12} lg={12}>
-            {loading ?  <>
-              <Box sx={{ width: 300 }}>
-             <Skeleton />
-             <Skeleton animation="wave" />
-             <Skeleton animation={true} />
-             
-           </Box> 
-            </> :
-            (<Grid container spacing={3}>
+            <Grid container spacing={3}>
               {hasPermission('View Users') && (
                 <Grid item xs={12} sm={6} md={3}>
                   <DashboardCard
@@ -96,9 +88,7 @@ export default function Dashboard({ auth }: PageProps) {
                 />
               </Grid>
               )}
-            </Grid>)
-            
-            }
+            </Grid>
             
           </Grid>
           <Grid item xs={12}>

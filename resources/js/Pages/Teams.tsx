@@ -11,9 +11,9 @@ export default function Teams({ auth }: PageProps) {
   return (
     <AuthenticatedLayout
       user={auth.user}
-      header={"Teams"}
+      header={"Team"}
     >
-      <Head title="Teams" />
+      <Head title="Team" />
       <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
@@ -28,7 +28,7 @@ export default function Teams({ auth }: PageProps) {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    height: 240,
+                    minHeight: 240,
                   }}
                 >
                     <Invite />
@@ -40,7 +40,7 @@ export default function Teams({ auth }: PageProps) {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    height: 240,
+                    //minheight: 240,
                   }}
                 >
                 </Paper>

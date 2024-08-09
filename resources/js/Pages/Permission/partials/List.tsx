@@ -62,7 +62,7 @@ const List = () => {
   const theme = useTheme();
   const [permissionName, setPermissionName] = useState([]);
 
-  useAxiosWithToken();
+  //useAxiosWithToken();
 
   useEffect(() => {
     axios.get(apiRoutes.orgPermissionUrl, { params: {  org_id:1} }).then((response) => {

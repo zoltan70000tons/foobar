@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Team\ListMembersRequest;
+use App\Http\Requests\Team\UpdateMemberRequest;
 use App\Http\Requests\Team\UpdateMemberRoleRequest;
 use App\Interfaces\TeamRepositoryInterface;
 use App\Repositories\TeamRepository;
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Redirect;
 
 class TeamController extends Controller
 {
@@ -27,6 +33,10 @@ public function updateMemberRoles(UpdateMemberRoleRequest $request){
     $user_id = $request->user_id;
     $roles = $request->roles;
     return $this->teamRepositoryInterface->updateMemberRoles($user_id, $this->organizationId, $roles);
+}
+public function updateMember(UpdateMemberRequest $request){
+        
+        return Redirect::route('teams',['slug' => '70K'])->with('message', 'User updated successfully');
 }
    
 }

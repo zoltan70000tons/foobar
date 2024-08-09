@@ -22,13 +22,26 @@ const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70 },
   { field: 'name', headerName: 'Name', width: 200 },
   { field: 'email', headerName: 'Email', type: 'string', width: 200 },
-  { field: 'status', headerName: 'Status', sortable: false, width: 100 },
+  { field: 'status', headerName: 'Status', sortable: false, width: 100,
+    renderCell: (params) => (
+      <Stack direction="row"
+      alignItems="center"
+      height="100%"
+      >
+          <Chip  label={params.row.status} color={ params.row.status == "Active" ? "success" : "warning" }/>
+      </Stack>
+    ),
+
+  },
   {
     field: 'roles',
     headerName: 'Roles',
     width: 300,
     renderCell: (params) => (
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row"
+      alignItems="center"
+      height="100%"
+      >
         {params.row.roles.map((role: string, index: number) => (
           <Chip key={index} label={role} />
         ))}
@@ -47,7 +60,6 @@ const List: React.FC = () => {
   const [rows, setRows] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useAxiosWithToken();
 
   useEffect(() => {
     const fetchData = async () => {

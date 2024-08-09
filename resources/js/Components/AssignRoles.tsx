@@ -11,10 +11,13 @@ import {
   SelectChangeEvent,
   Button,
 } from "@mui/material";
+import { usePermissions } from "@/Providers/PermissionContext";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { useTheme } from "@mui/material/styles";
 import SaveIcon from '@mui/icons-material/Save';
+import apiRoutes from "@/Helpers/ApiRoutes";
 import axios from "axios";
+
 
 interface Permission {
   name: string;
@@ -47,6 +50,9 @@ function getStyles(name: string, permissionName: readonly string[], theme: any) 
 }
 
 const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
+  const { hasPermission,  error } = usePermissions();
+  const canEdit = hasPermission('Edit User');
+  
   const theme = useTheme();
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [permissionName, setPermissionName] = useState<string[]>([]);
@@ -56,7 +62,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get(`/api/organization/roles`, { params: { org_id: orgId, user_id: userId } });
+        const response = await axios.get(apiRoutes.orgRolesUrl, { params: { org_id: orgId, user_id: userId } });
         const permissionsData = response.data.data;
         const grantedPermissions = permissionsData.filter(permission => permission.granted).map(permission => permission.name);
         setPermissions(permissionsData);
@@ -84,7 +90,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   const handleSubmit = async () => {
     try {
       setSaveLoading(true);
-      await axios.put(`/api/organization/members/updateRole`, { roles: permissionName, user_id: userId , org_id:1});
+      await axios.put(apiRoutes.updateRole, { roles: permissionName, user_id: userId , org_id:1});
       setSaveLoading(false);
     } catch (error) {
       console.error("Error saving roles", error);
@@ -106,6 +112,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
             id="multiple-chip"
             value={permissionName}
             onChange={handleChangeChips}
+            disabled ={!hasPermission('Edit User')} 
             input={<OutlinedInput id="select-multiple-chip" label="Roles" />}
             renderValue={(selected) => (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -129,8 +136,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
           </Select>
         )}
       </FormControl>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-
+      {hasPermission('Edit User') && ( <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
       <LoadingButton
               loading={saveLoading}
               loadingPosition="start"
@@ -141,7 +147,8 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
             >
               Save
             </LoadingButton>
-      </Box>
+      </Box>)}
+     
     </Box>
   );
 };

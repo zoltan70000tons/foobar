@@ -29,16 +29,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $organizationId = config('settings.organization_id');
+        setPermissionsTeamId($organizationId);
+        $user = $request->user();
+        $permissions = $user ? $user->getAllPermissions()->pluck('name') : [];
+        $roles = $user ? $user->getRoleNames() : [];
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'permissions' => $permissions,
+                'roles'=> $roles
             ],
             'flash' => [
-                'message' => fn () => $request->session()->get('message')
+                'message' => fn () => $request->session()->get('message'),
             ],
         ];
     }
-
-
 }

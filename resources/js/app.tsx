@@ -16,7 +16,7 @@ createInertiaApp({
     const root = createRoot(el);
     const { auth } = props.initialPage.props;
     root.render(
-      <PermissionsProvider user={auth.user}>
+      <PermissionsProvider auth={auth}>
         <App {...props} />
       </PermissionsProvider>
     );

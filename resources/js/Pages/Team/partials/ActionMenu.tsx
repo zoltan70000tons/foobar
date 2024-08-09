@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button } from "@mui/material";
+import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button, DialogTitle, DialogContent } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ViewMember from './ViewMember';
 
@@ -53,19 +53,21 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
         onClose={handleClose}
       >
         <MenuItem onClick={handleView}>View</MenuItem>
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
       </Menu>
 
       <Dialog
-        fullScreen
+        maxWidth="lg"
         open={openViewModal}
         onClose={handleCloseViewModal}
         aria-labelledby="view-dialog-title"
         aria-describedby="view-dialog-description"
       >
+        <DialogTitle>Edit User Details</DialogTitle>
+        <DialogContent>
         <ViewMember selectedUser={selectedUser} />
+        </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseViewModal} color="primary">Close</Button>
+          <Button onClick={handleCloseViewModal} color="primary" variant="contained">Close</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -9,9 +9,9 @@ export default function ManageRoles({ auth, loadingState }: PageProps) {
   return (
     <AuthenticatedLayout
       user={auth.user}
-      header={"Teams"}
+      header={"Team"}
     >
-      <Head title="Teams" />
+      <Head title="Team" />
       <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>

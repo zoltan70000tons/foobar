@@ -17,11 +17,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
     try {
       const response = await post(route('login'), {
         onSuccess: () => {
-          // Maneja el token almacenado en el backend (si es necesario)
-          const token = response.props.token;
-          localStorage.setItem('token', token);
-          
-          // Redirige o actualiza el estado como sea necesario
+           window.location.href = route('dashboard');
         },
       });
     } catch (err) {
