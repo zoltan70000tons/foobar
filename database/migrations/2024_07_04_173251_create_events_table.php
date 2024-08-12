@@ -15,6 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
+            $table->string('address');
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
+            $table->boolean('one_day_event');
+            $table->dateTime('sales_period_start_date');
+            $table->dateTime('sales_period_end_date');
+            $table->string('status');
+            $table->integer('organization_id');
             $table->timestamps();
         });
     }
