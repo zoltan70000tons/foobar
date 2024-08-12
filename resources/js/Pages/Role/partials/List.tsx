@@ -14,6 +14,7 @@ import {
   Select,
   MenuItem,
   OutlinedInput,
+  ButtonGroup,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,7 +25,10 @@ import { useTheme } from "@emotion/react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from '@mui/icons-material/Save';
 import apiRoutes from "@/Helpers/ApiRoutes";
-
+import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Link } from "@inertiajs/react";
+import LoadingOverlay from '../../../Components/LoadingOverlay'; 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -54,9 +58,12 @@ const List = () => {
   const [editRole, setEditRole] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const theme = useTheme();
   const [permissionName, setPermissionName] = useState([]);
+
+  //useAxiosWithToken();
 
   useEffect(() => {
     axios.get(apiRoutes.orgRolesUrl, { params: {  org_id:1} }).then((response) => {
@@ -86,11 +93,11 @@ const List = () => {
 
       setPermissions(allPermissions);
       setPermissionName(grantedPermissions);
-      setLoading(false);
     } catch (error) {
       console.error("Error loading permissions:", error);
     }
     setEditOpen(true);
+    setLoading(false);
   };
 
   const handleDelete = (id) => {
@@ -120,6 +127,10 @@ const List = () => {
 
   const handleEditChange = (event) => {
     setEditRole({ ...editRole, role: event.target.value });
+  };
+
+  const handleManagePermissions = (event) => {
+    //setNewRole(event.target.value);
   };
 
   const handleSave = async () => {
@@ -191,7 +202,7 @@ const List = () => {
             onClick={() => handleEdit(params.row)}
             disabled={params.row.system} // Disable button if system is true
           >
-            <EditIcon />
+            <SettingsIcon />
           </IconButton>
           <IconButton
             color="secondary"
@@ -200,42 +211,45 @@ const List = () => {
           >
             <DeleteIcon />
           </IconButton>
+
         </div>
       ),
       sortable: false,
     },
   ];
+  
+  const buttons = [
+    <Link href="/70k/team/" key="Team" >
+      <Button >Team</Button>
+    </Link>,
+    <Link href="/70k/team/roles" key="Roles">
+      <Button variant="contained">Roles</Button>
+    </Link>,
+    <Link href="/70k/team/permissions" key="Permissions">
+      <Button >Permissions</Button>
+    </Link>
+  ];
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpen}
-        sx={{ mb: 2 }}
-      >
-        Add Role
-      </Button>
+       <Box>
+       <ButtonGroup style={{marginBottom: '1rem'}} disableElevation size="small" aria-label="Small button group" variant="outlined">
+        {buttons}
+      </ButtonGroup>
+       </Box>
+       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpen}
+        >
+          Add Role
+        </Button>
+      </Box>
       <div style={{ height: 400, width: "100%", position: "relative" }}>
         {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              zIndex: 1,
-            }}
-          >
-            <CircularProgress />
-          </Box>
+          <></>
         ) : (
           <DataGrid
             rows={rows}
@@ -379,6 +393,7 @@ const List = () => {
           </Box>
         </Box>
       </Modal>
+      <LoadingOverlay open={loading}/>
     </Container>
   );
 };

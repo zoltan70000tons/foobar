@@ -5,19 +5,19 @@ import { Container, Toolbar, Paper,Grid} from '@mui/material';
 import List  from '@/Pages/Role/partials/List';
 
 
-export default function ManageRoles({ auth }: PageProps) {
+export default function ManageRoles({ auth, loadingState }: PageProps) {
   return (
     <AuthenticatedLayout
       user={auth.user}
-      header={"Teams"}
+      header={"Team"}
     >
-      <Head title="Teams" />
+      <Head title="Team" />
       <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
             <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <List />
+                  <List lodingState={loadingState}/>
                 </Paper>
               </Grid>
             </Grid>

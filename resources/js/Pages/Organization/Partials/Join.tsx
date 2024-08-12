@@ -1,95 +1,75 @@
 import { useForm, usePage } from "@inertiajs/react";
-import { FormEventHandler, useState, useEffect } from "react";
+import { FormEventHandler, useState } from "react";
 import { TextField, Button, Box, Stack, Alert, Divider } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 
 interface FormData {
-  name: string;
+  user_nickname: string;
   user_name: string;
+  user_lastname: string;
   email: string;
   password: string;
-  confirm_password: string;
 }
 
-export default function JoinOrganization() {
+export default function JoinOrganization({ email }: { email: string }) {
   const { flash } = usePage().props;
-  const { data, setData, post, errors, processing, recentlySuccessful } =
-    useForm<FormData>({
-      name: "",
-      user_name: "",
-      email: "",
-      password: "",
-      confirm_password: "",
-    });
+  const { data, setData, post, put, errors, processing, recentlySuccessful } = useForm<FormData>({
+    user_nickname: "",
+    user_name: "",
+    user_lastname: "",
+    email: email,
+    password: "",
+  });
 
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Partial<FormData>>({});
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
-  const validate = (field: keyof FormData, value: string) => {
-    const newErrors: Partial<FormData> = { ...validationErrors };
+  const validateForm = (field?: keyof FormData) => {
+    const newErrors: Partial<FormData> = {};
+    const { user_nickname, user_name, user_lastname, email, password } = data;
 
-    if (field === "user_name" && !value) {
-      newErrors.user_name = "Your name is required.";
-    } else if (field === "email" && !value) {
-      newErrors.email = "Email is required.";
-    } else if (field === "password" && !value) {
-      newErrors.password = "Password is required.";
-    } else if (field === "confirm_password" && !value) {
-      newErrors.confirm_password = "Confirm password is required.";
-    } else {
-      delete newErrors[field];
+    // Validación de todos los campos
+    if (field === undefined || field === "user_nickname") {
+      if (!user_nickname) newErrors.user_nickname = "Your nickname is required.";
     }
-
-    if ((field === "password" || field === "confirm_password") && data.password !== data.confirm_password) {
-      newErrors.confirm_password = "Passwords do not match.";
+    if (field === undefined || field === "user_name") {
+      if (!user_name) newErrors.user_name = "Your name is required.";
+    }
+    if (field === undefined || field === "user_lastname") {
+      if (!user_lastname) newErrors.user_lastname = "Your lastname is required.";
+    }
+    if (field === undefined || field === "email") {
+      if (!email) newErrors.email = "Email is required.";
+    }
+    if (field === undefined || field === "password") {
+      if (!password) newErrors.password = "Password is required.";
     }
 
     setValidationErrors(newErrors);
     setIsButtonDisabled(Object.keys(newErrors).length > 0);
+    return newErrors; // Devuelve los errores para el caso de validación en el submit
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setData(field, value);
-    validate(field, value);
+    validateForm(field);
   };
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    const newErrors = validateAll();
-    if (Object.keys(newErrors).length === 0) {
-     // post("/api/organizations");
-    } else {
-      setValidationErrors(newErrors);
+    const errors = validateForm(); // Validar todo el formulario
+    if (Object.keys(errors).length === 0) {
+       put("/join-organization");
     }
   };
 
-  const validateAll = () => {
-    const newErrors: Partial<FormData> = {};
-    if (!data.user_name) newErrors.user_name = "Your name is required.";
-    if (!data.email) newErrors.email = "Email is required.";
-    if (!data.password) newErrors.password = "Password is required.";
-    if (!data.confirm_password) newErrors.confirm_password = "Confirm password is required.";
-    if (data.password !== data.confirm_password)
-      newErrors.confirm_password = "Passwords do not match.";
-    return newErrors;
-  };
-
-
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-    >
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
       <section style={{ maxWidth: "400px" }}>
         <header>
-          <h2>Join Organization</h2>
+          <h2>Join the 70000 Tons Of Metal Team.</h2>
           <Divider flexItem />
-          <p>You are invited to ' ' organization - Register  .</p>
-          <p>
-          </p>
+          <p>You have been invited to be part of 70K Tons of Metal.</p>
           <br />
         </header>
         <form onSubmit={submit}>
@@ -102,6 +82,16 @@ export default function JoinOrganization() {
               flexWrap: "wrap",
             }}
           >
+            <TextField
+              fullWidth
+              error={Boolean(errors.user_nickname || validationErrors.user_nickname)}
+              label="Username"
+              type="text"
+              name="user_nickname"
+              value={data.user_nickname}
+              onChange={(e) => handleInputChange("user_nickname", e.target.value)}
+              helperText={validationErrors.user_nickname}
+            />
 
             <TextField
               fullWidth
@@ -113,16 +103,27 @@ export default function JoinOrganization() {
               onChange={(e) => handleInputChange("user_name", e.target.value)}
               helperText={validationErrors.user_name}
             />
+
             <TextField
               fullWidth
-              error={Boolean(errors.email || validationErrors.email)}
+              error={Boolean(errors.user_lastname || validationErrors.user_lastname)}
+              label="Your lastname"
+              type="text"
+              name="user_lastname"
+              value={data.user_lastname}
+              onChange={(e) => handleInputChange("user_lastname", e.target.value)}
+              helperText={validationErrors.user_lastname}
+            />
+
+            <TextField
+              fullWidth
               label="Your Email"
               type="email"
               name="email"
               value={data.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
-              helperText={validationErrors.email}
+              disabled={true}
             />
+
             <TextField
               fullWidth
               error={Boolean(errors.password || validationErrors.password)}
@@ -133,31 +134,15 @@ export default function JoinOrganization() {
               onChange={(e) => handleInputChange("password", e.target.value)}
               helperText={validationErrors.password}
             />
-            <TextField
-              fullWidth
-              error={Boolean(errors.confirm_password || validationErrors.confirm_password)}
-              label="Confirm password"
-              type="password"
-              name="confirm_password"
-              value={data.confirm_password}
-              onChange={(e) => handleInputChange("confirm_password", e.target.value)}
-              helperText={validationErrors.confirm_password}
-            />
-            <Stack
-              sx={{
-                width: "100%",
-              }}
-            >
+
+            <Stack sx={{ width: "100%" }}>
               {recentlySuccessful && (
-                <Alert
-                  icon={<CheckIcon fontSize="inherit" />}
-                  severity="success"
-                >
+                <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
                   Saved.
                 </Alert>
               )}
               <Button variant="contained" disabled={isButtonDisabled || processing} type="submit">
-                Join Organization
+                Join
               </Button>
             </Stack>
           </Box>

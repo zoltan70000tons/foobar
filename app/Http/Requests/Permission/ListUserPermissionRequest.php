@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Team;
+namespace App\Http\Requests\Permission;
 
 use App\Traits\JsonResponseTrait;
 use Illuminate\Contracts\Validation\Validator;
@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class UpdateMemberRoleRequest extends FormRequest
+class ListUserPermissionRequest extends FormRequest
 {
     use JsonResponseTrait;
    /**
@@ -27,8 +27,7 @@ class UpdateMemberRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'user_id' => 'required|int',
-                'roles' => 'required|array'
+                'id' => 'required|int',
         ];
     }
 

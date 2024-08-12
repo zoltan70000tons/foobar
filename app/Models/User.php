@@ -25,7 +25,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'policy',
+        'username',
+        'survivor_number',
+        'organization_id'
     ];
 
     /**
@@ -48,7 +50,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'policy' => 'boolean',
         ];
     }
 
@@ -62,4 +63,26 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
     }
 
+    static function generateUniqueSurvivorNumber(): int
+    {
+        do {
+            $number = '9';
+            for ($i = 1; $i < 11; $i++) {
+                $number .= mt_rand(0, 9);
+            }
+            $number = (int) $number;
+            $exists = User::where('survivor_number', $number)->exists();
+        } while ($exists);
+        return $number;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            if (empty($user->survivor_number)) {
+                $user->survivor_number = self::generateUniqueSurvivorNumber();
+            }
+        });
+    }
 }

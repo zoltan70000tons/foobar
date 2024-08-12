@@ -13,21 +13,24 @@ use Spatie\Permission\Models\Role;
 class PermissionRepository implements PermissionRepositoryInterface
 {
     use JsonResponseTrait;
+
+    protected $organizationId;
     /**
      * Create a new class instance.
      */
     public function __construct()
     {
-        //
+        $this->organizationId = config('settings.organization_id');
+        setPermissionsTeamId($this->organizationId);
     }
 
     public function getAll()
     {
         try {
             $data = Permission::all();
-            return ApiResponserHelper::sendResponse(PermissionResource::collection($data), 'Permissions listed successfully', 200);
+            return $this->successResponse($data, 'Permissions listed successfully');
         } catch (\Exception $e) {
-            return ApiResponserHelper::rollback($e);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -38,10 +41,11 @@ class PermissionRepository implements PermissionRepositoryInterface
     public function create($data)
     {
         try {
+            $data['guard_name'] = 'web';
             $permission = Permission::create($data);
             return $this->successResponse($permission, 'Permissions created successfully');
         } catch (\Exception $e) {
-            return ApiResponserHelper::rollback($e);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -66,20 +70,25 @@ class PermissionRepository implements PermissionRepositoryInterface
 
     public function findbyOrganization($id, $role_id = null)
     {
-        if ($role_id) {
-            $role = Role::with('permissions')
-                ->where(['team_id' => $id, 'id' => $role_id])
-                ->firstOrFail();
-            $organizationPermissions = Permission::all();
-            $permissions = $organizationPermissions->map(function ($permission) use ($role) {
-                return [
-                    'name' => $permission->name,
-                    'granted' => $role->permissions->contains('name', $permission->name),
-                ];
-            });
-        } else {
-            $permissions = Permission::all();
+        try {
+            if ($role_id) {
+                $role = Role::with('permissions')
+                    ->where(['team_id' => $id, 'id' => $role_id])
+                    ->firstOrFail();
+                $organizationPermissions = Permission::all();
+                $permissions = $organizationPermissions->map(function ($permission) use ($role) {
+                    return [
+                        'name' => $permission->name,
+                        'granted' => $role->permissions->contains('name', $permission->name),
+                    ];
+                });
+            } else {
+                $permissions = Permission::all();
+            }
+            return $this->successResponse($permissions, 'Permissions listed successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
         }
-        return $this->successResponse($permissions, 'Permissions listed successfully');
+        
     }
 }

@@ -9,7 +9,11 @@ use App\Http\Requests\Organization\ListOrganizationRequest;
 use App\Http\Resources\OrganizationResource;
 use App\Interfaces\OrganizationRepositoryInterface;
 use App\Models\Organization;
+use App\Models\User;
 use App\Repositories\OrganizationRepository;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 
 class OrganizationController extends Controller
 {
@@ -60,5 +64,43 @@ class OrganizationController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function join(Request $request)
+    {
+        if ($request->isMethod('get')) {
+            if (!$request->hasValidSignature()) {
+                return "NOT VALID REQUEST";
+            }
+            $userId = $request->query('user');
+            $user = User::findOrFail($userId);
+            $email = $user->email;
+            return Inertia::render('JoinOrganization', [
+                'email' => $email,
+            ]);
+        }
+    
+        if ($request->isMethod('put')) {
+            $validated = $request->validate([
+                'email' => 'required|email|exists:users,email',
+                'user_nickname' => 'required|string|max:255',
+                'password' => 'required|string|max:255',
+            ]);
+    
+            $user = User::where('email', $validated['email'])->first();
+    
+            if ($user) {
+                try {
+                    $user->username = $validated['user_nickname'];
+                    $user->user_activated_at = now();
+                    $user->password = Hash::make($validated['password']);
+                    $user->save();
+                    return redirect('/login');
+                } catch (\Exception $e) {
+                    return back()->withErrors(['error' => 'There was an issue processing your request. Please try again.']);
+                }
+            } else {
+                return back()->withErrors(['error' => 'User not found. Please contact support.']);
+            }
+        }
     }
 }

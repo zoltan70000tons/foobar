@@ -14,11 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
   )
   ->withMiddleware(function (Middleware $middleware) {
     $middleware->web(append: [
-      \App\Http\Middleware\AddSlug::class,
       \App\Http\Middleware\HandleInertiaRequests::class,
       \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-
-      ValidateOrganization::class,
       \App\Http\Middleware\TeamsPermission::class,
 
     ]);

@@ -4,15 +4,16 @@ import { PageProps } from '@/types';
 import { Container, Toolbar, Paper,Grid} from '@mui/material';
 import List  from '@/Pages/Team/partials/List';
 import Invite from '@/Pages/Team/partials/Invite';
+import LoadingOverlay from '@/Components/LoadingOverlay';
 
 
 export default function Teams({ auth }: PageProps) {
   return (
     <AuthenticatedLayout
       user={auth.user}
-      header={"Teams"}
+      header={"Team"}
     >
-      <Head title="Teams" />
+      <Head title="Team" />
       <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
@@ -27,7 +28,7 @@ export default function Teams({ auth }: PageProps) {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    height: 240,
+                    minHeight: 240,
                   }}
                 >
                     <Invite />
@@ -39,7 +40,7 @@ export default function Teams({ auth }: PageProps) {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    height: 240,
+                    //minheight: 240,
                   }}
                 >
                 </Paper>

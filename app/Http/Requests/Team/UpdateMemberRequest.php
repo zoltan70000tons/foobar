@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class UpdateMemberRoleRequest extends FormRequest
+class UpdateMemberRequest extends FormRequest
 {
     use JsonResponseTrait;
    /**
@@ -27,8 +27,13 @@ class UpdateMemberRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'user_id' => 'required|int',
-                'roles' => 'required|array'
+                'username' => 'required|string',
+                'firstname' => 'required|string',
+                'middlename' => 'required|string',
+                'lastname' => 'required|string',
+                'phone_number' => 'required|string',
+                'survivor_number' => 'required|string',
+
         ];
     }
 

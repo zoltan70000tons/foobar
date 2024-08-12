@@ -17,12 +17,12 @@ import LoginIcon from '@mui/icons-material/Login';
 export const guestListItems = (
     <React.Fragment>
 
-        <ListItemButton component={Link} href={route('organization.register')} method="get">
+        {/* <ListItemButton component={Link} href={route('organization.register')} method="get">
             <ListItemIcon>
                 <BusinessIcon />
             </ListItemIcon>
             <ListItemText primary="Create Organization" />
-        </ListItemButton>
+        </ListItemButton> */}
     </React.Fragment>
 );
 
@@ -32,7 +32,7 @@ export const guestAccountListItems = (
         <ListSubheader component="div" inset>
             Account
         </ListSubheader>
-        <ListItemButton component={Link} href={route('login')} method="post">
+        <ListItemButton component={Link} href={route('login')} method="get">
             <ListItemIcon>
                 <LoginIcon />
             </ListItemIcon>

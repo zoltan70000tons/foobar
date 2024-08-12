@@ -27,6 +27,7 @@ interface User {
     roles: string[];
     organization_id: number;
     organization_name: string;
+    survivor_number: number;
   }
 
 interface ProfileCardProps {
@@ -34,7 +35,6 @@ interface ProfileCardProps {
   }
   
 export default function ProfileCard({ user }: ProfileCardProps) {
-    console.log(user);
 
   return (
     <Card variant="outlined">
@@ -44,9 +44,8 @@ export default function ProfileCard({ user }: ProfileCardProps) {
         justifyContent="center"
         alignItems="center"
       >
-        {/* CARD HEADER START */}
+
         <Grid item sx={{ p: "1.5rem 0rem", textAlign: "center" }}>
-          {/* PROFILE PHOTO */}
           <Badge
             overlap="circular"
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -68,7 +67,6 @@ export default function ProfileCard({ user }: ProfileCardProps) {
             >L</Avatar>
           </Badge>
 
-          {/* DESCRIPTION */}
           <Typography variant="h6">
             {user.name}
           </Typography>
@@ -78,13 +76,13 @@ export default function ProfileCard({ user }: ProfileCardProps) {
           <Grid item xs={6}>
             <Typography style={styles.details}>Organizacion</Typography>
             <Typography style={styles.details}>Status</Typography>
-            <Typography style={styles.details}>Phone</Typography>
+            <Typography style={styles.details}>Role</Typography>
           </Grid>
           {/* VALUES */}
           <Grid item xs={6} sx={{ textAlign: "end" }}>
-            <Typography style={styles.value}>{user.organization_name}</Typography>
+            <Typography style={styles.value}>{"70K"}</Typography>
             <Typography style={styles.value}>{"Active"}</Typography>
-            <Typography style={styles.value}>{"-"}</Typography>
+            <Typography style={styles.value}>{user?.roles[0]}</Typography>
           </Grid>
         </Grid>
         <Grid item style={styles.details} sx={{ width: "100%", height:"100px" }}>

@@ -4,12 +4,12 @@ import { PageProps } from '@/types';
 import { Container } from '@mui/material';
 import Join from './Organization/Partials/Join';
 
-export default function JoinOrganization({ auth }: PageProps) {
+export default function JoinOrganization({ auth, email }: PageProps) {
   return (
      <><Head title="Join Organization" />
 
      <Container>
-     <Join />
+     <Join email={email}/>
      </Container></>
      );
 }
