@@ -25,13 +25,9 @@ class RoleRepository implements RoleRepositoryInterface
         setPermissionsTeamId($this->organizationId);
     }
 
-    public function getAll()
-    {
-    }
+    public function getAll() {}
 
-    public function find($id)
-    {
-    }
+    public function find($id) {}
 
     public function create($data)
     {
@@ -61,8 +57,13 @@ class RoleRepository implements RoleRepositoryInterface
         }
     }
 
-    public function delete($id)
+    public function delete($role)
     {
+        try {
+            $role->delete();
+        } catch (\Exception $e) {
+           // dd($e->getMessage());
+        }
     }
 
     public function addPermissionsToRole($role_id, $permission_id = null, $data = null)
@@ -129,9 +130,10 @@ class RoleRepository implements RoleRepositoryInterface
         }
     }
 
-    public function listByUser($id){
+    public function listByUser($id)
+    {
         try {
-            $user = User::find($id); 
+            $user = User::find($id);
             $permissions = $user->getAllPermissions()->pluck('name');
             $roles = $user->getRoleNames();
             return $this->successResponse(array('permissions' => $permissions, 'roles' => $roles), 'Roles listed successfully');

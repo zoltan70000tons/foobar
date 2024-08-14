@@ -6,4 +6,5 @@ return [
     App\Providers\RepositoryServiceProvider::class,
     Spatie\Permission\PermissionServiceProvider::class,
     App\Providers\HelpersServiceProvider::class,
+    Propaganistas\LaravelPhone\PhoneServiceProvider::class
 ];

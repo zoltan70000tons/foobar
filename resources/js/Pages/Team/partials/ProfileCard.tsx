@@ -1,7 +1,7 @@
 // IMPORTS
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import { Grid } from "@mui/material";
+import { Chip, Grid } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import Badge from "@mui/material/Badge";
@@ -20,21 +20,32 @@ const styles = {
 };
 
 interface User {
-    id: number;
-    name: string;
-    email: string;
-    status: string;
-    roles: string[];
-    organization_id: number;
-    organization_name: string;
-    survivor_number: number;
-  }
+  id: number;
+  name: string;
+  email: string;
+  status: string;
+  roles: string[];
+  organization_id: number;
+  organization_name: string;
+  survivor_number: number;
+}
 
 interface ProfileCardProps {
-    user: User | null;
-  }
-  
+  user: User | null;
+}
+
 export default function ProfileCard({ user }: ProfileCardProps) {
+
+  const getChipColor = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return 'error';
+      case 'Active':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
 
   return (
     <Card variant="outlined">
@@ -81,12 +92,18 @@ export default function ProfileCard({ user }: ProfileCardProps) {
           {/* VALUES */}
           <Grid item xs={6} sx={{ textAlign: "end" }}>
             <Typography style={styles.value}>{"70K"}</Typography>
-            <Typography style={styles.value}>{"Active"}</Typography>
-            <Typography style={styles.value}>{user?.roles[0]}</Typography>
+            <Typography style={styles.value}><Chip size="small" label={user?.status} color={getChipColor(user?.status)} style={{ marginBottom: "-1px" }}
+            /></Typography>
+            <Typography style={styles.value}><Chip
+              size="small"
+              label={user?.roles[0] ? user?.roles[0] : "Pending"}
+              color="default"
+            />
+            </Typography>
           </Grid>
         </Grid>
-        <Grid item style={styles.details} sx={{ width: "100%", height:"100px" }}>
-         
+        <Grid item style={styles.details} sx={{ width: "100%", height: "100px" }}>
+
         </Grid>
       </Grid>
     </Card>

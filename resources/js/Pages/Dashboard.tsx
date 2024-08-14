@@ -6,20 +6,16 @@ import { Container, Toolbar, Grid, Box, Typography, Button, Paper } from '@mui/m
 import RecentOrders from './Dashboard/RecentOrders';
 import DashboardCard from './Dashboard/DashboardCard';
 import GroupIcon from '@mui/icons-material/Group';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import { usePermissions } from '@/Providers/PermissionContext';
-import Skeleton from '@mui/material/Skeleton';
 
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission, loading, error } = usePermissions();
   const { user } = auth;
-  console.log(auth);
-  //if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
   return (

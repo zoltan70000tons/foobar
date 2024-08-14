@@ -1,20 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Visibility from "@mui/icons-material/Visibility";
-import CardContent from "@mui/material/CardContent";
-import { Grid } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import FormControl from "@mui/material/FormControl";
 import Button from "@mui/material/Button";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import CustomInput from "./CustomInput";
 import AssignRoles from "@/Components/AssignRoles";
+import { Box } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
+import { MuiTelInput } from 'mui-tel-input';
+import { CardContent, Snackbar, Alert } from "@mui/material";
+import { useTeamData } from "@/Hooks/useTeamData";
+import CustomSelect from "./CustomSelect";
+import SnackbarAlert from "@/Components/SnackbarAlert";
 
 interface User {
   id: number;
@@ -29,6 +30,7 @@ interface User {
   username?: string;
   firstname?: string;
   phone_number?: string;
+  gender?: string;
 }
 
 interface SettingsCardProps {
@@ -37,16 +39,24 @@ interface SettingsCardProps {
 
 const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
   const { hasPermission } = usePermissions();
-  const { data, setData, post, errors, processing } = useForm({
+  const { rows, fetchData, loading } = useTeamData();
+  const { errors, flash } = usePage().props;
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+
+
+
+
+  const { data, setData, post, processing } = useForm({
     id: user.id,
     email: user.email,
-    phone_number: user.phone_number,
+    phone_number: user?.detail?.phone,
     pass: '',
     survivor_number: user.survivor_number || '',
-    lastname: user.lastname || '',
-    middlename: user.middlename || '',
+    lastname: user?.detail?.last_name || '',
+    middlename: user?.detail?.middle_name || '',
     username: user.user_name || '',
-    firstname: user.firstname || ''
+    firstname: user?.detail?.first_name || '',
+    gender: user?.detail?.gender || ''
   });
 
   const canEdit = hasPermission('Edit User');
@@ -54,6 +64,10 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
   const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setData(event.target.name, event.target.value);
   };
+
+  const handleChangePhone = (val) => {
+    setData('phone_number', val);
+  }
 
   const [edit, setEdit] = useState({
     disabled: !canEdit,
@@ -65,21 +79,30 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     setTabValue(newValue);
   };
 
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (canEdit) {
       post(route('member.update', user.id), {
         onSuccess: () => {
-          console.log("User updated successfully");
+          setSnackbar({ open: true, severity: 'success', message: 'User updated successfully' });
+          fetchData();
         },
         onError: () => {
-          console.error("Error updating user");
+          setSnackbar({ open: true, severity: 'error', message: 'Error updating user' });
         },
       });
     }
   };
 
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleChangeSelect = (value: object) => {
+    setData('gender', value.target.value);
+    console.log(value.target);
+
+  }
   return (
     <Card variant="outlined" sx={{ height: "100%", width: "100%" }}>
       <Tabs
@@ -98,6 +121,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
           <CardContent sx={{ p: 3, maxHeight: { md: "40vh" }, textAlign: { xs: "center", md: "start" } }}>
             <FormControl fullWidth>
               <Grid container spacing={3}>
+
                 {/* First row */}
                 <Grid item xs={12} md={4}>
                   <CustomInput
@@ -106,6 +130,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     title="First Name"
                     onChange={handleUserChange}
                     dis={edit.disabled}
+                    error={errors.firstname}
                   />
                 </Grid>
 
@@ -116,6 +141,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     onChange={handleUserChange}
                     title="Last Name"
                     dis={edit.disabled}
+                    error={errors.lastname}
                   />
                 </Grid>
 
@@ -126,41 +152,21 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     onChange={handleUserChange}
                     title="Middle Name"
                     dis={edit.disabled}
-                  />
-                </Grid>
-
-                {/* Second row */}
-                <Grid item xs={12} md={4}>
-                  <CustomInput
-                    name="username"
-                    value={data.username}
-                    title="Username"
-                    dis={true}  
-                    InputProps={{ readOnly: true }} 
+                    error={errors.middlename}
                   />
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                  <CustomInput
-                    name="survivornumber"
-                    value={data.survivor_number}
-                    title="Survivor Number"
-                    dis={true}  
-                    InputProps={{ readOnly: true }}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <CustomInput
-                    name="phone_number"
-                    value={data.phone_number}
-                    onChange={handleUserChange}
-                    title="Phone Number"
-                    dis={edit.disabled}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">63+</InputAdornment>
-                    }}
-                  />
+                  <Box>
+                    <MuiTelInput
+                      name="phone_number"
+                      value={data.phone_number}
+                      onChange={handleChangePhone}
+                      fullWidth size="small"
+                      disabled={edit.disabled}
+                      helperText={errors.phone_number}
+                      error={errors.phone_number} />
+                  </Box>
                 </Grid>
 
                 {/* Third row */}
@@ -169,11 +175,26 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     name="email"
                     value={data.email}
                     title="Email Address"
-                    dis={true}  // Make this field read-only
-                    InputProps={{ readOnly: true }} // Additional property to make it read-only
+                    dis={true}
+                    error={errors.email}
                   />
                 </Grid>
 
+                <Grid item xs={12} md={4}>
+                  <CustomSelect
+                    name="gender"
+                    value={data.gender}
+                    title="Gender"
+                    onChange={handleChangeSelect}
+                    options={[
+                      { value: 'M', label: 'Male' },
+                      { value: 'F', label: 'Female' },
+
+                    ]}
+                    dis={edit.disabled}
+                    error={errors.example}
+                  />
+                </Grid>
 
                 {canEdit && (
                   <Grid item xs={12}>
@@ -186,7 +207,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                       type="submit"
                       disabled={processing}
                     >
-                      {processing ? "Saving..." : "EDIT"}
+                      {processing ? "Saving..." : "Save"}
                     </Button>
                   </Grid>
                 )}
@@ -197,10 +218,17 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
       )}
 
       {tabValue === "two" && (
-        <CardContent sx={{ p: 3, maxHeight: { md: "40vh" }, textAlign: { xs: "center", md: "start" } }}>
+        <CardContent sx={{ p: 3, maxHeight: { md: "40vh" }, textAlign: { xs: "center", md: "start" }, width: "100%" }}>
           <AssignRoles userId={user.id} orgId={user.organization_id} />
         </CardContent>
       )}
+
+      <SnackbarAlert
+        open={snackbar.open}
+        severity={snackbar.severity}
+        message={snackbar.message}
+        onClose={handleCloseSnackbar}
+      />
     </Card>
   );
 };

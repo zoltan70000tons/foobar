@@ -12,10 +12,9 @@ export default function Invite() {
 
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // Renombrado para evitar conflicto
-
+  const [errorMessage, setErrorMessage] = useState('');
   useEffect(() => {
-    axios.get(apiRoutes.orgRolesUrl, { params: { org_id: '1' } })  // Todo change to actual organization
+    axios.get(apiRoutes.orgRolesUrl, { params: { org_id: '1' } })  
       .then(response => {
         setRoles(response.data.data);
       })
@@ -61,12 +60,10 @@ export default function Invite() {
     axios.post(apiRoutes.sendInvitationsUrl, data)
       .then(response => {
         setLoading(false);
-        // Manejar la respuesta de éxito
       })
       .catch(error => {
         setLoading(false);
         setErrorMessage('Error sending invitations');
-        console.error('Error sending invitations:', error);
       });
   };
   
@@ -92,7 +89,8 @@ export default function Invite() {
           </Grid>
           <Grid item xs={4}>
             <FormControl fullWidth margin="normal" required error={!!errors[`invitations.${index}.role`]}>
-              <InputLabel id={`role-label-${index}`}>Role</InputLabel>
+            <InputLabel id={`role-label-${index}`} style={{ top: -6 }}>Role</InputLabel>
+
               <Select
                 size="small"
                 fullWidth

@@ -8,4 +8,5 @@ interface TeamRepositoryInterface
     function findMember($team, $id);
     function updateMemberRoles($user_id, $org_id, $roles);
     function inviteMember($data);
+    function updateMember($data);
 }

@@ -11,7 +11,8 @@ use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Interfaces\RoleRepositoryInterface;
 use App\Models\Organization;
 use App\Repositories\RoleRepository;
-
+use Illuminate\Support\Facades\Redirect;
+use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
@@ -51,6 +52,10 @@ class RoleController extends Controller
       $fields = $request->all();
       return $this->rolesRepositoryInterface->update($fields,$fields['id']);
     }
+    public function destroy(Role $role){
+        $this->rolesRepositoryInterface->delete($role);
+        Redirect::route('roles.index')->with('flash', 'Role deleted successfully.');
+      }
 
     public function getPermissions(ListUserPermissionRequest $request){
         $fields = $request->all();

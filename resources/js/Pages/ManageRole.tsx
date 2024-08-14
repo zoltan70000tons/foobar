@@ -3,7 +3,8 @@ import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { Container, Toolbar, Paper,Grid} from '@mui/material';
 import List  from '@/Pages/Role/partials/List';
-
+import NavigationTeam from '@/Components/NavigationTeam';
+import buttonsConfig from './Team/buttonsConfig';
 
 export default function ManageRoles({ auth, loadingState }: PageProps) {
   return (
@@ -17,6 +18,7 @@ export default function ManageRoles({ auth, loadingState }: PageProps) {
             <Grid container spacing={3}>
             <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                <NavigationTeam buttonsConfig={buttonsConfig} />
                   <List lodingState={loadingState}/>
                 </Paper>
               </Grid>

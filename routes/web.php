@@ -26,7 +26,6 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Grupo de rutas con middleware auth
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -35,7 +34,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/{slug}/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
     Route::post('/{slug}/invitations', [InvitationController::class, 'store'])->name('invitations.store');
     
-    // Grupo de rutas con el prefijo {slug}
     Route::prefix('{slug}')->group(function () {
         Route::get('/team', function () {
             return Inertia::render('Teams');
@@ -51,7 +49,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::apiResource('/events', EventController::class);
-    Route::apiResource('/events', EventController::class);
     Route::apiResource('/roles', RoleController::class);
     Route::apiResource('/permissions', PermissionController::class);
     Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
@@ -63,6 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/getPermissions', 'App\Http\Controllers\Role\RoleController@getPermissions');
     Route::post('/team/send-invitations', 'App\Http\Controllers\InvitationController@store');
     Route::post('/member/update', 'App\Http\Controllers\Api\TeamController@updateMember')->name('member.update');
+
+
 });
 
 

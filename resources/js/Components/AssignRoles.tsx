@@ -10,6 +10,7 @@ import {
   CircularProgress,
   SelectChangeEvent,
   Button,
+  Grid,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import LoadingButton from "@mui/lab/LoadingButton";
@@ -99,7 +100,8 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   };
 
   return (
-    <Box sx={{ m: 1, width: '100%' }} component="form" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+    <Grid container xs={12} sm={12} md={12} lg={12}>
+    <Box sx={{ width: '100%', display:'block'}} component="form" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
       <FormControl fullWidth>
         <InputLabel id="multiple-chip-label">Role</InputLabel>
         {loading ? (
@@ -148,8 +150,9 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
               Save
             </LoadingButton>
       </Box>)}
-     
+      <p style={{visibility:"hidden"}}>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Veniam dicta fugit adipisci quisquam sed soluta quo, dolor dolores quasi eveniet animi beatae ducimus, itaque est doloribus pariatur cupiditate atque? Sit?</p> 
     </Box>
+    </Grid> 
   );
 };
 

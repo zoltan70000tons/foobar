@@ -7,6 +7,7 @@ use App\Http\Resources\PermissionResource;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Models\User;
 use App\Traits\JsonResponseTrait;
+use Illuminate\Support\Facades\Redirect;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -34,9 +35,7 @@ class PermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function find($id)
-    {
-    }
+    public function find($id) {}
 
     public function create($data)
     {
@@ -49,12 +48,18 @@ class PermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function update($data, $id)
-    {
+    public function update(Permission $permission, $data) {
+        $name = $data['name'];
+        $permission->update($data);
     }
 
-    public function delete($id)
+    public function delete($permission)
     {
+        try {
+            $permission->delete();
+        } catch (\Exception $e) {
+           // dd($e->getMessage());
+        }
     }
 
     public function findByUser($id)
@@ -64,9 +69,7 @@ class PermissionRepository implements PermissionRepositoryInterface
         return $permissionNames;
     }
 
-    public function findByRole($id)
-    {
-    }
+    public function findByRole($id) {}
 
     public function findbyOrganization($id, $role_id = null)
     {
@@ -89,6 +92,5 @@ class PermissionRepository implements PermissionRepositoryInterface
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
-        
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -25,8 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'username',
-        'survivor_number',
+        'phone',
         'organization_id'
     ];
 
@@ -63,26 +63,31 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
     }
 
-    static function generateUniqueSurvivorNumber(): int
+    public function detail(): HasOne
     {
-        do {
-            $number = '9';
-            for ($i = 1; $i < 11; $i++) {
-                $number .= mt_rand(0, 9);
-            }
-            $number = (int) $number;
-            $exists = User::where('survivor_number', $number)->exists();
-        } while ($exists);
-        return $number;
+        return $this->hasOne(UserDetail::class, 'user_id');
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($user) {
-            if (empty($user->survivor_number)) {
-                $user->survivor_number = self::generateUniqueSurvivorNumber();
-            }
-        });
-    }
+    // static function generateUniqueSurvivorNumber(): int
+    // {
+    //     do {
+    //         $number = '9';
+    //         for ($i = 1; $i < 11; $i++) {
+    //             $number .= mt_rand(0, 9);
+    //         }
+    //         $number = (int) $number;
+    //         $exists = User::where('survivor_number', $number)->exists();
+    //     } while ($exists);
+    //     return $number;
+    // }
+
+    // protected static function boot()
+    // {
+    //     parent::boot();
+    //     static::creating(function ($user) {
+    //         if (empty($user->survivor_number)) {
+    //             $user->survivor_number = self::generateUniqueSurvivorNumber();
+    //         }
+    //     });
+    // }
 }

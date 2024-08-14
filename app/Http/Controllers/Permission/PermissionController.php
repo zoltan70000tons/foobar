@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Permission;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Permission\CreatePermissionRequest;
+use App\Http\Requests\Permission\DeletePermissionRequest;
 use App\Http\Requests\Permission\ListPermissionRequest;
 use App\Interfaces\PermissionRepositoryInterface;
 use App\Repositories\PermissionRepository;
-
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Http\Request;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
@@ -29,14 +32,25 @@ class PermissionController extends Controller
         return $this->permissionRepositoryInterface->create($data);
     }
 
-    
-    public function update()
+
+
+    public function destroy(Permission $permission)
     {
+      $this->permissionRepositoryInterface->delete($permission);
+      //Redirect::route('permissions.index')->with('flash', 'Permission updated successfully.');
     }
 
-    public function delete()
+    public function update(Request $request, Permission $permission)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $this->permissionRepositoryInterface->update($permission, $request->all());
+
+        //Redirect::route('permissions.index')->with('success', 'Permission updated successfully.');
     }
+
 
     public function listByOrganization(ListPermissionRequest $request)
     {

@@ -10,6 +10,7 @@ use App\Http\Resources\EventResource;
 use App\Interfaces\EventRepositoryInterface;
 use App\Repositories\EventRepository;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use PhpParser\Node\Stmt\TryCatch;
 
 class EventController extends Controller
@@ -28,7 +29,9 @@ class EventController extends Controller
     public function index()
     {
         $data = $this->eventRepositoryInterface->getAll();
-        return ApiResponserHelper::sendResponse(EventResource::collection($data), '', 200);
+        return Inertia::render('Events/Event', [
+            'events' => $data
+        ]);
     }
 
     /**
