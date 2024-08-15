@@ -4,6 +4,7 @@ import { useForm, Head, Link } from '@inertiajs/react';
 import axios from 'axios';
 import apiRoutes from '@/Helpers/ApiRoutes';
 import { Add, Remove } from '@mui/icons-material';
+import SnackbarAlert from '@/Components/SnackbarAlert';
 
 export default function Invite() {
   const { data, setData, post, errors, clearErrors, setError: setFormError } = useForm({
@@ -12,10 +13,10 @@ export default function Invite() {
 
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // Renombrado para evitar conflicto
-
+  const [errorMessage, setErrorMessage] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   useEffect(() => {
-    axios.get(apiRoutes.orgRolesUrl, { params: { org_id: '1' } })  // Todo change to actual organization
+    axios.get(apiRoutes.orgRolesUrl, { params: { org_id: '1' } })  
       .then(response => {
         setRoles(response.data.data);
       })
@@ -41,6 +42,10 @@ export default function Invite() {
     setData('invitations', newInvitations);
   };
 
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -61,12 +66,12 @@ export default function Invite() {
     axios.post(apiRoutes.sendInvitationsUrl, data)
       .then(response => {
         setLoading(false);
-        // Manejar la respuesta de éxito
+        console.log(response);
+        setSnackbar({ open: true, severity: 'success', message: response.data.message });
       })
       .catch(error => {
         setLoading(false);
-        setErrorMessage('Error sending invitations');
-        console.error('Error sending invitations:', error);
+        setSnackbar({ open: true, severity: 'error', message: 'Some invitations could not be processed.' });
       });
   };
   
@@ -92,7 +97,8 @@ export default function Invite() {
           </Grid>
           <Grid item xs={4}>
             <FormControl fullWidth margin="normal" required error={!!errors[`invitations.${index}.role`]}>
-              <InputLabel id={`role-label-${index}`}>Role</InputLabel>
+            <InputLabel id={`role-label-${index}`} style={{ top: -6 }}>Role</InputLabel>
+
               <Select
                 size="small"
                 fullWidth
@@ -140,6 +146,12 @@ export default function Invite() {
         </Button>
       </Box>
       {errorMessage && <Alert severity="error" sx={{ mt: 2 }}>{errorMessage}</Alert>}
+      <SnackbarAlert
+        open={snackbar.open}
+        severity={snackbar.severity}
+        message={snackbar.message}
+        onClose={handleCloseSnackbar}
+      />
     </Box>
   );
 }

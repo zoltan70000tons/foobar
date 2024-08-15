@@ -1,17 +1,14 @@
 <?php
 
-namespace App\Http\Requests\Team;
+namespace App\Http\Requests\Permission;
 
-use App\Traits\JsonResponseTrait;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
-class UpdateMemberRequest extends FormRequest
+class DeletePermissionRequest extends FormRequest
 {
-    use JsonResponseTrait;
    /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,12 +25,7 @@ class UpdateMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
-            'phone_number' => ['sometimes', 'phone:AUTO'],
-            //'gender' => 'sometimes|string',
-            //'middlename' => 'sometimes|string',
-            'email' => 'required|email',
+               // 'id' => 'required|integer'
         ];
     }
 }

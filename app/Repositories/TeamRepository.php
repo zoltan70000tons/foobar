@@ -5,12 +5,14 @@ namespace App\Repositories;
 use App\Interfaces\TeamRepositoryInterface;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\UserDetail;
 use App\Traits\JsonResponseTrait;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
@@ -18,7 +20,7 @@ class TeamRepository implements TeamRepositoryInterface
 {
 
     use JsonResponseTrait;
-    
+
     protected $organizationId;
 
     /**
@@ -35,7 +37,7 @@ class TeamRepository implements TeamRepositoryInterface
         setPermissionsTeamId($org_id);
         $org = Organization::find($org_id);
         if ($org) {
-            $members = User::where(['organization_id' => $this->organizationId])->get();
+            $members = User::with('detail')->where(['organization_id' => $this->organizationId])->get();
             $result = $members->map(function ($user) use ($org) {
                 return [
                     'id' => $user->id,
@@ -46,7 +48,8 @@ class TeamRepository implements TeamRepositoryInterface
                     'roles' => $user->roles->pluck('name')->toArray(),
                     'organization_id' => $org->id,
                     'organization_name' => $org->name,
-                    'survivor_number' => $user->survivor_number
+                    'survivor_number' => $user->survivor_number,
+                    'detail' => $user->detail
                 ];
             });
 
@@ -55,9 +58,7 @@ class TeamRepository implements TeamRepositoryInterface
         return null;
     }
 
-    public function findMember($team, $id)
-    {
-    }
+    public function findMember($team, $id) {}
 
     public function updateMemberRoles($user_id, $org_id, $roles)
     {
@@ -77,30 +78,60 @@ class TeamRepository implements TeamRepositoryInterface
 
     public function inviteMember($data)
     {
-       try {
-        $email = $data['email'];
-        $role = $data['role'];
-        $user = User::where('email', $email)->first();
-        if(!$user) {
-            $user = User::create([
-                'username' => $email,
-                'email' => $email,
-                'password' => Hash::make(Str::password()),
-                'organization_id' => $this->organizationId
-            ]);
-            $token = Str::random(60);
-            $domain = config('settings.application_url');
-            $link = $domain . '/join-organization';
-            $url = url($link) . '?token=' . $token;
-            $roles[] = $role;
-            $user->syncRoles($roles);
-            // save in database ????
-            $url = URL::temporarySignedRoute('organization.join', now()->addWeek(), ['user' => $user->id]);
-            Mail::to($email)->send(new \App\Mail\InviteUserMail($url));
+        try {
+            $email = $data['email'];
+            $role = $data['role'];
+            $user = User::where('email', $email)->first();
+            if (!$user) {
+                $user = User::create([
+                    'username' => $email,
+                    'email' => $email,
+                    'password' => Hash::make(Str::password()),
+                    'organization_id' => $this->organizationId
+                ]);
+                $roles[] = $role;
+                $user->syncRoles($roles);
+                $url = URL::temporarySignedRoute('organization.join', now()->addWeek(), ['user' => $user->id, 'org' => $this->organizationId]);
+                Mail::to($email)->send(new \App\Mail\InviteUserMail($url));
+            }
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
-       } catch (\Exception $e) {
+    }
 
-        return $this->errorResponse($e->getMessage());
-       }
+    public function updateMember($data)
+    {
+        try {
+            $email = $data['email'];
+            $user = User::where('email', $email)->first();
+
+            if ($user) {
+                $user_id = $user->id;
+                $detailsData = array_filter([
+                    'user_id' => $user_id,
+                    'first_name' => $data['firstname'] ?? null,
+                    'last_name' => $data['lastname'] ?? null,
+                    'middle_name' => $data['middlename'] ?? null,
+                    'gender' => $data['gender'] ?? null,
+                    'phone' => $data['phone_number'] ?? null,
+                ], function ($value) {
+                    return !is_null($value) && $value !== '';
+                });
+                if (!empty($detailsData)) {
+                    UserDetail::updateOrCreate(
+                        ['user_id' => $user_id],
+                        $detailsData
+                    );
+                    return Redirect::back()->with('success', 'Member details updated successfully.');
+                } else {
+                    return Redirect::back()->with('info', 'No data provided for update.');
+                }
+            } else {
+                return Redirect::back()->with('error', 'User not found.');
+            }
+        } catch (\Exception $ex) {
+            return Redirect::back()->with('error', $ex->getMessage());
+        }
     }
 }

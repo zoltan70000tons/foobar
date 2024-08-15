@@ -1,185 +1,148 @@
 import React, { useState, useEffect } from "react";
 import {
   Container,
-  IconButton,
   Button,
   Modal,
   TextField,
   Box,
   Typography,
+  IconButton,
   CircularProgress,
-  Chip,
-  InputLabel,
-  FormControl,
-  Select,
-  MenuItem,
-  OutlinedInput,
-  ButtonGroup,
+  ButtonGroup
 } from "@mui/material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from '@mui/icons-material/Save';
 import axios from "axios";
 import { useTheme } from "@emotion/react";
 import LoadingButton from "@mui/lab/LoadingButton";
-import SaveIcon from '@mui/icons-material/Save';
 import apiRoutes from "@/Helpers/ApiRoutes";
-import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
-import { Link } from "@inertiajs/react";
+import { Link, useForm } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
-
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
-
-function getStyles(name, personName, theme) {
-  return {
-    fontWeight:
-      personName.indexOf(name) === -1
-        ? theme.typography.fontWeightRegular
-        : theme.typography.fontWeightMedium,
-  };
-}
+import SnackbarAlert from "@/Components/SnackbarAlert";
+import { usePermissions } from "@/Providers/PermissionContext";
 
 const List = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [newRole, setNewRole] = useState("");
+  const [newPermission, setNewPermission] = useState("");
   const [editOpen, setEditOpen] = useState(false);
-  const [editRole, setEditRole] = useState(null);
-  const [editLoading, setEditLoading] = useState(false);
+  const [editPermission, setEditPermission] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [permissions, setPermissions] = useState([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const theme = useTheme();
-  const [permissionName, setPermissionName] = useState([]);
+  const { hasPermission} = usePermissions();
+  const viewPermission = 'View Permissions';
+  const createPermission = 'Create Permission';
+  const updatePermission = 'Edit Permission';
+  const deletePermission = 'Delete Permission';
 
-  //useAxiosWithToken();
+  const { delete: destroy } = useForm({
+    id: '',
+  });
 
   useEffect(() => {
-    axios.get(apiRoutes.orgPermissionUrl, { params: {  org_id:1} }).then((response) => {
-      const rolesData = response.data.data.map((roles) => ({
-        id: roles.id,
-        role: roles.name,
-        system: roles.system,
-      }));
-      setRows(rolesData);
-      setLoading(false);
-    });
+    axios.get(apiRoutes.orgPermissionUrl, { params: { org_id: 1 } })
+      .then(response => {
+        const rolesData = response.data.data.map(roles => ({
+          id: roles.id,
+          role: roles.name,
+          system: roles.system,
+        }));
+        setRows(rolesData);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Error fetching permissions:", error);
+        setLoading(false);
+      });
   }, []);
 
-  const handleEdit = async (role) => {
-    setLoading(true);
-    setEditRole(role);
-    try {
-      const response = await axios.get(apiRoutes.rolesUrl, {
-        params: { id: 1, role_id: role.id },
-      });
-      const allPermissions = response.data.data;
-      const grantedPermissions = allPermissions
-        .filter((p) => p.granted)
-        .map((p) => p.name);
-
-      setPermissions(allPermissions);
-      setPermissionName(grantedPermissions);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error loading permissions:", error);
-    }
+  const handleEdit = async (permission) => {
+    setEditPermission(permission);
     setEditOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setRows(rows.filter((row) => row.id !== id));
-    console.log(`Delete role with ID: ${id}`);
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
+  const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
-    setNewRole("");
+    setNewPermission("");
   };
-
   const handleEditClose = () => {
     setEditOpen(false);
-    setEditRole(null);
-    setPermissions([]);
-    setPermissionName([]);
+    setEditPermission(null);
   };
 
-  const handleChange = (event) => {
-    setNewRole(event.target.value);
-  };
+  const handleChange = (event) => setNewPermission(event.target.value);
 
   const handleEditChange = (event) => {
-    setEditRole({ ...editRole, role: event.target.value });
+    if (editPermission) {
+      setEditPermission({ ...editPermission, role: event.target.value });
+    }
   };
 
   const handleSave = async () => {
     try {
       setSaveLoading(true);
-      const response = await axios.post(apiRoutes.rolesUrl, { name: newRole });
-      const newRoleData = response.data.data;
-      console.log(newRoleData);
-      setRows([
-        ...rows,
-        { id: newRoleData.id, role: newRoleData.name, system: newRole.system },
-      ]);
+      const response = await axios.post(apiRoutes.orgPermissionUrl, { name: newPermission });
+      const newPermissionData = response.data.data;
+      setRows([...rows, { id: newPermissionData.id, role: newPermissionData.name, system: newPermissionData.system }]);
       setSaveLoading(false);
+      setSnackbar({ open: true, severity: 'success', message: 'Permission created successfully' });
       handleClose();
     } catch (error) {
-      console.error("Error creating new role:", error);
+      setSnackbar({ open: true, severity: 'error', message: 'Error creating permission' });
+      setSaveLoading(false);
     }
   };
 
   const handleEditSave = async () => {
+    if (!editPermission) return;
     try {
       setEditLoading(true);
-      const response = await axios.post(apiRoutes.addPermissionToRoleUrl, {
-        name: editRole.role,
-        permissions: permissions.map((permission) => ({
-          name: permission.name,
-          granted: permissionName.includes(permission.name),
-        })),
-        role_id: editRole.id,
-        org_id: 1,
-      });
-      const updatedRoleData = response.data.data;
-      console.log(updatedRoleData);
-      setRows(rows.map(row => row.id === updatedRoleData.id ? updatedRoleData : row));
+      const response = await axios.put(`${apiRoutes.orgPermissionUrl}/${editPermission.id}`, { name: editPermission.role });
+      const updatedPermission = response.data.data;
+
+      setRows(rows.map(row => 
+        row.id === updatedPermission.id 
+        ? { ...row, role: updatedPermission.name } 
+        : row
+      ));
+
       setEditLoading(false);
+      setSnackbar({ open: true, severity: 'success', message: 'Permission updated successfully' });
       handleEditClose();
     } catch (error) {
-      console.error("Error updating role:", error);
+      setSnackbar({ open: true, severity: 'error', message: 'Error updating permission' });
+      //console.error("Error updating permission:", error);
+      setEditLoading(false);
     }
   };
 
-  const handleChangeChips = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setPermissionName(typeof value === "string" ? value.split(",") : value);
+  const handleDelete = (id) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      axios.delete(route('permissions.destroy', id))
+        .then(() => {
+          setRows(rows.filter(row => row.id !== id));
+          setSnackbar({ open: true, severity: 'success', message: 'Permission deleted successfully' });
+        })
+        .catch(error => {
+          setSnackbar({ open: true, severity: 'error', message: 'Error deleting permission' });
+        });
+    }
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 10 },
-    {
-      field: "role",
-      headerName: "Permission",
-      type: "string",
-      width: 800,
-    },
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "role", headerName: "Permission", width: 800 },
     {
       field: "actions",
       headerName: "Actions",
@@ -187,49 +150,31 @@ const List = () => {
       headerAlign: "right",
       align: "right",
       renderCell: (params) => (
-        <div
-          style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
-        >
-          <IconButton
+        <div style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+          { hasPermission(updatePermission) && (<IconButton
             color="primary"
             onClick={() => handleEdit(params.row)}
-            disabled={params.row.system} // Disable button if system is true
+            disabled={params.row.system}
           >
             <EditIcon />
-          </IconButton>
+          </IconButton>)}
+          { hasPermission(deletePermission) && (
           <IconButton
             color="secondary"
             onClick={() => handleDelete(params.row.id)}
-            disabled={params.row.system} // Disable button if system is true
+            disabled={params.row.system}
           >
             <DeleteIcon />
-          </IconButton>
+          </IconButton>)}
         </div>
       ),
       sortable: false,
     },
   ];
-  
-  const buttons = [
-    <Link href="/70k/team/" key="Team" >
-      <Button >Team</Button>
-    </Link>,
-    <Link href="/70k/team/roles" key="Roles">
-      <Button>Roles</Button>
-    </Link>,
-    <Link  href="/70k/team/permissions" key="Permissions">
-      <Button variant="contained">Permissions</Button>
-    </Link>
-  ];
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-       <Box>
-       <ButtonGroup style={{marginBottom: '1rem'}} disableElevation size="small" aria-label="Small button group" variant="outlined">
-        {buttons}
-      </ButtonGroup>
-       </Box>
-       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          {hasPermission(createPermission) && (<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button
           variant="contained"
           color="primary"
@@ -238,11 +183,8 @@ const List = () => {
         >
           Add Permission
         </Button>
-      </Box>
-      <div style={{ height: 400, width: "100%", position: "relative" }}>
-        {loading ? (
-          <></>
-        ) : (
+      </Box>)}
+  
           <DataGrid
             rows={rows}
             columns={columns}
@@ -255,14 +197,11 @@ const List = () => {
             pageSizeOptions={[5, 10]}
             checkboxSelection
           />
-        )}
-      </div>
 
       <Modal
         open={open}
         onClose={handleClose}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
+        aria-labelledby="add-permission-modal-title"
       >
         <Box
           sx={{
@@ -275,18 +214,19 @@ const List = () => {
             border: "2px solid #000",
             boxShadow: 24,
             p: 4,
+            
           }}
         >
-          <Typography variant="h6" component="h2" id="simple-modal-title">
-            Add New Role
+          <Typography variant="h6" component="h2" id="add-permission-modal-title">
+            Add New Permission
           </Typography>
           <TextField
             autoFocus
             margin="dense"
-            label="Role"
+            label="Permission"
             type="text"
             fullWidth
-            value={newRole}
+            value={newPermission}
             onChange={handleChange}
           />
           <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
@@ -310,8 +250,7 @@ const List = () => {
       <Modal
         open={editOpen}
         onClose={handleEditClose}
-        aria-labelledby="edit-modal-title"
-        aria-describedby="edit-modal-description"
+        aria-labelledby="edit-permission-modal-title"
       >
         <Box
           sx={{
@@ -323,51 +262,21 @@ const List = () => {
             border: "2px solid #000",
             boxShadow: 24,
             p: 4,
+            width: { xs: '90%', sm: '75%', md: '60%', lg: '50%', xl: '40%' }
           }}
         >
-          <Typography variant="h6" component="h2" id="edit-modal-title">
-            Edit Role
+          <Typography variant="h6" component="h2" id="edit-permission-modal-title">
+            Edit Permission
           </Typography>
           <TextField
             autoFocus
             margin="dense"
-            label="Role"
+            label="Permission"
             type="text"
             fullWidth
-            value={editRole?.role || ""}
+            value={editPermission?.role || ""}
             onChange={handleEditChange}
           />
-          <FormControl sx={{ m: 1 }}>
-            <InputLabel id="demo-multiple-chip-label">Permissions</InputLabel>
-            <Select
-              labelId="demo-multiple-chip-label"
-              id="demo-multiple-chip"
-              multiple
-              value={permissionName}
-              onChange={handleChangeChips}
-              input={
-                <OutlinedInput id="select-multiple-chip" label="Permissions" />
-              }
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-            >
-              {permissions.map((permission) => (
-                <MenuItem
-                  key={permission.name}
-                  value={permission.name}
-                  style={getStyles(permission.name, permissionName, theme)}
-                >
-                  {permission.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
             <Button onClick={handleEditClose} sx={{ mr: 1 }}>
               Cancel
@@ -385,7 +294,13 @@ const List = () => {
           </Box>
         </Box>
       </Modal>
-      <LoadingOverlay open={loading}/>
+      <SnackbarAlert
+        open={snackbar.open}
+        severity={snackbar.severity}
+        message={snackbar.message}
+        onClose={handleCloseSnackbar}
+      />
+      <LoadingOverlay open={loading} />
     </Container>
   );
 };

@@ -22,7 +22,6 @@ class InvitationController extends Controller
 
     public function store(Request $request)
     {
-        //dd($request->all());
         $validator = Validator::make($request->all(), [
             'invitations' => 'required|array',
             'invitations.*.email' => 'required|email',
@@ -34,14 +33,28 @@ class InvitationController extends Controller
             ], 422);
         }
 
+        $successfulInvitations = [];
+        $failedInvitations = [];
+    
         foreach ($request->invitations as $invitation) {
-            $this->teamRepository->inviteMember($invitation);
+            $result = $this->teamRepository->inviteMember($invitation);
+    
+            if ($result) {
+                $successfulInvitations[] = $invitation;
+            } else {
+                $failedInvitations[] = $invitation;
+            }
         }
     
-        
-        //return response()->json(['message' => 'Invitations sent successfully']);
-        //Invitation::create($validated);
-
-       // return redirect()->back()->with('success', 'Invitation sent successfully.');
+        if (count($failedInvitations) > 0) {
+            return response()->json([
+                'message' => 'Some invitations could not be processed.'
+            ], 500);
+        }
+    
+        return response()->json([
+            'message' => 'All invitations were processed successfully.'
+        ], 200);
+    
     }
 }

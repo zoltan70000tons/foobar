@@ -35,8 +35,15 @@ public function updateMemberRoles(UpdateMemberRoleRequest $request){
     return $this->teamRepositoryInterface->updateMemberRoles($user_id, $this->organizationId, $roles);
 }
 public function updateMember(UpdateMemberRequest $request){
+        try {
+            $data = $request->all();
+            $this->teamRepositoryInterface->updateMember($data);
+            return Redirect::route('teams',['slug' => '70K'])->with('message', 'User updated successfully');
+        } catch (\Exception $ex) {
+            return Inertia::render('Team', [
+                'errors' => $ex->getMessage()]);
+        }
         
-        return Redirect::route('teams',['slug' => '70K'])->with('message', 'User updated successfully');
 }
    
 }

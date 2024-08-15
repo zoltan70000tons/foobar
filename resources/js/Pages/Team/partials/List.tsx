@@ -3,12 +3,11 @@ import { Container, CircularProgress, Button, ButtonGroup, Box } from "@mui/mate
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import axios from "axios";
 import ActionMenu from './ActionMenu';
-import apiRoutes from '@/Helpers/ApiRoutes';
-import useAxiosWithToken from '@/Hooks/useAxiosWithToken';
 import { Link } from '@inertiajs/react';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import LoadingOverlay from '@/Components/LoadingOverlay';
+import { useTeamData } from '@/Hooks/useTeamData';
 
 interface User {
   id: number;
@@ -20,27 +19,39 @@ interface User {
 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'name', headerName: 'Name', width: 200 },
+  {
+    field: 'name',
+    headerName: 'Name',
+    width: 200,
+    renderCell: (params) => {
+      const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+      const firstName = params.row.detail?.first_name ? capitalize(params.row.detail.first_name) : '';
+      const lastName = params.row.detail?.last_name ? capitalize(params.row.detail.last_name) : '';
+      return <>{`${firstName} ${lastName}`}</>;
+    },
+  },
+  
   { field: 'email', headerName: 'Email', type: 'string', width: 200 },
-  { field: 'status', headerName: 'Status', sortable: false, width: 100,
+  {
+    field: 'status', headerName: 'Status', sortable: false, width: 100,
     renderCell: (params) => (
       <Stack direction="row"
-      alignItems="center"
-      height="100%"
+        alignItems="center"
+        height="100%"
       >
-          <Chip  label={params.row.status} color={ params.row.status == "Active" ? "success" : "warning" }/>
+        <Chip label={params.row.status} color={params.row.status == "Active" ? "success" : "error"} />
       </Stack>
     ),
 
   },
   {
     field: 'roles',
-    headerName: 'Roles',
+    headerName: 'Role',
     width: 300,
     renderCell: (params) => (
       <Stack direction="row"
-      alignItems="center"
-      height="100%"
+        alignItems="center"
+        height="100%"
       >
         {params.row.roles.map((role: string, index: number) => (
           <Chip key={index} label={role} />
@@ -57,57 +68,18 @@ const columns: GridColDef[] = [
 ];
 
 const List: React.FC = () => {
-  const [rows, setRows] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const { rows, fetchData, loading } = useTeamData();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get<User[]>(apiRoutes.getTeamUrl, { params: { org_id: 1 } });
-        const processedData = response.data.map(user => ({
-          ...user,
-        }));
-        setRows(processedData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
-  // if (loading) {
-  //   return (
-  //     <Container maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-  //       <CircularProgress />
-  //     </Container>
-  //   );
-  // }
-
-  const buttons = [
-    <Link href="/70k/team/" key="Team" >
-      <Button variant="contained">Team</Button>
-    </Link>,
-    <Link href="/70k/team/roles" key="Roles">
-      <Button>Roles</Button>
-    </Link>,
-    <Link href="/70k/team/permissions" key="Permissions">
-      <Button>Permissions</Button>
-    </Link>
-  ];
+  
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box>
-        <ButtonGroup style={{ marginBottom: '1rem' }} disableElevation size="small" aria-label="Small button group" variant="outlined">
-          {buttons}
-        </ButtonGroup>
-      </Box>
       <div style={{ height: 400, width: "100%" }}>
-      {loading ? (
+        {loading ? (
           <></>
         ) : (
           <DataGrid
@@ -124,7 +96,7 @@ const List: React.FC = () => {
           />
         )}
       </div>
-      <LoadingOverlay open={loading}/>
+      <LoadingOverlay open={loading} />
     </Container>
   );
 };
