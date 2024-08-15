@@ -23,29 +23,17 @@ interface ViewMemberProps {
 
 export default function ViewMember({ selectedUser }: ViewMemberProps) {
   return (
-    <>
-      <DialogTitle id="view-dialog-title">User Details</DialogTitle>
-      <DialogContent>
-          <Grid container direction="column" sx={{ overflowX: "hidden" }}>
-            <Grid
-              container
-              direction={{ xs: "column", md: "row" }}
-              spacing={3}
-              sx={{
-                position: "absolute",
-                top: "20vh",
-                px: { xs: 0, md: 7 },
-              }}
-            >
-              <Grid item md={3}>
-                <ProfileCard user={selectedUser}></ProfileCard>
-              </Grid>
-              <Grid item md={9}>
-                <SettingsCard user={selectedUser}></SettingsCard>
-              </Grid>
-            </Grid>
-          </Grid>
-      </DialogContent>
-    </>
+    <Grid
+      container
+      direction={{ xs: "column", md: "row" }}
+      spacing={2}
+    >
+      <Grid item md={3}>
+        <ProfileCard user={selectedUser}></ProfileCard>
+      </Grid>
+      <Grid item md={9} sx={{ width: '100%' }}>
+        <SettingsCard user={selectedUser}  ></SettingsCard>
+      </Grid>
+    </Grid>
   );
 }

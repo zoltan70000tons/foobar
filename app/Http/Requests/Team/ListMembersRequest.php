@@ -27,7 +27,6 @@ class ListMembersRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'org_id' => 'required|int',
         ];
     }
 

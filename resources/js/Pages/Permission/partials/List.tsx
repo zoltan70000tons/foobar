@@ -1,89 +1,171 @@
 import React, { useState, useEffect } from "react";
-import { Container, IconButton, Button, Modal, TextField, Box, Typography, CircularProgress } from "@mui/material";
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import apiRoutes from "@/Helpers/ApiRoutes";
+import {
+  Container,
+  Button,
+  Modal,
+  TextField,
+  Box,
+  Typography,
+  IconButton,
+  CircularProgress,
+  ButtonGroup
+} from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from '@mui/icons-material/Save';
 import axios from "axios";
+import { useTheme } from "@emotion/react";
+import LoadingButton from "@mui/lab/LoadingButton";
+import apiRoutes from "@/Helpers/ApiRoutes";
+import { Link, useForm } from "@inertiajs/react";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import SnackbarAlert from "@/Components/SnackbarAlert";
+import { usePermissions } from "@/Providers/PermissionContext";
 
 const List = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newPermission, setNewPermission] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editPermission, setEditPermission] = useState(null);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+  const theme = useTheme();
+  const { hasPermission} = usePermissions();
+  const viewPermission = 'View Permissions';
+  const createPermission = 'Create Permission';
+  const updatePermission = 'Edit Permission';
+  const deletePermission = 'Delete Permission';
+
+  const { delete: destroy } = useForm({
+    id: '',
+  });
 
   useEffect(() => {
-    axios.get(apiRoutes.permissionUrl, { params: { id: '1' } }).then((response) => {
-      const permissionsData = response.data.data.map((permission: any) => ({
-        id: permission.id,
-        permission: permission.name,
-      }));
-      setRows(permissionsData);
-      setLoading(false);
-    });
+    axios.get(apiRoutes.orgPermissionUrl, { params: { org_id: 1 } })
+      .then(response => {
+        const rolesData = response.data.data.map(roles => ({
+          id: roles.id,
+          role: roles.name,
+          system: roles.system,
+        }));
+        setRows(rolesData);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Error fetching permissions:", error);
+        setLoading(false);
+      });
   }, []);
 
-  const handleEdit = (id: number) => {
-    console.log(`Edit permission with ID: ${id}`);
+  const handleEdit = async (permission) => {
+    setEditPermission(permission);
+    setEditOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setRows(rows.filter(row => row.id !== id));
-    console.log(`Delete permission with ID: ${id}`);
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
+  const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setNewPermission("");
   };
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setEditPermission(null);
+  };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPermission(event.target.value);
+  const handleChange = (event) => setNewPermission(event.target.value);
+
+  const handleEditChange = (event) => {
+    if (editPermission) {
+      setEditPermission({ ...editPermission, role: event.target.value });
+    }
   };
 
   const handleSave = async () => {
     try {
+      setSaveLoading(true);
       const response = await axios.post(apiRoutes.orgPermissionUrl, { name: newPermission });
       const newPermissionData = response.data.data;
-      console.log(newPermissionData);
-      setRows([...rows, { id: newPermissionData.id, permission: newPermissionData.name }]);
+      setRows([...rows, { id: newPermissionData.id, role: newPermissionData.name, system: newPermissionData.system }]);
+      setSaveLoading(false);
+      setSnackbar({ open: true, severity: 'success', message: 'Permission created successfully' });
       handleClose();
     } catch (error) {
-      console.error("Error creating new permission:", error);
+      setSnackbar({ open: true, severity: 'error', message: 'Error creating permission' });
+      setSaveLoading(false);
     }
   };
 
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
+  const handleEditSave = async () => {
+    if (!editPermission) return;
+    try {
+      setEditLoading(true);
+      const response = await axios.put(`${apiRoutes.orgPermissionUrl}/${editPermission.id}`, { name: editPermission.role });
+      const updatedPermission = response.data.data;
+
+      setRows(rows.map(row => 
+        row.id === updatedPermission.id 
+        ? { ...row, role: updatedPermission.name } 
+        : row
+      ));
+
+      setEditLoading(false);
+      setSnackbar({ open: true, severity: 'success', message: 'Permission updated successfully' });
+      handleEditClose();
+    } catch (error) {
+      setSnackbar({ open: true, severity: 'error', message: 'Error updating permission' });
+      //console.error("Error updating permission:", error);
+      setEditLoading(false);
+    }
+  };
+
+  const handleDelete = (id) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      axios.delete(route('permissions.destroy', id))
+        .then(() => {
+          setRows(rows.filter(row => row.id !== id));
+          setSnackbar({ open: true, severity: 'success', message: 'Permission deleted successfully' });
+        })
+        .catch(error => {
+          setSnackbar({ open: true, severity: 'error', message: 'Error deleting permission' });
+        });
+    }
+  };
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "role", headerName: "Permission", width: 800 },
     {
-      field: 'permission',
-      headerName: 'Permission',
-      type: 'string',
-      width: 200,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      headerName: "Actions",
       width: 150,
+      headerAlign: "right",
+      align: "right",
       renderCell: (params) => (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-          <IconButton
+        <div style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+          { hasPermission(updatePermission) && (<IconButton
             color="primary"
-            onClick={() => handleEdit(params.row.id)}
+            onClick={() => handleEdit(params.row)}
+            disabled={params.row.system}
           >
             <EditIcon />
-          </IconButton>
+          </IconButton>)}
+          { hasPermission(deletePermission) && (
           <IconButton
             color="secondary"
             onClick={() => handleDelete(params.row.id)}
+            disabled={params.row.system}
           >
             <DeleteIcon />
-          </IconButton>
+          </IconButton>)}
         </div>
       ),
       sortable: false,
@@ -92,35 +174,17 @@ const List = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpen}
-        sx={{ mb: 2 }}
-      >
-        Add Permission
-      </Button>
-      <div style={{ height: 400, width: "100%", position: "relative" }}>
-        {loading ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              zIndex: 1,
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
+          {hasPermission(createPermission) && (<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpen}
+        >
+          Add Permission
+        </Button>
+      </Box>)}
+  
           <DataGrid
             rows={rows}
             columns={columns}
@@ -133,17 +197,27 @@ const List = () => {
             pageSizeOptions={[5, 10]}
             checkboxSelection
           />
-        )}
-      </div>
 
       <Modal
         open={open}
         onClose={handleClose}
-        aria-labelledby="edit-permissions"
-        aria-describedby="edit-modal-permissions"
+        aria-labelledby="add-permission-modal-title"
       >
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4 }}>
-          <Typography variant="h6" component="h2" id="edit-modal-permission">
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            border: "2px solid #000",
+            boxShadow: 24,
+            p: 4,
+            
+          }}
+        >
+          <Typography variant="h6" component="h2" id="add-permission-modal-title">
             Add New Permission
           </Typography>
           <TextField
@@ -155,12 +229,78 @@ const List = () => {
             value={newPermission}
             onChange={handleChange}
           />
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button onClick={handleClose} sx={{ mr: 1 }}>Cancel</Button>
-            <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button onClick={handleClose} sx={{ mr: 1 }}>
+              Cancel
+            </Button>
+            <LoadingButton
+              loading={saveLoading}
+              loadingPosition="start"
+              startIcon={<SaveIcon />}
+              variant="contained"
+              color="primary"
+              onClick={handleSave}
+            >
+              Save
+            </LoadingButton>
           </Box>
         </Box>
       </Modal>
+
+      <Modal
+        open={editOpen}
+        onClose={handleEditClose}
+        aria-labelledby="edit-permission-modal-title"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            border: "2px solid #000",
+            boxShadow: 24,
+            p: 4,
+            width: { xs: '90%', sm: '75%', md: '60%', lg: '50%', xl: '40%' }
+          }}
+        >
+          <Typography variant="h6" component="h2" id="edit-permission-modal-title">
+            Edit Permission
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Permission"
+            type="text"
+            fullWidth
+            value={editPermission?.role || ""}
+            onChange={handleEditChange}
+          />
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button onClick={handleEditClose} sx={{ mr: 1 }}>
+              Cancel
+            </Button>
+            <LoadingButton
+              loading={editLoading}
+              loadingPosition="start"
+              startIcon={<SaveIcon />}
+              variant="contained"
+              color="primary"
+              onClick={handleEditSave}
+            >
+              Save
+            </LoadingButton>
+          </Box>
+        </Box>
+      </Modal>
+      <SnackbarAlert
+        open={snackbar.open}
+        severity={snackbar.severity}
+        message={snackbar.message}
+        onClose={handleCloseSnackbar}
+      />
+      <LoadingOverlay open={loading} />
     </Container>
   );
 };

@@ -28,7 +28,6 @@ class UpdateMemberRoleRequest extends FormRequest
     {
         return [
                 'user_id' => 'required|int',
-                'org_id' => 'required|int',
                 'roles' => 'required|array'
         ];
     }

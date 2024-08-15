@@ -7,23 +7,28 @@ import {
   TextField,
   Box,
   Typography,
-  CircularProgress,
   Chip,
   InputLabel,
   FormControl,
   Select,
   MenuItem,
   OutlinedInput,
+  ButtonGroup,
 } from "@mui/material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import EditIcon from "@mui/icons-material/Edit";
+import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import axios from "axios";
-import { useTheme } from "@emotion/react";
-import LoadingButton from "@mui/lab/LoadingButton";
 import SaveIcon from '@mui/icons-material/Save';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Link, useForm } from "@inertiajs/react";
+import axios from "axios";
 import apiRoutes from "@/Helpers/ApiRoutes";
+import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingOverlay from '../../../Components/LoadingOverlay'; 
+import {useTheme} from '@emotion/react';
+import SnackbarAlert from "@/Components/SnackbarAlert";
+import { usePermissions } from "@/Providers/PermissionContext";
+
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -36,15 +41,6 @@ const MenuProps = {
   },
 };
 
-function getStyles(name, personName, theme) {
-  return {
-    fontWeight:
-      personName.indexOf(name) === -1
-        ? theme.typography.fontWeightRegular
-        : theme.typography.fontWeightMedium,
-  };
-}
-
 const List = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,38 +51,45 @@ const List = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [permissions, setPermissions] = useState([]);
-  const theme = useTheme();
   const [permissionName, setPermissionName] = useState([]);
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+
+  const { hasPermission } = usePermissions();
+
+  const createRolePermission = 'Create Role';
+  const editRolePermission = 'Edit Role';
+  const deleteRolePermission = 'Delete Role';
+
+  const theme = useTheme();
+  const { delete: destroy } = useForm({
+    id: '',
+  });
 
   useEffect(() => {
-    axios.get(apiRoutes.orgRolesUrl, { params: {  org_id:1} }).then((response) => {
-      const rolesData = response.data.data.map((roles) => ({
-        id: roles.id,
-        role: roles.name,
-        system: roles.system,
-      }));
-      setRows(rolesData);
-      setLoading(false);
-    });
+    axios.get(apiRoutes.orgRolesUrl, { params: { org_id: 1 } })
+      .then((response) => {
+        const rolesData = response.data.data.map((role) => ({
+          id: role.id,
+          role: role.name,
+          system: role.system,
+        }));
+        setRows(rolesData);
+        setLoading(false);
+      });
   }, []);
 
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleEdit = async (role) => {
-    setLoading(true);
     setEditRole(role);
     try {
-      const response = await axios.get(apiRoutes.permissionUrl, {
-        params: { id: 1, role_id: role.id },
-      });
-      const allPermissions = response.data.data;
-
-      // Filtrar permisos con granted: true
-      const grantedPermissions = allPermissions
-        .filter((p) => p.granted)
-        .map((p) => p.name);
-
+      const { data } = await axios.get(apiRoutes.permissionUrl, { params: { id: 1, role_id: role.id } });
+      const allPermissions = data.data;
+      const grantedPermissions = allPermissions.filter(p => p.granted).map(p => p.name);
       setPermissions(allPermissions);
       setPermissionName(grantedPermissions);
-      setLoading(false);
     } catch (error) {
       console.error("Error loading permissions:", error);
     }
@@ -94,14 +97,23 @@ const List = () => {
   };
 
   const handleDelete = (id) => {
-    setRows(rows.filter((row) => row.id !== id));
-    console.log(`Delete role with ID: ${id}`);
+    if (confirm('Are you sure you want to delete this role?')) {
+      destroy(route('roles.destroy', id), {
+        method: 'delete',
+        onSuccess: () => {
+          setSnackbar({ open: true, severity: 'success', message: 'Role deleted successfully' });
+        },
+        onError:() =>{
+          setSnackbar({ open: true, severity: 'error', message: 'Error deleting permission' });
+        }
+      });
+      setRows(rows.filter((row) => row.id !== id));
+
+    }
+
   };
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
+  const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setNewRole("");
@@ -114,271 +126,181 @@ const List = () => {
     setPermissionName([]);
   };
 
-  const handleChange = (event) => {
-    setNewRole(event.target.value);
-  };
-
-  const handleEditChange = (event) => {
-    setEditRole({ ...editRole, role: event.target.value });
-  };
+  const handleChange = (event) => setNewRole(event.target.value);
+  const handleEditChange = (event) => setEditRole({ ...editRole, role: event.target.value });
+  const handleChangeChips = (event) => setPermissionName(event.target.value);
 
   const handleSave = async () => {
+    setSaveLoading(true);
     try {
-      setSaveLoading(true);
-      const response = await axios.post(apiRoutes.rolesUrl, { name: newRole });
-      const newRoleData = response.data.data;
-      console.log(newRoleData);
-      setRows([
-        ...rows,
-        { id: newRoleData.id, role: newRoleData.name, system: newRole.system },
-      ]);
-      setSaveLoading(false);
+      const { data } = await axios.post(apiRoutes.rolesUrl, { name: newRole });
+      setRows([...rows, { id: data.data.id, role: data.data.name, system: data.data.system }]);
       handleClose();
+      setSnackbar({ open: true, severity: 'success', message: 'Role added successfully' });
     } catch (error) {
-      console.error("Error creating new role:", error);
+      setSnackbar({ open: true, severity: 'error', message: 'Error adding role' });
+    } finally {
+      setSaveLoading(false);
     }
   };
 
   const handleEditSave = async () => {
+    setEditLoading(true);
     try {
-      setEditLoading(true);
-      const response = await axios.post(apiRoutes.addPermissionToRoleUrl, {
+      const { data } = await axios.post(apiRoutes.addPermissionToRoleUrl, {
         name: editRole.role,
-        permissions: permissions.map((permission) => ({
-          name: permission.name,
-          granted: permissionName.includes(permission.name),
+        permissions: permissions.map(p => ({
+          name: p.name,
+          granted: permissionName.includes(p.name),
         })),
         role_id: editRole.id,
         org_id: 1,
       });
-      const updatedRoleData = response.data.data;
-      console.log(updatedRoleData);
-      setRows(rows.map(row => row.id === updatedRoleData.id ? updatedRoleData : row));
-      setEditLoading(false);
+
+      setRows(rows.map(row => row.id === data.data.id ? data.data : row));
+      setSnackbar({ open: true, severity: 'success', message: 'Role updated successfully' });
       handleEditClose();
     } catch (error) {
-      console.error("Error updating role:", error);
+      setSnackbar({ open: true, severity: 'error', message: 'Error updating role' });
+    } finally {
+      setEditLoading(false);
     }
   };
 
-  const handleChangeChips = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setPermissionName(typeof value === "string" ? value.split(",") : value);
-  };
-
   const columns = [
-    { field: "id", headerName: "ID", width: 10 },
-    {
-      field: "role",
-      headerName: "Role",
-      type: "string",
-      width: 800,
-    },
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "role", headerName: "Role", width: 800 },
     {
       field: "actions",
       headerName: "Actions",
       width: 150,
-      headerAlign: "right",
-      align: "right",
       renderCell: (params) => (
-        <div
-          style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
-        >
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row)}
-            disabled={params.row.system} // Disable button if system is true
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
+        <Box display="flex" justifyContent="flex-end">
+           {hasPermission(editRolePermission) && (<IconButton color="primary" onClick={() => handleEdit(params.row)}>
+            <SettingsIcon />
+          </IconButton>)}
+          {hasPermission(deleteRolePermission) &&(<IconButton
             color="secondary"
             onClick={() => handleDelete(params.row.id)}
-            disabled={params.row.system} // Disable button if system is true
+            disabled={params.row.system}
           >
             <DeleteIcon />
-          </IconButton>
-        </div>
+          </IconButton>)}
+          
+        </Box>
       ),
-      sortable: false,
     },
   ];
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpen}
-        sx={{ mb: 2 }}
-      >
-        Add Role
-      </Button>
+      
+          {hasPermission(createRolePermission) && (<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}><Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpen}
+        >
+          Add Role
+        </Button></Box>)}
+      
       <div style={{ height: 400, width: "100%", position: "relative" }}>
-        {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              zIndex: 1,
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <DataGrid
+        <DataGrid
             rows={rows}
             columns={columns}
             getRowId={(row) => row.id}
-            initialState={{
-              pagination: {
-                paginationModel: { page: 0, pageSize: 5 },
-              },
-            }}
+            initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
             pageSizeOptions={[5, 10]}
             checkboxSelection
           />
-        )}
       </div>
-
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            border: "2px solid #000",
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography variant="h6" component="h2" id="simple-modal-title">
-            Add New Role
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Role"
-            type="text"
-            fullWidth
-            value={newRole}
-            onChange={handleChange}
-          />
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 400, bgcolor: "background.paper", border: "2px solid #000", boxShadow: 24, p: 4 }}>
+          <Typography variant="h6">Add New Role</Typography>
+          <TextField autoFocus margin="dense" label="Role" type="text" fullWidth value={newRole} onChange={handleChange} />
           <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-            <Button onClick={handleClose} sx={{ mr: 1 }}>
-              Cancel
-            </Button>
-            <LoadingButton
-              loading={saveLoading}
-              loadingPosition="start"
-              startIcon={<SaveIcon />}
-              variant="contained"
-              color="primary"
-              onClick={handleSave}
-            >
+            <Button onClick={handleClose} sx={{ mr: 1 }}>Cancel</Button>
+            <LoadingButton loading={saveLoading} loadingPosition="start" startIcon={<SaveIcon />} variant="contained" color="primary" onClick={handleSave}>
               Save
             </LoadingButton>
           </Box>
         </Box>
       </Modal>
 
-      <Modal
-        open={editOpen}
-        onClose={handleEditClose}
-        aria-labelledby="edit-modal-title"
-        aria-describedby="edit-modal-description"
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            border: "2px solid #000",
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography variant="h6" component="h2" id="edit-modal-title">
-            Edit Role
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Role"
-            type="text"
-            fullWidth
-            value={editRole?.role || ""}
-            onChange={handleEditChange}
-          />
-          <FormControl sx={{ m: 1 }}>
-            <InputLabel id="demo-multiple-chip-label">Permissions</InputLabel>
-            <Select
-              labelId="demo-multiple-chip-label"
-              id="demo-multiple-chip"
-              multiple
-              value={permissionName}
-              onChange={handleChangeChips}
-              input={
-                <OutlinedInput id="select-multiple-chip" label="Permissions" />
-              }
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-            >
-              {permissions.map((permission) => (
-                <MenuItem
-                  key={permission.name}
-                  value={permission.name}
-                  style={getStyles(permission.name, permissionName, theme)}
-                >
-                  {permission.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-            <Button onClick={handleEditClose} sx={{ mr: 1 }}>
-              Cancel
-            </Button>
-            <LoadingButton
-              loading={editLoading}
-              loadingPosition="start"
-              startIcon={<SaveIcon />}
-              variant="contained"
-              color="primary"
-              onClick={handleEditSave}
-            >
-              Save
-            </LoadingButton>
+      <Modal open={editOpen} onClose={handleEditClose}>
+  <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      bgcolor: "background.paper",
+      border: "2px solid #000",
+      boxShadow: 24,
+      p: 4,
+      width: { xs: '90%', sm: '75%', md: '60%', lg: '50%', xl: '40%' }
+    }}
+  >
+    <Typography variant="h6" gutterBottom>
+      Edit Role
+    </Typography>
+    <TextField
+      autoFocus
+      fullWidth
+      margin="dense"
+      label="Role"
+      type="text"
+      value={editRole?.role || ""}
+      onChange={handleEditChange}
+    />
+    <FormControl fullWidth sx={{ mt: 2 }}>
+      <InputLabel>Permissions</InputLabel>
+      <Select
+        multiple
+        value={permissionName}
+        onChange={handleChangeChips}
+        input={<OutlinedInput label="Permissions" />}
+        renderValue={(selected) => (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {selected.map((value) => (
+              <Chip key={value} label={value} />
+            ))}
           </Box>
-        </Box>
-      </Modal>
+        )}
+        MenuProps={MenuProps}
+      >
+        {permissions.map((permission) => (
+          <MenuItem key={permission.name} value={permission.name}>
+            {permission.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+    <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+      <Button onClick={handleEditClose} sx={{ mr: 1 }}>
+        Cancel
+      </Button>
+      <LoadingButton
+        loading={editLoading}
+        loadingPosition="start"
+        startIcon={<SaveIcon />}
+        variant="contained"
+        color="primary"
+        onClick={handleEditSave}
+      >
+        Save
+      </LoadingButton>
+    </Box>
+  </Box>
+</Modal>
+
+      <SnackbarAlert
+        open={snackbar.open}
+        severity={snackbar.severity}
+        message={snackbar.message}
+        onClose={handleCloseSnackbar}
+      />
+      <LoadingOverlay open={loading} />
     </Container>
   );
 };

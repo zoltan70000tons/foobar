@@ -1,19 +1,19 @@
 <?php 
 namespace App\Http\Controllers;
 
-use App\Models\Invitation;
+use App\Interfaces\TeamRepositoryInterface;
+use App\Repositories\TeamRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 
 class InvitationController extends Controller
 {
-    public function __construct()
+    private TeamRepositoryInterface $teamRepository;
+    public function __construct(TeamRepository $teamRepository)
     {
         $user = auth()->user(); 
-        $teams = $user->teams;
-        dd($teams);
+        $this->teamRepository = $teamRepository;
     }
     public function create()
     {
@@ -22,13 +22,39 @@ class InvitationController extends Controller
 
     public function store(Request $request)
     {
-        $validated = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'role' => 'required|string',
-        ])->validate();
+        $validator = Validator::make($request->all(), [
+            'invitations' => 'required|array',
+            'invitations.*.email' => 'required|email',
+            'invitations.*.role' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        Invitation::create($validated);
-
-        return redirect()->back()->with('success', 'Invitation sent successfully.');
+        $successfulInvitations = [];
+        $failedInvitations = [];
+    
+        foreach ($request->invitations as $invitation) {
+            $result = $this->teamRepository->inviteMember($invitation);
+    
+            if ($result) {
+                $successfulInvitations[] = $invitation;
+            } else {
+                $failedInvitations[] = $invitation;
+            }
+        }
+    
+        if (count($failedInvitations) > 0) {
+            return response()->json([
+                'message' => 'Some invitations could not be processed.'
+            ], 500);
+        }
+    
+        return response()->json([
+            'message' => 'All invitations were processed successfully.'
+        ], 200);
+    
     }
 }

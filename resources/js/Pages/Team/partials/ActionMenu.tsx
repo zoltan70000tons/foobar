@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button } from "@mui/material";
+import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button, DialogTitle, DialogContent } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ViewMember from './ViewMember';
+import { usePermissions } from '@/Providers/PermissionContext';
 
 interface ActionMenuProps {
   params: any;
@@ -11,6 +12,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { hasPermission } = usePermissions();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -27,7 +29,6 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
   };
 
   const handleEdit = () => {
-    console.log('Edit', params.row);
     //Todo edit
     handleClose();
   };
@@ -38,34 +39,41 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
 
   return (
     <>
+     {hasPermission('View Users') &&(
+      <>
       <IconButton
-        aria-label="more"
-        aria-controls="long-menu"
-        aria-haspopup="true"
-        onClick={handleClick}
-      >
-        <MoreVertIcon />
-      </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleView}>View</MenuItem>
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-      </Menu>
+      aria-label="more"
+      aria-controls="long-menu"
+      aria-haspopup="true"
+      onClick={handleClick}
+    >
+      <MoreVertIcon />
+    </IconButton>
+    <Menu
+      anchorEl={anchorEl}
+      keepMounted
+      open={Boolean(anchorEl)}
+      onClose={handleClose}
+    >
+      <MenuItem onClick={handleView}>View</MenuItem>
+    </Menu>
+      </>
+     )}
+      
 
       <Dialog
-        fullScreen
+        maxWidth="xl"
         open={openViewModal}
         onClose={handleCloseViewModal}
         aria-labelledby="view-dialog-title"
         aria-describedby="view-dialog-description"
       >
+        <DialogTitle>Edit User Details</DialogTitle>
+        <DialogContent>
         <ViewMember selectedUser={selectedUser} />
+        </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseViewModal} color="primary">Close</Button>
+          <Button onClick={handleCloseViewModal} color="primary" variant="contained">Close</Button>
         </DialogActions>
       </Dialog>
     </>

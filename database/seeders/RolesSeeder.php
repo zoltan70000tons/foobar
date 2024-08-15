@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ use Faker\Generator;
 class RolesSeeder extends Seeder
 {
 
-        /**
+    /**
      * The current Faker instance.
      *
      * @var \Faker\Generator
@@ -45,93 +46,118 @@ class RolesSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('roles')->insert([
-            'team_id' => 1,
-            'name' => 'SuperAdmin',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
+        // Insertar o actualizar roles
+        $roles = [
+            'SuperAdmin',
+            'Admin',
+            'Owner',
+            'Manager',
+            'Editor',
+            'Agent',
+            'Customer'
+        ];
+
+        foreach ($roles as $role) {
+            DB::table('roles')->updateOrInsert(
+                ['name' => $role, 'team_id' => 1],
+                [
+                    'team_id' => 1,
+                    'name' => $role,
+                    'guard_name' => 'web',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'system' => 1
+                ]
+            );
+        }
+
+        // Insertar o actualizar permisos
+        $permissions = [
+            'View Roles',
+            'Create Role',
+            'Edit Role',
+            'Delete Role',
+            'View Permissions',
+            'Create Permission',
+            'Edit Permission',
+            'Delete Permission',
+            'View Users',
+            'Create User',
+            'Edit User',
+            'Delete User',
+            'View Orders',
+            'Create Order',
+            'Edit Order',
+            'Delete Order',
+            'View Events',
+            'Create Event',
+            'Edit Event',
+            'Delete Event',
+            'View Customers',
+            'Create Customer',
+            'Edit Customer',
+            'Delete Customer',
+        ];
+
+        foreach ($permissions as $permission) {
+            DB::table('permissions')->updateOrInsert(
+                ['name' => $permission],
+                [
+                    'name' => $permission,
+                    'guard_name' => 'web',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'system' => 1
+                ]
+            );
+        }
+
+        $superAdminRoleId = DB::table('roles')->where('name', 'SuperAdmin')->value('id');
+        $permissionIds = DB::table('permissions')->pluck('id')->toArray();
+
+        $rolePermissionData = [];
+        foreach ($permissionIds as $permissionId) {
+            $rolePermissionData[] = [
+                'role_id' => $superAdminRoleId,
+                'permission_id' => $permissionId
+            ];
+        }
+
+        DB::table('role_has_permissions')->insert($rolePermissionData);
+        $password = Str::random(12);
+        $superAdminId = DB::table('users')->insertGetId([
+            'username' => 'SuperAdmin',
+            'email' => 'superadmin@70000tons.com',
+            'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', $password)),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'organization_id' => env('ORGANIZATION_ID', 1)
         ]);
 
-        DB::table('roles')->insert([
-            'team_id' => 1,
-            'name' => 'Admin',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
-        DB::table('roles')->insert([
-            'team_id' => 1,
-            'name' => 'Manager',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
+       $adminId = DB::table('users')->insertGetId(
+            [
+                'email' => 'admin@70000tons.com',
+                'username' => 'admin',
+                'password' => Hash::make(env('ADMIN_PASSWORD', $password)),
+                'created_at' => $this->faker->dateTime($max = 'now'),
+                'updated_at' => $this->faker->dateTime($max = 'now'),
+                'organization_id' => env('ORGANIZATION_ID', 1)
 
-        DB::table('roles')->insert([
-            'team_id' => 1,
-            'name' => 'Editor',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
+            ]
+        );
+
+        DB::table('model_has_roles')->insert([
+            'role_id' => $superAdminRoleId,
+            'model_type' => 'App\Models\User',
+            'model_id' => $superAdminId,
+            'team_id' => env('ORGANIZATION_ID', 1)
         ]);
 
-        DB::table('roles')->insert([
-            'team_id' => 1,
-            'name' => 'Agent',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
+        DB::table('model_has_roles')->insert([
+            'role_id' => $adminId,
+            'model_type' => 'App\Models\User',
+            'model_id' => $adminId,
+            'team_id' => env('ORGANIZATION_ID', 1)
         ]);
-        DB::table('roles')->insert([
-            'team_id' => 1,
-            'name' => 'Customer',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
-        DB::table('permissions')->insert([
-
-            'name' => 'View role',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
-
-        DB::table('permissions')->insert([
-
-            'name' => 'Create role',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
-
-        DB::table('permissions')->insert([
-
-            'name' => 'Edit Role',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
-
-        DB::table('permissions')->insert([
-
-            'name' => 'Delete Role',
-            'guard_name' => 'web',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'system' => 1
-        ]);
-
-
     }
 }

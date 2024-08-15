@@ -1,7 +1,7 @@
 // IMPORTS
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import { Grid } from "@mui/material";
+import { Chip, Grid } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import Badge from "@mui/material/Badge";
@@ -20,21 +20,32 @@ const styles = {
 };
 
 interface User {
-    id: number;
-    name: string;
-    email: string;
-    status: string;
-    roles: string[];
-    organization_id: number;
-    organization_name: string;
-  }
+  id: number;
+  name: string;
+  email: string;
+  status: string;
+  roles: string[];
+  organization_id: number;
+  organization_name: string;
+  survivor_number: number;
+}
 
 interface ProfileCardProps {
-    user: User | null;
-  }
-  
+  user: User | null;
+}
+
 export default function ProfileCard({ user }: ProfileCardProps) {
-    console.log(user);
+
+  const getChipColor = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return 'error';
+      case 'Active':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
 
   return (
     <Card variant="outlined">
@@ -44,9 +55,8 @@ export default function ProfileCard({ user }: ProfileCardProps) {
         justifyContent="center"
         alignItems="center"
       >
-        {/* CARD HEADER START */}
+
         <Grid item sx={{ p: "1.5rem 0rem", textAlign: "center" }}>
-          {/* PROFILE PHOTO */}
           <Badge
             overlap="circular"
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -68,7 +78,6 @@ export default function ProfileCard({ user }: ProfileCardProps) {
             >L</Avatar>
           </Badge>
 
-          {/* DESCRIPTION */}
           <Typography variant="h6">
             {user.name}
           </Typography>
@@ -78,17 +87,23 @@ export default function ProfileCard({ user }: ProfileCardProps) {
           <Grid item xs={6}>
             <Typography style={styles.details}>Organizacion</Typography>
             <Typography style={styles.details}>Status</Typography>
-            <Typography style={styles.details}>Phone</Typography>
+            <Typography style={styles.details}>Role</Typography>
           </Grid>
           {/* VALUES */}
           <Grid item xs={6} sx={{ textAlign: "end" }}>
-            <Typography style={styles.value}>{user.organization_name}</Typography>
-            <Typography style={styles.value}>{"Active"}</Typography>
-            <Typography style={styles.value}>{"-"}</Typography>
+            <Typography style={styles.value}>{"70K"}</Typography>
+            <Typography style={styles.value}><Chip size="small" label={user?.status} color={getChipColor(user?.status)} style={{ marginBottom: "-1px" }}
+            /></Typography>
+            <Typography style={styles.value}><Chip
+              size="small"
+              label={user?.roles[0] ? user?.roles[0] : "Pending"}
+              color="default"
+            />
+            </Typography>
           </Grid>
         </Grid>
-        <Grid item style={styles.details} sx={{ width: "100%", height:"100px" }}>
-         
+        <Grid item style={styles.details} sx={{ width: "100%", height: "100px" }}>
+
         </Grid>
       </Grid>
     </Card>

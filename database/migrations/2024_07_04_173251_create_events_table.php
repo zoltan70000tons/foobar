@@ -15,7 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
+            $table->string('address');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->boolean('one_day_event');
+            $table->date('sales_period_start_date')->nullable();
+            $table->date('sales_period_end_date')->nullable();
+            $table->string('status');
             $table->timestamps();
+            $table->foreignId('organization_id')->constrained('organizations');
         });
     }
 
