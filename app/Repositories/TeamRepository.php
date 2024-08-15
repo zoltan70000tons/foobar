@@ -20,7 +20,7 @@ class TeamRepository implements TeamRepositoryInterface
 {
 
     use JsonResponseTrait;
-    
+
     protected $organizationId;
 
     /**
@@ -58,9 +58,7 @@ class TeamRepository implements TeamRepositoryInterface
         return null;
     }
 
-    public function findMember($team, $id)
-    {
-    }
+    public function findMember($team, $id) {}
 
     public function updateMemberRoles($user_id, $org_id, $roles)
     {
@@ -80,31 +78,26 @@ class TeamRepository implements TeamRepositoryInterface
 
     public function inviteMember($data)
     {
-       try {
-        $email = $data['email'];
-        $role = $data['role'];
-        $user = User::where('email', $email)->first();
-        if(!$user) {
-            $user = User::create([
-                'username' => $email,
-                'email' => $email,
-                'password' => Hash::make(Str::password()),
-                'organization_id' => $this->organizationId
-            ]);
-            $token = Str::random(60);
-            $domain = config('settings.application_url');
-            $link = $domain . '/join-organization';
-            $url = url($link) . '?token=' . $token;
-            $roles[] = $role;
-            $user->syncRoles($roles);
-            // save in database ????
-            $url = URL::temporarySignedRoute('organization.join', now()->addWeek(), ['user' => $user->id]);
-            Mail::to($email)->send(new \App\Mail\InviteUserMail($url));
+        try {
+            $email = $data['email'];
+            $role = $data['role'];
+            $user = User::where('email', $email)->first();
+            if (!$user) {
+                $user = User::create([
+                    'username' => $email,
+                    'email' => $email,
+                    'password' => Hash::make(Str::password()),
+                    'organization_id' => $this->organizationId
+                ]);
+                $roles[] = $role;
+                $user->syncRoles($roles);
+                $url = URL::temporarySignedRoute('organization.join', now()->addWeek(), ['user' => $user->id, 'org' => $this->organizationId]);
+                Mail::to($email)->send(new \App\Mail\InviteUserMail($url));
+            }
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
-       } catch (\Exception $e) {
-
-        return $this->errorResponse($e->getMessage());
-       }
     }
 
     public function updateMember($data)
@@ -112,7 +105,7 @@ class TeamRepository implements TeamRepositoryInterface
         try {
             $email = $data['email'];
             $user = User::where('email', $email)->first();
-    
+
             if ($user) {
                 $user_id = $user->id;
                 $detailsData = array_filter([

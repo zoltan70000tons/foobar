@@ -46,21 +46,9 @@ class OrganizationSeeder extends Seeder
     public function run(): void
     {
         DB::table('organizations')->insert([
-            'name' => '70K Tons Of Metal',
+            'name' => '70000 Tons Of Metal',
             'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now'),
-            'slug' => '70K'
+            'updated_at' => $this->faker->dateTime($max = 'now')
         ]);
-
-
-        foreach (range(1, 21) as $index) {
-            $name = $this->faker->firstname;
-            DB::table('organization_user')->insert([
-                'user_id' => $index,
-                'organization_id' => 1,
-                'created_at' => $this->faker->dateTime($max = 'now'),
-                'updated_at' => $this->faker->dateTime($max = 'now')
-            ]);
-        }
     }
 }

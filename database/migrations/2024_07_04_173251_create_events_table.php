@@ -16,14 +16,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('description');
             $table->string('address');
-            $table->dateTime('start_date');
-            $table->dateTime('end_date');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->boolean('one_day_event');
-            $table->dateTime('sales_period_start_date');
-            $table->dateTime('sales_period_end_date');
+            $table->date('sales_period_start_date')->nullable();
+            $table->date('sales_period_end_date')->nullable();
             $table->string('status');
-            $table->integer('organization_id');
             $table->timestamps();
+            $table->foreignId('organization_id')->constrained('organizations');
         });
     }
 

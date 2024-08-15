@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Container\Container;
 use Faker\Generator;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -42,34 +43,18 @@ class UserSeeder extends Seeder
    */
   public function run(): void
   {
-    User::updateOrCreate(
-      ['email' => 'admin@70000tons.com'],
-      [
-        'name' => 'admin',
-        'lastname' => '',
-        'middlename' => '',
-        'password' => Hash::make('password'),
-        'created_at' => $this->faker->dateTime($max = 'now'),
-        'updated_at' => $this->faker->dateTime($max = 'now'),
-        'city' => $this->faker->city,
-        'state' => $this->faker->state,
-        'zipcode' => $this->faker->postcode,
-      ]
-    );
+    $password = Str::random(12);
     foreach (range(1, 20) as $index) {
       $name = $this->faker->firstname;
       User::updateOrCreate(
-        ['email' => $name . '@70000tons.com'],
+        ['email' => Str::lower($name).'@70000tons.com'],
         [
-          'name' => $name,
-          'lastname' => $this->faker->lastname,
-          'middlename' => $this->faker->firstname,
-          'password' => Hash::make('password'),
+          'username' => $name,
+          'password' => Hash::make(env('DEFAULT_PASSWORD', $password)),
           'created_at' => $this->faker->dateTime($max = 'now'),
           'updated_at' => $this->faker->dateTime($max = 'now'),
-          'city' => $this->faker->city,
-          'state' => $this->faker->state,
-          'zipcode' => $this->faker->postcode,
+          'organization_id' => env('ORGANIZATION_ID', 1)
+
         ]
       );
     }

@@ -68,9 +68,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');
 Route::put('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');
 
-Route::get('/register-organization', function () {
-    return Inertia::render('RegisterOrganization');
-})->name('organization.register');
+// Route::get('/register-organization', function () {
+//     return Inertia::render('RegisterOrganization');
+// })->name('organization.register');
 
 
 //Route::get('/send-test-email', [MailTestController::class, 'sendMail']);
