@@ -113,6 +113,7 @@ class RolesSeeder extends Seeder
         }
 
         $superAdminRoleId = DB::table('roles')->where('name', 'SuperAdmin')->value('id');
+        $adminRoleId = DB::table('roles')->where('name', 'Admin')->value('id');
         $permissionIds = DB::table('permissions')->pluck('id')->toArray();
 
         $rolePermissionData = [];
@@ -154,7 +155,7 @@ class RolesSeeder extends Seeder
         ]);
 
         DB::table('model_has_roles')->insert([
-            'role_id' => $adminId,
+            'role_id' => $adminRoleId,
             'model_type' => 'App\Models\User',
             'model_id' => $adminId,
             'team_id' => env('ORGANIZATION_ID', 1)
