@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
@@ -60,6 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/getPermissions', 'App\Http\Controllers\Role\RoleController@getPermissions');
     Route::post('/team/send-invitations', 'App\Http\Controllers\InvitationController@store');
     Route::post('/member/update', 'App\Http\Controllers\Api\TeamController@updateMember')->name('member.update');
+
+    Route::resource('events', EventController::class);
 
 
 });
