@@ -73,7 +73,6 @@ class CustomerRegisteredController extends Controller
       // send email
       $this->sendWelcomeEmail($user, $language);
 
-
       return response()->json([
         'message' => __('auth.account_created'),
       ], 204);
