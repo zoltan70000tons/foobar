@@ -10,6 +10,7 @@ use App\Http\Resources\OrganizationResource;
 use App\Interfaces\OrganizationRepositoryInterface;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\UserDetail;
 use App\Repositories\OrganizationRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -84,17 +85,28 @@ class OrganizationController extends Controller
                 'email' => 'required|email|exists:users,email',
                 'user_nickname' => 'required|string|max:255',
                 'password' => 'required|string|max:255',
+                'user_name' => 'required|string|max:255',
+                'user_lastname' => 'required|string|max:255',
             ]);
     
             $user = User::where('email', $validated['email'])->first();
     
             if ($user) {
                 try {
+                    // Set user identity
                     $user->username = $validated['user_nickname'];
                     $user->user_activated_at = now();
                     $user->password = Hash::make($validated['password']);
                     $user->save();
-                    return redirect('/login');
+
+                    // Set user details
+                    UserDetail::updateOrCreate(
+                        ['user_id' => $user->id],
+                        ['first_name' => $validated['user_name'], 'last_name' => $validated['user_lastname']]
+                    );
+
+                    // Redirect to login page
+                    return redirect('/login')->with('status', 'Your account has been activated. You can login now.');
                 } catch (\Exception $e) {
                     return back()->withErrors(['error' => 'There was an issue processing your request. Please try again.']);
                 }
