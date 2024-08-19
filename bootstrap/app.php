@@ -13,9 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     health: '/up',
   )
   ->withMiddleware(function (Middleware $middleware) {
+    $middleware->statefulApi();
+
     $middleware->alias([
       'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
       'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
+      'ensure_not_customer' => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
     ]);
 
     $middleware->web(append: [
@@ -24,9 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
       \App\Http\Middleware\TeamsPermission::class,
 
     ]);
-    $middleware->api(prepend: [
-      \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-    ]);
+    // $middleware->api(prepend: [
+    //   \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    // ]);
   })
   ->withExceptions(function (Exceptions $exceptions) {
     //

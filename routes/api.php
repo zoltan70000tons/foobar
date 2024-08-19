@@ -30,7 +30,7 @@ Route::get('/password-reset/{id}/{token}', [CustomerPasswordResetController::cla
   ->name('passwordApi.reset');
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest');
+Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest:customer');
 
 // --- EMAIL VERIFICATION ---  
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])
