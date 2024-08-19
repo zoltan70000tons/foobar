@@ -18,4 +18,8 @@ return [
   'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
   'current_password_incorrect' => 'The current password is incorrect.',
   'password_updated_successfully' => 'Password updated successfully.',
+  'verify_email' => 'Please verify your email address.',
+  'account_created' => 'Account created successfully.',
+  'token_verified' => 'Token verified successfully.',
+
 ];
