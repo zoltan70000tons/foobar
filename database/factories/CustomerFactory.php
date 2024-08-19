@@ -25,7 +25,7 @@ class CustomerFactory extends Factory
   {
     return [
       'name' => $this->faker->unique()->name,
-      'survival_number' => $this->faker->unique()->numerify('SN#####'),
+      'survival_number' => $this->faker->unique()->numerify('#########'),
       'password' => Hash::make('password'),
       'policy' => $this->faker->boolean,
       'email' => $this->faker->unique()->safeEmail,

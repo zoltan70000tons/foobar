@@ -21,12 +21,12 @@ class CustomerRegisteredController extends Controller
 {
 
   // Generate a unique survival number
-  private function generateUniqueSuperId(): string
+  private function generateUniqueSurvivalNumber(): string
   {
     do {
-      // Generate a random survivor_number, e.g., 'SN#####' format
-      $sn = 'SN' . str_pad(random_int(0, 99999), 5, '0', STR_PAD_LEFT);
-    } while (Customer::where('super_id', $sn)->exists());
+      // Generate a random 9-digit survival_number
+      $sn = str_pad(random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+    } while (Customer::where('survival_number', $sn)->exists());
 
     return $sn;
   }
@@ -56,7 +56,7 @@ class CustomerRegisteredController extends Controller
 
     try {
 
-      $survival_number = $this->generateUniqueSuperId();
+      $survival_number = $this->generateUniqueSurvivalNumber();
 
       $user = Customer::create([
         'name' => $request->name,
