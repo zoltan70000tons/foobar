@@ -57,7 +57,7 @@ export default function Dashboard({ auth }: PageProps) {
                   title="Events"
                   description="Manage your events"
                   Icon={LocalActivityIcon}
-                  link="/70k/events"
+                  link="/events"
                   badgeContent={1}
                 />
               </Grid>
