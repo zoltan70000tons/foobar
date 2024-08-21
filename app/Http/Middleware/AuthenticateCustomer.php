@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class AuthenticateCustomer
 {
@@ -18,12 +19,15 @@ class AuthenticateCustomer
    */
   public function handle(Request $request, Closure $next): Response
   {
+
     if (Auth::guard('customer')->check()) {
+      $request->session()->put('type_of_guard', 'customer');
       return $next($request);
     }
 
+    // Return a JSON response with a clear error message and status code
     return response()->json([
-      'message' => __('auth.unauthenticated' . ' customer', ['guard' => 'customer']),
+      'message' => __('auth.unauthenticated', ['guard' => 'customer']),
     ], 401);
   }
 }

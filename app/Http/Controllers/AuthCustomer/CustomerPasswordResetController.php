@@ -6,13 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Customer;
-use App\Models\CustomerPasswordReset;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
 use App\Notifications\CustomerResetPassword;
-use Illuminate\Database\Eloquent\Casts\Json;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
+use App\Models\CustomerPasswordReset;
 
 class CustomerPasswordResetController extends Controller
 {
@@ -43,35 +43,44 @@ class CustomerPasswordResetController extends Controller
       ->orWhere('name', $survival_number)
       ->first();
 
-    // get email from customer
-    $emails = $customer->email;
+    // Generate a signed reset URL
+    $temporarySignedUrl = URL::temporarySignedRoute(
+      'passwordApi.verify',
+      Carbon::now()->addMinutes(15),
+      ['id' => $customer->id]
+    );
 
-    if (!is_array($emails)) {
-      $emails = [$emails];
-    }
+    // Parse the query parameters from the signed URL
+    $queryParams = parse_url($temporarySignedUrl, PHP_URL_QUERY);
 
-    // MODEL CustomerPasswordReset
-    $token = CustomerPasswordReset::createToken($customer);
+    // Construct the full frontend URL, including the `id` parameter
+    $resetUrl = config('app.frontend_url') . "/en/password-reset?id={$customer->id}&{$queryParams}";
 
-    // NOTIFY
-    $customer->notify(new CustomerResetPassword($customer, $token));
+    // Notify the customer with the reset link
+    $customer->notify(new CustomerResetPassword($resetUrl));
 
     return response()->json([
       'message' => __('systemEmails.email_verification_link_sent'),
     ], 200);
   }
 
-
-  /**
-   * Token verification
-   * 
-   */
-  public function verifyToken(Request $request): JsonResponse|RedirectResponse
+  public function verifyResetLink(Request $request)
   {
+    // find customer by id
+    $customerId = $request->route('id');
+    $customer = Customer::findOrFail($customerId);
 
-    $resetUrl = config('app.frontend_url') . "/en/password-reset/{$request->id}/{$request->token}";
+    if (!$customer) {
+      return response()->json(['message' => 'Customer not found.'], 404);
+    }
 
-    return redirect()->to($resetUrl);
+    // generate token and send it to the customer
+    $token = $this->createToken($customer->id);
+
+    return response()->json([
+      'message' => 'Token generated successfully.',
+      'token' => $token,
+    ], 200);
   }
 
   /**
@@ -82,42 +91,50 @@ class CustomerPasswordResetController extends Controller
   {
 
     $request->validate([
-      'customer_id' => 'required|exists:customers,id',
-      'token' => 'required|string',
+      'id' => 'required|exists:customers,id',
       'password' => 'required|string|min:6|confirmed',
     ]);
 
-    $customer_id = $request->customer_id;
-    $token = $request->token;
+    $token = $request->input('token');
 
+    $passwordReset = CustomerPasswordReset::where('token', $token)->first();
 
-    $language = $request->language;
-    App::setLocale($language);
-
-    $passwordReset = CustomerPasswordReset::where('customer_id', $customer_id)->first();
-
-    // If the entry is not found, return an error
     if (!$passwordReset) {
-      return response()->json(['message' => 'Invalid password reset token.'], 404);
+      return response()->json([
+        'message' => 'Invalid token.'
+      ], 401);
     }
 
-    // If the token is hashed, compare the hash
-    if (!Hash::check($token, $passwordReset->token)) {
-      return response()->json(['message' => 'Invalid password reset token.'], 403);
-    }
+    $intId = (int)$request->input('id');
 
-    //$customer = $customerPasswordReset->customer;
-    $customer = Customer::findOrFail($customer_id);
-    $customer->password = Hash::make($request->password);
+    $customer = Customer::findOrFail($intId);
+    $customer->password = Hash::make($request->input('password'));
     $customer->save();
 
-    // set password token to null
-    $passwordReset->token = null;
-    $passwordReset->save();
-
+    // delete the token
+    $passwordReset->delete();
 
     return response()->json([
       'message' => __('auth.password_updated_successfully')
     ], 200);
+  }
+
+
+  // token generate
+  public function createToken($id)
+  {
+    $randomNum = Str::random(60);
+    $token = Hash::make($randomNum);
+
+    // add token to the table customer_password_resets
+    CustomerPasswordReset::updateOrCreate(
+      ['customer_id' => $id],
+      [
+        'token' => $token,
+        'created_at' => Carbon::now(),
+      ]
+    );
+
+    return $token;
   }
 }

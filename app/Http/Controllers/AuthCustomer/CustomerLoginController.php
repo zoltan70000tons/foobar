@@ -55,10 +55,9 @@ class CustomerLoginController extends Controller
     App::setLocale($language);
 
     try {
-      $request->session()->regenerate();
-
       // Get the authenticated customer
       $customer = Auth::guard('customer')->user();
+      $request->session()->regenerate();
 
       return response()->json($customer, 200);
     } catch (\Exception $e) {
