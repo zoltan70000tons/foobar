@@ -22,7 +22,7 @@ class Customer extends Authenticatable implements MustVerifyEmail
   protected $fillable = [
     'name',
     'email',
-    'survival_number',
+    'survivor_number',
     'password',
     'policy',
   ];
@@ -58,7 +58,7 @@ class Customer extends Authenticatable implements MustVerifyEmail
   {
     return [
       'name' => 'required|unique:customers,name',
-      'survival_number' => 'required|unique:customers,survival_number',
+      'survivor_number' => 'required|unique:customers,survivor_number',
       'password' => 'required',
     ];
   }

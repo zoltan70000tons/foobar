@@ -24,7 +24,7 @@ class AuthenticationApiTest extends TestCase
     ]);
 
     $response = $this->postJson('/api/login-customer', [
-      'survival_number' => $user->survival_number,
+      'survivor_number' => $user->survivor_number,
       'password' => 'password',
       'language' => 'en',
     ]);
@@ -35,7 +35,7 @@ class AuthenticationApiTest extends TestCase
   }
 
 
-  public function test_customer_cant_authenticate_with_invalid_survival_number(): void
+  public function test_customer_cant_authenticate_with_invalid_survivor_number(): void
   {
 
     $this->withHeaders([
@@ -43,7 +43,7 @@ class AuthenticationApiTest extends TestCase
     ]);
 
     $response = $this->postJson('/api/login-customer', [
-      'survival_number' => 'wrong-survival_number',
+      'survivor_number' => 'wrong-survivor_number',
       'password' => 'password',
       'language' => 'en',
     ]);
@@ -61,7 +61,7 @@ class AuthenticationApiTest extends TestCase
     ]);
 
     $response = $this->postJson('/api/login-customer', [
-      'survival_number' => $user->survival_number,
+      'survivor_number' => $user->survivor_number,
       'password' => 'password',
       'language' => 'en',
     ]);
@@ -82,7 +82,7 @@ class AuthenticationApiTest extends TestCase
 
   //   // Send a login request
   //   $response = $this->postJson('/api/login-customer', [
-  //     'survival_number' => $customer->survival_number,
+  //     'survivor_number' => $customer->survivor_number,
   //     'password' => 'password',
   //     'language' => 'en',
   //   ]);

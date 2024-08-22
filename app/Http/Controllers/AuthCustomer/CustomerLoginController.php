@@ -18,23 +18,23 @@ class CustomerLoginController extends Controller
   {
     // Validate the request data
     $request->validate([
-      'survival_number' => 'required|string',
+      'survivor_number' => 'required|string',
       'password' => 'required|string',
     ]);
 
     $credentials = [
-      'survival_number' => $request->input('survival_number'),
+      'survivor_number' => $request->input('survivor_number'),
       'password' => $request->input('password'),
     ];
 
-    // Attempt to log in with survival_number first
+    // Attempt to log in with survivor_number first
     if (Auth::guard('customer')->attempt($credentials)) {
       return $this->authenticated($request);
     }
 
     // Attempt to log in with name if the first attempt fails
     $credentials = [
-      'name' => $request->input('survival_number'),
+      'name' => $request->input('survivor_number'),
       'password' => $request->input('password'),
     ];
 

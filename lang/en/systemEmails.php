@@ -23,6 +23,6 @@ return [
   'email_regards' => 'Regards',
   'email_excited' => 'We are excited to have you on board!',
   'email_account_created' => 'Your account has been created successfully.',
-  'email_new_survival_number' => 'Your new survival number is:',
+  'email_new_survivor_number' => 'Your new survivor number is:',
   'email_thank_you' => 'Thank you for choosing us.',
 ];

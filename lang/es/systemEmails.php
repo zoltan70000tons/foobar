@@ -23,6 +23,6 @@ return [
   'email_regards' => 'Saludos',
   'email_excited' => '¡Estamos emocionados de tenerte a bordo!',
   'email_account_created' => 'Su cuenta ha sido creada con éxito.',
-  'email_new_survival_number' => 'Su nueva número de supervivencia es:',
+  'email_new_survivor_number' => 'Su nueva número de supervivencia es:',
   'email_thank_you' => 'Gracias por elegirnos.',
 ];

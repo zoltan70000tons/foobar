@@ -20,13 +20,13 @@ use App\Mail\CustomerRegistered;
 class CustomerRegisteredController extends Controller
 {
 
-  // Generate a unique survival number
-  private function generateUniqueSurvivalNumber(): string
+  // Generate a unique survivor number
+  private function generateUniqueSurvivorNumber(): string
   {
     do {
-      // Generate a random 9-digit survival_number
+      // Generate a random 9-digit survivor_number
       $sn = str_pad(random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
-    } while (Customer::where('survival_number', $sn)->exists());
+    } while (Customer::where('survivor_number', $sn)->exists());
 
     return $sn;
   }
@@ -44,10 +44,13 @@ class CustomerRegisteredController extends Controller
   public function store(Request $request): JsonResponse
   {
     $request->validate([
-      'name' => ['required', 'string', 'max:255', 'unique:customers'],
+      'name' => ['required', 'string', 'max:255', 'unique:customers', 'regex:/.*[a-zA-Z].*/'],
       'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ], [
+      'name.regex' => __('validation.regex'),
     ]);
+
 
     $language = $request->language;
     App::setLocale($language);
@@ -56,13 +59,13 @@ class CustomerRegisteredController extends Controller
 
     try {
 
-      $survival_number = $this->generateUniqueSurvivalNumber();
+      $survivor_number = $this->generateUniqueSurvivorNumber();
 
       $user = Customer::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->string('password')),
-        'survival_number' => $survival_number,
+        'survivor_number' => $survivor_number,
       ]);
 
 

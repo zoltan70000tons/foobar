@@ -23,11 +23,11 @@ class CustomerPasswordResetController extends Controller
   public function requestReset(Request $request): JsonResponse
   {
     $request->validate([
-      'survival_number' => [
+      'survivor_number' => [
         'required',
         'string',
         function ($attribute, $value, $fail) {
-          if (!Customer::where('survival_number', $value)->orWhere('name', $value)->exists()) {
+          if (!Customer::where('survivor_number', $value)->orWhere('name', $value)->exists()) {
             $fail(__('validation.exists', ['attribute' => $attribute]));
           }
         },
@@ -35,12 +35,12 @@ class CustomerPasswordResetController extends Controller
     ]);
 
     $language = $request->language;
-    $survival_number = $request->survival_number;
+    $survivor_number = $request->survivor_number;
 
     App::setLocale($language);
 
-    $customer = Customer::where('survival_number', $survival_number)
-      ->orWhere('name', $survival_number)
+    $customer = Customer::where('survivor_number', $survivor_number)
+      ->orWhere('name', $survivor_number)
       ->first();
 
     // Generate a signed reset URL
