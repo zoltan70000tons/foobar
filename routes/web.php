@@ -48,7 +48,6 @@ Route::middleware('auth')->group(function () {
         })->name('permissions');
     });
 
-    Route::apiResource('/events', EventController::class);
     Route::apiResource('/roles', RoleController::class);
     Route::apiResource('/permissions', PermissionController::class);
     Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
@@ -61,7 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/team/send-invitations', 'App\Http\Controllers\InvitationController@store');
     Route::post('/member/update', 'App\Http\Controllers\Api\TeamController@updateMember')->name('member.update');
 
-    Route::resource('events', EventController::class);
+    
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::resource('/events', EventController::class);
+    
 
 
 });

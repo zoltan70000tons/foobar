@@ -42,7 +42,7 @@ const Index = ({ auth, events }: PageProps) => {
                     height: "100%",
                   }}
                 >
-                  <CardActionArea
+                   <CardActionArea
                     component={Link}
                     href={route("events.create")}
                     sx={{ flex: 1 }}
@@ -65,7 +65,7 @@ const Index = ({ auth, events }: PageProps) => {
                         New Event
                       </Typography>
                     </CardContent>
-                  </CardActionArea>
+                  </CardActionArea> 
                 </Card>
               </Grid>
             )}

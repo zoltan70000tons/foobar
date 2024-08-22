@@ -7,21 +7,23 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use App\Rules\ValidDateFormat;
+use Illuminate\Support\Facades\Redis;
 
 class EventController extends Controller
 {
     public function index()
     {
         $events = Event::all();
-        return Inertia::render('Event/Index', [
+         return Inertia::render('Event/Index', [
             'events' => $events
-        ]);
+         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Event/Create');
+       return Inertia::render('Event/Create');
     }
+
 
     public function store(Request $request)
     {
@@ -111,7 +113,7 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        return Inertia::render('Event/View',['event' => $event]);
+         return Inertia::render('Event/View',['event' => $event]);
     }
 
     public function destroy(Event $event)
