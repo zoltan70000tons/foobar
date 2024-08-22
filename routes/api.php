@@ -32,7 +32,7 @@ Route::get('/password-reset/{id}/verify', [CustomerPasswordResetController::clas
 Route::post('/password-reset/{id}', [CustomerPasswordResetController::class, 'resetPassword']);
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest');
+Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest:customer');
 
 // --- EMAIL VERIFICATION ---  
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])
