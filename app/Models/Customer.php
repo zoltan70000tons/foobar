@@ -9,10 +9,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Notifications\CustomerEmailVerification;
+use App\Traits\UUID;
 
 class Customer extends Authenticatable implements MustVerifyEmail
 {
-  use HasFactory, Notifiable, HasApiTokens, HasRoles;
+  use HasFactory, Notifiable, HasApiTokens, HasRoles, UUID;
 
   /**
    * The attributes that are mass assignable.
