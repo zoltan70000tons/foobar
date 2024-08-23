@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use App\Rules\ValidDateFormat;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class EventController extends Controller
@@ -41,8 +42,7 @@ class EventController extends Controller
         $request->validate($rules);
 
         try {
-            $file = $request->file('image');
-            $path = $file->store('public/images');
+            $path = $request->file('image')->storePublicly('events', 's3');
             $publicPath = Storage::url($path);
             $event = new Event();
             $event->name = $request->name;
@@ -84,13 +84,7 @@ class EventController extends Controller
 
         try {
             if ($request->hasFile('image')) {
-                // Delete the old image if it exists
-                if ($event->image) {
-                    Storage::delete(parse_url($event->image, PHP_URL_PATH));
-                }
-
-                $file = $request->file('image');
-                $path = $file->store('images');
+                $path = $request->file('image')->storePublicly('events', 's3');
                 $publicPath = Storage::url($path);
                 $event->image = $publicPath;
             }

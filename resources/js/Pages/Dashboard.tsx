@@ -36,11 +36,11 @@ export default function Dashboard({ auth }: PageProps) {
                     description="Manage your team"
                     Icon={GroupWorkIcon}
                     link="/70k/team"
-                    badgeContent={4}
+                   // badgeContent={4}
                   />
                 </Grid>
               )}
-              {hasPermission('View Orders') && (
+              {/* {hasPermission('View Orders') && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
                   title="Orders"
@@ -50,7 +50,7 @@ export default function Dashboard({ auth }: PageProps) {
                   badgeContent={67}
                 />
               </Grid>
-              )}
+              )} */}
               {hasPermission('View Events') && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
@@ -58,11 +58,11 @@ export default function Dashboard({ auth }: PageProps) {
                   description="Manage your events"
                   Icon={LocalActivityIcon}
                   link="/events"
-                  badgeContent={1}
+                  //badgeContent={1}
                 />
               </Grid>
               )}
-              {hasPermission('View Customers') && (
+              {/* {hasPermission('View Customers') && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
                   title="Customers"
@@ -72,7 +72,7 @@ export default function Dashboard({ auth }: PageProps) {
                   badgeContent={1}
                 />
               </Grid>
-              )}
+              )} */}
               {hasPermission('View Roles') && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
@@ -80,7 +80,7 @@ export default function Dashboard({ auth }: PageProps) {
                   description="Manage organization roles"
                   Icon={LocalPoliceIcon}
                   link="/70k/team/roles"
-                  badgeContent={1}
+                  //badgeContent={1}
                 />
               </Grid>
               )}
