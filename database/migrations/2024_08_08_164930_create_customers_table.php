@@ -13,8 +13,7 @@ return new class extends Migration
   public function up(): void
   {
     Schema::create('customers', function (Blueprint $table) {
-      //$table->id()->from(1000);
-      $table->uuid('id')->primary()->unique()->index();
+      $table->uuid('id')->primary();
       $table->string('name')->unique();
       $table->string('survivor_number')->unique();
       $table->string('email')->nullable();
@@ -24,11 +23,6 @@ return new class extends Migration
       $table->rememberToken();
       $table->timestamps();
     });
-
-    // if (DB::connection()->getDriverName() === 'sqlite') {
-    //   DB::table('customers')->insert(['id' => 999, 'name' => 'dummy', 'survivor_number' => 'dummy_number', 'password' => 'dummy_password']);
-    //   DB::table('customers')->where('id', 999)->delete();
-    // }
   }
 
   /**

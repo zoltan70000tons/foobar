@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('customer_password_resets', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('customer_id')->constrained()->onDelete('cascade');
+      $table->uuid('customer_id')->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
       $table->string('token')->unique()->nullable();
       $table->timestamps();
     });
