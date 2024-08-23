@@ -1,29 +1,56 @@
 <?php
 
-
 use Illuminate\Support\Facades\Route;
+
+// AUTH CUSTOMER
+use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
+use App\Http\Controllers\AuthCustomer\CustomerPassResetInsideController;
+use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
+use App\Http\Controllers\AuthCustomer\CustomerLoginController;
+use App\Http\Controllers\AuthCustomer\CustomerAuthController;
+use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
+
+// log
+use Illuminate\Support\Facades\Log;
 
 
 /**
  * Auth API Routes
  * 
- * The following routes are used for authentication.
+ * The following routes are used for customers authentication.
  * 
- * These routes have prefix of /api.
- * /api/login - POST - Login a user
- * /api/logout - POST - Logout a user
- * etc.
- * 
- * 
- * !!!!! TO DO !!!!!
- * Create the group of routes for the auth routes.
- * There we will check if user role is user if yes,
- * We want to prevent the user from accessing the ADMIN routes.
- * So only /api routes should be accesible for role USER
  */
-//Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-//Route::post('/register', [RegisteredUserController::class, 'store']);
 
+// --- PASSWORD RESET ---
+Route::post('/reset-password', [CustomerPasswordResetController::class, 'requestReset']);
+//Route::post('/reset-password-data', [CustomerPasswordResetController::class, 'resetPassword']);
 
-// group of routes for the auth routes.
-Route::middleware(['auth:sanctum'])->group(function () {});
+Route::get('/password-reset/{id}/verify', [CustomerPasswordResetController::class, 'verifyResetLink'])
+  ->middleware(['signed'])
+  ->name('passwordApi.verify');
+
+Route::post('/password-reset/{id}', [CustomerPasswordResetController::class, 'resetPassword']);
+
+// --- LOGIN ---
+Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest:customer');
+
+// --- EMAIL VERIFICATION ---  
+Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])
+  ->middleware(['auth:sanctum', 'throttle:6,1']);
+
+Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
+  ->middleware(['signed'])
+  ->name('verificationApi.verify');
+
+// --- REGISTER ---
+Route::post('/register', [CustomerRegisteredController::class, 'store']);
+
+// --- LOGOUT ---
+Route::post('/logout', [CustomerLoginController::class, 'destroy'])
+  ->middleware(['auth:sanctum', 'auth.customer']);
+
+// --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
+Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+  Route::get('/customer', [CustomerAuthController::class, 'customer']);
+  Route::post('/reset-password-inside', [CustomerPassResetInsideController::class, 'update']);
+});

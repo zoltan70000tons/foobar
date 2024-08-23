@@ -18,5 +18,8 @@ return [
   'throttle' => 'Zu viele Anmeldeversuche. Bitte versuchen Sie es in :seconds Sekunden erneut.',
   'current_password_incorrect' => 'Das aktuelle Passwort ist falsch.',
   'password_updated_successfully' => 'Das Passwort wurde erfolgreich aktualisiert.',
+  'verify_email' => 'Bitte bestätigen Sie Ihre E-Mail-Adresse.',
+  'account_created' => 'Konto erfolgreich erstellt.',
+  'token_verified' => 'Token erfolgreich verifiziert.',
 
 ];

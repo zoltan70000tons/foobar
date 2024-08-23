@@ -18,4 +18,7 @@ return [
   'throttle' => 'Demasiados intentos de acceso. Por favor inténtelo de nuevo en :seconds segundos.',
   'current_password_incorrect' => 'La contraseña actual es incorrecta.',
   'password_updated_successfully' => 'Contraseña actualizada con éxito.',
+  'verify_email' => 'Por favor, verifique su dirección de correo electrónico.',
+  'account_created' => 'Cuenta creada con éxito.',
+  'token_verified' => 'Token verificado con éxito.',
 ];

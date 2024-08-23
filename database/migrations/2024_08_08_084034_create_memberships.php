@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('memberships', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('customer_id')->constrained('users');
+      $table->uuid('customer_id')->foreignId('customer_id')->references('id')->on('customers')->onDelete('cascade');
       $table->foreignId('membership_id')->constrained('membership_type');
       $table->timestamps();
     });
