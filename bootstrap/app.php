@@ -22,6 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->api(prepend: [
       \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
     ]);
+   ////////////////////////
+   //this is just for testing, remove in production for security reasons
+    $middleware->validateCsrfTokens(except: [
+      'http://localhost:8000/contact/submit',
+    ]);
+   //////////////////////// 
   })
   ->withExceptions(function (Exceptions $exceptions) {
     //

@@ -17,15 +17,12 @@ class ContactFormController extends Controller
             'subject' => 'required|string',
             'comments' => 'required|string',
         ]);
-
         try {
-            $response = Mail::send('emails.contact', $data, function ($message) {
-                $message->to('smtp@bspmi.comm')
+            $response = Mail::send('emails.contact-form', ['data' => $data], function ($message) {
+                $message->to('smtp@bspmi.com')
                         ->subject('New Contact Form Submission');
             });
-            dd($response);
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return response()->json(['error' => 'Failed to send email. Please try again later.'], 500);
         }
     }
