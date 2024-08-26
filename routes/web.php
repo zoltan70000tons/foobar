@@ -22,6 +22,8 @@ Route::get('/', function () {
     ]);
 });
 
+Route::post('/contact/submit', [ContactFormController::class, 'submit']);
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
