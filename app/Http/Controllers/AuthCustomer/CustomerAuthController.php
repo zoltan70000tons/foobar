@@ -25,7 +25,7 @@ class CustomerAuthController extends Controller
     $customer = Auth::guard('customer')->user();
 
     return $this->successResponse([
-      'customer' => $customer
+      'name' => $customer->name,
     ]);
   }
 
