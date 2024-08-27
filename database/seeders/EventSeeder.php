@@ -2,16 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Faker\Generator;
+use Carbon\Carbon;
 
-
-class OrganizationSeeder extends Seeder
+class EventSeeder extends Seeder
 {
 
     /**
@@ -45,10 +42,16 @@ class OrganizationSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('organizations')->insert([
-            'name' => '70000TONS OF METAL',
-            'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now')
+        DB::table('events')->insert([
+            'name' => '70000TONS OF METAL 2025',
+            'description' => '60 Bands, 4 Days, 1 Cruise Ship, and only 3000 Tickets. This is 70000TONS OF METAL®, The Original, The World’s Biggest Heavy Metal Cruise!',
+            'image' => 'http://umc-dev-assets.s3.us-east-2.amazonaws.com/events/res7u5JtjbgCTz2zoiu3bd8StkckaZwLpeCvNPWW.jpg',
+            'address' => 'Miami, Florida - Ocho Rios Jamaica',
+            'start_date' => '2025-01-30',
+            'start_date' => '2025-02-04',
+            'status' => 'pre-sale',
+            'created_at' => Carbon::now(),
+            'organization_id' => env('ORGANIZATION_ID')
         ]);
     }
 }
