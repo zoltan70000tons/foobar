@@ -13,6 +13,7 @@ use App\Traits\UUID;
 
 class Customer extends Authenticatable implements MustVerifyEmail
 {
+
   use HasFactory, Notifiable, HasApiTokens, HasRoles, UUID;
 
   /**
@@ -62,6 +63,16 @@ class Customer extends Authenticatable implements MustVerifyEmail
       'survivor_number' => 'required|unique:customers,survivor_number',
       'password' => 'required',
     ];
+  }
+
+  /**
+   * Define relationship with the customer's membership type
+   * 
+   * @return \Illuminate\Database\Eloquent\Relations\HasOne
+   */
+  public function membershipTypes()
+  {
+    return $this->belongsToMany(MembershipType::class, 'memberships', 'customer_id', 'membership_id');
   }
 
   /**

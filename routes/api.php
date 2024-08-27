@@ -10,6 +10,10 @@ use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
 
+// BOOKING
+use App\Http\Controllers\Api\Customer\BookingInitController;
+
+
 // log
 use Illuminate\Support\Facades\Log;
 
@@ -53,4 +57,9 @@ Route::post('/logout', [CustomerLoginController::class, 'destroy'])
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerPassResetInsideController::class, 'update']);
+});
+
+// --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
+Route::middleware(['membership_sales'])->group(function () {
+  Route::get('/booking-init', [BookingInitController::class, 'store']);
 });

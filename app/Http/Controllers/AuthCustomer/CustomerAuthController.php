@@ -22,10 +22,16 @@ class CustomerAuthController extends Controller
   public function customer(Request $request)
   {
 
+    // Get the authenticated customer by guard
     $customer = Auth::guard('customer')->user();
+
+    // Get the first membership type of the customer
+    $membership = $customer->membershipTypes->first() ?? null;
 
     return $this->successResponse([
       'name' => $customer->name,
+      'membership_type' => $membership->name ?? null,
+      'membership_discount' => $membership->discount_value ?? null,
     ]);
   }
 
