@@ -9,6 +9,6 @@ class Event extends Model
 {
     //use HasFactory;
     protected $table = 'events';
-    protected $fillable = ['name','description'];
+    protected $fillable = ['name','description', 'status', 'destination', 'start_date', 'end_date'];
     
 }

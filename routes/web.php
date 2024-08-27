@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
@@ -48,7 +48,6 @@ Route::middleware('auth')->group(function () {
         })->name('permissions');
     });
 
-    Route::apiResource('/events', EventController::class);
     Route::apiResource('/roles', RoleController::class);
     Route::apiResource('/permissions', PermissionController::class);
     Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
@@ -60,6 +59,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/getPermissions', 'App\Http\Controllers\Role\RoleController@getPermissions');
     Route::post('/team/send-invitations', 'App\Http\Controllers\InvitationController@store');
     Route::post('/member/update', 'App\Http\Controllers\Api\TeamController@updateMember')->name('member.update');
+
+    
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::resource('/events', EventController::class);
+    
 
 
 });
