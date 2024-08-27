@@ -46,7 +46,7 @@ class OrganizationSeeder extends Seeder
     public function run(): void
     {
         DB::table('organizations')->insert([
-            'name' => '70000 Tons Of Metal',
+            'name' => '70000TONS OF METAL',
             'created_at' => $this->faker->dateTime($max = 'now'),
             'updated_at' => $this->faker->dateTime($max = 'now')
         ]);
