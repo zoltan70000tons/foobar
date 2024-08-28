@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
       'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
       'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
       'ensure_not_customer' => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
+      'membership_sales' => \App\Http\Middleware\MembershipSales::class,
     ]);
 
     $middleware->web(append: [
