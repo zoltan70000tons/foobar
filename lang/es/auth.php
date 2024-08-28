@@ -21,4 +21,6 @@ return [
   'verify_email' => 'Por favor, verifique su dirección de correo electrónico.',
   'account_created' => 'Cuenta creada con éxito.',
   'token_verified' => 'Token verificado con éxito.',
+  'no_access_to_sales_everyone' => 'Las ventas públicas aún no están disponibles.',
+  'no_access_to_sales_not_allowed_type' => 'Los sobrevivientes :name aún no tienen acceso a las ventas.',
 ];

@@ -21,5 +21,6 @@ return [
   'verify_email' => 'Bitte bestätigen Sie Ihre E-Mail-Adresse.',
   'account_created' => 'Konto erfolgreich erstellt.',
   'token_verified' => 'Token erfolgreich verifiziert.',
-
+  'no_access_to_sales_everyone' => 'Öffentlicher Verkauf ist noch nicht verfügbar.',
+  'no_access_to_sales_not_allowed_type' => ':name Überlebende haben noch keinen Zugriff auf den Verkauf.',
 ];

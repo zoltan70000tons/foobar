@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 trait MembershipAccess
 {
 
-
   /**
    * Check if the user has access to sales based on their membership type
    * 
@@ -24,9 +23,6 @@ trait MembershipAccess
 
     // Query the presale periods table to get the relevant dates
     $presalePeriod = PresalePeriod::where('membership_type_id', $membership->id ?? null)->first();
-
-    // log the presale period
-    Log::info('Presale period', [$presalePeriod]);
 
     // If no membership, check if the current date is after the "Everyone" access date
     if (!$membership && $currentDate < $public_sales) {
@@ -45,10 +41,7 @@ trait MembershipAccess
     if ($presalePeriod) {
       return [
         'status' => false,
-        'message' => __(
-          'auth.sales_not_allowed_type',
-          ['type' => $membership->name]
-        )
+        'message' => __('auth.no_access_to_sales_not_allowed_type', ['name' => $membership->name])
       ];
     }
 

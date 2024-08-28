@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\App;
 use App\Traits\MembershipAccess;
+
 
 class MembershipSales
 {
@@ -25,6 +27,10 @@ class MembershipSales
   public function handle(Request $request, Closure $next): Response
   {
 
+    $language = $request->query('language', 'en');
+
+    App::setLocale($language);
+
     // Check if the current date is after the "Everyone" access date
     if ($this->checkMembershipAccess(null)['status'] === true) {
       return $next($request);
@@ -33,8 +39,8 @@ class MembershipSales
     // Get the authenticated customer by guard
     if (!Auth::guard('customer')->check()) {
       return response()->json([
-        'message' => __('auth.unauthenticated_access_type', ['guard' => 'customer']),
-        'status' => 'no_public_access',
+        'message' => __('auth.no_access_to_sales_everyone'),
+        'status' => false,
       ], 401);
     }
 
@@ -46,7 +52,7 @@ class MembershipSales
     if ($access['status'] === false) {
       return response()->json([
         'message' => $access['message'],
-        'status' => 'no_type_access',
+        'status' => false,
       ], 403);
     }
 
