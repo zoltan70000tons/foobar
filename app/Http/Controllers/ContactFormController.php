@@ -19,7 +19,7 @@ class ContactFormController extends Controller
         ]);
         try {
             $response = Mail::send('emails.contact-form', ['data' => $data], function ($message) {
-                $message->to('smtp@bspmi.com')
+                $message->to('nicanor@70000tons.com')
                         ->subject('New Contact Form Submission');
             });
         } catch (\Exception $e) {
