@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('booking_comments', function (Blueprint $table) {
       $table->id();
       $table->foreignId('booking_id')->constrained('bookings');
-      $table->foreignId('agent_id')->constrained('users');
+      $table->uuid('user_id')->foreignId('user_id')->references('id')->on('users');
       $table->text('comment');
       $table->timestamps();
     });

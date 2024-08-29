@@ -1,0 +1,71 @@
+﻿price,category_name,display_order,category_type,category_code,capacity
+2799,Spacious Ocean View Balcony 1B - Double,48,Balcony,1B,2
+2333,Spacious Ocean View Balcony 1B - Triple,49,Balcony,1B,3
+1866,Spacious Ocean View Balcony 1B Quad,50,Balcony,1B,4
+2533,Ocean View Balcony 1D Double/Twin,39,Balcony,1D,2
+2099,Ocean View Balcony 1D Triple,40,Balcony,1D,3
+1633,Ocean View Balcony 1D Quad,41,Balcony,1D,4
+2666,Spacious Ocean View Balcony 2B Double/Twin,47,Balcony,2B,2
+2399,Ocean View Balcony 2D Double/Twin,38,Balcony,2D,2
+2533,Spacious Ocean View Balcony 3B Double/Twin,44,Balcony,3B,2
+2099,Spacious Ocean View Balcony 3B Triple,45,Balcony,3B,3
+1633,Spacious Ocean View Balcony 3B Quad,46,Balcony,3B,4
+2399,Spacious Ocean View Balcony 4B Double/Twin,43,Balcony,4B,2
+2266,Ocean View Balcony 4D Double/Twin,35,Balcony,4D,2
+2133,Ocean View Balcony 5D Double/Twin,36,Balcony,5D,2
+1766,Ocean View Balcony 5D Triple,37,Balcony,5D,3
+2033,Spacious Promenade 1Q Quad,14,Interior,1Q,4
+1733,Spacious Promenade 1Q Quint,15,Interior,1Q,5
+1433,Spacious Promenade 1Q Sextuple,16,Interior,1Q,6
+1933,Spacious Interior 1R Quad,11,Interior,1R,4
+1633,Spacious Interior 1R Quint,12,Interior,1R,5
+1333,Spacious Interior 1R Sextuple,13,Interior,1R,6
+2199,Interior 1V Double/Twin,7,Interior,1V,2
+1799,Interior 1V Triple,8,Interior,1V,3
+1399,Interior 1V Quad,9,Interior,1V,4
+2199,Promenade 2T Double/Twin,10,Interior,2T,2
+2066,Interior 2V Double/Twin,6,Interior,2V,2
+1933,Interior 3Double/Twin,3,Interior,3V,2
+1566,Interior 3V Triple,4,Interior,3V,3
+1199,Interior 3V Quad,5,Interior,3V,4
+1799,Interior 4V Double/Twin,2,Interior,4VH,2
+1666,Interior 4V Double/Twin,17,Interior,4VL,2
+2333,Ultra Spacious Ocean View 1K Quad,29,Ocean View,1K,4
+1999,Ultra Spacious Ocean View 1K Quint,30,Ocean View,1K,5
+1666,Ultra Spacious Ocean View 1K Sextuple,31,Ocean View,1K,6
+2599,Spacious Panoramic Ocean View 1L Double/Twin,32,Ocean View,1L,2
+2166,Spacious Panoramic Ocean View 1L Triple,33,Ocean View,1L,3
+1733,Spacious Panoramic Ocean View 1L Quad,34,Ocean View,1L,4
+2399,Ocean View 1N Double/Twin,22,Ocean View,1N,2
+1999,Ocean View 1N Triple,23,Ocean View,1N,3
+1599,Ocean View 1N Quad,24,Ocean View,1N,4
+2266,Ocean View 2N Double/Twin,21,Ocean View,2N,2
+2666,Spacious Ocean View 3M Double/Twin,26,Ocean View,3M,2
+2233,Spacious Ocean View 3M Triple,27,Ocean View,3M,3
+1799,Spacious Ocean View 3M Quad,28,Ocean View,3M,4
+2133,Ocean View 3N Double/Twin,18,Ocean View,3N,2
+1766,Ocean View 3N Triple,19,Ocean View,3N,3
+1399,Ocean View 3N Quad,20,Ocean View,3N,4
+2533,Spacious Ocean View 4M Double/Twin,25,Ocean View,4M,2
+1999,Ocean View 4N Double/Twin,42,Ocean View,4N,2
+3999,Grand Suite GS Double/Twin,56,Suite,GS,2
+3199,Grand Suite GS Triple,57,Suite,GS,3
+2399,Grand Suite GS Quad,58,Suite,GS,4
+2899,Grand Suite GT Quad,59,Suite,GT,4
+2633,Grand Suite GT Quint,60,Suite,GT,5
+2366,Grand Suite GT Sextuple,61,Suite,GT,6
+2099,Grand Suite GT Septuple,62,Suite,GT,7
+1833,Grand Suite GT Octuple,63,Suite,GT,8
+2899,Balcony Suite J3 Double/Twin,52,Suite,J3,2
+2333,Balcony Suite J3 Triple,53,Suite,J3,3
+1766,Balcony Suite J3 Quad,54,Suite,J3,4
+2799,Balcony Suite J4 Double/Twin,55,Suite,J4,2
+5999,Owner's Suite OS Double/Twin,64,Suite,OS,2
+4999,Owner's Suite OS Triple,65,Suite,OS,3
+3999,Owner's Suite OS Quad,66,Suite,OS,4
+0,Royal Suite RS Double/Twin,67,Suite,RS,2
+0,Royal Suite RS Triple,68,Suite,RS,3
+0,Royal Suite RS Quad,69,Suite,RS,4
+2433,Ocean View Panoramic Suite (No Balcony) VP Quad,51,Suite,VP,4
+2099,Ocean View Panoramic Suite (No Balcony) VP Quint,70,Suite,VP,5
+1766,Ocean View Panoramic Suite (No Balcony) VP Sextuple,71,Suite,VP,6
