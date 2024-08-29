@@ -11,7 +11,7 @@ import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import { usePermissions } from '@/Providers/PermissionContext';
-
+import RoomPreferencesIcon from '@mui/icons-material/RoomPreferences';
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission, loading, error } = usePermissions();
@@ -80,6 +80,18 @@ export default function Dashboard({ auth }: PageProps) {
                   description="Manage organization roles"
                   Icon={LocalPoliceIcon}
                   link="/70k/team/roles"
+                  //badgeContent={1}
+                />
+              </Grid>
+              )}
+
+              {hasPermission('View Cabins') && (
+              <Grid item xs={12} sm={6} md={3}>
+                <DashboardCard
+                  title="Cabins"
+                  description="Manage cabins"
+                  Icon={RoomPreferencesIcon}
+                  link="/cabins"
                   //badgeContent={1}
                 />
               </Grid>
