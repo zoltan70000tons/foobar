@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Traits\UUID;
 
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasRoles;
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, UUID;
 
     /**
      * The attributes that are mass assignable.

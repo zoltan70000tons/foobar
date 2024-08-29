@@ -126,7 +126,9 @@ class RolesSeeder extends Seeder
 
         DB::table('role_has_permissions')->insert($rolePermissionData);
         $password = Str::random(12);
+        
         $superAdminId = DB::table('users')->insertGetId([
+            'id' => $this->faker->uuid,
             'username' => 'SuperAdmin',
             'email' => 'superadmin@70000tons.com',
             'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', $password)),
@@ -135,17 +137,15 @@ class RolesSeeder extends Seeder
             'organization_id' => env('ORGANIZATION_ID', 1)
         ]);
 
-       $adminId = DB::table('users')->insertGetId(
-            [
-                'email' => 'admin@70000tons.com',
-                'username' => 'admin',
-                'password' => Hash::make(env('ADMIN_PASSWORD', $password)),
-                'created_at' => $this->faker->dateTime($max = 'now'),
-                'updated_at' => $this->faker->dateTime($max = 'now'),
-                'organization_id' => env('ORGANIZATION_ID', 1)
-
-            ]
-        );
+       $adminId = DB::table('users')->insertGetId([
+            'id' => $this->faker->uuid,
+            'email' => 'admin@70000tons.com',
+            'username' => 'admin',
+            'password' => Hash::make(env('ADMIN_PASSWORD', $password)),
+            'created_at' => $this->faker->dateTime($max = 'now'),
+            'updated_at' => $this->faker->dateTime($max = 'now'),
+            'organization_id' => env('ORGANIZATION_ID', 1)
+        ]);
 
         DB::table('model_has_roles')->insert([
             'role_id' => $superAdminRoleId,

@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('bookings', function (Blueprint $table) {
       $table->id();
       $table->string('booking_code', 255);
-      $table->foreignId('user_id')->constrained('users');
+      $table->uuid('customer_id')->foreignId('customer_id')->references('id')->on('customers')->onDelete('cascade');
       $table->string('payment_method', 50);
       $table->boolean('carbon_offset')->default(false);
       $table->foreignId('cabin_id')->nullable()->constrained('cabins');

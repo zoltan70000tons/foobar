@@ -11,7 +11,7 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('membership_type', function (Blueprint $table) {
+    Schema::create('membership_types', function (Blueprint $table) {
       $table->id();
       $table->string('name', 255);
       $table->text('stamp_image')->nullable();
@@ -26,6 +26,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('membership_type');
+    Schema::dropIfExists('membership_types');
   }
 };

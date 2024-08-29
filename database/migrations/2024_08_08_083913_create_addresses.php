@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('addresses', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('user_id')->constrained('users');
+      $table->uuid('user_id')->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
       $table->string('address_first', 255)->nullable();
       $table->string('address_second', 255)->nullable();
       $table->string('city', 255)->nullable();
