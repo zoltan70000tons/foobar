@@ -10,6 +10,7 @@ class ContactFormController extends Controller
 {
     public function submit(Request $request)
     {
+        $contactMail = env("MAIL_TO");
         $data = $request->validate([
             'fullName' => 'required|string',
             'email' => 'required|email',
@@ -19,7 +20,7 @@ class ContactFormController extends Controller
         ]);
         try {
             $response = Mail::send('emails.contact-form', ['data' => $data], function ($message) {
-                $message->to('nicanor@70000tons.com')
+                $message->to($contactMail)
                         ->subject('New Contact Form Submission');
             });
         } catch (\Exception $e) {
