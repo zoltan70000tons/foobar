@@ -17,12 +17,14 @@ return new class extends Migration
       $table->string('category_code', 5);
       $table->string('category_name', 255);
       $table->integer('capacity');
-      $table->text('description');
+      $table->text('description')->nullable();
+      $table->text('iframe')->nullable();;
+      $table->json('images')->nullable();;
       $table->decimal('price', 10, 2);
       $table->integer('display_order');
-      $table->foreignId('cruise_id')->nullable()->constrained('cruises');
-      $table->foreignId('event_id')->nullable()->constrained('events');
-      $table->unique(['id', 'cruise_id']);
+      $table->foreignId('cruise_id')->constrained('cruises');
+      $table->foreignId('event_id')->constrained('events');
+      $table->unique(['category_code','capacity','cruise_id', 'event_id']);
       $table->timestamps();
     });
   }
