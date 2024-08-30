@@ -11,12 +11,14 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('cabin_types', function (Blueprint $table) {
-      $table->id();
-      $table->string('cabin_type', 50);
-      $table->string('cabin_type_description', 255)->nullable();
-      $table->timestamps();
-    });
+    if (!Schema::hasTable('cabin_types')) {
+      Schema::create('cabin_types', function (Blueprint $table) {
+        $table->id();
+        $table->string('cabin_type', 50);
+        $table->string('cabin_type_description', 255)->nullable();
+        $table->timestamps();
+      });
+    }
   }
 
   /**
