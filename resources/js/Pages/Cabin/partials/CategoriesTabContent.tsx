@@ -1,8 +1,9 @@
 import React from "react";
 import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
 import MuiTable from "@/Components/MuiTable";
-import { GridColDef } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
+import { GridColDef } from "@mui/x-data-grid";
+import AddIcon from "@mui/icons-material/Add";
+import { Head, router } from "@inertiajs/react";
 
 interface CabinCategory {
   id: number;
@@ -21,18 +22,22 @@ interface CategoriesTabContentProps {
   data: CabinCategory[] | undefined;
 }
 
-
 const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'category_type', headerName: 'Category Type', width: 150 },
-  { field: 'category_code', headerName: 'Category Code', width: 150 },
-  { field: 'category_name', headerName: 'Category Name', width: 150 },
-  { field: 'capacity', headerName: 'Capacity', width: 110 },
-  { field: 'description', headerName: 'Description', width: 200 },
-  { field: 'price', headerName: 'Price', width: 110, valueFormatter: (params) => `$${params.value}` },
-  { field: 'display_order', headerName: 'Display Order', width: 130 },
-  { field: 'cruise_id', headerName: 'Cruise ID', width: 110, hide: true }, 
-  { field: 'event_id', headerName: 'Event ID', width: 110, hide: true },  
+  { field: "id", headerName: "ID", width: 90 },
+  { field: "category_type", headerName: "Category Type", width: 150 },
+  { field: "category_code", headerName: "Category Code", width: 150 },
+  { field: "category_name", headerName: "Category Name", width: 150 },
+  { field: "capacity", headerName: "Capacity", width: 110 },
+  { field: "description", headerName: "Description", width: 200 },
+  {
+    field: "price",
+    headerName: "Price",
+    width: 110,
+    valueFormatter: (params) => `$${params.value}`,
+  },
+  { field: "display_order", headerName: "Display Order", width: 130 },
+  { field: "cruise_id", headerName: "Cruise ID", width: 110, hide: true },
+  { field: "event_id", headerName: "Event ID", width: 110, hide: true },
 ];
 
 const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
@@ -52,11 +57,13 @@ const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
     //alert(`You clicked on row with ID: ${row.id}`);
   };
 
- 
+  const onAddClick = () => {
+    router.get(route("cabinCategory.create", { id: 1 }));
+  };
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} style={{ width: '100%' }}>
+      <Grid item xs={12} style={{ width: "100%" }}>
         <MuiTable
           columns={columns}
           data={data}
@@ -66,6 +73,7 @@ const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
           showEdit={true}
           addText="Add New"
           addIcon={<AddIcon />}
+          onAddClick={onAddClick}
         />
       </Grid>
     </Grid>

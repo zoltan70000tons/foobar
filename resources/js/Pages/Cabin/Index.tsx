@@ -72,7 +72,7 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
         break;
     }
   
-    router.get(route(routeName), {}, {
+    router.get(route(routeName,{id: 1}), {}, {
       preserveScroll: true,
       preserveState: true, 
       only: ['data', 'tab'], 
@@ -93,7 +93,7 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <div>
-              <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+              <Tabs value={value} onChange={handleChange} aria-label="cabin tabs">
                 <Tab label="ALL" {...a11yProps(0)} />
                 <Tab label="CATEGORIES" {...a11yProps(1)} />
                 <Tab label="TAGS" {...a11yProps(2)} />

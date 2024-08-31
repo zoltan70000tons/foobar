@@ -8,6 +8,7 @@ use App\Http\Controllers\DeletedController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MailTestController;
+use App\Http\Controllers\NotAllowedController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\TagsController;
@@ -72,10 +73,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::resource('/events', EventController::class);
     
-    Route::get('/cabins', [CabinsController::class, 'index'])->name('cabins.index');
-    Route::get('/cabins/categories', [CabinCategoriesController::class, 'index'])->name('cabins.categories');
-    Route::get('/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
-    Route::get('/cabins/deleted', [DeletedController::class, 'index'])->name('cabins.deleted');
+    Route::get('/events/{id}/cabins', [CabinsController::class, 'index'])->name('cabins.index');
+    Route::get('/events/{id}/cabins/categories', [CabinCategoriesController::class, 'index'])->name('cabins.categories');
+    Route::get('/events/{id}/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
+    Route::get('/events/{id}/cabins/categories/create', [CabinCategoriesController::class, 'create'])->name('cabinCategory.create');
+    Route::post('/events/{id}/cabins/categories/store', [CabinCategoriesController::class, 'store'])->name('cabinCategory.store');
+
+    Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     
 
 

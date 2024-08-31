@@ -82,7 +82,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
     };
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%', height: '100%' }}>
             {showAddButton && (
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                     <Button variant="contained" color="primary" onClick={onAddClick} startIcon={addIcon}>
@@ -90,13 +90,17 @@ const MuiTable: FC<DataGridProps<any>> = ({
                     </Button>
                 </Box>
             )}
-            <div style={{ height: 400, width: '100%' }}>
+            <div style={{ height: '100%', width: '100%' }}>
                 <DataGrid
-                    sx={{ width: '100%' }}
+                    autoHeight
+                    sx={{ width: '100%', flexGrow: 1 }}
                     rows={data}
                     columns={showActions ? [...columns, actionColumn] : columns}
-                    pageSize={5}
-                    rowsPerPageOptions={[5]}
+                    initialState={{
+                        ...data.initialState,
+                        pagination: { paginationModel: { pageSize: 10 } },
+                    }}
+                    pageSizeOptions={[5, 10, 25]}
                     onRowClick={handleRowClick}
                     disableSelectionOnClick
                 />

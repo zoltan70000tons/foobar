@@ -23,6 +23,8 @@ import EventStatusSelect from "@/Components/EventStatusSelect";
 import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
+import DashboardCard from "../Dashboard/DashboardCard";
+import RoomPreferencesIcon from '@mui/icons-material/RoomPreferences';
 
 
 const View = ({ auth, event }: PageProps) => {
@@ -62,6 +64,20 @@ const View = ({ auth, event }: PageProps) => {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
           {hasPermission("View Events") && (
+            <>
+            <Grid container spacing={3} sx={{mt:2}}>
+              {hasPermission('View Cabins') && (
+              <Grid item xs={12} sm={6} md={3}>
+                <DashboardCard
+                  title="Cabins"
+                  description="Manage cabins"
+                  Icon={RoomPreferencesIcon}
+                  link={`/events/${event.id}/cabins/`}
+                  //badgeContent={1}
+                />
+              </Grid>
+              )}
+            </Grid>
             <Paper
               sx={{
                 p: 2,
@@ -71,7 +87,6 @@ const View = ({ auth, event }: PageProps) => {
                 width: "100%",
               }}
             >
-              <h1>View Event</h1>
               <Box sx={{ mt: 4 }}>
                 <Typography variant="body2" style={{ marginBottom: "1rem" }}>
                   Event Name
@@ -183,6 +198,7 @@ const View = ({ auth, event }: PageProps) => {
                 </div>
               </Box>
             </Paper>
+            </>
           )}
           <SnackbarAlert
             open={snackbar.open}
