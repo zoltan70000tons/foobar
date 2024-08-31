@@ -120,8 +120,6 @@ const Create = ({
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
                     <TextField
                       name="category_name"
                       label="Category Name"
@@ -136,8 +134,6 @@ const Create = ({
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
                     <TextField
                       name="category_code"
                       label="Category code"
@@ -170,8 +166,6 @@ const Create = ({
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
                     <TextField
                       name="capacity"
                       label="Capacity"
@@ -190,9 +184,7 @@ const Create = ({
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
+                  <Box sx={{ mb: 2 }} >
                     <TextField
                       name="description"
                       label="Description"
@@ -209,18 +201,14 @@ const Create = ({
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
+
                     <CategoryTypeSelect
-                      //value={data.category_type}
                       onChange={handleCategoryTypeChange}
                       error={errors}
 
                     />
                   </Box>
                   <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
                     <TextField
                       name="display_order"
                       label="Display order"
@@ -244,8 +232,6 @@ const Create = ({
                 </Grid>
                 <Grid item xs={12}>
                   <Box sx={{ mb: 2 }}>
-                    {" "}
-                    {/* Add margin bottom */}
                     <Button
                       variant="contained"
                       color="primary"

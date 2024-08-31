@@ -14,19 +14,23 @@ class CabinCategoryRepository implements CabinCategoryInterface
     function getAll() {}
     function find($id) {}
 
-    function save(array $data) : ?CabinCategory
+    function save(array $data): ?CabinCategory
     {
         try {
-            $files = $data['files'];
-            foreach ($files as $file) {
-                $path = $file->storePublicly('events/cabin-categories/' . $data['category_code'], 's3');
-                $url = Storage::disk('s3')->url($path);
-                $fileData[] = [
-                    'name' => $file->getClientOriginalName(),
-                    'url' => $url,
-                    'date' => Carbon::now()->toDateTimeString()
-                ];
+            $fileData = [];
+            if (isset($data['files']) && is_array($data['files'])) {
+                $files = $data['files'];
+                foreach ($files as $file) {
+                    $path = $file->storePublicly('events/cabin-categories/' . $data['category_code'], 's3');
+                    $url = Storage::disk('s3')->url($path);
+                    $fileData[] = [
+                        'name' => $file->getClientOriginalName(),
+                        'url' => $url,
+                        'date' => now()->toDateTimeString(),
+                    ];
+                }
             }
+    
             $cat = new CabinCategory();
             $cat->category_name = $data['category_name'];
             $cat->category_type = $data['category_type'];
@@ -35,15 +39,15 @@ class CabinCategoryRepository implements CabinCategoryInterface
             $cat->description = $data['description'];
             $cat->price = $data['price'];
             $cat->display_order = $data['display_order'];
-            //$cat->cruise_id =$data['cruise_id'];
             $cat->cruise_id = 1;
             $cat->event_id = $data['event_id'];
             $cat->images = json_encode($fileData);
             $cat->save();
+    
             return $cat;
         } catch (\Exception $e) {
             dd($e->getMessage());
-            return $e->getMessage();
+            return null;
         }
     }
     function update(array $data, $id) {}

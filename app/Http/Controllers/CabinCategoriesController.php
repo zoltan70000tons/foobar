@@ -54,10 +54,10 @@ class CabinCategoriesController extends Controller
         return $this->withPermission(['Create Cabin'], function (Request $request) {
             $rules = [
                 'category_name' => 'required|string|max:255',
-                'category_code' => 'required|string',
+                'category_code' => 'required|string|max:5',
                 'price' => 'required|numeric',
                 'capacity' => 'required|integer',
-                'description' => 'required|string|max:255',
+                'description' => 'required|string',
                 'category_type' => 'required|string',
                 'display_order' => 'required|numeric',
                 //'cruise_id' => 'required|numeric',
