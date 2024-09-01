@@ -61,8 +61,8 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
 Route::middleware(['membership_sales'])->group(function () {
   Route::get('/booking-init', [BookingController::class, 'store']);
+  Route::get('/events/{id}', [BookingController::class, 'showOne']);
 });
 
 // --- GROUP WITHOUT MIDDLEWARE ---
 Route::get('/events', [BookingController::class, 'show']);
-Route::get('/events/{id}', [BookingController::class, 'showOne']);
