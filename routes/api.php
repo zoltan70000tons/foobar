@@ -12,6 +12,7 @@ use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
 
 // BOOKING
 use App\Http\Controllers\Api\Customer\BookingController;
+
 // CABIN
 use App\Http\Controllers\Api\Customer\CabinController;
 
