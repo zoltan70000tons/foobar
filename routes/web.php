@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Api\OrganizationController;
+use App\Http\Controllers\ContactFormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MailTestController;
@@ -21,6 +22,12 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/token', function () {
+    return csrf_token(); 
+});
+
+Route::post('/contact/submit', [ContactFormController::class, 'submit']);
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
