@@ -53,10 +53,4 @@ class BookingController extends Controller
       'event' => $event
     ]);
   }
-
-  // test
-  public function store(Request $request): JsonResponse
-  {
-    return response()->json(['message' => 'test message']);
-  }
 }

@@ -12,7 +12,10 @@ use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
 
 // BOOKING
 use App\Http\Controllers\Api\Customer\BookingController;
-
+// CABIN
+use App\Http\Controllers\Api\Customer\CabinController;
+// BROADCAST
+use App\Events\CabinChange;
 
 // log
 use Illuminate\Support\Facades\Log;
@@ -66,3 +69,7 @@ Route::middleware(['membership_sales'])->group(function () {
 
 // --- GROUP WITHOUT MIDDLEWARE ---
 Route::get('/events', [BookingController::class, 'show']);
+
+// --- TEST PURPOSE FOR BROADCASTING ---
+// Route::get('/cabins', [CabinController::class, 'show']);
+// Route::get('/trigger-cabins', [CabinController::class, 'trigger']);

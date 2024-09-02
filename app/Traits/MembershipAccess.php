@@ -25,6 +25,15 @@ trait MembershipAccess
     // Get event by id
     $event = Event::find($id);
 
+    // if event status is not pre-sale or public, return false
+    if ($event && !in_array($event->status, ['pre-sale', 'public'])) {
+      return [
+        'status' => false,
+        'message' => __('event.no_event_found'),
+        'info_event' => null,
+      ];
+    }
+
     // Query the presale periods table to get the relevant dates
     $presalePeriod = PresalePeriod::where('membership_type_id', $membership->id ?? null)->first();
 
@@ -32,7 +41,15 @@ trait MembershipAccess
     if (!$membership && $event->status !== 'public') {
       return [
         'status' => false,
-        'message' => __('auth.no_access_to_sales_everyone')
+        'message' => __('auth.no_access_to_sales_everyone'),
+        'info_event' => [
+          'name' => $event->name,
+          'description' => $event->description,
+          'image' => $event->image,
+          'address' => $event->address,
+          'start_date' => $event->start_date,
+          'end_date' => $event->end_date,
+        ],
       ];
     }
 
@@ -49,7 +66,15 @@ trait MembershipAccess
     ) {
       return [
         'status' => false,
-        'message' => __('auth.no_access_to_sales_not_allowed_type', ['name' => $membership->name])
+        'message' => __('auth.no_access_to_sales_not_allowed_type', ['name' => $membership->name]),
+        'info_event' => [
+          'name' => $event->name,
+          'description' => $event->description,
+          'image' => $event->image,
+          'address' => $event->address,
+          'start_date' => $event->start_date,
+          'end_date' => $event->end_date,
+        ],
       ];
     }
 

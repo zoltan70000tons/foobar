@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use App\Traits\MembershipAccess;
-
+use App\Models\Event;
 
 class MembershipSales
 {
@@ -37,11 +37,32 @@ class MembershipSales
       return $next($request);
     }
 
+    // Get event by id
+    $event = Event::find($id);
+
+    // if event status is not pre-sale or public, return false
+    if ($event && !in_array($event->status, ['pre-sale', 'public'])) {
+      return [
+        'status' => false,
+        'message' => __('event.no_event_found'),
+        'info_event' => null,
+      ];
+    }
+
     // Get the authenticated customer by guard
     if (!Auth::guard('customer')->check()) {
       return response()->json([
         'message' => __('auth.no_access_to_sales_everyone'),
         'status' => false,
+        'info_event' => [
+          'id' => $event->id,
+          'name' => $event->name,
+          'description' => $event->description,
+          'image' => $event->image,
+          'address' => $event->address,
+          'start_date' => $event->start_date,
+          'end_date' => $event->end_date,
+        ],
       ], 401);
     }
 
@@ -54,6 +75,15 @@ class MembershipSales
       return response()->json([
         'message' => $access['message'],
         'status' => false,
+        'info_event' => [
+          'id' => $event->id,
+          'name' => $event->name,
+          'description' => $event->description,
+          'image' => $event->image,
+          'address' => $event->address,
+          'start_date' => $event->start_date,
+          'end_date' => $event->end_date,
+        ],
       ], 403);
     }
 
