@@ -12,21 +12,12 @@ class CabinController extends Controller
 {
   public function show()
   {
-    // return cabins where cabin_category_id === 1
-    $cabins = Cabin::where('cabin_category_id', 1)->get();
-    return response()->json($cabins);
+    //
   }
 
 
   public function trigger()
   {
-    // return cabins where cabin_category_id === 1
-    $cabins = Cabin::where('cabin_category_id', 1)->get();
-
-    // reaoder cabins on each triiger
-    $cabins = $cabins->shuffle();
-
-    // get first cabin
-    CabinChange::dispatch($cabins);
+    // 
   }
 }
