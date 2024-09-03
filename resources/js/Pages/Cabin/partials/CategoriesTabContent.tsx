@@ -33,7 +33,10 @@ const columns: GridColDef[] = [
     field: "price",
     headerName: "Price",
     width: 110,
-    valueFormatter: (params) => `$${params.value}`,
+    valueFormatter: (params) => {
+      console.log(params);
+      return `$${params}`;
+    },
   },
   { field: "display_order", headerName: "Display Order", width: 130 },
   { field: "cruise_id", headerName: "Cruise ID", width: 110, hide: true },
@@ -57,6 +60,17 @@ const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
     //alert(`You clicked on row with ID: ${row.id}`);
   };
 
+  const handleEditClick = (row: CabinCategory) => {
+    router.get(route("cabinCategory.edit", { id: row.event_id, catId: row.id }))
+  };
+  const handleViewClick = (row: CabinCategory) => {
+    router.get(route("cabinCategory.show", { id: row.event_id, catId: row.id }))
+  };
+  const handleDeleteClick = (row: CabinCategory) => {
+    console.log(row.id);
+    router.delete(route("cabinCategory.destroy", { id: row.event_id, catId: row.id }))
+  };
+
   const onAddClick = () => {
     router.get(route("cabinCategory.create", { id: 1 }));
   };
@@ -70,10 +84,15 @@ const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
           onRowClick={handleRowClick}
           showAddButton={true}
           showActions={true}
+          showView={true}
           showEdit={true}
+          showDelete={true}
           addText="Add New"
           addIcon={<AddIcon />}
           onAddClick={onAddClick}
+          onEditClick={handleEditClick}
+          onViewClick={handleViewClick}
+          onDeleteClick={handleDeleteClick}
         />
       </Grid>
     </Grid>

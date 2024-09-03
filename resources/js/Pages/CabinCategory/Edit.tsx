@@ -3,6 +3,10 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
 import { Head, router, useForm } from "@inertiajs/react";
 import {
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Container,
@@ -21,25 +25,36 @@ import DropZoneField from "@/Components/DropZoneField";
 import CustomNumericFormat from "@/Components/CustomNumericFormat";
 import { NumericFormat } from "react-number-format";
 import UMSelect from "@/Components/UMSelect";
+import ImageGallery from "@/Components/ImageGallery";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-const Create = ({
+const Edit = ({
   auth,
   event,
   cruisers,
+  cabin_category,
   errors,
 }: PageProps & { tab: string; data: any }) => {
   const { data, setData, post, processing } = useForm({
-    category_name: "",
-    category_code: "",
-    price: "",
-    capacity: "",
-    description: "",
-    category_type: "",
-    display_order: "",
+    category_name: cabin_category.category_name,
+    category_code: cabin_category.category_code,
+    price: cabin_category.price,
+    capacity: cabin_category.capacity,
+    description: cabin_category.description,
+    category_type: cabin_category.category_type,
+    display_order: cabin_category.display_order,
     event_id: event.id,
-    cruise: ""
+    cruise: cabin_category.cruise_id,
   });
 
+  interface Image {
+    name: string;
+    url: string;
+    path: string;
+    date: string;
+  }
+
+  const [images, setImages] = useState<Image[]>(cabin_category.images || []);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   const handleFilesChange = (files: string[]) => {
@@ -68,37 +83,40 @@ const Create = ({
     setData("category_type", event.target.value);
   };
 
-  const handleCruiserChange = (
-    event: SelectChangeEvent<{ value: string }>
-  ) => {
+  const handleCruiserChange = (event: SelectChangeEvent<{ value: string }>) => {
     setData("cruise", event.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const formData = new FormData();
     for (const key in data) {
       formData.append(key, data[key]);
     }
+
     uploadedFiles.forEach((file) => {
       formData.append("files[]", file);
     });
-    router.post(route("cabinCategory.store", { id: event.id }), formData, {
-      onSuccess: (response) => {
-        //   setSnackbar({
-        //     open: true,
-        //     severity: "success",
-        //     message: "Event created successfully",
-        //   });
-      },
-      onError: (errors) => {
-        //   setSnackbar({
-        //     open: true,
-        //     severity: "error",
-        //     message: "Error creating event",
-        //   });
-      },
+
+    // Verifica que images no sea null o undefined
+    const imagePathsSet = new Set((images || []).map((image) => image.path));
+    const missingImages = (cabin_category.images || []).filter(
+      (image) => !imagePathsSet.has(image.path)
+    );
+
+    missingImages.forEach((image) => {
+      formData.append("remove[]", image.path);
     });
+
+    router.post(route("cabinCategory.update", { id: event.id, catId: cabin_category.id }), formData, {
+      onSuccess: (response) => {},
+      onError: (errors) => {},
+    });
+  };
+
+  const onDelete = (url: string) => {
+    setImages((prevImages) => prevImages.filter((image) => image.url !== url));
   };
 
   return (
@@ -111,16 +129,12 @@ const Create = ({
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           {event.name}
         </Typography>
-
-        {/* <IconButton color="inherit">
-        <GridMenuIcon />
-      </IconButton> */}
       </Toolbar>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h5" sx={{ mb: 3 }}>
-              Create Cabin Category
+              Edit Cabin Category
             </Typography>
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>
@@ -166,7 +180,6 @@ const Create = ({
                       decimalScale={2}
                       onChange={handleInputChange}
                       error={errors}
-                     
                     />
                   </Box>
                 </Grid>
@@ -190,7 +203,7 @@ const Create = ({
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }} >
+                  <Box sx={{ mb: 2 }}>
                     <TextField
                       name="description"
                       label="Description"
@@ -201,18 +214,16 @@ const Create = ({
                       value={data.description}
                       onChange={handleInputChange}
                       error={Boolean(errors.description)}
-                      helpeText={errors.description}
+                      helperText={errors.description}
                     />
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-
                     <CategoryTypeSelect
                       onChange={handleCategoryTypeChange}
                       error={errors}
                       value={data.category_type}
-
                     />
                   </Box>
                   <Box sx={{ mb: 2 }}>
@@ -244,6 +255,21 @@ const Create = ({
                 </Grid>
               </Grid>
 
+              <Grid item xs={12} sx={{ mb: 2 }}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                  >
+                    Image Gallery
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ImageGallery images={images || []} onDelete={onDelete} />
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6">Media</Typography>
@@ -270,4 +296,4 @@ const Create = ({
   );
 };
 
-export default Create;
+export default Edit;

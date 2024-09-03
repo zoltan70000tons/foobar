@@ -3,6 +3,10 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
 import { Head, router, useForm } from "@inertiajs/react";
 import {
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Container,
@@ -11,94 +15,68 @@ import {
   SelectChangeEvent,
   TextField,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import FormatInput from "@/Components/FormatInput";
 import CategoryTypeSelect from "@/Components/CategoryTypeSelect";
 import { CategoryTypes } from "@/enums/CategoryTypeEnum";
-import { GridMenuIcon } from "@mui/x-data-grid";
 import DropZoneField from "@/Components/DropZoneField";
-import CustomNumericFormat from "@/Components/CustomNumericFormat";
-import { NumericFormat } from "react-number-format";
 import UMSelect from "@/Components/UMSelect";
+import ImageGallery from "@/Components/ImageGallery";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { ArrowBack, Delete, Edit } from "@mui/icons-material";
 
-const Create = ({
+const View = ({
   auth,
   event,
   cruisers,
+  cabin_category,
   errors,
 }: PageProps & { tab: string; data: any }) => {
   const { data, setData, post, processing } = useForm({
-    category_name: "",
-    category_code: "",
-    price: "",
-    capacity: "",
-    description: "",
-    category_type: "",
-    display_order: "",
+    category_name: cabin_category.category_name,
+    category_code: cabin_category.category_code,
+    price: cabin_category.price,
+    capacity: cabin_category.capacity,
+    description: cabin_category.description,
+    category_type: cabin_category.category_type,
+    display_order: cabin_category.display_order,
     event_id: event.id,
-    cruise: ""
+    cruise: cabin_category.cruise_id,
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  interface Image {
+    name: string;
+    url: string;
+    path: string;
+    date: string;
+  }
+  
+  const { hasPermission } = usePermissions();
+  const [images, setImages] = useState<Image[]>(cabin_category.images || []);
 
-  const handleFilesChange = (files: string[]) => {
-    setUploadedFiles(files);
+  const handleInputChange = () => {}
+  const handleCategoryTypeChange = () => {}
+  const handleCruiserChange = () => {}
+  const onDelete = () => {}
+  const handleBack = () => {
+    window.history.back();
+  }
+
+  const handleEdit = () => {
+    router.get(route("cabinCategory.edit", { id: event.id, catId: cabin_category.id }));
   };
 
-  const handleInputChange = (
-    e: React.FormEvent<HTMLFormElement> | string,
-    value?: string
-  ) => {
-    let name: string;
-
-    if (typeof e === "string") {
-      name = e;
-      setData(name, value || "");
-    } else {
-      const target = e.target as HTMLInputElement;
-      name = target.name;
-      setData(name, value || target.value);
+  const handleDelete = () => {
+    if (confirm("Are you sure you want to delete this category?")) {
+      router.delete(route("cabinCategory.destroy", { id: event.id, catId: cabin_category.id }), {
+        onSuccess: () => {
+          router.get(route("cabinCategory.index", { id: event.id }));
+        },
+      });
     }
-  };
-
-  const handleCategoryTypeChange = (
-    event: SelectChangeEvent<CategoryTypes>
-  ) => {
-    setData("category_type", event.target.value);
-  };
-
-  const handleCruiserChange = (
-    event: SelectChangeEvent<{ value: string }>
-  ) => {
-    setData("cruise", event.target.value);
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData();
-    for (const key in data) {
-      formData.append(key, data[key]);
-    }
-    uploadedFiles.forEach((file) => {
-      formData.append("files[]", file);
-    });
-    router.post(route("cabinCategory.store", { id: event.id }), formData, {
-      onSuccess: (response) => {
-        //   setSnackbar({
-        //     open: true,
-        //     severity: "success",
-        //     message: "Event created successfully",
-        //   });
-      },
-      onError: (errors) => {
-        //   setSnackbar({
-        //     open: true,
-        //     severity: "error",
-        //     message: "Error creating event",
-        //   });
-      },
-    });
   };
 
   return (
@@ -111,18 +89,14 @@ const Create = ({
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           {event.name}
         </Typography>
-
-        {/* <IconButton color="inherit">
-        <GridMenuIcon />
-      </IconButton> */}
       </Toolbar>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h5" sx={{ mb: 3 }}>
-              Create Cabin Category
+              View Cabin Category
             </Typography>
-            <form onSubmit={handleSubmit}>
+            <form>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
@@ -131,6 +105,7 @@ const Create = ({
                       label="Category Name"
                       variant="outlined"
                       fullWidth
+                      disabled
                       value={data.category_name}
                       onChange={handleInputChange}
                       error={Boolean(errors.category_name)}
@@ -145,6 +120,7 @@ const Create = ({
                       label="Category code"
                       variant="outlined"
                       fullWidth
+                      disabled
                       value={data.category_code}
                       onChange={handleInputChange}
                       error={Boolean(errors.category_code)}
@@ -162,11 +138,11 @@ const Create = ({
                       label="Price per person"
                       placeholder="Enter price"
                       format="#,##0.00"
+                      disabled
                       prefix="$"
                       decimalScale={2}
                       onChange={handleInputChange}
                       error={errors}
-                     
                     />
                   </Box>
                 </Grid>
@@ -177,6 +153,7 @@ const Create = ({
                       label="Capacity"
                       variant="outlined"
                       fullWidth
+                      disabled
                       type="number"
                       inputProps={{ min: 0, max: 12 }}
                       value={data.capacity}
@@ -190,29 +167,29 @@ const Create = ({
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }} >
+                  <Box sx={{ mb: 2 }}>
                     <TextField
                       name="description"
                       label="Description"
                       variant="outlined"
                       fullWidth
+                      disabled
                       multiline
                       rows={8}
                       value={data.description}
                       onChange={handleInputChange}
                       error={Boolean(errors.description)}
-                      helpeText={errors.description}
+                      helperText={errors.description}
                     />
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-
                     <CategoryTypeSelect
                       onChange={handleCategoryTypeChange}
                       error={errors}
                       value={data.category_type}
-
+                      disabled={true}
                     />
                   </Box>
                   <Box sx={{ mb: 2 }}>
@@ -222,6 +199,7 @@ const Create = ({
                       type="number"
                       variant="outlined"
                       fullWidth
+                      disabled
                       inputProps={{ min: 0 }}
                       value={data.display_order}
                       onChange={handleInputChange}
@@ -236,6 +214,7 @@ const Create = ({
                       id="cruise"
                       value={data.cruise}
                       options={cruisers.data}
+                      disabled
                       onChange={handleCruiserChange}
                       error={errors.cruise}
                       label="Cruiser"
@@ -244,24 +223,78 @@ const Create = ({
                 </Grid>
               </Grid>
 
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6">Media</Typography>
-                  <DropZoneField onFilesChange={handleFilesChange} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 2 }}>
+              <Grid item xs={12} sx={{ mb: 2 }}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                  >
+                    Image Gallery
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ImageGallery images={images || []} onDelete={onDelete} />
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+
+              {/* <Box sx={{ mt: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => router.back()}
+                    >
+                      Back
+                    </Button>
+                  </Grid>
+                  <Grid item>
                     <Button
                       variant="contained"
                       color="primary"
-                      fullWidth
-                      type="submit"
+                      onClick={handleEdit}
                     >
-                      Submit
+                      Edit
                     </Button>
-                  </Box>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={handleDelete}
+                    >
+                      Delete
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
+              </Box> */}
+                            <Box sx={{ mt: 4 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "8px",
+                  }}
+                >
+                  <Tooltip title="Back">
+                    <IconButton color="primary" onClick={handleBack}>
+                      <ArrowBack />
+                    </IconButton>
+                  </Tooltip>
+                  {hasPermission('Edit Cabin') && (<Tooltip title="Edit"> 
+                    <IconButton color="primary" onClick={handleEdit}>
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>)}
+                  {hasPermission('Delete Cabin') && (<Tooltip title="Delete">
+                    <IconButton color="error" onClick={handleDelete}>
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>) }
+                  
+                </div>
+              </Box>
             </form>
           </Grid>
         </Grid>
@@ -270,4 +303,4 @@ const Create = ({
   );
 };
 
-export default Create;
+export default View;

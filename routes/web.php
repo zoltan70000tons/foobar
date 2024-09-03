@@ -76,8 +76,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/cabins', [CabinsController::class, 'index'])->name('cabins.index');
     Route::get('/events/{id}/cabins/categories', [CabinCategoriesController::class, 'index'])->name('cabins.categories');
     Route::get('/events/{id}/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
+
+    //Cabin categories
+    Route::get('/events/{id}/cabins/categories/{catId}/show', [CabinCategoriesController::class, 'show'])->name('cabinCategory.show');
     Route::get('/events/{id}/cabins/categories/create', [CabinCategoriesController::class, 'create'])->name('cabinCategory.create');
     Route::post('/events/{id}/cabins/categories/store', [CabinCategoriesController::class, 'store'])->name('cabinCategory.store');
+    Route::get('/events/{id}/cabins/categories/{catId}/edit', [CabinCategoriesController::class, 'edit'])->name('cabinCategory.edit');
+    Route::post('/events/{id}/cabins/categories/{catId}/update', [CabinCategoriesController::class, 'update'])->name('cabinCategory.update');
+    Route::delete('/events/{id}/cabins/categories/{catId}/delete', [CabinCategoriesController::class, 'destroy'])->name('cabinCategory.destroy');
+    
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     

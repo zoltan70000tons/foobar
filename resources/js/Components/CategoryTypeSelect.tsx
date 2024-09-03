@@ -13,10 +13,12 @@ const CategoryTypeSelect = ({
   value,
   onChange,
   error,
+  disabled = false
 }: {
   value: CategoryTypes;
   onChange: (event: SelectChangeEvent<CategoryTypes>) => void;
   error: { category_type?: string };
+  disabled?: Boolean
 }) => {
   return (
     <FormControl fullWidth error={Boolean(error.category_type)}>
@@ -28,6 +30,7 @@ const CategoryTypeSelect = ({
         label="Category Type"
         onChange={onChange}
         name="category_type"
+        disabled={disabled}
       >
         {Object.entries(CategoryTypeLabels).map(([type, label]) => (
           <MenuItem key={type} value={type}>
