@@ -3,29 +3,35 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use App\Models\Customer;
 use App\Models\MembershipType;
+use App\Models\Membership;
 
 class MembershipSeeder extends Seeder
 {
-    /**
-     * Run the database seeders.
-     */
-    public function run(): void
-    {
-        // Fetch all customers
-        $customers = Customer::all();
+  /**
+   * Run the database seeders.
+   */
+  public function run(): void
+  {
 
-        // Fetch all membership types
-        $membershipTypes = MembershipType::all();
+    $customers = Customer::all();
 
-        // Assign random membership types to each customer
-        foreach ($customers as $customer) {
-            DB::table('memberships')->insert([
-                'customer_id' => $customer->id,
-                'membership_id' => $membershipTypes->random()->id,
-            ]);
-        }
+    // Two test purpose we will not assign membership to two customers
+    $customersWithoutMembership = $customers->random(2);
+    $membershipTypes = MembershipType::all();
+
+    // Assign random membership types to each customer except those without memberships
+    foreach ($customers as $customer) {
+      if ($customersWithoutMembership->contains($customer)) {
+        continue;
+      }
+
+      Membership::factory()
+        ->forCustomer($customer->id)
+        ->create([
+          'membership_id' => $membershipTypes->random()->id,
+        ]);
     }
+  }
 }

@@ -28,11 +28,12 @@ class MembershipSales
   {
 
     $language = $request->query('language', 'en');
+    $id = $request->route('id') ?? null;
 
     App::setLocale($language);
 
     // Check if the current date is after the "Everyone" access date
-    if ($this->checkMembershipAccess(null)['status'] === true) {
+    if ($this->checkMembershipAccess(null, null, $id)['status'] === true) {
       return $next($request);
     }
 
@@ -47,7 +48,7 @@ class MembershipSales
     $customer = Auth::guard('customer')->user();
     $membership = $customer->membershipTypes->first();
 
-    $access = $this->checkMembershipAccess($membership);
+    $access = $this->checkMembershipAccess($membership, null, $id);
 
     if ($access['status'] === false) {
       return response()->json([

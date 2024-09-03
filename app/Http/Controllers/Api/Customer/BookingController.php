@@ -41,7 +41,17 @@ class BookingController extends Controller
   // show a single event
   public function showOne($id)
   {
-    return response()->json(['message' => 'single event']);
+
+    // return event by id if exist
+    $event = Event::find($id);
+
+    if (!$event) {
+      return response()->json(['message' => 'event not found']);
+    }
+
+    return response()->json([
+      'event' => $event
+    ]);
   }
 
   // test
