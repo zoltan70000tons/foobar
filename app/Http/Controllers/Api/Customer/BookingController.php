@@ -41,7 +41,6 @@ class BookingController extends Controller
   // show a single event
   public function showOne($id)
   {
-
     // return event by id if exist
     $event = Event::find($id);
 
