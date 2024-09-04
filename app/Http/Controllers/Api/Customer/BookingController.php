@@ -41,7 +41,6 @@ class BookingController extends Controller
   // show a single event
   public function showOne($id)
   {
-
     // return event by id if exist
     $event = Event::find($id);
 
@@ -52,11 +51,5 @@ class BookingController extends Controller
     return response()->json([
       'event' => $event
     ]);
-  }
-
-  // test
-  public function store(Request $request): JsonResponse
-  {
-    return response()->json(['message' => 'test message']);
   }
 }

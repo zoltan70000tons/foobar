@@ -83,3 +83,7 @@ Route::get('/pricing-matrix/private-cabin', [PricingMatrixController::class, 'sh
 
 Route::get('/cabins', [CabinController::class, 'show']);
 Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
+
+// --- TEST PURPOSE FOR BROADCASTING ---
+// Route::get('/cabins', [CabinController::class, 'show']);
+// Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
