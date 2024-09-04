@@ -33,7 +33,7 @@ class MembershipSales
 
     $event = Event::find($id);
 
-    if ($event->status !== 'pre-sale' || $event->status === 'public') {
+    if ($event->status !== 'pre-sale' && $event->status !== 'public') {
       return response()->json([
         'message' => __('event.no_event_found'),
         'status' => false,

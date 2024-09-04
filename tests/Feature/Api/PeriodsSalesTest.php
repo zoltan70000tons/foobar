@@ -20,7 +20,7 @@ class PeriodsSalesTest extends TestCase
 
     Membership::factory()->create([
       'customer_id' => $user->id,
-      'membership_id' => 5,
+      'membership_id' => 4,
     ]);
 
 
