@@ -32,7 +32,7 @@ trait MembershipAccess
     if (!$membership && $event->status !== 'public') {
       return [
         'status' => false,
-        'message' => __('auth.no_access_to_sales_everyone')
+        'message' => __('auth.no_access_to_sales_everyone'),
       ];
     }
 
@@ -49,7 +49,7 @@ trait MembershipAccess
     ) {
       return [
         'status' => false,
-        'message' => __('auth.no_access_to_sales_not_allowed_type', ['name' => $membership->name])
+        'message' => __('auth.no_access_to_sales_not_allowed_type', ['name' => $membership->name]),
       ];
     }
 
