@@ -12,8 +12,13 @@ use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
 
 // BOOKING
 use App\Http\Controllers\Api\Customer\BookingController;
+
 // CABIN
 use App\Http\Controllers\Api\Customer\CabinController;
+
+// PRICING MATRIX
+use App\Http\Controllers\Api\Customer\PricingMatrixController;
+
 // BROADCAST
 use App\Events\CabinChange;
 
@@ -69,6 +74,15 @@ Route::middleware(['membership_sales'])->group(function () {
 
 // --- GROUP WITHOUT MIDDLEWARE ---
 Route::get('/events', [BookingController::class, 'show']);
+Route::get('/pricing-matrix/private-cabin', [PricingMatrixController::class, 'showPrivateCabin']);
+
+// Route::get('/cabins', function () {
+//   // test broadcast
+//   broadcast(new CabinChange());
+// });
+
+Route::get('/cabins', [CabinController::class, 'show']);
+Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
 
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);
