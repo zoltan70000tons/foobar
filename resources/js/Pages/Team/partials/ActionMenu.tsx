@@ -3,6 +3,7 @@ import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button, DialogTitle,
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ViewMember from './ViewMember';
 import { usePermissions } from '@/Providers/PermissionContext';
+import { Permissions } from '@/enums/PermissionEnum';
 
 interface ActionMenuProps {
   params: any;
@@ -39,7 +40,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
 
   return (
     <>
-     {hasPermission('View Users') &&(
+     {hasPermission(Permissions.ViewUsers) &&(
       <>
       <IconButton
       aria-label="more"

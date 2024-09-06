@@ -27,6 +27,7 @@ import ImageGallery from "@/Components/ImageGallery";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
+import { Permissions } from "@/enums/PermissionEnum";
 
 const View = ({
   auth,
@@ -282,12 +283,12 @@ const View = ({
                       <ArrowBack />
                     </IconButton>
                   </Tooltip>
-                  {hasPermission('Edit Cabin') && (<Tooltip title="Edit"> 
+                  {hasPermission(Permissions.EditCabinCategories) && (<Tooltip title="Edit"> 
                     <IconButton color="primary" onClick={handleEdit}>
                       <Edit />
                     </IconButton>
                   </Tooltip>)}
-                  {hasPermission('Delete Cabin') && (<Tooltip title="Delete">
+                  {hasPermission(Permissions.DeleteCabinCategories) && (<Tooltip title="Delete">
                     <IconButton color="error" onClick={handleDelete}>
                       <Delete />
                     </IconButton>

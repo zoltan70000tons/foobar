@@ -4,6 +4,8 @@ import MuiTable from "@/Components/MuiTable";
 import { GridColDef } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import { Head, router } from "@inertiajs/react";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 interface CabinCategory {
   id: number;
@@ -56,6 +58,8 @@ const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
     );
   }
 
+  const {hasPermission} = usePermissions();
+
   const handleRowClick = (row: CabinCategory) => {
     //alert(`You clicked on row with ID: ${row.id}`);
   };
@@ -82,11 +86,11 @@ const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
           columns={columns}
           data={data}
           onRowClick={handleRowClick}
-          showAddButton={true}
+          showAddButton={hasPermission(Permissions.CreateCabinCategories)}
           showActions={true}
-          showView={true}
-          showEdit={true}
-          showDelete={true}
+          showView={hasPermission(Permissions.ViewCabinCategories)}
+          showEdit={hasPermission(Permissions.EditCabinCategories)}
+          showDelete={hasPermission(Permissions.DeleteCabinCategories)}
           addText="Add New"
           addIcon={<AddIcon />}
           onAddClick={onAddClick}

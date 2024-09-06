@@ -1,7 +1,9 @@
+import { Permissions } from "@/enums/PermissionEnum";
+
 const buttonsConfig = [
-    { href: '/70k/team/', label: 'Team', requiredPermission: 'View Users' },
-    { href: '/70k/team/roles', label: 'Roles', requiredPermission: 'View Roles' },
-    { href: '/70k/team/permissions', label: 'Permissions', requiredPermission: 'View Permissions' },
+    { href: '/team/', label: 'Team', requiredPermission: Permissions.ViewUsers},
+    { href: '/team/roles', label: 'Roles', requiredPermission: Permissions.ViewRoles },
+    { href: '/team/permissions', label: 'Permissions', requiredPermission: Permissions.ViewPermissions },
 ];
 
 export default buttonsConfig;

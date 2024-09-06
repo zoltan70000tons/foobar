@@ -25,6 +25,7 @@ import SnackbarAlert from "@/Components/SnackbarAlert";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
 import DashboardCard from "../Dashboard/DashboardCard";
 import RoomPreferencesIcon from '@mui/icons-material/RoomPreferences';
+import { Permissions } from "@/enums/PermissionEnum";
 
 
 const View = ({ auth, event }: PageProps) => {
@@ -63,10 +64,10 @@ const View = ({ auth, event }: PageProps) => {
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          {hasPermission("View Events") && (
+          {hasPermission(Permissions.ViewEvents) && (
             <>
             <Grid container spacing={3} sx={{mt:2}}>
-              {hasPermission('View Cabins') && (
+              {hasPermission(Permissions.ViewCabins) && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
                   title="Cabins"

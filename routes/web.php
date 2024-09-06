@@ -29,7 +29,7 @@ Route::get('/', function () {
 });
 
 Route::get('/token', function () {
-    return csrf_token(); 
+    return csrf_token();
 });
 
 Route::post('/contact/submit', [ContactFormController::class, 'submit']);
@@ -42,23 +42,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     Route::get('/{slug}/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
     Route::post('/{slug}/invitations', [InvitationController::class, 'store'])->name('invitations.store');
-    
-    Route::prefix('{slug}')->group(function () {
-        Route::get('/team', function () {
-            return Inertia::render('Teams');
-        })->name('teams');
-        
-        Route::get('/team/roles', function () {
-            return Inertia::render('ManageRole');
-        })->name('roles');
-        
-        Route::get('/team/permissions', function () {
-            return Inertia::render('ManagePermission');
-        })->name('permissions');
-    });
+
+    Route::get('/team', function () {
+        return Inertia::render('Teams');
+    })->name('teams');
+
+    Route::get('/team/roles', function () {
+        return Inertia::render('ManageRole');
+    })->name('roles');
+
+    Route::get('/team/permissions', function () {
+        return Inertia::render('ManagePermission');
+    })->name('permissions');
 
     Route::apiResource('/roles', RoleController::class);
     Route::apiResource('/permissions', PermissionController::class);
@@ -79,7 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::resource('/events', EventController::class);
-    
+
     Route::get('/events/{id}/cabins', [CabinsController::class, 'index'])->name('cabins.index');
     Route::get('/events/{id}/cabins/categories', [CabinCategoriesController::class, 'index'])->name('cabins.categories');
     Route::get('/events/{id}/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
@@ -91,12 +89,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/cabins/categories/{catId}/edit', [CabinCategoriesController::class, 'edit'])->name('cabinCategory.edit');
     Route::post('/events/{id}/cabins/categories/{catId}/update', [CabinCategoriesController::class, 'update'])->name('cabinCategory.update');
     Route::delete('/events/{id}/cabins/categories/{catId}/delete', [CabinCategoriesController::class, 'destroy'])->name('cabinCategory.destroy');
-    
+
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
-    
-
-
 });
 
 
@@ -113,4 +108,4 @@ Route::put('/join-organization', [OrganizationController::class, 'join'])->name(
 
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

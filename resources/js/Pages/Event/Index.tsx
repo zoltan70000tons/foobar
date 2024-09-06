@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/en";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import { Permissions } from "@/enums/PermissionEnum";
 
 const Index = ({ auth, events }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -31,7 +32,7 @@ const Index = ({ auth, events }: PageProps) => {
       <Head title="Events" />
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {hasPermission("View Events") && (
+        {hasPermission(Permissions.ViewEvents) && (
           <Grid container spacing={3}>
             {hasPermission("Create Event") && (
               <Grid item xs={12} sm={6}>

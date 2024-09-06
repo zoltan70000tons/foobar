@@ -1,5 +1,6 @@
-import React from 'react';
-import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
+import React from "react";
+import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
+import MuiTable from "@/Components/MuiTable";
 
 interface Cabin {
   id: number;
@@ -22,24 +23,13 @@ const AllTabContent: React.FC<AllTabContentProps> = ({ data }) => {
       </Box>
     );
   }
+  
 
   return (
     <Grid container spacing={3}>
       {data.map((cabin) => (
         <Grid item xs={12} sm={6} md={4} key={cabin.id}>
-          <Card>
-            <CardContent>
-              <Typography variant="h5" component="div">
-                {cabin.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {cabin.description}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Location: {cabin.location}
-              </Typography>
-            </CardContent>
-          </Card>
+        
         </Grid>
       ))}
     </Grid>
@@ -47,4 +37,3 @@ const AllTabContent: React.FC<AllTabContentProps> = ({ data }) => {
 };
 
 export default AllTabContent;
-

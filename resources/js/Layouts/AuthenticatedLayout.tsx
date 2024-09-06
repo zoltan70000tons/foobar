@@ -10,21 +10,14 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import theme from '@/Theme/theme';
-
-import { mainListItems, secondaryListItems, accountListItems } from './ListItems';
+import ListItems from '@/Layouts/ListItems';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import { usePage } from '@inertiajs/react';
-// import Chart from './Chart';
-// import Deposits from './Deposits';
-// import Orders from './Orders';
 
 function Copyright(props: any) {
   return (
@@ -131,11 +124,11 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
             >
               {header}
             </Typography>
-            <IconButton color="inherit">
+            {/* <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
                 <NotificationsIcon />
               </Badge>
-            </IconButton>
+            </IconButton> */}
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -153,9 +146,9 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
           </Toolbar>
           <Divider />
           <List component="nav">
-            {mainListItems} 
+            <ListItems />
             <Divider sx={{ my: 1 }} />
-            {accountListItems}
+            {/* {accountListItems} */}
           </List>
         </Drawer>
         <Box

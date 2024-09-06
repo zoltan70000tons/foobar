@@ -16,6 +16,7 @@ import { CardContent, Snackbar, Alert } from "@mui/material";
 import { useTeamData } from "@/Hooks/useTeamData";
 import CustomSelect from "./CustomSelect";
 import SnackbarAlert from "@/Components/SnackbarAlert";
+import { Permissions } from "@/enums/PermissionEnum";
 
 interface User {
   id: number;
@@ -59,7 +60,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     gender: user?.detail?.gender || ''
   });
 
-  const canEdit = hasPermission('Edit User');
+  const canEdit = hasPermission(Permissions.EditUsers);
 
   const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setData(event.target.name, event.target.value);

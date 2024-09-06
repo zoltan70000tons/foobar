@@ -14,11 +14,15 @@ use App\Repositories\EventRepository;
 use App\Traits\HandlePermissions;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Traits\ExceptionLogger;
+use App\Enums\Permissions;
 
 
 class CabinCategoriesController extends Controller
 {
     use HandlePermissions;
+    use ExceptionLogger;
+
     protected EventRepositoryInterface $eventRepository;
     protected CabinCategoryInterface $cabinCategoryRepository;
     protected $cruisers;
@@ -33,32 +37,40 @@ class CabinCategoriesController extends Controller
 
     public function index()
     {
-
-        return $this->withPermission(['View Cabins'], function () {
-            $data = CabinCategory::all();
-            return Inertia::render('Cabin/Index', [
-                'data' => $data,
-                'tab' => 'CATEGORIES',
-            ]);
-        });
+        try {
+            return $this->withPermission([Permissions::ViewCabinCategories], function () {
+                $data = CabinCategory::all();
+                return Inertia::render('Cabin/Index', [
+                    'data' => $data,
+                    'tab' => 'CATEGORIES',
+                ]);
+            });
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function create(Request $request)
     {
-        return $this->withPermission(['Create Cabin'], function ($request) {
-            $eventId = $request->route('id');
-            $event = $this->eventRepository->find($eventId);
-            return Inertia::render('CabinCategory/Create', [
-                'event' => $event,
-                'cruisers' => $this->cruisers
-            ]);
-        }, $request);
+        try {
+            return $this->withPermission([Permissions::CreateCabinCategories], function ($request) {
+                $eventId = $request->route('id');
+                $event = $this->eventRepository->find($eventId);
+                return Inertia::render('CabinCategory/Create', [
+                    'event' => $event,
+                    'cruisers' => $this->cruisers
+                ]);
+            }, $request);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
 
     public function store(Request $request)
     {
-        $this->withPermission(['Create Cabin'], function (Request $request) {
+       try {
+        $this->withPermission([Permissions::CreateCabinCategories], function (Request $request) {
             $rules = [
                 'category_name' => 'required|string|max:255',
                 'category_code' => 'required|string|max:5',
@@ -75,67 +87,86 @@ class CabinCategoriesController extends Controller
             $event = $this->eventRepository->find($request->event_id);
             return Inertia::render('CabinCategory/Create', ['event' => $event, 'cabin_category' => $cabinCategory, 'cruisers' => $this->cruisers]);
         }, $request);
+       } catch (\Exception $e) {
+         $this->logException($e);
+       }
     }
 
     public function edit($eventId, $cabCatId)
     {
+       try {
         $event = $this->eventRepository->find($eventId);
         $category = $this->cabinCategoryRepository->find($cabCatId);
-        return $this->withPermission(['Edit Cabin'], function ($event, $category) {
+        return $this->withPermission([Permissions::EditCabinCategories], function ($event, $category) {
             return Inertia::render('CabinCategory/Edit', [
                 'cabin_category' => $category,
                 'event' => $event,
                 'cruisers' => $this->cruisers
             ]);
         }, $event, $category);
+       } catch (\Exception $e) {
+        $this->logException($e);
+       }
     }
 
     public function update(Request $request, $event, $cabCatId)
     {
-        $rules = [
-            'category_name' => 'required|string|max:255',
-            'category_code' => 'required|string|max:5',
-            'price' => 'required|numeric',
-            'capacity' => 'required|integer',
-            'description' => 'required|string',
-            'category_type' => 'required|string',
-            'display_order' => 'required|numeric',
-            'cruise' => 'required|numeric',
-            'event_id' => 'required|numeric'
-        ];
-        $request->validate($rules);
-        $event = $this->eventRepository->find($event);
-        $category = $this->cabinCategoryRepository->find($cabCatId);
-        $this->withPermission(['Edit Cabin'], function ($request, $event, $category) {
-            $this->cabinCategoryRepository->update($request->all(), $category->id);
-            return Inertia::render('CabinCategory/Edit', [
-                'cabin_category' => $category,
-                'event' => $event,
-                'cruisers' => $this->cruisers
-            ]);
-        }, $request, $event, $category);
+        try {
+            $rules = [
+                'category_name' => 'required|string|max:255',
+                'category_code' => 'required|string|max:5',
+                'price' => 'required|numeric',
+                'capacity' => 'required|integer',
+                'description' => 'required|string',
+                'category_type' => 'required|string',
+                'display_order' => 'required|numeric',
+                'cruise' => 'required|numeric',
+                'event_id' => 'required|numeric'
+            ];
+            $request->validate($rules);
+            $event = $this->eventRepository->find($event);
+            $category = $this->cabinCategoryRepository->find($cabCatId);
+            $this->withPermission([Permissions::EditCabinCategories], function ($request, $event, $category) {
+                $this->cabinCategoryRepository->update($request->all(), $category->id);
+                return Inertia::render('CabinCategory/Edit', [
+                    'cabin_category' => $category,
+                    'event' => $event,
+                    'cruisers' => $this->cruisers
+                ]);
+            }, $request, $event, $category);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function show(Request $request, $event, $catId)
     {
-        $event = $this->eventRepository->find($event);
-        $category = $this->cabinCategoryRepository->find($catId);
-        return $this->withPermission(['View Cabins'], function ($request, $event, $category) {
-            $this->cabinCategoryRepository->update($request->all(), $category->id);
-            return Inertia::render('CabinCategory/View', [
-                'cabin_category' => $category,
-                'event' => $event,
-                'cruisers' => $this->cruisers
-            ]);
-        }, $request, $event, $category);
+        try {
+            $event = $this->eventRepository->find($event);
+            $category = $this->cabinCategoryRepository->find($catId);
+            return $this->withPermission([Permissions::ViewCabinCategories], function ($request, $event, $category) {
+                $this->cabinCategoryRepository->update($request->all(), $category->id);
+                return Inertia::render('CabinCategory/View', [
+                    'cabin_category' => $category,
+                    'event' => $event,
+                    'cruisers' => $this->cruisers
+                ]);
+            }, $request, $event, $category);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function destroy($id, $catId)
     {
-        $category = $this->cabinCategoryRepository->find($catId);
-        $this->withPermission(['Delete Cabin'], function ($category,$id) {
-            $category->delete();
-            return redirect()->route('cabins.categories',['id' => $id])->with('success', 'Cabin Category deleted successfully.');
-        },  $category,$id);
+        try {
+            $category = $this->cabinCategoryRepository->find($catId);
+            $this->withPermission([Permissions::DeleteCabinCategories], function ($category, $id) {
+                $category->delete();
+                return redirect()->route('cabins.categories', ['id' => $id])->with('success', 'Cabin Category deleted successfully.');
+            },  $category, $id);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 }
