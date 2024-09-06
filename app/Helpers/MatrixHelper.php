@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Str;
 use App\Models\Cabin;
-
+use App\Enums\StatusCabin;
 
 class MatrixHelper
 {
@@ -56,20 +56,22 @@ class MatrixHelper
   /**
    * Return array for table
    * 
-   * @return string
+   * @return string | null
    */
-  public static function getDecks($cat_id)
+  public static function getDecks($cat_type_id, $cat_id)
   {
     // based on cat_id return unique decks number coma separated from lowest to highest
-    $cabin = Cabin::where('cabin_category_id', $cat_id)->get();
+    $listOfDecks = Cabin::where('cabin_type_id', $cat_type_id)
+      ->where('cabin_category_id', $cat_id)
+      ->get();
 
-    $decks = $cabin->map(function ($item) {
+    $decks = $listOfDecks->map(function ($item) {
       return $item->deck;
     })->filter(function ($deck) {
-      return !is_null($deck) && $deck !== ''; // Filter out null and empty strings
+      return !is_null($deck) && $deck !== '';
     })->unique()->sort()->values();
 
-    return $decks->implode(',');
+    return $decks->isEmpty() ? null : $decks->implode(',');
   }
 
   /**
@@ -77,7 +79,7 @@ class MatrixHelper
    * 
    * @return boolean
    */
-  public static function checkCabinAvailability($cat_id)
+  public static function checkCabinAvailability($cat_type_id, $cat_id): bool
   {
     // based on cat_id return true if there are still cabins available
 
@@ -87,13 +89,13 @@ class MatrixHelper
      * 
      */
 
+    $cabins = Cabin::where('cabin_type_id', $cat_type_id)
+      ->where('cabin_category_id', $cat_id)
+      ->get();
 
-    $cabin = Cabin::where('cabin_category_id', $cat_id)->get();
-
-    $available = $cabin->filter(function ($item) {
-      return $item->status === 'RESERVED';
+    // if all cabins have status reserved or sold return false
+    return $cabins->every(function ($cabin) {
+      return $cabin->status === StatusCabin::AVAILABLE->value;
     });
-
-    return $available->count() > 0;
   }
 }
