@@ -1,9 +1,10 @@
-<?php
+<?php 
 
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\Permissions; 
+use App\Enums\Roles; 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -11,55 +12,26 @@ use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Faker\Generator;
 
-
 class RolesSeeder extends Seeder
 {
-
-    /**
-     * The current Faker instance.
-     *
-     * @var \Faker\Generator
-     */
     protected $faker;
 
-    /**
-     * Create a new seeder instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->faker = $this->withFaker();
     }
 
-    /**
-     * Get a new Faker instance.
-     *
-     * @return \Faker\Generator
-     */
     protected function withFaker()
     {
         return Container::getInstance()->make(Generator::class);
     }
-    /**
-     * Run the database seeds.
-     */
+
     public function run(): void
     {
-        // Insertar o actualizar roles
-        $roles = [
-            'SuperAdmin',
-            'Admin',
-            'Owner',
-            'Manager',
-            'Editor',
-            'Agent',
-            'Customer'
-        ];
 
-        foreach ($roles as $role) {
+        foreach (Roles::cases() as $role) {
             DB::table('roles')->updateOrInsert(
-                ['name' => $role, 'team_id' => 1],
+            ['name' => $role, 'team_id' => 1],
                 [
                     'team_id' => 1,
                     'name' => $role,
@@ -71,39 +43,11 @@ class RolesSeeder extends Seeder
             );
         }
 
-        // Insertar o actualizar permisos
-        $permissions = [
-            'View Roles',
-            'Create Role',
-            'Edit Role',
-            'Delete Role',
-            'View Permissions',
-            'Create Permission',
-            'Edit Permission',
-            'Delete Permission',
-            'View Users',
-            'Create User',
-            'Edit User',
-            'Delete User',
-            'View Orders',
-            'Create Order',
-            'Edit Order',
-            'Delete Order',
-            'View Events',
-            'Create Event',
-            'Edit Event',
-            'Delete Event',
-            'View Customers',
-            'Create Customer',
-            'Edit Customer',
-            'Delete Customer',
-        ];
-
-        foreach ($permissions as $permission) {
+        foreach (Permissions::cases() as $permission) {
             DB::table('permissions')->updateOrInsert(
-                ['name' => $permission],
+                ['name' => $permission->value],
                 [
-                    'name' => $permission,
+                    'name' => $permission->value,
                     'guard_name' => 'web',
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -125,8 +69,9 @@ class RolesSeeder extends Seeder
         }
 
         DB::table('role_has_permissions')->insert($rolePermissionData);
+
         $password = Str::random(12);
-        
+
         $superAdminId = DB::table('users')->insertGetId([
             'id' => $this->faker->uuid,
             'username' => 'SuperAdmin',
@@ -137,7 +82,7 @@ class RolesSeeder extends Seeder
             'organization_id' => env('ORGANIZATION_ID', 1)
         ]);
 
-       $adminId = DB::table('users')->insertGetId([
+        $adminId = DB::table('users')->insertGetId([
             'id' => $this->faker->uuid,
             'email' => 'admin@70000tons.com',
             'username' => 'admin',

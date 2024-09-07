@@ -28,6 +28,7 @@ import LoadingOverlay from '../../../Components/LoadingOverlay';
 import {useTheme} from '@emotion/react';
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 
 const ITEM_HEIGHT = 48;
@@ -56,9 +57,9 @@ const List = () => {
 
   const { hasPermission } = usePermissions();
 
-  const createRolePermission = 'Create Role';
-  const editRolePermission = 'Edit Role';
-  const deleteRolePermission = 'Delete Role';
+  const createRolePermission = Permissions.CreateRoles;
+  const editRolePermission = Permissions.EditRoles;
+  const deleteRolePermission = Permissions.DeleteRoles;
 
   const theme = useTheme();
   const { delete: destroy } = useForm({

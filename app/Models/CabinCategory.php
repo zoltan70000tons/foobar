@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class CabinCategory extends Model
 {
@@ -47,4 +49,5 @@ class CabinCategory extends Model
     {
         return $this->belongsTo(Event::class, 'event_id');
     }
+
 }

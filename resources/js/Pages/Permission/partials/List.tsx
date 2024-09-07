@@ -23,6 +23,7 @@ import { Link, useForm } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 const List = () => {
   const [rows, setRows] = useState([]);
@@ -36,10 +37,10 @@ const List = () => {
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const theme = useTheme();
   const { hasPermission} = usePermissions();
-  const viewPermission = 'View Permissions';
-  const createPermission = 'Create Permission';
-  const updatePermission = 'Edit Permission';
-  const deletePermission = 'Delete Permission';
+  const viewPermission = Permissions.ViewPermissions;
+  const createPermission = Permissions.CreatePermissions;
+  const updatePermission = Permissions.EditPermissions;
+  const deletePermission = Permissions.DeletePermissions;
 
   const { delete: destroy } = useForm({
     id: '',

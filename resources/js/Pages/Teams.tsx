@@ -9,12 +9,13 @@ import NavigationTeam from '@/Components/NavigationTeam';
 import buttonsConfig from './Team/buttonsConfig';
 import NoAccessAlert from '@/Components/NoAccessAlert';
 import { usePermissions } from '@/Providers/PermissionContext';
+import { Permissions } from '@/enums/PermissionEnum';
 
 export default function Teams({ auth }: PageProps) {
   const { hasPermission } = usePermissions();
 
-  const viewPermission = 'View Users'; 
-  const createUserPermission = 'Create User'; 
+  const viewPermission = Permissions.ViewUsers; 
+  const createUserPermission = Permissions.CreateUsers; 
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Team"}>

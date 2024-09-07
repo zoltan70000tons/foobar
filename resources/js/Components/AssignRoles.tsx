@@ -18,6 +18,7 @@ import { useTheme } from "@mui/material/styles";
 import SaveIcon from '@mui/icons-material/Save';
 import apiRoutes from "@/Helpers/ApiRoutes";
 import axios from "axios";
+import { Permissions } from "@/enums/PermissionEnum";
 
 
 interface Permission {
@@ -52,7 +53,7 @@ function getStyles(name: string, permissionName: readonly string[], theme: any) 
 
 const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   const { hasPermission,  error } = usePermissions();
-  const canEdit = hasPermission('Edit User');
+  const canEdit = hasPermission(Permissions.EditUsers);
   
   const theme = useTheme();
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -114,7 +115,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
             id="multiple-chip"
             value={permissionName}
             onChange={handleChangeChips}
-            disabled ={!hasPermission('Edit User')} 
+            disabled ={!hasPermission(Permissions.EditUsers)} 
             input={<OutlinedInput id="select-multiple-chip" label="Roles" />}
             renderValue={(selected) => (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -138,7 +139,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
           </Select>
         )}
       </FormControl>
-      {hasPermission('Edit User') && ( <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+      {hasPermission(Permissions.EditUsers) && ( <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
       <LoadingButton
               loading={saveLoading}
               loadingPosition="start"

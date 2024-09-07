@@ -11,6 +11,7 @@ import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import { usePermissions } from '@/Providers/PermissionContext';
+import { Permissions } from '@/enums/PermissionEnum';
 
 
 export default function Dashboard({ auth }: PageProps) {
@@ -29,13 +30,13 @@ export default function Dashboard({ auth }: PageProps) {
         <Grid container spacing={3}>
           <Grid item xs={12} md={12} lg={12}>
             <Grid container spacing={3}>
-              {hasPermission('View Users') && (
+              {hasPermission(Permissions.ViewUsers) && (
                 <Grid item xs={12} sm={6} md={3}>
                   <DashboardCard
                     title="Team"
                     description="Manage your team"
                     Icon={GroupWorkIcon}
-                    link="/70k/team"
+                    link="/team"
                    // badgeContent={4}
                   />
                 </Grid>
@@ -51,7 +52,7 @@ export default function Dashboard({ auth }: PageProps) {
                 />
               </Grid>
               )} */}
-              {hasPermission('View Events') && (
+              {hasPermission(Permissions.ViewEvents) && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
                   title="Events"
@@ -73,17 +74,18 @@ export default function Dashboard({ auth }: PageProps) {
                 />
               </Grid>
               )} */}
-              {hasPermission('View Roles') && (
+              {hasPermission(Permissions.ViewRoles) && (
               <Grid item xs={12} sm={6} md={3}>
                 <DashboardCard
                   title="Roles"
                   description="Manage organization roles"
                   Icon={LocalPoliceIcon}
-                  link="/70k/team/roles"
+                  link="/team/roles"
                   //badgeContent={1}
                 />
               </Grid>
               )}
+
             </Grid>
             
           </Grid>
