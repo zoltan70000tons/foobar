@@ -1,183 +1,175 @@
-import * as React from "react";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import ListSubheader from "@mui/material/ListSubheader";
-import Collapse from "@mui/material/Collapse";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import WorkspacesIcon from "@mui/icons-material/Workspaces";
-import LocalActivityIcon from "@mui/icons-material/LocalActivity";
-import LogoutIcon from "@mui/icons-material/Logout";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import { Link } from "@inertiajs/react";
+import { useState } from "react";
+import {
+  Box,
+  Collapse,
+  Drawer,
+  IconButton,
+  ListSubheader,
+  ListItemButton,
+  ListItemText,
+  Tooltip,
+  List,
+} from "@mui/material";
+import {
+  Dashboard as DashboardIcon,
+  Workspaces as WorkspacesIcon,
+  LocalActivity as LocalActivityIcon,
+  Logout as LogoutIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+} from "@mui/icons-material";
+import { Link, router } from "@inertiajs/react";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
-import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 
-const MenuItems = () => {
+// Define types for the section names
+type Section = "dashboard" | "team" | "events" | null;
+
+interface MenuItemsProps {
+  mainDrawerToggle: React.Dispatch<React.SetStateAction<boolean>>; // Type for setState
+}
+
+const MenuItems: React.FC<MenuItemsProps> = ({ mainDrawerToggle }) => {
   const { hasPermission } = usePermissions();
 
-  // Estado compartido para la sección seleccionada
-  const [openSection, setOpenSection] = React.useState(
-    JSON.parse(localStorage.getItem("openSection")) || null
-  );
+  // Use lazy initialization for localStorage-based on Menu state
+  const [state, setState] = useState(() => ({
+    openSection: JSON.parse(localStorage.getItem("openSection") || "null") as Section,
+    openTeam: JSON.parse(localStorage.getItem("openTeam") || "false"),
+    openEvents: JSON.parse(localStorage.getItem("openEvents") || "false"),
+  }));
 
-  // Estados para las secciones del segundo sidebar
-  const [openTeam, setOpenTeam] = React.useState(
-    JSON.parse(localStorage.getItem("openTeam")) || false
-  );
-  const [openEvents, setOpenEvents] = React.useState(
-    JSON.parse(localStorage.getItem("openEvents")) || false
-  );
+  const { openSection, openTeam, openEvents } = state;
 
-  const handleSectionClick = (section) => {
-    setOpenSection(section);
-    localStorage.setItem("openSection", JSON.stringify(section));
+  // Handle section click events
+  const handleSectionClick = (section: Section): void => {
 
-    // Sincronizar el estado de expansión para las secciones del segundo sidebar
-    if (section === 'team') {
-      setOpenTeam(true);
-    } else if (section === 'events') {
-      setOpenEvents(true);
+    // Close the main drawer if the section is the same as the open section
+    if (section === openSection) {
+      mainDrawerToggle(false);
+      setState((prevState) => ({ ...prevState, openSection: null }));
     } else {
-      setOpenTeam(false);
-      setOpenEvents(false);
+      // Open the main drawer if the section is different from the open section
+      mainDrawerToggle(true);
+      setState((prevState) => ({
+        ...prevState,
+        openSection: section,
+        openTeam: section === "team",
+        openEvents: section === "events",
+      }));
+      localStorage.setItem("openSection", JSON.stringify(section));
     }
   };
 
-  const handleTeamClick = () => {
-    const newState = !openTeam;
-    setOpenTeam(newState);
-    localStorage.setItem("openTeam", JSON.stringify(newState));
+  // Handle team section toggle
+  const handleTeamClick = (): void => {
+    setState((prevState) => {
+      const newOpenTeam = !prevState.openTeam;
+      localStorage.setItem("openTeam", JSON.stringify(newOpenTeam));
+      return { ...prevState, openTeam: newOpenTeam };
+    });
   };
 
-  const handleEventsClick = () => {
-    const newState = !openEvents;
-    setOpenEvents(newState);
-    localStorage.setItem("openEvents", JSON.stringify(newState));
+  // Handle events section toggle
+  const handleEventsClick = (): void => {
+    setState((prevState) => {
+      const newOpenEvents = !prevState.openEvents;
+      localStorage.setItem("openEvents", JSON.stringify(newOpenEvents));
+      return { ...prevState, openEvents: newOpenEvents };
+    });
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      {/* Primer sidebar con solo iconos */}
+    <Box sx={{ display: "flex" }}>
+      {/* Main Side bar - Icons Only */}
       <Drawer
         variant="permanent"
         sx={{
           width: 60,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: 60, boxSizing: 'border-box' },
+          [`& .MuiDrawer-paper`]: { width: 60, boxSizing: "border-box" },
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 1 }}>
           {hasPermission(Permissions.ViewDashboard) && (
             <Tooltip title="Dashboard" placement="right">
-              <IconButton onClick={() => handleSectionClick('dashboard')}>
+              <IconButton onClick={() => (handleSectionClick("dashboard"))} >
                 <DashboardIcon />
               </IconButton>
             </Tooltip>
           )}
           {hasPermission(Permissions.ViewUsers) && (
             <Tooltip title="Team" placement="right">
-              <IconButton onClick={() => handleSectionClick('team')}>
+              <IconButton onClick={() => handleSectionClick("team")}>
                 <WorkspacesIcon />
               </IconButton>
             </Tooltip>
           )}
           {hasPermission(Permissions.ViewEvents) && (
             <Tooltip title="Events" placement="right">
-              <IconButton onClick={() => handleSectionClick('events')}>
+              <IconButton onClick={() => handleSectionClick("events")}>
                 <LocalActivityIcon />
               </IconButton>
             </Tooltip>
           )}
           <Tooltip title="Logout" placement="right">
-            <IconButton component={Link} href={route("logout")} method="post">
+            <IconButton onClick={() => router.post("logout")}>
               <LogoutIcon />
             </IconButton>
           </Tooltip>
         </Box>
       </Drawer>
 
-      {/* Segundo sidebar que muestra el contenido según la sección seleccionada */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box' },
-        }}
-      >
-        <Box sx={{ overflow: 'auto' }}>
-          {openSection === 'dashboard' && (
-            <ListItemButton component={Link} href={route("dashboard")} method="get">
-              <ListItemText primary="Dashboard" />
-            </ListItemButton>
-          )}
-
-          {openSection === 'team' && (
-            <>
-              <ListItemButton onClick={handleTeamClick}>
-                <ListItemText primary="Team" />
-                {openTeam ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-              <Collapse in={openTeam} timeout="auto" unmountOnExit>
-                <ListItemButton component={Link} href={route("teams")}>
-                  <ListItemText primary="Team Members" />
-                </ListItemButton>
-                <ListItemButton component={Link} href={route("roles")}>
-                  <ListItemText primary="Team Roles" />
-                </ListItemButton>
-                <ListItemButton component={Link} href={route("permissions")}>
-                  <ListItemText primary="Team Permissions" />
-                </ListItemButton>
-              </Collapse>
-            </>
-          )}
-
-          {openSection === 'events' && (
-            <>
-              <ListItemButton onClick={handleEventsClick}>
-                <ListItemText primary="Events" />
-                {openEvents ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-              <Collapse in={openEvents} timeout="auto" unmountOnExit>
-                <ListItemButton component={Link} href={route("events.index")}>
-                  <ListItemText primary="All Events" />
-                </ListItemButton>
-                {/* <ListItemButton component={Link} href={route("cabins.index")}>
-                  <ListItemText primary="Cabins" />
-                </ListItemButton>
-                <ListItemButton component={Link} href={route("cabincategories.index")}>
-                  <ListItemText primary="Cabin Categories" />
-                </ListItemButton>
-                <ListItemButton component={Link} href={route("taxes.index")}>
-                  <ListItemText primary="Taxes" />
-                </ListItemButton> */}
-              </Collapse>
-            </>
-          )}
-
-          {openSection === null && (
-            <ListSubheader component="div" inset>
-              Please select a section
+      {/* Second sidebar that displays content based on the selected section */}
+      <List
+        sx={{ width: "100%", bgcolor: "background.paper" }}
+        subheader={openSection === null && (
+            <ListSubheader component="div">
+              Select a Menu option
             </ListSubheader>
-          )}
-        </Box>
-      </Drawer>
-
-      {/* Contenido principal */}
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, bgcolor: 'background.default', padding: 3 }}
+          )
+        }
       >
-        {/* Aquí iría tu contenido principal */}
-      </Box>
+        {openSection === "dashboard" && (
+          <ListItemButton component={Link} href={route("dashboard")} method="get">
+            <ListItemText primary="Dashboard" />
+          </ListItemButton>
+        )}
+
+        {openSection === "team" && (
+          <>
+            <ListItemButton onClick={handleTeamClick}>
+              <ListItemText primary="Team" />
+              {openTeam ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </ListItemButton>
+            <Collapse in={openTeam} timeout="auto" unmountOnExit>
+              <ListItemButton component={Link} href={route("teams")}>
+                <ListItemText primary="Team Members" />
+              </ListItemButton>
+              <ListItemButton component={Link} href={route("roles")}>
+                <ListItemText primary="Team Roles" />
+              </ListItemButton>
+              <ListItemButton component={Link} href={route("permissions")}>
+                <ListItemText primary="Team Permissions" />
+              </ListItemButton>
+            </Collapse>
+          </>
+        )}
+
+        {openSection === "events" && (
+          <>
+            <ListItemButton onClick={handleEventsClick}>
+              <ListItemText primary="Events" />
+              {openEvents ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </ListItemButton>
+            <Collapse in={openEvents} timeout="auto" unmountOnExit>
+              <ListItemButton component={Link} href={route("events.index")}>
+                <ListItemText primary="All Events" />
+              </ListItemButton>
+            </Collapse>
+          </>
+        )}
+      </List>
     </Box>
   );
 };
