@@ -146,7 +146,7 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
           </Toolbar>
           <Divider />
           <List component="nav">
-            <ListItems />
+            <ListItems mainDrawerToggle={setOpen} />
             <Divider sx={{ my: 1 }} />
             {/* {accountListItems} */}
           </List>
