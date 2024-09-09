@@ -84,7 +84,9 @@ Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']
 // });
 
 Route::get('/cabins', [CabinController::class, 'show']);
+Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
+
 
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);
