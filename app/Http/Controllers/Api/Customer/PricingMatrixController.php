@@ -77,6 +77,8 @@ class PricingMatrixController extends Controller
 
         return [
           'category_name' => $item->category_name,
+          'category_capacity' => $item->capacity,
+          'display_order' => $item->display_order,
           'short_name' => MatrixHelper::getNameBeforeFirstNumber($item->category_name, $cabinTypeId),
           'related_category_code' => [
             'code' => $item->category_code,
