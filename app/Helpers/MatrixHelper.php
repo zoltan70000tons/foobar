@@ -58,20 +58,19 @@ class MatrixHelper
    * 
    * @return string | null
    */
-  public static function getDecks($cat_type_id, $cat_id)
+  public static function getDecks($cat_type_id = 1, $cat_id)
   {
-    // based on cat_id return unique decks number coma separated from lowest to highest
     $listOfDecks = Cabin::where('cabin_type_id', $cat_type_id)
-      ->where('cabin_category_id', $cat_id)
-      ->get();
+        ->where('cabin_category_id', $cat_id)
+        ->get();
 
     $decks = $listOfDecks->map(function ($item) {
-      return $item->deck;
+        return $item->deck;
     })->filter(function ($deck) {
-      return !is_null($deck) && $deck !== '';
+        return !is_null($deck) && $deck !== ''; 
     })->unique()->sort()->values();
 
-    return $decks->isEmpty() ? null : $decks->implode(',');
+    return $decks->isEmpty() ? null : $decks->implode(','); 
   }
 
   /**
@@ -88,7 +87,6 @@ class MatrixHelper
      *  
      * 
      */
-
     $cabins = Cabin::where('cabin_type_id', $cat_type_id)
       ->where('cabin_category_id', $cat_id)
       ->get();
@@ -97,5 +95,41 @@ class MatrixHelper
     return $cabins->every(function ($cabin) {
       return $cabin->status === StatusCabin::AVAILABLE->value;
     });
+  }
+
+
+  /**
+   * Return unique cabins type where cabin_code and decks are the same
+   * 
+   * @return array
+   */
+  public static function getUniqueCabinCodes($cabins, $cabinTypeId = 1)
+  {
+    $uniqueCodes = $cabins->map(function ($item) use ($cabinTypeId) {
+      $decks = self::getDecks($cabinTypeId, $item->id);
+      return [
+          'cabin_category_id' => $item->id,
+          'code' => $item->category_code,
+          'decks' => $decks,
+      ];
+    });
+
+    return $uniqueCodes->unique('code')->values();
+  }
+
+  /**
+   * Helper function to get price and availability details for a specific capacity
+   * 
+   * @return array
+   */
+  public static function getPriceDetails($cabins, $capacity, $availabilityStatus)
+  {
+    $cabin = $cabins->where('capacity', $capacity)->first();
+    return [
+      "full_category_name" => $cabin ? $cabin->category_name : null,
+      "capacity" => $capacity,
+      "price" => $cabin ? $cabin->price : null,
+      "is_available" => $cabin ? $availabilityStatus : null,
+    ];
   }
 }
