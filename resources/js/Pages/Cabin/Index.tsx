@@ -77,6 +77,7 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
       preserveState: true, 
       only: ['data', 'tab'], 
       onSuccess: (page) => {
+        console.log(page.props.data);
         setTabContent(page.props.data);
       }
     });
