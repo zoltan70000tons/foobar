@@ -6,6 +6,9 @@ use Illuminate\Support\Str;
 use App\Models\Cabin;
 use App\Enums\StatusCabin;
 
+// use log
+use Illuminate\Support\Facades\Log;
+
 class MatrixHelper
 {
   /**
@@ -58,14 +61,14 @@ class MatrixHelper
    * 
    * @return string | null
    */
-  public static function getDecks($cat_type_id = 1, $cat_id)
+  public static function getDecks($cat_type_id, $cat_id)
   {
     $listOfDecks = Cabin::where('cabin_type_id', $cat_type_id)
         ->where('cabin_category_id', $cat_id)
         ->get();
 
     $decks = $listOfDecks->map(function ($item) {
-        return $item->deck;
+      return strtolower(trim($item->deck));
     })->filter(function ($deck) {
         return !is_null($deck) && $deck !== ''; 
     })->unique()->sort()->values();
@@ -78,7 +81,7 @@ class MatrixHelper
    * 
    * @return boolean
    */
-  public static function checkCabinAvailability($cat_type_id, $cat_id): bool
+  public static function checkCabinAvailability($cat_type_id, $ticketType): bool
   {
     // based on cat_id return true if there are still cabins available
 
@@ -87,8 +90,8 @@ class MatrixHelper
      *  
      * 
      */
-    $cabins = Cabin::where('cabin_type_id', $cat_type_id)
-      ->where('cabin_category_id', $cat_id)
+    $cabins = Cabin::where('cabin_type_id', $ticketType)
+      ->where('cabin_category_id', $ticketType)
       ->get();
 
     // Return true if there is at least one available cabin
@@ -107,6 +110,11 @@ class MatrixHelper
   {
     $uniqueCodes = $cabins->map(function ($item) use ($cabinTypeId) {
       $decks = self::getDecks($cabinTypeId, $item->id);
+      
+      if($decks === null) {
+        return null;
+      }
+      
       return [
           'cabin_category_id' => $item->id,
           'code' => $item->category_code,
