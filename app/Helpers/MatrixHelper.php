@@ -91,8 +91,8 @@ class MatrixHelper
       ->where('cabin_category_id', $cat_id)
       ->get();
 
-    // if all cabins have status reserved or sold return false
-    return $cabins->every(function ($cabin) {
+    // Return true if there is at least one available cabin
+    return $cabins->contains(function ($cabin) {
       return $cabin->status === StatusCabin::AVAILABLE->value;
     });
   }
