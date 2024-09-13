@@ -38,8 +38,8 @@ class PricingMatrixController extends Controller
   public function show($cabinId)
   {
     $uniqueCatTypes = $this->cabinCategory
-      ->select('*')
-      ->groupBy('category_type')
+      ->select('category_type')
+      ->distinct()
       ->get();
 
     $formattedCategory = $uniqueCatTypes
