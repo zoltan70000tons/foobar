@@ -31,11 +31,13 @@ class PricingMatrixController extends Controller
   }
 
   /**
-   * Show private cabin
+   * Show cabins by id
+   * 
+   * default cabin id is 1, 2 is male, 3 is female
    * 
    * return json
    */
-  public function show($cabinId)
+  public function show($ticketType = 1)
   {
     $uniqueCatTypes = $this->cabinCategory
       ->select('category_type')
@@ -43,11 +45,11 @@ class PricingMatrixController extends Controller
       ->get();
 
     $formattedCategory = $uniqueCatTypes
-      ->map(function ($category) use ($cabinId) {
+      ->map(function ($category) use ($ticketType) {
         return [
           'main_category' => [
             'name' => $category->category_type,
-            'categories' => $this->getCategories($category->category_type, $cabinId)
+            'categories' => $this->getCategories($category->category_type, $ticketType)
           ]
         ];
       });
@@ -56,7 +58,7 @@ class PricingMatrixController extends Controller
   }
 
   // Get categories based on category type
-  public function getCategories($categoryType, $cabinTypeId)
+  public function getCategories($categoryType, $ticketType)
   {
     $cabinsGroups = $this->cabinCategory
       ->where('category_type', $categoryType)
@@ -64,11 +66,23 @@ class PricingMatrixController extends Controller
     
     $categoryShortNames = MatrixHelper::getUniqueCabinNames($cabinsGroups->pluck('category_name')->toArray());
     $formattedCategories = [];
+    
+    if($categoryShortNames === null) {
+      return [
+        'name_short' => 'No category found',
+        'cabins' => []
+      ];
+    }
 
     foreach ($categoryShortNames as $categoryShortName) {
+
+      if($categoryShortName === null) {
+        continue;
+      }
+
       $formattedCategories[] = [
           'name_short' => $categoryShortName,
-          'cabins' => $this->getCabinsByCategory($categoryType, $cabinTypeId),
+          'cabins' => $this->getCabinsByCategory($categoryType, $ticketType),
       ];
     }
     
@@ -76,23 +90,30 @@ class PricingMatrixController extends Controller
   }
 
   // Get cabins based on category name
-  public function getCabinsByCategory($categoryType, $cabinTypeId)
+  public function getCabinsByCategory($categoryType, $ticketType)
   {
     $cabinsGroups = $this->cabinCategory
       ->where('category_type', $categoryType)
       ->get();
 
-    $uniqueCodes = MatrixHelper::getUniqueCabinCodes($cabinsGroups, $cabinTypeId);
+    $uniqueCodes = MatrixHelper::getUniqueCabinCodes($cabinsGroups, $ticketType);
     $prices = [];
 
+    if($uniqueCodes === null) {
+      return [];
+    }
 
     foreach ($uniqueCodes as $uniqueCode) {
+
+      if($uniqueCode === null) {
+        continue;
+      }
 
       $prices[] = [
         'category_id' => $uniqueCode['cabin_category_id'],
         'code' => $uniqueCode['code'],
         'decks' => $uniqueCode['decks'],
-        'price_and_availability' => $this->getPrices($uniqueCode['code'], $cabinTypeId),
+        'price_and_availability' => $this->getPrices($uniqueCode['code'], $ticketType),
       ];
     }
 
@@ -100,7 +121,7 @@ class PricingMatrixController extends Controller
   }
 
   // Get prices based on cabin category code and type
-  public function getPrices($uniqueCode, $cabinTypeId)
+  public function getPrices($uniqueCode, $ticketType)
   {
     // Get all cabins for the given category code at once
     $cabins = $this->cabinCategory
@@ -108,7 +129,7 @@ class PricingMatrixController extends Controller
       ->get();
 
     // Cache availability check to avoid repeated calls
-    $availabilityStatus = MatrixHelper::checkCabinAvailability($cabinTypeId, 1);
+    $availabilityStatus = MatrixHelper::checkCabinAvailability($uniqueCode, $ticketType);
 
     // Create price structure based on capacity
     $price = [
