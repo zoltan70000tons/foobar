@@ -51,7 +51,7 @@ class EventSeeder extends Seeder
       'end_date' => '2025-02-04',
       'status' => 'pre-sale',
       'created_at' => Carbon::now(),
-      'organization_id' => env('ORGANIZATION_ID')
+      'organization_id' => env('ORGANIZATION_ID', 1)
     ]);
   }
 }
