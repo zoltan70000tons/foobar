@@ -9,4 +9,5 @@ export interface CabinCategory {
     display_order: number;
     cruise_id?: number;
     event_id?: number;
+    title?: string;
   }

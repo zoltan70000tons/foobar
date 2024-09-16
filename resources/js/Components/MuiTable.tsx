@@ -11,11 +11,14 @@ import {
   Collapse,
   Box,
   TablePagination,
-  TextField,
   CircularProgress,
   TableSortLabel,
   Checkbox,
-  Button
+  Button,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
@@ -29,9 +32,9 @@ interface DataGridProps<T> {
   data: T[];
   subColumns?: {
     header: string;
-    accessor: keyof T;
+    accessor: keyof any;
     sortable?: boolean;
-    draw?: (row: T) => React.ReactNode;
+    draw?: (row: any) => React.ReactNode;
   }[];
   serverSidePagination?: boolean;
   fetchData?: (
@@ -41,6 +44,7 @@ interface DataGridProps<T> {
     sort: { key: keyof T; direction: "asc" | "desc" }
   ) => Promise<{ data: T[]; total: number }>;
   showCheckBox?: boolean;
+  onApplyTags?: (tags: string[], subRowIds: (string | number)[]) => void;
 }
 
 interface RowProps<T> {
@@ -50,17 +54,18 @@ interface RowProps<T> {
     accessor: keyof T;
     draw?: (row: T) => React.ReactNode;
   }[];
-  subRows?: T[];
+  subRows?: any[];
   subColumns?: {
     header: string;
-    accessor: keyof T;
-    draw?: (row: T) => React.ReactNode;
+    accessor: keyof any;
+    draw?: (row: any) => React.ReactNode;
   }[];
   isOpen: boolean;
   onToggle: () => void;
   isSelected: boolean;
   onSelectRow: () => void;
   showCheckBox?: boolean;
+  onApplyTags?: (tags: string[], subRowIds: (string | number)[]) => void;
 }
 
 const Row: FC<RowProps<any>> = ({
@@ -73,10 +78,15 @@ const Row: FC<RowProps<any>> = ({
   isSelected,
   onSelectRow,
   showCheckBox,
+  onApplyTags,
 }) => {
   const [subPage, setSubPage] = useState(0);
   const [subRowsPerPage, setSubRowsPerPage] = useState(5);
-  const [selectedSubRows, setSelectedSubRows] = useState<number[]>([]);
+  const [selectedSubRows, setSelectedSubRows] = useState<(string | number)[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // Opciones predefinidas para las etiquetas
+  const tagOptions = ['NOT ASSIGNED', 'ASSIGNED', 'OPTION 1', 'OPTION 2'];
 
   const handleSubPageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -92,17 +102,22 @@ const Row: FC<RowProps<any>> = ({
 
   const handleSelectAllSubRows = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const allRows = subRows?.map((_, index) => index) || [];
-      setSelectedSubRows(allRows);
+      const allRowIds = subRows?.map((subRow) => subRow.id) || [];
+      setSelectedSubRows(allRowIds);
     } else {
       setSelectedSubRows([]);
     }
   };
 
-  const handleSelectRow = (index: number) => {
+  const handleSelectRow = (id: string | number) => {
     setSelectedSubRows((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
+  };
+
+  const handleTagsChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const value = event.target.value as string[];
+    setSelectedTags(value);
   };
 
   const paginatedSubRows =
@@ -140,15 +155,21 @@ const Row: FC<RowProps<any>> = ({
           >
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <Box margin={1}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  p={2}
+                >
                   <Box>
                     {selectedSubRows.length > 0 && (
                       <Button
                         variant="contained"
                         color="primary"
                         onClick={() => {
-                          // Handle applying tags to selected sub-rows
-                          console.log("Applying tags to:", selectedSubRows);
+                          if (onApplyTags) {
+                            onApplyTags(selectedTags, selectedSubRows);
+                          }
                         }}
                       >
                         Apply Tags
@@ -156,12 +177,24 @@ const Row: FC<RowProps<any>> = ({
                     )}
                   </Box>
                   <Box>
-                    <TextField
-                      label="Tags"
-                      variant="outlined"
-                      size="small"
-                      placeholder="Add tags"
-                    />
+                    <FormControl variant="outlined" size="small" style={{ minWidth: 200 }}>
+                      <InputLabel id="tags-label">Tags</InputLabel>
+                      <Select
+                        labelId="tags-label"
+                        multiple
+                        value={selectedTags}
+                        onChange={handleTagsChange}
+                        label="Tags"
+                        renderValue={(selected) => (selected as string[]).join(', ')}
+                      >
+                        {tagOptions.map((tag) => (
+                          <MenuItem key={tag} value={tag}>
+                            <Checkbox checked={selectedTags.indexOf(tag) > -1} />
+                            <span>{tag}</span>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   </Box>
                 </Box>
                 <Table size="small">
@@ -169,6 +202,10 @@ const Row: FC<RowProps<any>> = ({
                     <TableRow>
                       <TableCell padding="checkbox">
                         <Checkbox
+                          indeterminate={
+                            selectedSubRows.length > 0 &&
+                            selectedSubRows.length < subRows.length
+                          }
                           checked={selectedSubRows.length === subRows.length}
                           onChange={handleSelectAllSubRows}
                         />
@@ -181,12 +218,12 @@ const Row: FC<RowProps<any>> = ({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {paginatedSubRows.map((subRow, index) => (
-                      <TableRow key={index}>
+                    {paginatedSubRows.map((subRow) => (
+                      <TableRow key={subRow.id}>
                         <TableCell padding="checkbox">
                           <Checkbox
-                            checked={selectedSubRows.includes(index)}
-                            onChange={() => handleSelectRow(index)}
+                            checked={selectedSubRows.includes(subRow.id)}
+                            onChange={() => handleSelectRow(subRow.id)}
                           />
                         </TableCell>
                         {subColumns?.map((column) => (
@@ -225,6 +262,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
   serverSidePagination = false,
   fetchData,
   showCheckBox,
+  onApplyTags,
 }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -240,7 +278,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const [paginatedData, setPaginatedData] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
@@ -261,18 +299,18 @@ const MuiTable: FC<DataGridProps<any>> = ({
     }
   }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
 
-  const handleSelectRow = (index: number) => {
+  const handleSelectRow = (id: string | number) => {
     setSelectedRows((prevSelectedRows) =>
-      prevSelectedRows.includes(index)
-        ? prevSelectedRows.filter((i) => i !== index)
-        : [...prevSelectedRows, index]
+      prevSelectedRows.includes(id)
+        ? prevSelectedRows.filter((i) => i !== id)
+        : [...prevSelectedRows, id]
     );
   };
 
   const handleSelectAllRows = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const allRows = data.map((_, index) => index);
-      setSelectedRows(allRows);
+      const allRowIds = data.map((row) => row.id);
+      setSelectedRows(allRowIds);
     } else {
       setSelectedRows([]);
     }
@@ -329,6 +367,9 @@ const MuiTable: FC<DataGridProps<any>> = ({
               {showCheckBox && (
                 <TableCell padding="checkbox">
                   <Checkbox
+                    indeterminate={
+                      selectedRows.length > 0 && selectedRows.length < data.length
+                    }
                     checked={selectedRows.length === data.length}
                     onChange={handleSelectAllRows}
                   />
@@ -364,20 +405,19 @@ const MuiTable: FC<DataGridProps<any>> = ({
             ) : (
               paginatedRows.map((row, index) => (
                 <Row
-                  key={index}
+                  key={row.id}
                   row={row}
                   columns={columns}
                   subRows={row.subRows}
                   subColumns={subColumns}
                   isOpen={expandedRowIndex === index}
                   onToggle={() =>
-                    setExpandedRowIndex(
-                      expandedRowIndex === index ? null : index
-                    )
+                    setExpandedRowIndex(expandedRowIndex === index ? null : index)
                   }
-                  isSelected={selectedRows.includes(index)}
-                  onSelectRow={() => handleSelectRow(index)}
+                  isSelected={selectedRows.includes(row.id)}
+                  onSelectRow={() => handleSelectRow(row.id)}
                   showCheckBox={showCheckBox}
+                  onApplyTags={onApplyTags}
                 />
               ))
             )}

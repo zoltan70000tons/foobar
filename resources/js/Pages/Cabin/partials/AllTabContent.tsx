@@ -6,16 +6,20 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Cabin } from "@/interfaces/Cabin";
-import { Visibility, Edit, Delete } from '@mui/icons-material';
+import { Visibility, Edit, Delete } from "@mui/icons-material";
 import { CabinStatus } from "@/enums/CabinStatus";
+import axios from "axios";
+import apiRoutes from "@/Helpers/ApiRoutes";
 
 interface CabinTabContentProps {
   data: Cabin[] | undefined;
 }
 
-const AllTabContent: React.FC<Cabin> = ({ data }) => {
-  const {hasPermission} = usePermissions()
-  if (!data || data.length === 0) {
+const AllTabContent: React.FC<Cabin> = ({ data}) => {
+  const { hasPermission } = usePermissions();
+  const event_id = data.event_id;
+  const cabins = data.data;
+  if (!cabins || cabins.length === 0) {
     return (
       <Box p={3}>
         <Typography variant="h6" color="textSecondary">
@@ -37,7 +41,7 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
       },
       {
         header: "Name",
-        accessor: "category_name",
+        accessor: "title",
       },
       {
         header: "Capacity",
@@ -56,10 +60,10 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         accessor: "",
         disableFilter: true,
         draw: (row) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             <Visibility
               onClick={() => console.log(`View ${row.category_code}`)}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
             />
           </div>
         ),
@@ -68,20 +72,18 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
     []
   );
 
-
   const subColumns = useMemo(
     () => [
       {
         accessor: "cabin_code",
         header: "Code",
-
       },
       {
-        accessor: "cabin_type", 
+        accessor: "cabin_type",
         header: "Type",
       },
       {
-        accessor: "cabin_number", 
+        accessor: "cabin_number",
         header: "Number",
       },
       {
@@ -92,31 +94,31 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         accessor: "",
         header: "Status",
         draw: (row) => (
-          <Chip size="small" label={row.cabin_status} color={
-            row.cabin_status === CabinStatus.AVAILABLE
-              ? 'success'
-              : row.cabin_status === CabinStatus.RESERVED
-              ? 'default'
-              : row.cabin_status === CabinStatus.BOOKED
-              ? 'error'
-              : 'default' 
-          }
-          
-          
+          <Chip
+            size="small"
+            label={row.cabin_status}
+            color={
+              row.cabin_status === CabinStatus.AVAILABLE
+                ? "success"
+                : row.cabin_status === CabinStatus.RESERVED
+                ? "default"
+                : row.cabin_status === CabinStatus.BOOKED
+                ? "error"
+                : "default"
+            }
           />
-        )
-      
+        ),
       },
-      
+
       {
         header: "Actions",
         accessor: "category_code",
         disableFilter: true,
         draw: (row) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             <Visibility
               onClick={() => console.log(`View ${row.category_code}`)}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
             />
           </div>
         ),
@@ -124,16 +126,26 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
     ],
     []
   );
+
+  const manageTags = (tags, rows) => {
   
-  
+    const url = apiRoutes.addCabinTags(event_id);
+    axios
+      .post(url, { tags: tags, rows: rows })
+      .then((response) => {})
+      .catch((error) => {
+        console.error("Error adding tags:", error);
+      });
+  };
 
   return (
-      <MuiTable
-        columns={columns}
-        data={data}
-        subColumns={subColumns}
-        showCheckBox={false}
-      />
+    <MuiTable
+      columns={columns}
+      data={cabins}
+      subColumns={subColumns}
+      showCheckBox={false}
+      onApplyTags={manageTags}
+    />
   );
 };
 

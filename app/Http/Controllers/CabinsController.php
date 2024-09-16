@@ -22,11 +22,11 @@ class CabinsController extends Controller
     }
     public function index()
     {
-
+        $event_id = request()->route('id');
         $data = $this->cabinRepository->getCategoriesAndCabins();
         return Inertia::render('Cabin/Index', [
             'tab' => 'ALL',
-            'data'=> $data,
+            'data'=> array('data' => $data, 'event_id' => $event_id),
         ]);
     }
 
@@ -63,5 +63,28 @@ class CabinsController extends Controller
     {
         $cabin->delete();
         return redirect()->route('cabins.index')->with('success', 'Cabin deleted successfully.');
+    }
+
+    public function addTag(Request $request){
+        $validatedData = $request->validate([
+            'rows' => 'required|array|min:1',
+            'tags' => 'required|array|min:1',
+            'tags.*' => 'string|max:255',
+        ]);
+        $tags = $validatedData['tags'];
+        $cabinIds = $validatedData['rows'];
+
+        $cabins = Cabin::whereIn('id', $cabinIds)->get();
+
+        foreach ($cabins as $cabin) {
+            $existingTags = $cabin->tags ?? [];
+            $updatedTags = array_unique(array_merge($existingTags, $tags));
+            $cabin->tags = $updatedTags;
+            $cabin->save();
+        }
+
+        return response()->json([
+            'message' => 'Las etiquetas se han agregado correctamente a las cabinas seleccionadas.',
+        ], 200);
     }
 }

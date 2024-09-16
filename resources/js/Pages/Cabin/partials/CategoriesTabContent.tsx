@@ -27,6 +27,7 @@ interface CategoriesTabContentProps {
 const CategoriesTabContent: React.FC<CategoriesTabContentProps> = ({
   data,
 }) => {
+  data = data.data;
   if (!data || data.length === 0) {
     return (
       <Box p={3}>

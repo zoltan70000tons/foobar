@@ -75,9 +75,8 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
     router.get(route(routeName,{id: 1}), {}, {
       preserveScroll: true,
       preserveState: true, 
-      only: ['data', 'tab'], 
+      only: ['data', 'tab', 'event_id'], 
       onSuccess: (page) => {
-        console.log(page.props.data);
         setTabContent(page.props.data);
       }
     });

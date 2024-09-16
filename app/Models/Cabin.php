@@ -40,6 +40,7 @@ class Cabin extends Model
         'balcony' => 'boolean',
         'obstrucuted_view' => 'boolean',
     ];
+    
 
     // Relations
     public function category()

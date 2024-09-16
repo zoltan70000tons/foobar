@@ -26,12 +26,16 @@ class CabinCategory extends Model
         'price',
         'display_order',
         'cruise_id',
-        'event_id',
+        'event_id'
     ];
 
     protected $casts = [
         'images' => 'array',
         'price' => 'decimal:2',
+    ];
+
+    protected $appends = [
+        'title',
     ];
 
     // Relations
@@ -50,4 +54,37 @@ class CabinCategory extends Model
         return $this->belongsTo(Event::class, 'event_id');
     }
 
+    public function getTitleAttribute()
+    {
+
+        $title = $this->category_name;
+        if (strpos($this->category_name, $this->category_type) === false) {
+            $title .= ' ' . $this->category_type;
+        }
+        $title .= ' ' . $this->category_code . ' ' . $this->getCapacityDescription();
+        return $title;
+    }
+    protected function getCapacityDescription()
+    {
+        switch ($this->capacity) {
+            case 1:
+                return 'Single';
+            case 2:
+                return 'Double/Twin';
+            case 3:
+                return 'Triple';
+            case 4:
+                return 'Quad';
+            case 5:
+                return 'Quint';
+            case 6:
+                return 'Sextuple';
+            case 7:
+                return 'Septuple';
+            case 8:
+                return 'Octuple';
+            default:
+                return 'Capacity: ' . $this->capacity . ' Persons';
+        }
+    }
 }

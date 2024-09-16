@@ -48,8 +48,10 @@ class CabinRepository implements CabinInterface
                 'price' => $category->price,
                 'status' => "{$availableCabins}/{$totalCabins}",
                 'capacity' => $category->capacity,
+                'title' => $category->title,
                 'subRows' => $category->cabins->map(function($cabin) {
                     return [
+                        'id' => $cabin->id,
                         'cabin_code' => $cabin->cabin_code,
                         'deck' => $cabin->deck,
                         'total_berths' => $cabin->total_berths,
@@ -64,5 +66,9 @@ class CabinRepository implements CabinInterface
         return $categoriesWithCabins;
     }
     
+    function addTags(array $tags, array $cabins){
+     
+
+    }
 
 }
