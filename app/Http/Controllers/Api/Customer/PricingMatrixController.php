@@ -4,26 +4,21 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App\Helpers\MatrixHelper;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\CabinType;
-use App\Models\Cabin;
 use App\Models\CabinCategory;
-
+use Illuminate\Support\Facades\Log;
 
 class PricingMatrixController extends Controller
 {
 
   protected $cabinType;
   protected $cabinCategory;
-  protected $cabin;
 
-  public function __construct(CabinType $cabinType, CabinCategory $cabinCategory, Cabin $cabin)
+  public function __construct(CabinType $cabinType, CabinCategory $cabinCategory)
   {
     $this->cabinType = $cabinType;
     $this->cabinCategory = $cabinCategory;
-    $this->cabin = $cabin;
   }
-
 
   /**
    * Index return only name and id of cabin types
@@ -32,31 +27,29 @@ class PricingMatrixController extends Controller
   public function index()
   {
     $cabinTypes = $this->cabinType->select('id', 'cabin_type')->get();
-
     return response()->json($cabinTypes);
   }
 
-  /***
-   * Show private cabin
+  /**
+   * Show cabins by id
+   * 
+   * default cabin id is 1, 2 is male, 3 is female
    * 
    * return json
-   * 
    */
-  public function show($cabinId)
+  public function show($ticketType = 1)
   {
-
     $uniqueCatTypes = $this->cabinCategory
-      ->select('*') // Select all fields
-      ->groupBy('category_type') // Group by category_type to get unique ones
+      ->select('category_type')
+      ->distinct()
       ->get();
 
-    // here we got main category like Balocony, Interior, Ocean View
     $formattedCategory = $uniqueCatTypes
-      ->map(function ($category) use ($cabinId) {
+      ->map(function ($category) use ($ticketType) {
         return [
           'main_category' => [
             'name' => $category->category_type,
-            'categories' => $this->getCategories($category->category_type, $cabinId)
+            'categories' => $this->getCategories($category->category_type, $ticketType)
           ]
         ];
       });
@@ -64,39 +57,90 @@ class PricingMatrixController extends Controller
     return response()->json($formattedCategory);
   }
 
-  // get categories based on category type
-  public function getCategories($categoryType, $cabinTypeId)
+  // Get categories based on category type
+  public function getCategories($categoryType, $ticketType)
   {
-    $uniqueCategory = $this->cabinCategory
+    $cabinsGroups = $this->cabinCategory
       ->where('category_type', $categoryType)
-      ->groupBy('category_name')
-      ->get()
-      ->map(function ($item) use ($cabinTypeId) {
+      ->get();
+    
+    $categoryShortNames = MatrixHelper::getUniqueCabinNames($cabinsGroups->pluck('category_name')->toArray());
+    $formattedCategories = [];
+    
+    if($categoryShortNames === null) {
+      return [
+        'name_short' => 'No category found',
+        'cabins' => []
+      ];
+    }
 
-        $deck = MatrixHelper::getDecks($cabinTypeId, $item->id);
+    foreach ($categoryShortNames as $categoryShortName) {
 
-        return [
-          'category_name' => $item->category_name,
-          'short_name' => MatrixHelper::getNameBeforeFirstNumber($item->category_name, $cabinTypeId),
-          'related_category_code' => [
-            'code' => $item->category_code,
-            'decks' => $deck,
-            'related_prices' => $deck ? $this->getPrices($item, $cabinTypeId) : null
-          ],
-        ];
-      });
+      if($categoryShortName === null) {
+        continue;
+      }
 
-    return $uniqueCategory;
+      $formattedCategories[] = [
+          'name_short' => $categoryShortName,
+          'cabins' => $this->getCabinsByCategory($categoryType, $ticketType),
+      ];
+    }
+    
+    return $formattedCategories;
   }
 
-  // get prices
-  public function getPrices($item, $cabinTypeId)
+  // Get cabins based on category name
+  public function getCabinsByCategory($categoryType, $ticketType)
   {
-    $prices = [
-      'price' => $item->price,
-      'isAvailable' => MatrixHelper::checkCabinAvailability($cabinTypeId, $item->id),
-    ];
+    $cabinsGroups = $this->cabinCategory
+      ->where('category_type', $categoryType)
+      ->get();
+
+    $uniqueCodes = MatrixHelper::getUniqueCabinCodes($cabinsGroups, $ticketType);
+    $prices = [];
+
+    if($uniqueCodes === null) {
+      return [];
+    }
+
+    foreach ($uniqueCodes as $uniqueCode) {
+
+      if($uniqueCode === null) {
+        continue;
+      }
+
+      $prices[] = [
+        'category_id' => $uniqueCode['cabin_category_id'],
+        'code' => $uniqueCode['code'],
+        'decks' => $uniqueCode['decks'],
+        'price_and_availability' => $this->getPrices($uniqueCode['code'], $ticketType),
+      ];
+    }
 
     return $prices;
   }
+
+  // Get prices based on cabin category code and type
+  public function getPrices($uniqueCode, $ticketType)
+  {
+    // Get all cabins for the given category code at once
+    $cabins = $this->cabinCategory
+      ->where('category_code', $uniqueCode)
+      ->get();
+
+    // Cache availability check to avoid repeated calls
+    $availabilityStatus = MatrixHelper::checkCabinAvailability($uniqueCode, $ticketType);
+
+    // Create price structure based on capacity
+    $price = [
+      "price_capacity_2" => MatrixHelper::getPriceDetails($cabins, 2, $availabilityStatus),
+      "price_capacity_3" => MatrixHelper::getPriceDetails($cabins, 3, $availabilityStatus),
+      "price_capacity_4" => MatrixHelper::getPriceDetails($cabins, 4, $availabilityStatus),
+      "price_capacity_5" => MatrixHelper::getPriceDetails($cabins, 5, $availabilityStatus),
+      "price_capacity_6" => MatrixHelper::getPriceDetails($cabins, 6, $availabilityStatus),
+    ];
+
+    return $price;
+  }
+
 }
