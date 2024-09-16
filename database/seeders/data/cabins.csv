@@ -820,10 +820,10 @@ Category Type,Capacity,Cabin #,Cat,Description,Deck,Total Berths,Lower Bed Type1
 1,4,3630,3N,Ocean View,3,4,2C,,2,N,3632,AF,N,N,1,,,AVAILABLE
 1,4,3638,3N,Ocean View,3,4,2C,,2,N,,AF,N,N,1,,,AVAILABLE
 1,3,3644,3N,Ocean View,3,3,2C,,1,N,,AF,N,N,1,,,AVAILABLE
-3,4,1391,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
-3,4,1393,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
-3,4,1395,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
-3,4,1397,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
+1,4,1391,3V,Interior,10,4,2C,,2,N,,AF,N,N,1,,,AVAILABLE
+1,4,1393,3V,Interior,10,4,2C,,2,N,,AF,N,N,1,,,SOLD
+2,4,1395,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
+2,4,1397,3V,Interior,10,4,2C,,2,N,,AF,N,N,1,,,SOLD
 3,4,1691,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
 3,4,1693,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
 3,4,1695,3V,Interior,10,4,2C,,2,N,,AF,N,N,0,,,SOLD
@@ -1245,9 +1245,9 @@ Category Type,Capacity,Cabin #,Cat,Description,Deck,Total Berths,Lower Bed Type1
 1,2,7506,4N,Ocean View,7,2,2C,,,N,,FW,N,N,1,,,AVAILABLE
 1,2,9214,4N,Ocean View,9,2,2C,,,N,,FW,N,N,1,,,AVAILABLE
 1,2,9514,4N,Ocean View,9,2,2C,,,N,,FW,N,N,1,,,AVAILABLE
-2,2,1231,4VH,Interior Stateroom Access,10,2,2C,,,Y,,FW,N,N,0,,,SOLD
+1,2,1231,4VH,Interior Stateroom Access,10,2,2C,,,Y,,FW,N,N,0,,,SOLD
 2,2,1235,4VH,Interior,10,2,2C,,,N,,FW,N,N,0,,,SOLD
-2,2,1357,4VH,Interior Stateroom Access,10,2,2C,,,Y,,AF,N,N,0,,,SOLD
+3,2,1357,4VH,Interior Stateroom Access,10,2,2C,,,Y,,AF,N,N,0,,,SOLD
 2,2,1359,4VH,Interior,10,2,2C,,,N,,AF,N,N,0,,,SOLD
 2,2,1361,4VH,Interior,10,2,2C,,,N,,AF,N,N,0,,,SOLD
 2,2,1363,4VH,Interior,10,2,2C,,,N,,AF,N,N,0,,,SOLD
