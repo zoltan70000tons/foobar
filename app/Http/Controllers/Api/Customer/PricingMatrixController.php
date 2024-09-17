@@ -57,7 +57,7 @@ class PricingMatrixController extends Controller
                   'main_category' => [
                       'name' => $category->category_type,
                       'display_order' => $category->display_order,
-                      'max_capacity' => MatrixHelper::getMaxCapacity($category->id, $ticketType),
+                      'max_capacity' => $category->category_type === 'Suite' ? 8 : 6,
                       'categories' => $this->getCategories($category->category_type, $ticketType),
                   ]
               ];
@@ -70,30 +70,27 @@ class PricingMatrixController extends Controller
   // Get categories based on category type
   public function getCategories($categoryType, $ticketType)
   {
-    $cabinsGroups = $this->cabinCategory
-      ->where('category_type', $categoryType)
-      ->select('category_name')
-      ->distinct()
-      ->get()
-      ->map(function ($category) use ($categoryType, $ticketType) {
+    $categories = $this->cabinCategory
+        ->where('category_type', $categoryType)
+        ->with(['cabins' => function ($query) use ($ticketType) {
+            $query->where('cabin_type_id', $ticketType);
+        }])
+        ->get()
+        ->groupBy('category_name')
+        ->map(function ($group) {
+            return $group->sortBy('display_order')->first();
+        })
+        ->sortBy('display_order')
+        ->values();
+
+    $cabinsGroups = $categories->map(function ($category) use ($categoryType, $ticketType) {
         return [
-          'name' => $category->category_name,
-          'cabins' => $this->getCabinsByCategory($categoryType, $category->category_name, $ticketType),
+            'name' => $category->category_name,
+            'display_order' => $category->display_order,
+            'cabins' => $this->getCabinsByCategory($categoryType, $category->category_name, $ticketType),
         ];
-      });
-      
-    // foreach ($categoryShortNames as $categoryShortName) {
+    });
 
-    //   if($categoryShortName === null) {
-    //     continue;
-    //   }
-
-    //   $formattedCategories[] = [
-    //       'name_short' => $categoryShortName,
-    //       'cabins' => $this->getCabinsByCategory($categoryType, $ticketType),
-    //   ];
-    // }
-    
     return $cabinsGroups;
   }
 
@@ -129,34 +126,8 @@ class PricingMatrixController extends Controller
       ];
     }
 
-
-
     return $prices;
-
-    // $uniqueCodes = MatrixHelper::getUniqueCabinCodes($cabinsGroups, $ticketType);
-    // $prices = [];
-
-    // if($uniqueCodes === null) {
-    //   return [];
-    // }
-
-    // foreach ($uniqueCodes as $uniqueCode) {
-
-    //   if($uniqueCode === null) {
-    //     continue;
-    //   }
-
-    //   $prices[] = [
-    //     'category_id' => $uniqueCode['cabin_category_id'],
-    //     'code' => $uniqueCode['code'],
-    //     'decks' => $uniqueCode['decks'],
-    //     'price_and_availability' => $this->getPrices($uniqueCode['code'], $ticketType),
-    //   ];
-    // }
-
-    // return $prices;
   }
-
 
 
   // Get prices based on cabin category code and type
