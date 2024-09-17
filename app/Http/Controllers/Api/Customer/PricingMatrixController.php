@@ -70,18 +70,27 @@ class PricingMatrixController extends Controller
   // Get categories based on category type
   public function getCategories($categoryType, $ticketType)
   {
-    $cabinsGroups = $this->cabinCategory
-      ->where('category_type', $categoryType)
-      ->select('category_name')
-      ->distinct()
-      ->get()
-      ->map(function ($category) use ($categoryType, $ticketType) {
+    $categories = $this->cabinCategory
+        ->where('category_type', $categoryType)
+        ->with(['cabins' => function ($query) use ($ticketType) {
+            $query->where('cabin_type_id', $ticketType);
+        }])
+        ->get()
+        ->groupBy('category_name')
+        ->map(function ($group) {
+            return $group->sortBy('display_order')->first();
+        })
+        ->sortBy('display_order')
+        ->values();
+
+    $cabinsGroups = $categories->map(function ($category) use ($categoryType, $ticketType) {
         return [
-          'name' => $category->category_name,
-          'cabins' => $this->getCabinsByCategory($categoryType, $category->category_name, $ticketType),
+            'name' => $category->category_name,
+            'display_order' => $category->display_order,
+            'cabins' => $this->getCabinsByCategory($categoryType, $category->category_name, $ticketType),
         ];
-      });
-    
+    });
+
     return $cabinsGroups;
   }
 
