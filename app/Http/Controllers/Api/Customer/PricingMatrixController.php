@@ -57,7 +57,7 @@ class PricingMatrixController extends Controller
                   'main_category' => [
                       'name' => $category->category_type,
                       'display_order' => $category->display_order,
-                      'max_capacity' => MatrixHelper::getMaxCapacity($category->id, $ticketType),
+                      'max_capacity' => $category->category_type === 'Suite' ? 8 : 6,
                       'categories' => $this->getCategories($category->category_type, $ticketType),
                   ]
               ];
@@ -81,18 +81,6 @@ class PricingMatrixController extends Controller
           'cabins' => $this->getCabinsByCategory($categoryType, $category->category_name, $ticketType),
         ];
       });
-      
-    // foreach ($categoryShortNames as $categoryShortName) {
-
-    //   if($categoryShortName === null) {
-    //     continue;
-    //   }
-
-    //   $formattedCategories[] = [
-    //       'name_short' => $categoryShortName,
-    //       'cabins' => $this->getCabinsByCategory($categoryType, $ticketType),
-    //   ];
-    // }
     
     return $cabinsGroups;
   }
@@ -129,34 +117,8 @@ class PricingMatrixController extends Controller
       ];
     }
 
-
-
     return $prices;
-
-    // $uniqueCodes = MatrixHelper::getUniqueCabinCodes($cabinsGroups, $ticketType);
-    // $prices = [];
-
-    // if($uniqueCodes === null) {
-    //   return [];
-    // }
-
-    // foreach ($uniqueCodes as $uniqueCode) {
-
-    //   if($uniqueCode === null) {
-    //     continue;
-    //   }
-
-    //   $prices[] = [
-    //     'category_id' => $uniqueCode['cabin_category_id'],
-    //     'code' => $uniqueCode['code'],
-    //     'decks' => $uniqueCode['decks'],
-    //     'price_and_availability' => $this->getPrices($uniqueCode['code'], $ticketType),
-    //   ];
-    // }
-
-    // return $prices;
   }
-
 
 
   // Get prices based on cabin category code and type
