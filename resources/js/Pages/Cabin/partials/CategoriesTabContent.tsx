@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
-import MuiTable from "@/Components/MuiTable";
+import MuiTable from "@/Components/tables/MuiTable";
 import AddIcon from "@mui/icons-material/Add";
 import { Head, router } from "@inertiajs/react";
 import { usePermissions } from "@/Providers/PermissionContext";

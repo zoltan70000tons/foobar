@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, useMemo } from "react";
 import { Card, CardContent, Typography, Grid, Box, Chip } from "@mui/material";
 import { MaterialReactTable, MRT_ColumnDef } from "material-react-table";
-import MuiTable from "@/Components/MuiTable";
+import MuiTable from "@/Components/tables/MuiTable";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { CabinCategory } from "@/interfaces/CabinCategory";
@@ -34,40 +34,51 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
       {
         header: "Code",
         accessor: "category_code",
+        filtrable:true,
+        sortable: true,
       },
       {
         header: "Type",
         accessor: "category_type",
+        filtrable:true,
+        sortable: true,
       },
       {
         header: "Name",
         accessor: "title",
+        filtrable:true,
+        sortable: true,
       },
       {
         header: "Capacity",
         accessor: "capacity",
+        filtrable:true,
+        sortable: true,
       },
       {
         header: "Price",
         accessor: "price",
+        filtrable:true,
+        sortable: true,
       },
       {
         header: "Status",
         accessor: "status",
+        sortable: true,
+        filtrable:true
       },
-      {
-        header: "Actions",
-        accessor: "",
-        disableFilter: true,
-        draw: (row) => (
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Visibility
-              onClick={() => console.log(`View ${row.category_code}`)}
-              style={{ cursor: "pointer" }}
-            />
-          </div>
-        ),
-      },
+      // {
+      //   header: "Actions",
+      //   accessor: "",
+      //   draw: (row) => (
+      //     <div style={{ display: "flex", gap: "10px" }}>
+      //       <Visibility
+      //         onClick={() => console.log(`View ${row.category_code}`)}
+      //         style={{ cursor: "pointer" }}
+      //       />
+      //     </div>
+      //   ),
+      // },
     ],
     []
   );
@@ -77,22 +88,32 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
       {
         accessor: "cabin_code",
         header: "Code",
+        sortable: true,
+        filtrable: true
       },
       {
         accessor: "cabin_type",
         header: "Type",
+        sortable: true,
+        filtrable: true
       },
       {
         accessor: "cabin_number",
         header: "Number",
+        filtrable: true,
+        sortable: true,
       },
       {
         accessor: "cabin_deck",
         header: "Deck",
+        sortable: true,
+        filtrable: true
       },
       {
-        accessor: "",
+        accessor: "cabin_status",
         header: "Status",
+        filtrable: true,
+        sortable: true,
         draw: (row) => (
           <Chip
             size="small"
@@ -110,19 +131,19 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
         ),
       },
 
-      {
-        header: "Actions",
-        accessor: "category_code",
-        disableFilter: true,
-        draw: (row) => (
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Visibility
-              onClick={() => console.log(`View ${row.category_code}`)}
-              style={{ cursor: "pointer" }}
-            />
-          </div>
-        ),
-      },
+      // {
+      //   header: "Actions",
+      //   accessor: "category_code",
+      //   disableFilter: true,
+      //   draw: (row) => (<></>
+      //     // <div style={{ display: "flex", gap: "10px" }}>
+      //     //   <Visibility
+      //     //     onClick={() => console.log(`View ${row.category_code}`)}
+      //     //     style={{ cursor: "pointer" }}
+      //     //   />
+      //     // </div>
+      //   ),
+      // },
     ],
     []
   );
@@ -145,6 +166,8 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
       subColumns={subColumns}
       showCheckBox={false}
       onApplyTags={manageTags}
+      showTableFilters={true}
+      showSubTableFilters={true}
     />
   );
 };
