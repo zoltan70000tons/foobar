@@ -79,12 +79,31 @@ class CabinsController extends Controller
         foreach ($cabins as $cabin) {
             $existingTags = $cabin->tags ?? [];
             $updatedTags = array_unique(array_merge($existingTags, $tags));
+            $updatedTags = array_values($updatedTags); 
             $cabin->tags = $updatedTags;
             $cabin->save();
         }
 
         return response()->json([
-            'message' => 'Las etiquetas se han agregado correctamente a las cabinas seleccionadas.',
+            'message' => 'Tags added succefully.',
+        ], 200);
+    }
+
+    public function updateStatus(Request $request){
+        $validatedData = $request->validate([
+            'rows' => 'required|array|min:1',
+            'status' => 'required|string',
+        ]);
+        $status = $validatedData['status'];
+        $cabinIds = $validatedData['rows'];
+        $cabins = Cabin::whereIn('id', $cabinIds)->get();
+        foreach ($cabins as $cabin) {
+            $cabin->status = $status;
+            $cabin->save();
+        }
+
+        return response()->json([
+            'message' => 'Status updated successfully',
         ], 200);
     }
 }

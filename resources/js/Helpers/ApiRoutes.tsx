@@ -19,6 +19,7 @@ const apiRoutes = {
 
   //cabins
   addCabinTags: (id: string) => `${API_BASE_URL}/events/${id}/cabins/addTag`,
+  updateCabinStatus: (id: string) => `${API_BASE_URL}/events/${id}/cabins/updateStatus`,
 };
 
 export default apiRoutes;

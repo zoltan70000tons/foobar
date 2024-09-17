@@ -1,0 +1,8 @@
+export enum TagEnum {
+  STAFF = "STAFF", 
+  ARTIST = "ARTISTS", 
+  PRESS = "PRESS", 
+  UNUSABLE = "UNUSABLE",
+  NON_REV = "NON-REV", 
+  POTENTIAL_NOSE = "POTENTIAL NOISE"
+}

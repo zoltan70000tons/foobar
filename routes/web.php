@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
     
     //Cabins Add Tag
     Route::post('/events/{id}/cabins/addTag', [CabinsController::class, 'addTag'])->name('cabins.addTag');
+    Route::post('/events/{id}/cabins/updateStatus', [CabinsController::class, 'updateStatus'])->name('cabins.updateStatus');
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
 });

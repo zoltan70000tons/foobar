@@ -12,37 +12,23 @@ import {
   TableSortLabel,
   Checkbox,
   TextField,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Fab,
-  Box,
 } from "@mui/material";
-import { ManageAccounts } from "@mui/icons-material"; 
 import Row from "./Row"; 
 
+interface ColumnProps<T> {
+  header: string;
+  accessor: keyof T | string;
+  sortable?: boolean;
+  filterable?: boolean;
+  draw?: (row: T) => React.ReactNode;
+  filterType?: "text" | "select";
+  filterOptions?: string[];
+}
+
 interface DataGridProps<T> {
-  columns: {
-    header: string;
-    accessor: keyof T | string;
-    sortable?: boolean;
-    filtrable?: boolean;
-    draw?: (row: T) => React.ReactNode;
-  }[];
+  columns: ColumnProps<T>[];
   data: T[];
-  subColumns?: {
-    header: string;
-    accessor: keyof any | string;
-    sortable?: boolean;
-    filtrable?: boolean;
-    draw?: (row: any) => React.ReactNode;
-  }[];
+  subColumns?: ColumnProps<any>[];
   serverSidePagination?: boolean;
   fetchData?: (
     page: number,
@@ -51,11 +37,15 @@ interface DataGridProps<T> {
     sort: { key: keyof T | string; direction: "asc" | "desc" }
   ) => Promise<{ data: T[]; total: number }>;
   showCheckBox?: boolean;
-  onApplyTags?: (tags: string[], subRowIds: (string | number)[]) => void;
-  onApplyState?: (state: string, subRowIds: (string | number)[]) => void;
-  onChangeCabinType?: (type: string, subRowIds: (string | number)[]) => void;
+  onApplyTags?: (subRowIds: (string | number)[], selectedTags: string[]) => void;
+  onApplyState?: (
+    subRowIds: (string | number)[],
+    selectedStatus: string
+  ) => void; // Modificado
   showTableFilters?: boolean;
   showSubTableFilters?: boolean;
+  tagOptions?: string[];
+  statusOptions?: string[]; 
 }
 
 const MuiTable: FC<DataGridProps<any>> = ({
@@ -67,13 +57,14 @@ const MuiTable: FC<DataGridProps<any>> = ({
   showCheckBox,
   onApplyTags,
   onApplyState,
-  onChangeCabinType,
   showTableFilters = false,
   showSubTableFilters = false,
+  tagOptions = [],
+  statusOptions = [],
 }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [expandedRowIndex, setExpandedRowIndex] = useState<number | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [sort, setSort] = useState<{
     key: keyof any | string;
@@ -86,23 +77,8 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-  const [tableFilters, setTableFilters] = useState<{ [key: string]: string }>(
-    {}
-  );
-
-
-  const [selectedSubRows, setSelectedSubRows] = useState<(string | number)[]>(
-    []
-  );
-  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedState, setSelectedState] = useState<string>("");
-  const [selectedCabinType, setSelectedCabinType] = useState<string>("");
-
-
-  const tagOptions = ["NOT ASSIGNED", "ASSIGNED", "OPTION 1", "OPTION 2"];
-  const cabinStatuses = ["AVAILABLE", "RESERVED", "BOOKED", "MAINTENANCE"];
-  const cabinTypes = ["TYPE A", "TYPE B", "TYPE C"];
+  const [tableFilters, setTableFilters] = useState<{ [key: string]: string }>({});
+  const [selectedSubRows, setSelectedSubRows] = useState<(string | number)[]>([]);
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
@@ -199,7 +175,6 @@ const MuiTable: FC<DataGridProps<any>> = ({
     setPage(0);
   };
 
-
   const handleSelectSubRow = (id: string | number) => {
     setSelectedSubRows((prevSelectedSubRows) =>
       prevSelectedSubRows.includes(id)
@@ -208,32 +183,18 @@ const MuiTable: FC<DataGridProps<any>> = ({
     );
   };
 
-  const handleManageClick = () => {
-    setIsManageModalOpen(true);
+  const handleEditTags = (selectedTags: string[]) => {
+    if (onApplyTags) {
+      onApplyTags(selectedSubRows, selectedTags);
+    }
+    //setSelectedSubRows([]);
   };
 
-  const handleManageClose = () => {
-    setIsManageModalOpen(false);
-    setSelectedTags([]);
-    setSelectedState("");
-    setSelectedCabinType("");
-  };
-
-  const handleApplyChanges = () => {
-    if (onApplyTags && selectedTags.length > 0) {
-      onApplyTags(selectedTags, selectedSubRows);
+  const handleChangeStatus = (selectedStatus: string) => {
+    if (onApplyState) {
+      onApplyState(selectedSubRows, selectedStatus);
     }
-    if (onApplyState && selectedState) {
-      onApplyState(selectedState, selectedSubRows);
-    }
-    if (onChangeCabinType && selectedCabinType) {
-      onChangeCabinType(selectedCabinType, selectedSubRows);
-    }
-    setIsManageModalOpen(false);
-    setSelectedSubRows([]);
-    setSelectedTags([]);
-    setSelectedState("");
-    setSelectedCabinType("");
+    //setSelectedSubRows([]);
   };
 
   return (
@@ -242,14 +203,12 @@ const MuiTable: FC<DataGridProps<any>> = ({
         <TableContainer>
           <Table>
             <TableHead>
-
               <TableRow>
                 {showCheckBox && (
                   <TableCell padding="checkbox">
                     <Checkbox
                       indeterminate={
-                        selectedRows.length > 0 &&
-                        selectedRows.length < data.length
+                        selectedRows.length > 0 && selectedRows.length < data.length
                       }
                       checked={selectedRows.length === data.length}
                       onChange={handleSelectAllRows}
@@ -273,22 +232,32 @@ const MuiTable: FC<DataGridProps<any>> = ({
                   </TableCell>
                 ))}
               </TableRow>
-
               {showTableFilters && (
                 <TableRow>
                   {showCheckBox && <TableCell />}
                   <TableCell />
                   {columns.map((column) => (
                     <TableCell key={column.accessor as string}>
-                      {column.filtrable ? (
-                        <TextField
-                          name={column.accessor as string}
-                          label=""
-                          placeholder={`Filter ${column.header}`}
-                          variant="outlined"
-                          size="small"
-                          onChange={handleTableFilterChange}
-                        />
+                      {column.filterable ? (
+                        column.filterType === "select" ? (
+                          <TextField
+                            name={column.accessor as string}
+                            label=""
+                            placeholder={`Filter ${column.header}`}
+                            variant="outlined"
+                            size="small"
+                            onChange={handleTableFilterChange}
+                          />
+                        ) : (
+                          <TextField
+                            name={column.accessor as string}
+                            label=""
+                            placeholder={`Filter ${column.header}`}
+                            variant="outlined"
+                            size="small"
+                            onChange={handleTableFilterChange}
+                          />
+                        )
                       ) : null}
                     </TableCell>
                   ))}
@@ -313,11 +282,9 @@ const MuiTable: FC<DataGridProps<any>> = ({
                     columns={columns}
                     subRows={row.subRows}
                     subColumns={subColumns}
-                    isOpen={expandedRowIndex === index}
+                    isOpen={expandedRowId === row.id}
                     onToggle={() =>
-                      setExpandedRowIndex(
-                        expandedRowIndex === index ? null : index
-                      )
+                      setExpandedRowId(expandedRowId === row.id ? null : row.id)
                     }
                     isSelected={selectedRows.includes(row.id)}
                     onSelectRow={() => handleSelectRow(row.id)}
@@ -325,7 +292,10 @@ const MuiTable: FC<DataGridProps<any>> = ({
                     onSelectSubRow={handleSelectSubRow}
                     selectedSubRows={selectedSubRows}
                     showSubTableFilters={showSubTableFilters}
-                    onManageSubRows={handleManageClick} 
+                    onEditTags={handleEditTags}
+                    onChangeStatus={handleChangeStatus}
+                    tagOptions={tagOptions}
+                    statusOptions={statusOptions}
                   />
                 ))
               ) : (
@@ -352,80 +322,6 @@ const MuiTable: FC<DataGridProps<any>> = ({
           labelRowsPerPage="Rows per page"
         />
       </Paper>
-
-      <Dialog open={isManageModalOpen} onClose={handleManageClose}>
-        <DialogTitle>Manage selected cabins</DialogTitle>
-        <DialogContent>
-
-        <Box display="flex" gap={2} flexDirection="row" flexWrap="wrap">
-  <FormControl variant="outlined" size="small" style={{ minWidth: 200 }}>
-    <InputLabel id="tags-label">Tags</InputLabel>
-    <Select
-      labelId="tags-label"
-      multiple
-      value={selectedTags}
-      onChange={(event) => setSelectedTags(event.target.value as string[])}
-      label="Tags"
-      renderValue={(selected) => (selected as string[]).join(", ")}
-    >
-      {tagOptions.map((tag) => (
-        <MenuItem key={tag} value={tag}>
-          <Checkbox checked={selectedTags.indexOf(tag) > -1} />
-          <span>{tag}</span>
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-
-  <FormControl variant="outlined" size="small" style={{ minWidth: 200 }}>
-    <InputLabel id="state-label">Status</InputLabel>
-    <Select
-      labelId="state-label"
-      value={selectedState}
-      onChange={(event) => setSelectedState(event.target.value as string)}
-      label="Status"
-    >
-      {cabinStatuses.map((status) => (
-        <MenuItem key={status} value={status}>
-          {status}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-
-  <FormControl variant="outlined" size="small" style={{ minWidth: 200 }}>
-    <InputLabel id="type-label">Cabin Type</InputLabel>
-    <Select
-      labelId="type-label"
-      value={selectedCabinType}
-      onChange={(event) => setSelectedCabinType(event.target.value as string)}
-      label="Cabin Type"
-    >
-      {cabinTypes.map((type) => (
-        <MenuItem key={type} value={type}>
-          {type}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Box>
-
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleManageClose} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleApplyChanges}
-            color="primary"
-            disabled={
-              selectedTags.length === 0 && !selectedState && !selectedCabinType
-            }
-          >
-            Apply
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 };

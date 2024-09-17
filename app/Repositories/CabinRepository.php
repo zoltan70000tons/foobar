@@ -59,10 +59,12 @@ class CabinRepository implements CabinInterface
                         'cabin_deck' => $cabin->deck,
                         'cabin_status' => $cabin->status,
                         'cabin_type' => $cabin->cabinType->cabin_type,
+                        'cabin_tags' => $cabin->tags
                     ];
                 })
             ];
         });
+
         return $categoriesWithCabins;
     }
     

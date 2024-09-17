@@ -13,26 +13,31 @@ import {
   TablePagination,
   TableSortLabel,
   Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  OutlinedInput,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
+interface ColumnProps<T> {
+  header: string;
+  accessor: keyof T | string;
+  sortable?: boolean;
+  filterable?: boolean;
+  draw?: (row: T) => React.ReactNode;
+  filterType?: "text" | "select";
+  filterOptions?: string[];
+  filterFunction?: (cellValue: any, filterValue: string) => boolean;
+}
+
 interface RowProps<T> {
   row: T;
-  columns: {
-    header: string;
-    accessor: keyof T | string;
-    sortable?: boolean;
-    filtrable?: boolean;
-    draw?: (row: T) => React.ReactNode;
-  }[];
+  columns: ColumnProps<T>[];
   subRows?: any[];
-  subColumns?: {
-    header: string;
-    accessor: keyof any | string;
-    sortable?: boolean;
-    filtrable?: boolean;
-    draw?: (row: any) => React.ReactNode;
-  }[];
+  subColumns?: ColumnProps<any>[];
   isOpen: boolean;
   onToggle: () => void;
   isSelected: boolean;
@@ -41,7 +46,10 @@ interface RowProps<T> {
   onSelectSubRow?: (id: string | number) => void;
   selectedSubRows?: (string | number)[];
   showSubTableFilters?: boolean;
-  onManageSubRows?: () => void; 
+  onEditTags?: (selectedTags: string[]) => void;
+  onChangeStatus?: (selectedStatus: string) => void;
+  tagOptions?: string[];
+  statusOptions?: string[];
 }
 
 const Row: FC<RowProps<any>> = ({
@@ -57,7 +65,10 @@ const Row: FC<RowProps<any>> = ({
   onSelectSubRow,
   selectedSubRows = [],
   showSubTableFilters,
-  onManageSubRows, 
+  onEditTags,
+  onChangeStatus,
+  tagOptions = [],
+  statusOptions = [],
 }) => {
   const [subPage, setSubPage] = useState(0);
   const [subRowsPerPage, setSubRowsPerPage] = useState(5);
@@ -69,6 +80,9 @@ const Row: FC<RowProps<any>> = ({
     key: subColumns && subColumns[0]?.accessor,
     direction: "asc",
   });
+
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
   const handleSubPageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -82,10 +96,13 @@ const Row: FC<RowProps<any>> = ({
     setSubPage(0);
   };
 
-  const handleSubFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleSubFilterChange = (
+    event: ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => {
+    const { name, value } = event.target;
     setSubFilters({
       ...subFilters,
-      [event.target.name]: event.target.value,
+      [name as string]: value as string,
     });
     setSubPage(0);
   };
@@ -98,13 +115,25 @@ const Row: FC<RowProps<any>> = ({
     }));
   };
 
-  const filteredSubRows = subRows?.filter((subRow) => {
-    return Object.keys(subFilters).every((key) => {
-      const filterValue = subFilters[key]?.toLowerCase() || "";
-      const rowValue = subRow[key]?.toString().toLowerCase() || "";
-      return rowValue.includes(filterValue);
-    });
-  }) || [];
+  const filteredSubRows =
+    subRows?.filter((subRow) => {
+      return subColumns?.every((column) => {
+        const key = column.accessor as string;
+        const filterValue = subFilters[key];
+        if (filterValue) {
+          const cellValue = subRow[key];
+          if (column.filterFunction) {
+            return column.filterFunction(cellValue, filterValue);
+          } else if (column.filterType === "select") {
+            return cellValue === filterValue;
+          } else {
+            const cellValueStr = cellValue?.toString().toLowerCase() || "";
+            return cellValueStr.includes(filterValue.toLowerCase());
+          }
+        }
+        return true;
+      });
+    }) || [];
 
   const sortedSubRows = filteredSubRows.sort((a, b) => {
     const aValue = a[subSort.key];
@@ -141,6 +170,31 @@ const Row: FC<RowProps<any>> = ({
     }
   };
 
+  const handleTagChange = (event: any) => {
+    const {
+      target: { value },
+    } = event;
+    setSelectedTags(typeof value === "string" ? value.split(",") : value);
+  };
+
+  const handleStatusChange = (event: any) => {
+    setSelectedStatus(event.target.value);
+  };
+
+  const handleEditTags = () => {
+    if (onEditTags) {
+      onEditTags(selectedTags);
+    }
+    setSelectedTags([]);
+  };
+
+  const handleChangeStatus = () => {
+    if (onChangeStatus) {
+      onChangeStatus(selectedStatus);
+    }
+    setSelectedStatus("");
+  };
+
   return (
     <>
       <TableRow>
@@ -163,13 +217,91 @@ const Row: FC<RowProps<any>> = ({
         ))}
       </TableRow>
       {subRows && (
-        <TableRow sx={{ 'background' : '#1C252C'}}>
+        <TableRow>
           <TableCell
             style={{ paddingBottom: 0, paddingTop: 0 }}
             colSpan={columns.length + (showCheckBox ? 2 : 1)}
           >
-            <Collapse in={isOpen} timeout="auto" unmountOnExit  >
+            <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <Box margin={1}>
+                {selectedSubRows.length > 0 && (
+                  <Box
+                    // display="flex"
+                    // justifyContent="flex-end"
+                    // alignItems="left"
+                    mb={2}
+                    mt={2}
+                  >
+                    {/* Tags Select */}
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      style={{ minWidth: 200, marginRight: 8 }}
+                    >
+                      <InputLabel>Tags</InputLabel>
+                      <Select
+                        multiple
+                        value={selectedTags}
+                        onChange={handleTagChange}
+                        input={<OutlinedInput label="Tags" />}
+                        renderValue={(selected) => (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 0.5,
+                            }}
+                          >
+                            {(selected as string[]).map((value) => (
+                              <Chip size="small" key={value} label={value} />
+                            ))}
+                          </Box>
+                        )}
+                      >
+                        {tagOptions.map((tag) => (
+                          <MenuItem key={tag} value={tag}>
+                            {tag}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleEditTags}
+                      style={{ marginRight: 8 }}
+                      disabled={selectedTags.length === 0}
+                    >
+                      Edit Tags ({selectedSubRows.length})
+                    </Button>
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      style={{ minWidth: 200, marginRight: 8 }}
+                    >
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={selectedStatus}
+                        onChange={handleStatusChange}
+                        label="Status"
+                      >
+                        {statusOptions.map((status) => (
+                          <MenuItem key={status} value={status}>
+                            {status}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={handleChangeStatus}
+                      disabled={!selectedStatus}
+                    >
+                      Change Status ({selectedSubRows.length})
+                    </Button>
+                  </Box>
+                )}
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -207,37 +339,45 @@ const Row: FC<RowProps<any>> = ({
                         <TableCell />
                         {subColumns?.map((column) => (
                           <TableCell key={column.accessor as string}>
-                            {column.filtrable ? (
-                              <TextField
-                                name={column.accessor as string}
-                                label=""
-                                placeholder={`Filter ${column.header}`}
-                                variant="outlined"
-                                size="small"
-                                onChange={handleSubFilterChange}
-                              />
+                            {column.filterable ? (
+                              column.filterType === "select" ? (
+                                <FormControl
+                                  variant="outlined"
+                                  size="small"
+                                  fullWidth
+                                >
+                                  <InputLabel>{column.header}</InputLabel>
+                                  <Select
+                                    name={column.accessor as string}
+                                    value={
+                                      subFilters[column.accessor as string] || ""
+                                    }
+                                    onChange={handleSubFilterChange}
+                                    label={column.header}
+                                  >
+                                    <MenuItem value="">
+                                      <em>All</em>
+                                    </MenuItem>
+                                    {column.filterOptions?.map((option) => (
+                                      <MenuItem key={option} value={option}>
+                                        {option}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              ) : (
+                                <TextField
+                                  name={column.accessor as string}
+                                  label=""
+                                  placeholder={`Filter ${column.header}`}
+                                  variant="outlined"
+                                  size="small"
+                                  onChange={handleSubFilterChange}
+                                />
+                              )
                             ) : null}
                           </TableCell>
                         ))}
-                      </TableRow>
-                    )}
-
-                    {selectedSubRows.length > 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={subColumns?.length! + 1}
-                          style={{ textAlign: "right" }}
-                        >
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                              if (onManageSubRows) onManageSubRows();
-                            }}
-                          >
-                            Manage ({selectedSubRows.length})
-                          </Button>
-                        </TableCell>
                       </TableRow>
                     )}
                   </TableHead>
@@ -267,7 +407,7 @@ const Row: FC<RowProps<any>> = ({
                           colSpan={subColumns?.length! + 1}
                           style={{ textAlign: "center" }}
                         >
-                          No se encontraron datos.
+                          No data found.
                         </TableCell>
                       </TableRow>
                     )}

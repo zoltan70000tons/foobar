@@ -10,13 +10,16 @@ import { Visibility, Edit, Delete } from "@mui/icons-material";
 import { CabinStatus } from "@/enums/CabinStatus";
 import axios from "axios";
 import apiRoutes from "@/Helpers/ApiRoutes";
+import { TagEnum } from "@/enums/TagEnum";
 
 interface CabinTabContentProps {
   data: Cabin[] | undefined;
 }
 
-const AllTabContent: React.FC<Cabin> = ({ data}) => {
+const AllTabContent: React.FC<Cabin> = ({ data }) => {
   const { hasPermission } = usePermissions();
+  const statusOptions = Object.values(CabinStatus);
+  const tagOptions = Object.values(TagEnum);
   const event_id = data.event_id;
   const cabins = data.data;
   if (!cabins || cabins.length === 0) {
@@ -34,38 +37,38 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
       {
         header: "Code",
         accessor: "category_code",
-        filtrable:true,
+        filterable: true,
         sortable: true,
       },
       {
         header: "Type",
         accessor: "category_type",
-        filtrable:true,
+        filterable: true,
         sortable: true,
       },
       {
         header: "Name",
         accessor: "title",
-        filtrable:true,
+        filterable: true,
         sortable: true,
       },
       {
         header: "Capacity",
         accessor: "capacity",
-        filtrable:true,
+        filterable: true,
         sortable: true,
       },
       {
         header: "Price",
         accessor: "price",
-        filtrable:true,
+        filterable: true,
         sortable: true,
       },
       {
         header: "Status",
         accessor: "status",
         sortable: true,
-        filtrable:true
+        filterable: true,
       },
       // {
       //   header: "Actions",
@@ -89,31 +92,33 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
         accessor: "cabin_code",
         header: "Code",
         sortable: true,
-        filtrable: true
+        filterable: true,
       },
       {
         accessor: "cabin_type",
         header: "Type",
         sortable: true,
-        filtrable: true
+        filterable: true,
       },
       {
         accessor: "cabin_number",
         header: "Number",
-        filtrable: true,
+        filterable: true,
         sortable: true,
       },
       {
         accessor: "cabin_deck",
         header: "Deck",
         sortable: true,
-        filtrable: true
+        filterable: true,
       },
       {
         accessor: "cabin_status",
         header: "Status",
-        filtrable: true,
+        filterable: true,
         sortable: true,
+        filterType: "select",
+        filterOptions: statusOptions,
         draw: (row) => (
           <Chip
             size="small"
@@ -129,6 +134,35 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
             }
           />
         ),
+      },
+      {
+        accessor: "cabin_tags",
+        header: "Tags",
+        filterable: true,
+        filterType: "select",
+        filterOptions: tagOptions,
+        filterFunction: (cellValue: string[] | undefined, filterValue: string) => {
+          if (!Array.isArray(cellValue) || cellValue.length === 0) {
+            return filterValue === "";
+          }
+          return cellValue.some((tag) => {
+            console.log(tag);
+            console.log(cellValue);
+            return tag.toLowerCase().includes(filterValue.toLowerCase());
+          });
+        },
+        draw: (subRow) => (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
+              subRow.cabin_tags.map((tag: string) => (
+                <Chip key={tag} label={tag} size="small" />
+              ))
+            ) : (
+              <em>No Tags</em>
+            )}
+          </Box>
+        ),
+       
       },
 
       // {
@@ -148,8 +182,7 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
     []
   );
 
-  const manageTags = (tags, rows) => {
-  
+  const manageTags = (rows, tags) => {
     const url = apiRoutes.addCabinTags(event_id);
     axios
       .post(url, { tags: tags, rows: rows })
@@ -158,6 +191,17 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
         console.error("Error adding tags:", error);
       });
   };
+  const manageStatus = (rows, status) => {
+    console.log({ status: status, rows: rows });
+    const url = apiRoutes.updateCabinStatus(event_id);
+    axios
+      .post(url, { status: status, rows: rows })
+      .then((response) => {})
+      .catch((error) => {
+        console.error("Error adding status", error);
+      });
+  };
+
 
   return (
     <MuiTable
@@ -165,9 +209,12 @@ const AllTabContent: React.FC<Cabin> = ({ data}) => {
       data={cabins}
       subColumns={subColumns}
       showCheckBox={false}
-      onApplyTags={manageTags}
       showTableFilters={true}
       showSubTableFilters={true}
+      tagOptions={tagOptions}
+      statusOptions={statusOptions}
+      onApplyTags={manageTags}
+      onApplyState={manageStatus}
     />
   );
 };
