@@ -77,10 +77,12 @@ class CabinsController extends Controller
         $cabins = Cabin::whereIn('id', $cabinIds)->get();
 
         foreach ($cabins as $cabin) {
-            $existingTags = $cabin->tags ?? [];
-            $updatedTags = array_unique(array_merge($existingTags, $tags));
-            $updatedTags = array_values($updatedTags); 
-            $cabin->tags = $updatedTags;
+            // $existingTags = $cabin->tags ?? [];
+            // $updatedTags = array_unique(array_merge($existingTags, $tags));
+            // $updatedTags = array_values($updatedTags); 
+            // $cabin->tags = $updatedTags;
+            // $cabin->save();
+            $cabin->tags = array_values($tags);
             $cabin->save();
         }
 
