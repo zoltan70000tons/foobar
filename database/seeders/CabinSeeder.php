@@ -5,8 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
-use App\Models\CabinType;
-use Illuminate\Support\Facades\DB;
 use League\Csv\Reader;
 use Illuminate\Support\Facades\Log;
 
@@ -28,12 +26,13 @@ class CabinSeeder extends Seeder
 
     // Iterate through each record in the CSV
     foreach ($csv as $record) {
-        
-      // Find the corresponding cabin_category_id based on category_code and capacity
-      $cabinCategory = CabinCategory::where('category_code', $record['Cat'])
-        ->first();
-      $cabinCategoryId = $cabinCategory ? $cabinCategory->id : $record['Cat'];
 
+      // Find the corresponding cabin_category_id based on category_code and capacity
+      Log::info($record['Cat'] . ' ' . $record['Capacity']);
+      $cabinCategoryId = CabinCategory::where('category_code', $record['Cat'])
+        ->where('capacity', $record['Capacity'])
+        ->first()
+        ->id;
 
       // Convert "Y" and "N" to boolean for balcony and obstrucuted_view fields
       $balcony = $record['Balcony'] === 'Y';
@@ -60,7 +59,7 @@ class CabinSeeder extends Seeder
         'location' => $record['Location'],
         'balcony' => $balcony,
         'obstructed_view' => $obstructedView,
-        'status' => $record['Status'], 
+        'status' => $record['Status'],
       ];
 
       // Create the Cabin entry
