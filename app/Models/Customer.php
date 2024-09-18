@@ -66,13 +66,23 @@ class Customer extends Authenticatable implements MustVerifyEmail
   }
 
   /**
-   * Define relationship with the customer's membership type
+   * Define relationship with the customer's membership type, details, and addresses.
    * 
    * @return \Illuminate\Database\Eloquent\Relations\HasOne
    */
   public function membershipTypes()
   {
     return $this->belongsToMany(MembershipType::class, 'memberships', 'customer_id', 'membership_id');
+  }
+
+  public function details()
+  {
+    return $this->hasOne(CustomerDetail::class);
+  }
+
+  public function addresses()
+  {
+    return $this->hasMany(CustomerAddress::class);
   }
 
   /**
