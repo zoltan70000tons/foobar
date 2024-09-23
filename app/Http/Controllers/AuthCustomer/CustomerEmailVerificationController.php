@@ -44,16 +44,16 @@ class CustomerEmailVerificationController extends Controller
     $customer = Customer::findOrFail($request->route('id'));
 
     if (! hash_equals($request->route('hash'), sha1($customer->getEmailForVerification()))) {
-      return redirect()->to(env('FRONTEND_URL') . '/en/login?verified=errorSignature');
+      return redirect()->to(config('app.frontend_url') . '/en/login?verified=errorSignature');
     }
 
     if ($customer->hasVerifiedEmail()) {
-      return redirect()->to(env('FRONTEND_URL') . '/en/login?verified=1');
+      return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
     }
 
     $customer->markEmailAsVerified();
 
     // redirect to the customer dashboard in app
-    return redirect()->to(env('FRONTEND_URL') . '/en/login?verified=1');
+    return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
   }
 }
