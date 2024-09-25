@@ -1,6 +1,5 @@
 import React, { FC, ReactNode, useMemo } from "react";
 import { Card, CardContent, Typography, Grid, Box, Chip } from "@mui/material";
-import { MaterialReactTable, MRT_ColumnDef } from "material-react-table";
 import MuiTable from "@/Components/tables/MuiTable";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -11,6 +10,7 @@ import { CabinStatus } from "@/enums/CabinStatus";
 import axios from "axios";
 import apiRoutes from "@/Helpers/ApiRoutes";
 import { TagEnum } from "@/enums/TagEnum";
+import { Head, router, useForm } from "@inertiajs/react";
 
 interface CabinTabContentProps {
   data: Cabin[] | undefined;
@@ -165,19 +165,21 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
        
       },
 
-      // {
-      //   header: "Actions",
-      //   accessor: "category_code",
-      //   disableFilter: true,
-      //   draw: (row) => (<></>
-      //     // <div style={{ display: "flex", gap: "10px" }}>
-      //     //   <Visibility
-      //     //     onClick={() => console.log(`View ${row.category_code}`)}
-      //     //     style={{ cursor: "pointer" }}
-      //     //   />
-      //     // </div>
-      //   ),
-      // },
+      {
+        header: "Actions",
+        accessor: "category_code",
+        disableFilter: true,
+        draw: (row) => (
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Visibility
+              onClick={() => { 
+                console.log(row);
+                router.get(route("cabins.edit", {id: event_id, cabin_id: row.id})) }}
+              style={{ cursor: "pointer" }}
+            />
+          </div>
+        ),
+      },
     ],
     []
   );

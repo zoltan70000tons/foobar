@@ -13,31 +13,47 @@ class CabinRepository implements CabinInterface
 {
     function getAll()
     {
-       // return CabinCategory::all();
+        // return CabinCategory::all();
     }
 
     function find($id)
     {
-       // return CabinCategory::find($id);
+        return Cabin::find($id);
     }
 
     function save(array $data): ?Cabin
     {
-      return new Cabin();
-
+        return new Cabin();
     }
     function update(array $data, $id)
     {
-       
+        $cabin = $this->find($id);
+        $tags = $data['tags'];
+        $cabin->status = $data['cabin_status'];
+        $cabin->cabin_number = $data['cabin_number'];
+        $cabin->cabin_category_id = $data['cabin_category'];
+        $cabin->cabin_type_id = $data['cabin_type'];
+        $cabin->deck = $data['deck'];
+        $cabin->location = $data['location'];
+        $cabin->connects_with = $data['connects_with'] ?? null;
+        $cabin->total_berths = $data['total_berths'] ?? null;
+        $cabin->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
+        $cabin->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
+        $cabin->upper_berths = $data['upper_berths'] ?? null;
+        $cabin->notes = $data['notes'] ?? null;
+        $cabin->accessible = $data['features']['accessible'];
+        $cabin->balcony = $data['features']['balcony'];
+        $cabin->obstructed_view = $data['features']['obstructed_view'];
+        $cabin->tags = array_values($tags);
+        $cabin->save();
     }
-    function delete($id) {
-        
-    }
+    function delete($id) {}
 
-    function getCategoriesAndCabins() {
-        $categoriesWithCabins = CabinCategory::with('cabins')->get()->map(function($category) {
+    function getCategoriesAndCabins()
+    {
+        $categoriesWithCabins = CabinCategory::with('cabins')->get()->map(function ($category) {
             $totalCabins = $category->cabins->count();
-            $availableCabins = $category->cabins->filter(function($cabin) {
+            $availableCabins = $category->cabins->filter(function ($cabin) {
                 return $cabin->status === StatusCabin::AVAILABLE->value;
             })->count();
             return [
@@ -49,7 +65,7 @@ class CabinRepository implements CabinInterface
                 'status' => "{$availableCabins}/{$totalCabins}",
                 'capacity' => $category->capacity,
                 'title' => $category->title,
-                'subRows' => $category->cabins->map(function($cabin) {
+                'subRows' => $category->cabins->map(function ($cabin) {
                     return [
                         'id' => $cabin->id,
                         'cabin_code' => $cabin->cabin_code,
@@ -67,10 +83,6 @@ class CabinRepository implements CabinInterface
 
         return $categoriesWithCabins;
     }
-    
-    function addTags(array $tags, array $cabins){
-     
 
-    }
-
+    function addTags(array $tags, array $cabins) {}
 }

@@ -1,0 +1,548 @@
+import React, { useState } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { TagEnum } from "@/enums/TagEnum";
+import { CabinStatus } from "@/enums/CabinStatus";
+import { CabinType } from "@/enums/CabinType";
+import { PageProps } from "@/types";
+import { Head, router } from "@inertiajs/react";
+import { LocationEnum } from "@/enums/LocationEnum";
+import {
+  Box,
+  Container,
+  Grid,
+  IconButton,
+  TextField,
+  Toolbar,
+  Typography,
+  Autocomplete,
+  Chip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  FormControlLabel,
+  Button,
+  ListItemIcon,
+  Tooltip,
+} from "@mui/material";
+import {
+  CheckCircle,
+  Block,
+  HourglassEmpty,
+  Close,
+  ArrowBack,
+} from "@mui/icons-material";
+
+const Edit = ({
+  auth,
+  cabin,
+  event,
+  categories,
+  errors,
+}: PageProps & { tab: string; data: any }) => {
+  const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
+  const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
+  const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_number);
+  const [cabinCategory, setCabinCategory] = useState<string>(
+    cabin.cabin_category_id
+  );
+  const [cabinType, setCabinType] = useState<number | string>(
+    cabin.cabin_type_id
+  );
+  const [deck, setDeck] = useState<string>(cabin.deck);
+  const [location, setLocation] = useState<string>(cabin.location);
+  const [connectWith, setConnectWith] = useState<string>(cabin.connects_with);
+  const [ticketInventory, setTicketInventory] = useState<string>(
+    cabin.inventory
+  );
+  const [totalBerths, setTotalBerths] = useState<string>(cabin.total_berths);
+  const [lowerBedType1, setLowerBedType1] = useState<string>(
+    cabin.lower_bed_type_1
+  );
+  const [lowerBedType2, setLowerBedType2] = useState<string>(
+    cabin.lower_bed_type_2
+  );
+  const [upperBerths, setUpperBerths] = useState<string>(cabin.upper_berths);
+  const [notes, setNotes] = useState<string>(cabin.notes);
+  const [features, setFeatures] = useState({
+    accessible: cabin.accessible,
+    balcony: cabin.balcony,
+    obstructedView: cabin.obstructed_view,
+  });
+
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
+  const cabinTypeOptions = [
+    { value: 1, label: CabinType.PRIVATE_CABIN },
+    { value: 2, label: CabinType.SINGLE_TICKET_MALE },
+    { value: 3, label: CabinType.SINGLE_TICKET_FEMALE },
+  ];
+
+  const statusBorderColors = {
+    [CabinStatus.AVAILABLE]: "green",
+    [CabinStatus.RESERVED]: "cyan",
+    [CabinStatus.BOOKED]: "red",
+    [CabinStatus.CLOSED]: "light gray",
+  };
+
+  const statusIcons = {
+    [CabinStatus.AVAILABLE]: (
+      <CheckCircle fontSize="small" style={{ color: "green" }} />
+    ),
+    [CabinStatus.RESERVED]: (
+      <HourglassEmpty fontSize="small" style={{ color: "yellow" }} />
+    ),
+    [CabinStatus.BOOKED]: <Block fontSize="small" style={{ color: "red" }} />,
+    [CabinStatus.CLOSED]: <Close fontSize="small" style={{ color: "gray" }} />,
+  };
+
+  const handleTagsChange = (event: any, newValue: string[]) => {
+    setSelectedTags(newValue);
+  };
+
+  const handleFeatureChange = (event: any) => {
+    setFeatures({ ...features, [event.target.name]: event.target.checked });
+  };
+
+  const handleCabinStatusChange = (event: any) => {
+    setCabinStatus(event.target.value as CabinStatus);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = {
+      cabin_status: cabinStatus,
+      cabin_number: cabinNumber,
+      cabin_category: cabinCategory,
+      cabin_type: cabinType,
+      deck: deck,
+      location: location,
+      connects_with: connectWith,
+      total_berths: totalBerths,
+      lower_bed_type_1: lowerBedType1,
+      lower_bed_type_2: lowerBedType2,
+      upper_berths: upperBerths,
+      notes: notes,
+      tags: selectedTags,
+      features: {
+        accessible: features.accessible,
+        balcony: features.balcony,
+        obstructed_view: features.obstructedView,
+      },
+      ticket_inventory: ticketInventory,
+    };
+    router.post(
+      route("cabins.update", { id: event.id, cabin_id: cabin.id }),
+      formData
+    );
+  };
+
+  return (
+    <AuthenticatedLayout user={auth.user} header={"Cabins"}>
+      <Head title="Cabins" />
+      <Toolbar sx={{ mt: 8 }}>
+        <IconButton edge="start" color="inherit" aria-label="menu">
+          <img src={event.image} alt="Logo" style={{ height: 40 }} />
+        </IconButton>
+        <Typography variant="h6" style={{ flexGrow: 1 }}>
+          {event.name}
+        </Typography>
+      </Toolbar>
+      <Container maxWidth="lg" sx={{  mb: 4 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+          <Box >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                gap: "8px",
+              }}
+            >
+              <Tooltip title="Back">
+                <IconButton color="primary" onClick={handleBack}>
+                  <ArrowBack />
+                </IconButton>
+              </Tooltip>
+            </div>
+          </Box>
+            <Typography variant="h5" sx={{ mb: 3 }}>
+              Cabin Information
+            </Typography>
+
+            <form onSubmit={handleSubmit}>
+              <Grid container spacing={2}>
+                {/* Status Select */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={cabinStatus}
+                        onChange={handleCabinStatusChange}
+                        label="Status"
+                        renderValue={(selected) => (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <ListItemIcon
+                              sx={{
+                                minWidth: "auto",
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              {
+                                statusIcons[
+                                  selected as keyof typeof CabinStatus
+                                ]
+                              }{" "}
+                            </ListItemIcon>
+                            {CabinStatus[selected as keyof typeof CabinStatus]}{" "}
+                          </Box>
+                        )}
+                        sx={{
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor:
+                              statusBorderColors[cabinStatus] || "inherit",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor:
+                              statusBorderColors[cabinStatus] || "inherit",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor:
+                              statusBorderColors[cabinStatus] || "inherit",
+                          },
+                        }}
+                      >
+                        {Object.keys(CabinStatus).map((status) => (
+                          <MenuItem
+                            key={status}
+                            value={status}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <ListItemIcon
+                              sx={{
+                                minWidth: "auto",
+                                marginRight: 1,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              {statusIcons[status as keyof typeof CabinStatus]}{" "}
+                            </ListItemIcon>
+                            {CabinStatus[status as keyof typeof CabinStatus]}{" "}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Grid>
+
+                {/* Tags Select with Chips */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ mb: 2 }}>
+                    <Autocomplete
+                      multiple
+                      options={Object.values(TagEnum)}
+                      value={selectedTags}
+                      onChange={handleTagsChange}
+                      renderTags={(value: string[], getTagProps) =>
+                        value.map((option: string, index: number) => (
+                          <Chip
+                            variant="outlined"
+                            label={option}
+                            {...getTagProps({ index })}
+                          />
+                        ))
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          label="Tags"
+                          placeholder="Add tags"
+                        />
+                      )}
+                      fullWidth
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Cabin Category */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel>Cabin Category</InputLabel>
+                      <Select
+                        value={cabinCategory}
+                        onChange={(e) => setCabinCategory(e.target.value)}
+                        label="Cabin Category"
+                      >
+                        {categories.map((category) => (
+                          <MenuItem key={category.id} value={category.id}>
+                            {category.title}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Grid>
+
+                {/* Cabin Number */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="cabin_number"
+                      label="Cabin Number"
+                      variant="outlined"
+                      fullWidth
+                      value={cabinNumber}
+                      onChange={(e) => setCabinNumber(e.target.value)}
+                      error={Boolean(errors.cabin_number)}
+                      helperText={errors.cabin_number}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Cabin Type */}
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel>Cabin Type</InputLabel>
+                      <Select
+                        value={cabinType}
+                        onChange={(e) => setCabinType(e.target.value)}
+                        label="Cabin Type"
+                      >
+                        {cabinTypeOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Grid>
+
+                {/* Ticket Inventory */}
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="ticket_inventory"
+                      label="Ticket Inventory"
+                      variant="outlined"
+                      fullWidth
+                      disabled
+                      value={ticketInventory}
+                      onChange={(e) => setTicketInventory(e.target.value)}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Deck */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="deck"
+                      label="Deck"
+                      variant="outlined"
+                      fullWidth
+                      value={deck}
+                      onChange={(e) => setDeck(e.target.value)}
+                      error={Boolean(errors.deck)}
+                      helperText={errors.deck}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Location */}
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel>Location</InputLabel>
+                      <Select
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        label="Location"
+                      >
+                        <MenuItem value="FW">Forward</MenuItem>
+                        <MenuItem value="MS">Midship</MenuItem>
+                        <MenuItem value="AF">Aft</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Grid>
+
+                {/* Connect With */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="connects_with"
+                      label="Connects With"
+                      variant="outlined"
+                      fullWidth
+                      value={connectWith}
+                      onChange={(e) => setConnectWith(e.target.value)}
+                      error={Boolean(errors.connects_with)}
+                      helperText={errors.connects_with}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Features */}
+                <Grid item xs={12}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6">Features</Typography>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={features.accessible}
+                          onChange={handleFeatureChange}
+                          name="accessible"
+                        />
+                      }
+                      label="Accessible"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={features.balcony}
+                          onChange={handleFeatureChange}
+                          name="balcony"
+                        />
+                      }
+                      label="Balcony"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={features.obstructedView}
+                          onChange={handleFeatureChange}
+                          name="obstructedView"
+                        />
+                      }
+                      label="Obstructed View"
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Total Berths */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="total_berths"
+                      label="Total Berths"
+                      variant="outlined"
+                      fullWidth
+                      value={totalBerths}
+                      onChange={(e) => setTotalBerths(e.target.value)}
+                      error={Boolean(errors.total_berths)}
+                      helperText={errors.total_berths}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Lower Bed Type 1 */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="lower_bed_type_1"
+                      label="Lower Bed Type 1"
+                      variant="outlined"
+                      fullWidth
+                      value={lowerBedType1}
+                      onChange={(e) => setLowerBedType1(e.target.value)}
+                      error={Boolean(errors.lower_bed_type_1)}
+                      helperText={errors.lower_bed_type_1}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Lower Bed Type 2 */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="lower_bed_type_2"
+                      label="Lower Bed Type 2"
+                      variant="outlined"
+                      fullWidth
+                      value={lowerBedType2}
+                      onChange={(e) => setLowerBedType2(e.target.value)}
+                      error={Boolean(errors.lower_bed_type_2)}
+                      helperText={errors.lower_bed_type_2}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Upper Berths */}
+                <Grid item xs={12} md={2}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="upper_berths"
+                      label="Upper Berths"
+                      variant="outlined"
+                      fullWidth
+                      value={upperBerths}
+                      onChange={(e) => setUpperBerths(e.target.value)}
+                      error={Boolean(errors.upper_berths)}
+                      helperText={errors.upper_berths}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Notes */}
+                <Grid item xs={12}>
+                  <Box sx={{ mb: 2 }}>
+                    <TextField
+                      name="notes"
+                      label="Notes"
+                      variant="outlined"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      error={Boolean(errors.notes)}
+                      helperText={errors.notes}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      type="submit"
+                    >
+                      Update
+                    </Button>
+                  </Box>
+                </Grid>
+              </Grid>
+            </form>
+          </Grid>
+        </Grid>
+      </Container>
+    </AuthenticatedLayout>
+  );
+};
+
+export default Edit;
