@@ -37,6 +37,7 @@ import {
 import NoAccessAlert from "@/Components/NoAccessAlert";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import SnackbarAlert from "@/Components/SnackbarAlert";
 
 const Edit = ({
   auth,
@@ -76,6 +77,12 @@ const Edit = ({
   });
 
   const { hasPermission } = usePermissions();
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
 
   const handleBack = () => {
     window.history.back();
@@ -141,15 +148,36 @@ const Edit = ({
       },
       ticket_inventory: ticketInventory,
     };
+
     router.post(
       route("cabins.update", { id: event.id, cabin_id: cabin.id }),
-      formData
+      formData,
+      {
+        forceFormData: true,
+        onSuccess: (response) => {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Cabin edited successfully",
+          });
+        },
+        onError: (errors) => {
+          setSnackbar({
+            open: true,
+            severity: "error",
+            message: "Error editing cabin",
+          });
+        },
+      }
     );
   };
-  
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
   const hasAnyPermission =
-  hasPermission(Permissions.ViewCabins) ||
-  hasPermission(Permissions.EditCabins);
+    hasPermission(Permissions.ViewCabins) ||
+    hasPermission(Permissions.EditCabins);
 
   const canEdit = !hasPermission(Permissions.EditCabins);
 
@@ -183,7 +211,7 @@ const Edit = ({
               </div>
             </Box>
 
-            { hasAnyPermission ? (
+            {hasAnyPermission ? (
               <>
                 <Typography variant="h5" sx={{ mb: 3 }}>
                   Cabins / {cabin.cabin_number}
@@ -194,7 +222,11 @@ const Edit = ({
                     {/* Status Select */}
                     <Grid item xs={12} md={6}>
                       <Box sx={{ mb: 2 }}>
-                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                        <FormControl
+                          fullWidth
+                          variant="outlined"
+                          disabled={canEdit}
+                        >
                           <InputLabel>Status</InputLabel>
                           <Select
                             value={cabinStatus}
@@ -315,7 +347,11 @@ const Edit = ({
                     {/* Cabin Category */}
                     <Grid item xs={12} md={6}>
                       <Box sx={{ mb: 2 }}>
-                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                        <FormControl
+                          fullWidth
+                          variant="outlined"
+                          disabled={canEdit}
+                        >
                           <InputLabel>Cabin Category</InputLabel>
                           <Select
                             value={cabinCategory}
@@ -352,7 +388,11 @@ const Edit = ({
                     {/* Cabin Type */}
                     <Grid item xs={12} md={4}>
                       <Box sx={{ mb: 2 }}>
-                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                        <FormControl
+                          fullWidth
+                          variant="outlined"
+                          disabled={canEdit}
+                        >
                           <InputLabel>Cabin Type</InputLabel>
                           <Select
                             value={cabinType}
@@ -404,7 +444,11 @@ const Edit = ({
                     {/* Location */}
                     <Grid item xs={12} md={4}>
                       <Box sx={{ mb: 2 }}>
-                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                        <FormControl
+                          fullWidth
+                          variant="outlined"
+                          disabled={canEdit}
+                        >
                           <InputLabel>Location</InputLabel>
                           <Select
                             value={location}
@@ -564,25 +608,33 @@ const Edit = ({
                     </Grid>
                   </Grid>
 
-                  {hasPermission(Permissions.EditCabins) && (<Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <Box sx={{ mb: 2 }}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          type="submit"
-                        >
-                          Update
-                        </Button>
-                      </Box>
+                  {hasPermission(Permissions.EditCabins) && (
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <Box sx={{ mb: 2 }}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            type="submit"
+                          >
+                            Update
+                          </Button>
+                        </Box>
+                      </Grid>
                     </Grid>
-                  </Grid>)}
+                  )}
                 </form>
               </>
             ) : (
               <NoAccessAlert message="You do not have permission to access this section." /> // Mostrar NotAllowed si no tiene permisos
             )}
           </Grid>
+          <SnackbarAlert
+            open={snackbar.open}
+            severity={snackbar.severity}
+            message={snackbar.message}
+            onClose={handleCloseSnackbar}
+          />
         </Grid>
       </Container>
     </AuthenticatedLayout>
