@@ -56,7 +56,7 @@ class CabinsController extends Controller
             $cabin = $this->cabinRepository->find($request->cabin_id);
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
-            return $this->withPermission([Permissions::EditCabins], function ($event, $cabin, $cabinCategories) {
+            return $this->withPermission([Permissions::EditCabins, Permissions::ViewCabins], function ($event, $cabin, $cabinCategories) {
                 return Inertia::render('Cabin/Edit', [
                     'cabin' => $cabin,
                     'event' => $event,

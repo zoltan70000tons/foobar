@@ -18,6 +18,8 @@ interface CabinTabContentProps {
 
 const AllTabContent: React.FC<Cabin> = ({ data }) => {
   const { hasPermission } = usePermissions();
+
+  console.log(hasPermission(Permissions.ViewCabins));
   const statusOptions = Object.values(CabinStatus);
   const tagOptions = Object.values(TagEnum);
   const event_id = data.event_id;
@@ -171,12 +173,13 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         disableFilter: true,
         draw: (row) => (
           <div style={{ display: "flex", gap: "10px" }}>
-            <Visibility
+            {hasPermission(Permissions.ViewCabins) && (<Visibility
               onClick={() => { 
                 console.log(row);
                 router.get(route("cabins.edit", {id: event_id, cabin_id: row.id})) }}
               style={{ cursor: "pointer" }}
-            />
+            />)}
+            
           </div>
         ),
       },

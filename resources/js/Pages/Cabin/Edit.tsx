@@ -34,6 +34,10 @@ import {
   ArrowBack,
 } from "@mui/icons-material";
 
+import NoAccessAlert from "@/Components/NoAccessAlert";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
+
 const Edit = ({
   auth,
   cabin,
@@ -71,6 +75,7 @@ const Edit = ({
     obstructedView: cabin.obstructed_view,
   });
 
+  const { hasPermission } = usePermissions();
 
   const handleBack = () => {
     window.history.back();
@@ -141,6 +146,12 @@ const Edit = ({
       formData
     );
   };
+  
+  const hasAnyPermission =
+  hasPermission(Permissions.ViewCabins) ||
+  hasPermission(Permissions.EditCabins);
+
+  const canEdit = !hasPermission(Permissions.EditCabins);
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
@@ -153,391 +164,424 @@ const Edit = ({
           {event.name}
         </Typography>
       </Toolbar>
-      <Container maxWidth="lg" sx={{  mb: 4 }}>
+      <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
-          <Box >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-start",
-                gap: "8px",
-              }}
-            >
-              <Tooltip title="Back">
-                <IconButton color="primary" onClick={handleBack}>
-                  <ArrowBack />
-                </IconButton>
-              </Tooltip>
-            </div>
-          </Box>
-            <Typography variant="h5" sx={{ mb: 3 }}>
-              Cabin Information
-            </Typography>
+            <Box>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  gap: "8px",
+                }}
+              >
+                <Tooltip title="Back">
+                  <IconButton color="primary" onClick={handleBack}>
+                    <ArrowBack />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </Box>
 
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                {/* Status Select */}
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={cabinStatus}
-                        onChange={handleCabinStatusChange}
-                        label="Status"
-                        renderValue={(selected) => (
-                          <Box
+            { hasAnyPermission ? (
+              <>
+                <Typography variant="h5" sx={{ mb: 3 }}>
+                  Cabins / {cabin.cabin_number}
+                </Typography>
+
+                <form onSubmit={handleSubmit}>
+                  <Grid container spacing={2}>
+                    {/* Status Select */}
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                          <InputLabel>Status</InputLabel>
+                          <Select
+                            value={cabinStatus}
+                            onChange={handleCabinStatusChange}
+                            label="Status"
+                            renderValue={(selected) => (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                <ListItemIcon
+                                  sx={{
+                                    minWidth: "auto",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  {
+                                    statusIcons[
+                                      selected as keyof typeof CabinStatus
+                                    ]
+                                  }{" "}
+                                </ListItemIcon>
+                                {
+                                  CabinStatus[
+                                    selected as keyof typeof CabinStatus
+                                  ]
+                                }{" "}
+                              </Box>
+                            )}
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor:
+                                  statusBorderColors[cabinStatus] || "inherit",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor:
+                                  statusBorderColors[cabinStatus] || "inherit",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor:
+                                    statusBorderColors[cabinStatus] ||
+                                    "inherit",
+                                },
                             }}
                           >
-                            <ListItemIcon
-                              sx={{
-                                minWidth: "auto",
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              {
-                                statusIcons[
-                                  selected as keyof typeof CabinStatus
-                                ]
-                              }{" "}
-                            </ListItemIcon>
-                            {CabinStatus[selected as keyof typeof CabinStatus]}{" "}
-                          </Box>
-                        )}
-                        sx={{
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor:
-                              statusBorderColors[cabinStatus] || "inherit",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor:
-                              statusBorderColors[cabinStatus] || "inherit",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor:
-                              statusBorderColors[cabinStatus] || "inherit",
-                          },
-                        }}
-                      >
-                        {Object.keys(CabinStatus).map((status) => (
-                          <MenuItem
-                            key={status}
-                            value={status}
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <ListItemIcon
-                              sx={{
-                                minWidth: "auto",
-                                marginRight: 1,
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              {statusIcons[status as keyof typeof CabinStatus]}{" "}
-                            </ListItemIcon>
-                            {CabinStatus[status as keyof typeof CabinStatus]}{" "}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </Grid>
+                            {Object.keys(CabinStatus).map((status) => (
+                              <MenuItem
+                                key={status}
+                                value={status}
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                <ListItemIcon
+                                  sx={{
+                                    minWidth: "auto",
+                                    marginRight: 1,
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  {
+                                    statusIcons[
+                                      status as keyof typeof CabinStatus
+                                    ]
+                                  }{" "}
+                                </ListItemIcon>
+                                {
+                                  CabinStatus[
+                                    status as keyof typeof CabinStatus
+                                  ]
+                                }{" "}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Grid>
 
-                {/* Tags Select with Chips */}
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }}>
-                    <Autocomplete
-                      multiple
-                      options={Object.values(TagEnum)}
-                      value={selectedTags}
-                      onChange={handleTagsChange}
-                      renderTags={(value: string[], getTagProps) =>
-                        value.map((option: string, index: number) => (
-                          <Chip
-                            variant="outlined"
-                            label={option}
-                            {...getTagProps({ index })}
-                          />
-                        ))
-                      }
-                      renderInput={(params) => (
+                    {/* Tags Select with Chips */}
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ mb: 2 }}>
+                        <Autocomplete
+                          disabled={canEdit}
+                          multiple
+                          options={Object.values(TagEnum)}
+                          value={selectedTags}
+                          onChange={handleTagsChange}
+                          renderTags={(value: string[], getTagProps) =>
+                            value.map((option: string, index: number) => (
+                              <Chip
+                                variant="outlined"
+                                label={option}
+                                {...getTagProps({ index })}
+                              />
+                            ))
+                          }
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              variant="outlined"
+                              label="Tags"
+                              placeholder="Add tags"
+                            />
+                          )}
+                          fullWidth
+                        />
+                      </Box>
+                    </Grid>
+
+                    {/* Cabin Category */}
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                          <InputLabel>Cabin Category</InputLabel>
+                          <Select
+                            value={cabinCategory}
+                            onChange={(e) => setCabinCategory(e.target.value)}
+                            label="Cabin Category"
+                          >
+                            {categories.map((category) => (
+                              <MenuItem key={category.id} value={category.id}>
+                                {category.title}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Grid>
+
+                    {/* Cabin Number */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
                         <TextField
-                          {...params}
+                          disabled={canEdit}
+                          name="cabin_number"
+                          label="Cabin Number"
                           variant="outlined"
-                          label="Tags"
-                          placeholder="Add tags"
+                          fullWidth
+                          value={cabinNumber}
+                          onChange={(e) => setCabinNumber(e.target.value)}
+                          error={Boolean(errors.cabin_number)}
+                          helperText={errors.cabin_number}
                         />
-                      )}
-                      fullWidth
-                    />
-                  </Box>
-                </Grid>
+                      </Box>
+                    </Grid>
 
-                {/* Cabin Category */}
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel>Cabin Category</InputLabel>
-                      <Select
-                        value={cabinCategory}
-                        onChange={(e) => setCabinCategory(e.target.value)}
-                        label="Cabin Category"
-                      >
-                        {categories.map((category) => (
-                          <MenuItem key={category.id} value={category.id}>
-                            {category.title}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </Grid>
+                    {/* Cabin Type */}
+                    <Grid item xs={12} md={4}>
+                      <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                          <InputLabel>Cabin Type</InputLabel>
+                          <Select
+                            value={cabinType}
+                            onChange={(e) => setCabinType(e.target.value)}
+                            label="Cabin Type"
+                          >
+                            {cabinTypeOptions.map((option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Grid>
 
-                {/* Cabin Number */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="cabin_number"
-                      label="Cabin Number"
-                      variant="outlined"
-                      fullWidth
-                      value={cabinNumber}
-                      onChange={(e) => setCabinNumber(e.target.value)}
-                      error={Boolean(errors.cabin_number)}
-                      helperText={errors.cabin_number}
-                    />
-                  </Box>
-                </Grid>
-
-                {/* Cabin Type */}
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ mb: 2 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel>Cabin Type</InputLabel>
-                      <Select
-                        value={cabinType}
-                        onChange={(e) => setCabinType(e.target.value)}
-                        label="Cabin Type"
-                      >
-                        {cabinTypeOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </Grid>
-
-                {/* Ticket Inventory */}
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="ticket_inventory"
-                      label="Ticket Inventory"
-                      variant="outlined"
-                      fullWidth
-                      disabled
-                      value={ticketInventory}
-                      onChange={(e) => setTicketInventory(e.target.value)}
-                    />
-                  </Box>
-                </Grid>
-
-                {/* Deck */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="deck"
-                      label="Deck"
-                      variant="outlined"
-                      fullWidth
-                      value={deck}
-                      onChange={(e) => setDeck(e.target.value)}
-                      error={Boolean(errors.deck)}
-                      helperText={errors.deck}
-                    />
-                  </Box>
-                </Grid>
-
-                {/* Location */}
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ mb: 2 }}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel>Location</InputLabel>
-                      <Select
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        label="Location"
-                      >
-                        <MenuItem value="FW">Forward</MenuItem>
-                        <MenuItem value="MS">Midship</MenuItem>
-                        <MenuItem value="AF">Aft</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </Grid>
-
-                {/* Connect With */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="connects_with"
-                      label="Connects With"
-                      variant="outlined"
-                      fullWidth
-                      value={connectWith}
-                      onChange={(e) => setConnectWith(e.target.value)}
-                      error={Boolean(errors.connects_with)}
-                      helperText={errors.connects_with}
-                    />
-                  </Box>
-                </Grid>
-
-                {/* Features */}
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="h6">Features</Typography>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={features.accessible}
-                          onChange={handleFeatureChange}
-                          name="accessible"
+                    {/* Ticket Inventory */}
+                    <Grid item xs={12} md={4}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          name="ticket_inventory"
+                          label="Ticket Inventory"
+                          variant="outlined"
+                          fullWidth
+                          disabled
+                          value={ticketInventory}
+                          onChange={(e) => setTicketInventory(e.target.value)}
                         />
-                      }
-                      label="Accessible"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={features.balcony}
-                          onChange={handleFeatureChange}
-                          name="balcony"
+                      </Box>
+                    </Grid>
+
+                    {/* Deck */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="deck"
+                          label="Deck"
+                          variant="outlined"
+                          fullWidth
+                          value={deck}
+                          onChange={(e) => setDeck(e.target.value)}
+                          error={Boolean(errors.deck)}
+                          helperText={errors.deck}
                         />
-                      }
-                      label="Balcony"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={features.obstructedView}
-                          onChange={handleFeatureChange}
-                          name="obstructedView"
+                      </Box>
+                    </Grid>
+
+                    {/* Location */}
+                    <Grid item xs={12} md={4}>
+                      <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth variant="outlined" disabled={canEdit}>
+                          <InputLabel>Location</InputLabel>
+                          <Select
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            label="Location"
+                          >
+                            <MenuItem value="FW">Forward</MenuItem>
+                            <MenuItem value="MS">Midship</MenuItem>
+                            <MenuItem value="AF">Aft</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Grid>
+
+                    {/* Connect With */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="connects_with"
+                          label="Connects With"
+                          variant="outlined"
+                          fullWidth
+                          value={connectWith}
+                          onChange={(e) => setConnectWith(e.target.value)}
+                          error={Boolean(errors.connects_with)}
+                          helperText={errors.connects_with}
                         />
-                      }
-                      label="Obstructed View"
-                    />
-                  </Box>
-                </Grid>
+                      </Box>
+                    </Grid>
 
-                {/* Total Berths */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="total_berths"
-                      label="Total Berths"
-                      variant="outlined"
-                      fullWidth
-                      value={totalBerths}
-                      onChange={(e) => setTotalBerths(e.target.value)}
-                      error={Boolean(errors.total_berths)}
-                      helperText={errors.total_berths}
-                    />
-                  </Box>
-                </Grid>
+                    {/* Features */}
+                    <Grid item xs={12}>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="h6">Features</Typography>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={features.accessible}
+                              onChange={handleFeatureChange}
+                              name="accessible"
+                              disabled={canEdit}
+                            />
+                          }
+                          label="Accessible"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={features.balcony}
+                              onChange={handleFeatureChange}
+                              name="balcony"
+                              disabled={canEdit}
+                            />
+                          }
+                          label="Balcony"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={features.obstructedView}
+                              onChange={handleFeatureChange}
+                              name="obstructedView"
+                              disabled={canEdit}
+                            />
+                          }
+                          label="Obstructed View"
+                        />
+                      </Box>
+                    </Grid>
 
-                {/* Lower Bed Type 1 */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="lower_bed_type_1"
-                      label="Lower Bed Type 1"
-                      variant="outlined"
-                      fullWidth
-                      value={lowerBedType1}
-                      onChange={(e) => setLowerBedType1(e.target.value)}
-                      error={Boolean(errors.lower_bed_type_1)}
-                      helperText={errors.lower_bed_type_1}
-                    />
-                  </Box>
-                </Grid>
+                    {/* Total Berths */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="total_berths"
+                          label="Total Berths"
+                          variant="outlined"
+                          fullWidth
+                          value={totalBerths}
+                          onChange={(e) => setTotalBerths(e.target.value)}
+                          error={Boolean(errors.total_berths)}
+                          helperText={errors.total_berths}
+                        />
+                      </Box>
+                    </Grid>
 
-                {/* Lower Bed Type 2 */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="lower_bed_type_2"
-                      label="Lower Bed Type 2"
-                      variant="outlined"
-                      fullWidth
-                      value={lowerBedType2}
-                      onChange={(e) => setLowerBedType2(e.target.value)}
-                      error={Boolean(errors.lower_bed_type_2)}
-                      helperText={errors.lower_bed_type_2}
-                    />
-                  </Box>
-                </Grid>
+                    {/* Lower Bed Type 1 */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="lower_bed_type_1"
+                          label="Lower Bed Type 1"
+                          variant="outlined"
+                          fullWidth
+                          value={lowerBedType1}
+                          onChange={(e) => setLowerBedType1(e.target.value)}
+                          error={Boolean(errors.lower_bed_type_1)}
+                          helperText={errors.lower_bed_type_1}
+                        />
+                      </Box>
+                    </Grid>
 
-                {/* Upper Berths */}
-                <Grid item xs={12} md={2}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="upper_berths"
-                      label="Upper Berths"
-                      variant="outlined"
-                      fullWidth
-                      value={upperBerths}
-                      onChange={(e) => setUpperBerths(e.target.value)}
-                      error={Boolean(errors.upper_berths)}
-                      helperText={errors.upper_berths}
-                    />
-                  </Box>
-                </Grid>
+                    {/* Lower Bed Type 2 */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="lower_bed_type_2"
+                          label="Lower Bed Type 2"
+                          variant="outlined"
+                          fullWidth
+                          value={lowerBedType2}
+                          onChange={(e) => setLowerBedType2(e.target.value)}
+                          error={Boolean(errors.lower_bed_type_2)}
+                          helperText={errors.lower_bed_type_2}
+                        />
+                      </Box>
+                    </Grid>
 
-                {/* Notes */}
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 2 }}>
-                    <TextField
-                      name="notes"
-                      label="Notes"
-                      variant="outlined"
-                      fullWidth
-                      multiline
-                      rows={4}
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      error={Boolean(errors.notes)}
-                      helperText={errors.notes}
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
+                    {/* Upper Berths */}
+                    <Grid item xs={12} md={2}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="upper_berths"
+                          label="Upper Berths"
+                          variant="outlined"
+                          fullWidth
+                          value={upperBerths}
+                          onChange={(e) => setUpperBerths(e.target.value)}
+                          error={Boolean(errors.upper_berths)}
+                          helperText={errors.upper_berths}
+                        />
+                      </Box>
+                    </Grid>
 
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Box sx={{ mb: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      type="submit"
-                    >
-                      Update
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
-            </form>
+                    {/* Notes */}
+                    <Grid item xs={12}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="notes"
+                          label="Notes"
+                          variant="outlined"
+                          fullWidth
+                          multiline
+                          rows={4}
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          error={Boolean(errors.notes)}
+                          helperText={errors.notes}
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  {hasPermission(Permissions.EditCabins) && (<Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Box sx={{ mb: 2 }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          type="submit"
+                        >
+                          Update
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>)}
+                </form>
+              </>
+            ) : (
+              <NoAccessAlert message="You do not have permission to access this section." /> // Mostrar NotAllowed si no tiene permisos
+            )}
           </Grid>
         </Grid>
       </Container>
