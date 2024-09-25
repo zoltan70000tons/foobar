@@ -1,53 +1,59 @@
-price,display_order,category_type,category_name,category_code,capacity
-2799,48,Balcony,Spacious Balcony,1B,2
-2333,49,Balcony,Spacious Balcony,1B,3
-1866,50,Balcony,Spacious Balcony,1B,4
-2533,39,Balcony,Standard Balcony,1D,2
-2099,40,Balcony,Standard Balcony,1D,3
-1633,41,Balcony,Standard Balcony,1D,4
-2666,47,Balcony,Spacious Balcony,2B,2
-2399,38,Balcony,Standard Balcony,2D,2
-2533,44,Balcony,Spacious Balcony,3B,2
-2099,45,Balcony,Spacious Balcony,3B,3
-1633,46,Balcony,Spacious Balcony,3B,4
-2399,43,Balcony,Spacious Balcony,4B,2
-2266,35,Balcony,Standard Balcony,4D,2
-2133,36,Balcony,Standard Balcony,5D,2
-1766,37,Balcony,Standard Balcony,5D,3
-2033,14,Interior,Spacious Promenade,1Q,4
-1733,15,Interior,Spacious Promenade,1Q,5
-1433,16,Interior,Spacious Promenade,1Q,6
-1933,11,Interior,Spacious Interior,1R,4
-1633,12,Interior,Spacious Interior,1R,5
-1333,13,Interior,Spacious Interior,1R,6
+﻿price,display_order,category_type,category_name,category_code,capacity
+1666,1,Interior,Standard Interior,4VL,2
+1799,2,Interior,Standard Interior,4VH,2
+1933,3,Interior,Standard Interior,3V,2
+1566,4,Interior,Standard Interior,3V,3
+1199,5,Interior,Standard Interior,3V,4
+2066,6,Interior,Standard Interior,2V,2
 2199,7,Interior,Standard Interior,1V,2
 1799,8,Interior,Standard Interior,1V,3
 1399,9,Interior,Standard Interior,1V,4
 2199,10,Interior,Promenade,2T,2
-2066,6,Interior,Standard Interior,2V,2
-1933,3,Interior,Standard Interior,3V,2
-1566,4,Interior,Standard Interior,3V,3
-1199,5,Interior,Standard Interior,3V,4
-1799,2,Interior,Standard Interior,4VH,2
-1666,17,Interior,Standard Interior,4VL,2
+1933,11,Interior,Spacious Interior,1R,4
+1633,12,Interior,Spacious Interior,1R,5
+1333,13,Interior,Spacious Interior,1R,6
+2033,14,Interior,Spacious Promenade,1Q,4
+1733,15,Interior,Spacious Promenade,1Q,5
+1433,16,Interior,Spacious Promenade,1Q,6
+1999,17,Ocean View,Ocean View,4N,2
+2133,18,Ocean View,Ocean View,3N,2
+1766,19,Ocean View,Ocean View,3N,3
+1399,20,Ocean View,Ocean View,3N,4
+2266,21,Ocean View,Ocean View,2N,2
+2399,22,Ocean View,Ocean View,1N,2
+1999,23,Ocean View,Ocean View,1N,3
+1599,24,Ocean View,Ocean View,1N,4
+2533,25,Ocean View,Spacious Ocean View,4M,2
+2666,26,Ocean View,Spacious Ocean View,3M,2
+2233,27,Ocean View,Spacious Ocean View,3M,3
+1799,28,Ocean View,Spacious Ocean View,3M,4
 2333,29,Ocean View,Ultra Spacious Ocean View,1K,4
 1999,30,Ocean View,Ultra Spacious Ocean View,1K,5
 1666,31,Ocean View,Ultra Spacious Ocean View,1K,6
 2599,32,Ocean View,Spacious Panoramic Ocean View,1L,2
 2166,33,Ocean View,Spacious Panoramic Ocean View,1L,3
 1733,34,Ocean View,Spacious Panoramic Ocean View,1L,4
-2399,22,Ocean View,Ocean View,1N,2
-1999,23,Ocean View,Ocean View,1N,3
-1599,24,Ocean View,Ocean View,1N,4
-2266,21,Ocean View,Ocean View,2N,2
-2666,26,Ocean View,Spacious Ocean View,3M,2
-2233,27,Ocean View,Spacious Ocean View,3M,3
-1799,28,Ocean View,Spacious Ocean View,3M,4
-2133,18,Ocean View,Ocean View,3N,2
-1766,19,Ocean View,Ocean View,3N,3
-1399,20,Ocean View,Ocean View,3N,4
-2533,25,Ocean View,Spacious Ocean View,4M,2
-1999,42,Ocean View,Ocean View,4N,2
+2133,35,Balcony,Standard Balcony,5D,2
+1766,36,Balcony,Standard Balcony,5D,3
+2266,37,Balcony,Standard Balcony,4D,2
+2566,38,Balcony,Standard Balcony,2D,2
+2166,39,Balcony,Standard Balcony,2D,3
+2533,40,Balcony,Standard Balcony,1D,2
+2099,41,Balcony,Standard Balcony,1D,3
+1633,42,Balcony,Standard Balcony,1D,4
+2399,43,Balcony,Spacious Balcony,4B,2
+2533,44,Balcony,Spacious Balcony,3B,2
+2099,45,Balcony,Spacious Balcony,3B,3
+1633,46,Balcony,Spacious Balcony,3B,4
+2666,47,Balcony,Spacious Balcony,2B,2
+2799,48,Balcony,Spacious Balcony,1B,2
+2333,49,Balcony,Spacious Balcony,1B,3
+1866,50,Balcony,Spacious Balcony,1B,4
+2433,51,Suite,Panoramic Suite (No Balcony),VP,4
+2899,52,Suite,Balcony Suite,J3,2
+2333,53,Suite,Balcony Suite,J3,3
+1766,54,Suite,Balcony Suite,J3,4
+2799,55,Suite,Balcony Suite,J4,2
 3999,56,Suite,Grand Suite - 1 Bedroom,GS,2
 3199,57,Suite,Grand Suite - 1 Bedroom,GS,3
 2399,58,Suite,Grand Suite - 1 Bedroom,GS,4
@@ -56,16 +62,8 @@ price,display_order,category_type,category_name,category_code,capacity
 2366,61,Suite,Grand Suite -  2 Bedroom,GT,6
 2099,62,Suite,Grand Suite -  2 Bedroom,GT,7
 1833,63,Suite,Grand Suite -  2 Bedroom,GT,8
-2899,52,Suite,Balcony Suite,J3,2
-2333,53,Suite,Balcony Suite,J3,3
-1766,54,Suite,Balcony Suite,J3,4
-2799,55,Suite,Balcony Suite,J4,2
 5999,64,Suite,Owner's Suite,OS,2
 4999,65,Suite,Owner's Suite,OS,3
 3999,66,Suite,Owner's Suite,OS,4
-2433,51,Suite,Panoramic Suite (No Balcony),VP,4
-2099,70,Suite,Panoramic Suite (No Balcony),VP,5
-1766,71,Suite,Panoramic Suite (No Balcony),VP,6
-0,99,Suite,Royal Suite,RS,2
-0,99,Suite,Royal Suite,RS,3
-0,99,Suite,Royal Suite,RS,4
+2099,67,Suite,Panoramic Suite (No Balcony),VP,5
+1766,68,Suite,Panoramic Suite (No Balcony),VP,6
