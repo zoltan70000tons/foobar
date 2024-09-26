@@ -74,6 +74,8 @@ Route::middleware(['membership_sales'])->group(function () {
 
 // --- GROUP WITHOUT MIDDLEWARE ---
 Route::get('/events', [BookingController::class, 'show']);
+//Route::get('/events/{id}/{language?}', [BookingController::class, 'showOne']);
+
 
 Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
 Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']);

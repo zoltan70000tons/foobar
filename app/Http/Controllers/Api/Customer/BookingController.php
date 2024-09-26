@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use Illuminate\Support\Facades\App;
 
 class BookingController extends Controller
 {
@@ -38,18 +39,47 @@ class BookingController extends Controller
     ]);
   }
 
-  // show a single event
-  public function showOne($id)
+  /**
+   * Single event
+   * 
+   * 
+   */
+  public function showOne(Request $request, $id, $language = 'en')
   {
-    // return event by id if exist
-    $event = Event::find($id);
-
-    if (!$event) {
-      return response()->json(['message' => 'event not found']);
-    }
-
-    return response()->json([
-      'event' => $event
-    ]);
+      App::setLocale($language);
+  
+      // Retrieve the event
+      $event = Event::find($id);
+  
+      if (!$event) {
+          return response()->json([
+              'status' => 404, 
+              'message' => __('event.no_event_found')
+          ]);
+      }
+  
+      // Check event status
+      if (!in_array($event->status, ['pre-sale', 'public'])) {
+          return response()->json([
+              'status' => 403,
+              'message' => __('event.no_event_found'),
+          ]);
+      }
+  
+      // Get purchase access information from the request
+      $purchaseAccess = $request->get('purchase_access', false);
+      $accessMessage = $request->get('access_message', '');
+  
+      return response()->json([
+          'status' => 200,
+          'event_status' => $event->status,
+          'event' => $event,
+          'purchase_access' => $purchaseAccess,
+          'access_message' => $accessMessage,
+      ]);
   }
+
 }
+
+
+
