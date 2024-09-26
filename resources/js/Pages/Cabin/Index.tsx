@@ -75,7 +75,7 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
     router.get(route(routeName,{id: 1}), {}, {
       preserveScroll: true,
       preserveState: true, 
-      only: ['data', 'tab'], 
+      only: ['data', 'tab', 'event_id'], 
       onSuccess: (page) => {
         setTabContent(page.props.data);
       }
@@ -96,8 +96,8 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
               <Tabs value={value} onChange={handleChange} aria-label="cabin tabs">
                 <Tab label="ALL" {...a11yProps(0)} />
                 <Tab label="CATEGORIES" {...a11yProps(1)} />
-                <Tab label="TAGS" {...a11yProps(2)} />
-                <Tab label="DELETED" {...a11yProps(3)} />
+                {/* <Tab label="TAGS" {...a11yProps(2)} />
+                <Tab label="DELETED" {...a11yProps(3)} /> */}
               </Tabs>
               <TabPanel value={value} index={0}>
                 <AllTabContent data={tabContent} /> 

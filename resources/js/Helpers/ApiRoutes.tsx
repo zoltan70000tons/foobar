@@ -13,13 +13,15 @@ const apiRoutes = {
   rolesUrl: `${API_BASE_URL}/roles`,
   updateRole: `${API_BASE_URL}/organization/members/updateRole`,
 
-
   //permissions
   permissionUrl: `${API_BASE_URL}/organization/permissions`,
   addPermissionToRoleUrl: `${API_BASE_URL}/permissions/addToRole`,
   orgPermissionUrl: `${API_BASE_URL}/permissions`,
   getPermissions: `${API_BASE_URL}/users/getPermissions`,
 
+  //cabins
+  addCabinTags: (id: string) => `${API_BASE_URL}/events/${id}/cabins/addTag`,
+  updateCabinStatus: (id: string) => `${API_BASE_URL}/events/${id}/cabins/updateStatus`,
 };
 
 export default apiRoutes;

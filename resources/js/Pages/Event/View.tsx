@@ -185,12 +185,12 @@ const View = ({ auth, event }: PageProps) => {
                       <ArrowBack />
                     </IconButton>
                   </Tooltip>
-                  {hasPermission('Edit Event') && (<Tooltip title="Edit"> 
+                  {hasPermission(Permissions.EditEvents) && (<Tooltip title="Edit"> 
                     <IconButton color="primary" onClick={handleEdit}>
                       <Edit />
                     </IconButton>
                   </Tooltip>)}
-                  {hasPermission('Delete Event') && (<Tooltip title="Delete">
+                  {hasPermission(Permissions.DeleteEvents) && (<Tooltip title="Delete">
                     <IconButton color="error" onClick={handleDelete}>
                       <Delete />
                     </IconButton>

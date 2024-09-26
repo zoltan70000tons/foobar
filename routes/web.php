@@ -89,7 +89,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/cabins/categories/{catId}/edit', [CabinCategoriesController::class, 'edit'])->name('cabinCategory.edit');
     Route::post('/events/{id}/cabins/categories/{catId}/update', [CabinCategoriesController::class, 'update'])->name('cabinCategory.update');
     Route::delete('/events/{id}/cabins/categories/{catId}/delete', [CabinCategoriesController::class, 'destroy'])->name('cabinCategory.destroy');
+    
+    //Cabins Add Tag
+    Route::post('/events/{id}/cabins/addTag', [CabinsController::class, 'addTag'])->name('cabins.addTag');
+    Route::post('/events/{id}/cabins/updateStatus', [CabinsController::class, 'updateStatus'])->name('cabins.updateStatus');
 
+    //Cabin edit
+    Route::get('/events/{id}/cabins/{cabin_id}/edit', [CabinsController::class, 'edit'])->name('cabins.edit');
+    Route::post('/events/{id}/cabins/{cabin_id}/update', [CabinsController::class, 'update'])->name('cabins.update');
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
 });

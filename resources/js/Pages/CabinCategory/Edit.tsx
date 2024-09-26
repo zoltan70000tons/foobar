@@ -99,7 +99,6 @@ const Edit = ({
       formData.append("files[]", file);
     });
 
-    // Verifica que images no sea null o undefined
     const imagePathsSet = new Set((images || []).map((image) => image.path));
     const missingImages = (cabin_category.images || []).filter(
       (image) => !imagePathsSet.has(image.path)
