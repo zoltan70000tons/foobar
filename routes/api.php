@@ -87,6 +87,8 @@ Route::get('/cabins', [CabinController::class, 'show']);
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
 
+Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel']);
+
 
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);

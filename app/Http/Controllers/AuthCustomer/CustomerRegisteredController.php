@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AuthCustomer;
 use App\Http\Controllers\Controller;
 // use App\Models\User;
 use App\Models\Customer;
+use App\Models\CustomerDetail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
+use Carbon\Carbon;
 
 class CustomerRegisteredController extends Controller
 {
@@ -43,13 +45,19 @@ class CustomerRegisteredController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
-    $request->validate([
+    $validateCheck = $request->validate([
       'name' => ['required', 'string', 'max:255', 'unique:customers', 'regex:/.*[a-zA-Z].*/'],
       'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
+      'first_name' => ['required', 'string', 'max:255'],
+      'last_name' => ['required', 'string', 'max:255'],
+      'dob' => ['required', 'date'],
+      'gender' => ['required', 'in:M,F'],
+      'language' => ['required', 'string', 'max:5'],
     ], [
       'name.regex' => __('validation.regex'),
     ]);
+    Log::info($validateCheck);
 
 
     $language = $request->language;
@@ -68,6 +76,18 @@ class CustomerRegisteredController extends Controller
         'survivor_number' => $survivor_number,
       ]);
 
+      $customerDetail = CustomerDetail::create([
+        'customer_id' => $user->id,], [
+        'gender' => $request->gender,
+        'first_name' => $request->first_name,
+        'last_name' => $request->last_name,
+        'dob' => Carbon::parse($request->dob),
+        'language' => $request->language,
+        'citizenship' => '',
+        'phone' => '',
+        'emergency_c_name' => '',
+        'emergency_c_phone' => '',
+      ]);
 
       event(new Registered($user));
 
