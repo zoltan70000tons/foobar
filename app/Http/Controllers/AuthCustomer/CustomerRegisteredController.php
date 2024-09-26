@@ -77,7 +77,7 @@ class CustomerRegisteredController extends Controller
       ]);
 
       $customerDetail = CustomerDetail::create([
-        'customer_id' => $user->id,], [
+        'customer_id' => $user->id, 
         'gender' => $request->gender,
         'first_name' => $request->first_name,
         'last_name' => $request->last_name,
@@ -124,6 +124,7 @@ class CustomerRegisteredController extends Controller
       Mail::to($email)->send(new CustomerRegistered($user, $language));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+      Log::info($user->email);
     }
   }
 }
