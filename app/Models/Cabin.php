@@ -50,7 +50,7 @@ class Cabin extends Model
     
     public function cabinCategory()
     {
-        return $this->belongsTo(CabinCategory::class, 'cabin_category_id');
+        return $this->belongsTo(CabinCategory::class, 'cabin_category_id', 'id');
     }
 
     public function cabinType()

@@ -41,7 +41,7 @@ class CabinCategory extends Model
     // Relations
     public function cabins()
     {
-        return $this->hasMany(Cabin::class, 'cabin_category_id');
+        return $this->hasMany(Cabin::class, 'cabin_category_id', 'id');
     }
 
     public function cruise()
