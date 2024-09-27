@@ -2,9 +2,9 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Str;
 use App\Models\Cabin;
 use App\Enums\StatusCabin;
+use Illuminate\Support\Collection;
 
 // use log
 use Illuminate\Support\Facades\Log;
