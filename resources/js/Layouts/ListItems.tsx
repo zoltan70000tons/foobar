@@ -113,7 +113,7 @@ const MenuItems: React.FC<MenuItemsProps> = ({ mainDrawerToggle }) => {
             </Tooltip>
           )}
           <Tooltip title="Logout" placement="right">
-            <IconButton onClick={() => router.post("logout")}>
+            <IconButton onClick={() => router.post(route("logout"))}>
               <LogoutIcon />
             </IconButton>
           </Tooltip>
