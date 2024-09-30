@@ -6,6 +6,7 @@ use App\Enums\StatusCabin;
 use App\Interfaces\CabinInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -51,38 +52,40 @@ class CabinRepository implements CabinInterface
 
     function getCategoriesAndCabins()
     {
-        $categoriesWithCabins = CabinCategory::with('cabins')->get()->map(function ($category) {
-            $totalCabins = $category->cabins->count();
-            $availableCabins = $category->cabins->filter(function ($cabin) {
-                return $cabin->status === StatusCabin::AVAILABLE->value;
-            })->count();
-            return [
-                'id' => $category->id,
-                'category_type' => $category->category_type,
-                'category_code' => $category->category_code,
-                'category_name' => $category->category_name,
-                'price' => $category->price,
-                'status' => "{$availableCabins}/{$totalCabins}",
-                'capacity' => $category->capacity,
-                'title' => $category->title,
-                'subRows' => $category->cabins->map(function ($cabin) {
-                    return [
-                        'id' => $cabin->id,
-                        'cabin_code' => $cabin->cabin_code,
-                        'deck' => $cabin->deck,
-                        'total_berths' => $cabin->total_berths,
-                        'cabin_number' => $cabin->cabin_number,
-                        'cabin_deck' => $cabin->deck,
-                        'cabin_status' => $cabin->status,
-                        'cabin_type' => $cabin->cabinType->cabin_type,
-                        'cabin_tags' => $cabin->tags
-                    ];
-                })
-            ];
-        });
-
+        // Eager load only for cabins and cabinType
+        $categoriesWithCabins = CabinCategory::with(['cabins.cabinType'])
+            ->get()
+            ->map(function ($category) {
+                // Count total and availables
+                $totalCabins = $category->cabins->count();
+                $availableCabins = $category->cabins->where('status', StatusCabin::AVAILABLE->value)->count();
+                
+                return [
+                    'id' => $category->id,
+                    'category_type' => $category->category_type,
+                    'category_code' => $category->category_code,
+                    'category_name' => $category->category_name,
+                    'price' => $category->price,
+                    'status' => "{$availableCabins}/{$totalCabins}",
+                    'capacity' => $category->capacity,
+                    'title' => $category->title,
+                    'subRows' => $category->cabins->map(function ($cabin) {
+                        return [
+                            'id' => $cabin->id,
+                            'cabin_code' => $cabin->cabin_code,
+                            'deck' => $cabin->deck,
+                            'total_berths' => $cabin->total_berths,
+                            'cabin_number' => $cabin->cabin_number,
+                            'cabin_status' => $cabin->status,
+                            'cabin_type' => $cabin->cabinType->cabin_type,
+                            'cabin_tags' => $cabin->tags 
+                        ];
+                    })
+                ];
+            });
+    
         return $categoriesWithCabins;
     }
-
+    
     function addTags(array $tags, array $cabins) {}
 }
