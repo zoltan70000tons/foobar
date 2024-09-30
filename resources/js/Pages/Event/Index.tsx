@@ -34,7 +34,7 @@ const Index = ({ auth, events }: PageProps) => {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {hasPermission(Permissions.ViewEvents) && (
           <Grid container spacing={3}>
-            {hasPermission("Create Event") && (
+            {hasPermission(Permissions.CreateEvents) && (
               <Grid item xs={12} sm={6}>
                 <Card
                   sx={{
