@@ -25,6 +25,7 @@ import EventStatusSelect from "@/Components/EventStatusSelect";
 import { EventStatus } from "@/enums/EventStatusEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
+import { Permissions } from "@/enums/PermissionEnum";
 
 const Edit = ({ auth, errors}: PageProps) => {
 
@@ -95,7 +96,7 @@ const { hasPermission } = usePermissions();
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          {hasPermission('Edit Event') && (<Paper
+          {hasPermission(Permissions.EditEvents) && (<Paper
             sx={{
               p: 2,
               display: "flex",

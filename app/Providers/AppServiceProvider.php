@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    //
+    // Define a gate to authorize access to the Pulse dashboard
+    Gate::define('viewPulse', function (User $user): bool {
+      return $user->hasRole('SuperAdmin');
+  });
   }
 }

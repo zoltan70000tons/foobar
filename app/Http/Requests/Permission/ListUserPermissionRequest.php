@@ -27,7 +27,7 @@ class ListUserPermissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'id' => 'required|int',
+                'id' => 'required',
         ];
     }
 

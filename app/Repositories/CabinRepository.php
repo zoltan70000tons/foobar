@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Enums\StatusCabin;
+use App\Interfaces\CabinInterface;
+use App\Models\Cabin;
+use App\Models\CabinCategory;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
+class CabinRepository implements CabinInterface
+{
+    function getAll()
+    {
+        // return CabinCategory::all();
+    }
+
+    function find($id)
+    {
+        return Cabin::find($id);
+    }
+
+    function save(array $data): ?Cabin
+    {
+        return new Cabin();
+    }
+    function update(array $data, $id)
+    {
+        $cabin = $this->find($id);
+        $tags = $data['tags'];
+        $cabin->status = $data['cabin_status'];
+        $cabin->cabin_number = $data['cabin_number'];
+        $cabin->cabin_category_id = $data['cabin_category'];
+        $cabin->cabin_type_id = $data['cabin_type'];
+        $cabin->deck = $data['deck'];
+        $cabin->location = $data['location'];
+        $cabin->connects_with = $data['connects_with'] ?? null;
+        $cabin->total_berths = $data['total_berths'] ?? null;
+        $cabin->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
+        $cabin->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
+        $cabin->upper_berths = $data['upper_berths'] ?? null;
+        $cabin->notes = $data['notes'] ?? null;
+        $cabin->accessible = $data['features']['accessible'];
+        $cabin->balcony = $data['features']['balcony'];
+        $cabin->obstructed_view = $data['features']['obstructed_view'];
+        $cabin->tags = array_values($tags);
+        $cabin->save();
+    }
+    function delete($id) {}
+
+    function getCategoriesAndCabins()
+    {
+        $categoriesWithCabins = CabinCategory::with('cabins')->get()->map(function ($category) {
+            $totalCabins = $category->cabins->count();
+            $availableCabins = $category->cabins->filter(function ($cabin) {
+                return $cabin->status === StatusCabin::AVAILABLE->value;
+            })->count();
+            return [
+                'id' => $category->id,
+                'category_type' => $category->category_type,
+                'category_code' => $category->category_code,
+                'category_name' => $category->category_name,
+                'price' => $category->price,
+                'status' => "{$availableCabins}/{$totalCabins}",
+                'capacity' => $category->capacity,
+                'title' => $category->title,
+                'subRows' => $category->cabins->map(function ($cabin) {
+                    return [
+                        'id' => $cabin->id,
+                        'cabin_code' => $cabin->cabin_code,
+                        'deck' => $cabin->deck,
+                        'total_berths' => $cabin->total_berths,
+                        'cabin_number' => $cabin->cabin_number,
+                        'cabin_deck' => $cabin->deck,
+                        'cabin_status' => $cabin->status,
+                        'cabin_type' => $cabin->cabinType->cabin_type,
+                        'cabin_tags' => $cabin->tags
+                    ];
+                })
+            ];
+        });
+
+        return $categoriesWithCabins;
+    }
+
+    function addTags(array $tags, array $cabins) {}
+}

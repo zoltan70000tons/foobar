@@ -39,9 +39,9 @@ class CabinCategoriesController extends Controller
     {
         try {
             return $this->withPermission([Permissions::ViewCabinCategories], function () {
-                $data = CabinCategory::all();
+                $data = CabinCategory::all()->toArray();
                 return Inertia::render('Cabin/Index', [
-                    'data' => $data,
+                    'data' => array('data' => $data),
                     'tab' => 'CATEGORIES',
                 ]);
             });
