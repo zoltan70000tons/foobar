@@ -37,14 +37,13 @@ class CabinSeeder extends Seeder
       $obstructedView = $record['Obstructed View'] === 'Y';
       $accessible = $record['Accessible'] === 'Y';
 
-      // Find the connects_with cabin ID based on cabin_code
-      $connectingCabin = Cabin::where('cabin_code', $record['Connects with'])->first();
+      // Find the connects_with cabin ID based on cabin_number
+      $connectingCabin = Cabin::where('cabin_number', $record['Connects with'])->first();
       $connectingCabinId = $connectingCabin ? $connectingCabin->id : null;
 
       // Prepare data array
       $cabinData = [
         'cabin_category_id' => $cabinCategoryId,
-        'cabin_code' => 'AAAA-B12C', // Need to confirm with TS what this is for and if it is necessary
         'cabin_type_id' => $record['Category Type'], // Assuming the cabin_type is always 1, meaning private cabin
         'cabin_number' => $record['Cabin #'],
         'deck' => $record['Deck'],

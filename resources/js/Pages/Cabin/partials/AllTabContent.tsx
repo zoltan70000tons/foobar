@@ -37,14 +37,14 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
   const columns = useMemo(
     () => [
       {
-        header: "Code",
-        accessor: "category_code",
-        filterable: true,
+        header: "Order",
+        accessor: "display_order",
+        filterable: false,
         sortable: true,
       },
       {
-        header: "Type",
-        accessor: "category_type",
+        header: "Category Code",
+        accessor: "category_code",
         filterable: true,
         sortable: true,
       },
@@ -55,22 +55,16 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         sortable: true,
       },
       {
-        header: "Capacity",
-        accessor: "capacity",
-        filterable: true,
-        sortable: true,
-      },
-      {
         header: "Price",
         accessor: "price",
-        filterable: true,
+        filterable: false,
         sortable: true,
       },
       {
-        header: "Status",
-        accessor: "status",
+        header: "Availability",
+        accessor: "availability",
         sortable: true,
-        filterable: true,
+        filterable: false,
       },
       // {
       //   header: "Actions",
@@ -91,10 +85,10 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
   const subColumns = useMemo(
     () => [
       {
-        accessor: "cabin_code",
-        header: "Code",
-        sortable: true,
+        accessor: "cabin_number",
+        header: "Number",
         filterable: true,
+        sortable: true,
       },
       {
         accessor: "cabin_type",
@@ -102,14 +96,9 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         sortable: true,
         filterable: true,
       },
+
       {
-        accessor: "cabin_number",
-        header: "Number",
-        filterable: true,
-        sortable: true,
-      },
-      {
-        accessor: "cabin_deck",
+        accessor: "deck",
         header: "Deck",
         sortable: true,
         filterable: true,
@@ -156,15 +145,12 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         draw: (subRow) => (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
             {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
-              subRow.cabin_tags.map((tag: string) => (
-                <Chip key={tag} label={tag} size="small" />
-              ))
+              subRow.cabin_tags.map((tag: string) => <Chip key={tag} label={tag} size="small" />)
             ) : (
               <em>No Tags</em>
             )}
           </Box>
         ),
-       
       },
 
       {
@@ -173,13 +159,15 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         disableFilter: true,
         draw: (row) => (
           <div style={{ display: "flex", gap: "10px" }}>
-            {hasPermission(Permissions.ViewCabins) && (<Visibility
-              onClick={() => { 
-                console.log(row);
-                router.get(route("cabins.edit", {id: event_id, cabin_id: row.id})) }}
-              style={{ cursor: "pointer" }}
-            />)}
-            
+            {hasPermission(Permissions.ViewCabins) && (
+              <Visibility
+                onClick={() => {
+                  console.log(row);
+                  router.get(route("cabins.edit", { id: event_id, cabin_id: row.id }));
+                }}
+                style={{ cursor: "pointer" }}
+              />
+            )}
           </div>
         ),
       },
@@ -206,7 +194,6 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         console.error("Error adding status", error);
       });
   };
-
 
   return (
     <MuiTable

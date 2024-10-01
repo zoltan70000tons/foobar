@@ -16,7 +16,6 @@ class Cabin extends Model
   protected $fillable = [
     'cabin_type_id',
     'cabin_category_id',
-    'cabin_code',
     'cabin_number',
     'deck',
     'total_berths',

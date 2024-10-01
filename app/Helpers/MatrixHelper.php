@@ -49,7 +49,7 @@ class MatrixHelper
 
 
   /**
-   * Return unique cabins type where cabin_code and decks are the same
+   * Return unique cabins type where cabin_number and decks are the same
    * 
    * @return array
    */
