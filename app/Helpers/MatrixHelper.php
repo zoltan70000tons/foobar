@@ -11,6 +11,21 @@ use Illuminate\Support\Facades\Log;
 
 class MatrixHelper
 {
+
+  /**
+   * Check the cabins are still available for current category
+   * 
+   * @return boolean
+   */
+  public static function checkCabinAvailability($cat_type_id, $ticketType): bool
+  {
+      return Cabin::where('cabin_type_id', $ticketType)
+          ->where('cabin_category_id', $cat_type_id)
+          ->where('status', StatusCabin::AVAILABLE->value)
+          ->exists();
+  }
+
+
   /**
    * Return array for table
    * 
@@ -33,20 +48,6 @@ class MatrixHelper
   
       return $decks->isEmpty() ? null : $decks->implode(',');
   }
-
-  /**
-   * Check the cabins are still available for current category
-   * 
-   * @return boolean
-   */
-  public static function checkCabinAvailability($cat_type_id, $ticketType): bool
-  {
-      return Cabin::where('cabin_type_id', $ticketType)
-          ->where('cabin_category_id', $cat_type_id)
-          ->where('status', StatusCabin::AVAILABLE->value)
-          ->exists();
-  }
-
 
   /**
    * Return unique cabins type where cabin_number and decks are the same
@@ -86,21 +87,21 @@ class MatrixHelper
       "is_available" => $cabin ? $availabilityStatus : null,
     ];
   }
-
-  /**
-   * Helper function to get max capcity for a specific category
-   * 
-   * @return array
-   */
-  public static function getMaxCapacity($cabinType, $ticketType)
-  {
-
-    $cabins = Cabin::where('cabin_type_id', $ticketType)
-    ->where('cabin_category_id', $cabinType)
-    ->get();
-
-    $maxCapacity = $cabins->max('capacity');
-
-    return $maxCapacity;
-  }
 }
+
+//   /**
+//    * Helper function to get max capcity for a specific category
+//    * 
+//    * @return array
+//    */
+//   public static function getMaxCapacity($cabinType, $ticketType)
+//   {
+
+//     $cabins = Cabin::where('cabin_type_id', $ticketType)
+//     ->where('cabin_category_id', $cabinType)
+//     ->get();
+
+//     $maxCapacity = $cabins->max('capacity');
+
+//     return $maxCapacity;
+//   }
