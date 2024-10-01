@@ -3,7 +3,6 @@ export interface Cabin {
     cabin_type_id: number;
     cabin_category_id: number;
     cabin_number: number;
-    cabin_code: string;
     deck:number;
     total_berths:number;
     lower_bed_type_1:string;

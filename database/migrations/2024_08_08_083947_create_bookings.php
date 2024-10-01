@@ -20,6 +20,7 @@ return new class extends Migration
       $table->foreignId('cabin_id')->constrained('cabins');
       $table->boolean('self_assigned')->default(false); // False by default, indicating cabin was assigned by app
       $table->boolean('completed')->default(false); // False by default, indicating booking is in progress
+      $table->jsonb('tags')->default(json_encode(['NEW']));
       $table->timestamps();
     });
   }

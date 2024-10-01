@@ -1,38 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import {
-  Tabs,
-  Tab,
-  Container,
-  Grid,
-  Toolbar,
-  Typography,
-  Box,
-  AppBar,
-} from "@mui/material";
+import { Tabs, Tab, Container, Grid, Toolbar, Typography, Box, AppBar } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
-import AllTabContent from './partials/AllTabContent';
-import CategoriesTabContent from './partials/CategoriesTabContent';
-
+import AllTabContent from "./partials/AllTabContent";
+import CategoriesTabContent from "./partials/CategoriesTabContent";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      aria-labelledby={`tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box p={3}>
-          {children}
-        </Box>
-      )}
+    <div role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} aria-labelledby={`tab-${index}`} {...other}>
+      {value === index && <Box p={3}>{children}</Box>}
     </div>
   );
 }
@@ -43,47 +23,47 @@ function a11yProps(index: number) {
     "aria-controls": `tabpanel-${index}`,
   };
 }
-const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
+const Index = ({ auth, tab, data }: PageProps & { tab: string; data: any }) => {
   const { hasPermission } = usePermissions();
-  const [value, setValue] = useState(tab === 'ALL' ? 0 : tab === 'CATEGORIES' ? 1 : tab === 'TAGS' ? 2 : 3);
+  const [value, setValue] = useState(tab === "ALL" ? 0 : tab === "CATEGORIES" ? 1 : tab === "TAGS" ? 2 : 3);
   const [tabContent, setTabContent] = useState(data);
-
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
-  
-    let routeName = '';
-  
+
+    let routeName = "";
+
     switch (newValue) {
       case 0:
-        routeName = 'cabins.index';
+        routeName = "cabins.index";
         break;
       case 1:
-        routeName = 'cabins.categories';
+        routeName = "cabins.categories";
         break;
       case 2:
-        routeName = 'cabins.tags';
+        routeName = "cabins.tags";
         break;
       case 3:
-        routeName = 'cabins.deleted';
+        routeName = "cabins.deleted";
         break;
       default:
-        routeName = 'cabins.index';
+        routeName = "cabins.index";
         break;
     }
-  
-    router.get(route(routeName,{id: 1}), {}, {
-      preserveScroll: true,
-      preserveState: true, 
-      only: ['data', 'tab', 'event_id'], 
-      onSuccess: (page) => {
-        setTabContent(page.props.data);
-      }
-    });
-};
 
-  
-  
+    router.get(
+      route(routeName, { id: 1 }),
+      {},
+      {
+        preserveScroll: true,
+        preserveState: true,
+        only: ["data", "tab", "event_id"],
+        onSuccess: (page) => {
+          setTabContent(page.props.data);
+        },
+      }
+    );
+  };
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
@@ -100,7 +80,7 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string, data: any }) => {
                 <Tab label="DELETED" {...a11yProps(3)} /> */}
               </Tabs>
               <TabPanel value={value} index={0}>
-                <AllTabContent data={tabContent} /> 
+                <AllTabContent data={tabContent} />
               </TabPanel>
               <TabPanel value={value} index={1}>
                 <CategoriesTabContent data={tabContent} />
