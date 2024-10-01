@@ -27,7 +27,8 @@ class DatabaseSeeder extends Seeder
             CruiseSeeder::class,
             CabinCategorySeeder::class,
             CabinTypeSeeder::class,
-            CabinSeeder::class
+            CabinSeeder::class,
+            BookingSeeder::class
         ]);
     }
 }

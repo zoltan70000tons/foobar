@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
 use League\Csv\Reader;
-use Illuminate\Support\Facades\Log;
 
 class CabinSeeder extends Seeder
 {
@@ -28,7 +27,6 @@ class CabinSeeder extends Seeder
     foreach ($csv as $record) {
 
       // Find the corresponding cabin_category_id based on category_code and capacity
-      Log::info($record['Cat'] . ' ' . $record['Capacity']);
       $cabinCategoryId = CabinCategory::where('category_code', $record['Cat'])
         ->where('capacity', $record['Capacity'])
         ->first()
@@ -59,6 +57,9 @@ class CabinSeeder extends Seeder
         'location' => $record['Location'],
         'balcony' => $balcony,
         'obstructed_view' => $obstructedView,
+        'inventory' => $record['Inventory'],
+        'notes' => $record['Notes'],
+        'tags' => $record['Tags'], 
         'status' => $record['Status'],
       ];
 

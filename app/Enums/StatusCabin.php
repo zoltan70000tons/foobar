@@ -8,4 +8,5 @@ enum StatusCabin: string
   case BOOKED = 'BOOKED';
   case RESERVED = 'RESERVED';
   case CLOSED = 'CLOSED';
+  case PARTIALLY_BOOKED = 'PARTIALLY_BOOKED';
 }
