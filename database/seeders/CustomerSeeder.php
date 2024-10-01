@@ -27,7 +27,7 @@ class CustomerSeeder extends Seeder
       ]);
 
       // Create 1 addresses for each customer
-      CustomerAddress::factory()->count(1)->create([
+      CustomerAddress::factory()->create([
         'customer_id' => $customer->id,
       ]);
     }
@@ -40,7 +40,7 @@ class CustomerSeeder extends Seeder
     foreach ($duplicateEmailCustomers as $customer) {
       // Create customer details and addresses for customers with the same email
       CustomerDetail::factory()->create(['customer_id' => $customer->id]);
-      CustomerAddress::factory()->count(rand(1, 2))->create(['customer_id' => $customer->id]);
+      CustomerAddress::factory()->create(['customer_id' => $customer->id]);
     }
   }
 }

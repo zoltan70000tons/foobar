@@ -14,10 +14,12 @@ return new class extends Migration
     Schema::create('bookings', function (Blueprint $table) {
       $table->id();
       $table->string('booking_code', 255);
-      $table->uuid('customer_id')->foreignId('customer_id')->references('id')->on('customers')->onDelete('cascade');
-      $table->string('payment_method', 50);
+      $table->uuid('customer_id')->foreignId('customer_id')->references('id')->on('customers')->onDelete('cascade')->nullable();
+      $table->string('payment_plan', 50);
       $table->boolean('carbon_offset')->default(false);
-      $table->foreignId('cabin_id')->nullable()->constrained('cabins');
+      $table->foreignId('cabin_id')->constrained('cabins');
+      $table->boolean('self_assigned')->default(false); // False by default, indicating cabin was assigned by app
+      $table->boolean('completed')->default(false); // False by default, indicating booking is in progress
       $table->timestamps();
     });
   }
