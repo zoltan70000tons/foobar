@@ -51,7 +51,7 @@ class PricingMatrixController extends Controller
         }])
         ->select('category_type', 'display_order', 'id', 'category_name', 'category_code')
         ->get();
-  
+
       // Group categories by category type and get the first category of each type
       $groupedCategories = $categories->groupBy('category_type')->map(function ($group) {
         return $group->sortBy('display_order')->first();
@@ -87,19 +87,20 @@ class PricingMatrixController extends Controller
       return [
         'name' => $category->category_name,
         'display_order' => $category->display_order,
-        'cabins' => $this->getCabinsByCategory($categoryType, $category->category_name, $ticketType),
+        'cabins' => $this->getCabinsByCategory($categoryType, $category, $ticketType),
       ];
     });
   }
 
   // Get cabins based on category name
-  public function getCabinsByCategory($categoryType, $categoryName, $ticketType)
+  public function getCabinsByCategory($categoryType, $category, $ticketType)
   {
     $categories = $this->cabinCategory
       ->where('category_type', $categoryType)
-      ->where('category_name', $categoryName)
-      ->with(['cabins' => function ($query) use ($ticketType) {
-          $query->where('cabin_type_id', $ticketType);
+      ->where('category_name', $category->category_name)
+      ->with(['cabins' => function ($query) use ($ticketType, $category) {
+          $query->where('cabin_category_id', $category->id)
+              ->where('cabin_type_id', $ticketType);
       }])
       ->get();
 
