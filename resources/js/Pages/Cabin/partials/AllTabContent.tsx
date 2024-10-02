@@ -6,7 +6,7 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Cabin } from "@/interfaces/Cabin";
 import { Visibility, Edit, Delete } from "@mui/icons-material";
-import { CabinStatus } from "@/enums/CabinStatus";
+import { CabinStatus, CabinStatusFilters, CabinStatusOverrides } from "@/enums/CabinStatus";
 import axios from "axios";
 import apiRoutes from "@/Helpers/ApiRoutes";
 import { TagEnum } from "@/enums/TagEnum";
@@ -18,9 +18,8 @@ interface CabinTabContentProps {
 
 const AllTabContent: React.FC<Cabin> = ({ data }) => {
   const { hasPermission } = usePermissions();
-
-  console.log(hasPermission(Permissions.ViewCabins));
-  const statusOptions = Object.values(CabinStatus);
+  const statusFiltersOptions = Object.values(CabinStatusFilters);
+  const statusOverridesOptions = Object.values(CabinStatusOverrides);
   const tagOptions = Object.values(TagEnum);
   const event_id = data.event_id;
   const cabins = data.data;
@@ -65,19 +64,7 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         accessor: "availability",
         sortable: true,
         filterable: false,
-      },
-      // {
-      //   header: "Actions",
-      //   accessor: "",
-      //   draw: (row) => (
-      //     <div style={{ display: "flex", gap: "10px" }}>
-      //       <Visibility
-      //         onClick={() => console.log(`View ${row.category_code}`)}
-      //         style={{ cursor: "pointer" }}
-      //       />
-      //     </div>
-      //   ),
-      // },
+      }
     ],
     []
   );
@@ -96,7 +83,12 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         sortable: true,
         filterable: true,
       },
-
+      {
+        accessor: "ticket_inventory",
+        header: "Tickets Left",
+        sortable: true,
+        filterable: true,
+      },
       {
         accessor: "deck",
         header: "Deck",
@@ -109,17 +101,21 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
         filterable: true,
         sortable: true,
         filterType: "select",
-        filterOptions: statusOptions,
+        filterOptions: statusFiltersOptions,
         draw: (row) => (
           <Chip
             size="small"
             label={row.cabin_status}
             color={
-              row.cabin_status === CabinStatus.AVAILABLE
+              row.cabin_status === CabinStatusFilters.AVAILABLE
                 ? "success"
-                : row.cabin_status === CabinStatus.RESERVED
-                ? "default"
-                : row.cabin_status === CabinStatus.BOOKED
+                : row.cabin_status === CabinStatusFilters.RESERVED
+                ? "warning"
+                : row.cabin_status === CabinStatusFilters.BOOKED
+                ? "primary"
+                : row.cabin_status === CabinStatusFilters.PARTIALY_BOOKED
+                ? "secondary"
+                : row.cabin_status === CabinStatusFilters.CLOSED
                 ? "error"
                 : "default"
             }
@@ -204,7 +200,7 @@ const AllTabContent: React.FC<Cabin> = ({ data }) => {
       showTableFilters={true}
       showSubTableFilters={true}
       tagOptions={tagOptions}
-      statusOptions={statusOptions}
+      statusOptions={statusOverridesOptions}
       onApplyTags={manageTags}
       onApplyState={manageStatus}
     />

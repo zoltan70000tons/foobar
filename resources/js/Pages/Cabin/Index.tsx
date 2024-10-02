@@ -74,8 +74,8 @@ const Index = ({ auth, tab, data }: PageProps & { tab: string; data: any }) => {
           <Grid item xs={12}>
             <div>
               <Tabs value={value} onChange={handleChange} aria-label="cabin tabs">
-                <Tab label="ALL" {...a11yProps(0)} />
-                <Tab label="CATEGORIES" {...a11yProps(1)} />
+                <Tab label="CABIN INVENTORY" {...a11yProps(0)} />
+                <Tab label="MANAGE CATEGORIES" {...a11yProps(1)} />
                 {/* <Tab label="TAGS" {...a11yProps(2)} />
                 <Tab label="DELETED" {...a11yProps(3)} /> */}
               </Tabs>

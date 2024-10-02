@@ -65,20 +65,28 @@ class CabinRepository implements CabinInterface
           'category_type' => $category->category_type,
           'category_code' => "{$category->category_code}_{$category->capacity}",
           'category_name' => $category->category_name,
-          'price' => $category->price,
-          'availability' => "{$availableCabins}/{$totalCabins}",
-          'capacity' => $category->capacity,
-          'title' => $category->title,
+          'price'         => $category->price,
+          'availability'  => "{$availableCabins}/{$totalCabins}",
+          'capacity'      => $category->capacity,
+          'title'         => $category->title,
           'display_order' => $category->display_order,
-          'subRows' => $category->cabins->map(function ($cabin) {
+          'subRows'       => $category->cabins->map(function ($cabin) use ($category) {
+            $ticketInventory = $cabin->inventory;
+            // If cabin type is not PRIVATE CABIN, then show the split tickets
+            // e.g. 2/4, 3/6, 4/8
+            if ($cabin->cabinType->id !== 1) {
+              $ticketInventory = "{$ticketInventory} / {$category->capacity}";
+            }
+
             return [
               'id' => $cabin->id,
               'deck' => $cabin->deck,
-              'total_berths' => $cabin->total_berths,
-              'cabin_number' => $cabin->cabin_number,
-              'cabin_status' => $cabin->status,
-              'cabin_type' => $cabin->cabinType->cabin_type,
-              'cabin_tags' => $cabin->tags
+              'total_berths'    => $cabin->total_berths,
+              'cabin_number'    => $cabin->cabin_number,
+              'cabin_status'    => $cabin->status,
+              'ticket_inventory'=> $ticketInventory,
+              'cabin_type'      => $cabin->cabinType->cabin_type,
+              'cabin_tags'      => $cabin->tags
             ];
           })
         ];
