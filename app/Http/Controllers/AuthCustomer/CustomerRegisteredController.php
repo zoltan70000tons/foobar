@@ -76,13 +76,15 @@ class CustomerRegisteredController extends Controller
         'survivor_number' => $survivor_number,
       ]);
 
+      $formattedLanguage = $this->formatLanguage($language);
+
       $customerDetail = CustomerDetail::create([
         'customer_id' => $user->id, 
         'gender' => $request->gender,
         'first_name' => $request->first_name,
         'last_name' => $request->last_name,
         'dob' => Carbon::parse($request->dob),
-        'language' => $request->language,
+        'language' => $formattedLanguage,
         'citizenship' => '',
         'phone' => '',
         'emergency_c_name' => '',
@@ -125,6 +127,27 @@ class CustomerRegisteredController extends Controller
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
       Log::info($user->email);
+    }
+  }
+
+    /**
+   * Format the language code to the appropriate 3-letter format.
+   *
+   * @param string $language
+   * @return string
+   */
+  private function formatLanguage(string $language): string
+  {
+    switch ($language) {
+      case 'en':
+        return 'ENG';
+      case 'es':
+        return 'ESP';
+      case 'de':
+        return 'DEU';
+      default:
+        return strtoupper($language); 
+       
     }
   }
 }

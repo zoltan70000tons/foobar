@@ -19,6 +19,9 @@ use App\Http\Controllers\Api\Customer\CabinController;
 // PRICING MATRIX
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
 
+// EDIT PROFILE
+use App\Http\Controllers\Api\Customer\EditProfileController;
+
 // BROADCAST
 use App\Events\CabinChange;
 
@@ -89,7 +92,11 @@ Route::get('/cabins', [CabinController::class, 'show']);
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
 
-Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel']);
+
+Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+  Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel'])->where('id', '[0-9a-fA-F\-]{36}');
+});
+
 
 
 // --- TEST PURPOSE FOR BROADCASTING ---
