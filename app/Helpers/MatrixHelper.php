@@ -92,6 +92,7 @@ class MatrixHelper
                 "price" => null,
                 "capacity" => $capacity,
                 "is_available" => false,
+                "cabin_category_id" => null,
             ];
         }
 
@@ -107,6 +108,7 @@ class MatrixHelper
             "price" => $cabin->price,
             "capacity" => $capacity,
             "is_available" => $isAvailable,
+            "cabin_category_id" => $cabin->id,
         ];
     }
 }
