@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { TagEnum } from "@/enums/TagEnum";
-import { CabinStatus } from "@/enums/CabinStatus";
+import {
+  CabinStatus,
+  CabinStatusReduced,
+  CabinStatusColor,
+} from "@/enums/CabinStatus";
 import { CabinType } from "@/enums/CabinType";
 import { PageProps } from "@/types";
 import { Head, router } from "@inertiajs/react";
@@ -25,6 +29,7 @@ import {
   Button,
   ListItemIcon,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import {
   CheckCircle,
@@ -32,6 +37,7 @@ import {
   HourglassEmpty,
   Close,
   ArrowBack,
+  Rule,
 } from "@mui/icons-material";
 
 import NoAccessAlert from "@/Components/NoAccessAlert";
@@ -78,6 +84,8 @@ const Edit = ({
 
   const { hasPermission } = usePermissions();
 
+  console.log('cabin', cabin);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
@@ -93,23 +101,34 @@ const Edit = ({
     { value: 2, label: CabinType.SINGLE_TICKET_MALE },
     { value: 3, label: CabinType.SINGLE_TICKET_FEMALE },
   ];
-
-  const statusBorderColors = {
-    [CabinStatus.AVAILABLE]: "green",
-    [CabinStatus.RESERVED]: "cyan",
-    [CabinStatus.BOOKED]: "red",
-    [CabinStatus.CLOSED]: "light gray",
-  };
+  
+  const disableFields = cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED;
 
   const statusIcons = {
     [CabinStatus.AVAILABLE]: (
-      <CheckCircle fontSize="small" style={{ color: "green" }} />
+      <CheckCircle
+        fontSize="small"
+        color={CabinStatusColor[CabinStatus.AVAILABLE]}
+      />
     ),
     [CabinStatus.RESERVED]: (
-      <HourglassEmpty fontSize="small" style={{ color: "yellow" }} />
+      <HourglassEmpty
+        fontSize="small"
+        color={CabinStatusColor[CabinStatus.RESERVED]}
+      />
     ),
-    [CabinStatus.BOOKED]: <Block fontSize="small" style={{ color: "red" }} />,
-    [CabinStatus.CLOSED]: <Close fontSize="small" style={{ color: "gray" }} />,
+    [CabinStatus.BOOKED]: (
+      <Block fontSize="small" color={CabinStatusColor[CabinStatus.BOOKED]} />
+    ),
+    [CabinStatusReduced.CLOSED]: (
+      <Close fontSize="small" color={CabinStatusColor[CabinStatus.CLOSED]} />
+    ),
+    [CabinStatus.PARTIALLY_BOOKED]: (
+      <Rule
+        fontSize="small"
+        color={CabinStatusColor[CabinStatus.PARTIALLY_BOOKED]}
+      />
+    ),
   };
 
   const handleTagsChange = (event: any, newValue: string[]) => {
@@ -219,13 +238,22 @@ const Edit = ({
 
                 <form onSubmit={handleSubmit}>
                   <Grid container spacing={2}>
+                    {(cabinStatus === CabinStatus.BOOKED ||
+                      cabinStatus === CabinStatus.PARTIALLY_BOOKED) && (
+                      <Grid item xs={12}>
+                        <Alert severity="warning">
+                          The current status of this cabin only allows editing
+                          certain fields.
+                        </Alert>
+                      </Grid>
+                    )}
                     {/* Status Select */}
                     <Grid item xs={12} md={6}>
                       <Box sx={{ mb: 2 }}>
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Status</InputLabel>
                           <Select
@@ -260,22 +288,6 @@ const Edit = ({
                                 }{" "}
                               </Box>
                             )}
-                            sx={{
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                borderColor:
-                                  statusBorderColors[cabinStatus] || "inherit",
-                              },
-                              "&:hover .MuiOutlinedInput-notchedOutline": {
-                                borderColor:
-                                  statusBorderColors[cabinStatus] || "inherit",
-                              },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                {
-                                  borderColor:
-                                    statusBorderColors[cabinStatus] ||
-                                    "inherit",
-                                },
-                            }}
                           >
                             {Object.keys(CabinStatus).map((status) => (
                               <MenuItem
@@ -350,7 +362,7 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Cabin Category</InputLabel>
                           <Select
@@ -372,7 +384,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="cabin_number"
                           label="Cabin Number"
                           variant="outlined"
@@ -391,7 +403,7 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Cabin Type</InputLabel>
                           <Select
@@ -417,7 +429,7 @@ const Edit = ({
                           label="Ticket Inventory"
                           variant="outlined"
                           fullWidth
-                          disabled
+                          disabled={canEdit || disableFields}
                           value={ticketInventory}
                           onChange={(e) => setTicketInventory(e.target.value)}
                         />
@@ -428,7 +440,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="deck"
                           label="Deck"
                           variant="outlined"
@@ -447,7 +459,7 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Location</InputLabel>
                           <Select
@@ -467,7 +479,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="connects_with"
                           label="Connects With"
                           variant="outlined"
@@ -490,7 +502,7 @@ const Edit = ({
                               checked={features.accessible}
                               onChange={handleFeatureChange}
                               name="accessible"
-                              disabled={canEdit}
+                              disabled={canEdit || disableFields}
                             />
                           }
                           label="Accessible"
@@ -501,7 +513,7 @@ const Edit = ({
                               checked={features.balcony}
                               onChange={handleFeatureChange}
                               name="balcony"
-                              disabled={canEdit}
+                              disabled={canEdit || disableFields}
                             />
                           }
                           label="Balcony"
@@ -512,7 +524,7 @@ const Edit = ({
                               checked={features.obstructedView}
                               onChange={handleFeatureChange}
                               name="obstructedView"
-                              disabled={canEdit}
+                              disabled={canEdit || disableFields}
                             />
                           }
                           label="Obstructed View"
@@ -524,7 +536,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="total_berths"
                           label="Total Berths"
                           variant="outlined"
@@ -541,7 +553,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="lower_bed_type_1"
                           label="Lower Bed Type 1"
                           variant="outlined"
@@ -558,7 +570,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="lower_bed_type_2"
                           label="Lower Bed Type 2"
                           variant="outlined"
@@ -575,7 +587,7 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          disabled={canEdit || disableFields}
                           name="upper_berths"
                           label="Upper Berths"
                           variant="outlined"

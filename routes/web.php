@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Api\OrganizationController;
+use App\Http\Controllers\BookingsController;
 use App\Http\Controllers\CabinCategoriesController;
 use App\Http\Controllers\CabinsController;
 use App\Http\Controllers\DeletedController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\ContactFormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MailTestController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotAllowedController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Role\RoleController;
@@ -98,7 +100,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/cabins/{cabin_id}/edit', [CabinsController::class, 'edit'])->name('cabins.edit');
     Route::post('/events/{id}/cabins/{cabin_id}/update', [CabinsController::class, 'update'])->name('cabins.update');
 
+    //Booking controller
+    Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
+    ->where('id', '[0-9]+|all') // Expresión regular para números o 'all'
+    ->name('bookings.index');
+
+
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
+    Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
 });
 
 

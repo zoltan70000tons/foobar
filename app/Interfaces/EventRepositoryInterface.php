@@ -9,4 +9,5 @@ interface EventRepositoryInterface
     function save(array $data);
     function update(array $data,$id);
     function delete($id);
+    function listMenu();
 }

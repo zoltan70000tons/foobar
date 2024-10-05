@@ -11,6 +11,6 @@ interface CabinInterface
     function save(array $data): ?Cabin;
     function update(array $data,$id);
     function delete($id);
-    function getCategoriesAndCabins();
+    function getCategoriesAndCabins(int $event_id);
     function addTags(array $tags, array $cabins);
 }

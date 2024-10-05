@@ -43,8 +43,8 @@ interface RowProps<T> {
   isSelected: boolean;
   onSelectRow: () => void;
   showCheckBox?: boolean;
-  onSelectSubRow?: (id: string | number) => void;
-  selectedSubRows?: (string | number)[];
+  onSelectSubRow?: (id: string | number, status: string) => void;
+  selectedSubRows?: { id: string | number; status: string }[];
   showSubTableFilters?: boolean;
   onEditTags?: (selectedTags: string[]) => void;
   onChangeStatus?: (selectedStatus: string) => void;
@@ -159,14 +159,34 @@ const Row: FC<RowProps<any>> = ({
 
   const handleSelectAllSubRows = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const allSubRowIds = sortedSubRows.map((subRow) => subRow.id);
+      const allSubRowIdsAndStatuses = sortedSubRows.map((subRow) => ({
+        id: subRow.id,
+        status: subRow.cabin_status,
+      }));
+  
       if (onSelectSubRow) {
-        allSubRowIds.forEach((id) => onSelectSubRow(id));
+        allSubRowIdsAndStatuses.forEach(({ id, status }) => {
+          const isAlreadySelected = selectedSubRows.some((selectedRow) => selectedRow.id === id);
+  
+          if (!isAlreadySelected) {
+            onSelectSubRow(id, status);
+          }
+        });
       }
     } else {
       if (onSelectSubRow) {
-        sortedSubRows.forEach((subRow) => onSelectSubRow(subRow.id));
+        sortedSubRows.forEach((subRow) => {
+          onSelectSubRow(subRow.id, subRow.cabin_status);
+        });
       }
+    }
+  };
+  
+  
+
+  const handleSelectSubRow = (id: string | number, status: string) => {
+    if (onSelectSubRow) {
+      onSelectSubRow(id, status);
     }
   };
 
@@ -217,7 +237,7 @@ const Row: FC<RowProps<any>> = ({
         ))}
       </TableRow>
       {subRows && (
-        <TableRow>
+        <TableRow sx={{ background:'#272931'}}>
           <TableCell
             style={{ paddingBottom: 0, paddingTop: 0 }}
             colSpan={columns.length + (showCheckBox ? 2 : 1)}
@@ -225,14 +245,7 @@ const Row: FC<RowProps<any>> = ({
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <Box margin={1}>
                 {selectedSubRows.length > 0 && (
-                  <Box
-                    // display="flex"
-                    // justifyContent="flex-end"
-                    // alignItems="left"
-                    mb={2}
-                    mt={2}
-                  >
-                    {/* Tags Select */}
+                  <Box mb={2} mt={2}>
                     <FormControl
                       variant="outlined"
                       size="small"
@@ -386,14 +399,16 @@ const Row: FC<RowProps<any>> = ({
                       <TableRow key={subRow.id}>
                         <TableCell padding="checkbox">
                           <Checkbox
-                            checked={selectedSubRows.includes(subRow.id)}
+                            checked={selectedSubRows.some(
+                              (selected) => selected.id === subRow.id
+                            )}
                             onChange={() =>
-                              onSelectSubRow && onSelectSubRow(subRow.id)
+                              handleSelectSubRow(subRow.id, subRow.cabin_status)
                             }
                           />
                         </TableCell>
                         {subColumns?.map((column) => (
-                          <TableCell key={column.accessor as string}>
+                          <TableCell key={column.accessor as string} sx={{ width: column?.width || '100px' }}>
                             {column.draw
                               ? column.draw(subRow)
                               : subRow[column.accessor]}
@@ -405,7 +420,6 @@ const Row: FC<RowProps<any>> = ({
                       <TableRow>
                         <TableCell
                           colSpan={subColumns?.length! + 1}
-                          style={{ textAlign: "center" }}
                         >
                           No data found.
                         </TableCell>
