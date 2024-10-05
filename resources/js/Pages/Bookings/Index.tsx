@@ -1,97 +1,110 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
-import { PageProps } from "@/types";
-import { Tabs, Tab, Container, Grid, Toolbar, Typography, Box, AppBar } from "@mui/material";
+import { Head, router } from "@inertiajs/react";
+import {
+  Box,
+  Container,
+  Grid,
+  IconButton,
+  Toolbar,
+  Typography,
+  Tabs,
+  Tab,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
+import MuiTable from "@/Components/tables/MuiTable";
+import { CabinStatus, CabinStatusColor, CabinStatusReduced } from "@/enums/CabinStatus";
+import { TagEnum } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
-import AllTabContent from "./partials/AllTabContent";
-import CategoriesTabContent from "./partials/CategoriesTabContent";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import SnackbarAlert from "@/Components/SnackbarAlert";
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} aria-labelledby={`tab-${index}`} {...other}>
-      {value === index && <Box p={3}>{children}</Box>}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `tab-${index}`,
-    "aria-controls": `tabpanel-${index}`,
-  };
-}
-const Index = ({ auth, tab, data }: PageProps & { tab: string; data: any }) => {
+const Index = ({
+  auth,
+  event,
+  categories,
+  cabins,
+  errors,
+}: PageProps & { tab: string; data: any }) => {
   const { hasPermission } = usePermissions();
-  const [value, setValue] = useState(tab === "ALL" ? 0 : tab === "CATEGORIES" ? 1 : tab === "TAGS" ? 2 : 3);
-  const [tabContent, setTabContent] = useState(data);
+  const [selectedTab, setSelectedTab] = useState(0);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+  const [openDialog, setOpenDialog] = useState(false);
 
-    let routeName = "";
+  const [loading, setLoading] = useState(true);
 
-    switch (newValue) {
-      case 0:
-        routeName = "bookings.index";
-        break;
-      // case 1:
-      //   routeName = "bookings.categories";
-      //   break;
-      // case 2:
-      //   routeName = "cabins.tags";
-      //   break;
-      // case 3:
-      //   routeName = "cabins.deleted";
-      //   break;
-      default:
-        routeName = "bookings.index";
-        break;
-    }
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setSelectedTab(newValue);
+  };
 
-    router.get(
-      route(routeName, { id: 1 }),
-      {},
-      {
-        preserveScroll: true,
-        preserveState: true,
-        only: ["data", "tab", "event_id"],
-        onSuccess: (page) => {
-          setTabContent(page.props.data);
-        },
-      }
-    );
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
+
+  
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
   };
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
       <Head title="Cabins" />
-      <Toolbar />
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Toolbar sx={{ mt: 8 }}>
+        <IconButton edge="start" color="inherit" aria-label="menu">
+          <img src={event.image} alt="Logo" style={{ height: 40 }} />
+        </IconButton>
+        <Typography variant="h6" style={{ flexGrow: 1 }}>
+          {event.name}
+        </Typography>
+      </Toolbar>
+      <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <div>
-              <Tabs value={value} onChange={handleChange} aria-label="bookings tabs">
-                <Tab label="NEW BOOKINGS" {...a11yProps(0)} />
-                <Tab label="IN PROGRESS" {...a11yProps(1)} />
-                <Tab label="UPLOADED TO MANIFEST" {...a11yProps(2)} />
-                <Tab label="ALL" {...a11yProps(3)} />
+            <Box>
+              {/* Tabs for navigation */}
+              <Tabs
+                value={selectedTab}
+                onChange={handleTabChange}
+                aria-label="manage inventory and categories"
+              >
+                <Tab label="NEW BOOKINGS" />
+                <Tab label="IN PROGRESS" />
+                <Tab label="UPLOADED TO MANIFEST" />
+                <Tab label="ALL" />
               </Tabs>
-              <TabPanel value={value} index={0}>
-                <AllTabContent data={tabContent} />
-              </TabPanel>
-              <TabPanel value={value} index={1}>
-                <CategoriesTabContent data={tabContent} />
-              </TabPanel>
-              <TabPanel value={value} index={2}>
-                {/* <TagsTabContent data={tabContent} /> */}
-              </TabPanel>
-              <TabPanel value={value} index={3}>
-                {/* <DeletedTabContent data={tabContent} /> */}
-              </TabPanel>
-            </div>
+
+           
+              <Box
+                sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}
+              >
+                
+              </Box>
+
+              <Box
+                sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}
+              >
+                
+              </Box>
+            </Box>
+           
+            <SnackbarAlert
+            open={snackbar.open}
+            severity={snackbar.severity}
+            message={snackbar.message}
+            onClose={handleCloseSnackbar}
+          />
           </Grid>
         </Grid>
       </Container>

@@ -39,17 +39,26 @@ class CabinsController extends Controller
         $event_id = request()->route('id');
         $cabins = [];
         $categories = [];
-        $event = $this->eventRepository->find($event_id);
+
+        if($event_id == 'all'){
+            $events = $this->eventRepository->getAll();
+            return Inertia::render('Cabin/partials/Events', [
+                'events' => $events
+            ]);
+        }
+        
         if (is_numeric($event_id)) {
+            $event = $this->eventRepository->find($event_id);
             $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
             $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
+            return Inertia::render('Cabin/Index', [
+                'cabins' => $cabins,
+                'categories' => $categories,
+                'event' => $event
+    
+            ]);
         }
-        return Inertia::render('Cabin/Index', [
-            'cabins' => $cabins,
-            'categories' => $categories,
-            'event' => $event
-
-        ]);
+        
     }
 
     public function create()

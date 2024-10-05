@@ -24,19 +24,28 @@ class BookingsController extends Controller
     use HandlePermissions;
     use ExceptionLogger;
 
-    public function __construct()
+    protected EventRepositoryInterface $eventRepository;
+    public function __construct(EventRepository $eventRepository)
     {
+        $this->eventRepository = $eventRepository;
     }
     public function index()
     {
         try {
-            return $this->withPermission([Permissions::ViewCabinCategories], function () {
-                $data = CabinCategory::all()->toArray();
-                return Inertia::render('Bookings/Index', [
-                    'data' => array('data' => $data),
-                    'tab' => 'CATEGORIES',
+            $event_id = request()->route('id');
+            if($event_id == 'all'){
+                $events = $this->eventRepository->getAll();
+                return Inertia::render('Bookings/partials/Events', [
+                    'events' => $events
                 ]);
-            });
+            }
+            return $this->withPermission([Permissions::ViewCabinCategories], function ($event_id) {
+                $data = CabinCategory::all()->toArray();
+                $event = $this->eventRepository->find($event_id);
+                return Inertia::render('Bookings/Index', [
+                    'event' => $event
+                ]);
+            }, $event_id);
         } catch (\Exception $e) {
             $this->logException($e);
         }
