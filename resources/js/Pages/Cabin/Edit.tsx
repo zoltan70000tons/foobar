@@ -84,8 +84,6 @@ const Edit = ({
 
   const { hasPermission } = usePermissions();
 
-  console.log('cabin', cabin);
-
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
@@ -103,6 +101,7 @@ const Edit = ({
   ];
   
   const disableFields = cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED;
+  const statusSource = disableFields ? CabinStatus : CabinStatusReduced;
 
   const statusIcons = {
     [CabinStatus.AVAILABLE]: (
@@ -277,19 +276,19 @@ const Edit = ({
                                 >
                                   {
                                     statusIcons[
-                                      selected as keyof typeof CabinStatus
+                                      selected as keyof typeof statusSource
                                     ]
                                   }{" "}
                                 </ListItemIcon>
                                 {
-                                  CabinStatus[
-                                    selected as keyof typeof CabinStatus
+                                  statusSource[
+                                    selected as keyof typeof statusSource
                                   ]
                                 }{" "}
                               </Box>
                             )}
                           >
-                            {Object.keys(CabinStatus).map((status) => (
+                            {Object.keys(statusSource).map((status) => (
                               <MenuItem
                                 key={status}
                                 value={status}

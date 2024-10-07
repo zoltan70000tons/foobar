@@ -2,7 +2,7 @@
 // TO DO: ADD ICON TO EACH STATUS
 // TO DO: ADD BOOLEAN IF IT CAN BE MANUALLY CHANGED OR NOT
 
-export enum CabinStatusFilters {
+export enum CabinStatus {
     AVAILABLE = 'AVAILABLE',
     RESERVED = 'RESERVED',
     BOOKED = 'BOOKED',
