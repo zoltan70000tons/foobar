@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use App\Models\CabinCategory;
 use App\Models\Cruise;
 use App\Models\Event;
-use Illuminate\Support\Facades\DB;
 use League\Csv\Reader;
 
 class CabinCategorySeeder extends Seeder
@@ -41,6 +40,7 @@ class CabinCategorySeeder extends Seeder
                 'images'          => null, // Default to null; can be updated later
                 'iframe'          => null, // Default to null; can be updated later
                 'price'           => $record['price'],
+                'decks'           => $record['decks'],
                 'display_order'   => $record['display_order'],
                 'cruise_id'       => $cruiseId, // Use the dynamically retrieved cruise_id
                 'event_id'        => $eventId, // Use the dynamically retrieved event_id

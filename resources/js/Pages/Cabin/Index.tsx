@@ -379,8 +379,6 @@ const Index = ({
                 <Tab label="CABIN INVENTORY" />
                 <Tab label="MANAGE CATEGORIES" />
               </Tabs>
-
-              {/* Mantener ambos componentes montados pero ocultar el no activo */}
               <Box
                 sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}
               >
