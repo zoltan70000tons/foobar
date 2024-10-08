@@ -23,10 +23,22 @@ class CustomerAuthController extends Controller
   {
 
     // Get the authenticated customer by guard
-    $customer = Auth::guard('customer')->user();
+    //$customer = Auth::user()->role === 'Customer' ? Auth::user() : null;
+    $user = Auth::user();
+    $customer = $user->hasRole('Customer') ? $user : null;
 
+    if (!$customer) {
+      return $this->errorResponse('Unauthorized', 401);
+    }
     // Get the first membership type of the customer
     $membership = $customer->membershipTypes->first() ?? null;
+    
+    if(!$membership) {
+      return $this->successResponse([
+        'name' => $customer->name,
+        'email_verified_at' => $customer->email_verified_at ?? null,
+      ]);
+    }
 
     return $this->successResponse([
       'name' => $customer->name,

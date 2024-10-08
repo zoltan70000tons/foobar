@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class CustomerLoginController extends Controller
 {
@@ -16,55 +17,40 @@ class CustomerLoginController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
-    // Validate the request data
-    $request->validate([
-      'survivor_number' => 'required|string',
-      'password' => 'required|string',
-    ]);
-
-    $credentials = [
-      'survivor_number' => $request->input('survivor_number'),
-      'password' => $request->input('password'),
-    ];
-
-    // Attempt to log in with survivor_number first
-    if (Auth::guard('customer')->attempt($credentials)) {
-      return $this->authenticated($request);
-    }
-
-    // Attempt to log in with name if the first attempt fails
-    $credentials = [
-      'name' => $request->input('survivor_number'),
-      'password' => $request->input('password'),
-    ];
-
-    if (Auth::guard('customer')->attempt($credentials)) {
-      return $this->authenticated($request);
-    }
-
-    return response()->json([
-      'message' => __('auth.failed'),
-    ], 401);
-  }
-
-  // Handle an incoming authentication request. 
-  // Based on the user's email or username
-  protected function authenticated(Request $request): JsonResponse
-  {
-    $language = $request->language;
-    App::setLocale($language);
-
-    try {
-      // Get the authenticated customer
-      $customer = Auth::guard('customer')->user();
-      $request->session()->regenerate();
-
-      return response()->json($customer, 200);
-    } catch (\Exception $e) {
+      // Validate the request data
+      $request->validate([
+          'email' => 'required|string',
+          'password' => 'required|string',
+      ]);
+  
+  
+      $credentials = [
+          'email' => $request->input('email'),
+          'password' => $request->input('password'),
+      ];
+  
+      // Attempt to log in with the provided credentials
+      if (Auth::attempt($credentials)) {
+          $user = Auth::user();
+  
+          if ($user) {
+              if ($user->hasRole('Customer')) {
+                  $request->session()->regenerate();
+  
+                  return response()->json($user, 200);
+              } else {
+                  Auth::logout();
+  
+                  return response()->json([
+                      'message' => 'Unauthorized: Only customers can login through this route.',
+                  ], 403);
+              }
+          }
+      } 
+  
       return response()->json([
-        'message' => __('auth.failed'),
+          'message' => __('auth.failed'),
       ], 401);
-    }
   }
 
   /**
@@ -72,8 +58,8 @@ class CustomerLoginController extends Controller
    */
   public function destroy(Request $request): JsonResponse
   {
-    Auth::guard('customer')->logout();
-
+    Auth::guard('web')->logout();
+    
     $request->session()->invalidate();
 
     $request->session()->regenerateToken();

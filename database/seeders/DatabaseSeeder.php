@@ -17,18 +17,18 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             OrganizationSeeder::class,
-            UserSeeder::class,
             RolesSeeder::class,
+            UserSeeder::class,
             MembershipTypeSeeder::class,
             EventSeeder::class,
-            CustomerSeeder::class,
+            //CustomerSeeder::class,
             MembershipSeeder::class,
             PresalePeriodSeeder::class,
             CruiseSeeder::class,
             CabinCategorySeeder::class,
             CabinTypeSeeder::class,
             CabinSeeder::class,
-            BookingSeeder::class
+            //BookingSeeder::class
         ]);
     }
 }

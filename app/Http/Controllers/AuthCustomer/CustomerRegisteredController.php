@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\AuthCustomer;
 
 use App\Http\Controllers\Controller;
-// use App\Models\User;
-use App\Models\Customer;
+use App\Models\User;
+//use App\Models\Customer;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -16,20 +16,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
+use App\Helpers\CustomerHelper;
+use App\Models\SurvivorNumber;
 
 class CustomerRegisteredController extends Controller
 {
 
-  // Generate a unique survivor number
-  private function generateUniqueSurvivorNumber(): string
-  {
-    do {
-      // Generate a random 9-digit survivor_number
-      $sn = str_pad(random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
-    } while (Customer::where('survivor_number', $sn)->exists());
-
-    return $sn;
-  }
 
   /**
    * Handle an incoming registration request.
@@ -43,61 +35,61 @@ class CustomerRegisteredController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
-    $request->validate([
-      'name' => ['required', 'string', 'max:255', 'unique:customers', 'regex:/.*[a-zA-Z].*/'],
-      'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
-      'password' => ['required', 'confirmed', Rules\Password::defaults()],
-    ], [
-      'name.regex' => __('validation.regex'),
-    ]);
 
-
-    $language = $request->language;
-    App::setLocale($language);
-
-    DB::beginTransaction();
-
-    try {
-
-      $survivor_number = $this->generateUniqueSurvivorNumber();
-
-      $user = Customer::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->string('password')),
-        'survivor_number' => $survivor_number,
+      $request->validate([
+          'username' => ['required', 'string', 'max:255', 'unique:users'],
+          'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+          'password' => ['required', 'confirmed', Rules\Password::defaults()],
       ]);
 
+      $language = $request->language;
+      App::setLocale($language);
 
-      event(new Registered($user));
+      DB::beginTransaction();
 
-      DB::commit();
+      try {
+          // Create the user
+          $user = User::create([
+              'username' => $request->username,
+              'email' => $request->email,
+              'password' => Hash::make($request->string('password')),
+          ]);
 
-      // send email
-      $this->sendWelcomeEmail($user, $language);
+          // Assign the customer role
+          setPermissionsTeamId(1);
+          $user->assignRole('Customer');
 
-      return response()->json([
-        'message' => __('auth.account_created'),
-      ], 204);
-    } catch (\Exception $e) {
+          // Generate a unique numeric survivor number and store it
+          $survivorNumber = CustomerHelper::generateSurvivorNumber();
+          SurvivorNumber::create([
+              'user_id' => $user->id,
+              'survivor_number' => $survivorNumber,
+          ]);
 
-      DB::rollBack();
+          // Trigger event for user registration
+          event(new Registered($user));
 
-      Log::error('User registration failed: ' . $e->getMessage());
+          DB::commit();
 
-      return response()->json(['error' => 'User registration failed'], 500);
-    }
+          return response()->json([
+              'message' => __('auth.account_created'),
+          ], 204);
+      } catch (\Exception $e) {
+          DB::rollBack();
+          Log::error('User registration failed: ' . $e->getMessage());
+          return response()->json(['error' => 'User registration failed'], 500);
+      }
   }
 
 
   /**
    * Send a welcome email to the customer.
    *
-   * @param Customer $user
+   * @param User $user
    * @param string $language
    * @return void
    */
-  protected function sendWelcomeEmail(Customer $user, string $language): void
+  protected function sendWelcomeEmail(User $user, string $language): void
   {
     try {
       $email = $user->email;

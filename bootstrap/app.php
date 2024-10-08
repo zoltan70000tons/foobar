@@ -25,14 +25,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ]);
 
     $middleware->web(append: [
+      \App\Http\Middleware\TeamContext::class,
       \App\Http\Middleware\HandleInertiaRequests::class,
       \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
       \App\Http\Middleware\TeamsPermission::class,
     ]);
 
     $middleware->api(prepend: [
+      \App\Http\Middleware\TeamContext::class,
       //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-      \App\Http\Middleware\EnsureUserIsNotWeb::class,
+      // \App\Http\Middleware\EnsureUserIsNotWeb::class,
     ]);
    ////////////////////////
    //this is just for testing, remove in production for security reasons

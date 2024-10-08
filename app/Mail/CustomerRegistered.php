@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Customer;
+use App\Models\User;
 
 class CustomerRegistered extends Mailable
 {
@@ -20,7 +20,7 @@ class CustomerRegistered extends Mailable
   /**
    * Create a new message instance.
    */
-  public function __construct(Customer $customer, String $language)
+  public function __construct(User $customer, String $language)
   {
     $this->customer = $customer;
     $this->language = $language;

@@ -43,7 +43,7 @@ Route::get('/password-reset/{id}/verify', [CustomerPasswordResetController::clas
 Route::post('/password-reset/{id}', [CustomerPasswordResetController::class, 'resetPassword']);
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest:customer');
+Route::post('/login-customer', [CustomerLoginController::class, 'store']);
 
 // --- EMAIL VERIFICATION ---  
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])
@@ -61,7 +61,7 @@ Route::post('/logout', [CustomerLoginController::class, 'destroy'])
   ->middleware(['auth:sanctum', 'auth.customer']);
 
 // --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
-Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerPassResetInsideController::class, 'update']);
 });

@@ -7,14 +7,17 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Foundation\Auth\User;
 use App\Notifications\CustomerEmailVerification;
 use App\Traits\UUID;
 
-class Customer extends Authenticatable implements MustVerifyEmail
+class Customer extends User implements MustVerifyEmail
 {
 
-  use HasFactory, Notifiable, HasApiTokens, HasRoles, UUID;
+  use HasRoles;
+  use HasFactory, Notifiable, HasApiTokens, UUID;
+
+  protected $guard_name = 'web';
 
   /**
    * The attributes that are mass assignable.
