@@ -40,10 +40,6 @@ return [
       'driver' => 'session',
       'provider' => 'users',
     ],
-    // 'customer' => [
-    //   'driver' => 'session',
-    //   'provider' => 'customers',
-    // ],
   ],
 
   /*
@@ -68,10 +64,6 @@ return [
       'driver' => 'eloquent',
       'model' => env('AUTH_MODEL', App\Models\User::class),
     ],
-    // 'customers' => [
-    //   'driver' => 'eloquent',
-    //   'model' => App\Models\Customer::class,
-    // ],
   ],
 
   /*
@@ -99,6 +91,12 @@ return [
       'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
       'expire' => 60,
       'throttle' => 60,
+    ],
+    'customers' => [
+      'provider' => 'users', 
+      'table'    => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'), // The table that stores reset tokens
+      'expire'   => 60,                // Token expiration time in minutes
+      'throttle' => 60,                // Throttle time between reset requests
     ],
   ],
 

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('survivor_numbers', function (Blueprint $table) {
             $table->id();
             $table->uuid('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('survivor_number', 9)->unique();
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

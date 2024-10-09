@@ -10,12 +10,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UUID;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; 
 
-class User extends Authenticatable
+class User extends Authenticatable implements CanResetPassword
 {
-    use HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
+    use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
 
    protected $guard_name = 'web';
 
@@ -62,16 +64,19 @@ class User extends Authenticatable
       return $this->belongsToMany(MembershipType::class, 'memberships', 'user_id', 'membership_id');
     }
 
+    // Organizations
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)->withPivot('user_id')->withTimestamps();
     }
 
+    // teams
     public function teams()
     {
         return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
     }
 
+    // detail
     public function detail(): HasOne
     {
         return $this->hasOne(UserDetail::class, 'user_id');

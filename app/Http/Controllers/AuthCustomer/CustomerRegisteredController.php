@@ -4,18 +4,15 @@ namespace App\Http\Controllers\AuthCustomer;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-//use App\Models\Customer;
+
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\CustomerRegistered;
 use App\Helpers\CustomerHelper;
 use App\Models\SurvivorNumber;
 
@@ -91,11 +88,12 @@ class CustomerRegisteredController extends Controller
    */
   protected function sendWelcomeEmail(User $user, string $language): void
   {
-    try {
-      $email = $user->email;
-      Mail::to($email)->send(new CustomerRegistered($user, $language));
-    } catch (\Exception $e) {
-      Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
-    }
+  //   try {
+  //     $email = $user->email;
+  //     Mail::to($email)->send(new CustomerRegistered($user, $language));
+  //   } catch (\Exception $e) {
+  //     Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+  //   }
+  // }
   }
 }

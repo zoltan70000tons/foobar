@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Api\Auth;
 
-use App\Models\Customer;
+use App\Models\User;
 use Tests\TestCase;
 
 class AuthenticationApiTest extends TestCase
@@ -12,7 +12,7 @@ class AuthenticationApiTest extends TestCase
   public function test_users_can_authenticate_with_survivor_number(): void
   {
 
-    $user = Customer::factory()->create();
+    $user = User::factory()->create();
 
     $this->withHeaders([
       'referer' => env('SANCTUM_STATEFUL_DOMAINS'),

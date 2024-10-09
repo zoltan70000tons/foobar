@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Customer;
+use App\Models\User;
 
 class Booking extends Model
 {
@@ -24,7 +24,7 @@ class Booking extends Model
    */
   public function customer()
   {
-    return $this->belongsTo(Customer::class, 'customer_id');
+    return $this->belongsTo(User::class, 'user_id');
   }
 
   /**
@@ -46,16 +46,16 @@ class Booking extends Model
   {
     // Check if the cabin's inventory is positive
     if ($cabin->inventory <= 0) {
-      throw new Exception("This cabin has no available inventory.");
+      throw new  \Exception("This cabin has no available inventory.");
     }
 
     // Check if the cabin's status is "BOOKED"
     if (strtoupper($cabin->status) === 'BOOKED') {
-      throw new Exception("This cabin is already fully booked.");
+      throw new  \Exception("This cabin is already fully booked.");
     }
     
     // Get Lead Passenger Information
-    $lead_passenger = Customer::find($this->customer_id);
+    $lead_passenger = User::find($this->customer_id);
     $lead_passenger_details = $lead_passenger->details;
 
     // Define a set of A-Z characters

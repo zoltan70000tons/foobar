@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             MembershipTypeSeeder::class,
             EventSeeder::class,
-            //CustomerSeeder::class,
             MembershipSeeder::class,
             PresalePeriodSeeder::class,
             CruiseSeeder::class,

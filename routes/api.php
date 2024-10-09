@@ -34,13 +34,8 @@ use Illuminate\Support\Facades\Log;
  */
 
 // --- PASSWORD RESET ---
-Route::post('/reset-password', [CustomerPasswordResetController::class, 'requestReset']);
-
-Route::get('/password-reset/{id}/verify', [CustomerPasswordResetController::class, 'verifyResetLink'])
-  ->middleware(['signed'])
-  ->name('passwordApi.verify');
-
-Route::post('/password-reset/{id}', [CustomerPasswordResetController::class, 'resetPassword']);
+Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset']);
+Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword']);
 
 // --- LOGIN ---
 Route::post('/login-customer', [CustomerLoginController::class, 'store']);
