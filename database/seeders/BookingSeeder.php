@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Booking;
 use App\Models\Cabin;
-use App\Models\Customer;
+use App\Models\User;
 
 class BookingSeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class BookingSeeder extends Seeder
     $cabinType3 = Cabin::where('cabin_type_id', 3)->where('status', 'AVAILABLE')->inRandomOrder()->limit(2)->get();
 
     // Get enough unique customers (total 6 needed for bookings with cabins)
-    $customersForBookings = Customer::inRandomOrder()->limit(6)->get();
+    $customersForBookings = User::inRandomOrder()->limit(6)->get();
 
     // Array of all selected cabins (2 for each type)
     $selectedCabins = $cabinType1->merge($cabinType2)->merge($cabinType3);
@@ -30,9 +30,16 @@ class BookingSeeder extends Seeder
     // Ensure no customer is repeated for bookings with cabins
     foreach ($selectedCabins as $index => $cabin) {
       $customer = $customersForBookings[$index]; // Select a unique customer for each booking
+      
+      // Define a set of A-Z characters
+      $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+      // Generate a random 4-character code
+      $identifier_code = substr(str_shuffle($characters), 0, 4);
 
       // Create the booking with a unique customer_id
       $booking = Booking::factory()->create([
+        'booking_code' => "{$cabin->cabin_number}-{$identifier_code}-{$cabin->category->category_code}",
         'customer_id' => $customer->id,
         'cabin_id' => $cabin->id,
       ]);
