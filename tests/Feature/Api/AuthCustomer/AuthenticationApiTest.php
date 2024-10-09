@@ -49,7 +49,7 @@ class AuthenticationApiTest extends TestCase
 
   public function test_customer_cant_access_to_web_routes(): void
   {
-    $user = Customer::factory()->create();
+    $user = User::factory()->create();
 
     $this->withHeaders([
       'referer' => env('SANCTUM_STATEFUL_DOMAINS'),

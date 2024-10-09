@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
+use App\Http\Controllers\AuthCustomer\RecoverAccountController;
 
 // BOOKING
 use App\Http\Controllers\Api\Customer\BookingController;
@@ -39,6 +40,17 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 
 // --- LOGIN ---
 Route::post('/login-customer', [CustomerLoginController::class, 'store']);
+
+// --- Customer recover account ---
+Route::get('/recover-account', [RecoverAccountController::class, 'showRecoverForm'])
+    ->name('recover.account.form')
+    ->middleware('signed');
+
+Route::post('/recover-account-verify', [RecoverAccountController::class, 'recoverAccountVerify'])
+    ->middleware('signed');
+
+Route::post('/recover-account', [RecoverAccountController::class, 'recoverAccount'])
+    ->middleware('signed');
 
 // --- EMAIL VERIFICATION ---  
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])

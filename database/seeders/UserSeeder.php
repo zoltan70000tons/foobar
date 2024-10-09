@@ -62,19 +62,69 @@ class UserSeeder extends Seeder
             );
         }
 
-        // Seed users with 'Customer' role and generate survivor number
-        foreach (range(1, 20) as $index) {
+        // Seed 2 users with the same email address but different names and survivor numbers
+        $commonEmail1 = 'common1@customers.test';
+        foreach (range(1, 2) as $index) {
             $name = 'cus' . $this->faker->firstname;
-            $user = User::updateOrCreate(
-                ['email' => Str::lower($name) . '@customers.test'],
-                [
-                    'username' => $name,
-                    'password' => Hash::make('password'),
-                    'created_at' => $this->faker->dateTime($max = 'now'),
-                    'updated_at' => $this->faker->dateTime($max = 'now'),
-                    'organization_id' => env('ORGANIZATION_ID', 1)
-                ]
-            );
+            $user = User::create([
+                'email' => $commonEmail1,
+                'username' => $name,
+                'password' => Hash::make('password'),
+                'created_at' => $this->faker->dateTime($max = 'now'),
+                'updated_at' => $this->faker->dateTime($max = 'now'),
+                'organization_id' => env('ORGANIZATION_ID', 1)
+            ]);
+
+            // Assign 'Customer' role
+            setPermissionsTeamId(1);
+            $user->assignRole('Customer');
+
+            // Generate a unique survivor number
+            $survivorNumber = CustomerHelper::generateSurvivorNumber();
+
+            // Save survivor number in the survivor_numbers table
+            SurvivorNumber::create([
+                'user_id' => $user->id,
+                'survivor_number' => $survivorNumber,
+            ]);
+        }
+
+        // Seed another user with a different email address
+        $commonEmail2 = 'common2@customers.test';
+        $name = 'cus' . $this->faker->firstname;
+        $user = User::create([
+            'email' => $commonEmail2,
+            'username' => $name,
+            'password' => Hash::make('password'),
+            'created_at' => $this->faker->dateTime($max = 'now'),
+            'updated_at' => $this->faker->dateTime($max = 'now'),
+            'organization_id' => env('ORGANIZATION_ID', 1)
+        ]);
+
+        // Assign 'Customer' role
+        setPermissionsTeamId(1);
+        $user->assignRole('Customer');
+
+        // Generate a unique survivor number
+        $survivorNumber = CustomerHelper::generateSurvivorNumber();
+
+        // Save survivor number in the survivor_numbers table
+        SurvivorNumber::create([
+            'user_id' => $user->id,
+            'survivor_number' => $survivorNumber,
+        ]);
+
+        // Seed the rest of the users with 'Customer' role and generate survivor number
+        foreach (range(1, 16) as $index) {
+            $name = 'cus' . $this->faker->firstname;
+            $user = User::create([
+                'email' => Str::lower($name) . '@customers.test',
+                'username' => $name,
+                'password' => Hash::make('password'),
+                'created_at' => $this->faker->dateTime($max = 'now'),
+                'updated_at' => $this->faker->dateTime($max = 'now'),
+                'organization_id' => env('ORGANIZATION_ID', 1)
+            ]);
 
             // Assign 'Customer' role
             setPermissionsTeamId(1);

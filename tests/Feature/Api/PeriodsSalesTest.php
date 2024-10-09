@@ -49,7 +49,7 @@ class PeriodsSalesTest extends TestCase
   public function test_periods_sales_customer_type_has_access(): void
   {
 
-    $user = Customer::factory()->create();
+    $user = User::factory()->create();
 
     Membership::factory()->create([
       'customer_id' => $user->id,
@@ -80,7 +80,7 @@ class PeriodsSalesTest extends TestCase
   public function test_periods_sales_customer_doesnt_have_membership(): void
   {
 
-    $user = Customer::factory()->create();
+    $user = User::factory()->create();
 
     $this->withHeaders([
       'referer' => env('SANCTUM_STATEFUL_DOMAINS'),
