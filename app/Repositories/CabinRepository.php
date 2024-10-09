@@ -6,6 +6,7 @@ use App\Enums\StatusCabin;
 use App\Interfaces\CabinInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
+use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -29,31 +30,35 @@ class CabinRepository implements CabinInterface
   function update(array $data, $id)
   {
     $cabin = $this->find($id);
-    $tags = $data['tags'];
-    $cabin->status = $data['cabin_status'];
-    $cabin->cabin_number = $data['cabin_number'];
-    $cabin->cabin_category_id = $data['cabin_category'];
-    $cabin->cabin_type_id = $data['cabin_type'];
-    $cabin->deck = $data['deck'];
-    $cabin->location = $data['location'];
-    $cabin->connects_with = $data['connects_with'] ?? null;
-    $cabin->total_berths = $data['total_berths'] ?? null;
-    $cabin->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
-    $cabin->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
-    $cabin->upper_berths = $data['upper_berths'] ?? null;
     $cabin->notes = $data['notes'] ?? null;
-    $cabin->accessible = $data['features']['accessible'];
-    $cabin->balcony = $data['features']['balcony'];
-    $cabin->obstructed_view = $data['features']['obstructed_view'];
-    $cabin->tags = array_values($tags);
+    $cabin->tags = array_values($data['tags']);
+
+    if ($cabin->status !== StatusCabin::BOOKED && $cabin->status !== StatusCabin::PARTIALLY_BOOKED) {
+      $cabin->status = $data['cabin_status'];
+      $cabin->cabin_number = $data['cabin_number'];
+      $cabin->cabin_category_id = $data['cabin_category'];
+      $cabin->cabin_type_id = $data['cabin_type'];
+      $cabin->deck = $data['deck'];
+      $cabin->location = $data['location'];
+      $cabin->connects_with = $data['connects_with'] ?? null;
+      $cabin->total_berths = $data['total_berths'] ?? null;
+      $cabin->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
+      $cabin->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
+      $cabin->upper_berths = $data['upper_berths'] ?? null;
+
+      // updating features
+      $cabin->accessible = $data['features']['accessible'];
+      $cabin->balcony = $data['features']['balcony'];
+      $cabin->obstructed_view = $data['features']['obstructed_view'];
+    }
     $cabin->save();
   }
   function delete($id) {}
 
-  function getCategoriesAndCabins()
+  function getCategoriesAndCabins($event_id)
   {
     // Eager load only for cabins and cabinType
-    $categoriesWithCabins = CabinCategory::with(['cabins.cabinType'])
+    $categoriesWithCabins = CabinCategory::where('event_id', '=', $event_id)->with(['cabins.cabinType'])
       ->get()
       ->map(function ($category) {
         // Count total and availables

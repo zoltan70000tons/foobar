@@ -1,19 +1,6 @@
-import React, { FC, useState, ChangeEvent, MouseEvent, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TablePagination,
-  CircularProgress,
-  TableSortLabel,
-  Checkbox,
-  TextField,
-} from "@mui/material";
-import Row from "./Row"; 
+import React, { FC, useState, useEffect, ChangeEvent, MouseEvent } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, CircularProgress, TableSortLabel, Checkbox, TextField, Select, MenuItem } from "@mui/material";
+import Row from "./Row";
 
 interface ColumnProps<T> {
   header: string;
@@ -38,14 +25,10 @@ interface DataGridProps<T> {
   ) => Promise<{ data: T[]; total: number }>;
   showCheckBox?: boolean;
   onApplyTags?: (subRowIds: (string | number)[], selectedTags: string[]) => void;
-  onApplyState?: (
-    subRowIds: (string | number)[],
-    selectedStatus: string
-  ) => void; // Modificado
-  showTableFilters?: boolean;
+  onApplyState?: (subRowIds: (string | number | object)[], selectedStatus: string) => void;
   showSubTableFilters?: boolean;
   tagOptions?: string[];
-  statusOptions?: string[]; 
+  statusOptions?: string[];
 }
 
 const MuiTable: FC<DataGridProps<any>> = ({
@@ -57,7 +40,6 @@ const MuiTable: FC<DataGridProps<any>> = ({
   showCheckBox,
   onApplyTags,
   onApplyState,
-  showTableFilters = false,
   showSubTableFilters = false,
   tagOptions = [],
   statusOptions = [],
@@ -66,26 +48,23 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
-  const [sort, setSort] = useState<{
-    key: keyof any | string;
-    direction: "asc" | "desc";
-  }>({
+  const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
+  const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
+  const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
+  const [sort, setSort] = useState<{ key: keyof any | string; direction: "asc" | "desc" }>({
     key: columns[0]?.accessor,
     direction: "asc",
   });
+  const [loading, setLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-  const [tableFilters, setTableFilters] = useState<{ [key: string]: string }>({});
-  const [selectedSubRows, setSelectedSubRows] = useState<(string | number)[]>([]);
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
       const fetchTableData = async () => {
         setLoading(true);
         try {
-          const response = await fetchData(page, rowsPerPage, filters, sort);
+          const response = await fetchData(page, rowsPerPage, subFilters, sort);
           setPaginatedData(response.data);
           setTotalCount(response.total);
         } catch (error) {
@@ -97,7 +76,21 @@ const MuiTable: FC<DataGridProps<any>> = ({
 
       fetchTableData();
     }
-  }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
+  }, [page, rowsPerPage, subFilters, sort, serverSidePagination, fetchData]);
+
+  const dataArray = Array.isArray(data) ? data : Object.values(data);
+
+  const filteredData = dataArray.filter((row) => {
+    return Object.keys(filters).every((key) => {
+      const filterValue = filters[key]?.toLowerCase() || "";
+      const rowValue = (row[key] || "").toString().toLowerCase();
+      return rowValue.includes(filterValue);
+    });
+  });
+
+  const displayedData = serverSidePagination
+    ? paginatedData
+    : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleSelectRow = (id: string | number) => {
     setSelectedRows((prevSelectedRows) =>
@@ -108,65 +101,51 @@ const MuiTable: FC<DataGridProps<any>> = ({
   };
 
   const handleSelectAllRows = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const allRowIds = data.map((row) => row.id);
-      setSelectedRows(allRowIds);
-    } else {
-      setSelectedRows([]);
+    setSelectedRows(event.target.checked ? data.map((row) => row.id) : []);
+  };
+
+  const handleFilterChange = (name: string, value: string) => {
+    setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
+    setPage(0); // Reinicia la paginación cuando se aplica un filtro
+  };
+
+  const handleSubFilterChange = (name: string, value: string) => {
+    setSubFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
+  };
+
+  const handleSelectSubRow = (id: string | number, status: string) => {
+    setSelectedSubRows((prevSelectedSubRows) => {
+      const isSelected = prevSelectedSubRows.find((row) => row.id === id);
+      if (isSelected) {
+        return prevSelectedSubRows.filter((row) => row.id !== id);
+      } else {
+        return [...prevSelectedSubRows, { id, status }];
+      }
+    });
+  };
+
+  const handleEditTags = (selectedTags: string[]) => {
+    if (onApplyTags) {
+      const selectedIds = selectedSubRows.map((row) => row.id);
+      onApplyTags(selectedIds, selectedTags);
     }
   };
 
-  const handleTableFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setTableFilters({
-      ...tableFilters,
-      [event.target.name]: event.target.value,
-    });
-    setPage(0); 
+  const handleChangeStatus = (selectedStatus: string) => {
+    if (onApplyState) {
+      const selectedIds = selectedSubRows.map((row) => row.id);
+      onApplyState(selectedSubRows, selectedStatus);
+    }
   };
-
-  const filteredData = data.filter((row) => {
-    return Object.keys(tableFilters).every((key) => {
-      const filterValue = tableFilters[key]?.toLowerCase() || "";
-      const rowValue = row[key]?.toString().toLowerCase() || "";
-      return rowValue.includes(filterValue);
-    });
-  });
-
-  const sortedData = !serverSidePagination
-    ? filteredData.sort((a, b) => {
-        const aValue = a[sort.key];
-        const bValue = b[sort.key];
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return sort.direction === "asc"
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
-        }
-
-        if (typeof aValue === "number" && typeof bValue === "number") {
-          return sort.direction === "asc" ? aValue - bValue : bValue - aValue;
-        }
-
-        return 0;
-      })
-    : paginatedData;
-
-  const paginatedRows = !serverSidePagination
-    ? sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    : paginatedData;
 
   const handleSort = (key: keyof any | string) => {
     setSort((prevSort) => ({
       key,
-      direction:
-        prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
+      direction: prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
     }));
   };
 
-  const handlePageChange = (
-    event: MouseEvent<HTMLButtonElement> | null,
-    newPage: number
-  ) => {
+  const handlePageChange = (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
 
@@ -175,154 +154,133 @@ const MuiTable: FC<DataGridProps<any>> = ({
     setPage(0);
   };
 
-  const handleSelectSubRow = (id: string | number) => {
-    setSelectedSubRows((prevSelectedSubRows) =>
-      prevSelectedSubRows.includes(id)
-        ? prevSelectedSubRows.filter((i) => i !== id)
-        : [...prevSelectedSubRows, id]
-    );
-  };
-
-  const handleEditTags = (selectedTags: string[]) => {
-    if (onApplyTags) {
-      onApplyTags(selectedSubRows, selectedTags);
-    }
-    //setSelectedSubRows([]);
-  };
-
-  const handleChangeStatus = (selectedStatus: string) => {
-    if (onApplyState) {
-      onApplyState(selectedSubRows, selectedStatus);
-    }
-    //setSelectedSubRows([]);
-  };
-
   return (
-    <>
-      <Paper>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {showCheckBox && (
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={
-                        selectedRows.length > 0 && selectedRows.length < data.length
-                      }
-                      checked={selectedRows.length === data.length}
-                      onChange={handleSelectAllRows}
-                    />
-                  </TableCell>
-                )}
-                <TableCell />
-                {columns.map((column) => (
-                  <TableCell key={column.accessor as string}>
-                    {column.sortable ? (
-                      <TableSortLabel
-                        active={sort.key === column.accessor}
-                        direction={sort.direction}
-                        onClick={() => handleSort(column.accessor)}
-                      >
-                        {column.header}
-                      </TableSortLabel>
-                    ) : (
-                      column.header
-                    )}
-                  </TableCell>
-                ))}
-              </TableRow>
-              {showTableFilters && (
-                <TableRow>
-                  {showCheckBox && <TableCell />}
-                  <TableCell />
-                  {columns.map((column) => (
-                    <TableCell key={column.accessor as string}>
-                      {column.filterable ? (
-                        column.filterType === "select" ? (
-                          <TextField
-                            name={column.accessor as string}
-                            label=""
-                            placeholder={`Filter ${column.header}`}
-                            variant="outlined"
-                            size="small"
-                            onChange={handleTableFilterChange}
-                          />
-                        ) : (
-                          <TextField
-                            name={column.accessor as string}
-                            label=""
-                            placeholder={`Filter ${column.header}`}
-                            variant="outlined"
-                            size="small"
-                            onChange={handleTableFilterChange}
-                          />
-                        )
-                      ) : null}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              )}
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length + (showCheckBox ? 2 : 1)}
-                    style={{ textAlign: "center" }}
-                  >
-                    <CircularProgress />
-                  </TableCell>
-                </TableRow>
-              ) : paginatedRows.length > 0 ? (
-                paginatedRows.map((row, index) => (
-                  <Row
-                    key={row.id}
-                    row={row}
-                    columns={columns}
-                    subRows={row.subRows}
-                    subColumns={subColumns}
-                    isOpen={expandedRowId === row.id}
-                    onToggle={() =>
-                      setExpandedRowId(expandedRowId === row.id ? null : row.id)
-                    }
-                    isSelected={selectedRows.includes(row.id)}
-                    onSelectRow={() => handleSelectRow(row.id)}
-                    showCheckBox={showCheckBox}
-                    onSelectSubRow={handleSelectSubRow}
-                    selectedSubRows={selectedSubRows}
-                    showSubTableFilters={showSubTableFilters}
-                    onEditTags={handleEditTags}
-                    onChangeStatus={handleChangeStatus}
-                    tagOptions={tagOptions}
-                    statusOptions={statusOptions}
+    <Paper>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            {/* Primera fila para los encabezados */}
+            <TableRow>
+              {showCheckBox && (
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
+                    checked={selectedRows.length === data.length}
+                    onChange={handleSelectAllRows}
                   />
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length + (showCheckBox ? 2 : 1)}
-                    style={{ textAlign: "center" }}
-                  >
-                    No data found.
-                  </TableCell>
-                </TableRow>
+                </TableCell>
               )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={serverSidePagination ? totalCount : filteredData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handlePageChange}
-          onRowsPerPageChange={handleRowsPerPageChange}
-          labelRowsPerPage="Rows per page"
-        />
-      </Paper>
-    </>
+              <TableCell />
+              {columns.map((column) => (
+                <TableCell key={column.accessor as string}>
+                  {column.sortable ? (
+                    <TableSortLabel
+                      active={sort.key === column.accessor}
+                      direction={sort.direction}
+                      onClick={() => handleSort(column.accessor)}
+                    >
+                      {column.header}
+                    </TableSortLabel>
+                  ) : (
+                    column.header
+                  )}
+                </TableCell>
+              ))}
+            </TableRow>
+
+            {/* Segunda fila para los filtros */}
+            <TableRow>
+              {showCheckBox && <TableCell />}
+              <TableCell />
+              {columns.map((column) => (
+                <TableCell key={column.accessor as string}>
+                  {column.filterable && (
+                    column.filterType === "select" ? (
+                      <Select
+                        value={filters[column.accessor as string] || ""}
+                        onChange={(event) =>
+                          handleFilterChange(column.accessor as string, event.target.value)
+                        }
+                        displayEmpty
+                        fullWidth
+                        size="small"
+                      >
+                        <MenuItem value="">
+                          <em>All</em>
+                        </MenuItem>
+                        {column.filterOptions?.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    ) : (
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={filters[column.accessor as string] || ""}
+                        onChange={(event) =>
+                          handleFilterChange(column.accessor as string, event.target.value)
+                        }
+                        placeholder={`Filter ${column.header}`}
+                      />
+                    )
+                  )}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length + (showCheckBox ? 2 : 1)} style={{ textAlign: "center" }}>
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : displayedData.length > 0 ? (
+              displayedData.map((row) => (
+                <Row
+                  key={row.id}
+                  row={row}
+                  columns={columns}
+                  subRows={row.subRows}
+                  subColumns={subColumns}
+                  subFilters={subFilters}
+                  isOpen={expandedRowId === row.id}
+                  onToggle={() => setExpandedRowId(expandedRowId === row.id ? null : row.id)}
+                  isSelected={selectedRows.includes(row.id)}
+                  onSelectRow={() => handleSelectRow(row.id)}
+                  showCheckBox={showCheckBox}
+                  onSelectSubRow={handleSelectSubRow}
+                  selectedSubRows={selectedSubRows}
+                  showSubTableFilters={showSubTableFilters}
+                  onEditTags={handleEditTags}
+                  onChangeStatus={handleChangeStatus}
+                  tagOptions={tagOptions}
+                  statusOptions={statusOptions}
+                />
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length + (showCheckBox ? 2 : 1)} style={{ textAlign: "center" }}>
+                  No data found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={serverSidePagination ? totalCount : Array.isArray(data) ? data.length : Object.keys(data).length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        labelRowsPerPage="Rows per page"
+      />
+    </Paper>
   );
 };
 

@@ -6,10 +6,15 @@ use App\Classes\ApiResponserHelper;
 use App\Http\Resources\EventResource;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Event;
+use App\Traits\ExceptionLogger;
+use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\DB;
 
 class EventRepository implements EventRepositoryInterface
 {
+
+    use HandlePermissions;
+    use ExceptionLogger;
     /**
      * Create a new class instance.
      */
@@ -59,5 +64,13 @@ class EventRepository implements EventRepositoryInterface
 
     public function delete($id)
     {
+    }
+
+    public function listMenu(){
+        try {
+            return Event::all();
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 }

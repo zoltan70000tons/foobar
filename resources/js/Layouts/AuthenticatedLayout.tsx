@@ -18,6 +18,7 @@ import theme from '@/Theme/theme';
 import ListItems from '@/Layouts/ListItems';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import { usePage } from '@inertiajs/react';
+import { User } from '@/types';
 
 function Copyright(props: any) {
   return (
@@ -84,7 +85,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 const defaultTheme = theme;
 
-export default function AuthenticatedLayout({ user, header, children}: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+export default function AuthenticatedLayout({ user, header, children}: PropsWithChildren<{ user: User, header?: ReactNode, children?: ReactNode }>) {
   const [open, setOpen] = useState(true);
   const { auth } = usePage().props;
 
@@ -145,9 +146,9 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav">
-            <ListItems mainDrawerToggle={setOpen} />
-            <Divider sx={{ my: 1 }} />
+          <List component="nav" sx={{mt:0,pt:0}}>
+            <ListItems mainDrawerToggle={setOpen}  sx={{mt:0,pt:0}}/>
+            {/* <Divider sx={{ my: 1 }} /> */}
             {/* {accountListItems} */}
           </List>
         </Drawer>
