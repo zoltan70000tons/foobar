@@ -7,7 +7,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use App\Models\Customer;
+use App\Models\User;
+use App\Notifications\CustomerEmailVerification;
 
 class CustomerEmailVerificationController extends Controller
 {
@@ -27,7 +28,7 @@ class CustomerEmailVerificationController extends Controller
       ]);
     }
 
-    $request->user()->sendEmailVerificationNotification();
+    $request->user()->notify(new CustomerEmailVerification());
 
     return response()->json([
       'status' => 'verification-link-sent',
@@ -41,7 +42,7 @@ class CustomerEmailVerificationController extends Controller
   public function verify(Request $request): JsonResponse|RedirectResponse
   {
 
-    $customer = Customer::findOrFail($request->route('id'));
+    $customer = User::findOrFail($request->route('id'));
 
     if (! hash_equals($request->route('hash'), sha1($customer->getEmailForVerification()))) {
       return redirect()->to(config('app.frontend_url') . '/en/login?verified=errorSignature');

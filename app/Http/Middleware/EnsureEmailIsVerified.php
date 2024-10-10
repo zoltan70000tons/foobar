@@ -26,13 +26,13 @@ class EnsureEmailIsVerified
       ], 404);
     }
 
-    if ($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
-
-      return response()->json([
-        'message' => __('auth.verify_email'),
-      ], 409);
+    if ($user->hasRole('Customer')) {
+      if (is_null($user->email_verified_at)) {
+        return response()->json([
+          'message' => __('auth.verify_email'),
+        ], 409);
+      }
     }
-
     return $next($request);
   }
 }

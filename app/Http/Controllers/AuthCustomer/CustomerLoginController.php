@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 
 class CustomerLoginController extends Controller
 {
@@ -18,53 +21,78 @@ class CustomerLoginController extends Controller
   {
     // Validate the request data
     $request->validate([
-      'survivor_number' => 'required|string',
-      'password' => 'required|string',
+        'email'    => 'required|string|email',
+        'password' => 'required|string',
     ]);
 
-    $credentials = [
-      'survivor_number' => $request->input('survivor_number'),
-      'password' => $request->input('password'),
-    ];
+    $email = $request->input('email');
 
-    // Attempt to log in with survivor_number first
-    if (Auth::guard('customer')->attempt($credentials)) {
-      return $this->authenticated($request);
+    // Check if multiple users have the same email
+    $usersWithEmailCount = User::where('email', $email)->count();
+
+    if ($usersWithEmailCount > 1) {
+
+        // Generate a signed URL for the GET request (token validation)
+        $getSignedURL = URL::temporarySignedRoute(
+            'recover.account.form',
+            Carbon::now()->addMinutes(15),
+            [],
+            false // Generate relative URL
+        );
+
+        // Generate a signed URL for the POST request (survivor number verification)
+        $postSignedURL = URL::temporarySignedRoute(
+            'recover.account.verify', 
+            Carbon::now()->addMinutes(15),
+            [], 
+            false // Generate relative URL
+        );
+
+        // Generate a signed URL for the POST request (register)
+        $registerSignedUrl = URL::temporarySignedRoute(
+            'recover.account.register', 
+            Carbon::now()->addMinutes(15),
+            [], 
+            false // Generate relative URL
+        );
+
+        return response()->json([
+            'status'  => 'error-uniqueness',
+            'message' => 'Multiple accounts found with this email. Please recover your account.',
+            'get_signed_url' => $getSignedURL,
+            'post_signed_url' => $postSignedURL,
+            'register_signed_url' => $registerSignedUrl,
+        ], 400);
     }
 
-    // Attempt to log in with name if the first attempt fails
+    // Proceed to attempt login
     $credentials = [
-      'name' => $request->input('survivor_number'),
-      'password' => $request->input('password'),
+        'email'    => $email,
+        'password' => $request->input('password'),
     ];
 
-    if (Auth::guard('customer')->attempt($credentials)) {
-      return $this->authenticated($request);
+    // Attempt to log in with the provided credentials
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+
+        if ($user) {
+            if ($user->hasRole('Customer')) {
+                $request->session()->regenerate();
+
+                return response()->json($user, 200);
+            } else {
+                Auth::logout();
+
+                return response()->json([
+                    'message' => 'Unauthorized: Only customers can login through this route.',
+                ], 403);
+            }
+        }
     }
 
     return response()->json([
-      'message' => __('auth.failed'),
-    ], 401);
-  }
-
-  // Handle an incoming authentication request. 
-  // Based on the user's email or username
-  protected function authenticated(Request $request): JsonResponse
-  {
-    $language = $request->language;
-    App::setLocale($language);
-
-    try {
-      // Get the authenticated customer
-      $customer = Auth::guard('customer')->user();
-      $request->session()->regenerate();
-
-      return response()->json($customer, 200);
-    } catch (\Exception $e) {
-      return response()->json([
         'message' => __('auth.failed'),
-      ], 401);
-    }
+    ], 401);
   }
 
   /**
@@ -72,8 +100,8 @@ class CustomerLoginController extends Controller
    */
   public function destroy(Request $request): JsonResponse
   {
-    Auth::guard('customer')->logout();
-
+    Auth::guard('web')->logout();
+    
     $request->session()->invalidate();
 
     $request->session()->regenerateToken();

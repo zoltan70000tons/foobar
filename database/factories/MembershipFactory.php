@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Membership;
-use App\Models\Customer;
+use App\Models\User;
 use App\Models\MembershipType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +22,7 @@ class MembershipFactory extends Factory
   public function definition(): array
   {
     return [
-      'customer_id' => Customer::factory(),
+      'customer_id' => User::factory(),
       'membership_id' => MembershipType::all()->random()->id,
     ];
   }

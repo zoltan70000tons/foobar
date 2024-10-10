@@ -13,7 +13,8 @@ return new class extends Migration
   {
     Schema::create('customer_details', function (Blueprint $table) {
       $table->id();
-      $table->uuid('customer_id');
+      $table->uuid('user_id');
+      $table->string('survivor_number')->unique()->nullable();
       $table->string('gender', 2);
       $table->string('first_name', 100);
       $table->string('middle_name', 100)->nullable();
@@ -28,7 +29,7 @@ return new class extends Migration
       $table->timestamps();
 
       // Define foreign key constraint
-      $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
+      $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
     });
   }
 

@@ -24,6 +24,6 @@ class AppServiceProvider extends ServiceProvider
     // Define a gate to authorize access to the Pulse dashboard
     Gate::define('viewPulse', function (User $user): bool {
       return $user->hasRole('SuperAdmin');
-  });
+    });
   }
 }

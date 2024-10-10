@@ -22,8 +22,13 @@ class MembershipSales
   
       App::setLocale($language);
   
-      $customer = Auth::guard('customer')->user();
+    //   $customer = Auth::guard('customer')->user();
+    // get customer by role
   
+      // check if the Auth
+      $user = Auth::check() ? Auth::user() : null;
+      $customer = $user && $user->hasRole('Customer') ? $user : null;
+
       $membership = null;
   
       if ($customer) {
