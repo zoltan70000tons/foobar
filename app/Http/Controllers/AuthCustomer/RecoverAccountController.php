@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\SurvivorNumber;
+use Illuminate\Validation\Rules;
 
 class RecoverAccountController extends Controller
 {
@@ -21,7 +22,7 @@ class RecoverAccountController extends Controller
     public function showRecoverForm(Request $request)
     {
         // Validate the signed URL
-        if (! $request->hasValidSignature()) {
+        if (! $request->hasValidRelativeSignature()) {
             return response()->json(['message' => 'Invalid or expired link.'], 403);
         }
     
@@ -37,10 +38,10 @@ class RecoverAccountController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  string  $email
      */
-    public function recoverAccountVerify(Request $request, $email)
+    public function recoverAccountVerify(Request $request)
     {
         // Validate the signed URL
-        if (! $request->hasValidSignature()) {
+        if (! $request->hasValidRelativeSignature()) {
             return response()->json(['message' => 'Invalid or expired link.'], 403);
         }
     
@@ -59,12 +60,13 @@ class RecoverAccountController extends Controller
     
         $user = User::find($survivor->user_id);
     
-        if (!$user || $user->email !== $email) {
-            return response()->json(['message' => 'Survivor number and email do not match.'], 404);
+        if (!$user) {
+            return response()->json(['message' => 'There is no user with this survivor number.'], 404);
         }
     
         return response()->json([
             'message' => 'Survivor number verified. Please proceed to update your email, username, and password.',
+            'survivor_number' => $survivorNumber,
         ], 200);
     }
 
@@ -74,18 +76,18 @@ class RecoverAccountController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  string  $email
      */
-    public function recoverAccount(Request $request, $email)
+    public function recoverAccount(Request $request)
     {
         // Validate the signed URL
-        if (! $request->hasValidSignature()) {
+        if (! $request->hasValidRelativeSignature()) {
             return response()->json(['message' => 'Invalid or expired link.'], 403);
         }
     
         $request->validate([
-            'survivor_number' => 'required|numeric',
-            'email'           => 'required|string|email|unique:users,email',
-            'username'        => 'required|string|unique:users,username',
-            'password'        => 'required|string|confirmed',
+            'survivor_number' => ['required', 'numeric'],
+            'username' => ['required', 'string', 'max:255', 'unique:users'],
+            'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
     
         $survivorNumber = $request->input('survivor_number');
@@ -104,10 +106,10 @@ class RecoverAccountController extends Controller
             }
     
             $user = User::find($survivor->user_id);
-    
-            if (!$user || $user->email !== $email) {
-                return response()->json(['message' => 'User not found or email mismatch.'], 404);
-            }
+
+            // Assign the customer role
+            setPermissionsTeamId(1);
+            $user->assignRole('Customer');
     
             // Update user's email, username, and password
             $user->email    = $newEmail;
@@ -122,7 +124,7 @@ class RecoverAccountController extends Controller
             DB::rollBack();
             Log::error('Error updating account: ' . $e->getMessage());
     
-            return response()->json(['message' => 'An error occurred while updating your information.'], 500);
+            return response()->json(['error' => 'User registration failed'], 500);
         }
     }
 }

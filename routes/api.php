@@ -44,13 +44,15 @@ Route::post('/login-customer', [CustomerLoginController::class, 'store']);
 // --- Customer recover account ---
 Route::get('/recover-account', [RecoverAccountController::class, 'showRecoverForm'])
     ->name('recover.account.form')
-    ->middleware('signed');
+    ->middleware('signed:relative');
 
 Route::post('/recover-account-verify', [RecoverAccountController::class, 'recoverAccountVerify'])
-    ->middleware('signed');
+    ->name('recover.account.verify')    
+    ->middleware('signed:relative');
 
-Route::post('/recover-account', [RecoverAccountController::class, 'recoverAccount'])
-    ->middleware('signed');
+Route::post('/recover-account-register', [RecoverAccountController::class, 'recoverAccount'])
+    ->name('recover.account.register')      
+    ->middleware('signed:relative');
 
 // --- EMAIL VERIFICATION ---  
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])

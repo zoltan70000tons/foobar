@@ -32,17 +32,36 @@ class CustomerLoginController extends Controller
 
     if ($usersWithEmailCount > 1) {
 
-        $temporarySignedURL = URL::temporarySignedRoute(
-            'recover.account.form', // Route name to handle account recovery
+        // Generate a signed URL for the GET request (token validation)
+        $getSignedURL = URL::temporarySignedRoute(
+            'recover.account.form',
             Carbon::now()->addMinutes(15),
             [],
-            false // Generate a relative URL without the domain
+            false // Generate relative URL
+        );
+
+        // Generate a signed URL for the POST request (survivor number verification)
+        $postSignedURL = URL::temporarySignedRoute(
+            'recover.account.verify', 
+            Carbon::now()->addMinutes(15),
+            [], 
+            false // Generate relative URL
+        );
+
+        // Generate a signed URL for the POST request (register)
+        $registerSignedUrl = URL::temporarySignedRoute(
+            'recover.account.register', 
+            Carbon::now()->addMinutes(15),
+            [], 
+            false // Generate relative URL
         );
 
         return response()->json([
             'status'  => 'error-uniqueness',
             'message' => 'Multiple accounts found with this email. Please recover your account.',
-            'recover_url' => $temporarySignedURL,
+            'get_signed_url' => $getSignedURL,
+            'post_signed_url' => $postSignedURL,
+            'register_signed_url' => $registerSignedUrl,
         ], 400);
     }
 
