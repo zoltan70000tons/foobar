@@ -94,9 +94,12 @@ Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']
 //   broadcast(new CabinChange());
 // });
 
+// get cabins
 Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
-Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
+
+// reserve cabin
+Route::post('/cabin/reserve', [CabinController::class, 'reserve']);
 
 
 // --- TEST PURPOSE FOR BROADCASTING ---

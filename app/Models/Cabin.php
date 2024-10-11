@@ -41,6 +41,11 @@ class Cabin extends Model
   ];
 
   // Relations
+  public function temporaryReservations()
+  {
+      return $this->hasMany(TemporaryReservation::class);
+  }
+  
   public function category()
   {
     return $this->belongsTo(CabinCategory::class, 'cabin_category_id');
