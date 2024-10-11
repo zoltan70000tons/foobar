@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Interfaces\BookingInterface;
 use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
+use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
@@ -25,9 +27,11 @@ class BookingsController extends Controller
     use ExceptionLogger;
 
     protected EventRepositoryInterface $eventRepository;
-    public function __construct(EventRepository $eventRepository)
+    protected BookingInterface $bookingRepository;
+    public function __construct(EventRepository $eventRepository,BookingRepository $bookingRepository)
     {
         $this->eventRepository = $eventRepository;
+        $this->bookingRepository = $bookingRepository;
     }
     public function index()
     {
@@ -41,9 +45,11 @@ class BookingsController extends Controller
             }
             return $this->withPermission([Permissions::ViewCabinCategories], function ($event_id) {
                 $data = CabinCategory::all()->toArray();
+                $bookings = $this->bookingRepository->getAll();
                 $event = $this->eventRepository->find($event_id);
                 return Inertia::render('Bookings/Index', [
-                    'event' => $event
+                    'event' => $event,
+                    'bookings' => $bookings
                 ]);
             }, $event_id);
         } catch (\Exception $e) {
