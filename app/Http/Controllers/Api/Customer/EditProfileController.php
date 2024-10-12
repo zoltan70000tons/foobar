@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerDetail;
+use Illuminate\Support\Facades\Auth;
 
 class EditProfileController extends Controller
 {
@@ -84,6 +85,47 @@ class EditProfileController extends Controller
         return response()->json([
             'success' => true,
             'data' => $customerDetail,
+        ], 200);
+    }
+
+    /**
+     * Update the preferred language of a customer.
+     *
+     * @param  Request  $request
+     * @return JsonResponse
+     */
+    public function updatePreferredLanguage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'language' => 'required|string|in:ENG,DEU,SPA',
+        ]);
+
+        $customer = Auth::guard('customer')->user();
+
+        if (!$customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        // Find the customer's details
+        $customerDetail = CustomerDetail::where('customer_id', $customer->id)->first();
+
+        if (!$customerDetail) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer details not found',
+            ], 404);
+        }
+
+        // Update the language field
+        $customerDetail->language = $request->language;
+        $customerDetail->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Preferred language updated successfully',
         ], 200);
     }
 }

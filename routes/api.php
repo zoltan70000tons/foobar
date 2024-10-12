@@ -96,6 +96,7 @@ Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
   Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel'])->where('id', '[0-9a-fA-F\-]{36}');
   Route::get('/customers/{id}/details', [EditProfileController::class, 'getCustomerDetails']);
+  Route::post('/customers/preferred-language', [EditProfileController::class, 'updatePreferredLanguage']);
 });
 
 
