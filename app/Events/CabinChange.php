@@ -26,7 +26,6 @@ class CabinChange implements ShouldBroadcastNow
       $this->cabins = [
         [
           'cabin_number' => '0000',
-          'cabin_code' => 'DEFAULT-CODE',
           'cabin_status' => 'available',
         ],
       ];
@@ -34,7 +33,6 @@ class CabinChange implements ShouldBroadcastNow
       $this->cabins = $cabins->map(function ($cabin) {
         return [
           'cabin_number' => $cabin->cabin_number,
-          'cabin_code' => $cabin->cabin_code,
           'cabin_status' => $cabin->cabin_status,
         ];
       })->toArray();

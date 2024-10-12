@@ -22,6 +22,10 @@ class CabinCategoryRepository implements CabinCategoryInterface
         return CabinCategory::find($id);
     }
 
+    function getCategoriesByEvent($event_id){
+        return CabinCategory::where('event_id', '=', $event_id)->get()->toArray();
+    }
+
     function save(array $data): ?CabinCategory
     {
         try {

@@ -16,12 +16,12 @@ class EnsureUserIsNotCustomer
    */
   public function handle(Request $request, Closure $next): Response
   {
-    if (Auth::guard('customer')->check()) {
-      // return 401 response if the user is a customer
-      return response()->json([
-        'message' => __('auth.unauthenticated' . ' customer', ['guard' => 'customer']),
-      ], 401);
-    }
+    // if (Auth::guard('customer')->check()) {
+    //   // return 401 response if the user is a customer
+    //   return response()->json([
+    //     'message' => __('auth.unauthenticated' . ' customer', ['guard' => 'customer']),
+    //   ], 401);
+    // }
 
     // Proceed with the request if it's not a customer
     return $next($request);

@@ -15,8 +15,7 @@ return new class extends Migration
       $table->id();
       $table->foreignId('cabin_type_id')->constrained('cabin_types');
       $table->foreignId('cabin_category_id')->constrained('cabin_categories');
-      $table->string('cabin_number', 50);
-      $table->string('cabin_code', 50)->nullable(); // Need to confirm with TS what this is for and if it is necessary
+      $table->string('cabin_number', 50)->unique();
       $table->integer('deck');
       $table->integer('total_berths');
       $table->string('lower_bed_type_1', 5)->nullable();
@@ -30,7 +29,7 @@ return new class extends Migration
       $table->integer('inventory')->default(1);
       $table->string('notes', 255)->nullable();
       $table->jsonb('tags')->default(json_encode(['NOT ASSIGNED']));
-      $table->enum('status', ['AVAILABLE', 'RESERVED', 'SOLD'])->default('RESERVED');
+      $table->enum('status', ['AVAILABLE', 'RESERVED', 'BOOKED', 'PARTIALLY_BOOKED', 'CLOSED'])->default('RESERVED');
       $table->timestamps();
     });
   }

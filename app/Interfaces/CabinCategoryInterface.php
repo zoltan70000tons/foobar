@@ -11,4 +11,5 @@ interface CabinCategoryInterface
     function save(array $data): ?CabinCategory;
     function update(array $data,$id);
     function delete($id);
+    function getCategoriesByEvent($event_id);
 }

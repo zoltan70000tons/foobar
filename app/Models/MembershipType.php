@@ -17,6 +17,6 @@ class MembershipType extends Model
    */
   public function customers()
   {
-    return $this->belongsToMany(Customer::class, 'memberships', 'membership_id', 'customer_id');
+    return $this->belongsToMany(User::class, 'memberships', 'membership_id', 'customer_id');
   }
 }

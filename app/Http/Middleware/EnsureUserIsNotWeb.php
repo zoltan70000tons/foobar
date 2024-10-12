@@ -16,12 +16,12 @@ class EnsureUserIsNotWeb
    */
   public function handle(Request $request, Closure $next): Response
   {
-    if (Auth::guard('web')->check()) {
-      // return 401 response if the user is a customer
-      return response()->json([
-        'message' => __('auth.unauthenticated' . ' web', ['guard' => 'web']),
-      ], 401);
-    }
+    // if (Auth::guard('web')->check()) {
+    //   // return 401 response if the user is a customer
+    //   return response()->json([
+    //     'message' => __('auth.unauthenticated' . ' web', ['guard' => 'web']),
+    //   ], 401);
+    // }
 
     // Proceed with the request if it's not a customer
     return $next($request);

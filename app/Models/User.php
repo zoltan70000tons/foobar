@@ -10,13 +10,16 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UUID;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; 
 
-class User extends Authenticatable
+class User extends Authenticatable implements CanResetPassword
 {
-    use HasRoles;
-    use HasFactory, Notifiable, HasApiTokens, UUID;
+    use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
+
+   protected $guard_name = 'web';
 
     /**
      * The attributes that are mass assignable.
@@ -54,41 +57,35 @@ class User extends Authenticatable
         ];
     }
 
+
+    // Membership types
+    public function membershipTypes()
+    {
+      return $this->belongsToMany(MembershipType::class, 'memberships', 'user_id', 'membership_id');
+    }
+
+    // Organizations
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)->withPivot('user_id')->withTimestamps();
     }
 
+    // teams
     public function teams()
     {
         return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
     }
 
+    // detail
     public function detail(): HasOne
     {
         return $this->hasOne(UserDetail::class, 'user_id');
     }
 
-    // static function generateUniqueSurvivorNumber(): int
-    // {
-    //     do {
-    //         $number = '9';
-    //         for ($i = 1; $i < 11; $i++) {
-    //             $number .= mt_rand(0, 9);
-    //         }
-    //         $number = (int) $number;
-    //         $exists = User::where('survivor_number', $number)->exists();
-    //     } while ($exists);
-    //     return $number;
-    // }
+    // survivor number
+    public function survivorNumber()
+    {
+        return $this->hasOne(SurvivorNumber::class);
+    }
 
-    // protected static function boot()
-    // {
-    //     parent::boot();
-    //     static::creating(function ($user) {
-    //         if (empty($user->survivor_number)) {
-    //             $user->survivor_number = self::generateUniqueSurvivorNumber();
-    //         }
-    //     });
-    // }
 }

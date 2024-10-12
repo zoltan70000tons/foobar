@@ -7,6 +7,7 @@ use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
+use App\Models\Event;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Rules\ValidDateFormat;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
+use Hamcrest\Type\IsNumeric;
 use Illuminate\Support\Arr;
 
 class CabinsController extends Controller
@@ -35,11 +37,28 @@ class CabinsController extends Controller
     public function index()
     {
         $event_id = request()->route('id');
-        $data = $this->cabinRepository->getCategoriesAndCabins();
-        return Inertia::render('Cabin/Index', [
-            'tab' => 'ALL',
-            'data' => array('data' => $data, 'event_id' => $event_id),
-        ]);
+        $cabins = [];
+        $categories = [];
+
+        if($event_id == 'all'){
+            $events = $this->eventRepository->getAll();
+            return Inertia::render('Cabin/partials/Events', [
+                'events' => $events
+            ]);
+        }
+        
+        if (is_numeric($event_id)) {
+            $event = $this->eventRepository->find($event_id);
+            $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
+            $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
+            return Inertia::render('Cabin/Index', [
+                'cabins' => $cabins,
+                'categories' => $categories,
+                'event' => $event
+    
+            ]);
+        }
+        
     }
 
     public function create()

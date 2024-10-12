@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
-  Collapse,
   Drawer,
   IconButton,
+  Tooltip,
   ListSubheader,
   ListItemButton,
   ListItemText,
-  Tooltip,
   List,
 } from "@mui/material";
 import {
@@ -15,68 +14,73 @@ import {
   Workspaces as WorkspacesIcon,
   LocalActivity as LocalActivityIcon,
   Logout as LogoutIcon,
-  ExpandLess as ExpandLessIcon,
-  ExpandMore as ExpandMoreIcon,
+  RoomPreferences as RoomPreferenceIcon
 } from "@mui/icons-material";
+
+
 import { Link, router } from "@inertiajs/react";
+import axios from "axios"; 
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 
-// Define types for the section names
-type Section = "dashboard" | "team" | "events" | null;
-
-interface MenuItemsProps {
-  mainDrawerToggle: React.Dispatch<React.SetStateAction<boolean>>; // Type for setState
-}
-
-const MenuItems: React.FC<MenuItemsProps> = ({ mainDrawerToggle }) => {
+const MenuItems: React.FC = () => {
   const { hasPermission } = usePermissions();
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null); 
+  const [events, setEvents] = useState<any[]>([]);
+  const [isBookingsOpen, setIsBookingsOpen] = useState(false);
+  const currentPath = window.location.pathname;
+  const pathParts = window.location.pathname.split("/");
+  const routeEventId = pathParts[2];
+  const isBookingsRoute = currentPath.includes("bookings");
+  const isDashboardRoute = currentPath.includes("dashboard");
+  const isTeamRoute = currentPath.includes("team");
+  const isCabinsRoute = currentPath.includes("cabins");
 
-  // Use lazy initialization for localStorage-based on Menu state
-  const [state, setState] = useState(() => ({
-    openSection: JSON.parse(localStorage.getItem("openSection") || "null") as Section,
-    openTeam: JSON.parse(localStorage.getItem("openTeam") || "false"),
-    openEvents: JSON.parse(localStorage.getItem("openEvents") || "false"),
-  }));
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (isBookingsOpen) {
+        try {
+          const response = await axios.get("/menu/bookings");
+          setEvents(response.data);
+        } catch (error) {
+          console.error("Error fetching events:", error);
+        }
+      }
+    };
 
-  const { openSection, openTeam, openEvents } = state;
+    fetchEvents(); 
+  }, [isBookingsOpen]);
 
-  // Handle section click events
-  const handleSectionClick = (section: Section): void => {
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (isBookingsRoute || isCabinsRoute) {
+        try {
+          const response = await axios.get("/menu/bookings");
+          setEvents(response.data);
+          setIsBookingsOpen(true);
+        } catch (error) {
+          console.error("Error fetching events:", error);
+        }
+      }
+    };
 
-    // Close the main drawer if the section is the same as the open section
-    if (section === openSection) {
-      mainDrawerToggle(false);
-      setState((prevState) => ({ ...prevState, openSection: null }));
-    } else {
-      // Open the main drawer if the section is different from the open section
-      mainDrawerToggle(true);
-      setState((prevState) => ({
-        ...prevState,
-        openSection: section,
-        openTeam: section === "team",
-        openEvents: section === "events",
-      }));
-      localStorage.setItem("openSection", JSON.stringify(section));
+    fetchEvents();
+  }, [isBookingsRoute, isCabinsRoute]);
+  const handleBookingsClick = async () => {
+    setIsBookingsOpen(true); 
+  };
+
+
+  const handleEventClick = (eventId: number): void => {
+    setSelectedEventId(eventId);
+    router.visit(route("bookings.index", eventId)); 
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + "...";
     }
-  };
-
-  // Handle team section toggle
-  const handleTeamClick = (): void => {
-    setState((prevState) => {
-      const newOpenTeam = !prevState.openTeam;
-      localStorage.setItem("openTeam", JSON.stringify(newOpenTeam));
-      return { ...prevState, openTeam: newOpenTeam };
-    });
-  };
-
-  // Handle events section toggle
-  const handleEventsClick = (): void => {
-    setState((prevState) => {
-      const newOpenEvents = !prevState.openEvents;
-      localStorage.setItem("openEvents", JSON.stringify(newOpenEvents));
-      return { ...prevState, openEvents: newOpenEvents };
-    });
+    return text;
   };
 
   return (
@@ -90,86 +94,154 @@ const MenuItems: React.FC<MenuItemsProps> = ({ mainDrawerToggle }) => {
           [`& .MuiDrawer-paper`]: { width: 60, boxSizing: "border-box" },
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            paddingTop: 1,
+          }}
+        >
           {hasPermission(Permissions.ViewDashboard) && (
             <Tooltip title="Dashboard" placement="right">
-              <IconButton onClick={() => (handleSectionClick("dashboard"))} >
+              <IconButton
+                component={Link}
+                href={route("dashboard")}
+                style={{
+                  backgroundColor: isDashboardRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
                 <DashboardIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission(Permissions.ViewEvents) && (
+            <Tooltip title="Bookings" placement="right">
+              <IconButton
+                component={Link}
+                href={route("bookings.index", "all")}
+                style={{
+                  backgroundColor: isBookingsRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
+                <LocalActivityIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {hasPermission(Permissions.ViewCabins) && (
+            <Tooltip title="Cabins" placement="right">
+              <IconButton
+                component={Link}
+                href={route("cabins.index", "all")}
+                style={{
+                  backgroundColor: isCabinsRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
+                <RoomPreferenceIcon />
               </IconButton>
             </Tooltip>
           )}
           {hasPermission(Permissions.ViewUsers) && (
             <Tooltip title="Team" placement="right">
-              <IconButton onClick={() => handleSectionClick("team")}>
+              <IconButton
+                component={Link}
+                href={route("teams")}
+                style={{
+                  backgroundColor: isTeamRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
                 <WorkspacesIcon />
               </IconButton>
             </Tooltip>
           )}
-          {hasPermission(Permissions.ViewEvents) && (
-            <Tooltip title="Events" placement="right">
-              <IconButton onClick={() => handleSectionClick("events")}>
-                <LocalActivityIcon />
-              </IconButton>
-            </Tooltip>
-          )}
           <Tooltip title="Logout" placement="right">
-            <IconButton onClick={() => router.post("logout")}>
+            <IconButton onClick={() => router.post(route("logout"))}>
               <LogoutIcon />
             </IconButton>
           </Tooltip>
         </Box>
       </Drawer>
-
-      {/* Second sidebar that displays content based on the selected section */}
-      <List
-        sx={{ width: "100%", bgcolor: "background.paper" }}
-        subheader={openSection === null && (
-            <ListSubheader component="div">
-              Select a Menu option
-            </ListSubheader>
-          )
-        }
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 240, 
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: { width: 240, boxSizing: "border-box" },
+        }}
       >
-        {openSection === "dashboard" && (
-          <ListItemButton component={Link} href={route("dashboard")} method="get">
-            <ListItemText primary="Dashboard" />
-          </ListItemButton>
-        )}
-
-        {openSection === "team" && (
-          <>
-            <ListItemButton onClick={handleTeamClick}>
-              <ListItemText primary="Team" />
-              {openTeam ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        <List
+          sx={{ width: "100%", bgcolor: "background.paper", mt: 0, pt: 0 }}
+          subheader={
+            currentPath === null && (
+              <ListSubheader component="div">
+                Select a Menu option
+              </ListSubheader>
+            )
+          }
+        >
+          {isDashboardRoute && !isBookingsOpen && (
+            <ListItemButton
+              component={Link}
+              href={route("dashboard")}
+              method="get"
+              selected={isDashboardRoute}
+            >
+              <ListItemText primary="Dashboard" />
             </ListItemButton>
-            <Collapse in={openTeam} timeout="auto" unmountOnExit>
-              <ListItemButton component={Link} href={route("teams")}>
+          )}
+
+          {isTeamRoute && !isBookingsOpen && (
+            <>
+              <ListItemButton
+                key="team"
+                component={Link}
+                href={route("teams")}
+                selected={currentPath === "/team"}
+              >
                 <ListItemText primary="Team Members" />
               </ListItemButton>
-              <ListItemButton component={Link} href={route("roles")}>
+              <ListItemButton
+                key="roles"
+                component={Link}
+                href={route("roles")}
+                selected={currentPath.includes("roles")}
+              >
                 <ListItemText primary="Team Roles" />
               </ListItemButton>
-              <ListItemButton component={Link} href={route("permissions")}>
+              <ListItemButton
+                key="permissions"
+                component={Link}
+                href={route("permissions")}
+                selected={currentPath.includes("permissions")}
+              >
                 <ListItemText primary="Team Permissions" />
               </ListItemButton>
-            </Collapse>
-          </>
-        )}
+            </>
+          )}
 
-        {openSection === "events" && (
-          <>
-            <ListItemButton onClick={handleEventsClick}>
-              <ListItemText primary="Events" />
-              {openEvents ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-            <Collapse in={openEvents} timeout="auto" unmountOnExit>
-              <ListItemButton component={Link} href={route("events.index")}>
-                <ListItemText primary="All Events" />
-              </ListItemButton>
-            </Collapse>
-          </>
-        )}
-      </List>
+          {isBookingsOpen  && (
+            <List component="div" disablePadding>
+              {events.length > 0 ? (
+                events.map((event) => (
+                  <ListItemButton
+                    key={event.id}
+                    component={Link}
+                    href={route(  isBookingsRoute ? "bookings.index" : "cabins.index", event.id)}
+                    selected={parseInt(routeEventId) === event.id}
+                  >
+                    <Tooltip title={event.name}>
+                      <ListItemText primary={truncateText(event.name, 15)} />
+                    </Tooltip>
+                  </ListItemButton>
+                ))
+              ) : (
+                <ListItemText primary="No events available" />
+              )}
+            </List>
+          )}
+        </List>
+      </Drawer>
     </Box>
   );
 };

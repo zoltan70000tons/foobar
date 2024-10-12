@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
 use League\Csv\Reader;
-use Illuminate\Support\Facades\Log;
 
 class CabinSeeder extends Seeder
 {
@@ -28,7 +27,6 @@ class CabinSeeder extends Seeder
     foreach ($csv as $record) {
 
       // Find the corresponding cabin_category_id based on category_code and capacity
-      Log::info($record['Cat'] . ' ' . $record['Capacity']);
       $cabinCategoryId = CabinCategory::where('category_code', $record['Cat'])
         ->where('capacity', $record['Capacity'])
         ->first()
@@ -39,14 +37,13 @@ class CabinSeeder extends Seeder
       $obstructedView = $record['Obstructed View'] === 'Y';
       $accessible = $record['Accessible'] === 'Y';
 
-      // Find the connects_with cabin ID based on cabin_code
-      $connectingCabin = Cabin::where('cabin_code', $record['Connects with'])->first();
+      // Find the connects_with cabin ID based on cabin_number
+      $connectingCabin = Cabin::where('cabin_number', $record['Connects with'])->first();
       $connectingCabinId = $connectingCabin ? $connectingCabin->id : null;
 
       // Prepare data array
       $cabinData = [
         'cabin_category_id' => $cabinCategoryId,
-        'cabin_code' => 'AAAA-B12C', // Need to confirm with TS what this is for and if it is necessary
         'cabin_type_id' => $record['Category Type'], // Assuming the cabin_type is always 1, meaning private cabin
         'cabin_number' => $record['Cabin #'],
         'deck' => $record['Deck'],
@@ -59,6 +56,9 @@ class CabinSeeder extends Seeder
         'location' => $record['Location'],
         'balcony' => $balcony,
         'obstructed_view' => $obstructedView,
+        'inventory' => $record['Inventory'],
+        'notes' => $record['Notes'],
+        'tags' => $record['Tags'], 
         'status' => $record['Status'],
       ];
 

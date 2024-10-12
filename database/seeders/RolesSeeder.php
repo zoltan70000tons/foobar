@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Faker\Generator;
+use Spatie\Permission\Models\Role;
 
 class RolesSeeder extends Seeder
 {
@@ -29,15 +30,16 @@ class RolesSeeder extends Seeder
     public function run(): void
     {
 
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         foreach (Roles::cases() as $role) {
-            DB::table('roles')->updateOrInsert(
-            ['name' => $role, 'team_id' => 1],
+            $roleName = $role->value;
+            Role::updateOrCreate(
+                ['name' => $roleName, 'team_id' => 1],
                 [
                     'team_id' => 1,
-                    'name' => $role,
+                    'name' => $roleName,
                     'guard_name' => 'web',
-                    'created_at' => now(),
-                    'updated_at' => now(),
                     'system' => 1
                 ]
             );
@@ -56,8 +58,8 @@ class RolesSeeder extends Seeder
             );
         }
 
-        $superAdminRoleId = DB::table('roles')->where('name', 'SuperAdmin')->value('id');
-        $adminRoleId = DB::table('roles')->where('name', 'Admin')->value('id');
+        $superAdminRoleId = Role::where('name', 'SuperAdmin')->value('id');
+        $adminRoleId = Role::where('name', 'Admin')->value('id');
         $permissionIds = DB::table('permissions')->pluck('id')->toArray();
 
         $rolePermissionData = [];

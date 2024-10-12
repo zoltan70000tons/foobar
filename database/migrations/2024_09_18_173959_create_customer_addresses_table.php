@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('customer_addresses', function (Blueprint $table) {
       $table->id();
-      $table->uuid('customer_id');
+      $table->uuid('user_id');
       $table->string('address_first', 255);
       $table->string('address_second', 255)->nullable();
       $table->string('city', 255);
@@ -23,7 +23,7 @@ return new class extends Migration
       $table->timestamps();
 
       // Define foreign key constraint
-      $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
+      $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
     });
   }
 

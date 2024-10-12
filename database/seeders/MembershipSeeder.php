@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Customer;
 use App\Models\MembershipType;
 use App\Models\Membership;
+use App\Models\User;
 
 class MembershipSeeder extends Seeder
 {
@@ -14,10 +14,10 @@ class MembershipSeeder extends Seeder
    */
   public function run(): void
   {
+    // Get all users with role customer
+    $customers = User::role('Customer')->get();
 
-    $customers = Customer::all();
-
-    // Two test purpose we will not assign membership to two customers
+    // For test purposes, we will not assign membership to two customers
     $customersWithoutMembership = $customers->random(2);
     $membershipTypes = MembershipType::all();
 
@@ -27,11 +27,10 @@ class MembershipSeeder extends Seeder
         continue;
       }
 
-      Membership::factory()
-        ->forCustomer($customer->id)
-        ->create([
-          'membership_id' => $membershipTypes->random()->id,
-        ]);
+      Membership::create([
+        'user_id' => $customer->id,
+        'membership_id' => $membershipTypes->random()->id,
+      ]);
     }
   }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
+use App\Http\Controllers\AuthCustomer\RecoverAccountController;
 
 // BOOKING
 use App\Http\Controllers\Api\Customer\BookingController;
@@ -37,16 +38,24 @@ use Illuminate\Support\Facades\Log;
  */
 
 // --- PASSWORD RESET ---
-Route::post('/reset-password', [CustomerPasswordResetController::class, 'requestReset']);
-
-Route::get('/password-reset/{id}/verify', [CustomerPasswordResetController::class, 'verifyResetLink'])
-  ->middleware(['signed'])
-  ->name('passwordApi.verify');
-
-Route::post('/password-reset/{id}', [CustomerPasswordResetController::class, 'resetPassword']);
+Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset']);
+Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword']);
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('guest:customer');
+Route::post('/login-customer', [CustomerLoginController::class, 'store']);
+
+// --- Customer recover account ---
+Route::get('/recover-account', [RecoverAccountController::class, 'showRecoverForm'])
+    ->name('recover.account.form')
+    ->middleware('signed:relative');
+
+Route::post('/recover-account-verify', [RecoverAccountController::class, 'recoverAccountVerify'])
+    ->name('recover.account.verify')    
+    ->middleware('signed:relative');
+
+Route::post('/recover-account-register', [RecoverAccountController::class, 'recoverAccount'])
+    ->name('recover.account.register')      
+    ->middleware('signed:relative');
 
 // --- EMAIL VERIFICATION ---  
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])
@@ -64,7 +73,7 @@ Route::post('/logout', [CustomerLoginController::class, 'destroy'])
   ->middleware(['auth:sanctum', 'auth.customer']);
 
 // --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
-Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerPassResetInsideController::class, 'update']);
 });
@@ -88,9 +97,12 @@ Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']
 //   broadcast(new CabinChange());
 // });
 
-Route::get('/cabins', [CabinController::class, 'show']);
+// get cabins
+Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
-Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
+
+// reserve cabin
+Route::post('/cabin/reserve', [CabinController::class, 'reserve']);
 
 
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {

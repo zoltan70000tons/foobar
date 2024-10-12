@@ -2,9 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Models\Cabin;
 use App\Enums\StatusCabin;
-use Illuminate\Support\Collection;
+
 
 // use log
 use Illuminate\Support\Facades\Log;
@@ -16,91 +15,101 @@ class MatrixHelper
    * 
    * @return string | null
    */
-  public static function getDecks($cat_type_id, $cabinTypeId)
+  public static function getDecks($cabins)
   {
-      $decks = Cabin::where('cabin_type_id', $cabinTypeId)
-          ->where('cabin_category_id', $cat_type_id)
-          ->whereNotNull('deck')
-          //->where('deck', '!=', '')
-          ->distinct()
-          ->orderBy('deck')
-          ->pluck('deck')
-          ->map(function ($deck) {
-              return strtolower(trim($deck));
-          })
-          ->unique()
-          ->values();
-  
-      return $decks->isEmpty() ? null : $decks->implode(',');
+        $decks = $cabins->pluck('deck')->unique()->values()->all();
+        
+        // to string with coma
+        return implode(',', $decks);
   }
 
-  /**
-   * Check the cabins are still available for current category
-   * 
-   * @return boolean
-   */
-  public static function checkCabinAvailability($cat_type_id, $ticketType): bool
-  {
-      return Cabin::where('cabin_type_id', $ticketType)
-          ->where('cabin_category_id', $cat_type_id)
-          ->where('status', StatusCabin::AVAILABLE->value)
-          ->exists();
-  }
+    /**
+     * Return unique cabins type where cabin_number and decks are the same
+     * 
+     * @return array
+     */
+    public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
+    {
+        $filteredCategories = $categories->filter(function ($item) use ($parentCategoryName) {
+            return $item->category_name === $parentCategoryName;
+        });
 
+        // from filtered categories return only these which cabins have cabin_type_id equal to ticketType
+        $filteredCategoriesWithCabins = $filteredCategories->filter(function ($item) use ($ticketType) {
+            return $item->cabins->where('cabin_type_id', $ticketType)->isNotEmpty();
+        });
 
-  /**
-   * Return unique cabins type where cabin_code and decks are the same
-   * 
-   * @return array
-   */
-  public static function getUniqueCabinCodes($cabins, $ticketType)
-  {
-      return $cabins->map(function ($item) use ($ticketType) {
-          $decks = self::getDecks($item->id, $ticketType);
-  
-          if ($decks === null) {
-              return null;
-          }
-  
-          return [
-              'cabin_category_id' => $item->id,
-              'code' => $item->category_code,
-              'display_order' => $item->display_order,
-              'decks' => $decks,
-          ];
-      })->filter()->unique('code')->values();
-  }
+        // dd($filteredCategories->toArray());
+
+        return $filteredCategoriesWithCabins->map(function ($item) use ($categories) {
+            return [
+                'name' => $item->category_name,
+                'cabin_category_id' => $item->id,
+                'code' => $item->category_code,
+                'display_order' => $item->display_order,
+                'decks' => self::getDecks($item->cabins),
+                'price_and_availability' => self::getPriceDetails($categories, $item->category_code),
+            ];
+        })->unique('code')->values();
+    }
+
 
   /**
    * Helper function to get price and availability details for a specific capacity
    * 
    * @return array
    */
-  public static function getPriceDetails($cabins, $capacity, $availabilityStatus)
-  {
-    $cabin = $cabins->where('capacity', $capacity)->first();
-    return [
-      "full_category_name" => $cabin ? $cabin->category_name : null,
-      "capacity" => $capacity,
-      "price" => $cabin ? $cabin->price : null,
-      "is_available" => $cabin ? $availabilityStatus : null,
-    ];
-  }
+    public static function getPriceDetails($categories, $code)
+    {
 
-  /**
-   * Helper function to get max capcity for a specific category
-   * 
-   * @return array
-   */
-  public static function getMaxCapacity($cabinType, $ticketType)
-  {
+        $filteredCategories = $categories->where('category_code', $code)
+        ->groupBy('capacity')
+        ->map(function ($group) {
+            return $group->sortBy('display_order')->first();
+        })
+        ->sortBy('display_order')
+        ->values();
 
-    $cabins = Cabin::where('cabin_type_id', $ticketType)
-    ->where('cabin_category_id', $cabinType)
-    ->get();
 
-    $maxCapacity = $cabins->max('capacity');
+        $prices = [];
+            for ($capacity = 2; $capacity <= 8; $capacity++) {
+                $prices["price_capacity_$capacity"] = self::getSinglePrice($filteredCategories, $capacity);
+            }
 
-    return $maxCapacity;
-  }
+        return $prices;
+
+    }
+
+    // Single price for a specific capacity
+    public static function getSinglePrice($cabins, $capacity)
+    {
+        // Filter cabins by the specific capacity
+        $filteredCabins = $cabins->where('capacity', $capacity);
+
+        // If no cabins match the capacity, return null
+        if ($filteredCabins->isEmpty()) {
+            return [
+                "price" => null,
+                "capacity" => $capacity,
+                "is_available" => false,
+                "cabin_category_id" => null,
+            ];
+        }
+
+        // Check if all cabins for this capacity are available
+        $isAvailable = $filteredCabins->every(function ($cabin) {
+            return $cabin->status !== StatusCabin::AVAILABLE->value;
+        });
+
+        // Retrieve price details for the first available cabin with this capacity
+        $cabin = $filteredCabins->first();
+
+        return [
+            "price" => $cabin->price,
+            "capacity" => $capacity,
+            "is_available" => $isAvailable,
+            "cabin_category_id" => $cabin->id,
+        ];
+    }
 }
+
