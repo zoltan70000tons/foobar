@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AuthCustomer;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\User;
 
 use Illuminate\Auth\Events\Registered;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use App\Helpers\CustomerHelper;
 use App\Models\SurvivorNumber;
+
 
 class CustomerRegisteredController extends Controller
 {
@@ -38,6 +40,7 @@ class CustomerRegisteredController extends Controller
           'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
           'password' => ['required', 'confirmed', Rules\Password::defaults()],
       ]);
+
 
       $language = $request->language;
       App::setLocale($language);
@@ -88,6 +91,7 @@ class CustomerRegisteredController extends Controller
    */
   protected function sendWelcomeEmail(User $user, string $language): void
   {
+
   //   try {
   //     $email = $user->email;
   //     Mail::to($email)->send(new CustomerRegistered($user, $language));
