@@ -109,6 +109,9 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function
   Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel'])->where('id', '[0-9a-fA-F\-]{36}');
   Route::get('/customers/{id}/details', [EditProfileController::class, 'getCustomerDetails']);
   Route::post('/customers/preferred-language', [EditProfileController::class, 'updatePreferredLanguage']);
+  Route::post('/customers/update-phone', [EditProfileController::class, 'updatePhone']);
+  Route::post('/customers/update-email', [EditProfileController::class, 'updateEmail']);
+  Route::post('/customers/update-password', [EditProfileController::class. 'updatePassword']);
 });
 
 
