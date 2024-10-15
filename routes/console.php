@@ -12,7 +12,7 @@ Artisan::command('inspire', function () {
 
 /**
  * -------- SCHEDULE TASKS --------
- * 
+ * php artisan schedule:work
  * 
  */
 // Delete expired temporary reservations

@@ -89,18 +89,17 @@ Route::get('/events', [BookingController::class, 'show']);
 Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
 Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']);
 
-// Route::get('/cabins', function () {
-//   // test broadcast
-//   broadcast(new CabinChange());
-// });
 
 // get cabins
 Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 
-// reserve cabin
-Route::post('/cabin/reserve', [CabinController::class, 'reserve']);
-
+// This middleware will clear expired reservations from the session
+Route::middleware(['clear_expired_reservation'])->group(function () {
+  // reserve cabin
+  Route::post('/cabin/reserve', [CabinController::class, 'reserve']);
+  Route::post('/cabin/release', [CabinController::class, 'release']);
+});
 
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);
