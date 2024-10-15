@@ -8,3 +8,12 @@ export enum TagEnum {
   NOT_ASSIGNED = "NOT ASSIGNED",
   ASSIGNED = "ASSIGNED"
 }
+
+export enum BookingTagEnum {
+  NOT_ASSIGNE = "NOT ASSIGNED", 
+  NEW = "NEW", 
+  OVERDUE = "OVERDUE", 
+  MISSING_INFO = "MISSING INFO",
+  PAID = "PAID", 
+  IN_MANIFEST = "IN MANIFEST"
+}

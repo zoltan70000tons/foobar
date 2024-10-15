@@ -24,7 +24,7 @@ class Booking extends Model
    */
   public function customer()
   {
-    return $this->belongsTo(User::class, 'user_id');
+    return $this->belongsTo(User::class, 'customer_id');
   }
 
   /**
@@ -53,10 +53,6 @@ class Booking extends Model
     if (strtoupper($cabin->status) === 'BOOKED') {
       throw new  \Exception("This cabin is already fully booked.");
     }
-    
-    // Get Lead Passenger Information
-    $lead_passenger = User::find($this->customer_id);
-    $lead_passenger_details = $lead_passenger->details;
 
     // Define a set of A-Z characters
     $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -64,8 +60,8 @@ class Booking extends Model
     // Generate a random 4-character code
     $identifier_code = substr(str_shuffle($characters), 0, 4);
 
-    // Generate a booking code based on the cabin number, random 4 char string, and the lead passenger's name
-    $this->booking_code = $cabin->cabin_number . $identifier_code . '_' . $lead_passenger_details->last_name;
+    // Generate a unique booking code based on the cabin number, identifier code, and category code
+    $this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$cabin->category->category_code}";
 
     // Assign the cabin to this booking
     $this->cabin_id = $cabin->id;

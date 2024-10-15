@@ -13,12 +13,15 @@ return new class extends Migration
   {
     Schema::create('discounts', function (Blueprint $table) {
       $table->id();
-      $table->string('discount_code', 50)->unique();
-      $table->json('restrictions')->nullable();
-      $table->string('discount_type', 50);
-      $table->decimal('discount_value', 10, 2);
-      $table->foreignId('event_id')->nullable()->constrained('events');
+      $table->string('code')->unique(); // Unique discount code
+      $table->json('restrictions')->nullable(); // Restrictions as JSON (optional)
+      $table->enum('type', ['FIXED', 'PERCENTAGE'])->default('PERCENTAGE'); // Enum for operation_type
+      $table->decimal('value', 10, 2); // Discount value
+      $table->foreignId('event_id')->constrained('events')->onDelete('cascade'); // References events table
       $table->timestamps();
+      
+      // Unique index for event_id and code combination
+      $table->unique(['event_id', 'code']);
     });
   }
 

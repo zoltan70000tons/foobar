@@ -30,9 +30,16 @@ class BookingSeeder extends Seeder
     // Ensure no customer is repeated for bookings with cabins
     foreach ($selectedCabins as $index => $cabin) {
       $customer = $customersForBookings[$index]; // Select a unique customer for each booking
+      
+      // Define a set of A-Z characters
+      $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+      // Generate a random 4-character code
+      $identifier_code = substr(str_shuffle($characters), 0, 4);
 
       // Create the booking with a unique customer_id
       $booking = Booking::factory()->create([
+        'booking_code' => "{$cabin->cabin_number}-{$identifier_code}-{$cabin->category->category_code}",
         'customer_id' => $customer->id,
         'cabin_id' => $cabin->id,
       ]);
