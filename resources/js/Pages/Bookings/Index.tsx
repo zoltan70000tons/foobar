@@ -24,11 +24,16 @@ import { TagEnum } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import SnackbarAlert from "@/Components/SnackbarAlert";
+import { Permissions } from "@/enums/PermissionEnum";
+import { Visibility } from "@mui/icons-material";
 
 const Index = ({
   auth,
   event,
-  bookings,
+  newBookings,
+  inProgressBookings,
+  uploadedBookings,
+  cancelledBookings,
   errors,
 }: PageProps & { tab: string; data: any }) => {
   const { hasPermission } = usePermissions();
@@ -37,7 +42,7 @@ const Index = ({
   const [openDialog, setOpenDialog] = useState(false);
 
   const [loading, setLoading] = useState(true);
-  console.log(bookings);
+  console.log(newBookings);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
@@ -58,6 +63,10 @@ const Index = ({
     setOpenDialog(false);
   };
 
+  const handleViewClick =() => {
+    console.log('on click');
+  }
+
   const bookingColumns = useMemo(
     () => [
       {
@@ -67,24 +76,45 @@ const Index = ({
       {
         header: "Booking code",
         accessor: "booking_code",
+        filterable:true
       },
       {
         header: "Lead passenger",
-        accessor: "lead_passenger",
-        draw: (row) => (
-          <>{row.customer?.detail?.short_name}</>
-      )
+        accessor: "fullName",
+        filterable:true
       },
       {
         header: "Type",
-        accessor: "cabin",
-        draw: (row) => (
-            <>{row.cabin?.cabin_type?.cabin_type}</>
-        )
+        accessor: "cabinType",
+        filterable:true
       },
       {
         header: "Balance",
-        accessor: "tags",
+        accessor: "balance",
+        draw: (row) => (
+          <>{row.balance != null && row.cost != null && ( <>{row.balance + ' / ' + row.cost}</>)}</>
+      )
+      },
+      {
+        header: "Tags",
+        accessor: "Tags",
+        draw: (row) => (
+          <Box sx={{ display: "inline-flex", gap: 0.5 }}>
+            {Array.isArray(row.tags) &&
+            row.tags.length > 0 ? (
+              row.tags.map((tag: string) => (
+                <Chip
+                  key={tag}
+                  label={tag}
+                  size="small"
+                  sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
+                />
+              ))
+            ) : (
+              <em>No Tags</em>
+            )}
+          </Box>
+        ),
       },
       
       {
@@ -92,27 +122,14 @@ const Index = ({
         accessor: "",
         disableFilter: true,
         draw: (row) => (
-          // <div style={{ display: "flex", gap: "10px" }}>
-          //   {hasPermission(Permissions.ViewCabinCategories) && (
-          //     <Visibility
-          //       onClick={() => handleViewClick(row)}
-          //       style={{ cursor: "pointer" }}
-          //     />
-          //   )}
-          //   {hasPermission(Permissions.EditCabinCategories) && (
-          //     <Edit
-          //       onClick={() => handleEditClick(row)}
-          //       style={{ cursor: "pointer" }}
-          //     />
-          //   )}
-          //   {hasPermission(Permissions.DeleteCabinCategories) && (
-          //     <Delete
-          //       onClick={() => handleDeleteClick(row)}
-          //       style={{ cursor: "pointer" }}
-          //     />
-          //   )}
-          // </div>
-          <></>
+          <div style={{ display: "flex", gap: "10px" }}>
+            {hasPermission(Permissions.ViewCabins) && (
+              <Visibility
+                onClick={() => handleViewClick(row)}
+                style={{ cursor: "pointer" }}
+              />
+            )}
+          </div>
         ),
       },
     ],
@@ -144,7 +161,7 @@ const Index = ({
                 <Tab label="NEW BOOKINGS" />
                 <Tab label="IN PROGRESS" />
                 <Tab label="UPLOADED TO MANIFEST" />
-                <Tab label="ALL" />
+                <Tab label="CANCELLED" />
               </Tabs>
 
            
@@ -153,7 +170,8 @@ const Index = ({
               >
                 <MuiTable
                   columns={bookingColumns}
-                  data={bookings}
+                  data={newBookings}
+
                 />
               
                 
@@ -162,9 +180,33 @@ const Index = ({
               <Box
                 sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}
               >
+                <MuiTable
+                  columns={bookingColumns}
+                  data={inProgressBookings}
+                />
+                
+              </Box>
+
+              <Box
+                sx={{ display: selectedTab === 2 ? "block" : "none", mt: 2 }}
+              >
+                <MuiTable
+                  columns={bookingColumns}
+                  data={uploadedBookings}
+                />
                 
               </Box>
             </Box>
+
+            <Box
+                sx={{ display: selectedTab === 3 ? "block" : "none", mt: 2 }}
+              >
+                <MuiTable
+                  columns={bookingColumns}
+                  data={cancelledBookings}
+                />
+                
+              </Box>
            
             <SnackbarAlert
             open={snackbar.open}

@@ -5449,7 +5449,7 @@ namespace Illuminate\Support\Facades {
                     /**
          * Get all of the supported drivers.
          *
-         * @return string[] 
+         * @return string] 
          * @static 
          */        public static function supportedDrivers()
         {
@@ -5459,7 +5459,7 @@ namespace Illuminate\Support\Facades {
                     /**
          * Get all of the drivers that are actually available.
          *
-         * @return string[] 
+         * @return string] 
          * @static 
          */        public static function availableDrivers()
         {
@@ -5669,7 +5669,7 @@ namespace Illuminate\Support\Facades {
          * @param bool $useReadPdo
          * @return mixed 
          * @static 
-         */        public static function selectOne($query, $bindings = [], $useReadPdo = true)
+         */        public static function selectOne($query, $bindings = ], $useReadPdo = true)
         {            //Method inherited from \Illuminate\Database\Connection         
                         /** @var \Illuminate\Database\PostgresConnection $instance */
                         return $instance->selectOne($query, $bindings, $useReadPdo);
@@ -5683,7 +5683,7 @@ namespace Illuminate\Support\Facades {
          * @return mixed 
          * @throws \Illuminate\Database\MultipleColumnsSelectedException
          * @static 
-         */        public static function scalar($query, $bindings = [], $useReadPdo = true)
+         */        public static function scalar($query, $bindings = ], $useReadPdo = true)
         {            //Method inherited from \Illuminate\Database\Connection         
                         /** @var \Illuminate\Database\PostgresConnection $instance */
                         return $instance->scalar($query, $bindings, $useReadPdo);

@@ -17,6 +17,11 @@ class Booking extends Model
     'carbon_offset',
     'cabin_id',
     'completed',
+    'tags'
+  ];
+
+  protected $casts = [
+    'tags' => 'json'
   ];
 
   /**
@@ -33,6 +38,10 @@ class Booking extends Model
   public function cabin()
   {
     return $this->belongsTo(Cabin::class, 'cabin_id');
+  }
+
+  public function passengers(){
+    return $this->hasMany(Passenger::class, foreignKey: 'booking_id');
   }
 
   /**

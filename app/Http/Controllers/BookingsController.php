@@ -45,11 +45,17 @@ class BookingsController extends Controller
             }
             return $this->withPermission([Permissions::ViewCabinCategories], function ($event_id) {
                 $data = CabinCategory::all()->toArray();
-                $bookings = $this->bookingRepository->getAll();
+                $newBookings = $this->bookingRepository->getByTag(['New']);
+                $inProgressBookings = $this->bookingRepository->getByTag(['New', 'UPLOADED', 'CANCELLED']);
+                $uploadedBookings =$this->bookingRepository->getByTag(['UPLOADED']);
+                $cancelledBookings =$this->bookingRepository->getByTag(['CANCELLED']);
                 $event = $this->eventRepository->find($event_id);
                 return Inertia::render('Bookings/Index', [
                     'event' => $event,
-                    'bookings' => $bookings
+                    'newBookings' => $newBookings,
+                    'inProgressBookings' => $inProgressBookings,
+                    'uploadedBookings' => $uploadedBookings,
+                    'cancelledBookings' =>$cancelledBookings
                 ]);
             }, $event_id);
         } catch (\Exception $e) {
