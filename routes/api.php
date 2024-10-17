@@ -111,7 +111,7 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function
   Route::post('/customers/preferred-language', [EditProfileController::class, 'updatePreferredLanguage']);
   Route::post('/customers/update-phone', [EditProfileController::class, 'updatePhone']);
   Route::post('/customers/update-email', [EditProfileController::class, 'updateEmail']);
-  Route::post('/customers/update-password', [EditProfileController::class. 'updatePassword']);
+  Route::post('/customers/update-password', [EditProfileController::class, 'updatePassword']);
 });
 
 

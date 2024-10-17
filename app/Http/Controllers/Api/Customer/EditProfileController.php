@@ -6,10 +6,15 @@ use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserDetail;
 use App\Models\CustomerDetail;
+use App\Models\CustomerAddress;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Log;
 
 class EditProfileController extends Controller
 {
@@ -21,7 +26,7 @@ class EditProfileController extends Controller
     public function index(): JsonResponse
     {
         // Fetch all customers with their related details, membership types, and addresses
-        $customers = Customer::with(['details', 'membershipTypes', 'addresses'])->get();
+        $customers = User::with(['details', 'membershipTypes'])->get();
 
         // Return a JSON response with the customer data
         return response()->json([
@@ -33,30 +38,38 @@ class EditProfileController extends Controller
     /**
      * Get a specific customer by ID.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @return JsonResponse
      */
     public function getAccountIntel(string $id): JsonResponse
     {
-        // Fetch the customer by ID with related details, membership types, and addresses
-        $customer = Customer::with(['details', 'membershipTypes', 'addresses'])->find($id);
 
-        // Check if the customer exists
+        $user = Auth::user();
+        $customer = $user->hasRole('Customer') ? $user : null;
+
         if (!$customer) {
             return response()->json([
                 'success' => false,
-                'message' => 'Customer not found',
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+    
+        $user = User::with(['detail', 'membershipTypes', 'survivorNumber'])->find($id);
+    
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found',
             ], 404);
         }
-
-        // Return the customer data
+    
         return response()->json([
             'success' => true,
-            'data' => $customer,
+            'data' => $user,
         ], 200);
     }
 
-        /**
+    /**
      * Get specific customer details by customer ID (first_name, middle_name, last_name, gender, dob, phone, citizenship).
      *
      * @param  string  $id
@@ -64,29 +77,54 @@ class EditProfileController extends Controller
      */
     public function getCustomerDetails(string $id): JsonResponse
     {
-        // Fetch the customer details by customer_id
-        $customerDetail = CustomerDetail::where('customer_id', $id)->select(
+
+        $user = Auth::user();
+        $customer = $user->hasRole('Customer') ? $user : null;
+
+        if (!$customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $userDetail = UserDetail::where('user_id', '=', $customer->id)->select(
             'first_name',
             'middle_name',
             'last_name',
             'gender',
             'dob',
             'phone',
-            'citizenship'
+            'citizenship',
+            'language',
+            'emergency_c_name',
+            'emergency_c_phone'
         )->first();
-
-        // Check if the customer details exist
-        if (!$customerDetail) {
+    
+        $customerAddress = CustomerAddress::where('user_id', '=', $customer->id)->select(
+            'address_first',
+            'address_second',
+            'city',
+            'state',
+            'postal_code',
+            'country'
+        )->first();
+    
+        if (!$userDetail || !$customerAddress) {
             return response()->json([
                 'success' => false,
-                'message' => 'Customer details not found',
+                'message' => 'User details or address not found',
             ], 404);
         }
-
-        // Return the customer details
+    
+        $response = [
+            'user_details' => $userDetail,
+            'customer_address' => $customerAddress,
+        ];
+    
         return response()->json([
             'success' => true,
-            'data' => $customerDetail,
+            'data' => $response,
         ], 200);
     }
 
@@ -111,7 +149,6 @@ class EditProfileController extends Controller
             ], 401);
         }
 
-        // Find the customer's details
         $customerDetail = CustomerDetail::where('customer_id', $customer->id)->first();
 
         if (!$customerDetail) {
@@ -121,7 +158,6 @@ class EditProfileController extends Controller
             ], 404);
         }
 
-        // Update the language field
         $customerDetail->language = $request->language;
         $customerDetail->save();
 
@@ -139,7 +175,7 @@ class EditProfileController extends Controller
     */
     public function updatePhone(Request $request): JsonResponse
     {
-        // Validate the phone input
+
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|min:10|max:15',
         ]);
@@ -152,7 +188,6 @@ class EditProfileController extends Controller
             ], 400);
         }
 
-        // Get the authenticated customer
         $customer = Auth::guard('customer')->user();
 
         if (!$customer) {
@@ -162,7 +197,6 @@ class EditProfileController extends Controller
             ], 401);
         }
 
-        // Get the customer's details
         $customerDetail = CustomerDetail::where('customer_id', $customer->id)->first();
 
         if (!$customerDetail) {
@@ -172,7 +206,6 @@ class EditProfileController extends Controller
             ], 404);
         }
 
-        // Update the phone number
         $customerDetail->phone = $request->phone;
         $customerDetail->save();
 
@@ -191,7 +224,6 @@ class EditProfileController extends Controller
     */
     public function updateEmail(Request $request): JsonResponse
     {
-        // Validate the email input
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:users,email',
         ]);
@@ -204,7 +236,6 @@ class EditProfileController extends Controller
             ], 400);
         }
 
-        // Get the authenticated customer
         $customer = Auth::guard('customer')->user();
 
         if (!$customer) {
@@ -214,7 +245,6 @@ class EditProfileController extends Controller
             ], 401);
         }
 
-        // Get the customer's details
         $customerDetail = CustomerDetail::where('customer_id', $customer->id)->first();
 
         if (!$customerDetail) {
@@ -224,7 +254,6 @@ class EditProfileController extends Controller
             ], 404);
         }
 
-        // Update the email
         $customer->email = $request->email;
         $customer->save();
 
@@ -243,20 +272,8 @@ class EditProfileController extends Controller
     */
     public function updatePassword(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'current_password' => 'required|string|min:8',
-            'new_password' => 'required|string|min:8|confirmed', 
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 400);
-        }
-
-        $customer = Auth::guard('customer')->user();
+        $user = Auth::user();
+        $customer = $user->hasRole('Customer') ? $user : null;
 
         if (!$customer) {
             return response()->json([
@@ -265,14 +282,14 @@ class EditProfileController extends Controller
             ], 401);
         }
 
-        if (!Hash::check($request->current_password, $customer->password)) {
+        if ($request->new_password !== $request->confirm_new_password) {
             return response()->json([
                 'success' => false,
-                'message' => 'Current password is incorrect',
+                'message' => 'Passwords do not match',
             ], 400);
         }
 
-        $customer->password = $request->new_password;
+        $customer->password = Hash::make($request->new_password);
         $customer->save();
 
         return response()->json([
