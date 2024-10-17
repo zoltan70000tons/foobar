@@ -51,11 +51,17 @@ class Passenger extends Model
         'was_on_board',
     ];
 
+    protected $appends = ['full_name'];
+
     /**
      * Relationship: A passenger belongs to a booking.
      */
     public function booking()
     {
         return $this->belongsTo(Booking::class);
+    }
+    public function getFullNameAttribute()
+    {
+        return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
 }
