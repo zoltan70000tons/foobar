@@ -47,29 +47,35 @@ class PricingMatrixController extends Controller
    */
   public function show($ticketType)
   {
-      // Get all categories for the given ticket type
-      $categories = $this->cabinCategory
-        ->with(['cabins' => function ($query) use ($ticketType) {
-          $query->where('cabin_type_id', $ticketType);
-        }])
-        ->select('category_type', 'display_order', 'id', 'category_name', 'category_code', 'capacity', 'price')
-        ->get();
+    // Get all categories for the given ticket type
+    $categories = $this->cabinCategory
+      ->with(['cabins' => function ($query) use ($ticketType) {
+        $query->where('cabin_type_id', $ticketType);
+      }])
+      ->select('category_type', 'display_order', 'id', 'category_name', 'category_code', 'capacity', 'price')
+      ->get();
 
-      // Group categories by category type and get the first category of each type
-      $groupedCategories = $categories->groupBy('category_type')->map(function ($group) {
-        return $group->sortBy('display_order')->first();
-      })->values()->sortBy('display_order');
+    // Group categories by category type and get the first category of each type
+    $groupedCategories = $categories->groupBy('category_type')->map(function ($group) {
+      return $group->sortBy('display_order')->first();
+    })->values()->sortBy('display_order');
 
-      // Format categories for response
-      $formattedCategories = $groupedCategories->map(function ($category) use ($categories, $ticketType) {
-        return [
-            'main_category' => [
-              'name' => $category->category_type,
-              'display_order' => $category->display_order,
-              'max_capacity' => $category->category_type === 'Suite' ? 8 : 6,
-              'categories' => $this->getCategories($category->category_type, $categories, $ticketType),
-            ]
-        ];
+    // Format categories for response
+    $formattedCategories = $groupedCategories->map(function ($category) use ($categories, $ticketType) {
+
+      // Get max capacity for the category type
+      // if ticket type is Single Ticket, max capacity is 4
+      // if ticket type is Private Cabin, max capacity is 6 for all categories except Suite
+      $max_capacity = $ticketType !== '1'  ? 4 : ($category->category_type === 'Suite' ? 8 : 6);
+
+      return [
+        'main_category' => [
+          'name' => $category->category_type,
+          'display_order' => $category->display_order,
+          'max_capacity' => $max_capacity,
+          'categories' => $this->getCategories($category->category_type, $categories, $ticketType),
+        ]
+      ];
     });
 
     return response()->json($formattedCategories->values());
@@ -80,15 +86,14 @@ class PricingMatrixController extends Controller
   {
 
     $filteredCategories = $categories->where('category_type', $categoryType)
-        ->groupBy('category_name')
-        ->map(function ($group) {
-            return $group->sortBy('display_order')->first();
-        })
-        ->sortBy('display_order')
-        ->values();
+      ->groupBy('category_name')
+      ->map(function ($group) {
+        return $group->sortBy('display_order')->first();
+      })
+      ->sortBy('display_order')
+      ->values();
 
     // return unique category codes
-
     return $filteredCategories->map(function ($category) use ($categories, $ticketType) {
       return [
         'name' => $category->category_name,
@@ -98,5 +103,4 @@ class PricingMatrixController extends Controller
       ];
     });
   }
-
 }

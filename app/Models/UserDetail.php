@@ -19,9 +19,20 @@ class UserDetail extends Model
         'emergency_c_name',
         'emergency_c_phone'
     ];
+    protected $appends = ['full_name', 'short_name'];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+
+    public function getFullNameAttribute()
+    {
+        return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+    }
+    public function getShortNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
     }
 }

@@ -39,8 +39,7 @@ class CustomerAuthController extends Controller
     $membership = $customer->membershipTypes->first() ?? null;
     
     return $this->successResponse([
-      'id' => $customer->id,
-      'name' => $customer->name,
+      'name' => $customer->username,
       'membership_type' => $membership->name ?? null,
       'membership_discount' => $membership->discount_value ?? null,
       'email_verified_at' => $customer->email_verified_at ?? null,

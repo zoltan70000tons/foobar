@@ -96,19 +96,20 @@ class MatrixHelper
             ];
         }
 
-        // Check if all cabins for this capacity are available
-        $isAvailable = $filteredCabins->every(function ($cabin) {
-            return $cabin->status !== StatusCabin::AVAILABLE->value;
+        // Check if any of the cabins are available
+        $isAvailable = $filteredCabins->first()->cabins->contains(function ($cabin) {
+          return $cabin->status === StatusCabin::AVAILABLE->value;
         });
 
-        // Retrieve price details for the first available cabin with this capacity
+        // Get first instance just to get category attributes
+        // All cabins in the filteredCabins have the same price
         $cabin = $filteredCabins->first();
 
         return [
-            "price" => $cabin->price,
-            "capacity" => $capacity,
-            "is_available" => $isAvailable,
-            "cabin_category_id" => $cabin->id,
+          "price" => $cabin->price,
+          "capacity" => $capacity,
+          "is_available" => $isAvailable,
+          "cabin_category_id" => $cabin->id,
         ];
     }
 }

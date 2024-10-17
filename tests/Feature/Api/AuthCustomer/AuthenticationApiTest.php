@@ -1,17 +1,8 @@
 <?php
 
-namespace Tests\Feature\Api\Auth;
-
 use App\Models\User;
-use Tests\TestCase;
 
-class AuthenticationApiTest extends TestCase
-{
-  //use RefreshDatabase;
-
-  public function test_users_can_authenticate_with_survivor_number(): void
-  {
-
+test('users can authenticate with survivor number', function () {
     $user = User::factory()->create();
 
     $this->withHeaders([
@@ -27,12 +18,9 @@ class AuthenticationApiTest extends TestCase
     $response->assertStatus(200);
 
     $response->assertOk();
-  }
+});
 
-
-  public function test_customer_cant_authenticate_with_invalid_survivor_number(): void
-  {
-
+test('customer cant authenticate with invalid survivor number', function () {
     $this->withHeaders([
       'referer' => env('SANCTUM_STATEFUL_DOMAINS'),
     ]);
@@ -44,11 +32,9 @@ class AuthenticationApiTest extends TestCase
     ]);
 
     $response->assertStatus(401);
-  }
+});
 
-
-  public function test_customer_cant_access_to_web_routes(): void
-  {
+test('customer cant access to web routes', function () {
     $user = User::factory()->create();
 
     $this->withHeaders([
@@ -68,5 +54,4 @@ class AuthenticationApiTest extends TestCase
     $response = $this->get('/login');
 
     $response->assertStatus(401);
-  }
-}
+});
