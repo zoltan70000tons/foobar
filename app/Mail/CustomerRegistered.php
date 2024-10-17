@@ -9,6 +9,8 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\URL;
 
 class CustomerRegistered extends Mailable
 {
@@ -16,14 +18,24 @@ class CustomerRegistered extends Mailable
 
   public $customer;
   public $language;
+  public $survivorNumber;
+  public $activationLink;
 
   /**
    * Create a new message instance.
    */
-  public function __construct(User $customer, String $language)
+  public function __construct(User $customer, String $language, String $survivorNumber)
   {
     $this->customer = $customer;
     $this->language = $language;
+    $this->survivorNumber = $survivorNumber;
+    // Generate the activation (verification) link
+    $this->activationLink = URL::temporarySignedRoute(
+        'verificationApi.verify', 
+        now()->addMinutes(60), 
+        ['id' => $customer->id, 'hash' => sha1($customer->email)]
+    );
+
   }
 
   /**
@@ -47,6 +59,8 @@ class CustomerRegistered extends Mailable
       with: [
         'customer' => $this->customer,
         'language' => $this->language,
+        'survivorNumber' => $this->survivorNumber,
+        'activationLink' => $this->activationLink,
       ],
     );
   }
