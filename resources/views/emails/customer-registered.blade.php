@@ -19,7 +19,11 @@ We'll send a welcome email to the customer with new survivor number.
     <p>{{ __('systemEmails.email_hi') }} {{ $customer->name }},</p>
     <p>{{ __('systemEmails.email_excited') }}</p>
     <p>{{ __('systemEmails.email_new_survivor_number') }}
-        <strong>{{ $customer->survivor_number }}</strong>.
+        <strong>{{ $survivorNumber }}</strong>.
+    </p>
+    <p>{{ __('systemEmails.email_activate_account') }}</p>
+    <p>
+        <a href="{{ $activationLink }}">{{ __('systemEmails.email_activate_link') }}</a>
     </p>
     <p>{{ __('systemEmails.email_thank_you') }}</p>
 @endsection

@@ -14,6 +14,8 @@ use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerRegistered;
 use App\Helpers\CustomerHelper;
 use App\Models\SurvivorNumber;
 
@@ -71,6 +73,9 @@ class CustomerRegisteredController extends Controller
 
           DB::commit();
 
+         // Send a welcome email to the customer
+         $this->sendWelcomeEmail($user, $language, $survivorNumber);
+
           return response()->json([
               'message' => __('auth.account_created'),
           ], 204);
@@ -87,17 +92,18 @@ class CustomerRegisteredController extends Controller
    *
    * @param User $user
    * @param string $language
+   * @param string $survivorNumber
    * @return void
    */
-  protected function sendWelcomeEmail(User $user, string $language): void
+  protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void
   {
 
-  //   try {
-  //     $email = $user->email;
-  //     Mail::to($email)->send(new CustomerRegistered($user, $language));
-  //   } catch (\Exception $e) {
-  //     Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
-  //   }
-  // }
+    try {
+      $email = $user->email;
+      Mail::to($email)->send(new CustomerRegistered($user, $language, $survivorNumber));
+    } catch (\Exception $e) {
+      Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+    }
+
   }
 }
