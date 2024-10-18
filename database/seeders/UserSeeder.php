@@ -63,7 +63,7 @@ class UserSeeder extends Seeder
             );
             UserDetail::create([
                 'user_id' => $user->id, 
-                'gender' => $this->faker->randomElement(['Male', 'Female']),
+                'gender' => $this->faker->randomElement(['M', 'F']),
                 'first_name' => $this->faker->firstname,
                 'middle_name' => $this->faker->firstName,
                 'last_name' => $this->faker->lastName,
@@ -91,7 +91,7 @@ class UserSeeder extends Seeder
 
             UserDetail::create([
                 'user_id' => $user->id, 
-                'gender' => $this->faker->randomElement(['Male', 'Female']),
+                'gender' => $this->faker->randomElement(['M', 'F']),
                 'first_name' => $this->faker->firstname,
                 'middle_name' => $this->faker->firstName,
                 'last_name' => $this->faker->lastName,
@@ -132,7 +132,7 @@ class UserSeeder extends Seeder
 
         UserDetail::create([
             'user_id' => $user->id, 
-            'gender' => $this->faker->randomElement(['Male', 'Female']),
+            'gender' => $this->faker->randomElement(['M', 'F']),
             'first_name' => $this->faker->firstname,
             'middle_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,
@@ -185,7 +185,7 @@ class UserSeeder extends Seeder
 
             UserDetail::create([
                 'user_id' => $user->id, 
-                'gender' => $this->faker->randomElement(['Male', 'Female']),
+                'gender' => $this->faker->randomElement(['M', 'F']),
                 'first_name' => $this->faker->firstName,
                 'middle_name' => $this->faker->firstName,
                 'last_name' => $this->faker->lastName,

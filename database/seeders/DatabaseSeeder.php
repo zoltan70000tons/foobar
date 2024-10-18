@@ -6,7 +6,7 @@ namespace Database\Seeders;
 
 use App\Models\Cabin;
 use Illuminate\Database\Seeder;
-
+use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,7 +27,8 @@ class DatabaseSeeder extends Seeder
             CabinCategorySeeder::class,
             CabinTypeSeeder::class,
             CabinSeeder::class,
-            BookingSeeder::class
+            BookingSeeder::class,
+            PassengersSeeder::class
         ]);
     }
 }
