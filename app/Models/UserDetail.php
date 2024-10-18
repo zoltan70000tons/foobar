@@ -16,6 +16,8 @@ class UserDetail extends Model
         'last_name',
         'phone',
         'avatar',
+        'emergency_c_name',
+        'emergency_c_phone'
     ];
     protected $appends = ['full_name', 'short_name'];
 
