@@ -9,19 +9,19 @@ return new class extends Migration
   /**
    * Run the migrations.
    */
-  public function up(): void
+  public function up()
   {
     Schema::create('bookings', function (Blueprint $table) {
       $table->id();
-      $table->string('booking_code', 255);
-      $table->uuid('customer_id')->foreignId('customer_id')->references('id')->on('customers')->onDelete('cascade')->nullable();
-      $table->string('payment_plan', 50);
-      $table->boolean('carbon_offset')->default(false);
-      $table->foreignId('cabin_id')->constrained('cabins');
-      $table->boolean('self_assigned')->default(false); // False by default, indicating cabin was assigned by app
-      $table->boolean('completed')->default(false); // False by default, indicating booking is in progress
-      $table->jsonb('tags')->default(json_encode(['NEW']));
-      $table->timestamps();
+      $table->string('booking_code')->unique(); // Unique booking code e.g. Cabin Number + Random String
+      $table->uuid('customer_id')->references('id')->on('users')->onDelete('cascade'); // References users table
+      $table->enum('payment_plan', ['PAY_IN_FULL', '4_INSTALLMENTS', '3_INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
+      $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
+      $table->boolean('completed')->default(false); // Indicates if booking is completed
+      $table->boolean('is_cancelled')->default(false); // Indicates if booking is cancelled
+      $table->boolean('is_single_occupancy')->default(false); // Indicates if booking is for single occupancy
+      $table->jsonb('tags')->default(json_encode(['not-assigned'])); // JSONB field for tags
+      $table->timestamps(); // created_at and updated_at timestamps
     });
   }
 

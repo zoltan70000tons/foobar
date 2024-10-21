@@ -20,6 +20,9 @@ use App\Http\Controllers\Api\Customer\CabinController;
 // PRICING MATRIX
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
 
+// EDIT PROFILE
+use App\Http\Controllers\Api\Customer\EditProfileController;
+
 // BROADCAST
 use App\Events\CabinChange;
 
@@ -101,12 +104,15 @@ Route::middleware(['clear_expired_reservation'])->group(function () {
   Route::post('/cabin/release', [CabinController::class, 'release']);
 });
 
+Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+  Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel'])->where('id', '[0-9a-fA-F\-]{36}');
+  Route::get('/customers/{id}/details', [EditProfileController::class, 'getCustomerDetails']);
+  Route::post('/customers/preferred-language', [EditProfileController::class, 'updatePreferredLanguage']);
+  Route::post('/customers/update-phone', [EditProfileController::class, 'updatePhone']);
+  Route::post('/customers/update-email', [EditProfileController::class, 'updateEmail']);
+  Route::post('/customers/update-password', [EditProfileController::class, 'updatePassword']);
+});
 
-// --- MAILABLE  PREVIEW domain/api/mailable ----
-// Route::get('mailable', function () {
-//   $user = App\Models\User::inRandomOrder()->first();
-//   return (new App\Mail\CustomerRegistered($user, 'en', '123456789'))->render();    
-// });
 
 
 // --- TEST PURPOSE FOR BROADCASTING ---

@@ -28,8 +28,7 @@ import SnackbarAlert from "@/Components/SnackbarAlert";
 const Index = ({
   auth,
   event,
-  categories,
-  cabins,
+  bookings,
   errors,
 }: PageProps & { tab: string; data: any }) => {
   const { hasPermission } = usePermissions();
@@ -38,6 +37,7 @@ const Index = ({
   const [openDialog, setOpenDialog] = useState(false);
 
   const [loading, setLoading] = useState(true);
+  console.log(bookings);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
@@ -57,6 +57,68 @@ const Index = ({
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
+
+  const bookingColumns = useMemo(
+    () => [
+      {
+        header: "Id",
+        accessor: "id",
+      },
+      {
+        header: "Booking code",
+        accessor: "booking_code",
+      },
+      {
+        header: "Lead passenger",
+        accessor: "lead_passenger",
+        draw: (row) => (
+          <>{row.customer?.detail?.short_name}</>
+      )
+      },
+      {
+        header: "Type",
+        accessor: "cabin",
+        draw: (row) => (
+            <>{row.cabin?.cabin_type?.cabin_type}</>
+        )
+      },
+      {
+        header: "Balance",
+        accessor: "tags",
+      },
+      
+      {
+        header: "Actions",
+        accessor: "",
+        disableFilter: true,
+        draw: (row) => (
+          // <div style={{ display: "flex", gap: "10px" }}>
+          //   {hasPermission(Permissions.ViewCabinCategories) && (
+          //     <Visibility
+          //       onClick={() => handleViewClick(row)}
+          //       style={{ cursor: "pointer" }}
+          //     />
+          //   )}
+          //   {hasPermission(Permissions.EditCabinCategories) && (
+          //     <Edit
+          //       onClick={() => handleEditClick(row)}
+          //       style={{ cursor: "pointer" }}
+          //     />
+          //   )}
+          //   {hasPermission(Permissions.DeleteCabinCategories) && (
+          //     <Delete
+          //       onClick={() => handleDeleteClick(row)}
+          //       style={{ cursor: "pointer" }}
+          //     />
+          //   )}
+          // </div>
+          <></>
+        ),
+      },
+    ],
+    []
+  );
+
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
@@ -89,6 +151,11 @@ const Index = ({
               <Box
                 sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}
               >
+                <MuiTable
+                  columns={bookingColumns}
+                  data={bookings}
+                />
+              
                 
               </Box>
 
