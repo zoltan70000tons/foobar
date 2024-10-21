@@ -101,6 +101,14 @@ Route::middleware(['clear_expired_reservation'])->group(function () {
   Route::post('/cabin/release', [CabinController::class, 'release']);
 });
 
+
+// --- MAILABLE  PREVIEW domain/api/mailable ----
+// Route::get('mailable', function () {
+//   $user = App\Models\User::inRandomOrder()->first();
+//   return (new App\Mail\CustomerRegistered($user, 'en', '123456789'))->render();    
+// });
+
+
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);
 // Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
