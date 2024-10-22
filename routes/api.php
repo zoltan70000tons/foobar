@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // AUTH CUSTOMER
 use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
-use App\Http\Controllers\AuthCustomer\CustomerPassResetInsideController;
+//use App\Http\Controllers\AuthCustomer\CustomerPassResetInsideController;
 use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
@@ -75,7 +75,7 @@ Route::post('/logout', [CustomerLoginController::class, 'destroy'])
 // --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
-  Route::post('/reset-password-inside', [CustomerPassResetInsideController::class, 'update']);
+  Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
 });
 
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
