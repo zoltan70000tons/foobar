@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\App;
 
 class CustomerAuthController extends Controller
 {
@@ -54,24 +56,25 @@ class CustomerAuthController extends Controller
    * @return \Illuminate\Http\JsonResponse
    * 
    */
-  public function resetPassword(Request $request)
+  public function update(Request $request)
   {
-    $request->validate([
-      'old_password' => 'required|string|min:6',
-      'new_password' => 'required|string|min:6|confirmed',
-    ]);
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
 
-    $user = $request->user();
-
-    if (!Hash::check($request->old_password, $user->password)) {
-      throw ValidationException::withMessages([
-        'old_password' => ['The provided password does not match our records.'],
-      ]);
+    if (!Hash::check($request->input('current_password'), $request->user()->password)) {
+      return response()->json(['message' => __('auth.current_password_incorrect')], 422);
     }
 
-    $user->password = Hash::make($request->new_password);
-    $user->save();
+    $validated = $request->validate([
+      'password' => ['required', Password::defaults(), 'confirmed'],
+    ]);
 
-    return $this->successResponse('Password changed successfully');
+    // Update the user's password
+    $request->user()->update([
+      'password' => Hash::make($validated['password']),
+    ]);
+
+    return response()->json(['message' => __('auth.password_updated_successfully')]);
   }
+
 }

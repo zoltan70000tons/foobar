@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Customer;
+use App\Models\User;
 
 class CustomerResetPassword extends Mailable
 {
@@ -20,9 +20,9 @@ class CustomerResetPassword extends Mailable
   /**
    * Create a new message instance.
    */
-  public function __construct(Customer $customer, string $resetUrl)
+  public function __construct(User $user, string $resetUrl)
   {
-    $this->customer = $customer;
+    $this->customer = $user;
     $this->resetUrl = $resetUrl;
   }
 

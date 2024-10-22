@@ -9,33 +9,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Support\Facades\URL;
 
-class CustomerRegistered extends Mailable
+class CustomerResetPasswordSuccess extends Mailable
 {
   use Queueable, SerializesModels;
 
   public $customer;
-  public $language;
-  public $survivorNumber;
-  public $activationLink;
 
   /**
    * Create a new message instance.
    */
-  public function __construct(User $customer, String $language, String $survivorNumber)
+  public function __construct(User $user)
   {
-    $this->customer = $customer;
-    $this->language = $language;
-    $this->survivorNumber = $survivorNumber;
-    // Generate the activation (verification) link
-    $this->activationLink = URL::temporarySignedRoute(
-        'verificationApi.verify', 
-        now()->addMinutes(60), 
-        ['id' => $customer->id, 'hash' => sha1($customer->email)]
-    );
-
+    $this->customer = $user;
   }
 
   /**
@@ -45,7 +31,7 @@ class CustomerRegistered extends Mailable
   {
     return new Envelope(
       from: 'smtp@bspmi.com',
-      subject: '70000TONS OF METAL - WELCOME ON BOARD SAILOR!',
+      subject: 'Customer Reset Password Success',
     );
   }
 
@@ -55,12 +41,9 @@ class CustomerRegistered extends Mailable
   public function content(): Content
   {
     return new Content(
-      view: 'emails.customer-registered',
+      view: 'emails.customer-reset-password-success',
       with: [
         'customer' => $this->customer,
-        'language' => $this->language,
-        'survivorNumber' => $this->survivorNumber,
-        'activationLink' => $this->activationLink,
       ],
     );
   }

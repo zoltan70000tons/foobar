@@ -12,6 +12,9 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerResetPasswordSuccess;
+use Illuminate\Support\Facades\Log;
 
 class CustomerPasswordResetController extends Controller
 {
@@ -63,7 +66,6 @@ class CustomerPasswordResetController extends Controller
    */
   public function resetPassword(Request $request)
   {
-
     $request->validate([
       'token'    => 'required',
       'email'    => 'required|email',
@@ -92,7 +94,12 @@ class CustomerPasswordResetController extends Controller
         }
       );
 
+      $user = User::where('email', $request->email)->first();
+
       if ($status == Password::PASSWORD_RESET) {
+          // Send a email to the customer the password was reset
+          $this->sendUpdatePasswordEmail($user); 
+
           return response()->json([
               'message' => __('passwords.reset'),
           ], 200);
@@ -103,4 +110,20 @@ class CustomerPasswordResetController extends Controller
       }
   }
 
+
+  /**
+   * Send a email to the customer the password was reset.
+   *
+   * @param User $user
+   * @return void
+   */
+  protected function sendUpdatePasswordEmail(User $user): void
+  {
+    try {
+      $email = $user->email;
+      Mail::to($email)->send(new CustomerResetPasswordSuccess($user));
+    } catch (\Exception $e) {
+      Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+    }
+  }
 }
