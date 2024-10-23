@@ -31,9 +31,9 @@ return new class extends Migration
       $table->string('postal_code', 50);
       $table->string('country', 50);
       $table->string('email', 255);
-      $table->integer('phone');
+      $table->string('phone', length: 20);
       $table->string('emergency_c_name', 255);
-      $table->integer('emergency_c_phone');
+      $table->string('emergency_c_phone', length: 20);
       $table->text('special_request')->nullable();
       $table->string('hear_about', 255);
       $table->boolean('newsletter')->default(false);

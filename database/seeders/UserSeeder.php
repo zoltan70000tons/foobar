@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\SurvivorNumber;
 use Illuminate\Support\Str;
 use App\Helpers\CustomerHelper;
+use App\Models\UserDetail;
 
 class UserSeeder extends Seeder
 {
@@ -50,7 +51,7 @@ class UserSeeder extends Seeder
         // Seed users without 'Customer' role
         foreach (range(1, 20) as $index) {
             $name = $this->faker->firstname;
-            User::updateOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => Str::lower($name) . '@70000tons.com'],
                 [
                     'username' => $name,
@@ -60,6 +61,19 @@ class UserSeeder extends Seeder
                     'organization_id' => env('ORGANIZATION_ID', 1)
                 ]
             );
+            UserDetail::create([
+                'user_id' => $user->id, 
+                'gender' => $this->faker->randomElement(['M', 'F']),
+                'first_name' => $this->faker->firstname,
+                'middle_name' => $this->faker->firstName,
+                'last_name' => $this->faker->lastName,
+                'dob' => $this->faker->date(),
+                'citizenship' => $this->faker->country,
+                'phone' => $this->faker->phoneNumber,
+                'avatar' => $this->faker->imageUrl(),
+                'emergency_c_name' => $this->faker->name,
+                'emergency_c_phone' => $this->faker->phoneNumber,
+            ]);
         }
 
         // Seed 2 users with the same email address but different names and survivor numbers
@@ -74,6 +88,21 @@ class UserSeeder extends Seeder
                 'updated_at' => $this->faker->dateTime($max = 'now'),
                 'organization_id' => env('ORGANIZATION_ID', 1)
             ]);
+
+            UserDetail::create([
+                'user_id' => $user->id, 
+                'gender' => $this->faker->randomElement(['M', 'F']),
+                'first_name' => $this->faker->firstname,
+                'middle_name' => $this->faker->firstName,
+                'last_name' => $this->faker->lastName,
+                'dob' => $this->faker->date(),
+                'citizenship' => $this->faker->country,
+                'phone' => $this->faker->phoneNumber,
+                'avatar' => $this->faker->imageUrl(),
+                'emergency_c_name' => $this->faker->name,
+                'emergency_c_phone' => $this->faker->phoneNumber,
+            ]);
+
 
             // Assign 'Customer' role
             setPermissionsTeamId(1);
@@ -101,6 +130,20 @@ class UserSeeder extends Seeder
             'organization_id' => env('ORGANIZATION_ID', 1)
         ]);
 
+        UserDetail::create([
+            'user_id' => $user->id, 
+            'gender' => $this->faker->randomElement(['M', 'F']),
+            'first_name' => $this->faker->firstname,
+            'middle_name' => $this->faker->firstName,
+            'last_name' => $this->faker->lastName,
+            'dob' => $this->faker->date(),
+            'citizenship' => $this->faker->country,
+            'phone' => $this->faker->phoneNumber,
+            'avatar' => $this->faker->imageUrl(),
+            'emergency_c_name' => $this->faker->name,
+            'emergency_c_phone' => $this->faker->phoneNumber,
+        ]);
+
         // Assign 'Customer' role
         setPermissionsTeamId(1);
         $user->assignRole('Customer');
@@ -114,7 +157,6 @@ class UserSeeder extends Seeder
             'survivor_number' => $survivorNumber,
         ]);
 
-        // Seed the rest of the users with 'Customer' role and generate survivor number
         foreach (range(1, 16) as $index) {
             $name = 'cus' . $this->faker->firstname;
             $user = User::create([
@@ -127,18 +169,32 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'user_activated_at' => now(),
             ]);
-
+        
             // Assign 'Customer' role
             setPermissionsTeamId(1);
             $user->assignRole('Customer');
-
+        
             // Generate a unique survivor number
             $survivorNumber = CustomerHelper::generateSurvivorNumber();
-
+        
             // Save survivor number in the survivor_numbers table
             SurvivorNumber::create([
                 'user_id' => $user->id,
                 'survivor_number' => $survivorNumber,
+            ]);
+
+            UserDetail::create([
+                'user_id' => $user->id, 
+                'gender' => $this->faker->randomElement(['M', 'F']),
+                'first_name' => $this->faker->firstName,
+                'middle_name' => $this->faker->firstName,
+                'last_name' => $this->faker->lastName,
+                'dob' => $this->faker->date(),
+                'citizenship' => $this->faker->country,
+                'phone' => $this->faker->phoneNumber,
+                'avatar' => $this->faker->imageUrl(),
+                'emergency_c_name' => $this->faker->name,
+                'emergency_c_phone' => $this->faker->phoneNumber,
             ]);
         }
     }

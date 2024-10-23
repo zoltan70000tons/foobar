@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Booking;
 use App\Models\Cabin;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class BookingSeeder extends Seeder
 {
@@ -22,7 +23,9 @@ class BookingSeeder extends Seeder
     $cabinType3 = Cabin::where('cabin_type_id', 3)->where('status', 'AVAILABLE')->inRandomOrder()->limit(2)->get();
 
     // Get enough unique customers (total 6 needed for bookings with cabins)
-    $customersForBookings = User::inRandomOrder()->limit(6)->get();
+    $customersForBookings = User::whereHas('roles', function ($query) {
+      $query->where('name', 'Customer');
+    })->limit(6)->get();
 
     // Array of all selected cabins (2 for each type)
     $selectedCabins = $cabinType1->merge($cabinType2)->merge($cabinType3);

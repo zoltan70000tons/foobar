@@ -1,5 +1,21 @@
 import React, { FC, useState, useEffect, ChangeEvent, MouseEvent } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, CircularProgress, TableSortLabel, Checkbox, TextField, Select, MenuItem } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TablePagination,
+  CircularProgress,
+  TableSortLabel,
+  Checkbox,
+  TextField,
+  Select,
+  MenuItem,
+  Box,
+} from "@mui/material";
 import Row from "./Row";
 
 interface ColumnProps<T> {
@@ -24,11 +40,20 @@ interface DataGridProps<T> {
     sort: { key: keyof T | string; direction: "asc" | "desc" }
   ) => Promise<{ data: T[]; total: number }>;
   showCheckBox?: boolean;
-  onApplyTags?: (subRowIds: (string | number)[], selectedTags: string[]) => void;
-  onApplyState?: (subRowIds: (string | number | object)[], selectedStatus: string) => void;
+  showSubCheckBox?: boolean;
+  onApplyTags?: (
+    subRowIds: (string | number)[],
+    selectedTags: string[]
+  ) => void;
+  onApplyState?: (
+    subRowIds: (string | number | object)[],
+    selectedStatus: string
+  ) => void;
+  onCustomFilter?: (value: string) => void;
   showSubTableFilters?: boolean;
   tagOptions?: string[];
   statusOptions?: string[];
+  showCustomFilter?: boolean;
 }
 
 const MuiTable: FC<DataGridProps<any>> = ({
@@ -38,26 +63,37 @@ const MuiTable: FC<DataGridProps<any>> = ({
   serverSidePagination = false,
   fetchData,
   showCheckBox,
+  showSubCheckBox = true,
   onApplyTags,
   onApplyState,
+  onCustomFilter,
   showSubTableFilters = false,
   tagOptions = [],
   statusOptions = [],
+  showCustomFilter = false,
 }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(
+    null
+  );
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-  const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
-  const [sort, setSort] = useState<{ key: keyof any | string; direction: "asc" | "desc" }>({
+  const [selectedSubRows, setSelectedSubRows] = useState<
+    { id: string | number; status: string }[]
+  >([]);
+  const [sort, setSort] = useState<{
+    key: keyof any | string;
+    direction: "asc" | "desc";
+  }>({
     key: columns[0]?.accessor,
     direction: "asc",
   });
   const [loading, setLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [customFilter, setCustomFilter] = useState("");
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
@@ -106,7 +142,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
 
   const handleFilterChange = (name: string, value: string) => {
     setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
-    setPage(0); // Reinicia la paginación cuando se aplica un filtro
+    setPage(0); // restart pagination when change filters
   };
 
   const handleSubFilterChange = (name: string, value: string) => {
@@ -141,11 +177,15 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const handleSort = (key: keyof any | string) => {
     setSort((prevSort) => ({
       key,
-      direction: prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
+      direction:
+        prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
     }));
   };
 
-  const handlePageChange = (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  const handlePageChange = (
+    event: MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
     setPage(newPage);
   };
 
@@ -154,17 +194,40 @@ const MuiTable: FC<DataGridProps<any>> = ({
     setPage(0);
   };
 
+  const handleFilterSearchChange = (e) => {
+    setCustomFilter(e.target.value);
+    if (onCustomFilter) {
+      onCustomFilter(e);
+    }
+  };
+
   return (
     <Paper>
+      {showCustomFilter && (
+        <Box sx={{ width: "100%" }}>
+          {" "}
+          <TextField
+            variant="outlined"
+            size="small"
+            value={customFilter}
+            onChange={(event) => handleFilterSearchChange(event)}
+            placeholder="Search"
+            sx={{ margin: "1rem" }}
+          />
+        </Box>
+      )}
       <TableContainer>
         <Table>
           <TableHead>
-            {/* Primera fila para los encabezados */}
+            {/* first row for headers */}
             <TableRow>
               {showCheckBox && (
                 <TableCell padding="checkbox">
                   <Checkbox
-                    indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
+                    indeterminate={
+                      selectedRows.length > 0 &&
+                      selectedRows.length < data.length
+                    }
                     checked={selectedRows.length === data.length}
                     onChange={handleSelectAllRows}
                   />
@@ -188,52 +251,62 @@ const MuiTable: FC<DataGridProps<any>> = ({
               ))}
             </TableRow>
 
-            {/* Segunda fila para los filtros */}
-            <TableRow>
-              {showCheckBox && <TableCell />}
-              <TableCell />
-              {columns.map((column) => (
-                <TableCell key={column.accessor as string}>
-                  {column.filterable && (
-                    column.filterType === "select" ? (
-                      <Select
-                        value={filters[column.accessor as string] || ""}
-                        onChange={(event) =>
-                          handleFilterChange(column.accessor as string, event.target.value)
-                        }
-                        displayEmpty
-                        fullWidth
-                        size="small"
-                      >
-                        <MenuItem value="">
-                          <em>All</em>
-                        </MenuItem>
-                        {column.filterOptions?.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
+            {/* second row for filters */}
+            {columns.some((column) => column.filterable) && (
+              <TableRow>
+                {showCheckBox && <TableCell />}
+                <TableCell />
+                {columns.map((column) => (
+                  <TableCell key={column.accessor as string}>
+                    {column.filterable &&
+                      (column.filterType === "select" ? (
+                        <Select
+                          value={filters[column.accessor as string] || ""}
+                          onChange={(event) =>
+                            handleFilterChange(
+                              column.accessor as string,
+                              event.target.value
+                            )
+                          }
+                          displayEmpty
+                          fullWidth
+                          size="small"
+                        >
+                          <MenuItem value="">
+                            <em>All</em>
                           </MenuItem>
-                        ))}
-                      </Select>
-                    ) : (
-                      <TextField
-                        variant="outlined"
-                        size="small"
-                        value={filters[column.accessor as string] || ""}
-                        onChange={(event) =>
-                          handleFilterChange(column.accessor as string, event.target.value)
-                        }
-                        placeholder={`Filter ${column.header}`}
-                      />
-                    )
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
+                          {column.filterOptions?.map((option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        <TextField
+                          variant="outlined"
+                          size="small"
+                          value={filters[column.accessor as string] || ""}
+                          onChange={(event) =>
+                            handleFilterChange(
+                              column.accessor as string,
+                              event.target.value
+                            )
+                          }
+                          placeholder={`Filter ${column.header}`}
+                        />
+                      ))}
+                  </TableCell>
+                ))}
+              </TableRow>
+            )}
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length + (showCheckBox ? 2 : 1)} style={{ textAlign: "center" }}>
+                <TableCell
+                  colSpan={columns.length + (showCheckBox ? 2 : 1)}
+                  style={{ textAlign: "center" }}
+                >
                   <CircularProgress />
                 </TableCell>
               </TableRow>
@@ -247,10 +320,13 @@ const MuiTable: FC<DataGridProps<any>> = ({
                   subColumns={subColumns}
                   subFilters={subFilters}
                   isOpen={expandedRowId === row.id}
-                  onToggle={() => setExpandedRowId(expandedRowId === row.id ? null : row.id)}
+                  onToggle={() =>
+                    setExpandedRowId(expandedRowId === row.id ? null : row.id)
+                  }
                   isSelected={selectedRows.includes(row.id)}
                   onSelectRow={() => handleSelectRow(row.id)}
                   showCheckBox={showCheckBox}
+                  showSubCheckBox={showSubCheckBox}
                   onSelectSubRow={handleSelectSubRow}
                   selectedSubRows={selectedSubRows}
                   showSubTableFilters={showSubTableFilters}
@@ -262,7 +338,10 @@ const MuiTable: FC<DataGridProps<any>> = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length + (showCheckBox ? 2 : 1)} style={{ textAlign: "center" }}>
+                <TableCell
+                  colSpan={columns.length + (showCheckBox ? 2 : 1)}
+                  style={{ textAlign: "center" }}
+                >
                   No data found.
                 </TableCell>
               </TableRow>
@@ -273,7 +352,13 @@ const MuiTable: FC<DataGridProps<any>> = ({
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={serverSidePagination ? totalCount : Array.isArray(data) ? data.length : Object.keys(data).length}
+        count={
+          serverSidePagination
+            ? totalCount
+            : Array.isArray(data)
+            ? data.length
+            : Object.keys(data).length
+        }
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handlePageChange}

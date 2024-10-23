@@ -43,6 +43,7 @@ interface RowProps<T> {
   isSelected: boolean;
   onSelectRow: () => void;
   showCheckBox?: boolean;
+  showSubCheckBox?: boolean,
   onSelectSubRow?: (id: string | number, status: string) => void;
   selectedSubRows?: { id: string | number; status: string }[];
   showSubTableFilters?: boolean;
@@ -62,6 +63,7 @@ const Row: FC<RowProps<any>> = ({
   isSelected,
   onSelectRow,
   showCheckBox,
+  showSubCheckBox = true,
   onSelectSubRow,
   selectedSubRows = [],
   showSubTableFilters,
@@ -318,7 +320,7 @@ const Row: FC<RowProps<any>> = ({
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell padding="checkbox">
+                    {showSubCheckBox && (<TableCell padding="checkbox">
                         <Checkbox
                           indeterminate={
                             selectedSubRows.length > 0 &&
@@ -330,7 +332,7 @@ const Row: FC<RowProps<any>> = ({
                           }
                           onChange={handleSelectAllSubRows}
                         />
-                      </TableCell>
+                      </TableCell>)}
                       {subColumns?.map((column) => (
                         <TableCell key={column.accessor as string}>
                           {column.sortable ? (
@@ -397,7 +399,7 @@ const Row: FC<RowProps<any>> = ({
                   <TableBody>
                     {paginatedSubRows.map((subRow) => (
                       <TableRow key={subRow.id}>
-                        <TableCell padding="checkbox">
+                         {showSubCheckBox && (<TableCell padding="checkbox">
                           <Checkbox
                             checked={selectedSubRows.some(
                               (selected) => selected.id === subRow.id
@@ -406,7 +408,7 @@ const Row: FC<RowProps<any>> = ({
                               handleSelectSubRow(subRow.id, subRow.cabin_status)
                             }
                           />
-                        </TableCell>
+                        </TableCell>)}
                         {subColumns?.map((column) => (
                           <TableCell key={column.accessor as string} sx={{ width: column?.width || '100px' }}>
                             {column.draw
