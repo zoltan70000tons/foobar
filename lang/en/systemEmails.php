@@ -24,5 +24,6 @@ return [
   'email_excited' => 'We are excited to have you on board!',
   'email_account_created' => 'Your account has been created successfully.',
   'email_new_survivor_number' => 'Your new survivor number is:',
+  'email_activate_account' => 'Please activate your account by clicking the link below, or copy and paste it into your browser:',
   'email_thank_you' => 'Thank you for choosing us.',
 ];

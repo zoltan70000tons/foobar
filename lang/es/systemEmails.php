@@ -24,5 +24,6 @@ return [
   'email_excited' => '¡Estamos emocionados de tenerte a bordo!',
   'email_account_created' => 'Su cuenta ha sido creada con éxito.',
   'email_new_survivor_number' => 'Su nueva número de supervivencia es:',
+  'email_activate_account' => 'Por favor, active su cuenta haciendo clic en el siguiente enlace, o cópielo y péguelo en su navegador:',
   'email_thank_you' => 'Gracias por elegirnos.',
 ];

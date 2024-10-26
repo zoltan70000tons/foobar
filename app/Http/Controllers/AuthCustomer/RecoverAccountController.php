@@ -82,9 +82,9 @@ class RecoverAccountController extends Controller
         if (! $request->hasValidRelativeSignature()) {
             return response()->json(['message' => 'Invalid or expired link.'], 403);
         }
-    
+
         $request->validate([
-            'survivor_number' => ['required', 'numeric'],
+            'survivor_number' => ['required'],
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],

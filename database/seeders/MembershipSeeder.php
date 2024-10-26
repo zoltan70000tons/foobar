@@ -27,6 +27,18 @@ class MembershipSeeder extends Seeder
         continue;
       }
 
+
+      // customrs which name is starting with "cus"
+      if (substr($customer->username, 0, 3) === 'cus') {
+        Membership::create([
+          'user_id' => $customer->id,
+          'membership_id' => 3,
+        ]);
+
+        // Assign the customer role
+        // $customer->assignRole('Customer');
+      }
+
       Membership::create([
         'user_id' => $customer->id,
         'membership_id' => $membershipTypes->random()->id,
