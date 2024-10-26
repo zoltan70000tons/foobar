@@ -37,7 +37,12 @@ class TeamRepository implements TeamRepositoryInterface
         setPermissionsTeamId($org_id);
         $org = Organization::find($org_id);
         if ($org) {
-            $members = User::with('detail')->where(['organization_id' => $this->organizationId])->get();
+            $members = User::with(['detail', 'roles'])
+            ->where('organization_id', $this->organizationId)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'Customer');
+            })
+            ->get();
             $result = $members->map(function ($user) use ($org) {
                 return [
                     'id' => $user->id,
