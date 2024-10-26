@@ -7,6 +7,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Facades\App;
+use App\Models\Cabin;
+use App\Models\Booking;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
+
 
 class BookingController extends Controller
 {
@@ -77,6 +82,25 @@ class BookingController extends Controller
           'purchase_access' => $purchaseAccess,
           'access_message' => $accessMessage,
       ]);
+  }
+
+
+  /**
+   * Store a new booking
+   * 
+   * 
+   */
+  public function store(Request $request)
+  {
+    // 1. Validate the request
+    $request->validate([
+      'event_id' => 'required|integer',
+      'ticket_type_id' => 'required|integer',
+      'cabin_id' => 'required|integer',
+      'user_id' => 'required|integer',
+      'booking_price' => 'required|numeric',
+    ]);
+
   }
 
 }

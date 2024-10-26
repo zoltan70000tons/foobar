@@ -17,6 +17,11 @@ class Booking extends Model
     'carbon_offset',
     'cabin_id',
     'completed',
+    'tags'
+  ];
+
+  protected $casts = [
+    'tags' => 'json'
   ];
 
   /**
@@ -33,6 +38,10 @@ class Booking extends Model
   public function cabin()
   {
     return $this->belongsTo(Cabin::class, 'cabin_id');
+  }
+
+  public function passengers(){
+    return $this->hasMany(Passenger::class, foreignKey: 'booking_id');
   }
 
   /**
@@ -60,8 +69,8 @@ class Booking extends Model
     // Generate a random 4-character code
     $identifier_code = substr(str_shuffle($characters), 0, 4);
 
-    // Generate a unique booking code based on the cabin number, identifier code, and category code
-    $this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$cabin->category->category_code}";
+    // Generate a unique booking code based on the cabin number, identifier code, cabin_type_id, category code, and capacity. e.g. "1234-ABCD-14B2"
+    $this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$cabin->cabin_type_id}{$cabin->category->category_code}{$cabin->category->capacity}";
 
     // Assign the cabin to this booking
     $this->cabin_id = $cabin->id;

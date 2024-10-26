@@ -19,16 +19,26 @@ import {
   Button,
 } from "@mui/material";
 import MuiTable from "@/Components/tables/MuiTable";
-import { CabinStatus, CabinStatusColor, CabinStatusReduced } from "@/enums/CabinStatus";
+import {
+  CabinStatus,
+  CabinStatusColor,
+  CabinStatusReduced,
+} from "@/enums/CabinStatus";
 import { TagEnum } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import SnackbarAlert from "@/Components/SnackbarAlert";
+import { Permissions } from "@/enums/PermissionEnum";
+import { Visibility } from "@mui/icons-material";
+import { current } from "@reduxjs/toolkit";
 
 const Index = ({
   auth,
   event,
-  bookings,
+  newBookings,
+  inProgressBookings,
+  uploadedBookings,
+  cancelledBookings,
   errors,
 }: PageProps & { tab: string; data: any }) => {
   const { hasPermission } = usePermissions();
@@ -37,7 +47,7 @@ const Index = ({
   const [openDialog, setOpenDialog] = useState(false);
 
   const [loading, setLoading] = useState(true);
-  console.log(bookings);
+  const [keyword, setKeyword] = useState("");
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
@@ -49,13 +59,16 @@ const Index = ({
     message: "",
   });
 
-  
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
+  };
+
+  const handleViewClick = () => {
+    console.log("on click");
   };
 
   const bookingColumns = useMemo(
@@ -70,56 +83,112 @@ const Index = ({
       },
       {
         header: "Lead passenger",
-        accessor: "lead_passenger",
-        draw: (row) => (
-          <>{row.customer?.detail?.short_name}</>
-      )
+        accessor: "fullName",
       },
       {
         header: "Type",
-        accessor: "cabin",
-        draw: (row) => (
-            <>{row.cabin?.cabin_type?.cabin_type}</>
-        )
+        accessor: "cabinType",
+        draw: (row) => <>{row.cabin?.cabin_type?.cabin_type}</>,
       },
       {
         header: "Balance",
-        accessor: "tags",
+        accessor: "balance",
+        draw: (row) => (
+          <>
+            {row.balance != null && row.cost != null && (
+              <>{row.balance + " / " + row.cost}</>
+            )}
+          </>
+        ),
       },
-      
+      {
+        header: "Tags",
+        accessor: "Tags",
+        draw: (row) => (
+          <Box sx={{ display: "inline-flex", gap: 0.5 }}>
+            {Array.isArray(row.tags) && row.tags.length > 0 ? (
+              row.tags.map((tag: string) => (
+                <Chip
+                  key={tag}
+                  label={tag}
+                  size="small"
+                  sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
+                />
+              ))
+            ) : (
+              <em>No Tags</em>
+            )}
+          </Box>
+        ),
+      },
+
       {
         header: "Actions",
         accessor: "",
         disableFilter: true,
         draw: (row) => (
-          // <div style={{ display: "flex", gap: "10px" }}>
-          //   {hasPermission(Permissions.ViewCabinCategories) && (
-          //     <Visibility
-          //       onClick={() => handleViewClick(row)}
-          //       style={{ cursor: "pointer" }}
-          //     />
-          //   )}
-          //   {hasPermission(Permissions.EditCabinCategories) && (
-          //     <Edit
-          //       onClick={() => handleEditClick(row)}
-          //       style={{ cursor: "pointer" }}
-          //     />
-          //   )}
-          //   {hasPermission(Permissions.DeleteCabinCategories) && (
-          //     <Delete
-          //       onClick={() => handleDeleteClick(row)}
-          //       style={{ cursor: "pointer" }}
-          //     />
-          //   )}
-          // </div>
-          <></>
+          <div style={{ display: "flex", gap: "10px" }}>
+            {hasPermission(Permissions.ViewCabins) && (
+              <Visibility
+                onClick={() => handleViewClick(row)}
+                style={{ cursor: "pointer" }}
+              />
+            )}
+          </div>
         ),
       },
     ],
     []
   );
 
+  const subColumns = useMemo(
+    () => [
+      // {
+      //   header: "Id",
+      //   accessor: "id",
+      // },
+      {
+        header: "Passenger",
+        accessor: "full_name",
+      },
+      {
+        header: "Email",
+        accessor: "email",
+      },
+      {
+        header: "Phone",
+        accessor: "phone",
+      },
+      {
+        header: "Citizenship",
+        accessor: "citizenship",
+      },
+      {
+        header: "Balance",
+        accesor: "passenger_allocated_cost",
+        draw: (row) => (
+          <div style={{ display: "flex", gap: "10px" }}>
+            {row.passenger_balance + " / " + row.passenger_allocated_cost}
+          </div>
+        ),
+      },
+      {
+        header: "Payment Method",
+        accessor: "payment_method",
+      },
+    ],
+    []
+  );
 
+  const customFilter = (e) => {
+    let currentKeyword = e.target.value;
+    setKeyword(currentKeyword);
+    router.get(
+      `/events/${event.id}/bookings`,
+      { keyword: currentKeyword },
+      { preserveState: true, replace: true }
+    );
+  };
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
       <Head title="Cabins" />
@@ -144,34 +213,70 @@ const Index = ({
                 <Tab label="NEW BOOKINGS" />
                 <Tab label="IN PROGRESS" />
                 <Tab label="UPLOADED TO MANIFEST" />
-                <Tab label="ALL" />
+                <Tab label="CANCELLED" />
               </Tabs>
 
-           
               <Box
                 sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}
               >
                 <MuiTable
                   columns={bookingColumns}
-                  data={bookings}
+                  data={newBookings}
+                  subColumns={subColumns}
+                  showCheckBox={false}
+                  showSubCheckBox={false}
+                  showCustomFilter={true}
+                  onCustomFilter={customFilter}
                 />
-              
-                
               </Box>
 
               <Box
                 sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}
               >
-                
+                <MuiTable
+                  columns={bookingColumns}
+                  data={inProgressBookings}
+                  subColumns={subColumns}
+                  showCheckBox={false}
+                  showSubCheckBox={false}
+                  showCustomFilter={true}
+                  onCustomFilter={customFilter}
+                />
+              </Box>
+
+              <Box
+                sx={{ display: selectedTab === 2 ? "block" : "none", mt: 2 }}
+              >
+                <MuiTable
+                  columns={bookingColumns}
+                  data={uploadedBookings}
+                  subColumns={subColumns}
+                  showCheckBox={false}
+                  showSubCheckBox={false}
+                  showCustomFilter={true}
+                  onCustomFilter={customFilter}
+                />
               </Box>
             </Box>
-           
+
+            <Box sx={{ display: selectedTab === 3 ? "block" : "none", mt: 2 }}>
+              <MuiTable
+                columns={bookingColumns}
+                data={cancelledBookings}
+                subColumns={subColumns}
+                showCheckBox={false}
+                showSubCheckBox={false}
+                showCustomFilter={true}
+                  onCustomFilter={customFilter}
+              />
+            </Box>
+
             <SnackbarAlert
-            open={snackbar.open}
-            severity={snackbar.severity}
-            message={snackbar.message}
-            onClose={handleCloseSnackbar}
-          />
+              open={snackbar.open}
+              severity={snackbar.severity}
+              message={snackbar.message}
+              onClose={handleCloseSnackbar}
+            />
           </Grid>
         </Grid>
       </Container>

@@ -86,11 +86,11 @@ class Cabin extends Model
    */
   public function updateInventoryOnBooking()
   {
-    if ($this->cabin_type == 1) {
+    if ($this->cabin_type_id == 1) {
       // Private cabins, only one booking allowed, mark as sold
       $this->status = 'BOOKED';
       $this->inventory = 0;
-    } elseif (in_array($this->cabin_type, [2, 3])) {
+    } elseif (in_array($this->cabin_type_id, [2, 3])) {
       // Single ticket cabins, reduce inventory
       $this->inventory--;
 

@@ -31,6 +31,11 @@ export enum Permissions {
     EditCabinCategories = "Edit Cabin Categories",
     DeleteCabinCategories = "Delete Cabin Categories",
 
+    // Manage Bookings
+
+    ViewBookings = "View Bookings",
+    EditBookings = "Edit Bookings",
+
     // Manage Taxes
     ViewTaxes = "View Taxes",
     CreateTaxes = "Create Taxes",
@@ -50,4 +55,6 @@ export enum Permissions {
     DeletePermissions = "Delete Permissions",
     AssignPermissions = "Assign Permissions",
     RevokePermissions = "Revoke Permissions"
+
+
 }

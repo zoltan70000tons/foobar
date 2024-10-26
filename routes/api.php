@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // AUTH CUSTOMER
 use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
-use App\Http\Controllers\AuthCustomer\CustomerPassResetInsideController;
+//use App\Http\Controllers\AuthCustomer\CustomerPassResetInsideController;
 use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
@@ -19,6 +19,9 @@ use App\Http\Controllers\Api\Customer\CabinController;
 
 // PRICING MATRIX
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
+
+// EDIT PROFILE
+use App\Http\Controllers\Api\Customer\EditProfileController;
 
 // BROADCAST
 use App\Events\CabinChange;
@@ -72,7 +75,7 @@ Route::post('/logout', [CustomerLoginController::class, 'destroy'])
 // --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
-  Route::post('/reset-password-inside', [CustomerPassResetInsideController::class, 'update']);
+  Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
 });
 
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
@@ -100,6 +103,17 @@ Route::middleware(['clear_expired_reservation'])->group(function () {
   Route::post('/cabin/reserve', [CabinController::class, 'reserve']);
   Route::post('/cabin/release', [CabinController::class, 'release']);
 });
+
+Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+  Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel'])->where('id', '[0-9a-fA-F\-]{36}');
+  Route::get('/customers/{id}/details', [EditProfileController::class, 'getCustomerDetails']);
+  Route::post('/customers/preferred-language', [EditProfileController::class, 'updatePreferredLanguage']);
+  Route::post('/customers/update-phone', [EditProfileController::class, 'updatePhone']);
+  Route::post('/customers/update-email', [EditProfileController::class, 'updateEmail']);
+  Route::post('/customers/update-password', [EditProfileController::class, 'updatePassword']);
+});
+
+
 
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);

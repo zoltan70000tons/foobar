@@ -15,16 +15,25 @@ We'll send a welcome email to the customer with new survivor number.
 
 @section('title', 'Account created')
 
+@section('header')
+    70000TONS OF METAL
+@endsection
+
 @section('content')
-    <p>{{ __('systemEmails.email_hi') }} {{ $customer->name }},</p>
+    <p>{{ __('systemEmails.email_hi') }} {{ $customer->username }},</p>
     <p>{{ __('systemEmails.email_excited') }}</p>
+    <p>{{ __('systemEmails.email_account_created') }}
     <p>{{ __('systemEmails.email_new_survivor_number') }}
-        <strong>{{ $customer->survivor_number }}</strong>.
+        <strong>{{ $survivorNumber }}</strong>.
+    </p>
+    <p>{{ __('systemEmails.email_activate_account') }}</p>
+    <p>
+        <a href="{{ $activationLink }}">{{ $activationLink }}</a>
     </p>
     <p>{{ __('systemEmails.email_thank_you') }}</p>
 @endsection
 
 @section('footer')
     <p>{{ __('systemEmails.email_regards') }},</p>
-    <p>{{ config('app.name') }}</p>
+    <p>70000TONS OF METAL TEAM</p>
 @endsection
