@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Permission\ListUserPermissionRequest;
 use App\Http\Requests\Role\CreateRoleRequest;
-use App\Http\Requests\Role\addPermissionToRoleRequest;
+use App\Http\Requests\Role\AddPermissionToRoleRequest;
 use App\Http\Requests\Role\ListRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Interfaces\RoleRepositoryInterface;
@@ -35,7 +35,7 @@ class RoleController extends Controller
         return $this->rolesRepositoryInterface->create($data);
     }
     
-    public function addPermissionToRole(addPermissionToRoleRequest $request, $data=null){
+    public function addPermissionToRole(AddPermissionToRoleRequest $request, $data=null){
         $data= $request->all();
         return $this->rolesRepositoryInterface->addPermissionsToRole($data['role_id'],$data['permission_id']?? NULL, $data??NULL);
     }
