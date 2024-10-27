@@ -30,7 +30,7 @@ class UpdateMemberRequest extends FormRequest
         return [
             'firstname' => 'required|string',
             'lastname' => 'required|string',
-            'phone_number' => ['sometimes', 'phone:AUTO'],
+            //'phone_number' => ['sometimes', 'phone:AUTO'],
             //'gender' => 'sometimes|string',
             //'middlename' => 'sometimes|string',
             'email' => 'required|email',
