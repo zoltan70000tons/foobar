@@ -107,7 +107,7 @@ class RoleRepository implements RoleRepositoryInterface
             } else {
                 $roles = Role::where(['team_id' => $org_id])->get();
             }
-            if (is_numeric($user_id)) {
+            if (isset($user_id)) {
                 $roles->each(function ($role) use ($user_id) {
                     $role->granted = $role->users()->where('id', $user_id)->exists();
                     $role->user_id = $user_id;

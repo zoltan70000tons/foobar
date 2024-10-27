@@ -28,7 +28,7 @@ class ListRoleRequest extends FormRequest
     {
         return [
                 'role_id' => 'nullable|int',
-                'user_id' => 'nullable|int',
+                'user_id' => 'nullable|string',
         ];
     }
 
