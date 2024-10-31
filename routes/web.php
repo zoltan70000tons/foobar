@@ -102,8 +102,11 @@ Route::middleware('auth')->group(function () {
 
     //Booking controller
     Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
-    ->where('id', '[0-9]+|all') // Expresión regular para números o 'all'
+    ->where('id', '[0-9]+|all') 
     ->name('bookings.index');
+
+    Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])
+    ->name('bookings.show');
 
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');

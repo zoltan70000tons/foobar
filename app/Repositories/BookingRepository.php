@@ -74,7 +74,11 @@ class BookingRepository implements BookingInterface
 
   function find($id)
   {
-    return Cabin::find($id);
+    return Booking::find($id);
+  }
+
+  function findByCode($code){
+    return Booking::where('booking_code','=', $code)->first();
   }
 
   function save(array $data): ?Booking

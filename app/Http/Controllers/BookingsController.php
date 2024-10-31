@@ -74,7 +74,22 @@ class BookingsController extends Controller
 
     public function update(Request $request) {}
 
-    public function show(Cabin $cabin) {}
+    public function show(Cabin $cabin) {
+        try {
+            $event_id = request()->route('id');
+            $booking_code = request()->route('booking_code');
+            return $this->withPermission([Permissions::ViewCabinCategories], function ($event_id, $booking_code) {
+                $event = $this->eventRepository->find($event_id);
+                $booking = $this->bookingRepository->findByCode($booking_code);
+                return Inertia::render('Bookings/partials/Show', [
+                    'event' => $event,
+                    'booking' =>$booking
+                ]);
+            }, $event_id,$booking_code);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
 
     public function destroy(Cabin $cabin) {}
 

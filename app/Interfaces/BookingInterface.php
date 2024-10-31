@@ -8,6 +8,7 @@ interface BookingInterface
 {
     function getAll();
     function find($id);
+    function findByCode($code);
     function save(array $data): ?Booking;
     function update(array $data,$id);
     function delete($id);
