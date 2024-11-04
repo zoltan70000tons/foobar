@@ -20,7 +20,7 @@ We'll send a welcome email to the customer with new survivor number.
 @endsection
 
 @section('content')
-    <p>{{ __('systemEmails.email_hi') }} {{ $customer->username }},</p>
+    <p>{{ __('systemEmails.email_hi') }} {{ $customer->name }},</p>
     <p>{{ __('systemEmails.email_excited') }}</p>
     <p>{{ __('systemEmails.email_account_created') }}
     <p>{{ __('systemEmails.email_new_survivor_number') }}
