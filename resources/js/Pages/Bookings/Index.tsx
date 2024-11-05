@@ -67,8 +67,10 @@ const Index = ({
     setOpenDialog(false);
   };
 
-  const handleViewClick = () => {
-    console.log("on click");
+  const handleViewClick = (row) => {
+    router.get(
+      route("bookings.show", { id: event.id, booking_code: row.booking_code })
+    );
   };
 
   const bookingColumns = useMemo(
