@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Models\User;
 use App\Notifications\CustomerEmailVerification;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerEmailVerificationController extends Controller
 {

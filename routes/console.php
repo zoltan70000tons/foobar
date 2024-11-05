@@ -19,3 +19,4 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     TemporaryReservation::where('expires_at', '<', Carbon::now())->delete();
 })->everyMinute();
+
