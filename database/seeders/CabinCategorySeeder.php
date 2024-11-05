@@ -30,6 +30,9 @@ class CabinCategorySeeder extends Seeder
 
         // Iterate through each record in the CSV
         foreach ($csv as $record) {
+            // Convert the gallery column to a JSON array
+            $images = !empty($record['gallery']) ? explode(',', $record['gallery']) : null;
+          
             // Prepare data array
             $categoryData = [
                 'category_type'   => $record['category_type'],
@@ -37,8 +40,8 @@ class CabinCategorySeeder extends Seeder
                 'category_name'   => $record['category_name'],
                 'capacity'        => $record['capacity'],
                 'description'     => null, // We might need to update this field to accomodate the translation, or have it as a JSON field
-                'images'          => null, // Default to null; can be updated later
-                'iframe'          => null, // Default to null; can be updated later
+                'images'          => $images,
+                'iframe'          => $record['vr'],
                 'price'           => $record['price'],
                 'decks'           => $record['decks'],
                 'display_order'   => $record['display_order'],
