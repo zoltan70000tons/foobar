@@ -47,7 +47,10 @@ class MatrixHelper
                 'cabin_category_id' => $item->id,
                 'code' => $item->category_code,
                 'display_order' => $item->display_order,
-                'decks' => self::getDecks($item->cabins),
+                'decks' => $item->decks,
+                'iframe' => $item->iframe,
+                'images' => $item->images,
+                'full_title' => $item->getTitleAttribute(),
                 'price_and_availability' => self::getPriceDetails($categories, $item->category_code),
             ];
         })->unique('code')->values();
