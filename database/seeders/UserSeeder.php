@@ -54,7 +54,6 @@ class UserSeeder extends Seeder
             $user = User::updateOrCreate(
                 ['email' => Str::lower($name) . '@70000tons.com'],
                 [
-                    'username' => $name,
                     'password' => Hash::make('password'),
                     'created_at' => $this->faker->dateTime($max = 'now'),
                     'updated_at' => $this->faker->dateTime($max = 'now'),
@@ -82,7 +81,6 @@ class UserSeeder extends Seeder
             $name = 'cus' . $this->faker->firstname;
             $user = User::create([
                 'email' => $commonEmail1,
-                'username' => $name,
                 'password' => Hash::make('password'),
                 'created_at' => $this->faker->dateTime($max = 'now'),
                 'updated_at' => $this->faker->dateTime($max = 'now'),
@@ -123,7 +121,6 @@ class UserSeeder extends Seeder
         $name = 'cus' . $this->faker->firstname;
         $user = User::create([
             'email' => $commonEmail2,
-            'username' => $name,
             'password' => Hash::make('password'),
             'created_at' => $this->faker->dateTime($max = 'now'),
             'updated_at' => $this->faker->dateTime($max = 'now'),
@@ -161,7 +158,6 @@ class UserSeeder extends Seeder
             $name = 'cus' . $this->faker->firstname;
             $user = User::create([
                 'email' => Str::lower($name) . '@customers.test',
-                'username' => $name,
                 'password' => Hash::make('password'),
                 'created_at' => $this->faker->dateTime($max = 'now'),
                 'updated_at' => $this->faker->dateTime($max = 'now'),

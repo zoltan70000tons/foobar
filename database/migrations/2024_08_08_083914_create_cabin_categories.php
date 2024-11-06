@@ -21,7 +21,7 @@ return new class extends Migration
       $table->text('iframe')->nullable();;
       $table->json('images')->nullable();;
       $table->decimal('price', 10, 2);
-      $table->string('decks', 255);
+      $table->text('decks');
       $table->integer('display_order');
       $table->foreignId('cruise_id')->constrained('cruises');
       $table->foreignId('event_id')->constrained('events');

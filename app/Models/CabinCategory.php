@@ -20,6 +20,7 @@ class CabinCategory extends Model
         'category_code',
         'category_name',
         'capacity',
+        'decks',
         'description',
         'images',
         'iframe',

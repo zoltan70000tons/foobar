@@ -19,7 +19,6 @@ use App\Mail\CustomerRegistered;
 use App\Helpers\CustomerHelper;
 use App\Models\SurvivorNumber;
 
-
 class CustomerRegisteredController extends Controller
 {
 
@@ -31,6 +30,17 @@ class CustomerRegisteredController extends Controller
    * We use there DB::beginTransaction() and DB::commit() to wrap the user creation in a transaction.
    * It mean that if an exception is thrown during the user creation, the transaction will be rolled back and the user won't be created.
    * It will prevent the database from being in an inconsistent state.
+   * 
+   *       name,
+   *       middlename,
+   *       surname,
+   *       date_of_birth,
+   *       country,
+   *       gender,
+   *       email,
+   *       password,
+   *       password_confirmation,
+   *       language
    *
    * @throws \Illuminate\Validation\ValidationException
    */
@@ -38,12 +48,21 @@ class CustomerRegisteredController extends Controller
   {
 
       $request->validate([
-          'username' => ['required', 'string', 'max:255', 'unique:users'],
+          'name' => ['required', 'string', 'max:255'],
+          'middlename' => ['nullable', 'string', 'max:255'],
+          'surname' => ['required', 'string', 'max:255'],
+          'date_of_birth' => ['required', 'date'],
+          'country' => ['required', 'string', 'max:255'],
+          'gender' => ['required', 'string', 'max:255'],
           'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
           'password' => ['required', 'confirmed', Rules\Password::defaults()],
       ]);
 
-
+      // make sure email is lowercase
+      $email = strtolower($request->email);
+      $request->merge(['email' => $email]);
+      
+      // set language
       $language = $request->language;
       App::setLocale($language);
 
@@ -52,9 +71,18 @@ class CustomerRegisteredController extends Controller
       try {
           // Create the user
           $user = User::create([
-              'username' => $request->username,
               'email' => $request->email,
               'password' => Hash::make($request->string('password')),
+          ]);
+
+          // Create the user details
+          $user->detail()->create([
+            'first_name'    => $request->name,
+            'middle_name'   => $request->middlename,
+            'last_name'     => $request->surname,
+            'dob'           => $request->date_of_birth,
+            'gender'        => $request->gender,
+            'citizenship'   => $request->country,
           ]);
 
           // Assign the customer role
