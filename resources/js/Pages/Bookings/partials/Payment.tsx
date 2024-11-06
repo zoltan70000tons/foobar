@@ -12,21 +12,31 @@ import {
   Divider,
   Grid,
   IconButton,
+  Avatar,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EditIcon from "@mui/icons-material/Edit";
 
-const Payment = ({booking, passenger, number, count, lead=false}) => {
+const Payment = ({ booking, passenger, number, count, lead = false }) => {
   return (
-    <Box p={4} bgcolor="black" color="white" minHeight="100vh">
+    <Box minHeight="100vh">
+      <Box display="flex" sx={{textAlign:"center", width:"100%",justifyContent:"center"}}>
+        <Divider orientation="vertical" variant="middle" flexItem sx={{height:'100px', "&::before, &::after": {
+      borderColor: "secondary.light", border:'1px dashed',
+    },}}> <Avatar
+          sx={{ background: "#20a22d", color: "#fff", fontSize: "0.9rem" }}
+          
+        >
+          {number}/{count}
+        </Avatar></Divider>
+      </Box>
+
       <Box display="flex" alignItems="center" justifyContent="center" mb={4}>
-        <Typography variant="h6" sx={{ mr: 1 }}>
-          {number} / {count}
-        </Typography>
+       
       </Box>
 
       <Typography variant="h5" mb={2}>
-       {lead ?  "Lead Passenger" : "Passenger"} 
+        {lead ? "Lead Passenger" : "Passenger"}
       </Typography>
 
       <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c" }}>
@@ -36,12 +46,21 @@ const Payment = ({booking, passenger, number, count, lead=false}) => {
           <Typography color="green">Payment is complete</Typography>
         </Box>
 
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={1}
+        >
           <Typography>Paid:</Typography>
           <Typography>100%</Typography>
         </Box>
 
-        <LinearProgress variant="determinate" value={100} sx={{ height: 10, borderRadius: 5, bgcolor: "gray" }} />
+        <LinearProgress
+          variant="determinate"
+          value={100}
+          sx={{ height: 10, borderRadius: 5, bgcolor: "gray" }}
+        />
 
         <Table size="small" sx={{ mt: 2, color: "white" }}>
           <TableBody>
@@ -95,12 +114,20 @@ const Payment = ({booking, passenger, number, count, lead=false}) => {
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <Button fullWidth variant="outlined" sx={{ color: "white", borderColor: "gray" }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              sx={{ color: "white", borderColor: "gray" }}
+            >
               User details
             </Button>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <Button fullWidth variant="outlined" sx={{ color: "white", borderColor: "gray" }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              sx={{ color: "white", borderColor: "gray" }}
+            >
               Payment history
             </Button>
           </Grid>

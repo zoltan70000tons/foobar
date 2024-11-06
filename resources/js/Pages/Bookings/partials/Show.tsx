@@ -14,6 +14,7 @@ import {
   Select,
   MenuItem,
   Button,
+  Divider,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import dayjs from "dayjs";
@@ -26,12 +27,34 @@ import Detail from "./Details";
 import Passengers from "./Passengers";
 import Payment from "./Payment";
 import ActionList from "./ActionList";
+import Log from "./Log";
 
 
 const Show = ({ auth, event, booking }: PageProps) => {
   const { hasPermission } = usePermissions();
   const theme = useTheme();
   dayjs.extend(localizedFormat);
+  const logData = [
+    {
+      date: '28 / 04 / 2024',
+      time: '2:13AM',
+      user: 'LB',
+      action: 'Custom message',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+    },
+    {
+      date: '23 / 04 / 2024',
+      time: '2:23AM',
+      user: 'JG',
+      action: 'Edited email title'
+    },
+    {
+      date: '22 / 04 / 2024',
+      time: '2:23AM',
+      user: 'user',
+      action: 'Created'
+    }
+  ];
 
   
 
@@ -46,6 +69,7 @@ const Show = ({ auth, event, booking }: PageProps) => {
         <Payment  booking={booking}  passenger={null} number={1} count={4} lead={true} />
         <Payment  booking={booking}  passenger={null} number={2} count={4}  />
         <ActionList />
+        <Log logs={logData} />
       </Container>
     </AuthenticatedLayout>
   );

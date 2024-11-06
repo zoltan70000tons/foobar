@@ -54,11 +54,11 @@ const ActionList = () => {
   };
 
   return (
-    <Box p={4} bgcolor="black" color="white">
+    <Box >
       <Typography variant="h5" mb={2}>
         Action
       </Typography>
-
+      
       <Box display="flex" alignItems="center" mb={4}>
         <Select
           value={type}

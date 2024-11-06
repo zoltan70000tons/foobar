@@ -16,8 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 
 const Passengers = () => {
   return (
-    <Box p={4} bgcolor="black" color="white" minHeight="100vh">
-      {/* Pasajeros */}
+    <Box>
       <Typography variant="h5" gutterBottom>
         Passengers
       </Typography>
@@ -38,7 +37,7 @@ const Passengers = () => {
               <Box>
                 <Typography>Karen Doe</Typography>
                 <Typography variant="caption" color="error">
-                  <Box component="span" color="error.main" sx={{ borderRadius: 1, px: 1, backgroundColor: "red" }}>
+                  <Box component="span" color="error.main" sx={{ borderRadius: 1, px: 1, backgroundColor: "red", color:"white"}}>
                     Not confirmed account
                   </Box>
                 </Typography>
@@ -91,7 +90,6 @@ const Passengers = () => {
       </Paper>
 
       {/* Detalles de Pago (Placeholder) */}
-      <Divider sx={{ my: 4 }} />
       <Typography variant="h5" align="center">
         Payment details
       </Typography>
