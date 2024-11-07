@@ -47,7 +47,8 @@ class MatrixHelper
                 'cabin_category_id' => $item->id,
                 'code' => $item->category_code,
                 'display_order' => $item->display_order,
-                'decks' => $item->decks,
+                'decks' => self::getDecks($item->cabins), // Dynamically obtained from each individual cabin in the category: Used Cabin Selection.
+                'decks_static' => $item->decks, // Harcoded in cabin_categories table: Used only for pricing matrix and cabin description.
                 'iframe' => $item->iframe,
                 'images' => $item->images,
                 'full_title' => $item->getTitleAttribute(),
