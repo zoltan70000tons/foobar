@@ -55,4 +55,13 @@ enum Permissions: string
     case DeletePermissions = 'Delete Permissions';
     case AssignPermissions = 'Assign Permissions';
     case RevokePermissions = 'Revoke Permissions';
+    
+    // Manage bookings
+
+    case ViewBookings = 'View Bookings';
+    case CreateBookings = 'Create Bookings';
+    case EditBookings = 'Edit Bookings';
+    case DeleteBookings = 'Delete Bookings';
+
+
 }

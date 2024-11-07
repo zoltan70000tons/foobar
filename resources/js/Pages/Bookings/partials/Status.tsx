@@ -11,8 +11,9 @@ import {
 } from "@mui/material";
 import "dayjs/locale/en";
 import { BookingTagEnum } from "@/enums/TagEnum";
+import { router } from "@inertiajs/react";
 
-const Status = ({ booking }) => {
+const Status = ({ event, booking }) => {
   const [selectedTag, setSelectedTag] = useState<BookingTagEnum>(
     BookingTagEnum.NOT_ASSIGNE
   );
@@ -22,7 +23,11 @@ const Status = ({ booking }) => {
   };
 
   const handleUpdate = () => {
-    console.log("Tag actualizado a:", selectedTag);
+    const data = {
+      selectedTag,
+    };
+
+    router.post(route('bookings.update', { id: event.id, booking_code: booking.booking_code }), data);
   };
 
   return (

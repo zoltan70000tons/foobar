@@ -11,10 +11,20 @@ import {
   TableRow,
   TableCell,
   Divider,
+  IconButton,
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
 
-const Passengers = () => {
+const Passengers = ({passengers}) => {
+
+    console.log(passengers);
+    const getOrdinalSuffix = (n: number): string => {
+        if (n === 1) return "st";
+        if (n === 2) return "nd";
+        if (n === 3) return "rd";
+        return "th";
+    };
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
@@ -22,16 +32,26 @@ const Passengers = () => {
       </Typography>
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <Box display="flex" alignItems="center">
-              <Avatar src="https://via.placeholder.com/50" sx={{ width: 50, height: 50, mr: 2 }} />
-              <Box>
-                <Typography>John Doe</Typography>
-                <Typography variant="caption">Lead passenger</Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
+            {passengers.map((passenger, index) => {
+                 const isLeadPassenger = passenger.lead_passenger;
+                 const displayText = isLeadPassenger
+                 ? "Lead Passenger"
+                 : `${index+1}${getOrdinalSuffix(index+1)} Passenger`;
+                return(<Grid item xs={12} sm={4}>
+                    <Box display="flex" alignItems="center">
+                      {/* <Avatar src="https://via.placeholder.com/50" sx={{ width: 50, height: 50, mr: 2 }} /> */}
+                      <Avatar sx={{ width: 50, height: 50, mr: 2 }}>
+                        <PersonIcon />
+                      </Avatar>
+                      <Box>
+                        <Typography>{passenger.full_name}</Typography>
+                        <Typography variant="caption">{displayText}</Typography>
+                      </Box>
+                    </Box>
+                  </Grid>)
+            })}
+          
+          {/* <Grid item xs={12} sm={4}>
             <Box display="flex" alignItems="center">
               <Avatar sx={{ width: 50, height: 50, mr: 2, bgcolor: "grey.700" }}>KD</Avatar>
               <Box>
@@ -49,9 +69,11 @@ const Passengers = () => {
               <Avatar sx={{ width: 50, height: 50, mr: 2, bgcolor: "grey.800" }}>?</Avatar>
               <Typography variant="caption">Missing Passenger</Typography>
             </Box>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12} textAlign="right">
-            <Button variant="outlined" color="secondary" startIcon={<EditIcon />}>Edit</Button>
+            <IconButton color="secondary">
+                                    <EditIcon />
+                                </IconButton>
           </Grid>
         </Grid>
       </Paper>
@@ -70,7 +92,10 @@ const Passengers = () => {
               <TableCell>ID</TableCell>
               <TableCell align="right">345435sdads3-343434</TableCell>
               <TableCell align="right">
-                <Button variant="outlined" color="secondary" startIcon={<EditIcon />}>Edit</Button>
+                {/* <Button variant="outlined" color="secondary" startIcon={<EditIcon />}>Edit</Button> */}
+                <IconButton color="secondary">
+                                    <EditIcon />
+                                </IconButton>
               </TableCell>
             </TableRow>
             <TableRow>

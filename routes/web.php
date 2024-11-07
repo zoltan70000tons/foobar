@@ -107,6 +107,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])
     ->name('bookings.show');
+    Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])
+    ->name('bookings.update');
 
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');

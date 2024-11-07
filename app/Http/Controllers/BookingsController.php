@@ -45,7 +45,7 @@ class BookingsController extends Controller
                     'events' => $events
                 ]);
             }
-            return $this->withPermission([Permissions::ViewCabinCategories], function ($event_id,$keyword, $tag) {
+            return $this->withPermission([Permissions::ViewBookings], function ($event_id,$keyword, $tag) {
                 $data = CabinCategory::all()->toArray();
                 $newBookings = $this->bookingRepository->getByTag(['New'], $keyword);
                 $inProgressBookings = $this->bookingRepository->getByTag(['New', 'UPLOADED', 'CANCELLED'],$keyword);
@@ -72,14 +72,34 @@ class BookingsController extends Controller
 
     public function edit(Request $request) {}
 
-    public function update(Request $request) {}
+    public function update(Request $request) {
+        try {
+            $event_id = request()->route('id');
+            $booking_code = request()->route('booking_code');
+            $status = $request->input('selectedTag'); 
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_code, $status) {
+                $event = $this->eventRepository->find($event_id);
+                
+                $booking = $this->bookingRepository->findByCode($booking_code);
+                $this->bookingRepository->update(array('status' => $status), $booking->id);
+
+                // return Inertia::render('Bookings/partials/Show', [
+                //     'event' => $event,
+                //     'booking' =>$booking
+                // ]);
+            }, $event_id,$booking_code, $status);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
 
     public function show(Cabin $cabin) {
         try {
             $event_id = request()->route('id');
             $booking_code = request()->route('booking_code');
-            return $this->withPermission([Permissions::ViewCabinCategories], function ($event_id, $booking_code) {
+            return $this->withPermission([Permissions::ViewBookings], function ($event_id, $booking_code) {
                 $event = $this->eventRepository->find($event_id);
+                
                 $booking = $this->bookingRepository->findByCode($booking_code);
                 return Inertia::render('Bookings/partials/Show', [
                     'event' => $event,
@@ -95,5 +115,4 @@ class BookingsController extends Controller
 
     public function addTag(Request $request) {}
 
-    public function updateStatus(Request $request) {}
 }

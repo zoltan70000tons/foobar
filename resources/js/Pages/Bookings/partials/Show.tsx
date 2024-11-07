@@ -56,6 +56,7 @@ const Show = ({ auth, event, booking }: PageProps) => {
     }
   ];
 
+  console.log(booking);
   
 
   return (
@@ -63,9 +64,9 @@ const Show = ({ auth, event, booking }: PageProps) => {
       <Head title="Booking " />
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Status booking={booking} />
+        <Status event={event} booking={booking} />
         <Detail booking={booking} />
-        <Passengers />
+        <Passengers passengers={booking.passengers} />
         <Payment  booking={booking}  passenger={null} number={1} count={4} lead={true} />
         <Payment  booking={booking}  passenger={null} number={2} count={4}  />
         <ActionList />

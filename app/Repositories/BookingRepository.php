@@ -85,7 +85,9 @@ class BookingRepository implements BookingInterface
   {
     return new Booking();
   }
-  function update(array $data, $id) {}
+  function update(array $data, $id) {
+     dd($data, $id);
+  }
   function delete($id) {}
 
 
