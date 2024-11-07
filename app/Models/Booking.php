@@ -80,4 +80,9 @@ class Booking extends Model
     // Update the cabin inventory and status
     $cabin->updateInventoryOnBooking();
   }
+
+  public function logs()
+    {
+        return $this->hasMany(BookingLog::class, 'booking_id', 'id');
+    }
 }

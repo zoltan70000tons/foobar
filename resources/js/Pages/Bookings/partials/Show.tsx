@@ -31,6 +31,7 @@ import Log from "./Log";
 
 
 const Show = ({ auth, event, booking }: PageProps) => {
+  console.log(booking);
   const { hasPermission } = usePermissions();
   const theme = useTheme();
   dayjs.extend(localizedFormat);
@@ -56,7 +57,6 @@ const Show = ({ auth, event, booking }: PageProps) => {
     }
   ];
 
-  console.log(booking);
   
 
   return (
@@ -70,7 +70,7 @@ const Show = ({ auth, event, booking }: PageProps) => {
         <Payment  booking={booking}  passenger={null} number={1} count={4} lead={true} />
         <Payment  booking={booking}  passenger={null} number={2} count={4}  />
         <ActionList />
-        <Log logs={logData} />
+        <Log logs={booking.logs} />
       </Container>
     </AuthenticatedLayout>
   );

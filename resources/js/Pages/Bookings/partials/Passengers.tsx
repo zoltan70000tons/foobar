@@ -18,7 +18,6 @@ import PersonIcon from '@mui/icons-material/Person';
 
 const Passengers = ({passengers}) => {
 
-    console.log(passengers);
     const getOrdinalSuffix = (n: number): string => {
         if (n === 1) return "st";
         if (n === 2) return "nd";

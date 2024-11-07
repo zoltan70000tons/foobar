@@ -17,8 +17,6 @@ import "dayjs/locale/en";
 import { BookingTagEnum } from "@/enums/TagEnum";
 import EditIcon from '@mui/icons-material/Edit';
 const Detail = ({ booking }) => {
-  console.log(booking);
-
   return (
     <>
     <Box>

@@ -8,6 +8,9 @@ use DB;
 
 class BookingRepository implements BookingInterface
 {
+ 
+  
+
   function getAll()
   {
     return Booking::with(['cabin', 'cabin.cabinType', 'customer', 'customer.detail'])->get();
@@ -78,16 +81,21 @@ class BookingRepository implements BookingInterface
   }
 
   function findByCode($code){
-    return Booking::with('cabin', 'cabin.cabinType', 'cabin.cabinCategory', 'passengers')->where('booking_code','=', $code)->first();
+    return Booking::with('cabin', 'cabin.cabinType', 'cabin.cabinCategory', 'passengers', 'logs', 'logs.user')->where('booking_code','=', $code)->first();
   }
 
   function save(array $data): ?Booking
   {
     return new Booking();
   }
+
   function update(array $data, $id) {
-     dd($data, $id);
+    $booking = $this->find($id);
+    $tags = $data['tags'];
+    $booking->tags = $tags;
+    $booking->save();
   }
+
   function delete($id) {}
 
 

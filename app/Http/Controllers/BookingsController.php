@@ -7,12 +7,14 @@ use App\Interfaces\BookingInterface;
 use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
+use App\Interfaces\LogInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
+use App\Repositories\LogRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -28,10 +30,12 @@ class BookingsController extends Controller
 
     protected EventRepositoryInterface $eventRepository;
     protected BookingInterface $bookingRepository;
-    public function __construct(EventRepository $eventRepository, BookingRepository $bookingRepository)
+    protected LogInterface $logRepository;
+    public function __construct(EventRepository $eventRepository, BookingRepository $bookingRepository, LogRepository $logRepository)
     {
         $this->eventRepository = $eventRepository;
         $this->bookingRepository = $bookingRepository;
+        $this->logRepository = $logRepository;
     }
     public function index(Request $request)
     {
@@ -76,18 +80,18 @@ class BookingsController extends Controller
         try {
             $event_id = request()->route('id');
             $booking_code = request()->route('booking_code');
-            $status = $request->input('selectedTag'); 
-            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_code, $status) {
+            $tags = $request->input('selectedTags'); 
+            $user = $request->user();
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_code, $tags,$user) {
                 $event = $this->eventRepository->find($event_id);
-                
                 $booking = $this->bookingRepository->findByCode($booking_code);
-                $this->bookingRepository->update(array('status' => $status), $booking->id);
-
-                // return Inertia::render('Bookings/partials/Show', [
-                //     'event' => $event,
-                //     'booking' =>$booking
-                // ]);
-            }, $event_id,$booking_code, $status);
+                $this->bookingRepository->update(array('tags' => $tags), $booking->id);
+                $this->logRepository->writeOnBooking($booking->id, 'Updated Tag', $user);
+                return Inertia::render('Bookings/partials/Show', [
+                    'event' => $event,
+                    'booking' =>$booking
+                ]);
+            }, $event_id,$booking_code, $tags, $user);
         } catch (\Exception $e) {
             $this->logException($e);
         }
