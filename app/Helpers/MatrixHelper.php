@@ -45,7 +45,23 @@ class MatrixHelper
       return $item->cabins->where("cabin_type_id", $ticketType)->isNotEmpty();
     });
 
-    // dd($filteredCategories->toArray());
+        // dd($filteredCategories->toArray());
+
+        return $filteredCategoriesWithCabins->map(function ($item) use ($categories) {
+            return [
+                'name' => $item->category_name,
+                'cabin_category_id' => $item->id,
+                'code' => $item->category_code,
+                'display_order' => $item->display_order,
+                'decks' => self::getDecks($item->cabins), // Dynamically obtained from each individual cabin in the category: Used Cabin Selection.
+                'decks_static' => $item->decks, // Harcoded in cabin_categories table: Used only for pricing matrix and cabin description.
+                'iframe' => $item->iframe,
+                'images' => $item->images,
+                'full_title' => $item->getTitleAttribute(),
+                'price_and_availability' => self::getPriceDetails($categories, $item->category_code),
+            ];
+        })->unique('code')->values();
+    }
 
     return $filteredCategoriesWithCabins
       ->map(function ($item) use ($categories) {
