@@ -96,6 +96,8 @@ class CabinController extends Controller
     $cabinTypeId = $request->input("cabin_type_id");
     $cabinCategoryId = $request->input("cabin_category_id");
 
+    Log::info("Request input: ", $request->all());
+
     // Check if the cabin is available
     $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId);
 
@@ -106,30 +108,15 @@ class CabinController extends Controller
       );
     }
 
-    // Check if the specific cabin number exists in the filtered cabins
-    $cabin = $filteredCabins["cabins"]->firstWhere(
-      "cabin_number",
-      (string) $cabinNumber
-    );
+    // if cabin number is null, get random available cabin and temporary reserve it
+    if (!$cabinNumber && ($cabinTypeId === "2" || $cabinTypeId === "3")) {
+      $cabin = $filteredCabins["cabins"]->first();
 
-    if (!$cabin) {
-      return response()->json(
-        ["message" => "Cabin not found or may be reserved"],
-        404
-      );
-    }
-
-    // Reservation logic for cabin_type_id == 1
-    if ($cabinTypeId == 1) {
-      $existingReservation = TemporaryReservation::where(
-        "cabin_id",
-        $cabin["id"]
-      )
-        ->where("expires_at", ">", now())
-        ->first();
-
-      if ($existingReservation) {
-        return response()->json(["message" => "Cabin already reserved"], 404);
+      if (!$cabin) {
+        return response()->json(
+          ["message" => "No available cabins found"],
+          404
+        );
       }
 
       $reserved = TemporaryReservation::updateOrCreate(
@@ -154,38 +141,87 @@ class CabinController extends Controller
         200
       );
     } else {
-      // Logic for cabin types 2 and 3
-      $existingReservations = TemporaryReservation::where(
-        "cabin_id",
-        $cabin["id"]
-      )
-        ->where("expires_at", ">", now())
-        ->get();
+      // Check if the specific cabin number exists in the filtered cabins
+      $cabin = $filteredCabins["cabins"]->firstWhere(
+        "cabin_number",
+        (string) $cabinNumber
+      );
 
-      if ($existingReservations->count() >= $cabin["inventory"]) {
-        return response()->json(["message" => "All already reserved"], 404);
+      if (!$cabin) {
+        return response()->json(
+          ["message" => "Cabin not found or may be reserved"],
+          404
+        );
       }
 
-      $reserved = TemporaryReservation::updateOrCreate(
-        ["cabin_id" => $cabin["id"]],
-        [
-          "cabin_number" => $cabin["cabin_number"],
-          "inventory" => 1,
-          "expires_at" => now()->addMinutes(5),
-        ]
-      );
+      // Reservation logic for cabin_type_id == 1
+      if ($cabinTypeId == 1) {
+        $existingReservation = TemporaryReservation::where(
+          "cabin_id",
+          $cabin["id"]
+        )
+          ->where("expires_at", ">", now())
+          ->first();
 
-      // Store the reservation ID in the session to prevent further reservations
-      $request->session()->put("reserved_cabin_id", $reserved->id);
+        if ($existingReservation) {
+          return response()->json(["message" => "Cabin already reserved"], 404);
+        }
 
-      return response()->json(
-        [
-          "success" => true,
-          "message" => $reserved,
-          "reservation_id" => $reserved->id,
-        ],
-        200
-      );
+        $reserved = TemporaryReservation::updateOrCreate(
+          ["cabin_id" => $cabin["id"]],
+          [
+            "user_id" => $request->user()->id ?? null,
+            "cabin_number" => $cabin["cabin_number"],
+            "expires_at" => Carbon::now()->addMinutes(5),
+            "inventory" => $cabin["cabin_inventory"],
+          ]
+        );
+
+        // Store the reservation ID in the session to prevent further reservations
+        $request->session()->put("reserved_cabin_id", $reserved->id);
+
+        return response()->json(
+          [
+            "success" => true,
+            "message" => "Cabin reserved",
+            "reservation_id" => $reserved->id,
+          ],
+          200
+        );
+      } else {
+        // Logic for cabin types 2 and 3
+        $existingReservations = TemporaryReservation::where(
+          "cabin_id",
+          $cabin["id"]
+        )
+          ->where("expires_at", ">", now())
+          ->get();
+
+        if ($existingReservations->count() >= $cabin["inventory"]) {
+          return response()->json(["message" => "All already reserved"], 404);
+        }
+
+        $reserved = TemporaryReservation::updateOrCreate(
+          ["cabin_id" => $cabin["id"]],
+          [
+            "cabin_number" => $cabin["cabin_number"],
+            "inventory" => 1,
+            "expires_at" => now()->addMinutes(5),
+          ]
+        );
+
+        // Store the reservation ID in the session to prevent further reservations
+        $request->session()->put("reserved_cabin_id", $reserved->id);
+
+        return response()->json(
+          [
+            "success" => true,
+            "message" => $reserved,
+            "reservation_id" => $reserved->id,
+          ],
+          200
+        );
+      }
     }
   }
 
