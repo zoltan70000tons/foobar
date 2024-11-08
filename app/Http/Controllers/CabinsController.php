@@ -19,6 +19,7 @@ use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Hamcrest\Type\IsNumeric;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 class CabinsController extends Controller
 {
@@ -40,13 +41,13 @@ class CabinsController extends Controller
         $cabins = [];
         $categories = [];
 
-        if($event_id == 'all'){
+        if ($event_id == 'all') {
             $events = $this->eventRepository->getAll();
             return Inertia::render('Cabin/partials/Events', [
                 'events' => $events
             ]);
         }
-        
+
         if (is_numeric($event_id)) {
             $event = $this->eventRepository->find($event_id);
             $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
@@ -55,10 +56,9 @@ class CabinsController extends Controller
                 'cabins' => $cabins,
                 'categories' => $categories,
                 'event' => $event
-    
+
             ]);
         }
-        
     }
 
     public function create()
@@ -89,49 +89,52 @@ class CabinsController extends Controller
 
     public function update(Request $request)
     {
-        $cabin_id = $request->route('cabin_id');
-        $event_id = $request->route('id');
-        $rules = [
-            'cabin_status'      => 'required|string|max:255',
-            'cabin_number'      => [
-                'required',
-                'numeric',
-                'unique:cabins,cabin_number,' . $cabin_id . ',id'
-            ],
-            'cabin_category'    => 'required|numeric',
-            'cabin_type'        => 'required|numeric',
-            'deck'              => 'required|numeric',
-            'location'          => 'required|string',
-            'connects_with'     => 'nullable|numeric',
-            'total_berths'      => 'nullable|numeric',
-            'lower_bed_type_1'  => 'nullable|string',
-            'lower_bed_type_2'  => 'nullable|string',
-            'features' => 'required|array',
-            'features.accessible' => 'required|boolean',
-            'features.balcony' => 'required|boolean',
-            'features.obstructed_view' => 'required|boolean',
-            'tags' => 'nullable|array',
-            'tags.*' => 'nullable|string',
-            'upper_berths'      => 'nullable|string',
-            'notes'             => 'nullable|string'
-        ];
-        $validated = $request->validate($rules);
-        $sanitized = Arr::map($validated, function ($value, $key) {
-            if (is_array($value)) {
-                return $value;
-            }
-            if (is_string($value)) {
-                return strip_tags(trim($value));
-            }
 
-            return $value;
-        });
         try {
-            $event = $this->eventRepository->find($event_id);
-            return $this->withPermission([Permissions::EditCabins], function ($event, $cabin_id, $sanitized) {
+            $cabin_id = $request->route('cabin_id');
+            $event_id = $request->route('id');
+            $rules = [
+                'cabin_status'      => 'required|string|max:255',
+                'cabin_number'      => [
+                    'required',
+                    'numeric',
+                    'unique:cabins,cabin_number,' . $cabin_id . ',id'
+                ],
+                'cabin_category'    => 'required|numeric',
+                'cabin_type'        => 'required|numeric',
+                'deck'              => 'required|numeric',
+                'location'          => 'required|string',
+                'connects_with'     => 'nullable|numeric',
+                'total_berths'      => 'nullable|numeric',
+                'lower_bed_type_1'  => 'nullable|string',
+                'lower_bed_type_2'  => 'nullable|string',
+                'features' => 'required|array',
+                'features.accessible' => 'required|boolean',
+                'features.balcony' => 'required|boolean',
+                'features.obstructed_view' => 'required|boolean',
+                'tags' => 'nullable|array',
+                'tags.*' => 'nullable|string',
+                'upper_berths'      => 'nullable|string',
+                'notes'             => 'nullable|string'
+            ];
+            $validated = $request->validate($rules);
+            return $this->withPermission([Permissions::EditCabins], function ($event_id, $cabin_id, $validated) {
+                Arr::forget($validated, 'inventory');
+                $sanitized = Arr::map($validated, function ($value, $key) {
+                    if (is_array($value)) {
+                        return $value;
+                    }
+                    if (is_string($value)) {
+                        return strip_tags(trim($value));
+                    }
+
+                    return $value;
+                });
                 $this->cabinRepository->update($sanitized, $cabin_id);
-                return redirect()->route('cabins.edit', $event->id)->with('success', 'Cabin updated successfully.');
-            }, $event, $cabin_id, $sanitized);
+                return redirect()->route('cabins.edit', ['event_id' => $event_id, 'cabin_id' => $cabin_id])
+                ->with('success', 'Cabin updated successfully.');
+
+            }, $event_id, $cabin_id, $validated);
         } catch (\Exception $e) {
             $this->logException($e);
         }

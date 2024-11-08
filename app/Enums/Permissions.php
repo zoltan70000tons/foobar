@@ -62,6 +62,7 @@ enum Permissions: string
     case CreateBookings = 'Create Bookings';
     case EditBookings = 'Edit Bookings';
     case DeleteBookings = 'Delete Bookings';
+    case EditCabinInventory = "Edit Cabin Inventory";
 
 
 }
