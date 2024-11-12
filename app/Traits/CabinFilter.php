@@ -13,22 +13,25 @@ trait CabinFilter
     $cabinCategoryId,
     $cabinDeck = null
   ) {
-    // Fetch cabins with the given filters and exclude those with active temporary reservations
+    $currentTime = Carbon::now();
+
     $cabinsQuery = Cabin::with("category")
       ->where("cabin_type_id", $cabinTypeId)
-      ->where("cabin_category_id", $cabinCategoryId);
+      ->where("cabin_category_id", $cabinCategoryId)
+      ->where("status", StatusCabin::AVAILABLE->value)
+      ->withCount([
+        "temporaryReservations as active_reservations_count" => function (
+          $query
+        ) use ($currentTime) {
+          $query->where("expires_at", ">", $currentTime);
+        },
+      ]);
 
-    // If cabinDeck is provided, apply the deck filter
     if ($cabinDeck) {
       $cabinsQuery->where("deck", $cabinDeck);
     }
 
-    // Exclude cabins with active temporary reservations
-    $cabins = $cabinsQuery
-      ->whereDoesntHave("temporaryReservations", function ($query) {
-        $query->where("expires_at", ">", Carbon::now());
-      })
-      ->get();
+    $cabins = $cabinsQuery->get();
 
     if ($cabins->isEmpty()) {
       return [
@@ -37,18 +40,12 @@ trait CabinFilter
       ];
     }
 
-    // Filter based on cabin type, status, and active reservations vs. inventory
     $formattedCabins = $cabins
       ->filter(function ($cabin) {
         if ($cabin->cabin_type_id == 1) {
-          return $cabin->status === StatusCabin::AVAILABLE->value;
+          return $cabin->active_reservations_count == 0;
         } else {
-          $activeReservations = $cabin
-            ->temporaryReservations()
-            ->where("expires_at", ">", Carbon::now())
-            ->count();
-          return $cabin->status === StatusCabin::AVAILABLE->value &&
-            $activeReservations < $cabin->inventory;
+          return $cabin->active_reservations_count < $cabin->inventory;
         }
       })
       ->map(function ($cabin) {
@@ -66,6 +63,13 @@ trait CabinFilter
           "cabin_category_name" => $cabin->category->category_name,
         ];
       });
+
+    if ($formattedCabins->isEmpty()) {
+      return [
+        "error" => "No cabins available after filtering",
+        "status" => 404,
+      ];
+    }
 
     return ["cabins" => $formattedCabins, "status" => 200];
   }
