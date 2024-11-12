@@ -133,7 +133,11 @@ Route::get("/cabins/types", [CabinController::class, "showTypes"]);
 // This middleware will clear expired reservations from the session
 Route::middleware(["clear_expired_reservation"])->group(function () {
   // reserve cabin
-  Route::post("/cabin/reserve", [CabinController::class, "reserve"]);
+  Route::post("/cabin/reserve-type", [CabinController::class, "reserveType"]);
+  Route::post("/cabin/reserve-cabin-in-type", [
+    CabinController::class,
+    "reserveCabinInType",
+  ]);
   Route::post("/cabin/release", [CabinController::class, "release"]);
 });
 
