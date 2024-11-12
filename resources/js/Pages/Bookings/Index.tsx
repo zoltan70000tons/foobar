@@ -162,8 +162,8 @@ const Index = ({
         accessor: "phone",
       },
       {
-        header: "Citizenship",
-        accessor: "citizenship",
+        header: "Country Of Residence",
+        accessor: "country",
       },
       {
         header: "Balance",
