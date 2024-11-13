@@ -29,7 +29,8 @@ class CabinController extends Controller
     $filteredCabins = $this->filterCabins(
       $cabinTypeId,
       $cabinCategoryId,
-      $cabinDeck
+      $cabinDeck,
+      false
     );
 
     if (isset($filteredCabins["error"])) {
