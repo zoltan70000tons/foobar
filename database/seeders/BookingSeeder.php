@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Booking;
 use App\Models\Cabin;
 use App\Models\User;
+use Illuminate\Support\Arr;
 use Spatie\Permission\Models\Role;
 
 class BookingSeeder extends Seeder
@@ -51,8 +52,8 @@ class BookingSeeder extends Seeder
           'booking_code' => "{$cabin->cabin_number}-{$identifier_code}-{$cabin->category->category_code}",
           'customer_id' => $customer->id,
           'cabin_id' => $cabin->id,
-        ]);
-
+          'status' => Arr::random(['NEW', 'ON HOLD', 'UPLOADED']),
+      ]);
         // Use the assignCabin() method to assign the cabin and handle inventory/status updates
         $booking->assignCabin($cabin);
       }

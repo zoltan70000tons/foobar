@@ -192,8 +192,8 @@ const Index = ({
     );
   };
   return (
-    <AuthenticatedLayout user={auth.user} header={"Cabins"}>
-      <Head title="Cabins" />
+    <AuthenticatedLayout user={auth.user} header={"Bookings"}>
+      <Head title="Bookings" />
       <Toolbar sx={{ mt: 8 }}>
         <IconButton edge="start" color="inherit" aria-label="menu">
           <img src={event.image} alt="Logo" style={{ height: 40 }} />

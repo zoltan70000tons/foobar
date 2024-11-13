@@ -14,13 +14,15 @@ return new class extends Migration
     Schema::create('bookings', function (Blueprint $table) {
       $table->id();
       $table->string('booking_code')->unique(); // Unique booking code e.g. Cabin Number + Random String
-      $table->uuid('customer_id')->references('id')->on('users')->onDelete('cascade'); // References users table
+      $table->uuid('customer_id')->references('id')->on('users'); // References users table
       $table->enum('payment_plan', ['PAY_IN_FULL', '4_INSTALLMENTS', '3_INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
       $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
       $table->boolean('completed')->default(false); // Indicates if booking is completed
       $table->boolean('is_cancelled')->default(false); // Indicates if booking is cancelled
       $table->boolean('is_single_occupancy')->default(false); // Indicates if booking is for single occupancy
       $table->jsonb('tags')->default(json_encode(['not-assigned'])); // JSONB field for tags
+      $table->uuid('agent_id')->nullable()->references('id')->on('users'); // References users table for agent tracking
+      $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED'])->default('NEW');
       $table->timestamps(); // created_at and updated_at timestamps
     });
   }
