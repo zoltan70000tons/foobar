@@ -11,14 +11,18 @@ trait CabinFilter
   public function filterCabins(
     $cabinTypeId,
     $cabinCategoryId,
-    $cabinDeck = null
+    $cabinDeck = null,
+    $onlyAvailable = true
   ) {
     $currentTime = Carbon::now();
 
     $cabinsQuery = Cabin::with("category")
       ->where("cabin_type_id", $cabinTypeId)
       ->where("cabin_category_id", $cabinCategoryId)
-      ->where("status", StatusCabin::AVAILABLE->value)
+      ->when($onlyAvailable, function ($query) {
+        // Only return cabins that are available
+        return $query->where("status", StatusCabin::AVAILABLE->value);
+      })
       ->withCount([
         "temporaryReservations as active_reservations_count" => function (
           $query
