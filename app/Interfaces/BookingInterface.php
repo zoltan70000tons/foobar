@@ -14,4 +14,6 @@ interface BookingInterface
     function delete($id);
     function addTags(array $tags, array $cabins);
     function getByTag($tag, $keyword = null);
+    function getByStatus($status, $keyword = null);
+    function assignAgent($code, $user);
 }

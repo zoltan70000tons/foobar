@@ -8,6 +8,7 @@ use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Interfaces\LogInterface;
+use App\Interfaces\TeamRepositoryInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Repositories\BookingRepository;
@@ -15,6 +16,7 @@ use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\LogRepository;
+use App\Repositories\TeamRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -31,11 +33,15 @@ class BookingsController extends Controller
     protected EventRepositoryInterface $eventRepository;
     protected BookingInterface $bookingRepository;
     protected LogInterface $logRepository;
-    public function __construct(EventRepository $eventRepository, BookingRepository $bookingRepository, LogRepository $logRepository)
+    protected TeamRepositoryInterface $teamRepository;
+
+    public function __construct(EventRepository $eventRepository, 
+    BookingRepository $bookingRepository, LogRepository $logRepository, TeamRepository $teamRepository)
     {
         $this->eventRepository = $eventRepository;
         $this->bookingRepository = $bookingRepository;
         $this->logRepository = $logRepository;
+        $this->teamRepository = $teamRepository;
     }
     public function index(Request $request)
     {
@@ -50,18 +56,20 @@ class BookingsController extends Controller
                 ]);
             }
             return $this->withPermission([Permissions::ViewBookings], function ($event_id,$keyword, $tag) {
-                $data = CabinCategory::all()->toArray();
-                $newBookings = $this->bookingRepository->getByTag(['New'], $keyword);
-                $inProgressBookings = $this->bookingRepository->getByTag(['New', 'UPLOADED', 'CANCELLED'],$keyword);
-                $uploadedBookings = $this->bookingRepository->getByTag(['UPLOADED'],$keyword);
-                $cancelledBookings = $this->bookingRepository->getByTag(['CANCELLED'],$keyword);
+
+                $newBookings = $this->bookingRepository->getByStatus('NEW', $keyword);
+                $inProgressBookings = $this->bookingRepository->getByStatus('ON HOLD',$keyword);
+                $uploadedBookings = $this->bookingRepository->getByStatus('UPLOADED',$keyword);
+                $users = $this->teamRepository->getAllMembers(1);
+                $cancelledBookings = [];
                 $event = $this->eventRepository->find($event_id);
                 return Inertia::render('Bookings/Index', [
                     'event' => $event,
                     'newBookings' => $newBookings,
                     'inProgressBookings' => $inProgressBookings,
                     'uploadedBookings' => $uploadedBookings,
-                    'cancelledBookings' => $cancelledBookings
+                    'cancelledBookings' => $cancelledBookings,
+                    'users' => $users
                 ]);
             }, $event_id,$keyword,$tag);
         } catch (\Exception $e) {
@@ -75,6 +83,23 @@ class BookingsController extends Controller
     public function store(Request $request) {}
 
     public function edit(Request $request) {}
+
+    public function assignAgent(Request $request)
+    {
+        $request->validate([
+            'agent_id' => 'required|exists:users,id',
+            'booking_code' => 'required|exists:bookings,booking_code'
+        ]);
+        $agent_id = $request->input('agent_id');
+        $booking_code = $request->input('booking_code');
+        $booking = $this->bookingRepository->findByCode($booking_code);
+        if($booking){
+            $booking->agent_id = $agent_id;
+            $booking->save();
+            return redirect()->back()->with('message', 'User assigned successfully.');
+        }
+        
+    }
 
     public function update(Request $request) {
         try {

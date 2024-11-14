@@ -109,6 +109,7 @@ Route::middleware('auth')->group(function () {
     ->name('bookings.show');
     Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])
     ->name('bookings.update');
+    Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name('bookings.assignAgent');
 
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
