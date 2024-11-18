@@ -11,17 +11,17 @@ class Booking extends Model
   use HasFactory;
 
   protected $fillable = [
-    'booking_code',
-    'customer_id',
-    'payment_method',
-    'carbon_offset',
-    'cabin_id',
-    'completed',
-    'tags'
+    "booking_code",
+    "customer_id",
+    "payment_method",
+    "carbon_offset",
+    "cabin_id",
+    "completed",
+    "tags",
   ];
 
   protected $casts = [
-    'tags' => 'json'
+    "tags" => "json",
   ];
 
   /**
@@ -29,7 +29,15 @@ class Booking extends Model
    */
   public function customer()
   {
-    return $this->belongsTo(User::class, 'customer_id');
+    return $this->belongsTo(User::class, "customer_id");
+  }
+
+  /**
+   * Relationship: A booking have one event id.
+   */
+  public function event()
+  {
+    return $this->belongsTo(Event::class, "event_id");
   }
 
   /**
@@ -37,11 +45,12 @@ class Booking extends Model
    */
   public function cabin()
   {
-    return $this->belongsTo(Cabin::class, 'cabin_id');
+    return $this->belongsTo(Cabin::class, "cabin_id");
   }
 
-  public function passengers(){
-    return $this->hasMany(Passenger::class, foreignKey: 'booking_id');
+  public function passengers()
+  {
+    return $this->hasMany(Passenger::class, foreignKey: "booking_id");
   }
 
   /**
@@ -55,16 +64,16 @@ class Booking extends Model
   {
     // Check if the cabin's inventory is positive
     if ($cabin->inventory <= 0) {
-      throw new  \Exception("This cabin has no available inventory.");
+      throw new \Exception("This cabin has no available inventory.");
     }
 
     // Check if the cabin's status is "BOOKED"
-    if (strtoupper($cabin->status) === 'BOOKED') {
-      throw new  \Exception("This cabin is already fully booked.");
+    if (strtoupper($cabin->status) === "BOOKED") {
+      throw new \Exception("This cabin is already fully booked.");
     }
 
     // Define a set of A-Z characters
-    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     // Generate a random 4-character code
     $identifier_code = substr(str_shuffle($characters), 0, 4);
