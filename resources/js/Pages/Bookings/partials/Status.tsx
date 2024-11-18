@@ -13,13 +13,15 @@ import { BookingTagEnum } from "@/enums/TagEnum";
 import { router } from "@inertiajs/react";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import Tags from "./Tags";
+import { StatusEnum } from "@/enums/StatusEnum";
 
-const Status = ({ event, booking }) => {
-  const [selectedTags, setSelectedTags] = useState<BookingTagEnum[]>(booking.tags ? booking.tags : []);
+const Status = ({ event, booking, editMode }) => {
+  const [selectedStatus, setSelectedStatus] = useState<StatusEnum[]>(booking.status ? booking.status : []);
   const {hasPermission} = usePermissions();
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setSelectedTags(event.target.value as BookingTagEnum[]);
+    setSelectedStatus(event.target.value as StatusEnum[]);
   };
 
   const handleUpdate = () => {
@@ -46,17 +48,16 @@ const Status = ({ event, booking }) => {
               <Grid container spacing={2}>
                 <Grid item xs={8}>
                   <Select
-                    multiple
-                    value={selectedTags}
+                    value={selectedStatus}
                     onChange={handleSelectChange}
-                    disabled={!canEdit}
+                    disabled={!canEdit || !editMode}
                     fullWidth
                     displayEmpty
-                    renderValue={(selected) => (selected as BookingTagEnum[]).join(', ')}
+                    //renderValue={(selected) => (selected as StatusEnumEnum[]).join(', ')}
                   >
-                    {Object.values(BookingTagEnum).map((tag) => (
-                      <MenuItem key={tag} value={tag}>
-                        {tag}
+                    {Object.values(StatusEnum).map((status) => (
+                      <MenuItem key={status} value={status}>
+                        {status}
                       </MenuItem>
                     ))}
                   </Select>
@@ -66,12 +67,15 @@ const Status = ({ event, booking }) => {
                     variant="contained"
                     color="warning"
                     onClick={handleUpdate}
+                    disabled={!canEdit || !editMode}
                     sx={{ height: '-webkit-fill-available', color: "#fff" }}
-                    disabled={!canEdit}
                   >
                     Update
                   </Button>
                 </Grid>
+              </Grid>
+              <Grid container mt={2}>
+              <Tags editable={!editMode}/>
               </Grid>
             </Grid>
             <Grid item xs={12}></Grid>

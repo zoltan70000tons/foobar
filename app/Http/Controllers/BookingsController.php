@@ -128,12 +128,15 @@ class BookingsController extends Controller
             $booking_code = request()->route('booking_code');
             return $this->withPermission([Permissions::ViewBookings], function ($event_id, $booking_code) {
                 $event = $this->eventRepository->find($event_id);
-                
-                $booking = $this->bookingRepository->findByCode($booking_code);
+                $booking = $this->bookingRepository->findByCode($booking_code);     
+                $isEditable = $booking->agent_id === auth()->id();
                 return Inertia::render('Bookings/partials/Show', [
                     'event' => $event,
-                    'booking' =>$booking
+                    'booking' =>$booking,
+                    'isEditable' => $isEditable
                 ]);
+
+               
             }, $event_id,$booking_code);
         } catch (\Exception $e) {
             $this->logException($e);
