@@ -15,7 +15,7 @@ class BookingFactory extends Factory
     return [      
       'booking_code' => null, // Placeholder, will be overridden in seeder
       'customer_id' => User::factory(), // Placeholder, will be overridden in seeder
-      'payment_plan' => $this->faker->randomElement(['PAY_IN_FULL', '4_INSTALLMENTS', '3_INSTALLMENTS']), // Randomly select a payment plan
+      'payment_plan' => $this->faker->randomElement(['PAY_IN_FULL', 'INSTALLMENTS']), // Randomly select a payment plan
       'cabin_id' => null, // Placeholder, will be overridden in seeder
       'tags' => ['New'], // Default tag set to "New"
       'created_at' => now(),
