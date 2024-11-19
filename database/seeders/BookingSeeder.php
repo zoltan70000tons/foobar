@@ -49,6 +49,7 @@ class BookingSeeder extends Seeder
         $booking = Booking::factory()->create([
           "booking_code" => "{$cabin->cabin_number}-{$identifier_code}-{$cabin->category->category_code}",
           "event_id" => 1,
+          "payment_plan" => $index % 2 === 0 ? "INSTALLMENTS" : "PAY_IN_FULL",
           "customer_id" => $customer->id,
           "cabin_id" => $cabin->id,
         ]);
