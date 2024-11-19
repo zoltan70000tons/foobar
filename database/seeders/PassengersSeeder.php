@@ -36,7 +36,7 @@ class PassengersSeeder extends Seeder
                 ], [
                     'confirmed_booking_email' => $faker->boolean,
                     'survivor_number' => $faker->randomNumber(),
-                    'payment_method' => 'credit_card',
+                    'payment_method' => 'CREDIT_CARD',
                     'gender' => 'M',
                     'first_name' => $booking->customer->detail->first_name,
                     'middle_name' => $booking->customer->detail->middle_name,
@@ -86,7 +86,7 @@ class PassengersSeeder extends Seeder
                 ], [
                     'confirmed_booking_email' => $faker->boolean,
                     'survivor_number' => $faker->randomNumber(),
-                    'payment_method' => 'credit_card',
+                    'payment_method' => 'CREDIT_CARD',
                     'gender' => 'F',
                     'first_name' => $booking->customer->detail->first_name,
                     'middle_name' => $booking->customer->detail->middle_name,
@@ -137,7 +137,7 @@ class PassengersSeeder extends Seeder
                         ], [
                             'confirmed_booking_email' => $faker->boolean,
                             'survivor_number' => $faker->randomNumber(),
-                            'payment_method' => 'credit_card',
+                            'payment_method' => 'CREDIT_CARD',
                             'gender' => $lead_passenger->detail->gender,
                             'first_name' => $lead_passenger->detail->first_name,
                             'middle_name' => $lead_passenger->detail->middle_name,
@@ -172,7 +172,7 @@ class PassengersSeeder extends Seeder
                     ], [
                         'confirmed_booking_email' => $faker->boolean,
                         'survivor_number' => $faker->randomNumber(),
-                        'payment_method' => 'credit_card',
+                        'payment_method' => 'CREDIT_CARD',
                         'gender' => $faker->randomElement(['M', 'F']),
                         'first_name' => $faker->firstName,
                         'middle_name' => $faker->firstName,
