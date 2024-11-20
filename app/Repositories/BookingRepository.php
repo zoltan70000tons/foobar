@@ -6,6 +6,8 @@ use App\Interfaces\BookingInterface;
 use App\Models\Booking;
 use DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use App\Models\BookingLog;
 
 class BookingRepository implements BookingInterface
 {
@@ -126,7 +128,36 @@ class BookingRepository implements BookingInterface
     dd('ok');
   }
 
-
-
   function addTags(array $tags, array $cabins) {}
+
+  function changeCabin(Booking $booking, $cabin_number)
+  {
+    return $booking->changeCabin($cabin_number);
+  }
+
+  function changeCode(Booking $booking, $new_code)
+  {
+    try {
+      if (empty($new_code)) {
+        throw new InvalidArgumentException('The new booking code cannot be empty.');
+      }
+
+      if (Booking::where('booking_code', $new_code)->exists()) {
+        throw new InvalidArgumentException('The new booking code is already in use.');
+      }
+      $original_code = $booking->booking_code;
+      $booking->booking_code = $new_code;
+      $booking->save();
+      $blog = new BookingLog();
+      $blog->booking_id = $booking->id;
+      $blog->user_id = auth()->id();
+      $blog->action = 'Changed booking code';
+      $blog->description = "Booking code changed from {$original_code} to {$new_code}.";
+      $blog->save();
+
+      return $booking;
+    } catch (\Exception $e) {
+      return false;
+    }
+  }
 }

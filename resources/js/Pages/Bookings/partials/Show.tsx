@@ -118,7 +118,7 @@ const Show = ({ auth, event, booking }: PageProps) => {
             )}
           </Alert>)}
         <Status event={event} editMode={editMode} booking={booking} />
-        <Detail booking={booking} editMode={editMode} />
+        <Detail event={event} booking={booking} editMode={editMode} />
         <Passengers passengers={booking.passengers} editMode={editMode} />
         <Payment booking={booking} passenger={null} number={1} count={4} lead={true} editMode={editMode} />
         <Payment booking={booking} passenger={null} number={2} count={4} editMode={editMode} />

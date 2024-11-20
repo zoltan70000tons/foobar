@@ -25,6 +25,7 @@ return new class extends Migration
       $table->integer('display_order');
       $table->foreignId('cruise_id')->constrained('cruises');
       $table->foreignId('event_id')->constrained('events');
+      $table->string('category_number', 5)->nullable();
       $table->unique(['category_code','capacity','cruise_id', 'event_id']);
       $table->timestamps();
     });

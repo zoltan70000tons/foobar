@@ -105,13 +105,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
     ->where('id', '[0-9]+|all') 
     ->name('bookings.index');
-
+    Route::post('/events/{id}/bookings/update-cabin', [BookingsController::class, 'cabinUpdate'])
+    ->name('bookings.updateCabin');
+    Route::post('/events/{id}/bookings/update-code', [BookingsController::class, 'codeUpdate'])
+    ->name('bookings.updateCode');
     Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])
     ->name('bookings.show');
     Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])
     ->name('bookings.update');
     Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name('bookings.assignAgent');
     Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
+
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');

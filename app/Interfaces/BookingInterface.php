@@ -16,4 +16,6 @@ interface BookingInterface
     function getByTag($tag, $keyword = null);
     function getByStatus($status, $keyword = null);
     function assignAgent($code, $user);
+    function changeCabin(Booking $booking, $cabin_number);
+    function changeCode(Booking $booking, $new_code);
 }

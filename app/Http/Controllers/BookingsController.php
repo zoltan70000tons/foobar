@@ -181,6 +181,50 @@ class BookingsController extends Controller
             }
         }, $event_id, $booking_id, $lock);
     }
+
+    public function cabinUpdate(Request $request) {
+        try {
+            $event_id = request()->route('id');
+            
+            $booking_id = $request->input('booking_id');
+            $cabin_number = $request->input('cabin_number');
+
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_id, $cabin_number) {
+                $event = $this->eventRepository->find($event_id);
+                $booking = Booking::find($booking_id);
+                $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+                if($result){
+                    return redirect()->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                    ->with('success', 'Cabin updated successfully.');
+                }
+               
+            }, $event_id,$booking_id, $cabin_number);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+
+    public function codeUpdate(Request $request) {
+        try {
+            $event_id = request()->route('id');
+            $booking_id = $request->input('booking_id');
+            $booking_code = $request->input('booking_code');
+
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_id, $booking_code) {
+                $event = $this->eventRepository->find($event_id);
+                $booking = Booking::find($booking_id);
+                $result = $this->bookingRepository->changeCode($booking, $booking_code);
+                if($result){
+                    return redirect()->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                    ->with('success', 'Booking code updated successfully.');
+                }
+               
+            }, $event_id,$booking_id, $booking_code);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
     
 
 }
