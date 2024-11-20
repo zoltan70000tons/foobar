@@ -10,6 +10,8 @@ use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class CabinRepository implements CabinInterface
 {
@@ -31,9 +33,20 @@ class CabinRepository implements CabinInterface
   {
     $cabin = $this->find($id);
     $cabin->notes = $data['notes'] ?? null;
-    $cabin->tags = array_values($data['tags']);
+    $cabin->tags = isset($data['tags']) && is_array($data['tags']) && count($data['tags']) > 0
+    ? array_values($data['tags'])
+    : [];
 
     if ($cabin->status !== StatusCabin::BOOKED && $cabin->status !== StatusCabin::PARTIALLY_BOOKED) {
+
+      if (isset($data['cabin_type']) && $data['cabin_type'] !== $cabin->cabin_type_id) {
+        if ($cabin->cabin_type_id === 1 && ($data['cabin_type'] === "2" || $data['cabin_type'] === "3")) {
+          $cabin->inventory = $cabin->category->capacity;
+        } elseif (($cabin->cabin_type_id === 3 || $cabin->cabin_type_id === 2) && $data['cabin_type'] === "1") {
+          $cabin->inventory = 1;
+        }
+        $cabin->cabin_type_id = $data['cabin_type'];
+      }
       $cabin->status = $data['cabin_status'];
       $cabin->cabin_number = $data['cabin_number'];
       $cabin->cabin_category_id = $data['cabin_category'];
@@ -89,7 +102,7 @@ class CabinRepository implements CabinInterface
               'total_berths'    => $cabin->total_berths,
               'cabin_number'    => $cabin->cabin_number,
               'cabin_status'    => $cabin->status,
-              'ticket_inventory'=> $ticketInventory,
+              'ticket_inventory' => $ticketInventory,
               'cabin_type'      => $cabin->cabinType->cabin_type,
               'cabin_tags'      => $cabin->tags
             ];
