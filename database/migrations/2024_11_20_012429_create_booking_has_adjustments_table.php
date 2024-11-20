@@ -11,10 +11,10 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('booking_has_discounts', function (Blueprint $table) {
+    Schema::create('booking_has_adjustments', function (Blueprint $table) {
       $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade'); // References bookings table
-      $table->foreignId('discount_id')->constrained('discounts')->onDelete('cascade'); // References discounts table
-      $table->primary(['booking_id', 'discount_id']); // Composite primary key
+      $table->foreignId('adjustment_id')->constrained('adjustments')->onDelete('cascade'); // References the adjustments table
+      $table->primary(['booking_id', 'adjustment_id']); // Composite primary key
     });
   }
 
@@ -23,6 +23,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('booking_has_discounts');
+    Schema::dropIfExists('booking_has_adjustments');
   }
 };
