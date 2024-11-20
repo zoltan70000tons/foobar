@@ -18,17 +18,34 @@ class CartController extends Controller
   // Add item to cart session
   public function store(Request $request)
   {
-    $request->validate([
-      "id" => "required",
-      "quantity" => "required|integer|min:1",
+    $validated = $request->validate([
+      "event" => "required|string",
+      "ticketType" => "nullable|string",
+      "addons" => "nullable|array",
+      "step" => "required|integer",
+      "paymentPlan" => "nullable|string",
+      "cabinSelection" => "nullable|string",
+      "selectedRoom" => "nullable|string",
+      "reservationId" => "nullable|string",
+      "reservationTimestamp" => "nullable|string",
+      "cabinPrice" => "required|string",
+      "cabinCapacity" => "required|integer",
+      "cabinCode" => "nullable|string",
+      "cabinCategory" => "required|integer",
+      "categoryDecks" => "required|string",
     ]);
 
-    $cart = $request->session()->get("cart", []);
+    session(["cart" => $validated]);
 
-    $cart[$request->id] = $request->quantity;
+    return response()->json(["message" => "Cart updated successfully"], 200);
+  }
 
-    $request->session()->put("cart", $cart);
+  // destroy cart session
+  public function destroy(Request $request)
+  {
+    $request->session()->forget("cart");
+    $request->session()->forget("reserved_cabin_id");
 
-    return response()->json(["message" => "Item added to cart"], 200);
+    return response()->json(["message" => "Cart cleared successfully"], 200);
   }
 }

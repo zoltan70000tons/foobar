@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Customer\PricingMatrixController;
 use App\Http\Controllers\Api\Customer\EditProfileController;
 use App\Http\Controllers\Api\Customer\AdjustmentsController;
 use App\Http\Controllers\Api\Customer\CartController;
+use Illuminate\Routing\Router;
 
 /**
  * Auth API Routes
@@ -77,7 +78,7 @@ Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
 Route::get("/cart", [CartController::class, "index"]);
 Route::post("/cart", [CartController::class, "store"]);
-
+Route::delete("/cart", [CartController::class, "destroy"]);
 // get single category
 Route::get("/cabins/category/{categoryId}", [CabinController::class, "showCategory"]);
 

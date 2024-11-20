@@ -130,9 +130,20 @@ class CabinController extends Controller
         "inventory" => 1,
       ]);
 
+      // update temporary reservation id in session
       $request->session()->put("reserved_cabin_id", $reserved->id);
 
+      // update session cart
+      $cart = $request->session()->get("cart", []); // Fetch existing cart or initialize an empty array
+      $cart["cabinSelection"] = "clientSelect"; // Update cabin selection
+      $cart["selectedRoom"] = $cabin["cabin_number"]; // Update selected room
+      $cart["reservationId"] = $reserved->id; // Update reservation ID
+      $cart["reservationTimestamp"] = now()->timestamp; // Update reservation timestamp
+      $request->session()->put("cart", $cart);
+
       DB::commit();
+
+      // update session cart
 
       return response()->json(
         [
@@ -212,6 +223,12 @@ class CabinController extends Controller
       // Store the reservation ID in the session to prevent further reservations
       $request->session()->put("reserved_cabin_id", $reserved->id);
 
+      $cart = $request->session()->get("cart", []); // Fetch existing cart or initialize an empty array
+      $cart["cabinSelection"] = "weSelect"; // Update cabin selection
+      $cart["reservationId"] = $reserved->id; // Update reservation ID
+      $cart["reservationTimestamp"] = now()->timestamp; // Update reservation timestamp
+      $request->session()->put("cart", $cart); // Save the updated cart
+
       DB::commit();
 
       return response()->json(
@@ -257,6 +274,9 @@ class CabinController extends Controller
 
     // Remove the reserved_cabin_id from the session
     $request->session()->forget("reserved_cabin_id");
+
+    // update session cart
+    $request->session()->forget("cart");
 
     return response()->json(["message" => "Cabin released"], 200);
   }
