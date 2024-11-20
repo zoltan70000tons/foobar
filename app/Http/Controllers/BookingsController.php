@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Events\BookingLocked;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Interfaces\LogInterface;
 use App\Interfaces\TeamRepositoryInterface;
+use App\Models\Booking;
+use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Repositories\BookingRepository;
@@ -23,7 +26,9 @@ use Illuminate\Support\Facades\Storage;
 use App\Rules\ValidDateFormat;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
+use Database\Seeders\BookingSeeder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 class BookingsController extends Controller
 {
@@ -122,7 +127,7 @@ class BookingsController extends Controller
         }
     }
 
-    public function show(Cabin $cabin) {
+    public function show(Request $request) {
         try {
             $event_id = request()->route('id');
             $booking_code = request()->route('booking_code');
@@ -146,5 +151,36 @@ class BookingsController extends Controller
     public function destroy(Cabin $cabin) {}
 
     public function addTag(Request $request) {}
+
+    public function editMode(Request $request)
+    {
+        $booking_id = $request->input('booking_id');
+        $lock = $request->input('lock');
+        $event_id = $request->input('event_id');
+    
+        return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_id, $lock) {
+            // Buscar el evento y la reserva
+            $event = $this->eventRepository->find($event_id);
+            $booking = Booking::find($booking_id);
+    
+            // if (!$booking) {
+            //     return response()->json(['error' => 'Booking not found'], 404);
+            // }
+    
+            if ($lock == "1") {
+                $bookingSession = new BookingAgentSessions();
+                $bookingSession->agent_id = Auth::user()->id;
+                $bookingSession->booking_id = $booking->id;
+                $bookingSession->save();
+            } elseif ($lock == "0") {
+                // Eliminar el bloqueo si existe
+                $bookingSession = BookingAgentSessions::where('booking_id', $booking_id)->first();
+                if ($bookingSession) {
+                    $bookingSession->delete();
+                }
+            }
+        }, $event_id, $booking_id, $lock);
+    }
+    
 
 }

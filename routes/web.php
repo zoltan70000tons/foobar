@@ -20,6 +20,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Events\TestMessageSent;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -110,7 +111,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])
     ->name('bookings.update');
     Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name('bookings.assignAgent');
-
+    Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
@@ -128,6 +129,9 @@ Route::put('/join-organization', [OrganizationController::class, 'join'])->name(
 //Route::get('/send-test-email', [MailTestController::class, 'sendMail']);
 
 
-
+Route::get('/test-broadcast', function () {
+    broadcast(new TestMessageSent('Este es un mensaje de prueba.'));
+    return 'Mensaje enviado';
+});
 
 require __DIR__ . '/auth.php';

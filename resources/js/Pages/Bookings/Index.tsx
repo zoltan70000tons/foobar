@@ -209,13 +209,6 @@ const Index = ({
                 style={{ cursor: "pointer" }}
               />
             )}
-
-            {hasPermission(Permissions.ViewCabins) && (
-              <PersonIcon
-                onClick={() => handleViewClick(row)}
-                style={{ cursor: "pointer" }}
-              />
-            )}
           </div>
         ),
       },

@@ -16,7 +16,7 @@ import {
 import "dayjs/locale/en";
 import { BookingTagEnum } from "@/enums/TagEnum";
 import EditIcon from '@mui/icons-material/Edit';
-const Detail = ({ booking }) => {
+const Detail = ({ booking, editMode }) => {
   return (
     <>
     <Box>
@@ -35,7 +35,7 @@ const Detail = ({ booking }) => {
                     {booking?.cabin?.cabin_type?.cabin_type}
                   </TableCell>
                   <TableCell align="right">
-                  <IconButton color="secondary">
+                  <IconButton color="secondary" disabled={!editMode}>
                                     <EditIcon />
                                 </IconButton>
                   </TableCell>
