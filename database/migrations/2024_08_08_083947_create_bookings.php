@@ -14,8 +14,8 @@ return new class extends Migration
     Schema::create('bookings', function (Blueprint $table) {
       $table->id();
       $table->string('booking_code')->unique(); // Unique booking code e.g. Cabin Number + Random String
-      $table->uuid('customer_id')->references('id')->on('users'); // References users table
-      $table->enum('payment_plan', ['PAY_IN_FULL', '4_INSTALLMENTS', '3_INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
+      $table->uuid('customer_id')->references('id')->on('users')->onDelete('cascade'); // References users table
+      $table->enum('payment_plan', ['PAY_IN_FULL', 'INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
       $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
       $table->boolean('completed')->default(false); // Indicates if booking is completed
       $table->boolean('is_cancelled')->default(false); // Indicates if booking is cancelled
