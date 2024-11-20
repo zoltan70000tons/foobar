@@ -103,6 +103,8 @@ const Edit = ({
   const disableFields = cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED;
   const statusSource = disableFields ? CabinStatus : CabinStatusReduced;
 
+  const canUpdateInventory = hasPermission(Permissions.EditCabinInventory);
+
   const statusIcons = {
     [CabinStatus.AVAILABLE]: (
       <CheckCircle
@@ -178,6 +180,7 @@ const Edit = ({
             severity: "success",
             message: "Cabin edited successfully",
           });
+          router.visit(route('cabins.edit', { id: event.id, cabin_id: cabin.id}), { only: ['cabins'] });
         },
         onError: (errors) => {
           setSnackbar({
@@ -409,6 +412,7 @@ const Edit = ({
                             value={cabinType}
                             onChange={(e) => setCabinType(e.target.value)}
                             label="Cabin Type"
+                            disabled={canEdit || disableFields}
                           >
                             {cabinTypeOptions.map((option) => (
                               <MenuItem key={option.value} value={option.value}>
@@ -428,7 +432,7 @@ const Edit = ({
                           label="Ticket Inventory"
                           variant="outlined"
                           fullWidth
-                          disabled={canEdit || disableFields}
+                          disabled
                           value={ticketInventory}
                           onChange={(e) => setTicketInventory(e.target.value)}
                         />

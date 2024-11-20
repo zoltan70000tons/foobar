@@ -17,6 +17,7 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Avatar,
 } from "@mui/material";
 import MuiTable from "@/Components/tables/MuiTable";
 import {
@@ -31,6 +32,8 @@ import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import { Visibility } from "@mui/icons-material";
 import { current } from "@reduxjs/toolkit";
+import PersonIcon from '@mui/icons-material/Person';
+import UserSelectorModal from "@/Components/UserSelectorModal";
 
 const Index = ({
   auth,
@@ -39,16 +42,56 @@ const Index = ({
   inProgressBookings,
   uploadedBookings,
   cancelledBookings,
+  users,
   errors,
 }: PageProps & { tab: string; data: any }) => {
+
+  console.log(newBookings, users);
   const { hasPermission } = usePermissions();
   const [selectedTab, setSelectedTab] = useState(0);
 
   const [openDialog, setOpenDialog] = useState(false);
-
-  const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  
 
+  const handleOpenModal = (userId: string | null, booking_id : string | null) => {
+    setSelectedBookingId(booking_id);
+    setSelectedUserId(userId);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleSave = (userId: string | null) => {
+    if (!userId) return;
+    router.put(
+      route("bookings.assignAgent", { id:event.id }),
+      { agent_id: userId, booking_code: selectedBookingId },
+      {
+        onSuccess: () => {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "User assigned successfully.",
+          });
+          setOpenModal(false);
+        },
+        onError: (errors) => {
+          setSnackbar({
+            open: true,
+            severity: "error",
+            message: "There was an error assigning the user.",
+          });
+        },
+        preserveScroll: true,
+      }
+    );
+  };
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
   };
@@ -67,9 +110,16 @@ const Index = ({
     setOpenDialog(false);
   };
 
-  const handleViewClick = () => {
-    console.log("on click");
+  const handleViewClick = (row) => {
+    router.get(
+      route("bookings.show", { id: event.id, booking_code: row.booking_code })
+    );
   };
+
+  const handleClick = (agent_id : String, booking_id: String) => {
+    handleOpenModal(agent_id, booking_id);
+
+  }
 
   const bookingColumns = useMemo(
     () => [
@@ -123,6 +173,31 @@ const Index = ({
       },
 
       {
+        header: "Assigned to",
+        accessor: "agent_id",
+        draw: (row) => {
+          const agent = row?.agent;
+          const label = agent?.username ? agent.username : <em>Not Assigned</em>;
+          const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>N</Avatar>;
+
+          return (
+            <Box sx={{ display: "inline-flex", gap: 0.5 }}>
+              <Chip
+                key={row.id}
+                label={label}
+                avatar={avatar}
+                onClick={() => handleClick(agent?.id, row.booking_code)}
+                size="small"
+                color={agent?.username ? "primary" : "default"}
+                sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
+              />
+            </Box>
+          );
+        }
+      }
+      ,
+
+      {
         header: "Actions",
         accessor: "",
         disableFilter: true,
@@ -160,8 +235,8 @@ const Index = ({
         accessor: "phone",
       },
       {
-        header: "Citizenship",
-        accessor: "citizenship",
+        header: "Country Of Residence",
+        accessor: "country",
       },
       {
         header: "Balance",
@@ -190,8 +265,8 @@ const Index = ({
     );
   };
   return (
-    <AuthenticatedLayout user={auth.user} header={"Cabins"}>
-      <Head title="Cabins" />
+    <AuthenticatedLayout user={auth.user} header={"Bookings"}>
+      <Head title="Bookings" />
       <Toolbar sx={{ mt: 8 }}>
         <IconButton edge="start" color="inherit" aria-label="menu">
           <img src={event.image} alt="Logo" style={{ height: 40 }} />
@@ -267,7 +342,7 @@ const Index = ({
                 showCheckBox={false}
                 showSubCheckBox={false}
                 showCustomFilter={true}
-                  onCustomFilter={customFilter}
+                onCustomFilter={customFilter}
               />
             </Box>
 
@@ -276,6 +351,14 @@ const Index = ({
               severity={snackbar.severity}
               message={snackbar.message}
               onClose={handleCloseSnackbar}
+            />
+
+            <UserSelectorModal
+              open={openModal}
+              onClose={handleCloseModal}
+              onSave={handleSave}
+              initialUserId={selectedUserId}
+              users={users}
             />
           </Grid>
         </Grid>

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95aff67f8381e21e33786f918cf9795e",
+    "content-hash": "241bf0b436d9658ba2ae763ac55fff81",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1946,16 +1946,16 @@
         },
         {
             "name": "laravel/reverb",
-            "version": "v1.2.0",
+            "version": "v1.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/reverb.git",
-                "reference": "d4993bc6b8664d439c1c7d248bd25ef371e532cf"
+                "reference": "3b00b9cc5c9c4075a3e48bb50ffcca7a91ed96fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/reverb/zipball/d4993bc6b8664d439c1c7d248bd25ef371e532cf",
-                "reference": "d4993bc6b8664d439c1c7d248bd25ef371e532cf",
+                "url": "https://api.github.com/repos/laravel/reverb/zipball/3b00b9cc5c9c4075a3e48bb50ffcca7a91ed96fe",
+                "reference": "3b00b9cc5c9c4075a3e48bb50ffcca7a91ed96fe",
                 "shasum": ""
             },
             "require": {
@@ -1965,7 +1965,7 @@
                 "illuminate/contracts": "^10.47|^11.0",
                 "illuminate/http": "^10.47|^11.0",
                 "illuminate/support": "^10.47|^11.0",
-                "laravel/prompts": "^0.1.15",
+                "laravel/prompts": "^0.1.15|^0.2.0|^0.3.0",
                 "php": "^8.2",
                 "pusher/pusher-php-server": "^7.2",
                 "ratchet/rfc6455": "^0.3.1",
@@ -2022,9 +2022,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/reverb/issues",
-                "source": "https://github.com/laravel/reverb/tree/v1.2.0"
+                "source": "https://github.com/laravel/reverb/tree/v1.4.3"
             },
-            "time": "2024-08-16T17:59:50+00:00"
+            "time": "2024-10-31T17:06:44+00:00"
         },
         {
             "name": "laravel/sanctum",
@@ -11255,12 +11255,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

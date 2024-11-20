@@ -32,6 +32,15 @@ class Booking extends Model
     return $this->belongsTo(User::class, 'customer_id');
   }
 
+    /**
+   * Relationship: A booking belongs to a customer.
+   */
+  public function agent()
+  {
+    return $this->belongsTo(User::class, 'agent_id');
+  }
+
+
   /**
    * Relationship: A booking belongs to one cabin (one-to-one).
    */
@@ -80,4 +89,13 @@ class Booking extends Model
     // Update the cabin inventory and status
     $cabin->updateInventoryOnBooking();
   }
+
+  public function logs()
+    {
+        return $this->hasMany(BookingLog::class, 'booking_id', 'id');
+    }
+
+    public function lockedBy(){
+      return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
+    }
 }
