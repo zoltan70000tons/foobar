@@ -2,32 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 
-// AUTH CUSTOMER
 use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
-//use App\Http\Controllers\AuthCustomer\CustomerPassResetInsideController;
 use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
 use App\Http\Controllers\AuthCustomer\RecoverAccountController;
-
-// BOOKING
 use App\Http\Controllers\Api\Customer\BookingController;
-
-// CABIN
 use App\Http\Controllers\Api\Customer\CabinController;
-
-// PRICING MATRIX
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
-
-// EDIT PROFILE
 use App\Http\Controllers\Api\Customer\EditProfileController;
-
-// BROADCAST
-use App\Events\CabinChange;
-
-// log
-use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Api\Customer\AdjustmentsController;
+use App\Http\Controllers\Api\Customer\CartController;
 
 /**
  * Auth API Routes
@@ -86,10 +72,11 @@ Route::middleware(["membership_sales"])->group(function () {
 
 // --- GROUP WITHOUT MIDDLEWARE ---
 Route::get("/events", [BookingController::class, "show"]);
-//Route::get('/events/{id}/{language?}', [BookingController::class, 'showOne']);
-
+Route::get("/events/{id}/adjustments", [AdjustmentsController::class, "show"]);
 Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
+Route::get("/cart", [CartController::class, "index"]);
+Route::post("/cart", [CartController::class, "store"]);
 
 // get single category
 Route::get("/cabins/category/{categoryId}", [CabinController::class, "showCategory"]);
