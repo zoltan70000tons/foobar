@@ -29,8 +29,7 @@ class DatabaseSeeder extends Seeder
             CabinSeeder::class,
             BookingSeeder::class,
             PassengersSeeder::class,
-            AddonSeeder::class,
-            DiscountSeeder::class,
+            AdjustmentsSeeder::class,
         ]);
     }
 }

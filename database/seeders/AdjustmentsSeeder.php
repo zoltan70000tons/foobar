@@ -5,55 +5,79 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class AddonSeeder extends Seeder
+class AdjustmentsSeeder extends Seeder
 {
   public function run()
   {
-    DB::table('addons')->insert([
+    DB::table('adjustments')->insert([
+      // Discounts
       [
-        'code' => 'CHOOSE_YOUR_CABIN',
-        'type' => 'FIXED',
+        'code' => 'SINGLE_TICKET_FEE',
+        'type' => 'DISCOUNT',
+        'operation' => 'FIXED',
         'value' => 100.00,
+        'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
       ],
       [
-        'code' => 'TAXES',
-        'type' => 'FIXED',
-        'value' => 487.00,
+        'code' => 'PAID_IN_FULL',
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 5.00,
+        'restrictions' => null,
+        'event_id' => 1,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ],
+      // Addons
+      [
+        'code' => 'CHOOSE_YOUR_CABIN',
+        'type' => 'ADDON',
+        'operation' => 'FIXED',
+        'value' => 100.00,
+        'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
       ],
       [
         'code' => 'CARBON_OFFSET_I',
-        'type' => 'FIXED',
+        'type' => 'ADDON',
+        'operation' => 'FIXED',
         'value' => 42.80,
+        'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
       ],
       [
         'code' => 'CARBON_OFFSET_O',
-        'type' => 'FIXED',
+        'type' => 'ADDON',
+        'operation' => 'FIXED',
         'value' => 42.80,
+        'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
       ],
       [
         'code' => 'CARBON_OFFSET_B',
-        'type' => 'FIXED',
+        'type' => 'ADDON',
+        'operation' => 'FIXED',
         'value' => 44.55,
+        'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
       ],
       [
         'code' => 'CARBON_OFFSET_S',
-        'type' => 'FIXED',
+        'type' => 'ADDON',
+        'operation' => 'FIXED',
         'value' => 56.90,
+        'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
