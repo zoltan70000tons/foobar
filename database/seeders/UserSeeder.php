@@ -57,7 +57,8 @@ class UserSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'created_at' => $this->faker->dateTime($max = 'now'),
                     'updated_at' => $this->faker->dateTime($max = 'now'),
-                    'organization_id' => env('ORGANIZATION_ID', 1)
+                    'organization_id' => env('ORGANIZATION_ID', 1),
+                    'username' => $name.$index
                 ]
             );
             UserDetail::create([

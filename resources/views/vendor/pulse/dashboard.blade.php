@@ -21,4 +21,8 @@
 
     <livewire:reverb.messages cols="full" />
 
+    <livewire:reverb.connections cols="full" />
+    
+    <livewire:reverb.messages cols="full" />
+
 </x-pulse>

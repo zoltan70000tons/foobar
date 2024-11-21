@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Booking;
 use App\Models\Cabin;
 use App\Models\User;
+use Illuminate\Support\Arr;
 use Spatie\Permission\Models\Role;
 
 class BookingSeeder extends Seeder
@@ -53,6 +54,7 @@ class BookingSeeder extends Seeder
           "customer_id" => $customer->id,
           "cabin_id" => $cabin->id,
         ]);
+
 
         // Use the assignCabin() method to assign the cabin and handle inventory/status updates
         $booking->assignCabin($cabin);

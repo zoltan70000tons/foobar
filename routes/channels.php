@@ -9,3 +9,11 @@ Broadcast::channel("App.Models.User.{id}", function ($user, $id) {
 Broadcast::channel("temporary-reservations", function () {
   return true;
 });
+
+Broadcast::channel("bookings-locked", function () {
+  return true;
+});
+
+Broadcast::channel("test-channel", function () {
+  return true;
+});
