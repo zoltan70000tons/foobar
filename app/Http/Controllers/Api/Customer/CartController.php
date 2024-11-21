@@ -10,7 +10,11 @@ class CartController extends Controller
   // get items from cart session
   public function index(Request $request)
   {
+    // if cart session is empty, return an empty array else return the cart session
+
     $cart = $request->session()->get("cart", []);
+
+    \Log::info($cart);
 
     return response()->json($cart, 200);
   }
@@ -19,20 +23,20 @@ class CartController extends Controller
   public function store(Request $request)
   {
     $validated = $request->validate([
-      "event" => "required|string",
-      "ticketType" => "nullable|string",
+      "event_id" => "required|string",
+      "cabin_type" => "nullable|string",
       "addons" => "nullable|array",
       "step" => "required|integer",
-      "paymentPlan" => "nullable|string",
-      "cabinSelection" => "nullable|string",
-      "selectedRoom" => "nullable|string",
-      "reservationId" => "nullable|string",
-      "reservationTimestamp" => "nullable|string",
-      "cabinPrice" => "required|string",
-      "cabinCapacity" => "required|integer",
-      "cabinCode" => "nullable|string",
-      "cabinCategory" => "required|integer",
-      "categoryDecks" => "required|string",
+      "payment_plan" => "nullable|string",
+      "choose_your_cabin" => "nullable|boolean",
+      "cabin_number" => "nullable|integer",
+      "reservation_id" => "nullable|string",
+      "reservation_timestamp" => "nullable|string",
+      "cabin_price" => "required|string",
+      "cabin_capacity" => "required|integer",
+      "cabin_code" => "nullable|string",
+      "cabin_category" => "required|integer",
+      "cabin_category_decks" => "required|string",
     ]);
 
     session(["cart" => $validated]);
