@@ -12,14 +12,14 @@ class BookingFactory extends Factory
 
   public function definition()
   {
-    return [      
-      'booking_code' => null, // Placeholder, will be overridden in seeder
-      'customer_id' => User::factory(), // Placeholder, will be overridden in seeder
-      'payment_plan' => $this->faker->randomElement(['PAY_IN_FULL', 'INSTALLMENTS']), // Randomly select a payment plan
-      'cabin_id' => null, // Placeholder, will be overridden in seeder
-      'tags' => ['New'], // Default tag set to "New"
-      'created_at' => now(),
-      'updated_at' => now(),
+    return [
+      "booking_code" => null, // Placeholder, will be overridden in seeder
+      "customer_id" => User::factory(), // Placeholder, will be overridden in seeder
+      //'payment_plan' => $this->faker->randomElement(['PAY_IN_FULL', 'INSTALLMENTS']), // Randomly select a payment plan
+      "cabin_id" => null, // Placeholder, will be overridden in seeder
+      "tags" => ["New"], // Default tag set to "New"
+      "created_at" => now(),
+      "updated_at" => now(),
     ];
   }
 }
