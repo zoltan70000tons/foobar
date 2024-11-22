@@ -225,9 +225,9 @@ class CabinController extends Controller
       $request->session()->put("reserved_cabin_id", $reserved->id);
 
       $request->session()->put("cart", [
-        "cabinSelection" => "weSelect",
-        "reservationId" => $reserved->id,
-        "reservationTimestamp" => now()->timestamp,
+        "choose_your_cabin" => false,
+        "reservation_id" => $reserved->id,
+        "reservation_timestamp" => now()->timestamp,
       ]);
 
       \Log::info("Cabin reserved", [$request->session()->get("cart")]);
