@@ -135,9 +135,11 @@ class BookingsController extends Controller
                 $event = $this->eventRepository->find($event_id);
                 $booking = $this->bookingRepository->findByCode($booking_code);     
                 $isEditable = $booking->agent_id === auth()->id();
+                $users = $this->teamRepository->getAllMembers(1);
                 return Inertia::render('Bookings/partials/Show', [
                     'event' => $event,
                     'booking' =>$booking,
+                    'users' => $users,
                     'isEditable' => $isEditable
                 ]);
 
@@ -182,6 +184,28 @@ class BookingsController extends Controller
         }, $event_id, $booking_id, $lock);
     }
 
+    public function statusUpdate(Request $request) {
+        try {
+            $event_id = request()->route('id');
+            
+            $booking_id = $request->input('booking_id');
+            $status = $request->input('status');
+
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_id, $status) {
+                //$event = $this->eventRepository->find($event_id);
+                $booking = Booking::find($booking_id);
+                $result = $this->bookingRepository->changeStatus($booking, $status);
+                if($result){
+                    return redirect()->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                    ->with('success', 'Status updated successfully.');
+                }
+               
+            }, $event_id,$booking_id, $status);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
     public function cabinUpdate(Request $request) {
         try {
             $event_id = request()->route('id');
@@ -221,6 +245,46 @@ class BookingsController extends Controller
                 }
                
             }, $event_id,$booking_id, $booking_code);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+    public function addComment(Request $request) {
+        try {
+            $event_id = request()->route('id');
+            $booking_id = $request->input('booking_id');
+            $comment = $request->input('comment');
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_id, $comment) {
+                $event = $this->eventRepository->find($event_id);
+                $booking = Booking::find($booking_id);
+                $result = $this->bookingRepository->addComment($booking, $comment);
+                if($result){
+                    return redirect()->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                    ->with('success', 'Comment added successfully.');
+                }
+               
+            }, $event_id,$booking_id, $comment);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+    public function updateTags(Request $request) {
+        try {
+            $event_id = request()->route('id');
+            $booking_id = $request->input('booking_id');
+            $tags = $request->input('tags');
+            return $this->withPermission([Permissions::EditBookings], function ($event_id, $booking_id, $tags) {
+                $event = $this->eventRepository->find($event_id);
+                $booking = Booking::find($booking_id);
+                $result = $this->bookingRepository->addTags($booking, $tags);
+                if($result){
+                    return redirect()->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                    ->with('success', 'Tags updated successfully.');
+                }
+               
+            }, $event_id,$booking_id, $tags);
         } catch (\Exception $e) {
             $this->logException($e);
         }

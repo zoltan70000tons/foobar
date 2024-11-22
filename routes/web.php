@@ -109,6 +109,12 @@ Route::middleware('auth')->group(function () {
     ->name('bookings.updateCabin');
     Route::post('/events/{id}/bookings/update-code', [BookingsController::class, 'codeUpdate'])
     ->name('bookings.updateCode');
+    Route::post('/events/{id}/bookings/update-status', [BookingsController::class, 'statusUpdate'])
+    ->name('bookings.updateStatus');
+    Route::post('/events/{id}/bookings/add-comment', [BookingsController::class, 'addComment'])
+    ->name('bookings.addComment');
+    Route::post('/events/{id}/bookings/update-tags', [BookingsController::class, 'updateTags'])
+    ->name('bookings.updateTags');
     Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])
     ->name('bookings.show');
     Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])

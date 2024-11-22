@@ -109,6 +109,11 @@ class Booking extends Model
     return $this->hasMany(BookingLog::class, 'booking_id', 'id');
   }
 
+  public function comments()
+  {
+    return $this->hasMany(Comment::class, 'booking_id', 'id');
+  }
+
   public function lockedBy()
   {
     return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
