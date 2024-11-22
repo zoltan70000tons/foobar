@@ -16,6 +16,7 @@ return new class extends Migration
       $table->foreignId('booking_id')->constrained('bookings');
       $table->uuid('user_id')->foreignId('user_id')->references('id')->on('users');
       $table->string('action', 255);
+      $table->string('description', 255)->nullable();
       $table->timestamps();
     });
   }

@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 
-class BookingLog extends Model
+class Comment extends Model
 {
   use HasFactory;
+  protected $table = "booking_comments";
 
   protected $fillable = [
     'id',
     'booking_id',
     'user_id',
-    'action',
+    'comment',
     'created_at',
-    'description',
     'updated_at',
 
   ];

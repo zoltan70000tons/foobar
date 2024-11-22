@@ -6,10 +6,16 @@ use App\Interfaces\BookingInterface;
 use App\Models\Booking;
 use DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use App\Models\BookingLog;
+use App\Models\Comment;
+use App\Traits\BookingLogTrait;
+use Illuminate\Support\Facades\Auth;
 
 class BookingRepository implements BookingInterface
 {
 
+  use BookingLogTrait;
 
 
   function getAll()
@@ -101,7 +107,7 @@ class BookingRepository implements BookingInterface
 
   function findByCode($code)
   {
-    return Booking::with('cabin', 'cabin.cabinType', 'cabin.cabinCategory', 'passengers', 'logs', 'logs.user', 'lockedBy')->where('booking_code', '=', $code)->first();
+    return Booking::with('cabin', 'cabin.cabinType', 'cabin.cabinCategory', 'passengers', 'logs', 'logs.user', 'lockedBy', 'comments', 'comments.user', 'agent')->where('booking_code', '=', $code)->first();
   }
 
   function save(array $data): ?Booking
@@ -126,7 +132,115 @@ class BookingRepository implements BookingInterface
     dd('ok');
   }
 
+  function addTags($booking, $tags)
+  {
+      try {
+          if (!is_array($tags)) {
+              throw new InvalidArgumentException('Tags must be an array.');
+          }
+  
+          $originalTags = $booking->tags;
+  
+          $booking->update([
+              'tags' => $tags,
+          ]);
+  
+          if ($originalTags !== $tags) {
+              $this->saveBookingLog(
+                  $booking->id,
+                  'Changed booking tags',
+                  sprintf(
+                      'Booking tags changed from [%s] to [%s].',
+                      implode(', ', $originalTags ?? []),
+                      implode(', ', $tags)
+                  )
+              );
+          }
+  
+          return $booking;
+      } catch (\Throwable $e) {
+          \Log::error("Failed to update tags for booking ID {$booking->id}: {$e->getMessage()}");
+          throw $e; 
+      }
+  }
 
+  function changeCabin(Booking $booking, $cabin_number)
+  {
+    $booking = $booking->changeCabin($cabin_number);
+    if ($booking) {
+      $cabin = $booking->cabin;
+      $this->saveBookingLog(
+        $booking->id,
+        'Changed cabin number',
+        "Cabin number changed from {$cabin->cabin_number} to {$cabin_number}."
+      );
+    }
+    return $booking;
+  }
 
-  function addTags(array $tags, array $cabins) {}
+  function changeCode(Booking $booking, $new_code)
+  {
+    try {
+      if (empty($new_code)) {
+        throw new InvalidArgumentException('The new booking code cannot be empty.');
+      }
+
+      if (Booking::where('booking_code', $new_code)->exists()) {
+        throw new InvalidArgumentException('The new booking code is already in use.');
+      }
+      $originalCode = $booking->booking_code;
+      $booking->booking_code = $new_code;
+      $booking->save();
+      $this->saveBookingLog(
+        $booking->id,
+        'Changed booking code',
+        "Booking code changed manually from {$originalCode} to {$new_code}."
+      );
+
+      return $booking;
+    } catch (\Exception $e) {
+      return false;
+    }
+  }
+
+  public function changeStatus(Booking $booking, $status)
+  {
+    try {
+      if (empty($status)) {
+        throw new InvalidArgumentException('The status field cannot be empty.');
+      }
+      $originalStatus = $booking->status;
+      $booking->status = $status;
+      $booking->save();
+      $this->saveBookingLog(
+        $booking->id,
+        'Changed booking status',
+        "Booking status changed from {$originalStatus} to {$status}."
+      );
+      return $booking;
+    } catch (\Exception $e) {
+      Log::info($e);
+      return false;
+    }
+  }
+
+  public function addComment(Booking $booking, $comment)
+  {
+    try {
+      if (empty($comment)) {
+        throw new InvalidArgumentException('The comment field cannot be empty.');
+      }
+      $sanitizedComment = htmlspecialchars(strip_tags($comment));
+      $formattedComment = ucfirst($sanitizedComment);
+      Comment::create([
+        'booking_id' => $booking->id,
+        'user_id' => Auth::id(),
+        'comment' => $formattedComment
+      ]);
+      return $booking;
+    } catch (\Exception $e) {
+      Log::info($e);
+      return false;
+    }
+  }
 }
