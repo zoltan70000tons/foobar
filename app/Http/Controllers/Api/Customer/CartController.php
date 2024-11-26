@@ -72,7 +72,40 @@ class CartController extends Controller
       "cabin_category_decks" => "nullable|string",
     ]);
 
+    if ($request->session()->has("cart")) {
+      $this->destroy($request);
+    }
+
+    \Log::info("CartController@store: " . json_encode($validated));
+
     session(["cart" => $validated]);
+
+    \Log::info("CartController@SESSIOn: " . json_encode($request->session()->get("cart")));
+
+    return response()->json(["message" => "Cart updated successfully"], 200);
+  }
+
+  // Update cart session
+  public function update(Request $request)
+  {
+    $validated = $request->validate([
+      "event_id" => "required|string",
+      "cabin_type" => "nullable|string",
+      "addons" => "nullable|array",
+      "step" => "required|integer",
+      "payment_plan" => "nullable|string",
+      "choose_your_cabin" => "nullable|boolean",
+      "cabin_number" => "nullable|integer",
+      "reservation_id" => "nullable|integer",
+      "reservation_timestamp" => "nullable|string",
+      "cabin_price" => "nullable|string",
+      "cabin_capacity" => "nullable|integer",
+      "cabin_code" => "nullable|string",
+      "cabin_category" => "nullable|integer",
+      "cabin_category_decks" => "nullable|string",
+    ]);
+
+    $request->session()->put("cart", $validated);
 
     return response()->json(["message" => "Cart updated successfully"], 200);
   }

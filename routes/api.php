@@ -76,9 +76,13 @@ Route::get("/events", [BookingController::class, "show"]);
 Route::get("/events/{id}/adjustments", [AdjustmentsController::class, "show"]);
 Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
+
+// --- CART ---
 Route::get("/cart/{eventId}", [CartController::class, "index"]);
 Route::post("/cart", [CartController::class, "store"]);
+Route::put("/cart", [CartController::class, "update"]);
 Route::delete("/cart", [CartController::class, "destroy"]);
+
 // get single category
 Route::get("/cabins/category/{categoryId}", [CabinController::class, "showCategory"]);
 

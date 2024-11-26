@@ -55,12 +55,11 @@ class PriceCalculation
     // Add single ticket fee (only for one passenger)
     $totalAfterSingle = $roundToTwoDecimals($discountedPrice + ($cabinType ? $singleTicketFeeAddon : 0));
 
-    // Add tax per passenger
-    $taxTotal = $taxAddon * $capacity;
-
     // Calculate total for all passengers
     $totalPassenger = $roundToTwoDecimals($totalAfterSingle + $taxAddon + $addonsPrice);
-    $total = $roundToTwoDecimals($totalPassenger * $capacity + ($cabinType ? $singleTicketFeeAddon : 0));
+    $total = $roundToTwoDecimals(
+      $totalPassenger * ($cabinType ? $capacity : 1) + ($cabinType === false ? $singleTicketFeeAddon : 0)
+    );
 
     // Add optional selection price (once)
     if ($isSelection) {
@@ -72,21 +71,21 @@ class PriceCalculation
     $save = number_format($saveCalc, 2, ".", "");
 
     // Log for debugging
-    \Log::info("Price calculation", [
-      "cabinPrice" => $cabinPrice,
-      "capacity" => $capacity,
-      "userDiscount" => $userDiscount,
-      "cabinType" => $cabinType,
-      "paymentDiscount" => $paymentDiscount,
-      "addons" => $addons,
-      "isSelection" => $isSelection,
-      "singleTicketFeeAddon" => $singleTicketFeeAddon,
-      "taxAddon" => $taxAddon,
-      "chooseYourCabinAddon" => $chooseYourCabinAddon,
-      "total" => $total,
-      "totalPassenger" => $totalPassenger,
-      "save" => $save,
-    ]);
+    // \Log::info("Price calculation", [
+    //   "cabinPrice" => $cabinPrice,
+    //   "capacity" => $capacity,
+    //   "userDiscount" => $userDiscount,
+    //   "cabinType" => $cabinType,
+    //   "paymentDiscount" => $paymentDiscount,
+    //   "addons" => $addons,
+    //   "isSelection" => $isSelection,
+    //   "singleTicketFeeAddon" => $singleTicketFeeAddon,
+    //   "taxAddon" => $taxAddon,
+    //   "chooseYourCabinAddon" => $chooseYourCabinAddon,
+    //   "total" => $total,
+    //   "totalPassenger" => $totalPassenger,
+    //   "save" => $save,
+    // ]);
 
     return [
       "total" => $total,
