@@ -140,8 +140,6 @@ class CabinController extends Controller
         "reservationTimestamp" => now()->timestamp,
       ]);
 
-      \Log::info("Cabin reserved", [$request->session()->get("cart")]);
-
       DB::commit();
 
       // update session cart
@@ -181,13 +179,8 @@ class CabinController extends Controller
       );
     }
 
-    $cabinNumber = $request->input("cabin_number");
     $cabinTypeId = $request->input("cabin_type_id");
     $cabinCategoryId = $request->input("cabin_category_id");
-
-    if ($cabinNumber) {
-      return response()->json(["message" => "We can not reserve the cabin on this step"], 400);
-    }
 
     // if no cabinTypeId or cabinCategoryId is provided, return error
     if (!$cabinTypeId || !$cabinCategoryId) {
@@ -202,7 +195,6 @@ class CabinController extends Controller
     }
 
     // if cabin number is null, get random available cabin and temporary reserve it
-
     $cabin = $filteredCabins["cabins"]->first();
 
     if (!$cabin) {
