@@ -20,11 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->alias([
       "verified" => \App\Http\Middleware\EnsureEmailIsVerified::class,
       "auth.customer" => \App\Http\Middleware\AuthenticateCustomer::class,
-      "ensure_not_customer" =>
-        \App\Http\Middleware\EnsureUserIsNotCustomer::class,
+      "ensure_not_customer" => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
       "membership_sales" => \App\Http\Middleware\MembershipSales::class,
-      "clear_expired_reservation" =>
-        \App\Http\Middleware\ClearExpiredReservation::class,
+      "clear_expired_reservation" => \App\Http\Middleware\ClearExpiredReservation::class,
     ]);
 
     $middleware->web(
@@ -45,9 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
     );
     ////////////////////////
     //this is just for testing, remove in production for security reasons
-    $middleware->validateCsrfTokens(
-      except: ["http://localhost:8000/contact/submit"]
-    );
+    //$middleware->validateCsrfTokens(except: ["http://localhost:8000/contact/submit"]);
     ////////////////////////
   })
   ->withExceptions(function (Exceptions $exceptions) {
