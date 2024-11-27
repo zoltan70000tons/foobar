@@ -8,12 +8,8 @@ use App\Enums\StatusCabin;
 
 trait CabinFilter
 {
-  public function filterCabins(
-    $cabinTypeId,
-    $cabinCategoryId,
-    $cabinDeck = null,
-    $onlyAvailable = true
-  ) {
+  public function filterCabins($cabinTypeId, $cabinCategoryId, $cabinDeck = null, $onlyAvailable = true)
+  {
     $currentTime = Carbon::now();
 
     $cabinsQuery = Cabin::with("category")
@@ -24,9 +20,7 @@ trait CabinFilter
         return $query->where("status", StatusCabin::AVAILABLE->value);
       })
       ->withCount([
-        "temporaryReservations as active_reservations_count" => function (
-          $query
-        ) use ($currentTime) {
+        "temporaryReservations as active_reservations_count" => function ($query) use ($currentTime) {
           $query->where("expires_at", ">", $currentTime);
         },
       ]);
@@ -65,6 +59,7 @@ trait CabinFilter
           "cabin_category_id" => $cabin->cabin_category_id,
           "cabin_inventory" => $cabin->inventory,
           "cabin_category_name" => $cabin->category->category_name,
+          "cabin_category_type" => $cabin->category->category_type,
         ];
       });
 

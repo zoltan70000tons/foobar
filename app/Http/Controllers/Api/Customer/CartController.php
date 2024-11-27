@@ -26,8 +26,8 @@ class CartController extends Controller
 
     $user = Auth::check() ? Auth::user() : null;
 
-    $customer = $user->hasRole("Customer") ? $user : null;
-    $membership = $customer->membershipTypes->first() ?? null;
+    $customer = $user && $user->hasRole("Customer") ? $user : null;
+    $membership = $customer ? $customer->membershipTypes->first() : null;
 
     if ($cart && $cart["cabin_price"]) {
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
@@ -47,6 +47,9 @@ class CartController extends Controller
       $cart["price_total"] = $priceCalc["total"];
       $cart["price_total_passenger"] = $priceCalc["totalPassenger"];
       $cart["price_save"] = $priceCalc["save"];
+
+      // add static tax from adjustments to the cart session
+      $cart["tax"] = $taxAddon;
     }
 
     return response()->json($cart, 200);
@@ -70,17 +73,14 @@ class CartController extends Controller
       "cabin_code" => "nullable|string",
       "cabin_category" => "nullable|integer",
       "cabin_category_decks" => "nullable|string",
+      "cabin_category_type" => "nullable|string",
     ]);
 
     if ($request->session()->has("cart")) {
       $this->destroy($request);
     }
 
-    \Log::info("CartController@store: " . json_encode($validated));
-
     session(["cart" => $validated]);
-
-    \Log::info("CartController@SESSIOn: " . json_encode($request->session()->get("cart")));
 
     return response()->json(["message" => "Cart updated successfully"], 200);
   }
@@ -103,9 +103,12 @@ class CartController extends Controller
       "cabin_code" => "nullable|string",
       "cabin_category" => "nullable|integer",
       "cabin_category_decks" => "nullable|string",
+      "cabin_category_type" => "nullable|string",
     ]);
 
     $request->session()->put("cart", $validated);
+
+    \Log::info("CartController@update: " . json_encode($validated));
 
     return response()->json(["message" => "Cart updated successfully"], 200);
   }
