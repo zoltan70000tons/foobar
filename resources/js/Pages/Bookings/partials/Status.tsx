@@ -22,11 +22,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import WarningIcon from "@mui/icons-material/Warning";
 import { router } from "@inertiajs/react";
 import { usePermissions } from "@/Providers/PermissionContext";
-import Tags from "./Tags";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import UserSelectorModal from "@/Components/UserSelectorModal";
 import { Permissions } from "@/enums/PermissionEnum";
 import { StatusEnum } from "@/enums/StatusEnum";
-import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import Tags from "./Tags";
+
+
 
 
 const Status = ({ event, booking, editMode, users }) => {
@@ -69,12 +71,10 @@ const Status = ({ event, booking, editMode, users }) => {
       {
         onSuccess: () => {
           showSnackbar("Booking code updated successfully!", "success");
-          console.log("Booking code updated successfully!");
           setIsDialogOpen(false);
         },
         onError: (errors) => {
           showSnackbar("Error updating booking code!", "error");
-          console.error("Error updating booking code:", errors);
         },
       }
     );
@@ -87,12 +87,10 @@ const Status = ({ event, booking, editMode, users }) => {
     }, {
       onSuccess: () => {
         showSnackbar("Booking status updated successfully!", "success");
-        console.log("Booking status updated successfully!");
         setIsDialogOpen(false);
       },
       onError: (errors) => {
         showSnackbar("Error updating booking status!", "error");
-        console.error("Error updating booking status:", errors);
       },
     });
   };
@@ -109,7 +107,6 @@ const Status = ({ event, booking, editMode, users }) => {
         },
         onError: (errors) => {
           showSnackbar("Error canceling booking!", "error");
-          console.error("Error canceling booking:", errors);
           setIsCancelDialogOpen(false);
         },
       }
@@ -229,7 +226,7 @@ const Status = ({ event, booking, editMode, users }) => {
               color="warning"
               startIcon={<WarningIcon />}
               onClick={handleCancelDialogOpen}
-              disabled={booking.is_cancelled}
+              disabled={booking.is_cancelled || !editMode}
             >
               Cancel Booking
             </Button>

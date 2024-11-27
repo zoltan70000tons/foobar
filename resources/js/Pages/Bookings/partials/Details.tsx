@@ -144,7 +144,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                     <TableCell>Cabin Type</TableCell>
                     <TableCell>{booking?.cabin?.cabin_type?.cabin_type}</TableCell>
                     <TableCell align="right">
-                      <IconButton color="secondary" disabled={false} onClick={handleEditClick}>
+                      <IconButton color="secondary" disabled={!editMode} onClick={handleEditClick}>
                         <EditIcon />
                       </IconButton>
                     </TableCell>
@@ -181,6 +181,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             options={cabinTypes}
             getOptionLabel={(option) => option.cabin_type}
             value={cabinType}
+            disabled
             onChange={(event, newValue) => setCabinType(newValue)}
             renderInput={(params) => <TextField {...params} label="Cabin Type" />}
             sx={{ mb: 2 }}
@@ -190,6 +191,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             options={cabinCategories}
             getOptionLabel={(option) => option.title}
             value={cabinCategory}
+            disabled
             onChange={(event, newValue) => setCabinCategory(newValue)}
             renderInput={(params) => <TextField {...params} label="Cabin Category" />}
             sx={{ mb: 2 }}
