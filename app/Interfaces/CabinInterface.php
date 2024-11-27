@@ -13,4 +13,5 @@ interface CabinInterface
     function delete($id);
     function getCategoriesAndCabins(int $event_id);
     function addTags(array $tags, array $cabins);
+    function getTypes();
 }

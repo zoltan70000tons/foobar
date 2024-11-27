@@ -20,4 +20,5 @@ interface BookingInterface
     function changeCode(Booking $booking, $new_code);
     function changeStatus(Booking $booking, $status);
     function addComment(Booking $booking, $comment);
+    function cancel(Booking $booking);
 }

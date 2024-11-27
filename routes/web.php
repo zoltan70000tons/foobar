@@ -121,6 +121,8 @@ Route::middleware('auth')->group(function () {
     ->name('bookings.update');
     Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name('bookings.assignAgent');
     Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
+    Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
+    Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
 
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');

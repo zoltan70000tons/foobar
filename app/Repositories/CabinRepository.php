@@ -6,6 +6,7 @@ use App\Enums\StatusCabin;
 use App\Interfaces\CabinInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
+use App\Models\CabinType;
 use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -115,4 +116,8 @@ class CabinRepository implements CabinInterface
   }
 
   function addTags(array $tags, array $cabins) {}
+
+  function getTypes(){
+    return CabinType::all();
+  }
 }

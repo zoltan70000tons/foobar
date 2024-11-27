@@ -128,7 +128,7 @@ class Booking extends Model
   }
 
 
-  public function changeCabin($number)
+  public function changeCabin($booking, $number)
   {
     try {
       // Find the cabin by its number
@@ -148,10 +148,13 @@ class Booking extends Model
         throw new \Exception("This cabin is already fully booked.");
       }
 
-      // If a cabin is already assigned, release its inventory
-      if ($this->cabin) {
-        // $this->cabin->updateInventoryOnCancellation();
+      if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
+        throw new \Exception("This cabin is already partially booked.");
       }
+       
+      $prevCabin = $booking->cabin;
+      $prevCabin->inventory = $prevCabin->inventory + 1;
+      $prevCabin->save();
       // Assign the new cabin to the booking
       $this->assignCabin($cabin);
       $blog = new BookingLog();
@@ -166,13 +169,6 @@ class Booking extends Model
       return false;
     }
 
-
-    // Log the cabin change action
-    // $this->logs()->create([
-    //     'user_id' => auth()->id(),
-    //     'action' => 'Changed Cabin',
-    //     'description' => "Cabin changed to {$cabin->cabin_number}.",
-    // ]);
   }
 
   protected function containsBlockedWords($code)
@@ -182,4 +178,33 @@ class Booking extends Model
     // Check against blocked words
     return in_array(strtoupper($code), $blocked_words);
   }
+
+  public function cancel()
+{
+    try {
+        if ($this->status === 'CANCELLED') {
+            throw new \Exception("This booking is already cancelled.");
+        }
+        $segments = explode('-', $this->booking_code);
+
+        if (count($segments) !== 3) {
+            throw new \Exception("Invalid booking code format.");
+        }
+        $characters = config('whitelist.allowed_characters');
+        do {
+            $randomSegment = substr(str_shuffle($characters), 0, 4);
+        } while ($this->containsBlockedWords($randomSegment));
+        $segments[1] = $randomSegment;
+        $this->booking_code = implode('-', $segments);
+        $this->status = 'CANCELLED';
+        $this->is_cancelled = true;
+        $this->save();
+
+        return true;
+    } catch (\Exception $e) {
+        \Log::error("Error cancelling booking: " . $e->getMessage());
+        return false;
+    }
+}
+
 }
