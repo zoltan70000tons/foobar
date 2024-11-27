@@ -52,7 +52,7 @@ class PricingMatrixController extends Controller
       ->with(['cabins' => function ($query) use ($ticketType) {
         $query->where('cabin_type_id', $ticketType);
       }])
-      ->select('category_type', 'display_order', 'id', 'category_name', 'category_code', 'capacity', 'price', 'decks', 'iframe', 'images')
+      ->select('category_type', 'display_order', 'id', 'category_name', 'category_code', 'capacity', 'price', 'decks', 'iframe', 'images', 'description')
       ->get();
 
     // Group categories by category type and get the first category of each type
