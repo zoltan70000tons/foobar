@@ -17,7 +17,7 @@ return new class extends Migration
       $table->string('category_code', 5);
       $table->string('category_name', 255);
       $table->integer('capacity');
-      $table->text('description')->nullable();
+      $table->jsonb('description'); // JSONB column for multi-language descriptions
       $table->text('iframe')->nullable();;
       $table->json('images')->nullable();;
       $table->decimal('price', 10, 2);

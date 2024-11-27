@@ -37,11 +37,11 @@ class CabinCategorySeeder extends Seeder
             5 => ['J4', 'J3', 'GS', 'G3', 'OS', 'GT'],
         ];
 
-
         // Iterate through each record in the CSV
         foreach ($csv as $record) {
             // Convert the gallery column to a JSON array
             $images = !empty($record['gallery']) ? explode(',', $record['gallery']) : null;
+            
             // Determine the category number based on category_code
             $categoryNumber = null;
             foreach ($categoryMapping as $number => $codes) {
@@ -50,6 +50,13 @@ class CabinCategorySeeder extends Seeder
                     break;
                 }
             }
+            
+            // Prepare the category description array for each language
+            $categoryDescription = [
+              'en' => $record['en_description'],
+              'es' => $record['es_description'],
+              'de' => $record['de_description'],
+            ];
 
             // Prepare data array
             $categoryData = [
@@ -57,7 +64,7 @@ class CabinCategorySeeder extends Seeder
                 'category_code'   => $record['category_code'],
                 'category_name'   => $record['category_name'],
                 'capacity'        => $record['capacity'],
-                'description'     => null, // We might need to update this field to accomodate the translation, or have it as a JSON field
+                'description'     => json_encode($categoryDescription),
                 'images'          => $images,
                 'iframe'          => $record['vr'],
                 'price'           => $record['price'],

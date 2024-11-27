@@ -59,6 +59,7 @@ class MatrixHelper
           "iframe" => $item->iframe,
           "images" => $item->images,
           "full_title" => $item->getTitleAttribute(),
+          "description" => $item->description, // JSON object with multi-language descriptions
           "price_and_availability" => self::getPriceDetails(
             $categories,
             $item->category_code
