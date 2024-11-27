@@ -13,36 +13,33 @@ use App\Models\Event;
 
 class MembershipSales
 {
-    use MembershipAccess;
+  use MembershipAccess;
 
-    public function handle(Request $request, Closure $next): Response
-    {
-      $language = $request->query('language', 'en');
-      $id = $request->route('id') ?? null;
-  
-      App::setLocale($language);
-  
-    //   $customer = Auth::guard('customer')->user();
-    // get customer by role
-  
-      // check if the Auth
-      $user = Auth::check() ? Auth::user() : null;
-      $customer = $user && $user->hasRole('Customer') ? $user : null;
+  public function handle(Request $request, Closure $next): Response
+  {
+    $language = $request->query("language", "en");
+    $id = $request->route("id") ?? null;
 
-      $membership = null;
-  
-      if ($customer) {
-          $membership = $customer->membershipTypes->first() ?? null;
-      }
-  
-      $access = $this->checkMembershipAccess($membership, null, $id);
-  
-      // Attach access information to the request
-      $request->merge([
-          'purchase_access' => $access['status'],
-          'access_message' => $access['message'] ?? null,
-      ]);
-  
-      return $next($request);
+    App::setLocale($language);
+
+    // check if the Auth
+    $user = Auth::check() ? Auth::user() : null;
+    $customer = $user && $user->hasRole("Customer") ? $user : null;
+
+    $membership = null;
+
+    if ($customer) {
+      $membership = $customer->membershipTypes->first() ?? null;
     }
+
+    $access = $this->checkMembershipAccess($membership, null, $id);
+
+    // Attach access information to the request
+    $request->merge([
+      "purchase_access" => $access["status"],
+      "access_message" => $access["message"] ?? null,
+    ]);
+
+    return $next($request);
+  }
 }
