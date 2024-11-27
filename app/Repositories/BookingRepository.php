@@ -134,39 +134,39 @@ class BookingRepository implements BookingInterface
 
   function addTags($booking, $tags)
   {
-      try {
-          if (!is_array($tags)) {
-              throw new InvalidArgumentException('Tags must be an array.');
-          }
-  
-          $originalTags = $booking->tags;
-  
-          $booking->update([
-              'tags' => $tags,
-          ]);
-  
-          if ($originalTags !== $tags) {
-              $this->saveBookingLog(
-                  $booking->id,
-                  'Changed booking tags',
-                  sprintf(
-                      'Booking tags changed from [%s] to [%s].',
-                      implode(', ', $originalTags ?? []),
-                      implode(', ', $tags)
-                  )
-              );
-          }
-  
-          return $booking;
-      } catch (\Throwable $e) {
-          \Log::error("Failed to update tags for booking ID {$booking->id}: {$e->getMessage()}");
-          throw $e; 
+    try {
+      if (!is_array($tags)) {
+        throw new InvalidArgumentException('Tags must be an array.');
       }
+
+      $originalTags = $booking->tags;
+
+      $booking->update([
+        'tags' => $tags,
+      ]);
+
+      if ($originalTags !== $tags) {
+        $this->saveBookingLog(
+          $booking->id,
+          'Changed booking tags',
+          sprintf(
+            'Booking tags changed from [%s] to [%s].',
+            implode(', ', $originalTags ?? []),
+            implode(', ', $tags)
+          )
+        );
+      }
+
+      return $booking;
+    } catch (\Throwable $e) {
+      \Log::error("Failed to update tags for booking ID {$booking->id}: {$e->getMessage()}");
+      throw $e;
+    }
   }
 
   function changeCabin(Booking $booking, $cabin_number)
   {
-    $booking = $booking->changeCabin($cabin_number);
+    $booking = $booking->changeCabin($booking, $cabin_number);
     if ($booking) {
       $cabin = $booking->cabin;
       $this->saveBookingLog(
@@ -240,6 +240,21 @@ class BookingRepository implements BookingInterface
       return $booking;
     } catch (\Exception $e) {
       Log::info($e);
+      return false;
+    }
+  }
+
+  public function cancel(Booking $booking)
+  {
+    try {
+      $booking->cancel();
+      $this->saveBookingLog(
+        $booking->id,
+        'Cancelled',
+        "The booking was cancelled"
+      );
+      return $booking;
+    } catch (\Exception $e) {
       return false;
     }
   }

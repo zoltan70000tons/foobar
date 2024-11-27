@@ -33,23 +33,24 @@ import Passengers from "./Passengers";
 import Payment from "./Payment";
 import ActionList from "./ActionList";
 import Log from "./Log";
-import BookingSidebar from "./BookingSidebar"; 
+import BookingSidebar from "./BookingSidebar";
+import SnackbarAlert from "@/Components/SnackbarAlert";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
-const Show = ({ auth, event, booking, users}: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
   const [locked, setLocked] = useState(booking.locked_by ? true : false);
-  const [isSidebarOpen, setSidebarOpen] = useState(false); 
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const { hasPermission } = usePermissions();
   const [comments, setComments] = useState(booking.comments || []); // Estado inicial
   const [logs, setLogs] = useState(booking.logs || []);
   const theme = useTheme();
   dayjs.extend(localizedFormat);
+  const { showSnackbar } = useSnackbar();
 
-  console.log(booking);
 
   const handleEditChange = (e) => {
     setEditMode(e.target.checked);
-
     router.get(
       route("bookings.editMode", {
         booking_id: booking.id,
@@ -67,6 +68,8 @@ const Show = ({ auth, event, booking, users}: PageProps) => {
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
+
+
   const handleAddComment = (comment: string) => {
     router.post(
       route("bookings.addComment", {
@@ -78,11 +81,12 @@ const Show = ({ auth, event, booking, users}: PageProps) => {
       },
       {
         onSuccess: (page) => {
-          // Actualizamos los comentarios con los datos del backend
-          const newComment = page.props.booking.comments.slice(-1)[0]; // Último comentario agregado
+          const newComment = page.props.booking.comments.slice(-1)[0];
           setComments((prevComments) => [...prevComments, newComment]);
+          showSnackbar("Comment added successfully!", "success");
         },
         onError: (errors) => {
+          showSnackbar("Error adding comment:", "error");
           console.error("Error adding comment:", errors);
         },
         preserveScroll: true,
@@ -97,13 +101,26 @@ const Show = ({ auth, event, booking, users}: PageProps) => {
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <FormGroup>
-          <FormControlLabel
-            control={<Switch onChange={handleEditChange} />}
-            label="Edit Mode"
-          />
+          {booking.is_cancelled ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              <AlertTitle>Info</AlertTitle>
+              This booking has been cancelled and cannot be edited.
+            </Alert>
+          ) : (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={editMode || (booking.locked_by && booking.locked_by.agent_id === auth.user.id)}
+                  onChange={handleEditChange}
+                  disabled={booking.locked_by && booking.locked_by.agent_id !== auth.user.id}
+                />
+              }
+              label="Edit Mode"
+            />
+          )}
         </FormGroup>
 
-        {booking.locked_by && (
+        {booking.locked_by && !booking.is_cancelled && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Warning</AlertTitle>
             {booking.locked_by.agent_id === auth.user.id
@@ -123,7 +140,7 @@ const Show = ({ auth, event, booking, users}: PageProps) => {
         </Button>
 
         <Status event={event} editMode={editMode} booking={booking} users={users} />
-        <Detail event={event} booking={booking} editMode={editMode} />
+        <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
         <Passengers passengers={booking.passengers} editMode={editMode} />
         <Payment
           booking={booking}
