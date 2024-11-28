@@ -23,7 +23,7 @@ return new class extends Migration {
       $table->boolean('is_single_occupancy')->default(false); // Indicates if booking is for single occupancy
       $table->jsonb('tags')->default(json_encode(['not-assigned'])); // JSONB field for tags
       $table->uuid('agent_id')->nullable()->references('id')->on('users'); // References users table for agent tracking
-      $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED'])->default('NEW');
+      $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'])->default('NEW');
 
       $table->timestamps(); // created_at and updated_at timestamps
     });

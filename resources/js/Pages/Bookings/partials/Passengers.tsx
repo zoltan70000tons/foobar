@@ -16,14 +16,18 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';
 
-const Passengers = ({passengers}) => {
+const Passengers = ({ booking }) => {
 
-    const getOrdinalSuffix = (n: number): string => {
-        if (n === 1) return "st";
-        if (n === 2) return "nd";
-        if (n === 3) return "rd";
-        return "th";
-    };
+
+  console.log(booking);
+  const maxCapacity = booking.cabin.cabin_category.capacity;
+  const getOrdinalSuffix = (n: number): string => {
+    if (n === 1) return "st";
+    if (n === 2) return "nd";
+    if (n === 3) return "rd";
+    return "th";
+  };
+
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
@@ -31,49 +35,51 @@ const Passengers = ({passengers}) => {
       </Typography>
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
-            {passengers.map((passenger, index) => {
-                 const isLeadPassenger = passenger.lead_passenger;
-                 const displayText = isLeadPassenger
-                 ? "Lead Passenger"
-                 : `${index+1}${getOrdinalSuffix(index+1)} Passenger`;
-                return(<Grid item xs={12} sm={4}>
-                    <Box display="flex" alignItems="center">
-                      {/* <Avatar src="https://via.placeholder.com/50" sx={{ width: 50, height: 50, mr: 2 }} /> */}
-                      <Avatar sx={{ width: 50, height: 50, mr: 2 }}>
-                        <PersonIcon />
-                      </Avatar>
-                      <Box>
-                        <Typography>{passenger.full_name}</Typography>
-                        <Typography variant="caption">{displayText}</Typography>
-                      </Box>
+          {Array.isArray(booking.passengers) &&
+            booking.passengers.map((passenger, index) => {
+              const isLeadPassenger = passenger.lead_passenger;
+              const displayText = isLeadPassenger
+                ? "Lead Passenger"
+                : `${index + 1}${getOrdinalSuffix(index + 1)} Passenger`;
+              return (
+                <Grid item xs={12} sm={4} key={passenger.id || index}>
+                  <Box display="flex" alignItems="center">
+                    <Avatar sx={{ width: 50, height: 50, mr: 2 }}>
+                      <PersonIcon />
+                    </Avatar>
+                    <Box>
+                      <Typography>{passenger.full_name}</Typography>
+                      <Typography variant="caption">{displayText}</Typography>
                     </Box>
-                  </Grid>)
-            })}
-          
-          {/* <Grid item xs={12} sm={4}>
-            <Box display="flex" alignItems="center">
-              <Avatar sx={{ width: 50, height: 50, mr: 2, bgcolor: "grey.700" }}>KD</Avatar>
-              <Box>
-                <Typography>Karen Doe</Typography>
-                <Typography variant="caption" color="error">
-                  <Box component="span" color="error.main" sx={{ borderRadius: 1, px: 1, backgroundColor: "red", color:"white"}}>
-                    Not confirmed account
                   </Box>
+                </Grid>
+              );
+            })}
+
+
+          {booking.passengers.length < maxCapacity && (
+            <Grid item xs={12} sm={4}>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  border: "2px dashed gray",
+                  borderRadius: "50%",
+                  width: 50,
+                  height: 50,
+                  cursor: "pointer",
+                  color: "gray",
+                  ":hover": { borderColor: "blue", color: "blue" },
+                }}
+                onClick={() => console.log("Añadir pasajero")}
+              >
+                <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+                  +
                 </Typography>
               </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box display="flex" alignItems="center">
-              <Avatar sx={{ width: 50, height: 50, mr: 2, bgcolor: "grey.800" }}>?</Avatar>
-              <Typography variant="caption">Missing Passenger</Typography>
-            </Box>
-          </Grid> */}
-          <Grid item xs={12} textAlign="right">
-            <IconButton color="secondary">
-                                    <EditIcon />
-                                </IconButton>
-          </Grid>
+            </Grid>
+          )}
         </Grid>
       </Paper>
 
@@ -93,8 +99,8 @@ const Passengers = ({passengers}) => {
               <TableCell align="right">
                 {/* <Button variant="outlined" color="secondary" startIcon={<EditIcon />}>Edit</Button> */}
                 <IconButton color="secondary">
-                                    <EditIcon />
-                                </IconButton>
+                  <EditIcon />
+                </IconButton>
               </TableCell>
             </TableRow>
             <TableRow>
