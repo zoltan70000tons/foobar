@@ -67,7 +67,6 @@ Route::middleware(["auth:sanctum", "verified"])->group(function () {
 
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
 Route::middleware(["membership_sales"])->group(function () {
-  Route::get("/booking-init", [BookingController::class, "store"]);
   Route::get("/events/{id}", [BookingController::class, "showOne"]);
 });
 
@@ -78,6 +77,7 @@ Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
 
 // --- CART ---
+Route::get("/cart", [CartController::class, "check"]);
 Route::get("/cart/{eventId}", [CartController::class, "index"]);
 Route::post("/cart", [CartController::class, "store"]);
 Route::put("/cart", [CartController::class, "update"]);
@@ -98,13 +98,18 @@ Route::middleware(["clear_expired_reservation"])->group(function () {
   Route::post("/cabin/release", [CabinController::class, "release"]);
 });
 
+// --- AUTH ---
 Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function () {
+  // Profile
   Route::get("/customers/{id}", [EditProfileController::class, "getAccountIntel"])->where("id", "[0-9a-fA-F\-]{36}");
   Route::get("/customers/{id}/details", [EditProfileController::class, "getCustomerDetails"]);
   Route::post("/customers/preferred-language", [EditProfileController::class, "updatePreferredLanguage"]);
   Route::post("/customers/update-phone", [EditProfileController::class, "updatePhone"]);
   Route::post("/customers/update-email", [EditProfileController::class, "updateEmail"]);
   Route::post("/customers/update-password", [EditProfileController::class, "updatePassword"]);
+
+  // Booking
+  Route::post("/booking-init", [BookingController::class, "store"]);
 });
 
 // --- TEST PURPOSE FOR BROADCASTING ---

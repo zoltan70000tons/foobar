@@ -57,6 +57,14 @@ class CartController extends Controller
     return response()->json($cart, 200);
   }
 
+  // Only check the user have a cart session
+  public function check(Request $request)
+  {
+    $cart = $request->session()->get("cart", []);
+
+    return response()->json(["cart" => $cart], 200);
+  }
+
   // Add item to cart session
   public function store(Request $request)
   {
