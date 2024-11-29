@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   Box,
@@ -6,26 +6,49 @@ import {
   Grid,
   Paper,
   Typography,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  Divider,
-  IconButton,
+  TextField,
+  Modal,
+  Autocomplete,
 } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
-import PersonIcon from '@mui/icons-material/Person';
+import { Axios } from "axios";
 
 const Passengers = ({ booking }) => {
+  const [addPassengerOpen, setAddPassengerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [passengers, setPassengers] = useState(booking.passengers);
 
-
-  console.log(booking);
   const maxCapacity = booking.cabin.cabin_category.capacity;
-  const getOrdinalSuffix = (n: number): string => {
-    if (n === 1) return "st";
-    if (n === 2) return "nd";
-    if (n === 3) return "rd";
-    return "th";
+
+  // Fetch users based on the search query
+  const fetchUsers = async (query) => {
+    try {
+      const response = await axios.get("/passengers/search", {
+        params: { query },
+      });
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  // Add passenger to the booking
+  const handleAddPassenger = async () => {
+    try {
+      const response = await axios.post("/passengers/add", {
+        booking_id: booking.id,
+        user_id: selectedUser.id,
+        full_name: selectedUser.name,
+        email: selectedUser.email,
+      });
+      setPassengers([...passengers, response.data]);
+      setAddPassengerOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error("Error adding passenger:", error);
+      alert(error.response?.data?.error || "An error occurred.");
+    }
   };
 
   return (
@@ -35,29 +58,25 @@ const Passengers = ({ booking }) => {
       </Typography>
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
-          {Array.isArray(booking.passengers) &&
-            booking.passengers.map((passenger, index) => {
-              const isLeadPassenger = passenger.lead_passenger;
-              const displayText = isLeadPassenger
-                ? "Lead Passenger"
-                : `${index + 1}${getOrdinalSuffix(index + 1)} Passenger`;
-              return (
-                <Grid item xs={12} sm={4} key={passenger.id || index}>
-                  <Box display="flex" alignItems="center">
-                    <Avatar sx={{ width: 50, height: 50, mr: 2 }}>
-                      <PersonIcon />
-                    </Avatar>
-                    <Box>
-                      <Typography>{passenger.full_name}</Typography>
-                      <Typography variant="caption">{displayText}</Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-              );
-            })}
+          {passengers.map((passenger, index) => (
+            <Grid item xs={12} sm={4} key={passenger.id || index}>
+              <Box display="flex" alignItems="center">
+                <Avatar sx={{ width: 50, height: 50, mr: 2 }}>
+                  {passenger.full_name[0]}
+                </Avatar>
+                <Box>
+                  <Typography>{passenger.full_name}</Typography>
+                  <Typography variant="caption">
+                    {passenger.lead_passenger
+                      ? "Lead Passenger"
+                      : `Passenger ${index + 1}`}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          ))}
 
-
-          {booking.passengers.length < maxCapacity && (
+          {passengers.length < maxCapacity && (
             <Grid item xs={12} sm={4}>
               <Box
                 display="flex"
@@ -72,7 +91,7 @@ const Passengers = ({ booking }) => {
                   color: "gray",
                   ":hover": { borderColor: "blue", color: "blue" },
                 }}
-                onClick={() => console.log("Añadir pasajero")}
+                onClick={() => setAddPassengerOpen(true)}
               >
                 <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
                   +
@@ -83,46 +102,43 @@ const Passengers = ({ booking }) => {
         </Grid>
       </Paper>
 
-      {/* Resumen de Pago */}
-      <Typography variant="h5" gutterBottom>
-        Payment summary
-      </Typography>
-      <Typography variant="body2" color="gray" mb={1}>
-        Please note this information is not updated immediately. It may take up to 48 hours for the payment to be reflected.
-      </Typography>
-      <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
-        <Table>
-          <TableBody>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell align="right">345435sdads3-343434</TableCell>
-              <TableCell align="right">
-                {/* <Button variant="outlined" color="secondary" startIcon={<EditIcon />}>Edit</Button> */}
-                <IconButton color="secondary">
-                  <EditIcon />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Total to pay</TableCell>
-              <TableCell align="right">USD 4,833.00</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Current payments:</TableCell>
-              <TableCell align="right">USD 4,833.00</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>To pay:</TableCell>
-              <TableCell align="right">USD 0</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </Paper>
-
-      {/* Detalles de Pago (Placeholder) */}
-      <Typography variant="h5" align="center">
-        Payment details
-      </Typography>
+      {/* Modal para añadir pasajero */}
+      <Modal open={addPassengerOpen} onClose={() => setAddPassengerOpen(false)}>
+        <Paper sx={{ p: 4, margin: "auto", maxWidth: 600 }}>
+          <Typography variant="h6" gutterBottom>
+            Add Passenger
+          </Typography>
+          <Autocomplete
+            options={searchResults}
+            getOptionLabel={(option) => `${option.name} (${option.email})`}
+            onInputChange={(e, value) => {
+              setSearchQuery(value);
+              fetchUsers(value);
+            }}
+            onChange={(e, value) => setSelectedUser(value)}
+            renderInput={(params) => (
+              <TextField {...params} label="Search Users" variant="outlined" fullWidth />
+            )}
+          />
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddPassenger}
+              disabled={!selectedUser}
+            >
+              Add Passenger
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setAddPassengerOpen(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Paper>
+      </Modal>
     </Box>
   );
 };
