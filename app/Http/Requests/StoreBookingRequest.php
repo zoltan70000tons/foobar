@@ -11,7 +11,7 @@ class StoreBookingRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -38,6 +38,7 @@ class StoreBookingRequest extends FormRequest
       "confirmEmail" => "required|same:email",
       "info" => "required|string",
       "newsletter" => "nullable|boolean",
+      "specialRequest" => "nullable|string",
       "terms" => "required|accepted",
 
       // Phone numbers
@@ -48,21 +49,21 @@ class StoreBookingRequest extends FormRequest
       "emergencyContactName" => "required|string",
 
       // Cart data
-      "cart.event" => "required|string",
-      "cart.ticketType" => "nullable|string",
-      "cart.paymentPlan" => "required|string",
-      "cart.reservationId" => "nullable|number",
-      "cart.cabinCapacity" => "required|number",
-      "cart.cabinCategory" => "required|number",
-      "cart.cabinCode" => "nullable|string",
-      "cart.cabinPrice" => "required|string",
-      "cart.cabinSelection" => "required|string",
-      "cart.room" => "nullable|string",
-      "cart.total" => "required|number",
+      "cart.event_id" => "required|string",
+      "cart.cabin_type" => "nullable|string",
+      "cart.payment_plan" => "required|string",
+      "cart.reservation_id" => "nullable|numeric",
+      "cart.cabin_capacity" => "required|numeric",
+      "cart.cabin_category" => "required|numeric",
+      "cart.cabin_code" => "nullable|string",
+      "cart.cabin_price" => "required|numeric",
+      "cart.choose_your_cabin" => "required|boolean",
+      "cart.cabin_number" => "nullable|string",
+      "cart.price_total" => "required|numeric",
 
       // Addons array
       "cart.addons" => "nullable|array",
-      "cart.addons.*" => "string",
+      "cart.addons.*" => "nullable|array",
     ];
   }
 }

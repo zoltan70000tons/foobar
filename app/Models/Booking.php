@@ -13,6 +13,7 @@ class Booking extends Model
 
   protected $fillable = [
     "booking_code",
+    "event_id",
     "customer_id",
     "payment_method",
     "carbon_offset",
@@ -46,9 +47,8 @@ class Booking extends Model
    */
   public function agent()
   {
-    return $this->belongsTo(User::class, 'agent_id');
+    return $this->belongsTo(User::class, "agent_id");
   }
-
 
   /**
    * Relationship: A booking belongs to one cabin (one-to-one).
@@ -77,32 +77,31 @@ class Booking extends Model
       throw new \Exception("This cabin has no available inventory.");
     }
 
-
     // Check if the cabin's status is "BOOKED"
     if (strtoupper($cabin->status) === "BOOKED") {
       throw new \Exception("This cabin is already fully booked.");
     }
 
     // Define a set of A-Z characters
-    $characters = config('whitelist.allowed_characters');
+    $characters = config("whitelist.allowed_characters");
 
     // Generate a random 4-character code
     do {
       $identifier_code = substr(str_shuffle($characters), 0, 4);
     } while ($this->containsBlockedWords($identifier_code));
-    $year = 'E';
+    $year = "E";
 
     // Generate a unique booking code based on the cabin number, identifier code, cabin_type_id, category code, and capacity. e.g. "1234-ABCD-14B2"
     //$this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$cabin->cabin_type_id}{$cabin->category->category_code}{$cabin->category->capacity}";
 
-    $this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$year}{$cabin->category->category_code}{$cabin->category->category_number}{$cabin->category->capacity}";  //Year-Product Identifier - categorie (interior,Promenade) - ocupancy
+    $this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$year}{$cabin->category->category_code}{$cabin->category->category_number}{$cabin->category->capacity}"; //Year-Product Identifier - categorie (interior,Promenade) - ocupancy
     // Assign the cabin to this booking
     //Following segment:
     // Category(
-    //1 = Interior incl. Promenade, 
-    //2 = Window, 
-    //3 = Balcony, 
-    //4 = Panoramic Suite without Balcony, 
+    //1 = Interior incl. Promenade,
+    //2 = Window,
+    //3 = Balcony,
+    //4 = Panoramic Suite without Balcony,
     //5 = Suite with Balcony)
     $this->cabin_id = $cabin->id;
 
@@ -114,25 +113,24 @@ class Booking extends Model
 
   public function logs()
   {
-    return $this->hasMany(BookingLog::class, 'booking_id', 'id');
+    return $this->hasMany(BookingLog::class, "booking_id", "id");
   }
 
   public function comments()
   {
-    return $this->hasMany(Comment::class, 'booking_id', 'id');
+    return $this->hasMany(Comment::class, "booking_id", "id");
   }
 
   public function lockedBy()
   {
-    return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
+    return $this->hasOne(BookingAgentSessions::class, "booking_id", "id");
   }
-
 
   public function changeCabin($booking, $number)
   {
     try {
       // Find the cabin by its number
-      $cabin = Cabin::where('cabin_number', $number)->first();
+      $cabin = Cabin::where("cabin_number", $number)->first();
 
       // Validate that the cabin exists
       if (!$cabin) {
@@ -144,14 +142,14 @@ class Booking extends Model
         throw new \Exception("This cabin has no available inventory.");
       }
 
-      if (strtoupper($cabin->status) === 'BOOKED') {
+      if (strtoupper($cabin->status) === "BOOKED") {
         throw new \Exception("This cabin is already fully booked.");
       }
 
-      if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
+      if (strtoupper($cabin->status) === "PARTIALLY_BOOKED") {
         throw new \Exception("This cabin is already partially booked.");
       }
-       
+
       $prevCabin = $booking->cabin;
       $prevCabin->inventory = $prevCabin->inventory + 1;
       $prevCabin->save();
@@ -160,7 +158,7 @@ class Booking extends Model
       $blog = new BookingLog();
       $blog->booking_id = $this->id;
       $blog->user_id = auth()->id(); // Obtener el usuario actual
-      $blog->action = 'Changed Cabin';
+      $blog->action = "Changed Cabin";
       $blog->description = "Cabin changed to {$cabin->cabin_number}.";
       $blog->save();
 
@@ -168,43 +166,41 @@ class Booking extends Model
     } catch (\Exception $e) {
       return false;
     }
-
   }
 
   protected function containsBlockedWords($code)
   {
-    $blocked_words = config('whitelist.blocked_words');
+    $blocked_words = config("whitelist.blocked_words");
 
     // Check against blocked words
     return in_array(strtoupper($code), $blocked_words);
   }
 
   public function cancel()
-{
+  {
     try {
-        if ($this->status === 'CANCELLED') {
-            throw new \Exception("This booking is already cancelled.");
-        }
-        $segments = explode('-', $this->booking_code);
+      if ($this->status === "CANCELLED") {
+        throw new \Exception("This booking is already cancelled.");
+      }
+      $segments = explode("-", $this->booking_code);
 
-        if (count($segments) !== 3) {
-            throw new \Exception("Invalid booking code format.");
-        }
-        $characters = config('whitelist.allowed_characters');
-        do {
-            $randomSegment = substr(str_shuffle($characters), 0, 4);
-        } while ($this->containsBlockedWords($randomSegment));
-        $segments[1] = $randomSegment;
-        $this->booking_code = implode('-', $segments);
-        $this->status = 'CANCELLED';
-        $this->is_cancelled = true;
-        $this->save();
+      if (count($segments) !== 3) {
+        throw new \Exception("Invalid booking code format.");
+      }
+      $characters = config("whitelist.allowed_characters");
+      do {
+        $randomSegment = substr(str_shuffle($characters), 0, 4);
+      } while ($this->containsBlockedWords($randomSegment));
+      $segments[1] = $randomSegment;
+      $this->booking_code = implode("-", $segments);
+      $this->status = "CANCELLED";
+      $this->is_cancelled = true;
+      $this->save();
 
-        return true;
+      return true;
     } catch (\Exception $e) {
-        \Log::error("Error cancelling booking: " . $e->getMessage());
-        return false;
+      \Log::error("Error cancelling booking: " . $e->getMessage());
+      return false;
     }
-}
-
+  }
 }
