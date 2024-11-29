@@ -107,7 +107,7 @@ class BookingController extends Controller
     try {
       // Process booking data
       $bookingData = [
-        "event_id" => $validated["cart"]["event"],
+        "event_id" => $validated["cart"]["event_id"],
         "customer_id" => $user->id,
         "payment_plan" => $validated["cart"]["paymentPlan"],
         "cabin_id" => fn() => Cabin::where(
