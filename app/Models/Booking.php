@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\BookingLog;
+use App\Traits\BookingLogTrait;
 
 class Booking extends Model
 {
   use HasFactory;
+  use BookingLogTrait;
 
   protected $fillable = [
     "booking_code",
@@ -18,6 +20,7 @@ class Booking extends Model
     "carbon_offset",
     "cabin_id",
     "completed",
+    "event_id",
     "tags",
   ];
 
@@ -70,47 +73,40 @@ class Booking extends Model
    * @return void
    * @throws \Exception if the cabin is already fully booked or has no available inventory
    */
-  public function assignCabin(Cabin $cabin)
+
+  public function assignCabin(Cabin $cabin): array|bool
   {
-    // Check if the cabin's inventory is positive
-    if ($cabin->inventory <= 0) {
-      throw new \Exception("This cabin has no available inventory.");
+    try {
+      // Validate that the cabin has available inventory
+      if ($cabin->inventory <= 0) {
+        throw new \Exception("This cabin has no available inventory.");
+      }
+
+      // Check if the cabin is already fully booked
+      if (strtoupper($cabin->status) === "BOOKED") {
+        throw new \Exception("This cabin is already fully booked.");
+      }
+
+      // Assign the cabin to this booking
+      $this->cabin_id = $cabin->id;
+
+      // Save the updated booking
+      $this->save();
+
+      // Update the cabin's inventory and status
+      $cabin->updateInventoryOnBooking();
+
+      // Return true if successful
+      return true;
+    } catch (\Exception $e) {
+      // Return an error array in case of exception
+      return [
+        'error' => true,
+        'message' => $e->getMessage(),
+      ];
     }
-
-
-    // Check if the cabin's status is "BOOKED"
-    if (strtoupper($cabin->status) === "BOOKED") {
-      throw new \Exception("This cabin is already fully booked.");
-    }
-
-    // Define a set of A-Z characters
-    $characters = config('whitelist.allowed_characters');
-
-    // Generate a random 4-character code
-    do {
-      $identifier_code = substr(str_shuffle($characters), 0, 4);
-    } while ($this->containsBlockedWords($identifier_code));
-    $year = 'E';
-
-    // Generate a unique booking code based on the cabin number, identifier code, cabin_type_id, category code, and capacity. e.g. "1234-ABCD-14B2"
-    //$this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$cabin->cabin_type_id}{$cabin->category->category_code}{$cabin->category->capacity}";
-
-    $this->booking_code = "{$cabin->cabin_number}-{$identifier_code}-{$year}{$cabin->category->category_code}{$cabin->category->category_number}{$cabin->category->capacity}";  //Year-Product Identifier - categorie (interior,Promenade) - ocupancy
-    // Assign the cabin to this booking
-    //Following segment:
-    // Category(
-    //1 = Interior incl. Promenade, 
-    //2 = Window, 
-    //3 = Balcony, 
-    //4 = Panoramic Suite without Balcony, 
-    //5 = Suite with Balcony)
-    $this->cabin_id = $cabin->id;
-
-    $this->save();
-
-    // Update the cabin inventory and status
-    $cabin->updateInventoryOnBooking();
   }
+
 
   public function logs()
   {
@@ -151,7 +147,7 @@ class Booking extends Model
       if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
         throw new \Exception("This cabin is already partially booked.");
       }
-       
+
       $prevCabin = $booking->cabin;
       $prevCabin->inventory = $prevCabin->inventory + 1;
       $prevCabin->save();
@@ -168,7 +164,6 @@ class Booking extends Model
     } catch (\Exception $e) {
       return false;
     }
-
   }
 
   protected function containsBlockedWords($code)
@@ -180,31 +175,77 @@ class Booking extends Model
   }
 
   public function cancel()
-{
+  {
     try {
-        if ($this->status === 'CANCELLED') {
-            throw new \Exception("This booking is already cancelled.");
-        }
-        $segments = explode('-', $this->booking_code);
+      if ($this->status === 'CANCELLED') {
+        throw new \Exception("This booking is already cancelled.");
+      }
+      $segments = explode('-', $this->booking_code);
 
-        if (count($segments) !== 3) {
-            throw new \Exception("Invalid booking code format.");
-        }
-        $characters = config('whitelist.allowed_characters');
-        do {
-            $randomSegment = substr(str_shuffle($characters), 0, 4);
-        } while ($this->containsBlockedWords($randomSegment));
-        $segments[1] = $randomSegment;
-        $this->booking_code = implode('-', $segments);
-        $this->status = 'CANCELLED';
-        $this->is_cancelled = true;
-        $this->save();
+      if (count($segments) !== 3) {
+        throw new \Exception("Invalid booking code format.");
+      }
+      $characters = config('whitelist.allowed_characters');
+      do {
+        $randomSegment = substr(str_shuffle($characters), 0, 4);
+      } while ($this->containsBlockedWords($randomSegment));
+      $segments[1] = $randomSegment;
+      $this->booking_code = implode('-', $segments);
+      $this->status = 'CANCELLED';
+      $this->is_cancelled = true;
+      $this->save();
 
-        return true;
+      return true;
     } catch (\Exception $e) {
-        \Log::error("Error cancelling booking: " . $e->getMessage());
-        return false;
+      \Log::error("Error cancelling booking: " . $e->getMessage());
+      return false;
     }
-}
+  }
 
+  /**
+   * Generate a unique booking code for this booking.
+   */
+  private function generateBookingCode(Cabin $cabin): string
+  {
+    $characters = config('whitelist.allowed_characters');
+    $year = 'E';
+
+    // Generate a random 4-character code
+    do {
+      $identifier_code = substr(str_shuffle($characters), 0, 4);
+    } while ($this->containsBlockedWords($identifier_code));
+
+    return "{$cabin->cabin_number}-{$identifier_code}-{$year}{$cabin->category->category_code}{$cabin->category->category_number}{$cabin->category->capacity}";
+  }
+
+  protected static function boot()
+  {
+    parent::boot();
+
+    static::creating(function ($booking) {
+      if (!$booking->booking_code && $booking->cabin) {
+        $booking->booking_code = $booking->generateBookingCode($booking->cabin);
+      }
+      // Set status to 'NEW' if not already set
+      if (!$booking->status) {
+        $booking->status = 'NEW';
+      }
+    });
+
+    static::created(function ($booking) {
+      $booking->saveBookingLog(
+        $booking->id,
+        'Created',
+        "The booking was created"
+      );
+    });
+
+    static::deleted(function ($booking) {
+      $booking->saveBookingLog(
+        $booking->id,
+        'Deleted',
+        "The booking was deleted"
+      );
+    });
+  }
 }
