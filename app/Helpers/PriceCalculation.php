@@ -48,7 +48,7 @@ class PriceCalculation
     $addonsPrice = 0;
     if (is_array($addons) && !empty($addons)) {
       foreach ($addons as $addon) {
-        $addonsPrice = $roundToTwoDecimals($addonsPrice + $addon["price"]);
+        $addonsPrice = $roundToTwoDecimals($addonsPrice + $addon["value"]);
       }
     }
 

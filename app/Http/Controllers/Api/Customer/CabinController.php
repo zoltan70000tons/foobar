@@ -137,6 +137,8 @@ class CabinController extends Controller
       $request->session()->put("cart", [
         "cabinSelection" => "clientSelect",
         "reservationId" => $reserved->id,
+        "cabin_number" => $cabin["cabin_number"],
+        "cabin_category_type" => $cabin["cabin_category_type"],
         "reservationTimestamp" => now()->timestamp,
       ]);
 
@@ -220,6 +222,7 @@ class CabinController extends Controller
         "choose_your_cabin" => false,
         "reservation_id" => $reserved->id,
         "reservation_timestamp" => now()->timestamp,
+        "cabin_category_type" => $cabin["cabin_category_type"],
       ]);
 
       \Log::info("Cabin reserved", [$request->session()->get("cart")]);

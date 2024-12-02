@@ -20,11 +20,23 @@ class MembershipSales
     $language = $request->query("language", "en");
     $id = $request->route("id") ?? null;
 
+    // log cookies sended
+    // Log::info("--- Incoming Request ---");
+    // Log::info("Request URL: " . $request->fullUrl());
+    // Log::info("Request Method: " . $request->method());
+    // Log::info("Request IP Address: " . $request->ip());
+    // Log::info("Request Headers: " . json_encode($request->headers->all()));
+    // Log::info("Request Cookies: " . json_encode($request->cookies->all()));
+    // Log::info("Request Query Parameters: " . json_encode($request->query()));
+    // Log::info("Request Payload: " . json_encode($request->all()));
+
     App::setLocale($language);
 
     // check if the Auth
     $user = Auth::check() ? Auth::user() : null;
     $customer = $user && $user->hasRole("Customer") ? $user : null;
+
+    //Log::info("Customer: " . json_encode($customer));
 
     $membership = null;
 

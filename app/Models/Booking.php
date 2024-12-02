@@ -15,6 +15,7 @@ class Booking extends Model
 
   protected $fillable = [
     "booking_code",
+    "event_id",
     "customer_id",
     "payment_method",
     "carbon_offset",
@@ -49,9 +50,8 @@ class Booking extends Model
    */
   public function agent()
   {
-    return $this->belongsTo(User::class, 'agent_id');
+    return $this->belongsTo(User::class, "agent_id");
   }
-
 
   /**
    * Relationship: A booking belongs to one cabin (one-to-one).
@@ -110,25 +110,24 @@ class Booking extends Model
 
   public function logs()
   {
-    return $this->hasMany(BookingLog::class, 'booking_id', 'id');
+    return $this->hasMany(BookingLog::class, "booking_id", "id");
   }
 
   public function comments()
   {
-    return $this->hasMany(Comment::class, 'booking_id', 'id');
+    return $this->hasMany(Comment::class, "booking_id", "id");
   }
 
   public function lockedBy()
   {
-    return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
+    return $this->hasOne(BookingAgentSessions::class, "booking_id", "id");
   }
-
 
   public function changeCabin($booking, $number)
   {
     try {
       // Find the cabin by its number
-      $cabin = Cabin::where('cabin_number', $number)->first();
+      $cabin = Cabin::where("cabin_number", $number)->first();
 
       // Validate that the cabin exists
       if (!$cabin) {
@@ -140,11 +139,11 @@ class Booking extends Model
         throw new \Exception("This cabin has no available inventory.");
       }
 
-      if (strtoupper($cabin->status) === 'BOOKED') {
+      if (strtoupper($cabin->status) === "BOOKED") {
         throw new \Exception("This cabin is already fully booked.");
       }
 
-      if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
+      if (strtoupper($cabin->status) === "PARTIALLY_BOOKED") {
         throw new \Exception("This cabin is already partially booked.");
       }
 
@@ -156,7 +155,7 @@ class Booking extends Model
       $blog = new BookingLog();
       $blog->booking_id = $this->id;
       $blog->user_id = auth()->id(); // Obtener el usuario actual
-      $blog->action = 'Changed Cabin';
+      $blog->action = "Changed Cabin";
       $blog->description = "Cabin changed to {$cabin->cabin_number}.";
       $blog->save();
 
@@ -168,7 +167,7 @@ class Booking extends Model
 
   protected function containsBlockedWords($code)
   {
-    $blocked_words = config('whitelist.blocked_words');
+    $blocked_words = config("whitelist.blocked_words");
 
     // Check against blocked words
     return in_array(strtoupper($code), $blocked_words);
@@ -177,6 +176,7 @@ class Booking extends Model
   public function cancel()
   {
     try {
+
       if ($this->status === 'CANCELLED') {
         throw new \Exception("This booking is already cancelled.");
       }
@@ -201,6 +201,7 @@ class Booking extends Model
       return false;
     }
   }
+
 
   /**
    * Generate a unique booking code for this booking.
@@ -248,4 +249,5 @@ class Booking extends Model
       );
     });
   }
+
 }

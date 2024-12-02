@@ -16,7 +16,7 @@ return new class extends Migration
       $table->foreignId('booking_id')->constrained('bookings');
       $table->boolean('confirmed_booking_email')->default(false);
       $table->boolean('lead_passenger')->default(false);
-      $table->integer('survivor_number')->nullable();
+      $table->string('survivor_number', 9)->nullable();
       $table->enum('payment_method', ['CREDIT_CARD', 'BANK_TRANSFER'])->default('CREDIT_CARD');
       $table->string('gender', 50)->nullable();
       $table->string('first_name', 255)->nullable();
