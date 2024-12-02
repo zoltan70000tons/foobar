@@ -105,15 +105,25 @@ class BookingController extends Controller
     DB::beginTransaction();
 
     try {
-      // Resolve cabin_id
-      $cabinId = TemporaryReservation::find($validated["cart"]["reservation_id"])?->cabin_id;
-      $cabinNumber = TemporaryReservation::find($validated["cart"]["reservation_id"])?->cabin_number;
-      $cabinCategory = Cabin::find($cabinId)->category->id;
+      // Fetch temporary reservation data
+      $tempReservation = TemporaryReservation::find($validated["cart"]["reservation_id"]);
+      if (!$tempReservation) {
+        throw new \Exception("Temporary reservation not found.");
+      }
 
-      if (!$cabinId) {
+      // Fetch cabin data from the temporary reservation
+      $cabinId = $tempReservation->cabin_id;
+      $cabinNumber = $tempReservation->cabin_number;
+
+      // Fetch cabin data
+      $cabin = Cabin::find($cabinId);
+      if (!$cabin) {
         throw new \Exception("Cabin not found for the given reservation ID.");
       }
 
+      $cabinCategory = $cabin->category->id;
+
+      // Validate cabin ID
       $cabinId = Cabin::where("id", $cabinId)->firstOrFail()->id;
 
       $characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -142,19 +152,28 @@ class BookingController extends Controller
       // Create booking
       $booking = Booking::create($bookingData);
 
+      // Fetch user details
+      $userDetails = $user->detail;
+
+      if (!$userDetails) {
+        throw new \Exception("User details not found.");
+      }
+
       // Process passenger data
       $passengerData = [
         "booking_id" => $booking->id,
         "confirmed_booking_email" => false,
         "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-        "survivor_number" => $user->survivor_number,
-        "first_name" => $validated["firstName"],
-        "middle_name" => $validated["middleName"],
-        "last_name" => $validated["lastName"],
-        "payment_method" => "credit_card",
-        "gender" => "unknown",
-        "dob" => $validated["dateOfBirth"],
-        "citizenship" => $validated["citizenship"],
+        // Pull NON-EDITABLE data from the user
+        "survivor_number" => $user->survivorNumber->survivor_number,
+        "gender" => $userDetails->gender,
+        "first_name" => $userDetails->first_name,
+        "middle_name" => $userDetails->middle_name,
+        "last_name" => $userDetails->last_name,
+        "dob" => $userDetails->dob,
+        "citizenship" => $userDetails->citizenship,
+        // Pull EDITABLE data from the booking form
+        "payment_method" => "CREDIT_CARD", // TODO: Implement payment method selection
         "address_first" => $validated["addressLine1"],
         "address_second" => $validated["addressLine2"],
         "city" => $validated["city"],
@@ -162,9 +181,9 @@ class BookingController extends Controller
         "postal_code" => $validated["zipCode"],
         "country" => $validated["country"],
         "email" => $validated["email"],
-        "phone" => json_encode($validated["phone"]["prefix"]) . " " . json_encode($validated["phone"]["number"]),
+        "phone" => $validated["phone"]["number"],
         "emergency_c_name" => $validated["emergencyContactName"],
-        "emergency_c_phone" => json_encode($validated["emergencyContactPhone"]),
+        "emergency_c_phone" => $validated["emergencyContactPhone"]["number"],
         "special_request" => $validated["specialRequest"] ?? null,
         "newsletter" => $validated["newsletter"],
         "travel_info" => false,
