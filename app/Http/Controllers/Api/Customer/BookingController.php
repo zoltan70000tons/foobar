@@ -203,6 +203,9 @@ class BookingController extends Controller
 
       // Delete temporary reservation
       TemporaryReservation::find($validated["cart"]["reservation_id"])?->delete();
+      // delete current sesion
+      $request->session()->forget("cart");
+      $request->session()->forget("reservation_id");
 
       return response()->json(
         [
@@ -226,7 +229,7 @@ class BookingController extends Controller
   }
 
   // My bookings
-  public function myBookings(Request $request)
+  public function myBookings()
   {
     $user = Auth::user();
 
