@@ -77,11 +77,14 @@ Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
 
 // --- CART ---
+Route::middleware(["one_booking_per_user"])->group(function () {
+  Route::post("/cart", [CartController::class, "store"]);
+  Route::put("/cart", [CartController::class, "update"]);
+  Route::delete("/cart", [CartController::class, "destroy"]);
+});
+
 Route::get("/cart", [CartController::class, "check"]);
 Route::get("/cart/{eventId}", [CartController::class, "index"]);
-Route::post("/cart", [CartController::class, "store"]);
-Route::put("/cart", [CartController::class, "update"]);
-Route::delete("/cart", [CartController::class, "destroy"]);
 
 // get single category
 Route::get("/cabins/category/{categoryId}", [CabinController::class, "showCategory"]);
@@ -110,6 +113,8 @@ Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function
 
   // Booking
   Route::post("/booking-init", [BookingController::class, "store"]);
+  Route::get("/my-bookings", [BookingController::class, "myBookings"]);
+  Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
 });
 
 // --- TEST PURPOSE FOR BROADCASTING ---
