@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\BookingLog;
+use Illuminate\Support\Facades\Auth;
 
 class Booking extends Model
 {
@@ -157,7 +158,7 @@ class Booking extends Model
       $this->assignCabin($cabin);
       $blog = new BookingLog();
       $blog->booking_id = $this->id;
-      $blog->user_id = auth()->id(); // Obtener el usuario actual
+      $blog->user_id = Auth::user()->id(); // Obtener el usuario actual
       $blog->action = "Changed Cabin";
       $blog->description = "Cabin changed to {$cabin->cabin_number}.";
       $blog->save();
