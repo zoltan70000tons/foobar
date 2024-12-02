@@ -8,6 +8,7 @@ use DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use App\Models\BookingLog;
+use App\Models\Cabin;
 use App\Models\Comment;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
@@ -256,6 +257,48 @@ class BookingRepository implements BookingInterface
       return $booking;
     } catch (\Exception $e) {
       return false;
+    }
+  }
+
+
+  public function createBooking(array $data, Cabin $cabin): Booking|array
+  {
+    try {
+      // Validate required fields
+      if (empty($data['customer_id'])) {
+        throw new \Exception("Customer ID is required.");
+      }
+      if (empty($data['event_id'])) {
+        throw new \Exception("Event ID is required.");
+      }
+
+      if (!$cabin || $cabin->inventory <= 0 || strtoupper($cabin->status) === "BOOKED") {
+        throw new \Exception("The specified cabin is not available.");
+      }
+
+      // Create the booking
+      $booking = new Booking();
+      $booking->fill($data); // Fill other attributes like payment_method, tags, etc.
+
+      // Assign the cabin to the booking
+      $booking->cabin_id = $cabin->id;
+      // Set the default status
+      $booking->status = $data['status'] ?? 'NEW';
+
+      // Save the booking
+      $booking->save();
+
+      // Update cabin inventory and status
+      $cabin->updateInventoryOnBooking();
+
+      // Return the created booking
+      return $booking;
+    } catch (\Exception $e) {
+      // Return an error array
+      return [
+        'error' => true,
+        'message' => $e->getMessage(),
+      ];
     }
   }
 }

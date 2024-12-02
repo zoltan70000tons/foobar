@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Events\TestMessageSent;
+use App\Http\Controllers\PassengerController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -127,6 +128,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
+
+    Route::prefix('passengers')->group(function () {
+        Route::post('/add', [PassengerController::class, 'addPassenger']);
+        Route::post('/edit/{id}', [PassengerController::class, 'editPassenger']);
+        Route::get('/validate', [PassengerController::class, 'validatePassenger']);
+        Route::get('/search', [PassengerController::class, 'search']);
+    });
+
+
 });
 
 

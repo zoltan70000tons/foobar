@@ -15,7 +15,7 @@ class PassengersSeeder extends Seeder
      */
     public function run(): void
     {
-        
+
         // single male
         $bookings = Booking::whereHas('cabin.cabinType', function ($query) {
             $query->where('id', 2);
@@ -70,7 +70,7 @@ class PassengersSeeder extends Seeder
         $bookings = Booking::whereHas('cabin.cabinType', function ($query) {
             $query->where('id', 3);
         })
-            ->with(['cabin.cabinType', 'cabin.cabinCategory']) // Incluir tanto cabinType como cabinCategory
+            ->with(['cabin.cabinType', 'cabin.cabinCategory'])
             ->get();
 
         $faker = Faker::create();
@@ -118,10 +118,10 @@ class PassengersSeeder extends Seeder
         $bookings = Booking::whereHas('cabin.cabinType', function ($query) {
             $query->where('id', 1);
         })
-            ->with(['cabin.cabinType', 'cabin.cabinCategory']) // Incluir tanto cabinType como cabinCategory
+            ->with(['cabin.cabinType', 'cabin.cabinCategory'])
             ->get();
 
-        
+
 
         foreach ($bookings as $booking) {
             $faker = Faker::create();
@@ -131,40 +131,41 @@ class PassengersSeeder extends Seeder
                 $pricePerPerson = $booking->cabin->cabinCategory->price;
 
                 //add lead passenger
-                        Passenger::updateOrCreate([
-                            'booking_id' => $booking->id,
-                            'lead_passenger' => true,
-                        ], [
-                            'confirmed_booking_email' => $faker->boolean,
-                            'survivor_number' => $faker->randomNumber(),
-                            'payment_method' => 'CREDIT_CARD',
-                            'gender' => $lead_passenger->detail->gender,
-                            'first_name' => $lead_passenger->detail->first_name,
-                            'middle_name' => $lead_passenger->detail->middle_name,
-                            'last_name' => $lead_passenger->detail->last_name,
-                            'dob' => $lead_passenger->detail->dob,
-                            'citizenship' => $lead_passenger->detail->citizenship,
-                            'address_first' => $faker->streetAddress,
-                            'city' => $faker->city,
-                            'state' => $faker->state,
-                            'postal_code' => $faker->postcode,
-                            'country' => $faker->country,
-                            'email' => $lead_passenger->email,
-                            'phone' => $faker->phoneNumber,
-                            'emergency_c_name' => $faker->name,
-                            'emergency_c_phone' => $faker->phoneNumber,
-                            'hear_about' => 'Internet',
-                            'newsletter' => $faker->boolean,
-                            'travel_info' => $faker->boolean,
-                            'terms_n_cons' => true,
-                            'cabin_conf_accp' => $faker->boolean,
-                            'single_t_agreement' => $faker->boolean,
-                            'passenger_allocated_cost' => $pricePerPerson,
-                            'passenger_balance' => $faker->randomFloat(2, 1000, $pricePerPerson),
-                            'was_on_board' => $faker->boolean,
-                        ]);
+                Passenger::updateOrCreate([
+                    'booking_id' => $booking->id,
+                    'lead_passenger' => true,
+                ], [
+                    'confirmed_booking_email' => $faker->boolean,
+                    'survivor_number' => $faker->randomNumber(),
+                    'payment_method' => 'CREDIT_CARD',
+                    'gender' => $lead_passenger->detail->gender,
+                    'first_name' => $lead_passenger->detail->first_name,
+                    'middle_name' => $lead_passenger->detail->middle_name,
+                    'last_name' => $lead_passenger->detail->last_name,
+                    'dob' => $lead_passenger->detail->dob,
+                    'citizenship' => $lead_passenger->detail->citizenship,
+                    'address_first' => $faker->streetAddress,
+                    'city' => $faker->city,
+                    'state' => $faker->state,
+                    'postal_code' => $faker->postcode,
+                    'country' => $faker->country,
+                    'email' => $lead_passenger->email,
+                    'phone' => $faker->phoneNumber,
+                    'emergency_c_name' => $faker->name,
+                    'emergency_c_phone' => $faker->phoneNumber,
+                    'hear_about' => 'Internet',
+                    'newsletter' => $faker->boolean,
+                    'travel_info' => $faker->boolean,
+                    'terms_n_cons' => true,
+                    'cabin_conf_accp' => $faker->boolean,
+                    'single_t_agreement' => $faker->boolean,
+                    'passenger_allocated_cost' => $pricePerPerson,
+                    'passenger_balance' => $faker->randomFloat(2, 1000, $pricePerPerson),
+                    'was_on_board' => $faker->boolean,
+                ]);
                 // get random passengers to complete booking
-                   for($i = 0; $i < $capacity; $i++){
+                $remainingCapacity = $capacity > 1 ? $capacity - 1 : 1; // Reduce capacity by 1 to leave at least one space available
+                for ($i = 0; $i < $remainingCapacity; $i++) {
                     $faker = Faker::create();
                     Passenger::updateOrCreate([
                         'booking_id' => $booking->id,
@@ -178,7 +179,7 @@ class PassengersSeeder extends Seeder
                         'middle_name' => $faker->firstName,
                         'last_name' => $faker->lastName,
                         'dob' => $lead_passenger->detail->dob,
-                        'citizenship' =>  $faker->country,
+                        'citizenship' => $faker->country,
                         'address_first' => $faker->streetAddress,
                         'city' => $faker->city,
                         'state' => $faker->state,
@@ -198,7 +199,8 @@ class PassengersSeeder extends Seeder
                         'passenger_balance' => $faker->randomFloat(2, 0, $pricePerPerson),
                         'was_on_board' => $faker->boolean,
                     ]);
-                   } 
+                }
+
 
 
                 // dd($booking->cabin->cabinCategory);

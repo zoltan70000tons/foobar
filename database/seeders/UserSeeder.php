@@ -48,6 +48,18 @@ class UserSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
+        // Seed a default system user
+        $systemUser = User::firstOrCreate(
+            ['email' => 'system@70000tons.com'],
+            [
+                'username' => 'system',
+                'password' => Hash::make(Str::random(32)), // Generate a random, strong password
+                'created_at' => now(),
+                'updated_at' => now(),
+                'organization_id' => env('ORGANIZATION_ID', 1)
+            ]
+        );
+
         // Seed users without 'Customer' role
         foreach (range(1, 20) as $index) {
             $name = $this->faker->firstname;
@@ -58,11 +70,11 @@ class UserSeeder extends Seeder
                     'created_at' => $this->faker->dateTime($max = 'now'),
                     'updated_at' => $this->faker->dateTime($max = 'now'),
                     'organization_id' => env('ORGANIZATION_ID', 1),
-                    'username' => $name.$index
+                    'username' => $name . $index
                 ]
             );
             UserDetail::create([
-                'user_id' => $user->id, 
+                'user_id' => $user->id,
                 'gender' => $this->faker->randomElement(['M', 'F']),
                 'first_name' => $this->faker->firstname,
                 'middle_name' => $this->faker->firstName,
@@ -89,7 +101,7 @@ class UserSeeder extends Seeder
             ]);
 
             UserDetail::create([
-                'user_id' => $user->id, 
+                'user_id' => $user->id,
                 'gender' => $this->faker->randomElement(['M', 'F']),
                 'first_name' => $this->faker->firstname,
                 'middle_name' => $this->faker->firstName,
@@ -129,7 +141,7 @@ class UserSeeder extends Seeder
         ]);
 
         UserDetail::create([
-            'user_id' => $user->id, 
+            'user_id' => $user->id,
             'gender' => $this->faker->randomElement(['M', 'F']),
             'first_name' => $this->faker->firstname,
             'middle_name' => $this->faker->firstName,
@@ -166,14 +178,14 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'user_activated_at' => now(),
             ]);
-        
+
             // Assign 'Customer' role
             setPermissionsTeamId(1);
             $user->assignRole('Customer');
-        
+
             // Generate a unique survivor number
             $survivorNumber = CustomerHelper::generateSurvivorNumber();
-        
+
             // Save survivor number in the survivor_numbers table
             SurvivorNumber::create([
                 'user_id' => $user->id,
@@ -181,7 +193,7 @@ class UserSeeder extends Seeder
             ]);
 
             UserDetail::create([
-                'user_id' => $user->id, 
+                'user_id' => $user->id,
                 'gender' => $this->faker->randomElement(['M', 'F']),
                 'first_name' => $this->faker->firstName,
                 'middle_name' => $this->faker->firstName,
