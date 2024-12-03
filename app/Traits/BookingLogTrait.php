@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\BookingLog; // Asegúrate de importar el modelo de log
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 trait BookingLogTrait
@@ -18,9 +19,10 @@ trait BookingLogTrait
      */
     public function saveBookingLog(int $bookingId, string $action, string $description, ?int $userId = null): void
     {
+        $finalUserId = $userId ?? Auth::id() ?? User::where('email', 'system@70000tons.com')->value('id');
         BookingLog::create([
             'booking_id' => $bookingId,
-            'user_id' => $userId ?? Auth::id(),
+            'user_id' => $finalUserId,
             'action' => $action,
             'description' => $description,
         ]);
