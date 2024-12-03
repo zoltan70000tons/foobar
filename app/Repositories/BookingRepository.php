@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\BookingInterface;
+use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use DB;
 use Illuminate\Support\Facades\Log;
@@ -10,13 +11,23 @@ use InvalidArgumentException;
 use App\Models\BookingLog;
 use App\Models\Cabin;
 use App\Models\Comment;
+use App\Models\TemporaryReservation;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\PassengerRepository;
+use Illuminate\Support\Facades\DB as FacadesDB;
 
 class BookingRepository implements BookingInterface
 {
 
   use BookingLogTrait;
+
+  protected PassengerInterface $passengerRepository;
+
+  public function __construct(PassengerRepository $passengerRepository)
+  {
+    $this->passengerRepository = $passengerRepository;
+  }
 
 
   function getAll()
@@ -261,44 +272,63 @@ class BookingRepository implements BookingInterface
   }
 
 
-  public function createBooking(array $data, Cabin $cabin): Booking|array
+  public function createBooking(array $bookingData, $passengerData, ?Cabin $cabin = null, ?int $reservation_id = null): array
   {
-    try {
-      // Validate required fields
-      if (empty($data['customer_id'])) {
-        throw new \Exception("Customer ID is required.");
+      if (is_null($cabin) && is_null($reservation_id)) {
+          throw new InvalidArgumentException('You must provide a Cabin object or a Reservation Id.');
       }
-      if (empty($data['event_id'])) {
-        throw new \Exception("Event ID is required.");
+  
+      FacadesDB::beginTransaction();
+      try {
+          $selectedCabin = null;
+  
+          if ($reservation_id) {
+              $tempReservation = TemporaryReservation::find($reservation_id);
+              if (!$tempReservation) {
+                  throw new \Exception("Temporary reservation not found.");
+              }
+  
+              $cabinId = $tempReservation->cabin_id;
+              $selectedCabin = Cabin::find($cabinId);
+              if (!$selectedCabin) {
+                  throw new \Exception("Cabin not found for the given reservation ID.");
+              }
+          } else {
+              $selectedCabin = $cabin;
+          }
+  
+          $booking = new Booking();
+          $booking->fill($bookingData);
+          $booking->cabin_id = $selectedCabin->id; // Usar la cabaña seleccionada
+          $booking->status = $bookingData['status'] ?? 'NEW';
+          $booking->save();
+  
+          $passenger = null;
+          if ($passengerData) {
+              $passenger = $this->passengerRepository->create($passengerData, $booking);
+          }
+  
+          if ($passenger && $booking) {
+              if ($reservation_id) {
+                  TemporaryReservation::find($reservation_id)?->delete();
+              }
+              DB::commit();
+              return [
+                  "message" => "Booking created successfully.",
+                  'booking' => $booking,
+                  'passenger' => $passenger,
+              ];
+          }
+  
+          throw new \Exception("Error creating booking.");
+      } catch (\Exception $e) {
+          FacadesDB::rollBack();
+          return [
+              'error' => true,
+              'message' => $e->getMessage(),
+          ];
       }
-
-      if (!$cabin || $cabin->inventory <= 0 || strtoupper($cabin->status) === "BOOKED") {
-        throw new \Exception("The specified cabin is not available.");
-      }
-
-      // Create the booking
-      $booking = new Booking();
-      $booking->fill($data); // Fill other attributes like payment_method, tags, etc.
-
-      // Assign the cabin to the booking
-      $booking->cabin_id = $cabin->id;
-      // Set the default status
-      $booking->status = $data['status'] ?? 'NEW';
-
-      // Save the booking
-      $booking->save();
-
-      // Update cabin inventory and status
-      $cabin->updateInventoryOnBooking();
-
-      // Return the created booking
-      return $booking;
-    } catch (\Exception $e) {
-      // Return an error array
-      return [
-        'error' => true,
-        'message' => $e->getMessage(),
-      ];
-    }
   }
+  
+
 }
