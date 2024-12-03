@@ -271,46 +271,64 @@ class BookingRepository implements BookingInterface
     }
   }
 
-  public function createBooking(array $data, Cabin $cabin, $passengerData): Booking|array
+
+  public function createBooking(array $bookingData, $passengerData, ?Cabin $cabin = null, ?int $reservation_id = null): array
   {
-    FacadesDB::beginTransaction();
-    try {
-      if (empty($data['customer_id']) || empty($data['event_id'])) {
-        throw new \Exception("Customer ID and Event ID are required.");
+      if (is_null($cabin) && is_null($reservation_id)) {
+          throw new InvalidArgumentException('You must provide a Cabin object or a Reservation Id.');
       }
-
-      if (!$cabin || $cabin->inventory <= 0 || strtoupper($cabin->status) === "BOOKED") {
-        throw new \Exception("The specified cabin is not available.");
+  
+      FacadesDB::beginTransaction();
+      try {
+          $selectedCabin = null;
+  
+          if ($reservation_id) {
+              $tempReservation = TemporaryReservation::find($reservation_id);
+              if (!$tempReservation) {
+                  throw new \Exception("Temporary reservation not found.");
+              }
+  
+              $cabinId = $tempReservation->cabin_id;
+              $selectedCabin = Cabin::find($cabinId);
+              if (!$selectedCabin) {
+                  throw new \Exception("Cabin not found for the given reservation ID.");
+              }
+          } else {
+              $selectedCabin = $cabin;
+          }
+  
+          $booking = new Booking();
+          $booking->fill($bookingData);
+          $booking->cabin_id = $selectedCabin->id; // Usar la cabaña seleccionada
+          $booking->status = $bookingData['status'] ?? 'NEW';
+          $booking->save();
+  
+          $passenger = null;
+          if ($passengerData) {
+              $passenger = $this->passengerRepository->create($passengerData, $booking);
+          }
+  
+          if ($passenger && $booking) {
+              if ($reservation_id) {
+                  TemporaryReservation::find($reservation_id)?->delete();
+              }
+              DB::commit();
+              return [
+                  "message" => "Booking created successfully.",
+                  'booking' => $booking,
+                  'passenger' => $passenger,
+              ];
+          }
+  
+          throw new \Exception("Error creating booking.");
+      } catch (\Exception $e) {
+          FacadesDB::rollBack();
+          return [
+              'error' => true,
+              'message' => $e->getMessage(),
+          ];
       }
-
-      $booking = new Booking();
-      $booking->fill($data);
-      $booking->cabin_id = $cabin->id;
-      $booking->status = $data['status'] ?? 'NEW';
-      $booking->save();
-
-      $passenger = null;
-      if ($passengerData) {
-        $passenger = $this->passengerRepository->create($passengerData, $booking);
-      }
-
-      if ($booking && $passenger) {
-        $cabin->updateInventoryOnBooking();
-        FacadesDB::commit();
-        return [
-          "message" => "Booking created successfully.",
-          'booking' => $booking,
-          'passenger' => $passenger,
-        ];
-      }
-
-      throw new \Exception("Error creating booking.");
-    } catch (\Exception $e) {
-      FacadesDB::rollBack();
-      return [
-        'error' => true,
-        'message' => $e->getMessage(),
-      ];
-    }
   }
+  
+
 }
