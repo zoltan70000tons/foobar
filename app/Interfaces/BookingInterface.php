@@ -22,5 +22,5 @@ interface BookingInterface
     function changeStatus(Booking $booking, $status);
     function addComment(Booking $booking, $comment);
     function cancel(Booking $booking);
-    function createBooking(array $data, Cabin $cabin): Booking|array;
+    function createBooking(array $data, Cabin $cabin, $passengerData): Booking|array;
 }

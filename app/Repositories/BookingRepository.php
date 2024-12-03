@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Interfaces\BookingInterface;
+use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use DB;
 use Illuminate\Support\Facades\Log;
@@ -10,13 +11,23 @@ use InvalidArgumentException;
 use App\Models\BookingLog;
 use App\Models\Cabin;
 use App\Models\Comment;
+use App\Models\TemporaryReservation;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\PassengerRepository;
+use Illuminate\Support\Facades\DB as FacadesDB;
 
 class BookingRepository implements BookingInterface
 {
 
   use BookingLogTrait;
+
+  protected PassengerInterface $passengerRepository;
+
+  public function __construct(PassengerRepository $passengerRepository)
+  {
+    $this->passengerRepository = $passengerRepository;
+  }
 
 
   function getAll()
@@ -260,41 +271,42 @@ class BookingRepository implements BookingInterface
     }
   }
 
-
-  public function createBooking(array $data, Cabin $cabin): Booking|array
+  public function createBooking(array $data, Cabin $cabin, $passengerData): Booking|array
   {
+    FacadesDB::beginTransaction();
     try {
-      // Validate required fields
-      if (empty($data['customer_id'])) {
-        throw new \Exception("Customer ID is required.");
-      }
-      if (empty($data['event_id'])) {
-        throw new \Exception("Event ID is required.");
+      if (empty($data['customer_id']) || empty($data['event_id'])) {
+        throw new \Exception("Customer ID and Event ID are required.");
       }
 
       if (!$cabin || $cabin->inventory <= 0 || strtoupper($cabin->status) === "BOOKED") {
         throw new \Exception("The specified cabin is not available.");
       }
 
-      // Create the booking
       $booking = new Booking();
-      $booking->fill($data); // Fill other attributes like payment_method, tags, etc.
-
-      // Assign the cabin to the booking
+      $booking->fill($data);
       $booking->cabin_id = $cabin->id;
-      // Set the default status
       $booking->status = $data['status'] ?? 'NEW';
-
-      // Save the booking
       $booking->save();
 
-      // Update cabin inventory and status
-      $cabin->updateInventoryOnBooking();
+      $passenger = null;
+      if ($passengerData) {
+        $passenger = $this->passengerRepository->create($passengerData, $booking);
+      }
 
-      // Return the created booking
-      return $booking;
+      if ($booking && $passenger) {
+        $cabin->updateInventoryOnBooking();
+        FacadesDB::commit();
+        return [
+          "message" => "Booking created successfully.",
+          'booking' => $booking,
+          'passenger' => $passenger,
+        ];
+      }
+
+      throw new \Exception("Error creating booking.");
     } catch (\Exception $e) {
-      // Return an error array
+      FacadesDB::rollBack();
       return [
         'error' => true,
         'message' => $e->getMessage(),
