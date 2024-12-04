@@ -19,62 +19,60 @@ class CustomerAuthController extends Controller
 
   /**
    * Return the authenticated user
-   * 
+   *
    */
   public function customer(Request $request)
   {
     // Get the authenticated customer by guard
     //$customer = Auth::user()->role === 'Customer' ? Auth::user() : null;
     $user = Auth::user();
-    $customer = $user->hasRole('Customer') ? $user : null;
+    $customer = $user->hasRole("Customer") ? $user : null;
 
     if (!$customer) {
-      return $this->errorResponse('Unauthorized', 401);
+      return $this->errorResponse("Unauthorized", 401);
     }
 
     // check the customer have verified email
     if (!$customer->hasVerifiedEmail()) {
-      return $this->errorResponse('Email not verified', 409);
+      return $this->errorResponse("Email not verified", 409);
     }
 
     // Get the first membership type of the customer
     $membership = $customer->membershipTypes->first() ?? null;
-    
-    return $this->successResponse([
-      'name' => $customer->detail->first_name ?? null,
-      'membership_type' => $membership->name ?? null,
-      'membership_discount' => $membership->discount_value ?? null,
-      'email_verified_at' => $customer->email_verified_at ?? null,
-    ]);
-  }
 
+    return $this->successResponse([
+      "name" => $customer->detail->first_name ?? null,
+      "membership_type" => $membership->name ?? null,
+      "membership_discount" => $membership->discount_value ?? null,
+      "email_verified_at" => $customer->email_verified_at ?? null,
+    ])->withCookie("email_verified", "true", 60);
+  }
 
   /**
    * Reset password with validated old one
-   * 
+   *
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\JsonResponse
-   * 
+   *
    */
   public function update(Request $request)
   {
-    $language = $request->input('language', 'en');
+    $language = $request->input("language", "en");
     App::setLocale($language);
 
-    if (!Hash::check($request->input('current_password'), $request->user()->password)) {
-      return response()->json(['message' => __('auth.current_password_incorrect')], 422);
+    if (!Hash::check($request->input("current_password"), $request->user()->password)) {
+      return response()->json(["message" => __("auth.current_password_incorrect")], 422);
     }
 
     $validated = $request->validate([
-      'password' => ['required', Password::defaults(), 'confirmed'],
+      "password" => ["required", Password::defaults(), "confirmed"],
     ]);
 
     // Update the user's password
     $request->user()->update([
-      'password' => Hash::make($validated['password']),
+      "password" => Hash::make($validated["password"]),
     ]);
 
-    return response()->json(['message' => __('auth.password_updated_successfully')]);
+    return response()->json(["message" => __("auth.password_updated_successfully")]);
   }
-
 }

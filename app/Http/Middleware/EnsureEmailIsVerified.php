@@ -41,13 +41,13 @@ class EnsureEmailIsVerified
         );
     }
 
-    if ($user->hasRole("Customer") && !is_null($user->email_verified_at)) {
-      return response()->json($user)->cookie(
-        "email_verified", // Cookie name
-        "true", // Cookie value
-        60 // Expiration in minutes
-      );
-    }
+    // if ($user->hasRole("Customer") && !is_null($user->email_verified_at)) {
+    //   return response()->json($user)->cookie(
+    //     "email_verified", // Cookie name
+    //     "true", // Cookie value
+    //     60 // Expiration in minutes
+    //   );
+    // }
 
     // Proceed with the request and include the user in the response
     return $next($request);
