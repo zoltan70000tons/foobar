@@ -8,7 +8,22 @@ class OneBookingPerUser
 {
   public function handle($request, Closure $next)
   {
-    // Middleware to check if user has already booked
+    // Check the user has already booked for this event
+    if (
+      Auth::check() &&
+      Auth::user()
+        ->bookings()
+        ->where("event_id", $request->event_id)
+        ->count() > 0
+    ) {
+      return response()->json(
+        [
+          "message" => "You already have a booking for this event",
+          "code" => "BOOKING_LIMIT_EXCEEDED",
+        ],
+        403
+      );
+    }
 
     return $next($request);
   }

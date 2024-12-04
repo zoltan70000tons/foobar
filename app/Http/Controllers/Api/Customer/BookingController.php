@@ -203,6 +203,9 @@ class BookingController extends Controller
 
       // Delete temporary reservation
       TemporaryReservation::find($validated["cart"]["reservation_id"])?->delete();
+      // delete current sesion
+      $request->session()->forget("cart");
+      $request->session()->forget("reservation_id");
 
       return response()->json(
         [
@@ -223,5 +226,43 @@ class BookingController extends Controller
         500
       );
     }
+  }
+
+  // My bookings
+  public function myBookings()
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $bookings = Booking::where("customer_id", $user->id)->get();
+
+    return response()->json(["bookings" => $bookings]);
+  }
+
+  // Delete booking
+  public function destroy(Request $request, $id)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::find($id);
+
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    if ($booking->customer_id !== $user->id) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking->delete();
+
+    return response()->json(["message" => "Booking deleted successfully"], 200);
   }
 }

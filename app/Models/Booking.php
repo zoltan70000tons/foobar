@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\BookingLog;
 use App\Traits\BookingLogTrait;
+use Illuminate\Support\Facades\Auth;
 
 class Booking extends Model
 {
@@ -101,12 +102,11 @@ class Booking extends Model
     } catch (\Exception $e) {
       // Return an error array in case of exception
       return [
-        'error' => true,
-        'message' => $e->getMessage(),
+        "error" => true,
+        "message" => $e->getMessage(),
       ];
     }
   }
-
 
   public function logs()
   {
@@ -154,7 +154,7 @@ class Booking extends Model
       $this->assignCabin($cabin);
       $blog = new BookingLog();
       $blog->booking_id = $this->id;
-      $blog->user_id = auth()->id(); // Obtener el usuario actual
+      $blog->user_id = Auth::user()->id(); // Obtener el usuario actual
       $blog->action = "Changed Cabin";
       $blog->description = "Cabin changed to {$cabin->cabin_number}.";
       $blog->save();
@@ -176,22 +176,21 @@ class Booking extends Model
   public function cancel()
   {
     try {
-
-      if ($this->status === 'CANCELLED') {
+      if ($this->status === "CANCELLED") {
         throw new \Exception("This booking is already cancelled.");
       }
-      $segments = explode('-', $this->booking_code);
+      $segments = explode("-", $this->booking_code);
 
       if (count($segments) !== 3) {
         throw new \Exception("Invalid booking code format.");
       }
-      $characters = config('whitelist.allowed_characters');
+      $characters = config("whitelist.allowed_characters");
       do {
         $randomSegment = substr(str_shuffle($characters), 0, 4);
       } while ($this->containsBlockedWords($randomSegment));
       $segments[1] = $randomSegment;
-      $this->booking_code = implode('-', $segments);
-      $this->status = 'CANCELLED';
+      $this->booking_code = implode("-", $segments);
+      $this->status = "CANCELLED";
       $this->is_cancelled = true;
       $this->save();
 
@@ -202,14 +201,13 @@ class Booking extends Model
     }
   }
 
-
   /**
    * Generate a unique booking code for this booking.
    */
   private function generateBookingCode(Cabin $cabin): string
   {
-    $characters = config('whitelist.allowed_characters');
-    $year = 'E';
+    $characters = config("whitelist.allowed_characters");
+    $year = "E";
 
     // Generate a random 4-character code
     do {
@@ -229,25 +227,16 @@ class Booking extends Model
       }
       // Set status to 'NEW' if not already set
       if (!$booking->status) {
-        $booking->status = 'NEW';
+        $booking->status = "NEW";
       }
     });
 
     static::created(function ($booking) {
-      $booking->saveBookingLog(
-        $booking->id,
-        'Created',
-        "The booking was created"
-      );
+      $booking->saveBookingLog($booking->id, "Created", "The booking was created");
     });
 
     static::deleted(function ($booking) {
-      $booking->saveBookingLog(
-        $booking->id,
-        'Deleted',
-        "The booking was deleted"
-      );
+      $booking->saveBookingLog($booking->id, "Deleted", "The booking was deleted");
     });
   }
-
 }

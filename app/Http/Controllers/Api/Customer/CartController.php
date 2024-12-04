@@ -29,7 +29,7 @@ class CartController extends Controller
     $customer = $user && $user->hasRole("Customer") ? $user : null;
     $membership = $customer ? $customer->membershipTypes->first() : null;
 
-    if ($cart && $cart["cabin_price"]) {
+    if ($cart && isset($cart["cabin_price"])) {
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
         "cabinPrice" => $cart["cabin_price"],
         "capacity" => $cart["cabin_capacity"],

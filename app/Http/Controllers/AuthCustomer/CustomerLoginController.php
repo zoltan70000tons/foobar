@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
 use App\Models\SurvivorNumber;
+use Illuminate\Support\Facades\Cookie;
 
 class CustomerLoginController extends Controller
 {
@@ -51,8 +52,7 @@ class CustomerLoginController extends Controller
       return response()->json(
         [
           "status" => "error-uniqueness",
-          "message" =>
-            "Multiple accounts found with this email. Please recover your account.",
+          "message" => "Multiple accounts found with this email. Please recover your account.",
           "get_signed_url" => $getSignedURL,
           "post_signed_url" => $postSignedURL,
           "register_signed_url" => $registerSignedUrl,
@@ -132,10 +132,7 @@ class CustomerLoginController extends Controller
       // Handle survivor_number-based authentication
 
       // Attempt to find the survivor number
-      $survivorNumber = SurvivorNumber::where(
-        "survivor_number",
-        $identifier
-      )->first();
+      $survivorNumber = SurvivorNumber::where("survivor_number", $identifier)->first();
 
       if (!$survivorNumber) {
         return response()->json(
@@ -210,6 +207,10 @@ class CustomerLoginController extends Controller
 
     $request->session()->regenerateToken();
 
-    return response()->json(null, 204);
+    // destroy emaIl_verified cookie
+    $response = response()->json(null, 204);
+    return $response->withCookie(Cookie::forget("email_verified"));
+
+    //return response()->json(null, 204);
   }
 }
