@@ -18,7 +18,6 @@ class PassengerRepository implements PassengerInterface
       if (!$user) {
         return false;
       }
-
       \Log::info("User: " . $user->id);
 
       $userDetails = $user->detail;
@@ -57,14 +56,66 @@ class PassengerRepository implements PassengerInterface
         "passenger_balance" => 0,
         "was_on_board" => false,
       ];
+      $leadPassenger = Passenger::create($passengerData);
+      $seats = $booking->cabin->cabinCategory->capacity -1;
+      if ($seats > 0) {
+        $result = $this->fillAditionalSeats($seats, $booking->id);
+        if (!$result) {
+          throw new \Exception("Error creating seats.");
+        }
+      }
 
       \Log::info("Passenger Data: " . json_encode($passengerData));
-
-      return Passenger::create($passengerData);
+      return $leadPassenger;
     } catch (\Exception $e) {
       \Log::info("PassengerRepository@create: " . $e->getMessage());
-      dd($e->getMessage());
+      return false;
+    }
+  }
 
+
+  private function fillAditionalSeats($seats,$bookingId): bool
+  {
+    try {
+      for ($i = 0; $i < $seats; $i++) {
+        $additionalPassengerData = [
+          "booking_id" => $bookingId,
+          "confirmed_booking_email" => false,
+          "lead_passenger" => false,
+          "survivor_number" => null,
+          "gender" => null,
+          "first_name" => 'Unknown',
+          "middle_name" => 'Unknown',
+          "last_name" => 'Unknown',
+          "dob" => null,
+          "citizenship" => null,
+          "payment_method" => "CREDIT_CARD",
+          "address_first" => 'Unknown',
+          "address_second" => 'Unknown',
+          "city" => null,
+          "state" => null,
+          "postal_code" => null,
+          "country" => null,
+          "email" => 'Unknown',
+          "phone" => null,
+          "emergency_c_name" => 'Unknown',
+          "emergency_c_phone" => null,
+          "special_request" => null,
+          "newsletter" => false,
+          "travel_info" => false,
+          "terms_n_cons" => false,
+          "cabin_conf_accp" => false,
+          "single_t_agreement" => false,
+          "passenger_allocated_cost" => 0,
+          "passenger_balance" => 0,
+          "was_on_board" => false,
+        ];
+        \Log::info("Passenger Data (Additional): " . json_encode($additionalPassengerData));
+        Passenger::create($additionalPassengerData);
+      }
+      return true;
+    } catch (\Exception $e) {
+      \Log::error("Error filling additional seats: " . $e->getMessage());
       return false;
     }
   }
