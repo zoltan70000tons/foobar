@@ -1,5 +1,4 @@
 <?php
-
 /*
 |--------------------------------------------------------------------------
 | Customer Reset Password Email
@@ -13,6 +12,10 @@ This template is used to send a reset password link to the customer.
 
 @section('title', 'Reset Password')
 
+@section('header')
+    70000TONS OF METAL
+@endsection
+
 @section('content')
     <p>Hi {{ $customer->username }},</p>
     <p>You are receiving this email because we received a password reset request for your account.</p>
@@ -21,6 +24,6 @@ This template is used to send a reset password link to the customer.
 @endsection
 
 @section('footer')
-    <p>Regards,</p>
-    <p>{{ config('app.name') }}</p>
+    <p>{{ __('systemEmails.email_regards') }},</p>
+    <p>70000TONS OF METAL TEAM</p>
 @endsection
