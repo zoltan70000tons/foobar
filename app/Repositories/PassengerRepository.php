@@ -19,11 +19,7 @@ class PassengerRepository implements PassengerInterface
         return false;
       }
 
-      \Log::info("User: " . $user->id);
-
       $userDetails = $user->detail;
-
-      \Log::info("User Details: " . $userDetails);
 
       $passengerData = [
         "booking_id" => $booking->id,
@@ -58,11 +54,8 @@ class PassengerRepository implements PassengerInterface
         "was_on_board" => false,
       ];
 
-      \Log::info("Passenger Data: " . json_encode($passengerData));
-
       return Passenger::create($passengerData);
     } catch (\Exception $e) {
-      \Log::info("PassengerRepository@create: " . $e->getMessage());
       dd($e->getMessage());
 
       return false;

@@ -126,17 +126,11 @@ class BookingController extends Controller
         "tags" => json_encode(["New"]),
       ];
 
-      \Log::info("STOOORE@store: " . json_encode($bookingData));
-
       // Process passenger data
       $passengerData = [
-        //we dont pass booking_id because it will be set on repository
-        //"booking_id"
         "confirmed_booking_email" => false,
         "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-        // Pull NON-EDITABLE data from the user
-        // Pull EDITABLE data from the booking form
-        "payment_method" => "CREDIT_CARD", // TODO: Implement payment method selection
+        "payment_method" => "CREDIT_CARD",
         "address_first" => $validated["addressLine1"],
         "address_second" => $validated["addressLine2"],
         "city" => $validated["city"],
@@ -176,131 +170,6 @@ class BookingController extends Controller
         500
       );
     }
-
-    // DB::beginTransaction();
-
-    // try {
-    //   // Fetch temporary reservation data
-    //   $tempReservation = TemporaryReservation::find($validated["cart"]["reservation_id"]);
-    //   if (!$tempReservation) {
-    //     throw new \Exception("Temporary reservation not found.");
-    //   }
-
-    //   // Fetch cabin data from the temporary reservation
-    //   $cabinId = $tempReservation->cabin_id;
-    //   $cabinNumber = $tempReservation->cabin_number;
-
-    //   // Fetch cabin data
-    //   $cabin = Cabin::find($cabinId);
-    //   if (!$cabin) {
-    //     throw new \Exception("Cabin not found for the given reservation ID.");
-    //   }
-
-    //   $cabinCategory = $cabin->category->id;
-
-    //   // Validate cabin ID
-    //   $cabinId = Cabin::where("id", $cabinId)->firstOrFail()->id;
-
-    //   $characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    //   $identifier_code = substr(str_shuffle($characters), 0, 4);
-    //   $bookingCode = "{$cabinNumber}-{$identifier_code}-{$cabinCategory}";
-
-    //   $eventId = (int) $validated["cart"]["event_id"];
-    //   $paymentPlan = $validated["cart"]["payment_plan"];
-    //   $isSigle = $validated["cart"]["cabin_type"] === "private-cabin" ? true : false;
-
-    //   // Process booking data
-    //   $bookingData = [
-    //     "booking_code" => $bookingCode,
-    //     "event_id" => $eventId,
-    //     "customer_id" => $user->id,
-    //     "payment_plan" => $paymentPlan,
-    //     "cabin_id" => $cabinId,
-    //     "completed" => false,
-    //     "is_cancelled" => false,
-    //     "is_single_occupancy" => $isSigle,
-    //     "tags" => json_encode(["New"]),
-    //   ];
-
-    //   Log::info("STOOORE@store: " . json_encode($bookingData));
-
-    //   // Create booking
-    //   $booking = Booking::create($bookingData);
-
-    //   // Fetch user details
-    //   $userDetails = $user->detail;
-
-    //   if (!$userDetails) {
-    //     throw new \Exception("User details not found.");
-    //   }
-
-    //   // Process passenger data
-    //   $passengerData = [
-    //     "booking_id" => $booking->id,
-    //     "confirmed_booking_email" => false,
-    //     "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-    //     // Pull NON-EDITABLE data from the user
-    //     "survivor_number" => $user->survivorNumber->survivor_number,
-    //     "gender" => $userDetails->gender,
-    //     "first_name" => $userDetails->first_name,
-    //     "middle_name" => $userDetails->middle_name,
-    //     "last_name" => $userDetails->last_name,
-    //     "dob" => $userDetails->dob,
-    //     "citizenship" => $userDetails->citizenship,
-    //     // Pull EDITABLE data from the booking form
-    //     "payment_method" => "CREDIT_CARD", // TODO: Implement payment method selection
-    //     "address_first" => $validated["addressLine1"],
-    //     "address_second" => $validated["addressLine2"],
-    //     "city" => $validated["city"],
-    //     "state" => $validated["state"],
-    //     "postal_code" => $validated["zipCode"],
-    //     "country" => $validated["country"],
-    //     "email" => $validated["email"],
-    //     "phone" => $validated["phone"]["number"],
-    //     "emergency_c_name" => $validated["emergencyContactName"],
-    //     "emergency_c_phone" => $validated["emergencyContactPhone"]["number"],
-    //     "special_request" => $validated["specialRequest"] ?? null,
-    //     "newsletter" => $validated["newsletter"],
-    //     "travel_info" => false,
-    //     "terms_n_cons" => $validated["terms"],
-    //     "cabin_conf_accp" => false,
-    //     "single_t_agreement" => false,
-    //     "passenger_allocated_cost" => $validated["cart"]["price_total"],
-    //     "passenger_balance" => 0,
-    //     "was_on_board" => false,
-    //   ];
-
-    //   // Create passenger
-    //   $passenger = Passenger::create($passengerData);
-
-    //   // Commit transaction
-    //   DB::commit();
-
-    //   // Delete temporary reservation
-    //   TemporaryReservation::find($validated["cart"]["reservation_id"])?->delete();
-    //   // delete current sesion
-    //   $request->session()->forget("cart");
-    //   $request->session()->forget("reservation_id");
-
-    //   return response()->json(
-    //     [
-    //       "message" => "Booking created successfully.",
-    //       "booking" => $booking,
-    //       "passenger" => $passenger,
-    //     ],
-    //     201
-    //   );
-    // } catch (\Exception $e) {
-    //   DB::rollBack();
-
-    //   return response()->json(
-    //     [
-    //       "message" => "An error occurred while creating the booking.",
-    //       "error" => $e->getMessage(),
-    //     ],
-    //     500
-    //   );
-    // }
   }
 
   // My bookings

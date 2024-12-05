@@ -32,7 +32,12 @@ class EnsureEmailIsVerified
         ->json([
           "message" => __("auth.email_not_verified"),
           "status" => "email_not_verified",
-          "user" => $user, // Include user object
+          "user" => [
+            "name" => $user->detail->first_name ?? null,
+            "email_verified_at" => $user->email_verified_at ?? null,
+            "membership_type" => $user->membershipTypes->first()->name ?? null,
+            "membership_discount" => $user->membershipTypes->first()->discount_value ?? null,
+          ],
         ])
         ->cookie(
           "email_verified", // Cookie name
@@ -40,14 +45,6 @@ class EnsureEmailIsVerified
           60 // Expiration in minutes
         );
     }
-
-    // if ($user->hasRole("Customer") && !is_null($user->email_verified_at)) {
-    //   return response()->json($user)->cookie(
-    //     "email_verified", // Cookie name
-    //     "true", // Cookie value
-    //     60 // Expiration in minutes
-    //   );
-    // }
 
     // Proceed with the request and include the user in the response
     return $next($request);
