@@ -291,24 +291,18 @@ class BookingRepository implements BookingInterface
       throw new InvalidArgumentException("You must provide a Cabin object or a Reservation Id.");
     }
 
-    \Log::info("Creating booking with data:", $bookingData);
-
-    \Log::info("Passenger data:", $passengerData);
-
     FacadesDB::beginTransaction();
     try {
       $selectedCabin = null;
 
       // Handle temporary reservation case
       if ($reservation_id) {
-        \Log::info("Reservation ID provided: {$reservation_id}");
         $tempReservation = TemporaryReservation::find($reservation_id);
         if (!$tempReservation) {
           throw new \Exception("Temporary reservation not found.");
         }
 
         $cabinId = $tempReservation->cabin_id;
-        \Log::info("Temporary reservation found, cabin ID: {$cabinId}");
         $selectedCabin = Cabin::find($cabinId);
         if (!$selectedCabin) {
           throw new \Exception("Cabin not found for the given reservation ID.");
@@ -316,7 +310,6 @@ class BookingRepository implements BookingInterface
       } else {
         // Use provided cabin
         $selectedCabin = $cabin;
-        \Log::info("Using provided cabin:", $cabin->toArray());
       }
 
       // Create booking
@@ -325,20 +318,17 @@ class BookingRepository implements BookingInterface
       $booking->cabin_id = $selectedCabin->id;
       $booking->status = $bookingData["status"] ?? "NEW";
       $booking->save();
-      \Log::info("Booking saved:", $booking->toArray());
 
       // Create passenger
       $passenger = null;
       if ($passengerData) {
         $passenger = $this->passengerRepository->create($passengerData, $booking);
-        \Log::info("Passenger created:", $passenger->toArray());
       }
 
       // Handle cleanup
       if ($passenger && $booking) {
         if ($reservation_id) {
           TemporaryReservation::find($reservation_id)?->delete();
-          \Log::info("Temporary reservation deleted: {$reservation_id}");
         }
 
         FacadesDB::commit();
@@ -352,10 +342,6 @@ class BookingRepository implements BookingInterface
       throw new \Exception("Error creating booking: Booking or Passenger not created properly.");
     } catch (\Exception $e) {
       FacadesDB::rollBack();
-      \Log::error("Error creating booking:", [
-        "message" => $e->getMessage(),
-        "trace" => $e->getTraceAsString(),
-      ]);
 
       return [
         "error" => true,
