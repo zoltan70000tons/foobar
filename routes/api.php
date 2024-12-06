@@ -114,6 +114,8 @@ Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function
   // Booking
   Route::post("/booking-init", [BookingController::class, "store"]);
   Route::get("/my-bookings", [BookingController::class, "myBookings"]);
+  // --- single booking
+  Route::get("/my-bookings/{bookingCode}", [BookingController::class, "showBooking"]);
   Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
 });
 
