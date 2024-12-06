@@ -3,28 +3,25 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Facades\App;
-use App\Models\Cabin;
 use App\Models\Booking;
-use App\Models\TemporaryReservation;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreBookingRequest;
-use Illuminate\Support\Facades\DB;
-use App\Models\Passenger;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
+use App\Repositories\CustomerBookingRepository;
+use App\Services\CustomerBookingService;
 
 class BookingController extends Controller
 {
   protected $bookingRepository;
+  protected $customerBookingService;
 
-  public function __construct(BookingRepository $bookingRepository)
+  public function __construct(BookingRepository $bookingRepository, CustomerBookingService $CustomerBookingService)
   {
     $this->bookingRepository = $bookingRepository;
+    $this->customerBookingService = $CustomerBookingService;
   }
   /**
    * Show only events that are in pre-sale or public status
@@ -94,6 +91,9 @@ class BookingController extends Controller
   /**
    * Store a new booking
    *
+   * Validate the request and use BookingRepository to create a new booking
+   *
+   * @param StoreBookingRequest $request
    *
    */
   public function store(StoreBookingRequest $request)
@@ -153,11 +153,18 @@ class BookingController extends Controller
       ];
       //call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
+
+      // delete current sesion
+      $request->session()->forget("cart");
+      $request->session()->forget("reservation_id");
+
       return response()->json(
         [
           "message" => "Booking created successfully.",
-          "booking" => $result["booking"],
-          "passenger" => $result["passenger"],
+          "booking" => [
+            "booking_code" => $result["booking_code"],
+          ],
+          // "passenger" => $result["passenger"],
         ],
         201
       );
@@ -170,6 +177,20 @@ class BookingController extends Controller
         500
       );
     }
+  }
+
+  // Get booking by id
+  public function showBooking($bookingCode)
+  {
+    $result = $this->customerBookingService->getAvailableBeds($bookingCode);
+
+    \Log::info("RESULT@showBooking: " . json_encode($result));
+
+    if (!$result) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    return response()->json(["booking" => $result]);
   }
 
   // My bookings
