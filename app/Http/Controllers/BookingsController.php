@@ -146,7 +146,7 @@ class BookingsController extends Controller
             return $this->withPermission([Permissions::ViewBookings], function ($event_id, $booking_code) {
                 $event = $this->eventRepository->find($event_id);
                 $booking = $this->bookingRepository->findByCode($booking_code);
-                $isEditable = $booking->agent_id === auth()->id();
+                $isEditable = $booking->agent_id === Auth::()->id;
                 $users = $this->teamRepository->getAllMembers(1);
                 $cabinTypes = $this->cabinRepository->getTypes();
                 $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);

@@ -44,6 +44,7 @@ class Passenger extends Model
     "newsletter",
     "travel_info",
     "terms_n_cons",
+    "empty_seat",
     "cabin_conf_accp",
     "single_t_agreement",
     "passenger_allocated_cost",
