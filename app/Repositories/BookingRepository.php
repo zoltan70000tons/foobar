@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB as FacadesDB;
 class BookingRepository implements BookingInterface
 {
   use BookingLogTrait;
+  use CabinFilter;
 
   protected PassengerInterface $passengerRepository;
 
@@ -313,7 +314,7 @@ class BookingRepository implements BookingInterface
         if (!$tempReservation) {
           throw new \Exception("Temporary booking ID not found.");
         }
-        
+
         $cabinId = $tempReservation->cabin_id;
         $selectedCabin = Cabin::find($cabinId);
         if (!$selectedCabin) {
@@ -323,14 +324,21 @@ class BookingRepository implements BookingInterface
         $selectedCabin = $cabin;
       }
 
-      if($selectedCabin->status !== StatusCabin::AVAILABLE->value){
-        throw new \Exception("Cabin is not available.");
+      $availableCabins = $this->filterCabins($selectedCabin->cabin_type_id, $selectedCabin->cabin_category_id, null, true);
+      if (is_array($availableCabins) && array_key_exists('error', $availableCabins)) {
+        throw new \Exception($availableCabins['error']);
+      }
+      $availableCabins = $availableCabins['cabins']->toArray();
+      $cabinNumberToSearch = $selectedCabin->cabin_number;
+      $cabinNumbers = array_column($availableCabins, 'cabin_number'); 
+      $available = array_search($cabinNumberToSearch, $cabinNumbers) !== false;
+      if(!$available){
+        throw new \Exception("Cabin not available.");
       }
 
       $booking = new Booking();
       $booking->fill($bookingData);
       $booking->cabin_id = $selectedCabin->id;
-      $booking->status = $bookingData['status'] ?? 'NEW';
       $booking->save();
 
       $passenger = null;

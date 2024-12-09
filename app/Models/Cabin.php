@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Log;
 
 class Cabin extends Model
 {
@@ -86,6 +87,7 @@ class Cabin extends Model
    */
   public function updateInventoryOnBooking()
   {
+    Log::info('updateInventory on booking' );
     if ($this->cabin_type_id == 1) {
       // Private cabins, only one booking allowed, mark as sold
       $this->status = 'BOOKED';

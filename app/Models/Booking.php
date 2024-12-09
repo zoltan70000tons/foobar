@@ -233,6 +233,7 @@ class Booking extends Model
 
     static::created(function ($booking) {
       $booking->saveBookingLog($booking->id, "Created", "The booking was created");
+      $booking->cabin->updateInventoryOnBooking();
     });
 
     static::deleted(function ($booking) {
