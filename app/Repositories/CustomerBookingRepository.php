@@ -30,6 +30,6 @@ class CustomerBookingRepository
 
   public function getBookingByCode($bookingCode)
   {
-    return Booking::with("passengers", "cabin.cabinCategory")->where("booking_code", $bookingCode)->first();
+    return Booking::with("passengers", "cabin.cabinCategory", "event")->where("booking_code", $bookingCode)->first();
   }
 }

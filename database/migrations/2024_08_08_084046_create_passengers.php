@@ -38,6 +38,7 @@ return new class extends Migration {
       $table->boolean("newsletter")->default(false);
       $table->boolean("travel_info")->default(false);
       $table->boolean("terms_n_cons")->default(false);
+      $table->boolean("empty_seat")->default(false);
       $table->boolean("cabin_conf_accp")->default(false);
       $table->boolean("single_t_agreement")->default(false);
       $table->decimal("passenger_allocated_cost", 10, 2);

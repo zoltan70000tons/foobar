@@ -17,11 +17,16 @@ class BookingController extends Controller
 {
   protected $bookingRepository;
   protected $customerBookingService;
+  protected $customerBookingRepository;
 
-  public function __construct(BookingRepository $bookingRepository, CustomerBookingService $CustomerBookingService)
-  {
+  public function __construct(
+    BookingRepository $bookingRepository,
+    CustomerBookingService $CustomerBookingService,
+    CustomerBookingRepository $customerBookingRepository
+  ) {
     $this->bookingRepository = $bookingRepository;
     $this->customerBookingService = $CustomerBookingService;
+    $this->customerBookingRepository = $customerBookingRepository;
   }
   /**
    * Show only events that are in pre-sale or public status
@@ -154,6 +159,8 @@ class BookingController extends Controller
       //call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
+      \Log::info("RESULT@store: " . json_encode($result));
+
       // delete current sesion
       $request->session()->forget("cart");
       $request->session()->forget("reservation_id");
@@ -162,7 +169,7 @@ class BookingController extends Controller
         [
           "message" => "Booking created successfully.",
           "booking" => [
-            "booking_code" => $result["booking_code"],
+            "booking_code" => $result["booking"]["booking_code"],
           ],
           // "passenger" => $result["passenger"],
         ],
@@ -182,15 +189,19 @@ class BookingController extends Controller
   // Get booking by id
   public function showBooking($bookingCode)
   {
-    $result = $this->customerBookingService->getAvailableBeds($bookingCode);
-
-    \Log::info("RESULT@showBooking: " . json_encode($result));
+    $result = $this->customerBookingRepository->getBookingByCode($bookingCode);
+    $available_beds = $this->customerBookingService->getAvailableBeds($bookingCode);
 
     if (!$result) {
       return response()->json(["message" => "Booking not found"], 404);
     }
 
-    return response()->json(["booking" => $result]);
+    $schema = [
+      "booking" => $result,
+      "available_beds" => $available_beds,
+    ];
+
+    return response()->json($schema);
   }
 
   // My bookings
@@ -202,7 +213,9 @@ class BookingController extends Controller
       return response()->json(["message" => "Unauthorized"], 403);
     }
 
-    $bookings = Booking::where("customer_id", $user->id)->get();
+    $bookings = Booking::with("event", "cabin.cabinCategory")
+      ->where("customer_id", $user->id)
+      ->get();
 
     return response()->json(["bookings" => $bookings]);
   }
