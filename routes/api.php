@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Customer\CabinController;
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
 use App\Http\Controllers\Api\Customer\EditProfileController;
 use App\Http\Controllers\Api\Customer\AdjustmentsController;
+use App\Http\Controllers\Api\Customer\EventController;
 use App\Http\Controllers\Api\Customer\CartController;
 use Illuminate\Routing\Router;
 
@@ -59,19 +60,14 @@ Route::post("/register", [CustomerRegisteredController::class, "store"]);
 // --- LOGOUT ---
 Route::post("/logout", [CustomerLoginController::class, "destroy"])->middleware(["auth:sanctum", "auth.customer"]);
 
-// --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
-Route::middleware(["auth:sanctum", "verified"])->group(function () {
-  Route::get("/customer", [CustomerAuthController::class, "customer"]);
-  Route::post("/reset-password-inside", [CustomerAuthController::class, "update"]);
-});
-
+// ---- EVENTS ----
+// --- GROUP WITHOUT MIDDLEWARE ---
+Route::get("/events", [EventController::class, "show"]);
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
 Route::middleware(["membership_sales"])->group(function () {
-  Route::get("/events/{id}", [BookingController::class, "showOne"]);
+  Route::get("/events/{id}", [EventController::class, "showOne"]);
 });
 
-// --- GROUP WITHOUT MIDDLEWARE ---
-Route::get("/events", [BookingController::class, "show"]);
 Route::get("/events/{id}/adjustments", [AdjustmentsController::class, "show"]);
 Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
@@ -103,6 +99,9 @@ Route::middleware(["clear_expired_reservation"])->group(function () {
 
 // --- AUTH ---
 Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function () {
+  Route::get("/customer", [CustomerAuthController::class, "customer"]);
+  Route::post("/reset-password-inside", [CustomerAuthController::class, "update"]);
+
   // Profile
   Route::get("/customers/{id}", [EditProfileController::class, "getAccountIntel"])->where("id", "[0-9a-fA-F\-]{36}");
   Route::get("/customers/{id}/details", [EditProfileController::class, "getCustomerDetails"]);
