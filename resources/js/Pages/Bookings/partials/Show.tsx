@@ -48,7 +48,8 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
 
-
+  const capacity = booking.cabin.cabin_category.capacity;
+  console.log(capacity); 
   const handleEditChange = (e) => {
     setEditMode(e.target.checked);
     router.get(
@@ -150,7 +151,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
           lead={true}
           editMode={editMode}
         />
-        <Payment booking={booking} passenger={null} number={2} count={4} editMode={editMode} />
+        <Payment booking={booking} passenger={null} number={2} count={capacity} editMode={editMode} />
         <ActionList editMode={editMode} />
         <BookingSidebar
           isOpen={isSidebarOpen}

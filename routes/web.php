@@ -128,12 +128,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
+    Route::get('/passengers/search', [PassengerController::class, 'search'])->name('seat.search');
 
-    Route::prefix('passengers')->group(function () {
-        Route::post('/add', [PassengerController::class, 'addPassenger']);
-        Route::post('/edit/{id}', [PassengerController::class, 'editPassenger']);
-        Route::get('/validate', [PassengerController::class, 'validatePassenger']);
-        Route::get('/search', [PassengerController::class, 'search']);
+    Route::prefix('/events/{id}/booking/{booking_id}/passengers')->group(function () {
+        Route::post('/update/seat', [PassengerController::class, 'updateSeat'])->name('seat.update');
     });
 
 

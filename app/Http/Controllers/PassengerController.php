@@ -1,4 +1,4 @@
-<?
+<?php
 
 namespace App\Http\Controllers;
 
@@ -6,92 +6,123 @@ use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
 use App\Models\User;
+use App\Models\UserDetail;
+use App\Repositories\PassengerRepository;
 
 class PassengerController extends Controller
 {
-    public function addPassenger(Request $request)
-    {
-        $validated = $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'user_id' => 'nullable|exists:users,id',
-            'full_name' => 'required|string',
-            'email' => 'required|email|unique:passengers,email',
-        ]);
 
-        if ($validated['user_id']) {
-            $conflict = Passenger::where('user_id', $validated['user_id'])->exists();
-            if ($conflict) {
-                return response()->json(['error' => 'User already assigned to another booking'], 400);
-            }
-        }
-
-        $passenger = Passenger::create([
-            'booking_id' => $validated['booking_id'],
-            'user_id' => $validated['user_id'] ?? null,
-            'full_name' => $validated['full_name'],
-            'email' => $validated['email'],
-        ]);
-
-        return response()->json($passenger, 201);
+    protected PassengerRepository $passengerRepository;
+    public function __construct(PassengerRepository $passengerRepository){
+        $this->passengerRepository = $passengerRepository;
     }
 
-    public function editPassenger(Request $request, $id)
+
+    public function updateSeat(Request $request)
     {
-        $passenger = Passenger::findOrFail($id);
+
 
         $validated = $request->validate([
-            'full_name' => 'string',
-            'email' => 'email|unique:passengers,email,' . $id,
+            'id' => 'required|int',
+            'booking_id' => 'required|int',
+            'confirmed_booking_email' => 'required|boolean',
+            'survivor_number' => 'nullable|string', 
+            'payment_method' => 'required|string|in:CREDIT_CARD,BANK_TRANSFER', 
+            'gender' => 'nullable|string|in:M,F,O', 
+            'first_name' => 'required|string',
+            'middle_name' => 'nullable|string',
+            'last_name' => 'required|string',
+            'dob' => 'nullable|date', 
+            'citizenship' => 'nullable|string',
+            'address_first' => 'required|string',
+            'address_second' => 'nullable|string',
+            'city' => 'required|string',
+            'state' => 'nullable|string', 
+            'postal_code' => 'nullable|string',
+            'country' => 'nullable|string',
+            'email' => 'required|email',
             'phone' => 'nullable|string',
+            'emergency_c_name' => 'required|string',
+            'emergency_c_phone' => 'nullable|string',
+            'special_request' => 'nullable|string',
+            'hear_about' => 'nullable|string',
+           // 'newsletter' => 'required|boolean',
+           // 'travel_info' => 'required|boolean',
+            'terms_n_cons' => 'required|boolean',
+           // 'cabin_conf_accp' => 'required|boolean',
+            //'single_t_agreement' => 'required|boolean',
+            'passenger_allocated_cost' => 'required|numeric',
+            'passenger_balance' => 'required|numeric',
+           // 'was_on_board' => 'required|boolean',
         ]);
-
+        
+        $passenger = Passenger::findOrFail($validated['id']);
+        $booking = Booking::findOrFail($validated['booking_id']);
+         
+        $this->passengerRepository->updateSeat($passenger, $booking, $validated);
         $passenger->update($validated);
 
         return response()->json($passenger);
     }
 
-    public function validatePassenger(Request $request)
-    {
-        $validated = $request->validate([
-            'email' => 'nullable|email',
-            'user_id' => 'nullable|exists:users,id',
-        ]);
 
-        $conflicts = [];
-        
-        if (isset($validated['email'])) {
-            $emailConflict = Passenger::where('email', $validated['email'])->exists();
-            if ($emailConflict) {
-                $conflicts[] = 'Email already registered as a passenger';
-            }
-        }
-
-        if (isset($validated['user_id'])) {
-            $userConflict = Passenger::where('user_id', $validated['user_id'])->exists();
-            if ($userConflict) {
-                $conflicts[] = 'User is already assigned to another booking';
-            }
-        }
-
-        if (!empty($conflicts)) {
-            return response()->json(['conflicts' => $conflicts], 400);
-        }
-
-        return response()->json(['message' => 'No conflicts found']);
-    }
-
+    /**
+     * Search users by first_name, last_name, or email.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function search(Request $request)
     {
-        $query = $request->input('query');
-        
-        if (!$query) {
-            return response()->json(['error' => 'Query is required'], 400);
-        }
+        $request->validate([
+            'query' => 'required|string|min:3',
+        ]);
 
-        $users = User::where('email', 'LIKE', "%{$query}%")
-            ->select('id', 'email') 
-            ->get();
+        $query = $request->get('query');
+        $results = User::with('detail')
+            ->where('email', 'LIKE', "%{$query}%")
+            ->orWhereHas('detail', function ($q) use ($query) {
+                $q->where('first_name', 'LIKE', "%{$query}%")
+                    ->orWhere('last_name', 'LIKE', "%{$query}%");
+            })
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'first_name' => $user->detail->first_name ?? null,
+                    'last_name' => $user->detail->last_name ?? null,
+                    'middle_name' => $user->detail->middle_name ?? null,
+                    'survivor_number' => $user->detail->survivor_number ?? null,
+                    'confirmed_booking_email' => $user->detail->confirmed_booking_email ?? null,
+                    'lead_passenger' => $user->detail->lead_passenger ?? null,
+                    'payment_method' => $user->detail->payment_method ?? null,
+                    'phone' => $user->detail->phone ?? null,
+                    'address_first' => $user->detail->address_first ?? null,
+                    'address_second' => $user->detail->address_second ?? null,
+                    'city' => $user->detail->city ?? null,
+                    'state' => $user->detail->state ?? null,
+                    'postal_code' => $user->detail->postal_code ?? null,
+                    'country' => $user->detail->country ?? null,
+                    'citizenship' => $user->detail->citizenship ?? null,
+                    'gender' => $user->detail->gender ?? null,
+                    'dob' =>  $user->detail->dob ?? null,
+                    'full_name' => ($user->detail->first_name ?? '') . ' ' . ($user->detail->last_name ?? ''),
+                    'emergency_c_name' => $user->detail->emergency_c_name ?? null,
+                    'emergency_c_phone' => $user->detail->emergency_c_phone ?? null,
+                    'special_request' => $user->detail->special_request ?? null,
+                    'hear_about' => $user->detail->hear_about ?? null,
+                    'newsletter' => $user->detail->newsletter ?? null,
+                    'travel_info' => $user->detail->travel_info ?? null,
+                    'term_n_cons' => $user->detail->term_n_cons ?? null,
+                    'cabin_conf_accp' => $user->detail->cabin_conf_accp ?? null,
+                    'single_t_agreement' => $user->detail->single_t_agreement ?? null,
+                    'passenger_allocated_cost' => $user->detail->passenger_allocated_cost ?? null,
+                    'passenger_balance' => $user->detail->passenger_balance ?? null,
+                    'was_on_board' => $user->detail->was_on_board ?? null,
+                ];
+            });
 
-        return response()->json($users);
+        return response()->json($results);
     }
 }

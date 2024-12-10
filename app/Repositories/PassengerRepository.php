@@ -119,4 +119,10 @@ class PassengerRepository implements PassengerInterface
       return false;
     }
   }
+
+
+
+  public function updateSeat(Passenger $passenger, Booking $booking, array $data){
+    $passenger->update($data);
+  }
 }

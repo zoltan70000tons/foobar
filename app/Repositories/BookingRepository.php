@@ -125,20 +125,22 @@ class BookingRepository implements BookingInterface
 
   function findByCode($code)
   {
-    return Booking::with(
+    return Booking::with([
       "cabin",
       "cabin.cabinType",
       "cabin.cabinCategory",
-      "passengers",
+      "passengers" => function ($query) {
+          $query->orderBy('id', 'asc'); 
+      },
       "logs",
       "logs.user",
       "lockedBy",
       "comments",
       "comments.user",
       "agent"
-    )
-      ->where("booking_code", "=", $code)
-      ->first();
+  ])
+  ->where("booking_code", "=", $code)
+  ->first();
   }
 
   function save(array $data): ?Booking
