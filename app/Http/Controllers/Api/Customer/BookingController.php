@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Event;
-use Illuminate\Support\Facades\App;
 use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use Illuminate\Support\Facades\Auth;
@@ -27,70 +25,6 @@ class BookingController extends Controller
     $this->bookingRepository = $bookingRepository;
     $this->customerBookingService = $CustomerBookingService;
     $this->customerBookingRepository = $customerBookingRepository;
-  }
-  /**
-   * Show only events that are in pre-sale or public status
-   *
-   * If no events are found, return a message
-   * Pre-sale: Only logged-in users whose membership status matches one of the entries in the new table above can book. The current date must also be within the range.
-   * Public: Everyone can book.
-   * Closed: Event is shown to the public, but no longer taking booking requests
-   * Draft: The event exists only for admin users internally.
-   *
-   */
-  public function show()
-  {
-    // check if event exist and get only if pre-sale or public
-    $events = Event::where("status", "pre-sale")->orWhere("status", "public")->get();
-
-    if ($events->isEmpty()) {
-      return response()->json(["message" => "no events found"]);
-    }
-
-    // return events if exist
-    return response()->json([
-      "events" => $events,
-    ]);
-  }
-
-  /**
-   * Single event
-   *
-   *
-   */
-  public function showOne(Request $request, $id, $language = "en")
-  {
-    App::setLocale($language);
-
-    // Retrieve the event
-    $event = Event::find($id);
-
-    if (!$event) {
-      return response()->json([
-        "status" => 404,
-        "message" => __("event.no_event_found"),
-      ]);
-    }
-
-    // Check event status
-    if (!in_array($event->status, ["pre-sale", "public"])) {
-      return response()->json([
-        "status" => 403,
-        "message" => __("event.no_event_found"),
-      ]);
-    }
-
-    // Get purchase access information from the request
-    $purchaseAccess = $request->get("purchase_access", false);
-    $accessMessage = $request->get("access_message", "");
-
-    return response()->json([
-      "status" => 200,
-      "event_status" => $event->status,
-      "event" => $event,
-      "purchase_access" => $purchaseAccess,
-      "access_message" => $accessMessage,
-    ]);
   }
 
   /**
@@ -186,7 +120,13 @@ class BookingController extends Controller
     }
   }
 
-  // Get booking by id
+  /**
+   * Get booking by booking code
+   *
+   * @param string $bookingCode
+   * @return \Illuminate\Http\JsonResponse
+   *
+   */
   public function showBooking($bookingCode)
   {
     $result = $this->customerBookingRepository->getBookingByCode($bookingCode);
@@ -194,6 +134,12 @@ class BookingController extends Controller
 
     if (!$result) {
       return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    // if status is "New" then do not return cabin id and number
+    if ($result->status === "NEW") {
+      $result->cabin["cabin_id"] = null;
+      $result->cabin["cabin_number"] = null;
     }
 
     $schema = [
@@ -204,7 +150,11 @@ class BookingController extends Controller
     return response()->json($schema);
   }
 
-  // My bookings
+  /**
+   * Get all bookings for the authenticated user
+   *
+   * @return \Illuminate\Http\JsonResponse
+   */
   public function myBookings()
   {
     $user = Auth::user();
@@ -216,6 +166,14 @@ class BookingController extends Controller
     $bookings = Booking::with("event", "cabin.cabinCategory")
       ->where("customer_id", $user->id)
       ->get();
+
+    // if booking have status new then do not return cabin id and number
+    $bookings->map(function ($booking) {
+      if ($booking->status === "NEW") {
+        $booking->cabin["cabin_id"] = null;
+        $booking->cabin["cabin_number"] = null;
+      }
+    });
 
     return response()->json(["bookings" => $bookings]);
   }

@@ -9,6 +9,8 @@ class OneBookingPerUser
   public function handle($request, Closure $next)
   {
     // Check the user has already booked for this event
+    // SET MIDDLEWARE WITH CANCEL BOOKING
+    // ********************** THERE < ----------------
     if (
       Auth::check() &&
       Auth::user()
