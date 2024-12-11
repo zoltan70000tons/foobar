@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Repositories\PassengerRepository;
+use Log;
 
 class PassengerController extends Controller
 {
@@ -55,14 +56,41 @@ class PassengerController extends Controller
             'passenger_balance' => 'required|numeric',
            // 'was_on_board' => 'required|boolean',
         ]);
-        
-        $passenger = Passenger::findOrFail($validated['id']);
-        $booking = Booking::findOrFail($validated['booking_id']);
-         
-        $this->passengerRepository->updateSeat($passenger, $booking, $validated);
-        $passenger->update($validated);
 
-        return response()->json($passenger);
+        $user = User::where('email','=',$validated['email'])->first();
+        if($user){
+            return response()->json([
+                'error' => 'User have an account, please use autocomplete',
+            ], 422);
+        }
+        
+        $slot = Passenger::where('id','=',$validated['id'])->first();
+       
+        Log::info($slot);
+        $booking = Booking::findOrFail($validated['booking_id']);
+        if($slot->booking_id !== $booking->id){
+            return response()->json([
+                'error' => 'Slot and Booking Id inconsistent.',
+            ], 422);
+        }
+
+        $existingBooking = Booking::whereHas('passengers', function ($query) use ($validated) {
+            $query->where('email', '=', $validated['email']);
+        })
+        ->where('id', '!=', $booking->id)
+        ->where('event_id', '=', $booking->event_id)
+        ->first();
+        
+        if ($existingBooking) {
+            return response()->json([
+                'error' => 'Passenger already found on other booking for the eventw.',
+            ], 422);
+        }
+         
+        $this->passengerRepository->updateSeat($slot, $booking, $validated);
+        $slot->update($validated);
+
+        return response()->json($slot);
     }
 
 

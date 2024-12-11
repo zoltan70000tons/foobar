@@ -24,9 +24,8 @@ const Passengers = ({ booking }) => {
   const [editingPassenger, setEditingPassenger] = useState(null);
   const [editedPassengerData, setEditedPassengerData] = useState({});
   const maxCapacity = booking.cabin.cabin_category.capacity;
+  const [errors, setErrors] = useState({});
 
-  console.log(booking);
-  console.log(booking.passengers)
   // Fetch users based on the search query
   const fetchUsers = async (query) => {
     try {
@@ -80,9 +79,17 @@ const Passengers = ({ booking }) => {
       );
       setEditPassengerOpen(false);
       setEditingPassenger(null);
+      setErrors({});
     } catch (error) {
-      console.error("Error updating passenger:", error);
-      alert(error.response?.data?.error || "An error occurred.");
+       setErrors(error);
+      // console.error("Error updating passenger:", error);
+      // //alert(error.response?.data?.error || "An error occurred.");
+      // if (error.response && error.response.data && error.response.data.errors) {
+      //   console.log(error.response.data.errors);
+      //   setErrors(error.response.data.errors);
+      // } else {
+      //   console.error('Error', error);
+      // }
     }
   };
 
@@ -186,6 +193,7 @@ const Passengers = ({ booking }) => {
         onChange={(field, value) =>
           setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
         }
+        errors={errors}
       />
 
 

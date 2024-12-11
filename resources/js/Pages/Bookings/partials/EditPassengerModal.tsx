@@ -15,6 +15,7 @@ import {
     Typography,
     Autocomplete,
     CircularProgress,
+    FormHelperText,
 } from "@mui/material";
 import axios from "axios";
 
@@ -24,12 +25,16 @@ const EditPassengerModal = ({
     passenger,
     onSave,
     onChange,
+    errors
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const isLeadPassenger = passenger?.lead_passenger;
+    const validation = errors?.response?.data?.errors;
+    console.log(validation);
+
 
     useEffect(() => {
         if (searchQuery.length < 3) {
@@ -51,6 +56,15 @@ const EditPassengerModal = ({
 
         fetchSuggestions();
     }, [searchQuery]);
+
+    const handleOnClose = () => {
+        setSearchQuery("");
+        setSelectedUser(null);
+        setSuggestions([]);
+        if (onClose) {
+            onClose();
+        }
+    }
 
     const handlePrefill = () => {
         if (!selectedUser) return;
@@ -87,7 +101,7 @@ const EditPassengerModal = ({
         onChange("lead_passenger", selectedUser.lead_passenger);
         onChange("confirmed_booking_email", selectedUser.confirmed_booking_email || "");
         onChange("travel_info", selectedUser.travel_info || "");
-        onChange("term_n_cons", selectedUser.term_n_cons || "");
+        onChange("terms_n_cons", selectedUser.term_n_cons || "");
         onChange("cabin_conf_accp", selectedUser.cabin_conf_accp || "");
         onChange("single_t_agreement", selectedUser.single_t_agreement || "");
         onChange("was_on_board", selectedUser.was_on_board || "");
@@ -100,7 +114,7 @@ const EditPassengerModal = ({
     return (
         <Modal
             open={open}
-            onClose={onClose}
+            onClose={handleOnClose}
             sx={{
                 display: "flex",
                 alignItems: "center",
@@ -115,10 +129,12 @@ const EditPassengerModal = ({
                 {/* Autocomplete Search */}
                 <Box mb={3}>
                     <Autocomplete
+                        size="small"
                         options={suggestions}
                         getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email})`}
                         loading={loading}
                         value={selectedUser}
+                        inputValue={searchQuery}
                         onInputChange={(e, value) => setSearchQuery(value)}
                         onChange={(e, value) => setSelectedUser(value)}
                         renderInput={(params) => (
@@ -126,7 +142,6 @@ const EditPassengerModal = ({
                                 {...params}
                                 label="Search by Email or Name"
                                 variant="outlined"
-                                //fullWidth
                                 InputProps={{
                                     ...params.InputProps,
                                     endAdornment: (
@@ -152,7 +167,7 @@ const EditPassengerModal = ({
 
                 <Grid container spacing={2}>
                     {/* First Column */}
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="First Name"
                             variant="outlined"
@@ -161,9 +176,11 @@ const EditPassengerModal = ({
                             value={passenger?.first_name || ""}
                             onChange={(e) => onChange("first_name", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.first_name}
+                            helperText={validation?.first_name?.[0]}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Middle Name"
                             variant="outlined"
@@ -174,7 +191,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Last Name"
                             variant="outlined"
@@ -183,9 +200,11 @@ const EditPassengerModal = ({
                             value={passenger?.last_name || ""}
                             onChange={(e) => onChange("last_name", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.last_name}
+                            helperText={validation?.last_name?.[0]}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Date of Birth"
                             variant="outlined"
@@ -198,8 +217,8 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                        <FormControl fullWidth size="small">
+                    <Grid item xs={12} md={3}>
+                        <FormControl fullWidth size="small" >
                             <InputLabel>Gender</InputLabel>
                             <Select
                                 value={passenger?.gender || ""}
@@ -212,7 +231,7 @@ const EditPassengerModal = ({
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Citizenship"
                             variant="outlined"
@@ -221,9 +240,11 @@ const EditPassengerModal = ({
                             value={passenger?.citizenship || ""}
                             onChange={(e) => onChange("citizenship", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.citizenship}
+                            helperText={validation?.citizenship?.[0]}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Email"
                             variant="outlined"
@@ -232,9 +253,11 @@ const EditPassengerModal = ({
                             value={passenger?.email || ""}
                             onChange={(e) => onChange("email", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.email}
+                            helperText={validation?.email?.[0]}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Phone"
                             variant="outlined"
@@ -245,7 +268,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Address Line 1"
                             variant="outlined"
@@ -254,9 +277,11 @@ const EditPassengerModal = ({
                             value={passenger?.address_first || ""}
                             onChange={(e) => onChange("address_first", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.address_first}
+                            helperText={validation?.address_first?.[0]}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Address Line 2"
                             variant="outlined"
@@ -267,7 +292,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="City"
                             variant="outlined"
@@ -278,7 +303,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="State"
                             variant="outlined"
@@ -289,7 +314,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Postal Code"
                             variant="outlined"
@@ -300,7 +325,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Country"
                             variant="outlined"
@@ -309,9 +334,12 @@ const EditPassengerModal = ({
                             value={passenger?.country || ""}
                             onChange={(e) => onChange("country", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.country}
+                            helperText={validation?.country?.[0]}
+                            
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Emergency Contact Name"
                             variant="outlined"
@@ -322,7 +350,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             label="Emergency Contact Phone"
                             variant="outlined"
@@ -333,26 +361,73 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={2}>
                         <TextField
-                            label="Passenger Allocated Cost"
+                            label="Allocated Cost"
                             variant="outlined"
                             fullWidth
                             size="small"
                             value={passenger?.passenger_allocated_cost || ""}
                             onChange={(e) => onChange("passenger_allocated_cost", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.passenger_allocated_cost}
+                            helperText={validation?.passenger_allocated_cost?.[0]}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={2}>
                         <TextField
-                            label="Passenger Balance"
+                            label="Balance"
                             variant="outlined"
                             fullWidth
                             size="small"
                             value={passenger?.passenger_balance || ""}
                             onChange={(e) => onChange("passenger_balance", e.target.value)}
                             disabled={isLeadPassenger}
+                            error={!!validation?.passenger_balance}
+                            helperText={validation?.passenger_balance?.[0]}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                        <FormControl fullWidth size="small" error={!!validation?.payment_method}>
+                            <InputLabel>Payment Method</InputLabel>
+                            <Select
+                                value={passenger?.payment_method || ""}
+                                onChange={(e) => onChange("payment_method", e.target.value)}
+                                disabled={isLeadPassenger}
+                            >
+                                <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
+                                <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>
+                            </Select>
+                            {validation?.payment_method?.[0] && (
+                                <FormHelperText>{validation.payment_method[0]}</FormHelperText>
+                            )}
+                        </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={passenger?.confirmed_booking_email || false}
+                                    onChange={(e) => onChange("confirmed_booking_email", e.target.checked)}
+                                    disabled={isLeadPassenger}
+                                />
+                            }
+                            label="Confirmed booking email"
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={passenger?.terms_n_cons || false}
+                                    onChange={(e) => onChange("terms_n_cons", e.target.checked)}
+                                    disabled={isLeadPassenger}
+                                />
+                            }
+                            label="Terms"
                         />
                     </Grid>
                     <Grid item xs={12}>
@@ -368,35 +443,7 @@ const EditPassengerModal = ({
                             disabled={isLeadPassenger}
                         />
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Payment Method</InputLabel>
-                            <Select
-                                value={passenger?.payment_method || ""}
-                                onChange={(e) => onChange("payment_method", e.target.value)}
-                                disabled={isLeadPassenger}
-                            >
-                                <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
-                                <MenuItem value="BANK_TRANSFER">
-                                Bank Transfer</MenuItem>
-
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    size="small"
-                                    checked={passenger?.confirmed_booking_email || false}
-                                    onChange={(e) => onChange("confirmed_booking_email", e.target.checked)}
-                                    disabled={isLeadPassenger}
-                                />
-                            }
-                            label="Confirmed booking email"
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={2}>
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -409,19 +456,59 @@ const EditPassengerModal = ({
                             label="Newsletter"
                         />
                     </Grid>
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={2}>
                         <FormControlLabel
                             control={
                                 <Checkbox
                                     size="small"
-                                    checked={passenger?.term_n_cons || false}
-                                    onChange={(e) => onChange("terms_n_con", e.target.checked)}
+                                    checked={passenger?.travel_info || false}
+                                    onChange={(e) => onChange("travel_info", e.target.checked)}
                                     disabled={isLeadPassenger}
                                 />
                             }
-                            label="Terms"
+                            label="Travel Info"
                         />
                     </Grid>
+                    <Grid item xs={12} md={2}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={passenger?.single_t_agreement || false}
+                                    onChange={(e) => onChange("single_t_agreement", e.target.checked)}
+                                    disabled={isLeadPassenger}
+                                />
+                            }
+                            label="STA"
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={passenger?.cabin_conf_accp || false}
+                                    onChange={(e) => onChange("cabin_conf_accp", e.target.checked)}
+                                    disabled={isLeadPassenger}
+                                />
+                            }
+                            label="CCA"
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={passenger?.was_on_board || false}
+                                    onChange={(e) => onChange("was_on_board", e.target.checked)}
+                                    disabled={isLeadPassenger}
+                                />
+                            }
+                            label="WOB"
+                        />
+                    </Grid>
+
                 </Grid>
 
 
