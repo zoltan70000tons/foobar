@@ -32,4 +32,10 @@ class CustomerBookingRepository
   {
     return Booking::with("passengers", "cabin.cabinCategory", "event")->where("booking_code", $bookingCode)->first();
   }
+
+  // create passenger
+  public function createPassenger($data)
+  {
+    return Passenger::create($data);
+  }
 }
