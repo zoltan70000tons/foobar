@@ -116,6 +116,13 @@ Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function
   // --- single booking
   Route::get("/my-bookings/{bookingCode}", [BookingController::class, "showBooking"]);
   Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
+
+  // set slot empty
+  Route::post("/my-bookings/{bookingCode}/set-empty-seat", [BookingController::class, "emptySeat"]);
+  // add passenger manually
+  Route::post("/my-bookings/{bookingCode}/add-passenger", [BookingController::class, "addPassenger"]);
+  // add passenger via email
+  Route::post("/my-bookings/{bookingCode}/add-passenger-via-email", [BookingController::class, "addPassengerViaEmail"]);
 });
 
 // --- TEST PURPOSE FOR BROADCASTING ---

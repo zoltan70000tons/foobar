@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
+use App\Http\Requests\StorePassengerRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
@@ -130,7 +131,7 @@ class BookingController extends Controller
   public function showBooking($bookingCode)
   {
     $result = $this->customerBookingRepository->getBookingByCode($bookingCode);
-    $available_beds = $this->customerBookingService->getAvailableBeds($bookingCode);
+    $available_beds = $this->customerBookingService->getAvailableSeats($bookingCode);
 
     if (!$result) {
       return response()->json(["message" => "Booking not found"], 404);
@@ -176,6 +177,88 @@ class BookingController extends Controller
     });
 
     return response()->json(["bookings" => $bookings]);
+  }
+
+  // Set empty seat
+  public function emptySeat($bookingCode)
+  {
+    $user = Auth::user();
+
+    // no user
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::where("booking_code", $bookingCode)->first();
+
+    // no booking
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    // not the owner
+    if ($booking->customer_id !== $user->id) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $result = $this->customerBookingService->setEmptySeat($bookingCode);
+
+    return $result;
+  }
+
+  // Add passenger manually
+  public function addPassenger(StorePassengerRequest $request, $bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::where("booking_code", $bookingCode)->first();
+
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    $validated = $request->validated();
+
+    \Log::info("VALIDATED@addPassenger: " . json_encode($validated));
+
+    // create passenger with booking id
+    $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
+
+    \Log::info("RESULT@addPassenger: " . json_encode($result));
+
+    return $result;
+  }
+
+  // Add passenger via email
+  public function addPassengerViaEmail(Request $request, $bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::where("booking_code", $bookingCode)->first();
+
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    // get email and survivor number from request
+    $email = $request->input("email");
+    $survivorNumber = $request->input("survivor_number");
+
+    if (!$email || !$survivorNumber) {
+      return response()->json(["message" => "Email and survivor number are required"], 400);
+    }
+
+    $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email, $survivorNumber);
+
+    return $result;
   }
 
   // Delete booking
