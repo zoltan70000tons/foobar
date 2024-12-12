@@ -100,20 +100,20 @@ class CustomerBookingService
   }
 
   // add passenger via email
-  public function addPassengerViaEmail($bookingCode, $email, $survivorNumber)
+  public function addPassengerViaEmail($bookingCode, $email)
   {
     // generate signed url
     $getSignedURL = URL::temporarySignedRoute(
-      "recover.account.form",
+      "add.pax",
       Carbon::now()->addHours(24),
-      [],
+      ["bookingCode" => $bookingCode],
       false // Generate relative URL
     );
 
     // send email to the user
     try {
       $email = $email;
-      Mail::to($email)->send(new AddPassenger($getSignedURL, $survivorNumber));
+      Mail::to($email)->send(new AddPassenger($getSignedURL, $bookingCode));
     } catch (\Exception $e) {
       \Log::error("Failed to send email to user: " . $e->getMessage());
       return response()->json(["message" => "Failed to send email to user"], 500);

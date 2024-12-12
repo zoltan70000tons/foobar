@@ -17,15 +17,19 @@ class AddPassenger extends Mailable
   use Queueable, SerializesModels;
 
   public $getSignedURL;
-  public $survivorNumber;
+  public $bookingCode;
 
   /**
    * Create a new message instance.
    */
-  public function __construct($getSignedURL, $survivorNumber)
+  public function __construct($getSignedURL, $bookingCode)
   {
-    $this->getSignedURL = $getSignedURL;
-    $this->survivorNumber = $survivorNumber;
+    $fontEndUrl = config("app.frontend_url");
+    // trim api prefix
+    $getSignedURL = substr($getSignedURL, 4);
+
+    $this->getSignedURL = $fontEndUrl . "/en" . $getSignedURL;
+    $this->bookingCode = $bookingCode;
     // Generate the activation (verification) link
   }
 
@@ -48,8 +52,8 @@ class AddPassenger extends Mailable
     return new Content(
       view: "emails.addpax",
       with: [
-        "survivorNumber" => $this->survivorNumber,
         "getSignedURL" => $this->getSignedURL,
+        "bookingCode" => $this->bookingCode,
       ]
     );
   }

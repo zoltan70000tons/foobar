@@ -52,8 +52,6 @@ class CartController extends Controller
       $cart["tax"] = $taxAddon;
     }
 
-    \Log::info("CART@index: " . json_encode($cart));
-
     return response()->json($cart, 200);
   }
 
