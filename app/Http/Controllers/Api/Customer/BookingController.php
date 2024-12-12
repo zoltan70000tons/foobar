@@ -228,8 +228,6 @@ class BookingController extends Controller
     // create passenger with booking id
     $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
 
-    \Log::info("RESULT@addPassenger: " . json_encode($result));
-
     return $result;
   }
 
@@ -250,13 +248,12 @@ class BookingController extends Controller
 
     // get email and survivor number from request
     $email = $request->input("email");
-    $survivorNumber = $request->input("survivor_number");
 
-    if (!$email || !$survivorNumber) {
+    if (!$email) {
       return response()->json(["message" => "Email and survivor number are required"], 400);
     }
 
-    $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email, $survivorNumber);
+    $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
 
     return $result;
   }
@@ -283,5 +280,19 @@ class BookingController extends Controller
     $booking->delete();
 
     return response()->json(["message" => "Booking deleted successfully"], 200);
+  }
+
+  // Add pax verification
+  public function addPaxVerification(Request $request, $bookingCode)
+  {
+    // check signed url
+    if (!$request->hasValidSignature()) {
+      return response()->json(["message" => "Invalid or expired link."], 403);
+    }
+
+    $bookingCode = $request->input("bookingCode");
+
+    // // redirect to fronend url with booking code
+    // return redirect()->to(config("app.frontend_url") . "/en/add-pax/" . "?booking-code=$bookingCode");
   }
 }

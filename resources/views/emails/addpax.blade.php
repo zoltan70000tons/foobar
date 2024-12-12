@@ -18,12 +18,11 @@ This email is send when customer send a request to add a pax.
 @endsection
 
 @section('content')
-    <p>You got a request to add a pax.</p>
-    From:
-        <strong>{{ $survivorNumber }}</strong>.
-    </p>
+    <p>You got a request to add a pax portal.</p>
+
     <p>You have 24 hours to add your details to the booking</p>
     <p>
+        Click on bellow link to add your details.
         <a href="{{ $getSignedURL }}">{{ $getSignedURL }}</a>
     </p>
 @endsection

@@ -44,6 +44,11 @@ Route::post("/recover-account-register", [RecoverAccountController::class, "reco
   ->name("recover.account.register")
   ->middleware("signed:relative");
 
+// --- ADD PAX ---
+Route::get("/add-pax", [BookingController::class, "addPax"])
+  ->name("add.pax")
+  ->middleware("signed:relative");
+
 // --- EMAIL VERIFICATION ---
 Route::post("/email/verification-notification", [CustomerEmailVerificationController::class, "store"])->middleware([
   "auth:sanctum",
