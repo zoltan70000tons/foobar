@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Log;
 
 class PassengerRepository implements PassengerInterface
 {
@@ -16,6 +17,7 @@ class PassengerRepository implements PassengerInterface
       // Get authenticated user
       $user = Auth::user();
       if (!$user) {
+        Log::info('No user');
         return false;
       }
       \Log::info("User: " . $user->id);
@@ -23,11 +25,16 @@ class PassengerRepository implements PassengerInterface
       $userDetails = $user->detail;
 
       \Log::info("User Details: " . $userDetails);
+      
+      $cabin = $booking->cabin;
+      $cabinType = $cabin->cabinType->id;
+      Log::info('cabin type = '. $cabinType);
+
 
       $passengerData = [
         "booking_id" => $booking->id,
         "confirmed_booking_email" => false,
-        "lead_passenger" => $data["lead_passenger"],
+        "lead_passenger" => true,
         "survivor_number" => $user->survivorNumber->survivor_number,
         "gender" => $userDetails->gender,
         "first_name" => $userDetails->first_name,
@@ -57,18 +64,23 @@ class PassengerRepository implements PassengerInterface
         "was_on_board" => false,
       ];
       $leadPassenger = Passenger::create($passengerData);
-      $seats = $booking->cabin->cabinCategory->capacity -1;
-      if ($seats > 0) {
-        $result = $this->fillAditionalSeats($seats, $booking->id);
+      $availableSeats = $booking->cabin->cabinCategory->capacity -1;
+      if($cabinType == 2 || $cabinType == 3){
+      $availableSeats = 0;
+      }
+      
+      if ($availableSeats > 0) {
+        $result = $this->fillAditionalSeats($availableSeats, $booking->id);
         if (!$result) {
           throw new \Exception("Error creating seats.");
         }
       }
 
-      \Log::info("Passenger Data: " . json_encode($passengerData));
+      Log::info("Passenger Data: " . json_encode($passengerData));
       return $leadPassenger;
     } catch (\Exception $e) {
-      \Log::info("PassengerRepository@create: " . $e->getMessage());
+      Log::error($e->getMessage());
+      //\Log::info("PassengerRepository@create: " . $e->getMessage());
       return false;
     }
   }
@@ -115,7 +127,7 @@ class PassengerRepository implements PassengerInterface
       }
       return true;
     } catch (\Exception $e) {
-      \Log::error("Error filling additional seats: " . $e->getMessage());
+      Log::error("Error filling additional seats: " . $e->getMessage());
       return false;
     }
   }

@@ -58,7 +58,10 @@ export enum Permissions {
     RevokePermissions = "Revoke Permissions",
 
     //Manage Inventory
-    EditCabinInventory = "Edit Cabin Inventory"
+    EditCabinInventory = "Edit Cabin Inventory",
+    EditPassengers = "Edit Passengers",
+    ResetSeat = "Reset Seat"
+
 
 
 

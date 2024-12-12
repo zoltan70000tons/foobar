@@ -344,11 +344,14 @@ class BookingRepository implements BookingInterface
       $booking->save();
 
       $passenger = null;
+      Log::error($passengerData);
       if ($passengerData) {
+        Log::info('passenger data ok');
         $passenger = $this->passengerRepository->create($passengerData, $booking);
       }
 
       if ($passenger && $booking) {
+        Log::info('in passsengers and booking');
         if ($temporaryBookingId) {
           TemporaryReservation::find($temporaryBookingId)?->delete();
         }
@@ -359,9 +362,11 @@ class BookingRepository implements BookingInterface
           'passenger' => $passenger,
         ];
       }
-
+      Log::info($booking);
+      Log::info($passenger);
       throw new \Exception("Error creating booking.");
     } catch (\Exception $e) {
+      Log::error($e->getMessage());
       FacadesDB::rollBack();
       return [
         'error' => true,

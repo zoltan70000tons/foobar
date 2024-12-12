@@ -14,7 +14,8 @@ class PassengerController extends Controller
 {
 
     protected PassengerRepository $passengerRepository;
-    public function __construct(PassengerRepository $passengerRepository){
+    public function __construct(PassengerRepository $passengerRepository)
+    {
         $this->passengerRepository = $passengerRepository;
     }
 
@@ -27,18 +28,18 @@ class PassengerController extends Controller
             'id' => 'required|int',
             'booking_id' => 'required|int',
             'confirmed_booking_email' => 'required|boolean',
-            'survivor_number' => 'nullable|string', 
-            'payment_method' => 'required|string|in:CREDIT_CARD,BANK_TRANSFER', 
-            'gender' => 'nullable|string|in:M,F,O', 
+            'survivor_number' => 'nullable|string',
+            'payment_method' => 'required|string|in:CREDIT_CARD,BANK_TRANSFER',
+            'gender' => 'nullable|string|in:M,F,O',
             'first_name' => 'required|string',
             'middle_name' => 'nullable|string',
             'last_name' => 'required|string',
-            'dob' => 'nullable|date', 
+            'dob' => 'nullable|date',
             'citizenship' => 'nullable|string',
             'address_first' => 'required|string',
             'address_second' => 'nullable|string',
             'city' => 'required|string',
-            'state' => 'nullable|string', 
+            'state' => 'nullable|string',
             'postal_code' => 'nullable|string',
             'country' => 'nullable|string',
             'email' => 'required|email',
@@ -47,28 +48,28 @@ class PassengerController extends Controller
             'emergency_c_phone' => 'nullable|string',
             'special_request' => 'nullable|string',
             'hear_about' => 'nullable|string',
-           // 'newsletter' => 'required|boolean',
-           // 'travel_info' => 'required|boolean',
+            // 'newsletter' => 'required|boolean',
+            // 'travel_info' => 'required|boolean',
             'terms_n_cons' => 'required|boolean',
-           // 'cabin_conf_accp' => 'required|boolean',
+            // 'cabin_conf_accp' => 'required|boolean',
             //'single_t_agreement' => 'required|boolean',
             'passenger_allocated_cost' => 'required|numeric',
             'passenger_balance' => 'required|numeric',
-           // 'was_on_board' => 'required|boolean',
+            // 'was_on_board' => 'required|boolean',
         ]);
 
-        $user = User::where('email','=',$validated['email'])->first();
-        if($user){
-            return response()->json([
-                'error' => 'User have an account, please use autocomplete',
-            ], 422);
-        }
-        
-        $slot = Passenger::where('id','=',$validated['id'])->first();
-       
+        // $user = User::where('email','=',$validated['email'])->first();
+        // if($user){
+        //     return response()->json([
+        //         'error' => 'User have an account, please use autocomplete',
+        //     ], 422);
+        // }
+
+        $slot = Passenger::where('id', '=', $validated['id'])->first();
+
         Log::info($slot);
         $booking = Booking::findOrFail($validated['booking_id']);
-        if($slot->booking_id !== $booking->id){
+        if ($slot->booking_id !== $booking->id) {
             return response()->json([
                 'error' => 'Slot and Booking Id inconsistent.',
             ], 422);
@@ -77,20 +78,68 @@ class PassengerController extends Controller
         $existingBooking = Booking::whereHas('passengers', function ($query) use ($validated) {
             $query->where('email', '=', $validated['email']);
         })
-        ->where('id', '!=', $booking->id)
-        ->where('event_id', '=', $booking->event_id)
-        ->first();
-        
+            ->where('id', '!=', $booking->id)
+            ->where('event_id', '=', $booking->event_id)
+            ->first();
+
         if ($existingBooking) {
             return response()->json([
-                'error' => 'Passenger already found on other booking for the eventw.',
+                'error' => 'Passenger already found on other booking for the event.',
             ], 422);
         }
-         
+
         $this->passengerRepository->updateSeat($slot, $booking, $validated);
         $slot->update($validated);
 
         return response()->json($slot);
+    }
+
+    public function releaseSeat(Request $request)
+    {
+        $validated = $request->validate([
+            'slotId' => 'required|int',
+            'bookingId' => 'required|int'
+        ]);
+        try {
+            $slot = Passenger::where('id', '=', $validated['slotId'])->first();
+            if ($slot) {
+                $slot->confirmed_booking_email = false;
+                $slot->lead_passenger = false;
+                $slot->survivor_number = null;
+                $slot->payment_method = 'CREDIT_CARD';
+                $slot->gender = null;
+                $slot->first_name = null;
+                $slot->middle_name = null;
+                $slot->last_name = null;
+                $slot->dob = null;
+                $slot->citizenship = null;
+                $slot->address_first = null;
+                $slot->address_second = null;
+                $slot->city = null;
+                $slot->state = null;
+                $slot->postal_code = null;
+                $slot->country = null;
+                $slot->email = null;
+                $slot->phone = null;
+                $slot->emergency_c_name = null;
+                $slot->emergency_c_phone = null;
+                $slot->special_request = null;
+                $slot->hear_about = null;
+                $slot->newsletter = false;
+                $slot->travel_info = false;
+                $slot->terms_n_cons = false;
+                $slot->cabin_conf_accp = false;
+                $slot->single_t_agreement = false;
+                $slot->passenger_allocated_cost = 0;
+                $slot->passenger_balance = 0;
+                $slot->was_on_board = 0;
+                $slot->save();
+            }
+            return response()->json($slot);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json('error');
+        }
     }
 
 
