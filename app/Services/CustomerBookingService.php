@@ -17,7 +17,37 @@ class CustomerBookingService
     $this->customerBookingRepository = $customerBookingRepository;
   }
 
-  // based on cabin capacity and passengers return available seats
+  /*
+  |--------------------------------------------------------------------------
+  | Get my bookings
+  |--------------------------------------------------------------------------
+  |
+  |  In this method we check the type of booking and status of the booking
+  |
+  */
+  public function getMyBookings($user)
+  {
+    $bookings = $this->customerBookingRepository->getAllBookings($user);
+
+    // if booking have status new then do not return cabin id and number
+    $bookings->map(function ($booking) {
+      if ($booking->status === "NEW") {
+        $booking->cabin["cabin_id"] = null;
+        $booking->cabin["cabin_number"] = null;
+      }
+    });
+
+    return $bookings;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Get available seats
+  |--------------------------------------------------------------------------
+  |
+  |  This method will return the number of available seats in the cabin
+  |
+  */
   public function getAvailableSeats($bookingCode)
   {
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
@@ -30,7 +60,14 @@ class CustomerBookingService
     return $countOfAvaialble;
   }
 
-  // set empty seat
+  /*
+  |--------------------------------------------------------------------------
+  | Set empty seat
+  |--------------------------------------------------------------------------
+  |
+  | This method will add an empty seat to the booking
+  |
+  */
   public function setEmptySeat($bookingCode)
   {
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
@@ -57,7 +94,14 @@ class CustomerBookingService
     return response()->json(["message" => "No empty seats available"], 404);
   }
 
-  // Add passenger manually
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger manually
+  |--------------------------------------------------------------------------
+  |
+  | This method will add a passenger to the booking manually
+  |
+  */
   public function addPassengerManually($bookingCode, $validated)
   {
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
@@ -99,7 +143,14 @@ class CustomerBookingService
     return response()->json(["message" => "No empty seats available"], 404);
   }
 
-  // add passenger via email
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger via email
+  |--------------------------------------------------------------------------
+  |
+  | This method will send an email to the user with a signed URL to add a passenger
+  |
+  */
   public function addPassengerViaEmail($bookingCode, $email)
   {
     // generate signed url
