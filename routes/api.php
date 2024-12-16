@@ -45,7 +45,7 @@ Route::post("/recover-account-register", [RecoverAccountController::class, "reco
   ->middleware("signed:relative");
 
 // --- ADD PAX ---
-Route::get("/add-pax", [BookingController::class, "addPax"])
+Route::get("/add-pax", [BookingController::class, "addPaxVerify"])
   ->name("add.pax")
   ->middleware("signed:relative");
 

@@ -130,7 +130,13 @@ class BookingController extends Controller
    */
   public function showBooking($bookingCode)
   {
-    $result = $this->customerBookingRepository->getBookingByCode($bookingCode);
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
     $available_beds = $this->customerBookingService->getAvailableSeats($bookingCode);
 
     if (!$result) {
@@ -164,22 +170,21 @@ class BookingController extends Controller
       return response()->json(["message" => "Unauthorized"], 403);
     }
 
-    $bookings = Booking::with("event", "cabin.cabinCategory")
-      ->where("customer_id", $user->id)
-      ->get();
+    $result = $this->customerBookingService->getMyBookings($user);
 
-    // if booking have status new then do not return cabin id and number
-    $bookings->map(function ($booking) {
-      if ($booking->status === "NEW") {
-        $booking->cabin["cabin_id"] = null;
-        $booking->cabin["cabin_number"] = null;
-      }
-    });
-
-    return response()->json(["bookings" => $bookings]);
+    return response()->json([
+      "bookings" => $result,
+    ]);
   }
 
-  // Set empty seat
+  /*
+  |--------------------------------------------------------------------------
+  | Set empty seat
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to set an empty seat in the booking
+  |
+  */
   public function emptySeat($bookingCode)
   {
     $user = Auth::user();
@@ -196,6 +201,10 @@ class BookingController extends Controller
       return response()->json(["message" => "Booking not found"], 404);
     }
 
+    if ($booking->is_single_occupancy) {
+      return response()->json(["message" => "This booking is single occupancy"], 400);
+    }
+
     // not the owner
     if ($booking->customer_id !== $user->id) {
       return response()->json(["message" => "Unauthorized"], 403);
@@ -206,7 +215,14 @@ class BookingController extends Controller
     return $result;
   }
 
-  // Add passenger manually
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger manually
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to add a passenger to a booking manually
+  |
+  */
   public function addPassenger(StorePassengerRequest $request, $bookingCode)
   {
     $user = Auth::user();
@@ -221,6 +237,10 @@ class BookingController extends Controller
       return response()->json(["message" => "Booking not found"], 404);
     }
 
+    if ($booking->is_single_occupancy) {
+      return response()->json(["message" => "This booking is single occupancy"], 400);
+    }
+
     $validated = $request->validated();
 
     \Log::info("VALIDATED@addPassenger: " . json_encode($validated));
@@ -231,7 +251,14 @@ class BookingController extends Controller
     return $result;
   }
 
-  // Add passenger via email
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger via email
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to add a passenger to a booking via email
+  |
+  */
   public function addPassengerViaEmail(Request $request, $bookingCode)
   {
     $user = Auth::user();
@@ -246,6 +273,10 @@ class BookingController extends Controller
       return response()->json(["message" => "Booking not found"], 404);
     }
 
+    if ($booking->is_single_occupancy) {
+      return response()->json(["message" => "This booking is single occupancy"], 400);
+    }
+
     // get email and survivor number from request
     $email = $request->input("email");
 
@@ -258,8 +289,15 @@ class BookingController extends Controller
     return $result;
   }
 
-  // Delete booking
-  public function destroy(Request $request, $id)
+  /*
+  |--------------------------------------------------------------------------
+  | Destroy booking
+  |--------------------------------------------------------------------------
+  |
+  |  This method will delete a booking
+  |
+  */
+  public function destroy($id)
   {
     $user = Auth::user();
 
@@ -282,7 +320,14 @@ class BookingController extends Controller
     return response()->json(["message" => "Booking deleted successfully"], 200);
   }
 
-  // Add pax verification
+  /*
+  |--------------------------------------------------------------------------
+  | Add "Pax" passenger verification
+  |--------------------------------------------------------------------------
+  |
+  |  In this method we will verify the signed URL and redirect to the frontend
+  |
+  */
   public function addPaxVerification(Request $request, $bookingCode)
   {
     // check signed url
