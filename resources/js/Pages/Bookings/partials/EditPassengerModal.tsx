@@ -97,6 +97,7 @@ const EditPassengerModal = ({
         onChange("emergency_c_phone", selectedUser.emergency_c_phone || "");
         onChange("passenger_allocated_cost", selectedUser.passenger_allocated_cost || "");
         onChange("passenger_balance", selectedUser.passenger_balance || "");
+        onChange("survivor_number", selectedUser.survivor_number || "");
 
         //select
         onChange("gender", selectedUser.gender || "");
@@ -257,6 +258,19 @@ const EditPassengerModal = ({
                                 disabled={isLeadPassenger || !canEdit}
                                 error={!!validation?.citizenship}
                                 helperText={validation?.citizenship?.[0]}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={3}>
+                            <TextField
+                                label="Survivor Number"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                value={passenger?.survivor_number || ""}
+                                onChange={(e) => onChange("survivor_number", e.target.value)}
+                                disabled={isLeadPassenger || !canEdit}
+                                error={!!validation?.survivor_number}
+                                helperText={validation?.survivor_number?.[0]}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>

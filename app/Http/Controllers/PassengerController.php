@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Repositories\PassengerRepository;
+use App\Rules\UniqueSurvivorInEvent;
 use Log;
 
 class PassengerController extends Controller
@@ -23,12 +24,12 @@ class PassengerController extends Controller
     public function updateSeat(Request $request)
     {
 
-
+        $event_id = request()->route("id");
         $validated = $request->validate([
             'id' => 'required|int',
             'booking_id' => 'required|int',
             'confirmed_booking_email' => 'required|boolean',
-            'survivor_number' => 'nullable|string',
+            'survivor_number' => ['required', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number',new UniqueSurvivorInEvent($event_id, $request->booking_id),],
             'payment_method' => 'required|string|in:CREDIT_CARD,BANK_TRANSFER',
             'gender' => 'nullable|string|in:M,F,O',
             'first_name' => 'required|string',
@@ -58,12 +59,6 @@ class PassengerController extends Controller
             // 'was_on_board' => 'required|boolean',
         ]);
 
-        // $user = User::where('email','=',$validated['email'])->first();
-        // if($user){
-        //     return response()->json([
-        //         'error' => 'User have an account, please use autocomplete',
-        //     ], 422);
-        // }
 
         $slot = Passenger::where('id', '=', $validated['id'])->first();
 
@@ -76,7 +71,7 @@ class PassengerController extends Controller
         }
 
         $existingBooking = Booking::whereHas('passengers', function ($query) use ($validated) {
-            $query->where('email', '=', $validated['email']);
+            $query->where('survivor_number', '=', $validated['survivor_number']);
         })
             ->where('id', '!=', $booking->id)
             ->where('event_id', '=', $booking->event_id)
