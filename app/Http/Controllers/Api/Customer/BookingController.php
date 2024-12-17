@@ -40,8 +40,6 @@ class BookingController extends Controller
   {
     $validated = $request->validated();
 
-    \Log::info("VALIDATED@store: " . json_encode($validated));
-
     // Get authenticated user
     $user = Auth::user();
 
@@ -70,7 +68,7 @@ class BookingController extends Controller
       $passengerData = [
         "confirmed_booking_email" => false,
         "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-        "payment_method" => "CREDIT_CARD",
+        "payment_method" => $validated["paymentMethod"],
         "address_first" => $validated["addressLine1"],
         "address_second" => $validated["addressLine2"],
         "city" => $validated["city"],
@@ -78,15 +76,15 @@ class BookingController extends Controller
         "postal_code" => $validated["zipCode"],
         "country" => $validated["country"],
         "email" => $validated["email"],
-        "phone" => $validated["phone"]["number"],
+        "phone" => $validated["phoneNumber"],
         "emergency_c_name" => $validated["emergencyContactName"],
-        "emergency_c_phone" => $validated["emergencyContactPhone"]["number"],
+        "emergency_c_phone" => $validated["emergencyPhoneNumber"],
         "special_request" => $validated["specialRequest"] ?? null,
         "newsletter" => $validated["newsletter"],
         "travel_info" => false,
         "terms_n_cons" => $validated["terms"],
-        "cabin_conf_accp" => false,
-        "single_t_agreement" => false,
+        "cabin_conf_accp" => $validated["cart"]["cabin_conf_accp"],
+        "single_t_agreement" => $validated["cart"]["single_t_agreement"],
         "passenger_allocated_cost" => $validated["cart"]["price_total"],
         "passenger_balance" => 0,
         "was_on_board" => false,

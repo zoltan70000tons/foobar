@@ -12,6 +12,8 @@ class PassengerRepository implements PassengerInterface
 {
   public function create($data, Booking $booking): Passenger|bool
   {
+    \Log::info("PassengerRepository::create", ["data" => $data]);
+
     try {
       // Get authenticated user
       $user = Auth::user();
@@ -32,7 +34,7 @@ class PassengerRepository implements PassengerInterface
         "last_name" => $userDetails->last_name,
         "dob" => $userDetails->dob,
         "citizenship" => $userDetails->citizenship,
-        "payment_method" => "CREDIT_CARD",
+        "payment_method" => $data["payment_method"],
         "address_first" => $data["address_first"],
         "address_second" => $data["address_second"],
         "city" => $data["city"],
@@ -47,8 +49,8 @@ class PassengerRepository implements PassengerInterface
         "newsletter" => $data["newsletter"],
         "travel_info" => false,
         "terms_n_cons" => $data["terms_n_cons"],
-        "cabin_conf_accp" => false,
-        "single_t_agreement" => false,
+        "cabin_conf_accp" => $data["cabin_conf_accp"],
+        "single_t_agreement" => $data["single_t_agreement"],
         "passenger_allocated_cost" => $data["passenger_allocated_cost"],
         "passenger_balance" => 0,
         "was_on_board" => false,
