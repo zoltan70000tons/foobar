@@ -3,104 +3,42 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\Event;
-use Illuminate\Support\Facades\App;
-use App\Models\Cabin;
 use App\Models\Booking;
-use App\Models\TemporaryReservation;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreBookingRequest;
-use Illuminate\Support\Facades\DB;
-use App\Models\Passenger;
+use App\Http\Requests\StorePassengerRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
+use App\Repositories\CustomerBookingRepository;
+use App\Services\CustomerBookingService;
 
 class BookingController extends Controller
 {
   protected $bookingRepository;
+  protected $customerBookingService;
+  protected $customerBookingRepository;
 
-  public function __construct(BookingRepository $bookingRepository)
-  {
+  public function __construct(
+    BookingRepository $bookingRepository,
+    CustomerBookingService $CustomerBookingService,
+    CustomerBookingRepository $customerBookingRepository
+  ) {
     $this->bookingRepository = $bookingRepository;
-  }
-  /**
-   * Show only events that are in pre-sale or public status
-   *
-   * If no events are found, return a message
-   * Pre-sale: Only logged-in users whose membership status matches one of the entries in the new table above can book. The current date must also be within the range.
-   * Public: Everyone can book.
-   * Closed: Event is shown to the public, but no longer taking booking requests
-   * Draft: The event exists only for admin users internally.
-   *
-   */
-  public function show()
-  {
-    // check if event exist and get only if pre-sale or public
-    $events = Event::where("status", "pre-sale")->orWhere("status", "public")->get();
-
-    if ($events->isEmpty()) {
-      return response()->json(["message" => "no events found"]);
-    }
-
-    // return events if exist
-    return response()->json([
-      "events" => $events,
-    ]);
-  }
-
-  /**
-   * Single event
-   *
-   *
-   */
-  public function showOne(Request $request, $id, $language = "en")
-  {
-    App::setLocale($language);
-
-    // Retrieve the event
-    $event = Event::find($id);
-
-    if (!$event) {
-      return response()->json([
-        "status" => 404,
-        "message" => __("event.no_event_found"),
-      ]);
-    }
-
-    // Check event status
-    if (!in_array($event->status, ["pre-sale", "public"])) {
-      return response()->json([
-        "status" => 403,
-        "message" => __("event.no_event_found"),
-      ]);
-    }
-
-    // Get purchase access information from the request
-    $purchaseAccess = $request->get("purchase_access", false);
-    $accessMessage = $request->get("access_message", "");
-
-    return response()->json([
-      "status" => 200,
-      "event_status" => $event->status,
-      "event" => $event,
-      "purchase_access" => $purchaseAccess,
-      "access_message" => $accessMessage,
-    ]);
+    $this->customerBookingService = $CustomerBookingService;
+    $this->customerBookingRepository = $customerBookingRepository;
   }
 
   /**
    * Store a new booking
    *
+   * Validate the request and use BookingRepository to create a new booking
+   *
+   * @param StoreBookingRequest $request
    *
    */
   public function store(StoreBookingRequest $request)
   {
     $validated = $request->validated();
-
-    \Log::info("VALIDATED@store: " . json_encode($validated));
 
     // Get authenticated user
     $user = Auth::user();
@@ -126,17 +64,11 @@ class BookingController extends Controller
         "tags" => json_encode(["New"]),
       ];
 
-      \Log::info("STOOORE@store: " . json_encode($bookingData));
-
       // Process passenger data
       $passengerData = [
-        //we dont pass booking_id because it will be set on repository
-        //"booking_id"
         "confirmed_booking_email" => false,
         "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-        // Pull NON-EDITABLE data from the user
-        // Pull EDITABLE data from the booking form
-        "payment_method" => "CREDIT_CARD", // TODO: Implement payment method selection
+        "payment_method" => $validated["paymentMethod"],
         "address_first" => $validated["addressLine1"],
         "address_second" => $validated["addressLine2"],
         "city" => $validated["city"],
@@ -144,26 +76,35 @@ class BookingController extends Controller
         "postal_code" => $validated["zipCode"],
         "country" => $validated["country"],
         "email" => $validated["email"],
-        "phone" => $validated["phone"]["number"],
+        "phone" => $validated["phoneNumber"],
         "emergency_c_name" => $validated["emergencyContactName"],
-        "emergency_c_phone" => $validated["emergencyContactPhone"]["number"],
+        "emergency_c_phone" => $validated["emergencyPhoneNumber"],
         "special_request" => $validated["specialRequest"] ?? null,
         "newsletter" => $validated["newsletter"],
         "travel_info" => false,
         "terms_n_cons" => $validated["terms"],
-        "cabin_conf_accp" => false,
-        "single_t_agreement" => false,
+        "cabin_conf_accp" => $validated["cart"]["cabin_conf_accp"],
+        "single_t_agreement" => $validated["cart"]["single_t_agreement"],
         "passenger_allocated_cost" => $validated["cart"]["price_total"],
         "passenger_balance" => 0,
         "was_on_board" => false,
       ];
       //call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
+
+      \Log::info("RESULT@store: " . json_encode($result));
+
+      // delete current sesion
+      $request->session()->forget("cart");
+      $request->session()->forget("reservation_id");
+
       return response()->json(
         [
           "message" => "Booking created successfully.",
-          "booking" => $result["booking"],
-          "passenger" => $result["passenger"],
+          "booking" => [
+            "booking_code" => $result["booking"]["booking_code"],
+          ],
+          // "passenger" => $result["passenger"],
         ],
         201
       );
@@ -176,134 +117,49 @@ class BookingController extends Controller
         500
       );
     }
-
-    // DB::beginTransaction();
-
-    // try {
-    //   // Fetch temporary reservation data
-    //   $tempReservation = TemporaryReservation::find($validated["cart"]["reservation_id"]);
-    //   if (!$tempReservation) {
-    //     throw new \Exception("Temporary reservation not found.");
-    //   }
-
-    //   // Fetch cabin data from the temporary reservation
-    //   $cabinId = $tempReservation->cabin_id;
-    //   $cabinNumber = $tempReservation->cabin_number;
-
-    //   // Fetch cabin data
-    //   $cabin = Cabin::find($cabinId);
-    //   if (!$cabin) {
-    //     throw new \Exception("Cabin not found for the given reservation ID.");
-    //   }
-
-    //   $cabinCategory = $cabin->category->id;
-
-    //   // Validate cabin ID
-    //   $cabinId = Cabin::where("id", $cabinId)->firstOrFail()->id;
-
-    //   $characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    //   $identifier_code = substr(str_shuffle($characters), 0, 4);
-    //   $bookingCode = "{$cabinNumber}-{$identifier_code}-{$cabinCategory}";
-
-    //   $eventId = (int) $validated["cart"]["event_id"];
-    //   $paymentPlan = $validated["cart"]["payment_plan"];
-    //   $isSigle = $validated["cart"]["cabin_type"] === "private-cabin" ? true : false;
-
-    //   // Process booking data
-    //   $bookingData = [
-    //     "booking_code" => $bookingCode,
-    //     "event_id" => $eventId,
-    //     "customer_id" => $user->id,
-    //     "payment_plan" => $paymentPlan,
-    //     "cabin_id" => $cabinId,
-    //     "completed" => false,
-    //     "is_cancelled" => false,
-    //     "is_single_occupancy" => $isSigle,
-    //     "tags" => json_encode(["New"]),
-    //   ];
-
-    //   Log::info("STOOORE@store: " . json_encode($bookingData));
-
-    //   // Create booking
-    //   $booking = Booking::create($bookingData);
-
-    //   // Fetch user details
-    //   $userDetails = $user->detail;
-
-    //   if (!$userDetails) {
-    //     throw new \Exception("User details not found.");
-    //   }
-
-    //   // Process passenger data
-    //   $passengerData = [
-    //     "booking_id" => $booking->id,
-    //     "confirmed_booking_email" => false,
-    //     "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-    //     // Pull NON-EDITABLE data from the user
-    //     "survivor_number" => $user->survivorNumber->survivor_number,
-    //     "gender" => $userDetails->gender,
-    //     "first_name" => $userDetails->first_name,
-    //     "middle_name" => $userDetails->middle_name,
-    //     "last_name" => $userDetails->last_name,
-    //     "dob" => $userDetails->dob,
-    //     "citizenship" => $userDetails->citizenship,
-    //     // Pull EDITABLE data from the booking form
-    //     "payment_method" => "CREDIT_CARD", // TODO: Implement payment method selection
-    //     "address_first" => $validated["addressLine1"],
-    //     "address_second" => $validated["addressLine2"],
-    //     "city" => $validated["city"],
-    //     "state" => $validated["state"],
-    //     "postal_code" => $validated["zipCode"],
-    //     "country" => $validated["country"],
-    //     "email" => $validated["email"],
-    //     "phone" => $validated["phone"]["number"],
-    //     "emergency_c_name" => $validated["emergencyContactName"],
-    //     "emergency_c_phone" => $validated["emergencyContactPhone"]["number"],
-    //     "special_request" => $validated["specialRequest"] ?? null,
-    //     "newsletter" => $validated["newsletter"],
-    //     "travel_info" => false,
-    //     "terms_n_cons" => $validated["terms"],
-    //     "cabin_conf_accp" => false,
-    //     "single_t_agreement" => false,
-    //     "passenger_allocated_cost" => $validated["cart"]["price_total"],
-    //     "passenger_balance" => 0,
-    //     "was_on_board" => false,
-    //   ];
-
-    //   // Create passenger
-    //   $passenger = Passenger::create($passengerData);
-
-    //   // Commit transaction
-    //   DB::commit();
-
-    //   // Delete temporary reservation
-    //   TemporaryReservation::find($validated["cart"]["reservation_id"])?->delete();
-    //   // delete current sesion
-    //   $request->session()->forget("cart");
-    //   $request->session()->forget("reservation_id");
-
-    //   return response()->json(
-    //     [
-    //       "message" => "Booking created successfully.",
-    //       "booking" => $booking,
-    //       "passenger" => $passenger,
-    //     ],
-    //     201
-    //   );
-    // } catch (\Exception $e) {
-    //   DB::rollBack();
-
-    //   return response()->json(
-    //     [
-    //       "message" => "An error occurred while creating the booking.",
-    //       "error" => $e->getMessage(),
-    //     ],
-    //     500
-    //   );
-    // }
   }
 
-  // My bookings
+  /**
+   * Get booking by booking code
+   *
+   * @param string $bookingCode
+   * @return \Illuminate\Http\JsonResponse
+   *
+   */
+  public function showBooking($bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
+    $available_beds = $this->customerBookingService->getAvailableSeats($bookingCode);
+
+    if (!$result) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    // if status is "New" then do not return cabin id and number
+    if ($result->status === "NEW") {
+      $result->cabin["cabin_id"] = null;
+      $result->cabin["cabin_number"] = null;
+    }
+
+    $schema = [
+      "booking" => $result,
+      "available_beds" => $available_beds,
+    ];
+
+    return response()->json($schema);
+  }
+
+  /**
+   * Get all bookings for the authenticated user
+   *
+   * @return \Illuminate\Http\JsonResponse
+   */
   public function myBookings()
   {
     $user = Auth::user();
@@ -312,13 +168,134 @@ class BookingController extends Controller
       return response()->json(["message" => "Unauthorized"], 403);
     }
 
-    $bookings = Booking::where("customer_id", $user->id)->get();
+    $result = $this->customerBookingService->getMyBookings($user);
 
-    return response()->json(["bookings" => $bookings]);
+    return response()->json([
+      "bookings" => $result,
+    ]);
   }
 
-  // Delete booking
-  public function destroy(Request $request, $id)
+  /*
+  |--------------------------------------------------------------------------
+  | Set empty seat
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to set an empty seat in the booking
+  |
+  */
+  public function emptySeat($bookingCode)
+  {
+    $user = Auth::user();
+
+    // no user
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::where("booking_code", $bookingCode)->first();
+
+    // no booking
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    if ($booking->is_single_occupancy) {
+      return response()->json(["message" => "This booking is single occupancy"], 400);
+    }
+
+    // not the owner
+    if ($booking->customer_id !== $user->id) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $result = $this->customerBookingService->setEmptySeat($bookingCode);
+
+    return $result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger manually
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to add a passenger to a booking manually
+  |
+  */
+  public function addPassenger(StorePassengerRequest $request, $bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::where("booking_code", $bookingCode)->first();
+
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    if ($booking->is_single_occupancy) {
+      return response()->json(["message" => "This booking is single occupancy"], 400);
+    }
+
+    $validated = $request->validated();
+
+    \Log::info("VALIDATED@addPassenger: " . json_encode($validated));
+
+    // create passenger with booking id
+    $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
+
+    return $result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger via email
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to add a passenger to a booking via email
+  |
+  */
+  public function addPassengerViaEmail(Request $request, $bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    $booking = Booking::where("booking_code", $bookingCode)->first();
+
+    if (!$booking) {
+      return response()->json(["message" => "Booking not found"], 404);
+    }
+
+    if ($booking->is_single_occupancy) {
+      return response()->json(["message" => "This booking is single occupancy"], 400);
+    }
+
+    // get email and survivor number from request
+    $email = $request->input("email");
+
+    if (!$email) {
+      return response()->json(["message" => "Email and survivor number are required"], 400);
+    }
+
+    $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
+
+    return $result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Destroy booking
+  |--------------------------------------------------------------------------
+  |
+  |  This method will delete a booking
+  |
+  */
+  public function destroy($id)
   {
     $user = Auth::user();
 
@@ -339,5 +316,26 @@ class BookingController extends Controller
     $booking->delete();
 
     return response()->json(["message" => "Booking deleted successfully"], 200);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Add "Pax" passenger verification
+  |--------------------------------------------------------------------------
+  |
+  |  In this method we will verify the signed URL and redirect to the frontend
+  |
+  */
+  public function addPaxVerification(Request $request, $bookingCode)
+  {
+    // check signed url
+    if (!$request->hasValidSignature()) {
+      return response()->json(["message" => "Invalid or expired link."], 403);
+    }
+
+    $bookingCode = $request->input("bookingCode");
+
+    // // redirect to fronend url with booking code
+    // return redirect()->to(config("app.frontend_url") . "/en/add-pax/" . "?booking-code=$bookingCode");
   }
 }

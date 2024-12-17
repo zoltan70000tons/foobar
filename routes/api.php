@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Customer\CabinController;
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
 use App\Http\Controllers\Api\Customer\EditProfileController;
 use App\Http\Controllers\Api\Customer\AdjustmentsController;
+use App\Http\Controllers\Api\Customer\EventController;
 use App\Http\Controllers\Api\Customer\CartController;
 use Illuminate\Routing\Router;
 
@@ -43,6 +44,11 @@ Route::post("/recover-account-register", [RecoverAccountController::class, "reco
   ->name("recover.account.register")
   ->middleware("signed:relative");
 
+// --- ADD PAX ---
+Route::get("/add-pax", [BookingController::class, "addPaxVerify"])
+  ->name("add.pax")
+  ->middleware("signed:relative");
+
 // --- EMAIL VERIFICATION ---
 Route::post("/email/verification-notification", [CustomerEmailVerificationController::class, "store"])->middleware([
   "auth:sanctum",
@@ -59,19 +65,14 @@ Route::post("/register", [CustomerRegisteredController::class, "store"]);
 // --- LOGOUT ---
 Route::post("/logout", [CustomerLoginController::class, "destroy"])->middleware(["auth:sanctum", "auth.customer"]);
 
-// --- CUSTOMER MIDDLEWARE AFTER LOGIN ---
-Route::middleware(["auth:sanctum", "verified"])->group(function () {
-  Route::get("/customer", [CustomerAuthController::class, "customer"]);
-  Route::post("/reset-password-inside", [CustomerAuthController::class, "update"]);
-});
-
+// ---- EVENTS ----
+// --- GROUP WITHOUT MIDDLEWARE ---
+Route::get("/events", [EventController::class, "show"]);
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
 Route::middleware(["membership_sales"])->group(function () {
-  Route::get("/events/{id}", [BookingController::class, "showOne"]);
+  Route::get("/events/{id}", [EventController::class, "showOne"]);
 });
 
-// --- GROUP WITHOUT MIDDLEWARE ---
-Route::get("/events", [BookingController::class, "show"]);
 Route::get("/events/{id}/adjustments", [AdjustmentsController::class, "show"]);
 Route::get("/pricing-matrix", [PricingMatrixController::class, "index"]);
 Route::get("/pricing-matrix/{cabinId}", [PricingMatrixController::class, "show"]);
@@ -103,6 +104,9 @@ Route::middleware(["clear_expired_reservation"])->group(function () {
 
 // --- AUTH ---
 Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function () {
+  Route::get("/customer", [CustomerAuthController::class, "customer"]);
+  Route::post("/reset-password-inside", [CustomerAuthController::class, "update"]);
+
   // Profile
   Route::get("/customers/{id}", [EditProfileController::class, "getAccountIntel"])->where("id", "[0-9a-fA-F\-]{36}");
   Route::get("/customers/{id}/details", [EditProfileController::class, "getCustomerDetails"]);
@@ -114,7 +118,16 @@ Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function
   // Booking
   Route::post("/booking-init", [BookingController::class, "store"]);
   Route::get("/my-bookings", [BookingController::class, "myBookings"]);
+  // --- single booking
+  Route::get("/my-bookings/{bookingCode}", [BookingController::class, "showBooking"]);
   Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
+
+  // set slot empty
+  Route::post("/my-bookings/{bookingCode}/set-empty-seat", [BookingController::class, "emptySeat"]);
+  // add passenger manually
+  Route::post("/my-bookings/{bookingCode}/add-passenger", [BookingController::class, "addPassenger"]);
+  // add passenger via email
+  Route::post("/my-bookings/{bookingCode}/add-passenger-via-email", [BookingController::class, "addPassengerViaEmail"]);
 });
 
 // --- TEST PURPOSE FOR BROADCASTING ---

@@ -5,12 +5,15 @@ namespace App\Traits;
 use App\Models\Cabin;
 use Carbon\Carbon;
 use App\Enums\StatusCabin;
+use App\Models\Booking;
 
 trait CabinFilter
 {
   public function filterCabins($cabinTypeId, $cabinCategoryId, $cabinDeck = null, $onlyAvailable = true)
   {
     $currentTime = Carbon::now();
+
+    // $bookins = Booking::where("status", "CONFIRMED")->get();
 
     $cabinsQuery = Cabin::with("category")
       ->where("cabin_type_id", $cabinTypeId)

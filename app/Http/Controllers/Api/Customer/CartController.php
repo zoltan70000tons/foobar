@@ -52,8 +52,6 @@ class CartController extends Controller
       $cart["tax"] = $taxAddon;
     }
 
-    \Log::info("CartController@index: " . json_encode($cart));
-
     return response()->json($cart, 200);
   }
 
@@ -84,7 +82,23 @@ class CartController extends Controller
       "cabin_category" => "nullable|integer",
       "cabin_category_decks" => "nullable|string",
       "cabin_category_type" => "nullable|string",
+      "force_clear" => "nullable|boolean",
     ]);
+
+    // if force_clear is true, delete the reservation from db and forget it from session
+    if ($request->input("force_clear", false)) {
+      if ($request->session()->has("reserved_cabin_id")) {
+        $reservationId = $request->session()->get("reserved_cabin_id");
+
+        $reservation = TemporaryReservation::find($reservationId);
+
+        if ($reservation) {
+          $reservation->delete();
+        }
+
+        $request->session()->forget("reserved_cabin_id");
+      }
+    }
 
     if ($request->session()->has("cart")) {
       $this->destroy($request);
@@ -117,8 +131,6 @@ class CartController extends Controller
     ]);
 
     $request->session()->put("cart", $validated);
-
-    \Log::info("CartController@update: " . json_encode($validated));
 
     return response()->json(["message" => "Cart updated successfully"], 200);
   }
