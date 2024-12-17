@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
+use App\Models\BookingLog;
 
 class BookingController extends Controller
 {
@@ -305,7 +306,9 @@ class BookingController extends Controller
 
     $booking = Booking::find($id);
 
-    if (!$booking) {
+    $bookingLog = BookingLog::where("booking_id", $id)->first();
+
+    if (!$booking || !$bookingLog) {
       return response()->json(["message" => "Booking not found"], 404);
     }
 
@@ -313,6 +316,7 @@ class BookingController extends Controller
       return response()->json(["message" => "Unauthorized"], 403);
     }
 
+    $bookingLog->delete();
     $booking->delete();
 
     return response()->json(["message" => "Booking deleted successfully"], 200);

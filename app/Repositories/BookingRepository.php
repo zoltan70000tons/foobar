@@ -15,6 +15,7 @@ use App\Models\TemporaryReservation;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PassengerRepository;
+use App\Repositories\AdjustmentsRepository;
 use Illuminate\Support\Facades\DB as FacadesDB;
 
 class BookingRepository implements BookingInterface
@@ -22,10 +23,12 @@ class BookingRepository implements BookingInterface
   use BookingLogTrait;
 
   protected PassengerInterface $passengerRepository;
+  protected AdjustmentsRepository $adjustmentsRepository;
 
-  public function __construct(PassengerRepository $passengerRepository)
+  public function __construct(PassengerRepository $passengerRepository, AdjustmentsRepository $adjustmentsRepository)
   {
     $this->passengerRepository = $passengerRepository;
+    $this->adjustmentsRepository = $adjustmentsRepository;
   }
 
   function getAll()
@@ -323,6 +326,17 @@ class BookingRepository implements BookingInterface
       $passenger = null;
       if ($passengerData) {
         $passenger = $this->passengerRepository->create($passengerData, $booking);
+      }
+
+      // create adjustments
+      if ($passenger && $booking) {
+        $adjustmentIds = collect($bookingData["addons"] ?? [])
+          ->map(fn($addon) => $addon["id"])
+          ->all();
+
+        \Log::info("Adjustments", ["ids" => $adjustmentIds]);
+
+        $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
       }
 
       // Handle cleanup
