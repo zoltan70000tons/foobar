@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Avatar,
   Box,
@@ -9,136 +9,162 @@ import {
   TextField,
   Modal,
   Autocomplete,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
-import { Axios } from "axios";
+import axios from "axios";
+import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, blueGrey, teal, green} from '@mui/material/colors';
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import EditPassengerModal from "./EditPassengerModal";
+import { router } from "@inertiajs/react";
+
 
 const Passengers = ({ booking }) => {
-  const [addPassengerOpen, setAddPassengerOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [editPassengerOpen, setEditPassengerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [openConfirm, setOpenConfirm] = useState(false);
   const [passengers, setPassengers] = useState(booking.passengers);
+  const [editingPassenger, setEditingPassenger] = useState(null);
+  const [editedPassengerData, setEditedPassengerData] = useState({});
+  const [errors, setErrors] = useState({});
+  const colors = [blueGrey, deepPurple, red, yellow];
+  const { showSnackbar } = useSnackbar();
 
-  const maxCapacity = booking.cabin.cabin_category.capacity;
 
-  // Fetch users based on the search query
-  const fetchUsers = async (query) => {
+
+
+  // Open edit modal and set passenger data
+  const handleEditPassenger = (passenger) => {
+    console.log(passenger);
+    setEditingPassenger(passenger);
+    setEditedPassengerData(passenger);
+    setEditPassengerOpen(true);
+  };
+
+  // Update passenger details
+  const handleSavePassenger = async () => {
     try {
-      const response = await axios.get("/passengers/search", {
-        params: { query },
+      const response = await axios.post(route('seat.update', { id: booking.event_id, booking_id: booking.id }), {
+        ...editedPassengerData
       });
-      setSearchResults(response.data);
+      setPassengers((prev) =>
+        prev.map((p) =>
+          p.id === editingPassenger.id
+            ? { ...p, ...response.data }
+            : p
+        )
+      );
+      setEditPassengerOpen(false);
+      setEditingPassenger(null);
+      setErrors({});
+      showSnackbar("Passenger data updated succesfully!", "success");
     } catch (error) {
-      console.error("Error fetching users:", error);
+       setErrors(error);
+       showSnackbar("Error updating passenger data!", "error");
     }
   };
 
-  // Add passenger to the booking
-  const handleAddPassenger = async () => {
-    try {
-      const response = await axios.post("/passengers/add", {
-        booking_id: booking.id,
-        user_id: selectedUser.id,
-        full_name: selectedUser.name,
-        email: selectedUser.email,
-      });
-      setPassengers([...passengers, response.data]);
-      setAddPassengerOpen(false);
-      setSelectedUser(null);
-    } catch (error) {
-      console.error("Error adding passenger:", error);
-      alert(error.response?.data?.error || "An error occurred.");
-    }
-  };
+  const onDelete = () => {
+    setOpenConfirm(true);
+};
+
+const handleConfirm = async () => {
+  setOpenConfirm(false);
+
+  try {
+      const response = await axios.post(
+          route('seat.release', { id: booking.event_id, booking_id: booking.id }), 
+          {
+              slotId: editedPassengerData.id,
+              bookingId: booking.id 
+          }
+      );
+
+      if (response.status === 200) {
+          console.log("Seat released successfully");
+          showSnackbar("Seat released succesfully!", "success");
+          setEditPassengerOpen(false);
+          console.log(response);
+          setEditedPassengerData(response.data);
+          router.reload({ only: ['booking'], preserveScroll: true });
+      } else {
+          console.error("Failed to release seat", response.data);
+          showSnackbar("Failed to release seat", "error");
+      }
+  } catch (error) {
+      console.error("Error releasing seat:", error.response || error);
+  }
+};
+
+const handleCancel = () => {
+    setOpenConfirm(false);
+};
 
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
-        Passengers
+        Seats
       </Typography>
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
           {passengers.map((passenger, index) => (
-            <Grid item xs={12} sm={4} key={passenger.id || index}>
+            <Grid item xs={12} sm={3} key={passenger.id+passenger.email}>
               <Box display="flex" alignItems="center">
-                <Avatar sx={{ width: 50, height: 50, mr: 2 }}>
+                <Avatar
+                  sx={{ width: 50, height: 50, mr: 2, cursor: "pointer",bgcolor: passenger.lead_passenger ? green[800] : passenger.empty ? grey[500] : colors[index][500] }}
+                  onClick={() => handleEditPassenger(passenger)}
+                >
                   {passenger.full_name[0]}
                 </Avatar>
                 <Box>
                   <Typography>{passenger.full_name}</Typography>
-                  <Typography variant="caption">
+                  {passenger.lead_passenger ? <Chip label="Lead Passenger" size="small" color="warning" /> : `Passenger ${index + 1}`}
+                  {/* <Typography variant="caption" color={passenger.lead_passenger ? 'green' : 'grey'}>
                     {passenger.lead_passenger
                       ? "Lead Passenger"
                       : `Passenger ${index + 1}`}
-                  </Typography>
+                  </Typography><br/> */}
+                  {passenger.empty ? <><br /><Chip label="available" size="small" color="info" sx={{color:"white"}} /></> : <></>}
                 </Box>
               </Box>
             </Grid>
           ))}
-
-          {passengers.length < maxCapacity && (
-            <Grid item xs={12} sm={4}>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                sx={{
-                  border: "2px dashed gray",
-                  borderRadius: "50%",
-                  width: 50,
-                  height: 50,
-                  cursor: "pointer",
-                  color: "gray",
-                  ":hover": { borderColor: "blue", color: "blue" },
-                }}
-                onClick={() => setAddPassengerOpen(true)}
-              >
-                <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
-                  +
-                </Typography>
-              </Box>
-            </Grid>
-          )}
         </Grid>
       </Paper>
 
-      {/* Modal para añadir pasajero */}
-      <Modal open={addPassengerOpen} onClose={() => setAddPassengerOpen(false)}>
-        <Paper sx={{ p: 4, margin: "auto", maxWidth: 600 }}>
-          <Typography variant="h6" gutterBottom>
-            Add Passenger
-          </Typography>
-          <Autocomplete
-            options={searchResults}
-            getOptionLabel={(option) => `${option.name} (${option.email})`}
-            onInputChange={(e, value) => {
-              setSearchQuery(value);
-              fetchUsers(value);
-            }}
-            onChange={(e, value) => setSelectedUser(value)}
-            renderInput={(params) => (
-              <TextField {...params} label="Search Users" variant="outlined" fullWidth />
-            )}
-          />
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddPassenger}
-              disabled={!selectedUser}
-            >
-              Add Passenger
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setAddPassengerOpen(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Paper>
-      </Modal>
+      <EditPassengerModal
+        open={editPassengerOpen}
+        onClose={() => setEditPassengerOpen(false)}
+        passenger={editedPassengerData}
+        onSave={handleSavePassenger}
+        onDelete={onDelete}
+        onChange={(field, value) =>
+          setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
+        }
+        errors={errors}
+      />
+      
+      <Dialog open={openConfirm} onClose={handleCancel}>
+                <DialogTitle>Confirm Action</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to release this seat? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancel} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleConfirm} color="error" variant="contained">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
     </Box>
   );
 };

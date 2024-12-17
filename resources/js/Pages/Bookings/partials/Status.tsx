@@ -182,6 +182,7 @@ const Status = ({ event, booking, editMode, users }) => {
                 <Grid item xs={8}>
                   <Select
                     value={selectedStatus}
+                    size="small"
                     onChange={handleSelectChange}
                     disabled={!canEdit || !editMode}
                     fullWidth
