@@ -40,12 +40,13 @@ class StoreBookingRequest extends FormRequest
       "newsletter" => "nullable|boolean",
       "specialRequest" => "nullable|string",
       "terms" => "required|accepted",
+      "paymentMethod" => "required|string",
 
       // Phone numbers
-      "phone.prefix" => "required|string",
-      "phone.number" => "required|string",
-      "emergencyContactPhone.prefix" => "required|string",
-      "emergencyContactPhone.number" => "required|string",
+      // "phone.prefix" => "required|string",
+      "phoneNumber" => "required|string",
+      // "emergencyContactPhone.prefix" => "required|string",
+      "emergencyPhoneNumber" => "required|string",
       "emergencyContactName" => "required|string",
 
       // Cart data
@@ -60,6 +61,8 @@ class StoreBookingRequest extends FormRequest
       "cart.choose_your_cabin" => "required|boolean",
       "cart.cabin_number" => "nullable|string",
       "cart.price_total" => "required|numeric",
+      "cart.cabin_conf_accp" => "required|boolean",
+      "cart.single_t_agreement" => "required|boolean",
 
       // Addons array
       "cart.addons" => "nullable|array",
