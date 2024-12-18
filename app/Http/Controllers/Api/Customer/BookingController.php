@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
-use App\Models\BookingLog;
 
 class BookingController extends Controller
 {
@@ -87,13 +86,15 @@ class BookingController extends Controller
         "cabin_conf_accp" => $validated["cart"]["cabin_conf_accp"],
         "single_t_agreement" => $validated["cart"]["single_t_agreement"],
         "passenger_allocated_cost" => $validated["cart"]["price_total"],
+        "addons" => $validated["cart"]["addons"],
         "passenger_balance" => 0,
         "was_on_board" => false,
       ];
+
+      \Log::info("passengerData@store: " . json_encode($passengerData));
+
       //call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
-
-      \Log::info("RESULT@store: " . json_encode($result));
 
       // delete current sesion
       $request->session()->forget("cart");
@@ -127,7 +128,7 @@ class BookingController extends Controller
    * @return \Illuminate\Http\JsonResponse
    *
    */
-  public function showBooking($bookingCode)
+  public function singleBooking($bookingCode)
   {
     $user = Auth::user();
 
@@ -161,7 +162,7 @@ class BookingController extends Controller
    *
    * @return \Illuminate\Http\JsonResponse
    */
-  public function myBookings()
+  public function allBookings()
   {
     $user = Auth::user();
 
@@ -296,31 +297,31 @@ class BookingController extends Controller
   |  This method will delete a booking
   |
   */
-  public function destroy($id)
-  {
-    $user = Auth::user();
+  // public function destroy($id)
+  // {
+  //   $user = Auth::user();
 
-    if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
-    }
+  //   if (!$user) {
+  //     return response()->json(["message" => "Unauthorized"], 403);
+  //   }
 
-    $booking = Booking::find($id);
+  //   $booking = Booking::find($id);
 
-    $bookingLog = BookingLog::where("booking_id", $id)->first();
+  //   $bookingLog = BookingLog::where("booking_id", $id)->first();
 
-    if (!$booking || !$bookingLog) {
-      return response()->json(["message" => "Booking not found"], 404);
-    }
+  //   if (!$booking || !$bookingLog) {
+  //     return response()->json(["message" => "Booking not found"], 404);
+  //   }
 
-    if ($booking->customer_id !== $user->id) {
-      return response()->json(["message" => "Unauthorized"], 403);
-    }
+  //   if ($booking->customer_id !== $user->id) {
+  //     return response()->json(["message" => "Unauthorized"], 403);
+  //   }
 
-    $bookingLog->delete();
-    $booking->delete();
+  //   $bookingLog->delete();
+  //   $booking->delete();
 
-    return response()->json(["message" => "Booking deleted successfully"], 200);
-  }
+  //   return response()->json(["message" => "Booking deleted successfully"], 200);
+  // }
 
   /*
   |--------------------------------------------------------------------------
