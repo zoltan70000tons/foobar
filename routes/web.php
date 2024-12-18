@@ -117,33 +117,38 @@ Route::middleware("auth")->group(function () {
   Route::get("/events/{id}/cabins/{cabin_id}/edit", [CabinsController::class, "edit"])->name("cabins.edit");
   Route::post("/events/{id}/cabins/{cabin_id}/update", [CabinsController::class, "update"])->name("cabins.update");
 
-  //Booking controller
-  Route::get("/events/{id}/bookings", [BookingsController::class, "index"])
-    ->where("id", "[0-9]+|all")
-    ->name("bookings.index");
-  Route::post("/events/{id}/bookings/update-cabin", [BookingsController::class, "cabinUpdate"])->name(
-    "bookings.updateCabin"
-  );
-  Route::post("/events/{id}/bookings/update-code", [BookingsController::class, "codeUpdate"])->name(
-    "bookings.updateCode"
-  );
-  Route::post("/events/{id}/bookings/update-status", [BookingsController::class, "statusUpdate"])->name(
-    "bookings.updateStatus"
-  );
-  Route::post("/events/{id}/bookings/add-comment", [BookingsController::class, "addComment"])->name(
-    "bookings.addComment"
-  );
-  Route::post("/events/{id}/bookings/update-tags", [BookingsController::class, "updateTags"])->name(
-    "bookings.updateTags"
-  );
-  Route::get("/events/{id}/bookings/{booking_code}", [BookingsController::class, "show"])->name("bookings.show");
-  Route::post("/events/{id}/bookings/{booking_code}", [BookingsController::class, "update"])->name("bookings.update");
-  Route::put("/bookings/{booking}/assign-agent", [BookingsController::class, "assignAgent"])->name(
-    "bookings.assignAgent"
-  );
-  Route::get("/bookings/edit-mode", [BookingsController::class, "editMode"])->name("bookings.editMode");
-  Route::post("/events/{id}//bookings/cancel", [BookingsController::class, "cancel"])->name("bookings.cancel");
-  Route::get("/cabins/available", [BookingsController::class, "getAvailableCabins"])->name("cabins.available");
+    //Booking controller
+    Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
+    ->where('id', '[0-9]+|all') 
+    ->name('bookings.index');
+    Route::post('/events/{id}/bookings/update-cabin', [BookingsController::class, 'cabinUpdate'])
+    ->name('bookings.updateCabin');
+    Route::post('/events/{id}/bookings/update-code', [BookingsController::class, 'codeUpdate'])
+    ->name('bookings.updateCode');
+    Route::post('/events/{id}/bookings/update-status', [BookingsController::class, 'statusUpdate'])
+    ->name('bookings.updateStatus');
+    Route::post('/events/{id}/bookings/add-comment', [BookingsController::class, 'addComment'])
+    ->name('bookings.addComment');
+    Route::post('/events/{id}/bookings/update-tags', [BookingsController::class, 'updateTags'])
+    ->name('bookings.updateTags');
+    Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])
+    ->name('bookings.show');
+    Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])
+    ->name('bookings.update');
+    Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name('bookings.assignAgent');
+    Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
+    Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
+    Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
+
+
+    Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
+    Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
+    Route::get('/passengers/search', [PassengerController::class, 'search'])->name('seat.search');
+
+    Route::prefix('/events/{id}/booking/{booking_id}/passengers')->group(function () {
+        Route::post('/update/seat', [PassengerController::class, 'updateSeat'])->name('seat.update');
+        Route::post('/release/seat', [PassengerController::class, 'releaseSeat'])->name('seat.release');
+    });
 
   Route::get("/not-allowed", [NotAllowedController::class, "index"])->name("access.denied");
   Route::get("/menu/bookings", [MenuController::class, "getEvents"])->name("menu.bookings");

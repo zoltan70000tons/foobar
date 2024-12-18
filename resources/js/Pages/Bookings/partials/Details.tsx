@@ -138,7 +138,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
         <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Table>
+              <Table size="small">
                 <TableBody>
                   <TableRow>
                     <TableCell>Cabin Type</TableCell>
@@ -164,6 +164,10 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                   <TableRow>
                     <TableCell>Location</TableCell>
                     <TableCell>{booking?.cabin?.location}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Capacity</TableCell>
+                    <TableCell>{booking?.cabin?.cabin_category?.capacity}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
