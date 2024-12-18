@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\BookingLog;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Booking extends Model
 {
   use HasFactory;
@@ -29,6 +29,14 @@ class Booking extends Model
   protected $casts = [
     "tags" => "json",
   ];
+
+  /**
+   * Relationship: A booking belongs to many adjustments.
+   */
+  public function adjustments(): BelongsToMany
+  {
+    return $this->belongsToMany(Adjustment::class, "booking_has_adjustments");
+  }
 
   /**
    * Relationship: A booking belongs to a customer.

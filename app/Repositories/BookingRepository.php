@@ -17,6 +17,7 @@ use App\Models\TemporaryReservation;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PassengerRepository;
+use App\Repositories\AdjustmentsRepository;
 use Illuminate\Support\Facades\DB as FacadesDB;
 
 class BookingRepository implements BookingInterface
@@ -25,10 +26,12 @@ class BookingRepository implements BookingInterface
   use CabinFilter;
 
   protected PassengerInterface $passengerRepository;
+  protected AdjustmentsRepository $adjustmentsRepository;
 
-  public function __construct(PassengerRepository $passengerRepository)
+  public function __construct(PassengerRepository $passengerRepository, AdjustmentsRepository $adjustmentsRepository)
   {
     $this->passengerRepository = $passengerRepository;
+    $this->adjustmentsRepository = $adjustmentsRepository;
   }
 
   function getAll()
@@ -130,17 +133,17 @@ class BookingRepository implements BookingInterface
       "cabin.cabinType",
       "cabin.cabinCategory",
       "passengers" => function ($query) {
-          $query->orderBy('id', 'asc'); 
+        $query->orderBy("id", "asc");
       },
       "logs",
       "logs.user",
       "lockedBy",
       "comments",
       "comments.user",
-      "agent"
-  ])
-  ->where("booking_code", "=", $code)
-  ->first();
+      "agent",
+    ])
+      ->where("booking_code", "=", $code)
+      ->first();
   }
 
   function save(array $data): ?Booking
@@ -156,7 +159,9 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id) {}
+  function delete($id)
+  {
+  }
 
   function assignAgent($code, $user)
   {
@@ -284,27 +289,30 @@ class BookingRepository implements BookingInterface
     }
   }
 
-
   /**
    * Creates a new booking in the system, linking a passenger and a cabin.
-   * 
+   *
    * @param array $bookingData Data for creating the booking (e.g., dates, status).
    * @param array|null $passengerData Data for creating the passenger.
    * @param Cabin|null $cabin An instance of the Cabin model to associate with the booking (optional).
    * @param int|null $temporaryBookingId The ID of a temporary booking to convert into a booking (optional).
-   * 
+   *
    * @throws InvalidArgumentException If neither a Cabin object nor a Reservation ID is provided.
    * @throws \Exception If the reservation or cabin associated with the Reservation ID is not found.
    * @throws \Exception if The cabin is not available.;
-   * 
+   *
    * @return array An array containing either:
    *               - Success: ['message' => string, 'booking' => Booking, 'passenger' => Passenger|null]
    *               - Error: ['error' => true, 'message' => string]
    */
-  public function createBooking(array $bookingData, $passengerData, ?Cabin $cabin = null, ?int $temporaryBookingId = null): array
-  {
+  public function createBooking(
+    array $bookingData,
+    $passengerData,
+    ?Cabin $cabin = null,
+    ?int $temporaryBookingId = null
+  ): array {
     if (is_null($cabin) && is_null($temporaryBookingId)) {
-      throw new InvalidArgumentException('You must provide a Cabin object or a Temporary Booking ID.');
+      throw new InvalidArgumentException("You must provide a Cabin object or a Temporary Booking ID.");
     }
 
     FacadesDB::beginTransaction();
@@ -326,16 +334,33 @@ class BookingRepository implements BookingInterface
         $selectedCabin = $cabin;
       }
 
-      $availableCabins = $this->filterCabins($selectedCabin->cabin_type_id, $selectedCabin->cabin_category_id, null, true);
-      if (is_array($availableCabins) && array_key_exists('error', $availableCabins)) {
-        throw new \Exception($availableCabins['error']);
-      }
-      $availableCabins = $availableCabins['cabins']->toArray();
-      $cabinNumberToSearch = $selectedCabin->cabin_number;
-      $cabinNumbers = array_column($availableCabins, 'cabin_number'); 
-      $available = array_search($cabinNumberToSearch, $cabinNumbers) !== false;
-      if(!$available){
-        throw new \Exception("Cabin not available.");
+      Log::info(" selected cabin ", ["cabin" => $selectedCabin]);
+
+      if (!$selectedCabin) {
+        throw new \Exception("Cabin not found.");
+
+        $availableCabins = $this->filterCabins(
+          $selectedCabin->cabin_type_id,
+          $selectedCabin->cabin_category_id,
+          null,
+          true
+        );
+
+        Log::info("0. available cabins", ["cabins" => $availableCabins]);
+        if (is_array($availableCabins) && array_key_exists("error", $availableCabins)) {
+          throw new \Exception($availableCabins["error"]);
+        }
+        $availableCabins = $availableCabins["cabins"]->toArray();
+        Log::info("1. available cabins", ["cabins" => $availableCabins]);
+        $cabinNumberToSearch = $selectedCabin->cabin_number;
+        Log::info("2. cabin number to search", ["cabin_number" => $cabinNumberToSearch]);
+        $cabinNumbers = array_column($availableCabins, "cabin_number");
+        Log::info("3. cabin numbers", ["cabin_numbers" => $cabinNumbers]);
+        $available = array_search($cabinNumberToSearch, $cabinNumbers) !== false;
+        if (!$available) {
+          throw new \Exception("Cabin not available.");
+        }
+        Log::info("4. cabin available", ["cabin_number" => $cabinNumberToSearch]);
       }
 
       $booking = new Booking();
@@ -344,22 +369,34 @@ class BookingRepository implements BookingInterface
       $booking->save();
 
       $passenger = null;
-      Log::error($passengerData);
+
       if ($passengerData) {
-        Log::info('passenger data ok');
+        Log::info("passenger data ok");
         $passenger = $this->passengerRepository->create($passengerData, $booking);
       }
 
       if ($passenger && $booking) {
-        Log::info('in passsengers and booking');
+        Log::info("Booking addons", ["addons" => $passengerData["addons"]]);
+
+        // ---- start Create adjustments
+        $adjustmentIds = collect($passengerData["addons"] ?? [])
+          ->filter(fn($addon) => isset($addon["id"]))
+          ->map(fn($addon) => $addon["id"])
+          ->all();
+
+        Log::info("Adjustments", ["ids" => $adjustmentIds]);
+
+        $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
+        // ---- end Create adjustments
+
         if ($temporaryBookingId) {
           TemporaryReservation::find($temporaryBookingId)?->delete();
         }
         DB::commit();
         return [
           "message" => "Booking created successfully.",
-          'booking' => $booking,
-          'passenger' => $passenger,
+          "booking" => $booking,
+          "passenger" => $passenger,
         ];
       }
       Log::info($booking);
@@ -369,8 +406,8 @@ class BookingRepository implements BookingInterface
       Log::error($e->getMessage());
       FacadesDB::rollBack();
       return [
-        'error' => true,
-        'message' => $e->getMessage(),
+        "error" => true,
+        "message" => $e->getMessage(),
       ];
     }
   }

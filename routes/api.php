@@ -102,7 +102,7 @@ Route::middleware(["clear_expired_reservation"])->group(function () {
   Route::post("/cabin/release", [CabinController::class, "release"]);
 });
 
-// --- AUTH ---
+// --- AUTH GROUP ---
 Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function () {
   Route::get("/customer", [CustomerAuthController::class, "customer"]);
   Route::post("/reset-password-inside", [CustomerAuthController::class, "update"]);
@@ -116,11 +116,14 @@ Route::middleware(["auth:sanctum", "auth.customer", "verified"])->group(function
   Route::post("/customers/update-password", [EditProfileController::class, "updatePassword"]);
 
   // Booking
+  // --- booking init
   Route::post("/booking-init", [BookingController::class, "store"]);
-  Route::get("/my-bookings", [BookingController::class, "myBookings"]);
+  // --- all bookings
+  Route::get("/my-bookings", [BookingController::class, "allBookings"]);
   // --- single booking
-  Route::get("/my-bookings/{bookingCode}", [BookingController::class, "showBooking"]);
-  Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
+  Route::get("/my-bookings/{bookingCode}", [BookingController::class, "singleBooking"]);
+  // ! ! ! ! ! --- delete booking THIS ROUTE SHOULD BE DELETED ON PROD! ! ! ! ! ! ! ! !
+  //  Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
 
   // set slot empty
   Route::post("/my-bookings/{bookingCode}/set-empty-seat", [BookingController::class, "emptySeat"]);
