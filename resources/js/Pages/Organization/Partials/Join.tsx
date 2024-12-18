@@ -47,7 +47,7 @@ export default function JoinOrganization({ email }: { email: string }) {
 
     setValidationErrors(newErrors);
     setIsButtonDisabled(Object.keys(newErrors).length > 0);
-    return newErrors; // Devuelve los errores para el caso de validación en el submit
+    return newErrors; 
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -57,7 +57,7 @@ export default function JoinOrganization({ email }: { email: string }) {
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    const errors = validateForm(); // Validar todo el formulario
+    const errors = validateForm();
     if (Object.keys(errors).length === 0) {
        put("/join-organization");
     }
@@ -67,9 +67,9 @@ export default function JoinOrganization({ email }: { email: string }) {
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
       <section style={{ maxWidth: "400px" }}>
         <header>
-          <h2>Join the 70000 Tons Of Metal Team.</h2>
+          <h2>Join the 70000TONS OF METAL Team.</h2>
           <Divider flexItem />
-          <p>You have been invited to be part of 70K Tons of Metal.</p>
+          <p>You have been invited to be part of 70000TONS OF METAL.</p>
           <br />
         </header>
         <form onSubmit={submit}>
