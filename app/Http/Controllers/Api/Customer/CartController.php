@@ -19,8 +19,8 @@ class CartController extends Controller
     $eventId = $cart["event_id"] ?? $eventId;
 
     $adjustments = Adjustment::where("event_id", $eventId)->first();
-    $singleTicketFeeAddon = $adjustments->where("code", "SINGLE_TICKET_FEE")->first()->value;
     $taxAddon = $adjustments->where("code", "TAX")->first()->value;
+    $singleTicketFeeAddon = $adjustments->where("code", "SINGLE_TICKET_FEE")->first()->value;
     $chooseYourCabinAddon = $adjustments->where("code", "CHOOSE_YOUR_CABIN")->first()->value;
     $discountPaymentFull = $adjustments->where("code", "PAID_IN_FULL")->first()->value;
 
@@ -35,12 +35,13 @@ class CartController extends Controller
         "capacity" => $cart["cabin_capacity"],
         "userDiscount" => $membership->discount_value ?? null,
         "cabinType" => $cart["cabin_type"] === "private-cabin" ? true : false,
-        "paymentDiscount" => $cart["payment_plan"] === "PAY_IN_FULL" ? $discountPaymentFull : 0,
         "addons" => $cart["addons"],
-        "isSelection" => $cart["choose_your_cabin"],
-        "singleTicketFeeAddon" => $singleTicketFeeAddon,
-        "taxAddon" => $taxAddon,
-        "chooseYourCabinAddon" => $chooseYourCabinAddon,
+        "adjustments" => $adjustments,
+        // "paymentDiscount" => $cart["payment_plan"] === "PAY_IN_FULL" ? $discountPaymentFull : 0,
+        // "isSelection" => $cart["choose_your_cabin"],
+        // "singleTicketFeeAddon" => $singleTicketFeeAddon,
+        // "taxAddon" => $taxAddon,
+        // "chooseYourCabinAddon" => $chooseYourCabinAddon,
       ]);
 
       // add the calculated price to the cart session
@@ -51,6 +52,8 @@ class CartController extends Controller
       // add static tax from adjustments to the cart session
       $cart["tax"] = $taxAddon;
     }
+
+    \Log::info("CartController::index", ["cart" => $cart]);
 
     return response()->json($cart, 200);
   }

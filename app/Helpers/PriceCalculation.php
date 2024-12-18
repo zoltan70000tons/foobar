@@ -17,12 +17,17 @@ class PriceCalculation
     $capacity = (int) $params["capacity"];
     $userDiscount = (float) $params["userDiscount"];
     $cabinType = (bool) $params["cabinType"];
-    $paymentDiscount = (float) $params["paymentDiscount"];
     $addons = $params["addons"];
-    $isSelection = (bool) $params["isSelection"];
-    $singleTicketFeeAddon = (float) $params["singleTicketFeeAddon"];
-    $taxAddon = (float) $params["taxAddon"];
-    $chooseYourCabinAddon = (float) $params["chooseYourCabinAddon"];
+    $adjustments = $params["adjustments"];
+    // $singleTicketFeeAddon = $adjustments->where("code", "SINGLE_TICKET_FEE")->first()->value;
+
+    // $paymentDiscount = (float) $params["paymentDiscount"];
+    // $isSelection = (bool) $params["isSelection"];
+    // $singleTicketFeeAddon = (float) $params["singleTicketFeeAddon"];
+    // $taxAddon = (float) $params["taxAddon"];
+    // $chooseYourCabinAddon = (float) $params["chooseYourCabinAddon"];
+
+    // Extract adjustments from the input array based on addons param
 
     // Helper function to round to two decimal places
     $roundToTwoDecimals = function ($value) {
@@ -31,6 +36,19 @@ class PriceCalculation
 
     // Validate and clamp discounts between 0% and 100%
     $validatedUserDiscount = max(0, min($userDiscount, 100));
+    // $validatedPaymentDiscount = max(0, min($paymentDiscount, 100));
+
+    // if in addons array is PAID_IN_FULL, then get value from adjustments
+    $paymentDiscount = 0;
+
+    if (is_array($addons) && !empty($addons)) {
+      foreach ($addons as $addon) {
+        if ($addon["code"] === "PAID_IN_FULL") {
+          $paymentDiscount = $adjustments->where("code", "PAID_IN_FULL")->first()->value;
+        }
+      }
+    }
+
     $validatedPaymentDiscount = max(0, min($paymentDiscount, 100));
 
     $userDiscountPercentage = $validatedUserDiscount / 100;
@@ -53,18 +71,20 @@ class PriceCalculation
     }
 
     // Add single ticket fee (only for one passenger)
-    $totalAfterSingle = $roundToTwoDecimals($discountedPrice + ($cabinType ? $singleTicketFeeAddon : 0));
+    $totalAfterSingle = $roundToTwoDecimals($discountedPrice + $addonsPrice);
 
     // Calculate total for all passengers
-    $totalPassenger = $roundToTwoDecimals($totalAfterSingle + $taxAddon + $addonsPrice);
-    $total = $roundToTwoDecimals(
-      $totalPassenger * ($cabinType ? $capacity : 1) + ($cabinType === false ? $singleTicketFeeAddon : 0)
-    );
+    $totalPassenger = $roundToTwoDecimals($totalAfterSingle + $addonsPrice);
+    // $total = $roundToTwoDecimals(
+    //   $totalPassenger * ($cabinType ? $capacity : 1) + ($cabinType === false ? $singleTicketFeeAddon : 0)
+    // );
 
-    // Add optional selection price (once)
-    if ($isSelection) {
-      $total += $chooseYourCabinAddon;
-    }
+    // // Add optional selection price (once)
+    // if ($isSelection) {
+    //   $total += $chooseYourCabinAddon;
+    // }
+
+    $total = $totalPassenger * ($cabinType ? $capacity : 1);
 
     // Calculate total savings
     $saveCalc = $cabinPrice - $discountedPrice;

@@ -42,9 +42,14 @@ class BookingController extends Controller
 
     // Get authenticated user
     $user = Auth::user();
+    $cart = $request->session()->get("cart", []);
 
     if (!$user) {
       return response()->json(["message" => "Unauthorized"], 403);
+    }
+
+    if (!$cart) {
+      return response()->json(["message" => "Cart is empty"], 400);
     }
 
     try {
@@ -63,6 +68,9 @@ class BookingController extends Controller
         "is_single_occupancy" => $isSigle,
         "tags" => json_encode(["New"]),
       ];
+
+      // get price from session
+      // $price = $validated["cart"]["price_total"];
 
       // Process passenger data
       $passengerData = [
@@ -85,7 +93,7 @@ class BookingController extends Controller
         "terms_n_cons" => $validated["terms"],
         "cabin_conf_accp" => $validated["cart"]["cabin_conf_accp"],
         "single_t_agreement" => $validated["cart"]["single_t_agreement"],
-        "passenger_allocated_cost" => $validated["cart"]["price_total"],
+        //"passenger_allocated_cost" => $validated["cart"]["price_total"],
         "addons" => $validated["cart"]["addons"],
         "passenger_balance" => 0,
         "was_on_board" => false,
