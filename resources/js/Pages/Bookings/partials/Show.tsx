@@ -42,12 +42,13 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
   const [locked, setLocked] = useState(booking.locked_by ? true : false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const { hasPermission } = usePermissions();
-  const [comments, setComments] = useState(booking.comments || []); // Estado inicial
+  const [comments, setComments] = useState(booking.comments || []); 
   const [logs, setLogs] = useState(booking.logs || []);
   const theme = useTheme();
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
+  console.log(capacity);
   const handleEditChange = (e) => {
     setEditMode(e.target.checked);
     router.get(
