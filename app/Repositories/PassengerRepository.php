@@ -66,7 +66,7 @@ class PassengerRepository implements PassengerInterface
         "was_on_board" => false,
       ];
       $leadPassenger = Passenger::create($passengerData);
-      $availableSeats = $booking->cabin->cabinCategory->capacity -1;
+      $availableSeats = $booking->cabin->category->capacity -1;
       if($cabinType == 2 || $cabinType == 3){
       $availableSeats = 0;
       }
@@ -82,7 +82,7 @@ class PassengerRepository implements PassengerInterface
       return $leadPassenger;
     } catch (\Exception $e) {
       Log::error($e->getMessage());
-      //\Log::info("PassengerRepository@create: " . $e->getMessage());
+      Log::info("PassengerRepository@create: " . $e->getMessage());
       return false;
     }
   }

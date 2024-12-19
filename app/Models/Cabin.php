@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Log;
 
@@ -17,54 +18,63 @@ class Cabin extends Model
   protected $fillable = [
     'cabin_type_id',
     'cabin_category_id',
-    'cabin_number',
-    'deck',
-    'total_berths',
-    'lower_bed_type_1',
-    'lower_bed_type_2',
-    'upper_berths',
-    'accessible',
-    'connects_with',
-    'location',
-    'balcony',
-    'obstructed_view',
+    'cabin_spec_id',
     'inventory',
     'notes',
     'tags',
     'status',
   ];
 
+  // Cast attributes to specific types
   protected $casts = [
-    'tags' => 'json',
-    'accessible' => 'boolean',
-    'balcony' => 'boolean',
-    'obstrucuted_view' => 'boolean',
+    'tags' => 'json',        // Tags stored as a JSON array
+    'inventory' => 'integer', // Inventory stored as an integer
   ];
 
-  // Relations
-  public function temporaryReservations()
+  // Append custom attributes to the serialized output
+  protected $appends = [
+    'cabin_number',
+    'deck',
+    'balcony',
+    'obstructed_view',
+    'location',
+    'accessible',
+  ];
+
+  // ==========================
+  // Relationships
+  // ==========================
+
+  /**
+   * Relationship: A cabin belongs to a CabinSpec.
+   */
+  public function cabinSpec()
   {
-      return $this->hasMany(TemporaryReservation::class);
+    return $this->belongsTo(CabinSpec::class, 'cabin_spec_id');
   }
-  
+
+  /**
+   * Relationship: A cabin belongs to a CabinCategory.
+   */
   public function category()
   {
     return $this->belongsTo(CabinCategory::class, 'cabin_category_id');
   }
 
-  public function cabinCategory()
-  {
-    return $this->belongsTo(CabinCategory::class, 'cabin_category_id', 'id');
-  }
-
+  /**
+   * Relationship: A cabin belongs to a CabinType.
+   */
   public function cabinType()
   {
     return $this->belongsTo(CabinType::class, 'cabin_type_id');
   }
 
-  public function connectingCabin()
+  /**
+   * Relationship: A cabin can have many temporary reservations.
+   */
+  public function temporaryReservations()
   {
-    return $this->belongsTo(Cabin::class, 'connects_with');
+    return $this->hasMany(TemporaryReservation::class);
   }
 
   /**
@@ -82,12 +92,68 @@ class Cabin extends Model
     }
   }
 
+  // ==========================
+  // Accessors
+  // ==========================
   /**
-   * Mark the cabin as partially sold or sold based on the remaining inventory.
+   * Accessor: Get the cabin number from the related CabinSpec.
+   */
+  protected function cabinNumber(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->cabin_number);
+  }
+
+  /**
+   * Accessor: Get the deck from the related CabinSpec.
+   */
+  protected function deck(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->deck);
+  }
+
+  /**
+   * Accessor: Get the balcony status from the related CabinSpec.
+   */
+  protected function balcony(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->balcony ?? false);
+  }
+
+  /**
+   * Accessor: Get the obstructed view status from the related CabinSpec.
+   */
+  protected function obstructedView(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->obstructed_view ?? false);
+  }
+
+  /**
+   * Accessor: Get the location from the related CabinSpec.
+   */
+  protected function location(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->location);
+  }
+
+  /**
+   * Accessor: Get the accessibility from the related CabinSpec.
+   */
+  protected function accessible(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->accessible ?? null);
+  }
+
+  // ==========================
+  // Methods
+  // ==========================
+
+  /**
+   * Update the inventory and status of the cabin based on a booking.
    */
   public function updateInventoryOnBooking()
   {
-    Log::info('updateInventory on booking' );
+    Log::info('Updating inventory on booking');
+
     if ($this->cabin_type_id == 1) {
       // Private cabins, only one booking allowed, mark as sold
       $this->status = 'BOOKED';
