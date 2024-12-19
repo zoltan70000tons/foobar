@@ -33,38 +33,39 @@ class PassengerRepository implements PassengerInterface
       Log::info('cabin type = '. $cabinType);
 
 
-      $passengerData = [
+      $passengerData = [ 
         "booking_id" => $booking->id,
         "confirmed_booking_email" => false,
         "lead_passenger" => true,
         "survivor_number" => $user->survivorNumber->survivor_number,
-        "gender" => $userDetails->gender,
-        "first_name" => $userDetails->first_name,
-        "middle_name" => $userDetails->middle_name,
-        "last_name" => $userDetails->last_name,
-        "dob" => $userDetails->dob,
-        "citizenship" => $userDetails->citizenship,
-        "payment_method" => $data["payment_method"],
-        "address_first" => $data["address_first"],
-        "address_second" => $data["address_second"],
-        "city" => $data["city"],
-        "state" => $data["state"],
-        "postal_code" => $data["postal_code"],
-        "country" => $data["country"],
-        "email" => $data["email"],
-        "phone" => $data["phone"],
-        "emergency_c_name" => $data["emergency_c_name"],
-        "emergency_c_phone" => $data["emergency_c_phone"],
+        "gender" => $userDetails->gender ?? null,
+        "first_name" => $userDetails->first_name ?? null,
+        "middle_name" => $userDetails->middle_name ?? null,
+        "last_name" => $userDetails->last_name ?? null,
+        "dob" => $userDetails->dob ?? null,
+        "citizenship" => $userDetails->citizenship ?? null,
+        "payment_method" => $data["payment_method"] ?? 'CREDIT_CARD',
+        "address_first" => $data["address_first"] ?? null,
+        "address_second" => $data["address_second"] ?? null,
+        "city" => $data["city"] ?? null,
+        "state" => $data["state"] ?? null,
+        "postal_code" => $data["postal_code"] ?? null,
+        "country" => $data["country"] ?? null,
+        "email" => $data["email"] ?? null,
+        "phone" => $data["phone"] ?? null,
+        "emergency_c_name" => $data["emergency_c_name"] ?? null,
+        "emergency_c_phone" => $data["emergency_c_phone"] ?? null,
         "special_request" => $data["special_request"] ?? null,
-        "newsletter" => $data["newsletter"],
+        "newsletter" => $data["newsletter"] ?? null,
         "travel_info" => false,
-        "terms_n_cons" => $data["terms_n_cons"],
-        "cabin_conf_accp" => $data["cabin_conf_accp"],
-        "single_t_agreement" => $data["single_t_agreement"],
-        "passenger_allocated_cost" => $data["passenger_allocated_cost"],
+        "terms_n_cons" => $data["terms_n_cons"] ?? null,
+        "cabin_conf_accp" => $data["cabin_conf_accp"] ?? null,
+        "single_t_agreement" => $data["single_t_agreement"] ?? null,
+        "passenger_allocated_cost" => $data["passenger_allocated_cost"] ?? null,
         "passenger_balance" => 0,
         "was_on_board" => false,
-      ];
+    ];
+    
       $leadPassenger = Passenger::create($passengerData);
       $availableSeats = $booking->cabin->category->capacity -1;
       if($cabinType == 2 || $cabinType == 3){
