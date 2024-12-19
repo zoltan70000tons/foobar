@@ -2,5 +2,13 @@
   "tabWidth": 2,
   "useTabs": false,
   "printWidth": 120,
-  "plugins": ["@prettier/plugin-php"]
+  "plugins": ["@prettier/plugin-php"],
+  "overrides": [
+    {
+      "files": "*.php",
+      "options": {
+        "singleQuote": true
+      }
+    }
+  ]
 }

@@ -8,6 +8,7 @@ use App\Models\Adjustment;
 use App\Helpers\PriceCalculation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TemporaryReservation;
+use App\Models\CabinCategory;
 
 class CartController extends Controller
 {
@@ -15,28 +16,39 @@ class CartController extends Controller
   public function index(Request $request, $eventId)
   {
     // if cart session is empty, return an empty array else return the cart session
-    $cart = $request->session()->get("cart", []);
-    $eventId = $cart["event_id"] ?? $eventId;
+    $cart = $request->session()->get('cart', []);
+    $eventId = $cart['event_id'] ?? $eventId;
 
-    $adjustments = Adjustment::where("event_id", $eventId)->first();
-    $taxAddon = $adjustments->where("code", "TAX")->first()->value;
-    $singleTicketFeeAddon = $adjustments->where("code", "SINGLE_TICKET_FEE")->first()->value;
-    $chooseYourCabinAddon = $adjustments->where("code", "CHOOSE_YOUR_CABIN")->first()->value;
-    $discountPaymentFull = $adjustments->where("code", "PAID_IN_FULL")->first()->value;
+    $adjustments = Adjustment::where('event_id', $eventId)->first();
+    $taxAddon = $adjustments ? $adjustments->where('code', 'TAX')->first()->value : 0;
 
     $user = Auth::check() ? Auth::user() : null;
 
-    $customer = $user && $user->hasRole("Customer") ? $user : null;
+    $customer = $user && $user->hasRole('Customer') ? $user : null;
     $membership = $customer ? $customer->membershipTypes->first() : null;
 
-    if ($cart && isset($cart["cabin_price"])) {
+    // 1. price cart get from database based on id
+    // 2. same with cabin capacity
+
+    if ($cart && isset($cart['cabin_price'])) {
+      $cabin = CabinCategory::where('event_id', $eventId)
+        ->where('id', $cart['cabin_category'])
+        ->first();
+
+      if (!$cabin) {
+        return response()->json(['message' => 'Cabin category not found'], 404);
+      }
+
+      $price = $cabin->price;
+      $capacity = $cabin->spec->capacity;
+
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
-        "cabinPrice" => $cart["cabin_price"],
-        "capacity" => $cart["cabin_capacity"],
-        "userDiscount" => $membership->discount_value ?? null,
-        "cabinType" => $cart["cabin_type"] === "private-cabin" ? true : false,
-        "addons" => $cart["addons"],
-        "adjustments" => $adjustments,
+        'cabinPrice' => $price,
+        'cabinCapacity' => $capacity,
+        'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
+        'userDiscount' => $membership->discount_value ?? null,
+        'selectedAdjustments' => $cart['addons'],
+        'adjustments' => $adjustments,
         // "paymentDiscount" => $cart["payment_plan"] === "PAY_IN_FULL" ? $discountPaymentFull : 0,
         // "isSelection" => $cart["choose_your_cabin"],
         // "singleTicketFeeAddon" => $singleTicketFeeAddon,
@@ -45,15 +57,14 @@ class CartController extends Controller
       ]);
 
       // add the calculated price to the cart session
-      $cart["price_total"] = $priceCalc["total"];
-      $cart["price_total_passenger"] = $priceCalc["totalPassenger"];
-      $cart["price_save"] = $priceCalc["save"];
+      $cart['price_total'] = $priceCalc['total'];
+      $cart['price_total_passenger'] = $priceCalc['totalPassenger'];
+      $cart['price_save'] = $priceCalc['save'];
+      $cart['price_extras'] = $priceCalc['extras'];
 
       // add static tax from adjustments to the cart session
-      $cart["tax"] = $taxAddon;
+      $cart['tax'] = $taxAddon;
     }
-
-    \Log::info("CartController::index", ["cart" => $cart]);
 
     return response()->json($cart, 200);
   }
@@ -61,37 +72,40 @@ class CartController extends Controller
   // Only check the user have a cart session
   public function check(Request $request)
   {
-    $cart = $request->session()->get("cart", []);
+    $cart = $request->session()->get('cart', []);
 
-    return response()->json(["cart" => $cart], 200);
+    return response()->json(['cart' => $cart], 200);
   }
 
   // Add item to cart session
   public function store(Request $request)
   {
     $validated = $request->validate([
-      "event_id" => "required|string",
-      "cabin_type" => "nullable|string",
-      "addons" => "nullable|array",
-      "step" => "required|integer",
-      "payment_plan" => "nullable|string",
-      "choose_your_cabin" => "nullable|boolean",
-      "cabin_number" => "nullable|integer",
-      "reservation_id" => "nullable|integer",
-      "reservation_timestamp" => "nullable|string",
-      "cabin_price" => "nullable|string",
-      "cabin_capacity" => "nullable|integer",
-      "cabin_code" => "nullable|string",
-      "cabin_category" => "nullable|integer",
-      "cabin_category_decks" => "nullable|string",
-      "cabin_category_type" => "nullable|string",
-      "force_clear" => "nullable|boolean",
+      'event_id' => 'required|string',
+      'cabin_type' => 'nullable|string',
+      'addons' => 'nullable|array',
+      'step' => 'required|integer',
+      'payment_plan' => 'nullable|string',
+      'choose_your_cabin' => 'nullable|boolean',
+      'cabin_number' => 'nullable|integer',
+      'reservation_id' => 'nullable|integer',
+      'reservation_timestamp' => 'nullable|string',
+      'cabin_price' => 'nullable|string',
+      'cabin_capacity' => 'nullable|integer',
+      'cabin_code' => 'nullable|string',
+      'cabin_category' => 'nullable|integer',
+      'cabin_category_decks' => 'nullable|string',
+      'cabin_category_type' => 'nullable|string',
+      'force_clear' => 'nullable|boolean',
     ]);
 
+    // set cabin number null
+    $validated['cabin_number'] = null;
+
     // if force_clear is true, delete the reservation from db and forget it from session
-    if ($request->input("force_clear", false)) {
-      if ($request->session()->has("reserved_cabin_id")) {
-        $reservationId = $request->session()->get("reserved_cabin_id");
+    if ($request->input('force_clear', false)) {
+      if ($request->session()->has('reserved_cabin_id')) {
+        $reservationId = $request->session()->get('reserved_cabin_id');
 
         $reservation = TemporaryReservation::find($reservationId);
 
@@ -99,55 +113,55 @@ class CartController extends Controller
           $reservation->delete();
         }
 
-        $request->session()->forget("reserved_cabin_id");
+        $request->session()->forget('reserved_cabin_id');
       }
     }
 
-    if ($request->session()->has("cart")) {
+    if ($request->session()->has('cart')) {
       $this->destroy($request);
     }
 
-    session(["cart" => $validated]);
+    session(['cart' => $validated]);
 
-    return response()->json(["message" => "Cart updated successfully"], 200);
+    return response()->json(['message' => 'Cart updated successfully'], 200);
   }
 
   // Update cart session
   public function update(Request $request)
   {
     $validated = $request->validate([
-      "event_id" => "required|string",
-      "cabin_type" => "nullable|string",
-      "addons" => "nullable|array",
-      "step" => "required|integer",
-      "payment_plan" => "nullable|string",
-      "choose_your_cabin" => "nullable|boolean",
-      "cabin_number" => "nullable|integer",
-      "reservation_id" => "nullable|integer",
-      "reservation_timestamp" => "nullable|string",
-      "cabin_price" => "nullable|string",
-      "cabin_capacity" => "nullable|integer",
-      "cabin_code" => "nullable|string",
-      "cabin_category" => "nullable|integer",
-      "cabin_category_decks" => "nullable|string",
-      "cabin_category_type" => "nullable|string",
+      'event_id' => 'required|string',
+      'cabin_type' => 'nullable|string',
+      'addons' => 'nullable|array',
+      'step' => 'required|integer',
+      'payment_plan' => 'nullable|string',
+      'choose_your_cabin' => 'nullable|boolean',
+      'cabin_number' => 'nullable|integer',
+      'reservation_id' => 'nullable|integer',
+      'reservation_timestamp' => 'nullable|string',
+      'cabin_price' => 'nullable|string',
+      'cabin_capacity' => 'nullable|integer',
+      'cabin_code' => 'nullable|string',
+      'cabin_category' => 'nullable|integer',
+      'cabin_category_decks' => 'nullable|string',
+      'cabin_category_type' => 'nullable|string',
     ]);
 
-    $request->session()->put("cart", $validated);
+    $request->session()->put('cart', $validated);
 
-    return response()->json(["message" => "Cart updated successfully"], 200);
+    return response()->json(['message' => 'Cart updated successfully'], 200);
   }
 
   // destroy cart session
   public function destroy(Request $request)
   {
-    $request->session()->forget("cart");
+    $request->session()->forget('cart');
 
     //$request->session()->forget("reserved_cabin_id");
 
     // if session have reserved_cabin_id, delete it from db and forget it from session
-    if ($request->session()->has("reserved_cabin_id")) {
-      $reservationId = $request->session()->get("reserved_cabin_id");
+    if ($request->session()->has('reserved_cabin_id')) {
+      $reservationId = $request->session()->get('reserved_cabin_id');
 
       $reservation = TemporaryReservation::find($reservationId);
 
@@ -155,9 +169,9 @@ class CartController extends Controller
         $reservation->delete();
       }
 
-      $request->session()->forget("reserved_cabin_id");
+      $request->session()->forget('reserved_cabin_id');
     }
 
-    return response()->json(["message" => "Cart cleared successfully"], 200);
+    return response()->json(['message' => 'Cart cleared successfully'], 200);
   }
 }
