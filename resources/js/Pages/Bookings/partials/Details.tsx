@@ -167,7 +167,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                   </TableRow>
                   <TableRow>
                     <TableCell>Capacity</TableCell>
-                    <TableCell>{booking?.cabin?.cabin_category?.capacity}</TableCell>
+                    <TableCell>{booking?.cabin?.category?.capacity}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
