@@ -21,7 +21,7 @@ class InviteUserMail extends Mailable
     {
         return $this->view('emails.invite')
                     ->with(['link' => $this->link])
-                    ->subject('70k Admin Panel Invitation');
+                    ->subject('70000TONS OF METAL Admin Panel Invitation');
 
     }
 }

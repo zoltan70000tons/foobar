@@ -15,20 +15,22 @@ import AddIcon from "@mui/icons-material/Add";
 import { BookingTagEnum } from "@/enums/TagEnum";
 import { router } from "@inertiajs/react";
 
-// Tags disponibles
+
 const availableTags = Object.values(BookingTagEnum).map((tag) => ({
     label: tag,
     value: tag,
 }));
 
 const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ editable, event, booking }) => {
-    const [tags, setTags] = useState<string[]>([]); // Tags actuales del booking
+    const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    // Inicializar con las tags del booking
+
     useEffect(() => {
-        if (booking?.tags) {
-            setTags(booking.tags); // Sincroniza el estado inicial con booking.tags
+        if (Array.isArray(booking?.tags)) {
+            setTags(booking.tags);
+        } else {
+            setTags([]); 
         }
     }, [booking]);
 
@@ -41,40 +43,38 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
     };
 
     const handleSaveTags = (newTags: string[]) => {
-        setTags(newTags); // Actualiza el estado de tags
+        setTags(newTags);
         router.post(route("bookings.updateTags", { id: event.id }), {
             tags: newTags,
             booking_id: booking.id,
         });
-        setDialogOpen(false); // Cierra el diálogo
+        setDialogOpen(false);
     };
 
+
+    console.log(tags);
     return (
         <Box>
-            {/* Chips de tags actuales */}
             <Box display="flex" alignItems="center" gap={1}>
                 <span>Tags:</span>
-                {tags.map((tag, index) => (
+                {tags && tags.length > 0 && tags.map((tag, index) => (
                     <Chip key={index} label={tag} />
                 ))}
                 <IconButton onClick={handleOpenDialog} disabled={!editable}>
                     <AddIcon />
                 </IconButton>
             </Box>
-
-            {/* Diálogo para seleccionar y eliminar tags */}
             <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="md">
                 <DialogTitle>Select or Remove Tags</DialogTitle>
                 <DialogContent>
                     <Autocomplete
                         multiple
-                        options={availableTags} // Todas las opciones disponibles
+                        options={availableTags}
                         getOptionLabel={(option) => option.label}
-                        value={tags.map((tag) => ({ label: tag, value: tag }))} // Tags actuales
+                        value={tags.map((tag) => ({ label: tag, value: tag }))}
                         onChange={(_, value) => {
-                            // Actualizar las tags seleccionadas
                             const newTags = value.map((item) => item.value);
-                            handleSaveTags(newTags); // Guardar cambios
+                            handleSaveTags(newTags);
                         }}
                         renderInput={(params) => (
                             <TextField {...params} label="Tags" placeholder="Select or remove tags" />
