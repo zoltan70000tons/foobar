@@ -131,7 +131,7 @@ class BookingRepository implements BookingInterface
     return Booking::with([
       "cabin",
       "cabin.cabinType",
-      "cabin.cabinCategory",
+      "cabin.category",
       "passengers" => function ($query) {
         $query->orderBy("id", "asc");
       },

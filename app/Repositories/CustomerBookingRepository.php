@@ -31,7 +31,7 @@ class CustomerBookingRepository
   {
     $user_survivor_number = $user->survivor_number ?? null;
 
-    $booking = Booking::with("passengers", "cabin.cabinCategory", "event")
+    $booking = Booking::with("passengers", "cabin.category", "event")
       ->where("booking_code", $bookingCode)
       ->first();
 
@@ -57,7 +57,7 @@ class CustomerBookingRepository
     $user_survivor_number = $user->survivor_number ?? null;
     $customer_id = $user->id ?? null;
 
-    $bookings = Booking::with("passengers", "cabin.cabinCategory", "event")->where("customer_id", $customer_id)->get();
+    $bookings = Booking::with("passengers", "cabin.category", "event")->where("customer_id", $customer_id)->get();
 
     // if booking is_single_occupancy then do not return other passengers
     $bookings->map(function ($booking) use ($user_survivor_number) {

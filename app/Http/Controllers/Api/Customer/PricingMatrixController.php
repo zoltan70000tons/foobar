@@ -4,120 +4,104 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App\Helpers\MatrixHelper;
 use App\Http\Controllers\Controller;
-
-use App\Models\Cabin;
-use App\Models\CabinType;
 use App\Models\CabinCategory;
-
-use Illuminate\Support\Facades\Log;
+use App\Models\CabinType;
 
 class PricingMatrixController extends Controller
 {
-  protected $cabin;
   protected $cabinType;
   protected $cabinCategory;
 
-  public function __construct(CabinType $cabinType, CabinCategory $cabinCategory, Cabin $cabin)
+  /**
+   * Constructor to inject dependencies.
+   */
+  public function __construct(CabinType $cabinType, CabinCategory $cabinCategory)
   {
-    $this->cabin = $cabin;
     $this->cabinType = $cabinType;
     $this->cabinCategory = $cabinCategory;
   }
 
   /**
-   * Index return only name and id of cabin types
-   *
+   * Index method: return name and id of cabin types.
    */
   public function index()
   {
-    $cabinTypes = $this->cabinType->select("id", "cabin_type")->get();
+    $cabinTypes = CabinType::select("id", "cabin_type")->get();
     return response()->json($cabinTypes);
   }
 
   /**
-   * Show cabins by id
-   *
-   * default cabin: 1
-   * - 1 is private cabin,
-   * - 2 is male,
-   * - 3 is female
-   *
-   * return json
+   * Show cabins grouped by ticket type.
    */
   public function show($ticketType)
   {
-    // Get all categories for the given ticket type
-    $categories = $this->cabinCategory
-      ->with([
-        "cabins" => function ($query) use ($ticketType) {
-          $query->where("cabin_type_id", $ticketType);
-        },
-      ])
-      ->select(
-        "category_type",
-        "category_type",
-        "display_order",
-        "id",
-        "category_name",
-        "category_code",
-        "capacity",
-        "price",
-        "decks",
-        "iframe",
-        "images",
-        "description"
-      )
-      ->get();
+    // Fetch categories with cabins and specs based on ticket type
+    $categories = CabinCategory::with([
+      'cabins' => fn($query) => $query->where('cabin_type_id', $ticketType),
+      'spec',
+    ])->get();
 
-    // Group categories by category type and get the first category of each type
+    // Group categories by type, sort, and select the first for each type
     $groupedCategories = $categories
-      ->groupBy("category_type")
-      ->map(function ($group) {
-        return $group->sortBy("display_order")->first();
-      })
-      ->values()
-      ->sortBy("display_order");
+      ->groupBy(fn($category) => $category->category_type)
+      ->map(fn($group) => $group->sortBy(fn($category) => $category->displayOrder)->first())
+      ->sortBy(fn($category) => $category->displayOrder);
 
     // Format categories for response
-    $formattedCategories = $groupedCategories->map(function ($category) use ($categories, $ticketType) {
-      // Get max capacity for the category type
-      // if ticket type is Single Ticket, max capacity is 4
-      // if ticket type is Private Cabin, max capacity is 6 for all categories except Suite
-      $max_capacity = $ticketType !== "1" ? 4 : ($category->category_type === "Suite" ? 8 : 6);
-
-      return [
-        "main_category" => [
-          "name" => $category->category_type,
-          "display_order" => $category->display_order,
-          "max_capacity" => $max_capacity,
-          "categories" => $this->getCategories($category->category_type, $categories, $ticketType),
-        ],
-      ];
-    });
+    $formattedCategories = $groupedCategories->map(fn($category) => $this->formatCategory($category, $categories, $ticketType));
 
     return response()->json($formattedCategories->values());
   }
 
-  // Get categories based on category type
-  public function getCategories($categoryType, $categories, $ticketType)
+  /**
+   * Format a category for response.
+   */
+  protected function formatCategory($category, $categories, $ticketType)
   {
+    $categorySpec = $category->spec;
+
+    // Determine max capacity
+    $maxCapacity = $ticketType !== "1"
+      ? 4 // Single Ticket max capacity
+      : ($categorySpec->category_type === "Suite" ? 8 : 6); // Private Cabin max capacity
+
+    return [
+      "main_category" => [
+        "name" => $categorySpec->category_type,
+        "display_order" => $categorySpec->display_order,
+        "max_capacity" => $maxCapacity,
+        "categories" => $this->getCategories($categorySpec->category_type, $categories, $ticketType),
+      ],
+    ];
+  }
+
+  /**
+   * Get categories based on category type.
+   */
+  public function getCategories($category_type, $categories, $ticketType)
+  {
+    // Filter, group, and sort categories by category type
     $filteredCategories = $categories
-      ->where("category_type", $categoryType)
-      ->groupBy("category_name")
-      ->map(function ($group) {
-        return $group->sortBy("display_order")->first();
-      })
-      ->sortBy("display_order")
+      ->filter(fn($category) => $category->category_type === $category_type)
+      ->groupBy(fn($category) => $category->category_name)
+      ->map(fn($group) => $group->sortBy(fn($category) => $category->display_order)->first())
+      ->sortBy(fn($category) => $category->display_order)
       ->values();
 
-    // return unique category codes
-    return $filteredCategories->map(function ($category) use ($categories, $ticketType) {
-      return [
-        "name" => $category->category_name,
-        "cabin_category_id" => $category->id,
-        "display_order" => $category->display_order,
-        "cabins" => MatrixHelper::getUniqueCategories($categories, $category->category_name, $ticketType),
-      ];
-    });
+    // Map categories for response
+    return $filteredCategories->map(fn($category) => $this->formatFilteredCategory($category, $categories, $ticketType));
+  }
+
+  /**
+   * Format a filtered category for response.
+   */
+  protected function formatFilteredCategory($category, $categories, $ticketType)
+  {
+    return [
+      "name" => $category->category_name,
+      "cabin_category_id" => $category->id,
+      "display_order" => $category->display_order,
+      "cabins" => MatrixHelper::getUniqueCategories($categories, $category->category_name, $ticketType),
+    ];
   }
 }
