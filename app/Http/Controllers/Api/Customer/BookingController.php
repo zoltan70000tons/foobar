@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
+use Log;
 
 class BookingController extends Controller
 {
@@ -42,69 +43,77 @@ class BookingController extends Controller
 
     // Get authenticated user
     $user = Auth::user();
+    $cart = $request->session()->get('cart', []);
 
     if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    if (!$cart) {
+      return response()->json(['message' => 'Cart is empty'], 400);
     }
 
     try {
-      $reservationId = $validated["cart"]["reservation_id"];
-      $eventId = (int) $validated["cart"]["event_id"];
-      $paymentPlan = $validated["cart"]["payment_plan"];
-      $isSigle = $validated["cart"]["cabin_type"] === "private-cabin" ? true : false;
+      $reservationId = $validated['cart']['reservation_id'];
+      $eventId = (int) $validated['cart']['event_id'];
+      $paymentPlan = $validated['cart']['payment_plan'];
+      $isSigle = $validated['cart']['cabin_type'] === 'private-cabin' ? true : false;
 
       // Process booking data
       $bookingData = [
-        "event_id" => $eventId,
-        "customer_id" => $user->id,
-        "payment_plan" => $paymentPlan,
-        "completed" => false,
-        "is_cancelled" => false,
-        "is_single_occupancy" => $isSigle,
-        "tags" => json_encode(["New"]),
+        'event_id' => $eventId,
+        'customer_id' => $user->id,
+        'payment_plan' => $paymentPlan,
+        'completed' => false,
+        'is_cancelled' => false,
+        'is_single_occupancy' => $isSigle,
+        'tags' => json_encode(['New']),
       ];
+
+      // get price from session
+      // $price = $validated["cart"]["price_total"];
 
       // Process passenger data
       $passengerData = [
-        "confirmed_booking_email" => false,
-        "lead_passenger" => $validated["cart"]["cabin_type"] === "private-cabin",
-        "payment_method" => $validated["paymentMethod"],
-        "address_first" => $validated["addressLine1"],
-        "address_second" => $validated["addressLine2"],
-        "city" => $validated["city"],
-        "state" => $validated["state"],
-        "postal_code" => $validated["zipCode"],
-        "country" => $validated["country"],
-        "email" => $validated["email"],
-        "phone" => $validated["phoneNumber"],
-        "emergency_c_name" => $validated["emergencyContactName"],
-        "emergency_c_phone" => $validated["emergencyPhoneNumber"],
-        "special_request" => $validated["specialRequest"] ?? null,
-        "newsletter" => $validated["newsletter"],
-        "travel_info" => false,
-        "terms_n_cons" => $validated["terms"],
-        "cabin_conf_accp" => $validated["cart"]["cabin_conf_accp"],
-        "single_t_agreement" => $validated["cart"]["single_t_agreement"],
-        "passenger_allocated_cost" => $validated["cart"]["price_total"],
-        "addons" => $validated["cart"]["addons"],
-        "passenger_balance" => 0,
-        "was_on_board" => false,
+        'confirmed_booking_email' => false,
+        'lead_passenger' => $validated['cart']['cabin_type'] === 'private-cabin',
+        'payment_method' => $validated['paymentMethod'],
+        'address_first' => $validated['addressLine1'],
+        'address_second' => $validated['addressLine2'],
+        'city' => $validated['city'],
+        'state' => $validated['state'],
+        'postal_code' => $validated['zipCode'],
+        'country' => $validated['country'],
+        'email' => $validated['email'],
+        'phone' => $validated['phoneNumber'],
+        'emergency_c_name' => $validated['emergencyContactName'],
+        'emergency_c_phone' => $validated['emergencyPhoneNumber'],
+        'special_request' => $validated['specialRequest'] ?? null,
+        'newsletter' => $validated['newsletter'],
+        'travel_info' => false,
+        'terms_n_cons' => $validated['terms'],
+        'cabin_conf_accp' => $validated['cart']['cabin_conf_accp'],
+        'single_t_agreement' => $validated['cart']['single_t_agreement'],
+        'passenger_allocated_cost' => $validated['cart']['price_total'],
+        'addons' => $validated['cart']['addons'],
+        'passenger_balance' => 0,
+        'was_on_board' => false,
       ];
 
-      \Log::info("passengerData@store: " . json_encode($passengerData));
+      \Log::info('passengerData@store: ' . json_encode($passengerData));
 
       //call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
       // delete current sesion
-      $request->session()->forget("cart");
-      $request->session()->forget("reservation_id");
+      $request->session()->forget('cart');
+      $request->session()->forget('reservation_id');
 
       return response()->json(
         [
-          "message" => "Booking created successfully.",
-          "booking" => [
-            "booking_code" => $result["booking"]["booking_code"],
+          'message' => 'Booking created successfully.',
+          'booking' => [
+            'booking_code' => $result['booking']['booking_code'],
           ],
           // "passenger" => $result["passenger"],
         ],
@@ -113,8 +122,8 @@ class BookingController extends Controller
     } catch (\Exception $e) {
       return response()->json(
         [
-          "message" => "An error occurred while creating the booking.",
-          "error" => $e->getMessage(),
+          'message' => 'An error occurred while creating the booking.',
+          'error' => $e->getMessage(),
         ],
         500
       );
@@ -133,25 +142,26 @@ class BookingController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
     $available_beds = $this->customerBookingService->getAvailableSeats($bookingCode);
 
     if (!$result) {
-      return response()->json(["message" => "Booking not found"], 404);
+      return response()->json(['message' => 'Booking not found'], 404);
     }
 
     // if status is "New" then do not return cabin id and number
-    if ($result->status === "NEW") {
-      $result->cabin["cabin_id"] = null;
-      $result->cabin["cabin_number"] = null;
-    }
+
+    $result->cabin->id = null;
+    $result->cabin->cabin_number = null;
+
+    Log::info('BookingController@singleBooking: ' . json_encode($result->cabin->cabin_number));
 
     $schema = [
-      "booking" => $result,
-      "available_beds" => $available_beds,
+      'booking' => $result,
+      'available_beds' => $available_beds,
     ];
 
     return response()->json($schema);
@@ -167,13 +177,13 @@ class BookingController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     $result = $this->customerBookingService->getMyBookings($user);
 
     return response()->json([
-      "bookings" => $result,
+      'bookings' => $result,
     ]);
   }
 
@@ -191,23 +201,23 @@ class BookingController extends Controller
 
     // no user
     if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $booking = Booking::where("booking_code", $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->first();
 
     // no booking
     if (!$booking) {
-      return response()->json(["message" => "Booking not found"], 404);
+      return response()->json(['message' => 'Booking not found'], 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(["message" => "This booking is single occupancy"], 400);
+      return response()->json(['message' => 'This booking is single occupancy'], 400);
     }
 
     // not the owner
     if ($booking->customer_id !== $user->id) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     $result = $this->customerBookingService->setEmptySeat($bookingCode);
@@ -228,22 +238,22 @@ class BookingController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $booking = Booking::where("booking_code", $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->first();
 
     if (!$booking) {
-      return response()->json(["message" => "Booking not found"], 404);
+      return response()->json(['message' => 'Booking not found'], 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(["message" => "This booking is single occupancy"], 400);
+      return response()->json(['message' => 'This booking is single occupancy'], 400);
     }
 
     $validated = $request->validated();
 
-    \Log::info("VALIDATED@addPassenger: " . json_encode($validated));
+    \Log::info('VALIDATED@addPassenger: ' . json_encode($validated));
 
     // create passenger with booking id
     $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
@@ -264,24 +274,24 @@ class BookingController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(["message" => "Unauthorized"], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $booking = Booking::where("booking_code", $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->first();
 
     if (!$booking) {
-      return response()->json(["message" => "Booking not found"], 404);
+      return response()->json(['message' => 'Booking not found'], 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(["message" => "This booking is single occupancy"], 400);
+      return response()->json(['message' => 'This booking is single occupancy'], 400);
     }
 
     // get email and survivor number from request
-    $email = $request->input("email");
+    $email = $request->input('email');
 
     if (!$email) {
-      return response()->json(["message" => "Email and survivor number are required"], 400);
+      return response()->json(['message' => 'Email and survivor number are required'], 400);
     }
 
     $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
@@ -335,10 +345,10 @@ class BookingController extends Controller
   {
     // check signed url
     if (!$request->hasValidSignature()) {
-      return response()->json(["message" => "Invalid or expired link."], 403);
+      return response()->json(['message' => 'Invalid or expired link.'], 403);
     }
 
-    $bookingCode = $request->input("bookingCode");
+    $bookingCode = $request->input('bookingCode');
 
     // // redirect to fronend url with booking code
     // return redirect()->to(config("app.frontend_url") . "/en/add-pax/" . "?booking-code=$bookingCode");

@@ -57,7 +57,7 @@ class StoreBookingRequest extends FormRequest
       "cart.cabin_capacity" => "required|numeric",
       "cart.cabin_category" => "required|numeric",
       "cart.cabin_code" => "nullable|string",
-      "cart.cabin_price" => "required|string",
+      "cart.cabin_price" => "nullable|string",
       "cart.choose_your_cabin" => "required|boolean",
       "cart.cabin_number" => "nullable|numeric",
       "cart.price_total" => "required|numeric",
