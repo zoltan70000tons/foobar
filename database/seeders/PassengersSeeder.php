@@ -20,7 +20,7 @@ class PassengersSeeder extends Seeder
     $bookings = Booking::whereHas("cabin.cabinType", function ($query) {
       $query->where("id", 2);
     })
-      ->with(["cabin.cabinType", "cabin.cabinCategory"])
+      ->with(["cabin.cabinType", "cabin.category"])
       ->get();
 
     $faker = Faker::create();
@@ -31,7 +31,7 @@ class PassengersSeeder extends Seeder
       if ($booking->cabin && $booking->customer) {
         $lead_passenger_id = $booking->customer->id;
         $customer = $booking->customer;
-        $pricePerPerson = $booking->cabin->cabinCategory->price;
+        $pricePerPerson = $booking->cabin->category->price;
         Passenger::updateOrCreate(
           [
             "booking_id" => $booking->id,
@@ -74,7 +74,7 @@ class PassengersSeeder extends Seeder
     $bookings = Booking::whereHas("cabin.cabinType", function ($query) {
       $query->where("id", 3);
     })
-      ->with(["cabin.cabinType", "cabin.cabinCategory"]) // Incluir tanto cabinType como cabinCategory
+      ->with(["cabin.cabinType", "cabin.category"]) // Incluir tanto cabinType como cabinCategory
       ->get();
 
     $faker = Faker::create();
@@ -125,15 +125,15 @@ class PassengersSeeder extends Seeder
     $bookings = Booking::whereHas("cabin.cabinType", function ($query) {
       $query->where("id", 1);
     })
-      ->with(["cabin.cabinType", "cabin.cabinCategory"]) // Incluir tanto cabinType como cabinCategory
+      ->with(["cabin.cabinType", "cabin.category"]) // Incluir tanto cabinType como cabinCategory
       ->get();
 
     foreach ($bookings as $booking) {
       $faker = Faker::create();
       if ($booking->cabin && $booking->customer) {
         $lead_passenger = $booking->customer;
-        $capacity = $booking->cabin->cabinCategory->capacity;
-        $pricePerPerson = $booking->cabin->cabinCategory->price;
+        $capacity = $booking->cabin->category->capacity;
+        $pricePerPerson = $booking->cabin->category->price;
 
         //add lead passenger
         Passenger::updateOrCreate(

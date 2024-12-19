@@ -52,7 +52,7 @@ class CustomerBookingService
   {
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
 
-    $cabin = $booking->cabin->cabinCategory->capacity;
+    $cabin = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;
 
     $countOfAvaialble = $cabin - count($passengers);
@@ -72,7 +72,7 @@ class CustomerBookingService
   {
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
 
-    $cabinCapacity = $booking->cabin->cabinCategory->capacity;
+    $cabinCapacity = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;
 
     if (count($passengers) < $cabinCapacity) {
@@ -106,7 +106,7 @@ class CustomerBookingService
   {
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
 
-    $cabinCapacity = $booking->cabin->cabinCategory->capacity;
+    $cabinCapacity = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;
 
     if (count($passengers) < $cabinCapacity) {

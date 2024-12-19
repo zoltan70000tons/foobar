@@ -11,7 +11,7 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('cabin_categories', function (Blueprint $table) {
+    Schema::create('cabin_category_specs', function (Blueprint $table) {
       $table->id();
       $table->string('category_type', 255);
       $table->string('category_code', 5);
@@ -20,13 +20,11 @@ return new class extends Migration
       $table->jsonb('description'); // JSONB column for multi-language descriptions
       $table->text('iframe')->nullable();;
       $table->json('images')->nullable();;
-      $table->decimal('price', 10, 2);
       $table->string('decks', 255);
       $table->integer('display_order');
       $table->foreignId('cruise_id')->constrained('cruises');
-      $table->foreignId('event_id')->constrained('events');
       $table->string('category_number', 5)->nullable();
-      $table->unique(['category_code','capacity','cruise_id', 'event_id']);
+      $table->unique(['category_code','capacity','cruise_id']);
       $table->timestamps();
     });
   }
@@ -36,6 +34,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('cabin_categories');
+    Schema::dropIfExists('cabin_category_specs');
   }
 };
