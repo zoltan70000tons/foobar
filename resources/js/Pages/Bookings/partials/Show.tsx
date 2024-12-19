@@ -47,9 +47,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
   const theme = useTheme();
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
-
-  const capacity = booking.cabin.capacity;
-  console.log(capacity); 
+  const capacity = booking.cabin.category.capacity;
   const handleEditChange = (e) => {
     setEditMode(e.target.checked);
     router.get(
