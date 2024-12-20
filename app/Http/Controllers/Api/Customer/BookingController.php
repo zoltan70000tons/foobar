@@ -153,11 +153,10 @@ class BookingController extends Controller
     }
 
     // if status is "New" then do not return cabin id and number
-
-    $result->cabin->id = null;
+    $result->cabin['id'] = null;
     $result->cabin->cabin_number = null;
 
-    Log::info('BookingController@singleBooking: ' . json_encode($result->cabin->cabin_number));
+    Log::info('BookingController@singleBooking: ' . json_encode($result));
 
     $schema = [
       'booking' => $result,
