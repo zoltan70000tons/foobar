@@ -15,31 +15,16 @@ class Cabin extends Model
 
   protected $primaryKey = 'id';
 
-  protected $fillable = [
-    'cabin_type_id',
-    'cabin_category_id',
-    'cabin_spec_id',
-    'inventory',
-    'notes',
-    'tags',
-    'status',
-  ];
+  protected $fillable = ['cabin_type_id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'notes', 'tags', 'status'];
 
   // Cast attributes to specific types
   protected $casts = [
-    'tags' => 'json',        // Tags stored as a JSON array
+    'tags' => 'json', // Tags stored as a JSON array
     'inventory' => 'integer', // Inventory stored as an integer
   ];
 
   // Append custom attributes to the serialized output
-  protected $appends = [
-    'cabin_number',
-    'deck',
-    'balcony',
-    'obstructed_view',
-    'location',
-    'accessible',
-  ];
+  protected $appends = ['cabin_number', 'deck', 'balcony', 'obstructed_view', 'location', 'accessible'];
 
   // ==========================
   // Relationships
@@ -100,7 +85,7 @@ class Cabin extends Model
    */
   protected function cabinNumber(): Attribute
   {
-    return Attribute::get(fn() => $this->cabinSpec?->cabin_number);
+    return Attribute::get(fn() => $this->cabinSpec ? $this->cabinSpec->cabin_number : null);
   }
 
   /**
@@ -108,7 +93,7 @@ class Cabin extends Model
    */
   protected function deck(): Attribute
   {
-    return Attribute::get(fn() => $this->cabinSpec?->deck);
+    return Attribute::get(fn() => $this->cabinSpec?->deck ? $this->cabinSpec->deck : null);
   }
 
   /**
@@ -132,7 +117,7 @@ class Cabin extends Model
    */
   protected function location(): Attribute
   {
-    return Attribute::get(fn() => $this->cabinSpec?->location);
+    return Attribute::get(fn() => $this->cabinSpec?->location ? $this->cabinSpec->location : null);
   }
 
   /**

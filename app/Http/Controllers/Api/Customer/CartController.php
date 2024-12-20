@@ -49,11 +49,6 @@ class CartController extends Controller
         'userDiscount' => $membership->discount_value ?? null,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
-        // "paymentDiscount" => $cart["payment_plan"] === "PAY_IN_FULL" ? $discountPaymentFull : 0,
-        // "isSelection" => $cart["choose_your_cabin"],
-        // "singleTicketFeeAddon" => $singleTicketFeeAddon,
-        // "taxAddon" => $taxAddon,
-        // "chooseYourCabinAddon" => $chooseYourCabinAddon,
       ]);
 
       // add the calculated price to the cart session

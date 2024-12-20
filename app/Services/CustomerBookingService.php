@@ -31,9 +31,9 @@ class CustomerBookingService
 
     // if booking have status new then do not return cabin id and number
     $bookings->map(function ($booking) {
-      if ($booking->status === 'NEW') {
-        $booking->cabin['cabin_id'] = null;
-        $booking->cabin['cabin_number'] = null;
+      if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
+        $booking->cabin->makeHidden(['cabin_number']);
+        $booking->cabin->cabinSpec->makeHidden(['cabin_number']);
       }
     });
 
