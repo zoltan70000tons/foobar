@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
-use Log;
+use App\Helpers\PriceCalculation;
 
 class BookingController extends Controller
 {
@@ -100,8 +100,6 @@ class BookingController extends Controller
         'was_on_board' => false,
       ];
 
-      \Log::info('passengerData@store: ' . json_encode($passengerData));
-
       //call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
@@ -152,12 +150,19 @@ class BookingController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    // if status is "New" then do not return cabin id and number
+    // $priceCalc = PriceCalculation::calculatePricePerPassenger([
+    //   'cabinPrice' => $result->cabin->category->price,
+    //   'cabinCapacity' => $result->cabin->spec->capacity,
+    //   'cabinType' => $result->is_single_occupancy,
+    //   'userDiscount' => $result->customer->membership->discount_value ?? null,
+    //   'selectedAdjustments' => $result->passengers->first()->addons,
+    //   'adjustments' => $result->passengers->first()->addons,
+    // ]);
 
-    $result->cabin->id = null;
-    $result->cabin->cabin_number = null;
-
-    Log::info('BookingController@singleBooking: ' . json_encode($result->cabin->cabin_number));
+    if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
+      $result->cabin->makeHidden(['cabin_number']);
+      $result->cabin->cabinSpec->makeHidden(['cabin_number']);
+    }
 
     $schema = [
       'booking' => $result,
@@ -297,6 +302,35 @@ class BookingController extends Controller
     $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
 
     return $result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Add Pax
+  |--------------------------------------------------------------------------
+  |
+  |  This method is checking the signed URL and returning the booking
+  |
+  */
+  public function validateAddPassenger(Request $request, $bookingCode)
+  {
+    // Validate the signed URL
+    if (!$request->hasValidSignature()) {
+      return response()->json(['message' => 'Invalid or expired URL'], 403);
+    }
+
+    // Fetch the booking and check if it exists
+    $booking = Booking::where('booking_code', $bookingCode)->first();
+
+    if (!$booking) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    // You can add any additional logic here, such as checking if the passenger can be added
+    return response()->json([
+      'message' => 'Valid URL',
+      'booking' => $booking,
+    ]);
   }
 
   /*

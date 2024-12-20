@@ -8,7 +8,7 @@ class PriceCalculation
    * Calculate the total price per passenger.
    *
    * @param array $params An associative array containing all necessary parameters.
-   * @return array An array with 'total', 'totalPassenger', and 'save' keys.
+   * @return array An array with 'total', 'totalPassenger', 'save' and extras keys.
    */
   public static function calculatePricePerPassenger(array $params): array
   {
