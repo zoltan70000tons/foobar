@@ -15,7 +15,7 @@ use App\Http\Controllers\Api\Customer\EditProfileController;
 use App\Http\Controllers\Api\Customer\AdjustmentsController;
 use App\Http\Controllers\Api\Customer\EventController;
 use App\Http\Controllers\Api\Customer\CartController;
-use Illuminate\Routing\Router;
+use App\Http\Controllers\Api\Customer\AddPaxController;
 
 /**
  * Auth API Routes
@@ -42,11 +42,6 @@ Route::post('/recover-account-verify', [RecoverAccountController::class, 'recove
 
 Route::post('/recover-account-register', [RecoverAccountController::class, 'recoverAccount'])
   ->name('recover.account.register')
-  ->middleware('signed:relative');
-
-// --- ADD PAX ---
-Route::get('/add-pax', [BookingController::class, 'addPaxVerify'])
-  ->name('add.pax')
   ->middleware('signed:relative');
 
 // --- EMAIL VERIFICATION ---
@@ -124,7 +119,9 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function
   Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
   // ! ! ! ! ! --- delete booking THIS ROUTE SHOULD BE DELETED ON PROD! ! ! ! ! ! ! ! !
   //  Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
+});
 
+Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'])->group(function () {
   // set slot empty
   Route::post('/my-bookings/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
   // add passenger manually
@@ -133,8 +130,15 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function
   Route::post('/my-bookings/{bookingCode}/add-passenger-via-email', [BookingController::class, 'addPassengerViaEmail']);
 });
 
-// Add pax
-Route::post('/add-pax', [BookingController::class, 'validateAddPassenger']);
+// --- ADD PAX ---
+Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
+  ->name('add.pax')
+  ->middleware('signed:relative');
+
+Route::post('/add-pax/{bookingCode}', [BookingController::class, 'submitAddPassenger']);
+
+// --- ADD PAX PROFILE ---
+Route::post('/add-pax-profile', [AddPaxController::class, 'show']);
 
 // --- TEST PURPOSE FOR BROADCASTING ---
 // Route::get('/cabins', [CabinController::class, 'show']);
