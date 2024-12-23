@@ -8,23 +8,24 @@ use Illuminate\Session\Middleware\StartSession;
 
 return Application::configure(basePath: dirname(__DIR__))
   ->withRouting(
-    web: __DIR__ . "/../routes/web.php",
-    api: __DIR__ . "/../routes/api.php",
-    commands: __DIR__ . "/../routes/console.php",
-    health: "/up"
+    web: __DIR__ . '/../routes/web.php',
+    api: __DIR__ . '/../routes/api.php',
+    commands: __DIR__ . '/../routes/console.php',
+    health: '/up'
   )
   ->withMiddleware(function (Middleware $middleware) {
     $middleware->statefulApi();
     $middleware->authenticateSessions();
-    $middleware->encryptCookies(except: ["email_verified"]);
+    $middleware->encryptCookies(except: ['email_verified']);
 
     $middleware->alias([
-      "verified" => \App\Http\Middleware\EnsureEmailIsVerified::class,
-      "membership_sales" => \App\Http\Middleware\MembershipSales::class,
-      "auth.customer" => \App\Http\Middleware\AuthenticateCustomer::class,
-      "ensure_not_customer" => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
-      "clear_expired_reservation" => \App\Http\Middleware\ClearExpiredReservation::class,
-      "one_booking_per_user" => \App\Http\Middleware\OneBookingPerUser::class,
+      'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+      'membership_sales' => \App\Http\Middleware\MembershipSales::class,
+      'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
+      'ensure_not_customer' => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
+      'clear_expired_reservation' => \App\Http\Middleware\ClearExpiredReservation::class,
+      'one_booking_per_user' => \App\Http\Middleware\OneBookingPerUser::class,
+      'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
     ]);
 
     $middleware->web(

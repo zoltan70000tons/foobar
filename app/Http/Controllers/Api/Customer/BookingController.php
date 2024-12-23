@@ -258,8 +258,6 @@ class BookingController extends Controller
 
     $validated = $request->validated();
 
-    \Log::info('VALIDATED@addPassenger: ' . json_encode($validated));
-
     // create passenger with booking id
     $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
 
@@ -299,6 +297,13 @@ class BookingController extends Controller
       return response()->json(['message' => 'Email and survivor number are required'], 400);
     }
 
+    // if booking have passenger with this email
+    $passenger = $booking->passengers()->where('email', $email)->first();
+
+    if ($passenger) {
+      return response()->json(['message' => 'Passenger already exists'], 400);
+    }
+
     $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
 
     return $result;
@@ -312,10 +317,12 @@ class BookingController extends Controller
   |  This method is checking the signed URL and returning the booking
   |
   */
-  public function validateAddPassenger(Request $request, $bookingCode)
+  public function validateAddPassenger(Request $request)
   {
+    $bookingCode = $request->input('bookingCode');
+
     // Validate the signed URL
-    if (!$request->hasValidSignature()) {
+    if (!$request->hasValidSignature(false)) {
       return response()->json(['message' => 'Invalid or expired URL'], 403);
     }
 
@@ -335,56 +342,16 @@ class BookingController extends Controller
 
   /*
   |--------------------------------------------------------------------------
-  | Destroy booking
+  | Submit booking via email
   |--------------------------------------------------------------------------
-  |
-  |  This method will delete a booking
   |
   */
-  // public function destroy($id)
-  // {
-  //   $user = Auth::user();
-
-  //   if (!$user) {
-  //     return response()->json(["message" => "Unauthorized"], 403);
-  //   }
-
-  //   $booking = Booking::find($id);
-
-  //   $bookingLog = BookingLog::where("booking_id", $id)->first();
-
-  //   if (!$booking || !$bookingLog) {
-  //     return response()->json(["message" => "Booking not found"], 404);
-  //   }
-
-  //   if ($booking->customer_id !== $user->id) {
-  //     return response()->json(["message" => "Unauthorized"], 403);
-  //   }
-
-  //   $bookingLog->delete();
-  //   $booking->delete();
-
-  //   return response()->json(["message" => "Booking deleted successfully"], 200);
-  // }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Add "Pax" passenger verification
-  |--------------------------------------------------------------------------
-  |
-  |  In this method we will verify the signed URL and redirect to the frontend
-  |
-  */
-  public function addPaxVerification(Request $request, $bookingCode)
+  public function submitAddPassenger(StorePassengerRequest $request, $bookingCode)
   {
-    // check signed url
-    if (!$request->hasValidSignature()) {
-      return response()->json(['message' => 'Invalid or expired link.'], 403);
-    }
+    $validated = $request->validated();
+    // create passenger with booking id
+    $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
 
-    $bookingCode = $request->input('bookingCode');
-
-    // // redirect to fronend url with booking code
-    // return redirect()->to(config("app.frontend_url") . "/en/add-pax/" . "?booking-code=$bookingCode");
+    return $result;
   }
 }
