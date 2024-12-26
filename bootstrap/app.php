@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
       'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
       'membership_sales' => \App\Http\Middleware\MembershipSales::class,
       'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
-      'ensure_not_customer' => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
+      // 'ensure_not_customer' => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
       'clear_expired_reservation' => \App\Http\Middleware\ClearExpiredReservation::class,
       'one_booking_per_user' => \App\Http\Middleware\OneBookingPerUser::class,
       'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
     $middleware->web(
       append: [
+        \App\Http\Middleware\EnsureUserIsNotCustomer::class,
         \App\Http\Middleware\TeamContext::class,
         \App\Http\Middleware\HandleInertiaRequests::class,
         \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
@@ -44,10 +45,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]
     );
-    ////////////////////////
-    //this is just for testing, remove in production for security reasons
-    //$middleware->validateCsrfTokens(except: ["http://localhost:8000/contact/submit"]);
-    ////////////////////////
   })
   ->withExceptions(function (Exceptions $exceptions) {
     //
