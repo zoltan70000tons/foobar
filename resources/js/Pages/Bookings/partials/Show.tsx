@@ -36,6 +36,7 @@ import Log from "./Log";
 import BookingSidebar from "./BookingSidebar";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import AdjustmentForm from "./AdjustmentForm";
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
@@ -141,6 +142,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
         <Passengers booking={booking} editMode={editMode} />
+        <AdjustmentForm booking={booking} editMode ={true} />
         <Payment
           booking={booking}
           editMode={editMode}
