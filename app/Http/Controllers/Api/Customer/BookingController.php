@@ -12,6 +12,7 @@ use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
+use App\Models\Adjustment;
 
 class BookingController extends Controller
 {
@@ -53,6 +54,8 @@ class BookingController extends Controller
       return response()->json(['message' => 'Cart is empty'], 400);
     }
 
+    \Log::info('cart', $cart);
+
     try {
       $reservationId = $validated['cart']['reservation_id'];
       $eventId = (int) $validated['cart']['event_id'];
@@ -72,6 +75,17 @@ class BookingController extends Controller
 
       // get price from session
       // $price = $validated["cart"]["price_total"];
+      $adjustments = Adjustment::where('event_id', $eventId)->first();
+      $priceCalc = PriceCalculation::calculatePricePerPassenger([
+        'cabinPrice' => $validated['cart']['cabin_price'],
+        'cabinCapacity' => $validated['cart']['cabin_capacity'],
+        'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
+        //'userDiscount' => $membership->discount_value ?? null,
+        'selectedAdjustments' => $cart['addons'],
+        'adjustments' => $adjustments,
+      ]);
+
+      $totalPassenger = $priceCalc['totalPassenger'];
 
       // Process passenger data
       $passengerData = [
@@ -94,7 +108,8 @@ class BookingController extends Controller
         'terms_n_cons' => $validated['terms'],
         'cabin_conf_accp' => $validated['cart']['cabin_conf_accp'],
         'single_t_agreement' => $validated['cart']['single_t_agreement'],
-        'passenger_allocated_cost' => $validated['cart']['price_total'],
+        // passenger allocated cost - take from calculation
+        'passenger_allocated_cost' => $totalPassenger,
         'addons' => $validated['cart']['addons'],
         'passenger_balance' => 0,
         'was_on_board' => false,

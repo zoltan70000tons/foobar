@@ -36,21 +36,21 @@ class BookingRepository implements BookingInterface
 
   function getAll()
   {
-    return Booking::with(["cabin", "cabin.cabinType", "customer", "customer.detail"])->get();
+    return Booking::with(['cabin', 'cabin.cabinType', 'customer', 'customer.detail'])->get();
   }
 
   function getByTag($tags, $keyword = null)
   {
-    $query = Booking::with(["cabin", "cabin.cabinType", "customer", "customer.detail", "passengers"])
-      ->withSum("passengers as balance", "passenger_balance")
-      ->withSum("passengers as cost", "passenger_allocated_cost");
+    $query = Booking::with(['cabin', 'cabin.cabinType', 'customer', 'customer.detail', 'passengers'])
+      ->withSum('passengers as balance', 'passenger_balance')
+      ->withSum('passengers as cost', 'passenger_allocated_cost');
 
     if (!empty($tags)) {
       $query->where(function ($query) use ($tags) {
         foreach ($tags as $tag) {
           $query->orWhereRaw(
-            "EXISTS (SELECT 1 FROM jsonb_array_elements_text(bookings.tags) as t WHERE LOWER(t) ILIKE ?)",
-            ["%" . strtolower($tag) . "%"]
+            'EXISTS (SELECT 1 FROM jsonb_array_elements_text(bookings.tags) as t WHERE LOWER(t) ILIKE ?)',
+            ['%' . strtolower($tag) . '%']
           );
         }
       });
@@ -60,27 +60,27 @@ class BookingRepository implements BookingInterface
       $keyword = strtolower($keyword);
 
       $query->where(function ($query) use ($keyword) {
-        $query->orWhere(DB::raw("LOWER(booking_code)"), "like", "%" . $keyword . "%");
+        $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%');
 
-        $query->orWhereHas("customer.detail", function ($query) use ($keyword) {
+        $query->orWhereHas('customer.detail', function ($query) use ($keyword) {
           $query->where(function ($query) use ($keyword) {
             $query
-              ->where(DB::raw("LOWER(first_name)"), "like", "%" . $keyword . "%")
-              ->orWhere(DB::raw("LOWER(last_name)"), "like", "%" . $keyword . "%")
-              ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), "like", "%" . $keyword . "%");
+              ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
           });
         });
 
-        $query->orWhereHas("cabin.cabinType", function ($query) use ($keyword) {
-          $query->where(DB::raw("LOWER(cabin_type)"), "like", "%" . $keyword . "%");
+        $query->orWhereHas('cabin.cabinType', function ($query) use ($keyword) {
+          $query->where(DB::raw('LOWER(cabin_type)'), 'like', '%' . $keyword . '%');
         });
 
-        $query->orWhereHas("passengers", function ($query) use ($keyword) {
+        $query->orWhereHas('passengers', function ($query) use ($keyword) {
           $query->where(function ($query) use ($keyword) {
             $query
-              ->where(DB::raw("LOWER(first_name)"), "like", "%" . $keyword . "%")
-              ->orWhere(DB::raw("LOWER(last_name)"), "like", "%" . $keyword . "%")
-              ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), "like", "%" . $keyword . "%");
+              ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
           });
         });
       });
@@ -99,17 +99,17 @@ class BookingRepository implements BookingInterface
   function getByStatus($status, $keyword = null)
   {
     $query = Booking::with([
-      "cabin",
-      "cabin.cabinType",
-      "customer",
-      "customer.detail",
-      "passengers",
-      "agent",
-      "agent.detail",
+      'cabin',
+      'cabin.cabinType',
+      'customer',
+      'customer.detail',
+      'passengers',
+      'agent',
+      'agent.detail',
     ])
-      ->withSum("passengers as balance", "passenger_balance")
-      ->withSum("passengers as cost", "passenger_allocated_cost")
-      ->where("status", "=", $status);
+      ->withSum('passengers as balance', 'passenger_balance')
+      ->withSum('passengers as cost', 'passenger_allocated_cost')
+      ->where('status', '=', $status);
 
     $results = $query->get();
     $results->each(function ($booking) {
@@ -129,20 +129,20 @@ class BookingRepository implements BookingInterface
   function findByCode($code)
   {
     return Booking::with([
-      "cabin",
-      "cabin.cabinType",
-      "cabin.category",
-      "passengers" => function ($query) {
-        $query->orderBy("id", "asc");
+      'cabin',
+      'cabin.cabinType',
+      'cabin.category',
+      'passengers' => function ($query) {
+        $query->orderBy('id', 'asc');
       },
-      "logs",
-      "logs.user",
-      "lockedBy",
-      "comments",
-      "comments.user",
-      "agent",
+      'logs',
+      'logs.user',
+      'lockedBy',
+      'comments',
+      'comments.user',
+      'agent',
     ])
-      ->where("booking_code", "=", $code)
+      ->where('booking_code', '=', $code)
       ->first();
   }
 
@@ -154,7 +154,7 @@ class BookingRepository implements BookingInterface
   function update(array $data, $id)
   {
     $booking = $this->find($id);
-    $tags = $data["tags"];
+    $tags = $data['tags'];
     $booking->tags = $tags;
     $booking->save();
   }
@@ -167,27 +167,27 @@ class BookingRepository implements BookingInterface
   {
     Log::info($code);
     Log::info($user);
-    dd("ok");
+    dd('ok');
   }
 
   function addTags($booking, $tags)
   {
     try {
       if (!is_array($tags)) {
-        throw new InvalidArgumentException("Tags must be an array.");
+        throw new InvalidArgumentException('Tags must be an array.');
       }
 
       $originalTags = $booking->tags;
 
       $booking->update([
-        "tags" => $tags,
+        'tags' => $tags,
       ]);
 
       if ($originalTags !== $tags) {
         $this->saveBookingLog(
           $booking->id,
-          "Changed booking tags",
-          sprintf("Booking tags changed from [%s] to [%s].", implode(", ", $originalTags ?? []), implode(", ", $tags))
+          'Changed booking tags',
+          sprintf('Booking tags changed from [%s] to [%s].', implode(', ', $originalTags ?? []), implode(', ', $tags))
         );
       }
 
@@ -205,7 +205,7 @@ class BookingRepository implements BookingInterface
       $cabin = $booking->cabin;
       $this->saveBookingLog(
         $booking->id,
-        "Changed cabin number",
+        'Changed cabin number',
         "Cabin number changed from {$cabin->cabin_number} to {$cabin_number}."
       );
     }
@@ -216,18 +216,18 @@ class BookingRepository implements BookingInterface
   {
     try {
       if (empty($new_code)) {
-        throw new InvalidArgumentException("The new booking code cannot be empty.");
+        throw new InvalidArgumentException('The new booking code cannot be empty.');
       }
 
-      if (Booking::where("booking_code", $new_code)->exists()) {
-        throw new InvalidArgumentException("The new booking code is already in use.");
+      if (Booking::where('booking_code', $new_code)->exists()) {
+        throw new InvalidArgumentException('The new booking code is already in use.');
       }
       $originalCode = $booking->booking_code;
       $booking->booking_code = $new_code;
       $booking->save();
       $this->saveBookingLog(
         $booking->id,
-        "Changed booking code",
+        'Changed booking code',
         "Booking code changed manually from {$originalCode} to {$new_code}."
       );
 
@@ -241,14 +241,14 @@ class BookingRepository implements BookingInterface
   {
     try {
       if (empty($status)) {
-        throw new InvalidArgumentException("The status field cannot be empty.");
+        throw new InvalidArgumentException('The status field cannot be empty.');
       }
       $originalStatus = $booking->status;
       $booking->status = $status;
       $booking->save();
       $this->saveBookingLog(
         $booking->id,
-        "Changed booking status",
+        'Changed booking status',
         "Booking status changed from {$originalStatus} to {$status}."
       );
       return $booking;
@@ -262,14 +262,14 @@ class BookingRepository implements BookingInterface
   {
     try {
       if (empty($comment)) {
-        throw new InvalidArgumentException("The comment field cannot be empty.");
+        throw new InvalidArgumentException('The comment field cannot be empty.');
       }
       $sanitizedComment = htmlspecialchars(strip_tags($comment));
       $formattedComment = ucfirst($sanitizedComment);
       Comment::create([
-        "booking_id" => $booking->id,
-        "user_id" => Auth::id(),
-        "comment" => $formattedComment,
+        'booking_id' => $booking->id,
+        'user_id' => Auth::id(),
+        'comment' => $formattedComment,
       ]);
       return $booking;
     } catch (\Exception $e) {
@@ -282,7 +282,7 @@ class BookingRepository implements BookingInterface
   {
     try {
       $booking->cancel();
-      $this->saveBookingLog($booking->id, "Cancelled", "The booking was cancelled");
+      $this->saveBookingLog($booking->id, 'Cancelled', 'The booking was cancelled');
       return $booking;
     } catch (\Exception $e) {
       return false;
@@ -312,7 +312,7 @@ class BookingRepository implements BookingInterface
     ?int $temporaryBookingId = null
   ): array {
     if (is_null($cabin) && is_null($temporaryBookingId)) {
-      throw new InvalidArgumentException("You must provide a Cabin object or a Temporary Booking ID.");
+      throw new InvalidArgumentException('You must provide a Cabin object or a Temporary Booking ID.');
     }
 
     FacadesDB::beginTransaction();
@@ -322,20 +322,20 @@ class BookingRepository implements BookingInterface
       if ($temporaryBookingId) {
         $tempReservation = TemporaryReservation::find($temporaryBookingId);
         if (!$tempReservation) {
-          throw new \Exception("Temporary booking ID not found.");
+          throw new \Exception('Temporary booking ID not found.');
         }
 
         $cabinId = $tempReservation->cabin_id;
         $selectedCabin = Cabin::find($cabinId);
         if (!$selectedCabin) {
-          throw new \Exception("Cabin not found for the given reservation ID.");
+          throw new \Exception('Cabin not found for the given reservation ID.');
         }
       } else {
         $selectedCabin = $cabin;
       }
 
       if (!$selectedCabin) {
-        throw new \Exception("Cabin not found.");
+        throw new \Exception('Cabin not found.');
 
         $availableCabins = $this->filterCabins(
           $selectedCabin->cabin_type_id,
@@ -344,15 +344,15 @@ class BookingRepository implements BookingInterface
           true
         );
 
-        if (is_array($availableCabins) && array_key_exists("error", $availableCabins)) {
-          throw new \Exception($availableCabins["error"]);
+        if (is_array($availableCabins) && array_key_exists('error', $availableCabins)) {
+          throw new \Exception($availableCabins['error']);
         }
-        $availableCabins = $availableCabins["cabins"]->toArray();
+        $availableCabins = $availableCabins['cabins']->toArray();
         $cabinNumberToSearch = $selectedCabin->cabin_number;
-        $cabinNumbers = array_column($availableCabins, "cabin_number");
+        $cabinNumbers = array_column($availableCabins, 'cabin_number');
         $available = array_search($cabinNumberToSearch, $cabinNumbers) !== false;
         if (!$available) {
-          throw new \Exception("Cabin not available.");
+          throw new \Exception('Cabin not available.');
         }
       }
 
@@ -369,12 +369,10 @@ class BookingRepository implements BookingInterface
 
       if ($passenger && $booking) {
         // ---- start Create adjustments
-        $adjustmentIds = collect($passengerData["addons"] ?? [])
-          ->filter(fn($addon) => isset($addon["id"]))
-          ->map(fn($addon) => $addon["id"])
+        $adjustmentIds = collect($passengerData['addons'] ?? [])
+          ->filter(fn($addon) => isset($addon['id']))
+          ->map(fn($addon) => $addon['id'])
           ->all();
-
-        Log::info("Adjustments", ["ids" => $adjustmentIds]);
 
         $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
         // ---- end Create adjustments
@@ -384,20 +382,20 @@ class BookingRepository implements BookingInterface
         }
         DB::commit();
         return [
-          "message" => "Booking created successfully.",
-          "booking" => $booking,
-          "passenger" => $passenger,
+          'message' => 'Booking created successfully.',
+          'booking' => $booking,
+          'passenger' => $passenger,
         ];
       }
       Log::info($booking);
       Log::info($passenger);
-      throw new \Exception("Error creating booking.");
+      throw new \Exception('Error creating booking.');
     } catch (\Exception $e) {
       Log::error($e->getMessage());
       FacadesDB::rollBack();
       return [
-        "error" => true,
-        "message" => $e->getMessage(),
+        'error' => true,
+        'message' => $e->getMessage(),
       ];
     }
   }

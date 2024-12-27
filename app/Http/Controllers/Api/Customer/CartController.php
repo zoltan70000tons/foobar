@@ -24,8 +24,8 @@ class CartController extends Controller
 
     $user = Auth::check() ? Auth::user() : null;
 
-    $customer = $user && $user->hasRole('Customer') ? $user : null;
-    $membership = $customer ? $customer->membershipTypes->first() : null;
+    // $customer = $user && $user->hasRole('Customer') ? $user : null;
+    //$membership = $customer ? $customer->membershipTypes->first() : null;
 
     // 1. price cart get from database based on id
     // 2. same with cabin capacity
@@ -46,7 +46,7 @@ class CartController extends Controller
         'cabinPrice' => $price,
         'cabinCapacity' => $capacity,
         'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
-        'userDiscount' => $membership->discount_value ?? null,
+        //'userDiscount' => $membership->discount_value ?? null,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
       ]);

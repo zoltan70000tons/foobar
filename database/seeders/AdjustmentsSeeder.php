@@ -73,7 +73,7 @@ class AdjustmentsSeeder extends Seeder
         'updated_at' => now(),
       ],
       [
-        'code' => 'BLACK',
+        'code' => 'MEMBERSHIP_BLACK',
         'type' => 'DISCOUNT',
         'operation' => 'PERCENTAGE',
         'value' => 10.0,
