@@ -50,16 +50,25 @@ class CustomerBookingService
   */
   public function getAvailableSeats($bookingCode)
   {
+    // Fetch the booking data using the repository
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
 
-    $cabin = $booking->cabin->category->capacity;
+    // Get the cabin's total capacity
+    $cabinCapacity = $booking->cabin->category->capacity;
+
+    // Get the list of passengers associated with the booking
     $passengers = $booking->passengers;
 
-    $countOfAvaialble = $cabin - count($passengers);
+    // Filter passengers where first_name, gender, and dob are null
+    $emptySeats = $passengers->filter(function ($passenger) {
+      return $passenger->first_name === null && $passenger->gender === null && $passenger->dob === null;
+    });
 
-    return $countOfAvaialble;
+    // Count the number of empty seats
+    $availableSeats = $emptySeats->count();
+
+    return $availableSeats;
   }
-
   /*
   |--------------------------------------------------------------------------
   | Set empty seat
