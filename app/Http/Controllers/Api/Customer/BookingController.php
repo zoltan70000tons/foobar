@@ -80,7 +80,6 @@ class BookingController extends Controller
         'cabinPrice' => $validated['cart']['cabin_price'],
         'cabinCapacity' => $validated['cart']['cabin_capacity'],
         'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
-        //'userDiscount' => $membership->discount_value ?? null,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
       ]);
@@ -159,20 +158,11 @@ class BookingController extends Controller
     }
 
     $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
-    $available_beds = $this->customerBookingService->getAvailableSeats($bookingCode);
+    $available_seats = $this->customerBookingService->getAvailableSeats($bookingCode);
 
     if (!$result) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
-
-    // $priceCalc = PriceCalculation::calculatePricePerPassenger([
-    //   'cabinPrice' => $result->cabin->category->price,
-    //   'cabinCapacity' => $result->cabin->spec->capacity,
-    //   'cabinType' => $result->is_single_occupancy,
-    //   'userDiscount' => $result->customer->membership->discount_value ?? null,
-    //   'selectedAdjustments' => $result->passengers->first()->addons,
-    //   'adjustments' => $result->passengers->first()->addons,
-    // ]);
 
     if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
       $result->cabin->makeHidden(['cabin_number']);
@@ -181,7 +171,7 @@ class BookingController extends Controller
 
     $schema = [
       'booking' => $result,
-      'available_beds' => $available_beds,
+      'available_seats' => $available_seats,
     ];
 
     return response()->json($schema);
