@@ -40,6 +40,13 @@ class CustomerBookingRepository
       });
     }
 
+    // if booking payment_plan is INSTALLMENTS get all installments where passenger is lead_passenger
+    if ($booking->payment_plan === 'INSTALLMENTS') {
+      $booking->passengers->map(function ($passenger) {
+        $passenger->installments = $passenger->installments;
+      });
+    }
+
     return $booking;
   }
 

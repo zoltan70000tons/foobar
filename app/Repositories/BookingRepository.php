@@ -18,6 +18,7 @@ use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PassengerRepository;
 use App\Repositories\AdjustmentsRepository;
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\DB as FacadesDB;
 
 class BookingRepository implements BookingInterface
@@ -27,11 +28,16 @@ class BookingRepository implements BookingInterface
 
   protected PassengerInterface $passengerRepository;
   protected AdjustmentsRepository $adjustmentsRepository;
+  protected PaymentService $paymentService;
 
-  public function __construct(PassengerRepository $passengerRepository, AdjustmentsRepository $adjustmentsRepository)
-  {
+  public function __construct(
+    PassengerRepository $passengerRepository,
+    AdjustmentsRepository $adjustmentsRepository,
+    PaymentService $paymentService
+  ) {
     $this->passengerRepository = $passengerRepository;
     $this->adjustmentsRepository = $adjustmentsRepository;
+    $this->paymentService = $paymentService;
   }
 
   function getAll()
@@ -367,15 +373,25 @@ class BookingRepository implements BookingInterface
         $passenger = $this->passengerRepository->create($passengerData, $booking);
       }
 
+      // JG ---- start Installments
+      if ($passenger && $bookingData['payment_plan'] === 'INSTALLMENTS' && $bookingData['number_of_installments'] > 1) {
+        // get passenger who lead_passenger have true
+        $passId = $passenger->id;
+        $installments = (int) $bookingData['number_of_installments'];
+
+        $this->paymentService->createInstallments($passId, $installments);
+      }
+      // JG  ---- end Installments
+
       if ($passenger && $booking) {
-        // ---- start Create adjustments
+        // JG  ---- start Create adjustments
         $adjustmentIds = collect($passengerData['addons'] ?? [])
           ->filter(fn($addon) => isset($addon['id']))
           ->map(fn($addon) => $addon['id'])
           ->all();
 
         $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
-        // ---- end Create adjustments
+        // JG  ---- end Create adjustments
 
         if ($temporaryBookingId) {
           TemporaryReservation::find($temporaryBookingId)?->delete();
