@@ -36,6 +36,7 @@ import Log from "./Log";
 import BookingSidebar from "./BookingSidebar";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import AdjustmentForm from "./AdjustmentForm";
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
@@ -94,6 +95,28 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
     );
   };
 
+
+  const handleAddAdjustment = (data) => {
+    console.log(data);
+    router.post(
+      route("bookings.addAdjustment", {
+        id: event.id,
+      }),
+      { 
+        code: data.code,
+        type: data.type,
+        operation: data.operation,
+        value: data.value,
+        restrictions: null,
+        event_id: event.id,
+        booking_id: booking.id
+       }
+    );
+  };
+
+
+
+
   return (
     <AuthenticatedLayout user={auth.user} header={"Booking Detail"}>
       <Head title="Booking " />
@@ -141,6 +164,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
         <Passengers booking={booking} editMode={editMode} />
+        <AdjustmentForm booking={booking} editMode={true} onSubmit={handleAddAdjustment} />
         <Payment
           booking={booking}
           editMode={editMode}

@@ -135,11 +135,12 @@ class BookingRepository implements BookingInterface
   function findByCode($code)
   {
     return Booking::with([
-      'cabin',
-      'cabin.cabinType',
-      'cabin.category',
-      'passengers' => function ($query) {
-        $query->orderBy('id', 'asc');
+      "cabin",
+      "cabin.cabinType",
+      "cabin.category",
+      "adjustments",
+      "passengers" => function ($query) {
+        $query->orderBy("id", "asc");
       },
       'logs',
       'logs.user',
@@ -165,9 +166,7 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id)
-  {
-  }
+  function delete($id) {}
 
   function assignAgent($code, $user)
   {

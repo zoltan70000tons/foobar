@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Events\TestMessageSent;
+use App\Http\Controllers\AdjustmentsController;
 use App\Http\Controllers\PassengerController;
 
 Route::get("/", function () {
@@ -159,7 +160,13 @@ Route::middleware("auth")->group(function () {
     Route::get("/validate", [PassengerController::class, "validatePassenger"]);
     Route::get("/search", [PassengerController::class, "search"]);
   });
+
+  Route::prefix("adjustments")->group(function () {
+    Route::post("/add-to-booking", [AdjustmentsController::class, "createAdjustment"])->name("bookings.addAdjustment");
+  });
 });
+
+
 
 Route::get("/join-organization", [OrganizationController::class, "join"])->name("organization.join");
 Route::put("/join-organization", [OrganizationController::class, "join"])->name("organization.join");
