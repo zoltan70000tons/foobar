@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Adjustment;
 use App\Models\Booking;
+use Inertia\Inertia;
 
 class AdjustmentsController extends Controller
 {
@@ -55,10 +56,14 @@ class AdjustmentsController extends Controller
             // Commit the transaction
             DB::commit();
 
-            return response()->json([
+            return redirect()->route('bookings.show',[
+                'id' => $validated['event_id'],
+                'booking_code' => $booking->booking_code,
+            ])->with([
                 'message' => 'Adjustment created and linked successfully.',
-                'adjustment' => $adjustment,
-            ], 201);
+            ]);
+
+            
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
