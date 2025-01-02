@@ -16,7 +16,7 @@ class AdjustmentsController extends Controller
      * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function createAdjustment($bookingId, Request $request)
+    public function createAdjustment(Request $request)
     {
         // Validate the incoming request
         $validated = $request->validate([
@@ -26,10 +26,11 @@ class AdjustmentsController extends Controller
             'value' => 'required|numeric|min:0',
             'restrictions' => 'nullable|json',
             'event_id' => 'required|integer|exists:events,id',
+            'booking_id' => 'required|integer|exists:bookings,id'
         ]);
 
         // Verify if the booking exists
-        $booking = Booking::findOrFail($bookingId);
+        $booking = Booking::findOrFail($validated['booking_id']);
 
         // Start a database transaction
         DB::beginTransaction();
