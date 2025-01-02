@@ -16,14 +16,22 @@ class EnsureUserIsNotCustomer
    */
   public function handle(Request $request, Closure $next): Response
   {
-    // if (Auth::guard('customer')->check()) {
-    //   // return 401 response if the user is a customer
-    //   return response()->json([
-    //     'message' => __('auth.unauthenticated' . ' customer', ['guard' => 'customer']),
-    //   ], 401);
-    // }
+    $user = Auth::user();
 
-    // Proceed with the request if it's not a customer
+    if ($user) {
+      setPermissionsTeamId(1);
+
+      if ($user->hasRole('Customer')) {
+        return response()->json(
+          [
+            'message' => __('You do not have access to this resource.'),
+          ],
+          403
+        );
+      }
+    }
+
+    // Allow non-customer users to proceed
     return $next($request);
   }
 }

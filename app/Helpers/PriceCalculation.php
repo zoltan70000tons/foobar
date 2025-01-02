@@ -8,14 +8,14 @@ class PriceCalculation
    * Calculate the total price per passenger.
    *
    * @param array $params An associative array containing all necessary parameters.
-   * @return array An array with 'total', 'totalPassenger', and 'save' keys.
+   * @return array An array with 'total', 'totalPassenger', 'save' and extras keys.
    */
   public static function calculatePricePerPassenger(array $params): array
   {
     // Extract parameters from the input array
     $cabinPrice = (float) $params['cabinPrice'];
     $cabinCapacity = (int) $params['cabinCapacity'];
-    $userDiscount = (float) $params['userDiscount'];
+    //$userDiscount = (float) $params['userDiscount'];
     $cabinType = (bool) $params['cabinType'];
     $selectedAdjustments = $params['selectedAdjustments'];
     $adjustments = $params['adjustments'];
@@ -26,7 +26,7 @@ class PriceCalculation
     };
 
     // Validate and clamp discounts between 0% and 100%
-    $validatedUserDiscount = max(0, min($userDiscount, 100));
+    //$validatedUserDiscount = max(0, min($userDiscount, 100));
 
     $sumOfPercentagesDiscounts = 0;
     // Ensure $selectedAdjustments is an array and not empty
@@ -48,10 +48,10 @@ class PriceCalculation
 
     $validatedPaymentDiscount = max(0, min($sumOfPercentagesDiscounts, 100));
 
-    $userDiscountPercentage = $validatedUserDiscount / 100;
+    // $userDiscountPercentage = $validatedUserDiscount / 100;
     $addonsDiscountPercentage = $validatedPaymentDiscount / 100;
 
-    $sumOfDiscounts = $userDiscountPercentage + $addonsDiscountPercentage;
+    $sumOfDiscounts = $addonsDiscountPercentage;
 
     // Ensure the total discount doesn't exceed 100%
     $totalDiscountPercentage = min($sumOfDiscounts, 1);

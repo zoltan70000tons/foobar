@@ -6,6 +6,7 @@ use App\Helpers\MatrixHelper;
 use App\Http\Controllers\Controller;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
+use App\Enums\StatusCabin;
 
 class PricingMatrixController extends Controller
 {
@@ -26,7 +27,7 @@ class PricingMatrixController extends Controller
    */
   public function index()
   {
-    $cabinTypes = CabinType::select("id", "cabin_type")->get();
+    $cabinTypes = CabinType::select('id', 'cabin_type')->get();
     return response()->json($cabinTypes);
   }
 
@@ -48,7 +49,9 @@ class PricingMatrixController extends Controller
       ->sortBy(fn($category) => $category->displayOrder);
 
     // Format categories for response
-    $formattedCategories = $groupedCategories->map(fn($category) => $this->formatCategory($category, $categories, $ticketType));
+    $formattedCategories = $groupedCategories->map(
+      fn($category) => $this->formatCategory($category, $categories, $ticketType)
+    );
 
     return response()->json($formattedCategories->values());
   }
@@ -61,16 +64,19 @@ class PricingMatrixController extends Controller
     $categorySpec = $category->spec;
 
     // Determine max capacity
-    $maxCapacity = $ticketType !== "1"
-      ? 4 // Single Ticket max capacity
-      : ($categorySpec->category_type === "Suite" ? 8 : 6); // Private Cabin max capacity
+    $maxCapacity =
+      $ticketType !== '1'
+        ? 4 // Single Ticket max capacity
+        : ($categorySpec->category_type === 'Suite'
+          ? 8
+          : 6); // Private Cabin max capacity
 
     return [
-      "main_category" => [
-        "name" => $categorySpec->category_type,
-        "display_order" => $categorySpec->display_order,
-        "max_capacity" => $maxCapacity,
-        "categories" => $this->getCategories($categorySpec->category_type, $categories, $ticketType),
+      'main_category' => [
+        'name' => $categorySpec->category_type,
+        'display_order' => $categorySpec->display_order,
+        'max_capacity' => $maxCapacity,
+        'categories' => $this->getCategories($categorySpec->category_type, $categories, $ticketType),
       ],
     ];
   }
@@ -89,7 +95,9 @@ class PricingMatrixController extends Controller
       ->values();
 
     // Map categories for response
-    return $filteredCategories->map(fn($category) => $this->formatFilteredCategory($category, $categories, $ticketType));
+    return $filteredCategories->map(
+      fn($category) => $this->formatFilteredCategory($category, $categories, $ticketType)
+    );
   }
 
   /**
@@ -98,10 +106,26 @@ class PricingMatrixController extends Controller
   protected function formatFilteredCategory($category, $categories, $ticketType)
   {
     return [
-      "name" => $category->category_name,
-      "cabin_category_id" => $category->id,
-      "display_order" => $category->display_order,
-      "cabins" => MatrixHelper::getUniqueCategories($categories, $category->category_name, $ticketType),
+      'name' => $category->category_name,
+      'cabin_category_id' => $category->id,
+      'display_order' => $category->display_order,
+      // 'cabins' => $category->spec,
+      //
+      // 'cabins' => [
+      //   'name' => $category->spec->category_name,
+      //   'cabin_category_id' => $category->spec->cabin_category_id,
+      //   'code' => $category->spec->category_code,
+      //   'display_order' => $category->spec->display_order,
+      //   'decks' => $category->spec->decks,
+      //   'decks_static' => $category->spec->decks,
+      //   'iframe' => $category->spec->iframe,
+      //   'images' => $category->spec->images,
+      //   'full_title' => $category->spec->category_name,
+      //   'description' => $category->spec->description,
+      //   'price_and_availability' => $this->getPriceDetails($categories, $category->spec->category_code),
+      // ],
+
+      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $ticketType),
     ];
   }
 }

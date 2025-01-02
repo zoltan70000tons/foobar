@@ -31,12 +31,19 @@ class CustomerBookingRepository
   {
     $user_survivor_number = $user->survivor_number ?? null;
 
-    $booking = Booking::with('passengers', 'cabin', 'event')->where('booking_code', $bookingCode)->first();
+    $booking = Booking::with('passengers', 'cabin.category', 'event')->where('booking_code', $bookingCode)->first();
 
     // if booking is_single_occupancy then do not return other passengers
     if ($booking->is_single_occupancy) {
       $booking->passengers = $booking->passengers->filter(function ($passenger) use ($user_survivor_number) {
         return $passenger->survivor_number === $user_survivor_number;
+      });
+    }
+
+    // if booking payment_plan is INSTALLMENTS get all installments where passenger is lead_passenger
+    if ($booking->payment_plan === 'INSTALLMENTS') {
+      $booking->passengers->map(function ($passenger) {
+        $passenger->installments = $passenger->installments;
       });
     }
 
