@@ -89,6 +89,6 @@ class User extends Authenticatable implements CanResetPassword
   // Customer address
   public function customerAddress(): HasOne
   {
-    return $this->hasOne(CustomerAddress::class, "customer_id");
+    return $this->hasOne(CustomerAddress::class, "user_id");
   }
 }
