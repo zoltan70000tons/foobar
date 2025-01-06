@@ -24,6 +24,7 @@ return new class extends Migration
       $table->text('avatar')->nullable();
       $table->string('emergency_c_name', 255)->nullable();
       $table->string('emergency_c_phone', 20)->nullable();
+      $table->string('language', 4);
       $table->timestamps();
     });
   }

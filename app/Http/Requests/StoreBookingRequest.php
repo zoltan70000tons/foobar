@@ -23,11 +23,6 @@ class StoreBookingRequest extends FormRequest
   {
     return [
       // Passenger-related validation rules
-      'firstName' => 'required|string',
-      'middleName' => 'nullable|string',
-      'lastName' => 'required|string',
-      'dateOfBirth' => 'required|date',
-      'citizenship' => 'required|string',
       'addressLine1' => 'required|string',
       'addressLine2' => 'nullable|string',
       'city' => 'required|string',
