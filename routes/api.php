@@ -11,7 +11,6 @@ use App\Http\Controllers\AuthCustomer\RecoverAccountController;
 use App\Http\Controllers\Api\Customer\BookingController;
 use App\Http\Controllers\Api\Customer\CabinController;
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
-use App\Http\Controllers\Api\Customer\EditProfileController;
 use App\Http\Controllers\Api\Customer\AdjustmentsController;
 use App\Http\Controllers\Api\Customer\EventController;
 use App\Http\Controllers\Api\Customer\CartController;
@@ -101,14 +100,7 @@ Route::middleware(['clear_expired_reservation'])->group(function () {
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
-
-  // Profile
-  Route::get('/customers/{id}', [EditProfileController::class, 'getAccountIntel'])->where('id', '[0-9a-fA-F\-]{36}');
-  Route::get('/customers/{id}/details', [EditProfileController::class, 'getCustomerDetails']);
-  Route::post('/customers/preferred-language', [EditProfileController::class, 'updatePreferredLanguage']);
-  Route::post('/customers/update-phone', [EditProfileController::class, 'updatePhone']);
-  Route::post('/customers/update-email', [EditProfileController::class, 'updateEmail']);
-  Route::post('/customers/update-password', [EditProfileController::class, 'updatePassword']);
+  Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
 
   // Booking
   // --- booking init
