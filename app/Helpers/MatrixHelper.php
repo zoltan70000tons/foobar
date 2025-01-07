@@ -14,13 +14,13 @@ class MatrixHelper
   //  *
   //  * @return string | null
   //  */
-  // public static function getDecks($cabins)
-  // {
-  //   $decks = $cabins->pluck('deck')->unique()->values()->all();
+  public static function getDecks($cabins)
+  {
+    $decks = $cabins->pluck('deck')->unique()->values()->all();
 
-  //   // to string with coma
-  //   return implode(',', $decks);
-  // }
+    // to string with coma
+    return implode(',', $decks);
+  }
 
   /**
    * Return unique cabins type where cabin_number and decks are the same
@@ -88,7 +88,8 @@ class MatrixHelper
           'cabin_category_id' => $item->spec->id,
           'code' => $item->spec->category_code,
           'display_order' => $item->spec->display_order,
-          'decks' => $item->spec->decks, // Dynamic decks info
+          //'decks' => $item->spec->decks, // Dynamic decks info
+          'decks' => self::getDecks($item->cabins),
           'decks_static' => $item->spec->decks, // Static decks info
           'iframe' => $item->iframe,
           'images' => $item->images,
