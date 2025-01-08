@@ -2,20 +2,19 @@ import React from "react";
 import {
     Box,
     Typography,
-    LinearProgress,
+    Divider,
     Paper,
     Table,
     TableBody,
     TableCell,
     TableRow,
     Button,
-    Divider,
     Grid,
     IconButton,
     Avatar,
 } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EditIcon from "@mui/icons-material/Edit";
+import SectionPercentage from "@/Components/SectionPercentage";
 
 const getOrdinalSuffix = (n: number): string => {
     if (n === 1) return "st";
@@ -24,106 +23,203 @@ const getOrdinalSuffix = (n: number): string => {
     return "th";
 };
 
+type Passenger = {
+    lead_passenger: boolean;
+    passenger_allocated_cost: number;
+    passenger_balance: number;
+};
 
-const Payment = ({ booking, editMode }) => {
+type Adjustment = {
+    id: number;
+    code: string;
+    type: "DISCOUNT" | "ADDON";
+    operation: "FIXED" | "PERCENTAGE";
+    value: string;
+};
 
+type Booking = {
+    passengers: Passenger[];
+    payment_plan: string;
+    adjustments: Adjustment[];
+};
 
+const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean }) => {
     const passengers = booking.passengers;
     const totalPassengers = passengers.length;
-    //const isLeadPassenger = number === 1;
-    // const displayText = isLeadPassenger
-    //     ? "Lead Passenger"
-    //     : `${number}${getOrdinalSuffix(number)} Passenger`;
+    const pricePerPassenger = booking?.cabin?.category?.price;
+    const calculateAdjustments = (allocatedCost: number) => {
+        const grouped = booking.adjustments.reduce(
+            (acc, adj) => {
+                let adjustmentValue = parseFloat(adj.value);
+
+                if (adj.operation === "PERCENTAGE") {
+                    adjustmentValue = (adjustmentValue / 100) * allocatedCost;
+                }
+
+                if (adj.type === "DISCOUNT") {
+                    acc.discounts.push({ code: adj.code, value: adjustmentValue });
+                    acc.totalDiscounts += adjustmentValue;
+                } else if (adj.type === "ADDON") {
+                    acc.addons.push({ code: adj.code, value: adjustmentValue });
+                    acc.totalAddons += adjustmentValue;
+                }
+
+                return acc;
+            },
+            {
+                discounts: [] as { code: string; value: number }[],
+                addons: [] as { code: string; value: number }[],
+                totalDiscounts: 0,
+                totalAddons: 0,
+            }
+        );
+        return grouped;
+    };
 
     return (
         <Grid>
-            {
-                passengers.map((pax, index) => {
-                    return (<Box>
-                        <Box display="flex" sx={{ textAlign: "center", width: "100%", justifyContent: "center" }}>
-                            <Divider orientation="vertical" variant="middle" flexItem sx={{
-                                height: '100px', "&::before, &::after": {
-                                    borderColor: "secondary.light", border: '1px dashed',
-                                },
-                            }}> <Avatar
-                                sx={{ background: "#20a22d", color: "#fff", fontSize: "0.9rem" }}
+            {passengers.map((pax, index) => {
+                const displayText = pax.lead_passenger
+                    ? "Lead Passenger"
+                    : `${index + 1}${getOrdinalSuffix(index + 1)} Passenger`;
 
+                const allocatedCost = pax.passenger_allocated_cost;
+                const { discounts, addons, totalDiscounts, totalAddons } =
+                    calculateAdjustments(allocatedCost);
+
+                const totalCostAfterAdjustments = pricePerPassenger - totalDiscounts + totalAddons;
+
+                return (
+                    <Box key={index}>
+                        <Box
+                            display="flex"
+                            sx={{
+                                textAlign: "center",
+                                width: "100%",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <Divider
+                                orientation="vertical"
+                                variant="middle"
+                                flexItem
+                                sx={{
+                                    height: "100px",
+                                    "&::before, &::after": {
+                                        borderColor: "secondary.light",
+                                        border: "1px dashed",
+                                    },
+                                }}
                             >
+                                <Avatar
+                                    sx={{
+                                        background: "#20a22d",
+                                        color: "#fff",
+                                        fontSize: "0.9rem",
+                                    }}
+                                >
                                     {index + 1}/{totalPassengers}
-                                </Avatar></Divider>
+                                </Avatar>
+                            </Divider>
                         </Box>
 
-
-                        <Typography variant="h5" mb={2} sx={{textAlign:'center'}}>
-                            {pax.lead_passenger ? "Lead Passenger" : `${index+1}${getOrdinalSuffix(index+1)} Passenger`}
+                        <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
+                            {displayText}
                         </Typography>
 
-
-                        <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c" }}>
-                            <Box display="flex" alignItems="center" mb={2}>
-                                <CheckCircleIcon sx={{ color: "green", mr: 1 }} />
-                                <Typography color="green">Payment is complete</Typography>
-                            </Box>
-
-                            <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="space-between"
-                                mb={1}
-                            >
-                                <Typography>Paid:</Typography>
-                                <Typography>100%</Typography>
-                            </Box>
-
-                            <LinearProgress
-                                variant="determinate"
-                                value={100}
-                                sx={{ height: 10, borderRadius: 5, bgcolor: "gray" }}
+                        <Paper
+                            variant="outlined"
+                            sx={{ p: 3, backgroundColor: "#1c1c1c", mb: 4 }}
+                        >
+                            {/* SectionPercentage Integration */}
+                            <SectionPercentage
+                                passenger={{
+                                    passenger_allocated_cost: totalCostAfterAdjustments,
+                                    passenger_balance: pax.passenger_balance,
+                                }}
+                                booking={{ payment_plan: booking.payment_plan }}
+                                installments={[
+                                    { due_date: "2025-01-10" },
+                                    { due_date: "2025-02-10" },
+                                    { due_date: "2025-03-10" },
+                                ]}
+                                setIsBookingError={(error) => console.error("Booking Error:", error)}
                             />
 
+                            {/* Payment Details */}
                             <Table size="small" sx={{ mt: 2, color: "white" }}>
                                 <TableBody>
                                     <TableRow>
                                         <TableCell>Payment type:</TableCell>
-                                        <TableCell align="right">Full Payment</TableCell>
                                         <TableCell align="right">
-                                            <IconButton color="secondary">
-                                                <EditIcon />
-                                            </IconButton>
+                                            {booking.payment_plan === "PAY_IN_FULL"
+                                                ? "Full Payment"
+                                                : "Installments"}
                                         </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Paid:</TableCell>
-                                        <TableCell align="right" sx={{ color: "#3f8cff" }}>
-                                            $3,178.35
+                                        <TableCell align="right" >
+                                            ${Number(pax.passenger_balance || 0).toFixed(2)}
                                         </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Balance:</TableCell>
-                                        <TableCell align="right">$0</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Official Ticket Price:</TableCell>
-                                        <TableCell align="right">USD 2,833.00</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>5% Discount:</TableCell>
-                                        <TableCell align="right">USD 141.65</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Net Ticket Price:</TableCell>
-                                        <TableCell align="right">USD 1,800.00</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>Taxes & Fees:</TableCell>
-                                        <TableCell align="right">USD 180.00</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>
-                                            <Typography fontWeight="bold">Total Ticket Price:</Typography>
-                                        </TableCell>
                                         <TableCell align="right">
-                                            <Typography fontWeight="bold">USD 3,178.35</Typography>
+                                            ${(
+                                                totalCostAfterAdjustments - Number(pax.passenger_balance || 0)
+                                            ).toFixed(2)}
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Price Per Passenger:</TableCell>
+                                        <TableCell align="right">
+                                            ${Number(pricePerPassenger || 0).toFixed(2)}
+                                        </TableCell>
+                                    </TableRow>
+
+                                    {/* List Discounts */}
+                                    {discounts.map((discount, i) => (
+                                        <TableRow key={`discount-${i}`}>
+                                            <TableCell>Discount ({discount.code}):</TableCell>
+                                            <TableCell align="right">
+                                                -${discount.value.toFixed(2)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    <TableRow>
+                                        <TableCell style={{color:"#4CAF50" }}>Total Discounts:</TableCell>
+                                        <TableCell align="right">
+                                            <Box component="span" sx={{ color: "#4CAF50" }}>
+                                                -${totalDiscounts.toFixed(2)}
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+
+
+                                    {/* List Addons */}
+                                    {addons.map((addon, i) => (
+                                        <TableRow key={`addon-${i}`}>
+                                            <TableCell>Addon ({addon.code}):</TableCell>
+                                            <TableCell align="right">
+                                                +${addon.value.toFixed(2)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    <TableRow>
+                                        <TableCell style={{color:"#FF9800" }}>Total Addons:</TableCell>
+                                        <TableCell align="right">
+                                            <Box component="span" sx={{ color: "#FF9800" }}>
+                                                +${totalAddons.toFixed(2)}
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Amount to Pay:</TableCell>
+                                        <TableCell align="right">
+                                            <Box component="span" sx={{ color: "#2196F3" }}>
+                                                ${totalCostAfterAdjustments.toFixed(2)}
+                                            </Box>
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -152,11 +248,10 @@ const Payment = ({ booking, editMode }) => {
                                 </Grid>
                             </Grid>
                         </Paper>
-                    </Box>);
-                })
-            }
-
-        </Grid >
+                    </Box>
+                );
+            })}
+        </Grid>
     );
 };
 
