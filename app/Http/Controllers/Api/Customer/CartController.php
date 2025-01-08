@@ -22,7 +22,7 @@ class CartController extends Controller
     $adjustments = Adjustment::where('event_id', $eventId)->first();
     $taxAddon = $adjustments ? $adjustments->where('code', 'TAX')->first()->value : 0;
 
-    $user = Auth::check() ? Auth::user() : null;
+    //$user = Auth::check() ? Auth::user() : null;
 
     // $customer = $user && $user->hasRole('Customer') ? $user : null;
     //$membership = $customer ? $customer->membershipTypes->first() : null;
@@ -60,6 +60,8 @@ class CartController extends Controller
       // add static tax from adjustments to the cart session
       $cart['tax'] = $taxAddon;
     }
+
+    \Log::info('CartController@index', ['cart' => $cart]);
 
     return response()->json($cart, 200);
   }
@@ -141,7 +143,7 @@ class CartController extends Controller
       'cabin_code' => 'nullable|string',
       'cabin_category' => 'nullable|integer',
       'cabin_category_decks' => 'nullable|string',
-      'cabin_category_type' => 'nullable|string',
+      'cabin_category_type' => 'required|string',
     ]);
 
     $request->session()->put('cart', $validated);
