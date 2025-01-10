@@ -88,6 +88,7 @@ class CartController extends Controller
       'cabin_number' => 'nullable|integer',
       'reservation_id' => 'nullable|integer',
       'reservation_timestamp' => 'nullable|string',
+      'cabin_type' => 'nullable|string',
       'cabin_price' => 'nullable|string',
       'cabin_capacity' => 'nullable|integer',
       'cabin_code' => 'nullable|string',
