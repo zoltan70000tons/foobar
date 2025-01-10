@@ -6,7 +6,6 @@ use App\Helpers\MatrixHelper;
 use App\Http\Controllers\Controller;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
-use App\Enums\StatusCabin;
 
 class PricingMatrixController extends Controller
 {
@@ -36,6 +35,7 @@ class PricingMatrixController extends Controller
    */
   public function show($ticketType)
   {
+    // \DB::enableQueryLog();
     // Fetch categories with cabins and specs based on ticket type
     $categories = CabinCategory::with([
       'cabins' => fn($query) => $query->where('cabin_type_id', $ticketType),
@@ -109,22 +109,6 @@ class PricingMatrixController extends Controller
       'name' => $category->category_name,
       'cabin_category_id' => $category->id,
       'display_order' => $category->display_order,
-      // 'cabins' => $category->spec,
-      //
-      // 'cabins' => [
-      //   'name' => $category->spec->category_name,
-      //   'cabin_category_id' => $category->spec->cabin_category_id,
-      //   'code' => $category->spec->category_code,
-      //   'display_order' => $category->spec->display_order,
-      //   'decks' => $category->spec->decks,
-      //   'decks_static' => $category->spec->decks,
-      //   'iframe' => $category->spec->iframe,
-      //   'images' => $category->spec->images,
-      //   'full_title' => $category->spec->category_name,
-      //   'description' => $category->spec->description,
-      //   'price_and_availability' => $this->getPriceDetails($categories, $category->spec->category_code),
-      // ],
-
       'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $ticketType),
     ];
   }

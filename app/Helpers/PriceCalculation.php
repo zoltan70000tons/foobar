@@ -15,20 +15,26 @@ class PriceCalculation
     // Extract parameters from the input array
     $cabinPrice = (float) $params['cabinPrice'];
     $cabinCapacity = (int) $params['cabinCapacity'];
-    //$userDiscount = (float) $params['userDiscount'];
     $cabinType = (bool) $params['cabinType'];
     $selectedAdjustments = $params['selectedAdjustments'];
     $adjustments = $params['adjustments'];
 
+    \Log::info('collected params', $params);
+
     // Helper function to round to two decimal places
-    $roundToTwoDecimals = function ($value) {
-      return round($value * 100) / 100;
-    };
+    $roundToTwoDecimals = fn($value) => round($value * 100) / 100;
 
-    // Validate and clamp discounts between 0% and 100%
-    //$validatedUserDiscount = max(0, min($userDiscount, 100));
-
+    /*
+    |--------------------------------------------------------------------------
+    | Discounts
+    |--------------------------------------------------------------------------
+    |
+    | Calculate the total discount based on the selected addons.
+    |
+    */
     $sumOfPercentagesDiscounts = 0;
+    $sumOfFixedDiscounts = 0;
+
     // Ensure $selectedAdjustments is an array and not empty
     if (is_array($selectedAdjustments) && !empty($selectedAdjustments)) {
       foreach ($selectedAdjustments as $addon) {
@@ -44,14 +50,27 @@ class PriceCalculation
           $sumOfPercentagesDiscounts += $adjustment->value;
         }
       }
+
+      foreach ($selectedAdjustments as $addon) {
+        // Find the matching adjustment
+        $adjustment = $adjustments
+          ->where('code', $addon['code'])
+          ->where('operation', 'FIXED')
+          ->where('type', 'DISCOUNT')
+          ->first();
+
+        // Add the value only if the adjustment exists
+        if ($adjustment && isset($adjustment->value)) {
+          $sumOfFixedDiscounts += $adjustment->value;
+        }
+      }
     }
 
     $validatedPaymentDiscount = max(0, min($sumOfPercentagesDiscounts, 100));
 
     // $userDiscountPercentage = $validatedUserDiscount / 100;
     $addonsDiscountPercentage = $validatedPaymentDiscount / 100;
-
-    $sumOfDiscounts = $addonsDiscountPercentage;
+    $sumOfDiscounts = $addonsDiscountPercentage + $sumOfFixedDiscounts;
 
     // Ensure the total discount doesn't exceed 100%
     $totalDiscountPercentage = min($sumOfDiscounts, 1);
@@ -59,9 +78,39 @@ class PriceCalculation
     // Calculate base price after discount
     $discountedPrice = $roundToTwoDecimals($cabinPrice - $cabinPrice * $totalDiscountPercentage);
 
-    // addons
-    $sumOfAddons = 0;
+    \Log::info('discounted price', [
+      'validatedPaymentDiscount' => $validatedPaymentDiscount,
+      'sumOfPercentagesDiscounts' => $sumOfPercentagesDiscounts,
+      'totalDiscountPercentage' => $totalDiscountPercentage,
+      'discountedPrice' => $discountedPrice,
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Addons
+    |--------------------------------------------------------------------------
+    |
+    | Calculate the total price of all selected addons.
+    |
+    */
+    $sumOfPercentageAddons = 0;
+    $sumOfFixedAddons = 0;
+
     if (is_array($selectedAdjustments) && !empty($selectedAdjustments)) {
+      foreach ($selectedAdjustments as $addon) {
+        // Find the matching adjustment
+        $adjustment = $adjustments
+          ->where('code', $addon['code'])
+          ->where('operation', 'PERCENTAGE')
+          ->where('type', 'ADDON')
+          ->first();
+
+        // Add the value only if the adjustment exists
+        if ($adjustment && isset($adjustment->value)) {
+          $sumOfPercentageAddons += $adjustment->value;
+        }
+      }
+
       foreach ($selectedAdjustments as $addon) {
         // Find the matching adjustment
         $adjustment = $adjustments
@@ -72,25 +121,35 @@ class PriceCalculation
 
         // Add the value only if the adjustment exists
         if ($adjustment && isset($adjustment->value)) {
-          $sumOfAddons += $adjustment->value;
+          $sumOfFixedAddons += $adjustment->value;
         }
       }
     }
 
     // Add single ticket fee (only for one passenger)
-    $totalPassenger = $roundToTwoDecimals($discountedPrice + $sumOfAddons);
+    $totalPassenger = $roundToTwoDecimals($discountedPrice + $sumOfFixedAddons);
 
     $total = $totalPassenger * ($cabinType ? $cabinCapacity : 1);
+
+    \Log::info('total price', [
+      'total' => $total,
+      'totalPassenger' => $totalPassenger,
+      'sumOfFixedAddons' => $sumOfFixedAddons,
+    ]);
 
     // Calculate total savings
     $saveCalc = $cabinPrice - $discountedPrice;
     $save = number_format($saveCalc, 2, '.', '');
 
+    \Log::info('total savings', [
+      'save' => $save,
+    ]);
+
     return [
       'total' => $total,
       'totalPassenger' => $totalPassenger,
       'save' => $save,
-      'extras' => $sumOfAddons,
+      'extras' => $sumOfFixedAddons,
     ];
   }
 }

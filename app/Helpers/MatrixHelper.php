@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Enums\StatusCabin;
+use Illuminate\Support\Facades\DB;
 
 // use log
 use Illuminate\Support\Facades\Log;
@@ -14,61 +15,16 @@ class MatrixHelper
   //  *
   //  * @return string | null
   //  */
-  // public static function getDecks($cabins)
-  // {
-  //   $decks = $cabins->pluck('deck')->unique()->values()->all();
-
-  //   // to string with coma
-  //   return implode(',', $decks);
-  // }
-
-  /**
-   * Return unique cabins type where cabin_number and decks are the same
-   *
-   * @return array
-   */
-  // public static function getUniqueCategories(
-  //   $categories,
-  //   $parentCategoryName,
-  //   $ticketType
-  // ) {
-  //   $filteredCategories = $categories->filter(function ($item) use (
-  //     $parentCategoryName
-  //   ) {
-  //     return $item->category_name === $parentCategoryName;
-  //   });
-
-  //   // from filtered categories return only these which cabins have cabin_type_id equal to ticketType
-  //   $filteredCategoriesWithCabins = $filteredCategories->filter(function (
-  //     $item
-  //   ) use ($ticketType) {
-  //     return $item->cabins->where("cabin_type_id", $ticketType)->isNotEmpty();
-  //   });
-
-  //   // dd($filteredCategories->toArray());
-
-  //   return $filteredCategoriesWithCabins
-  //     ->map(function ($item) use ($categories) {
-  //       return [
-  //         "name" => $item->category_name,
-  //         "cabin_category_id" => $item->id,
-  //         "code" => $item->category_code,
-  //         "display_order" => $item->display_order,
-  //         "decks" => self::getDecks($item->cabins), // Dynamically obtained from each individual cabin in the category: Used Cabin Selection.
-  //         "decks_static" => $item->decks, // Harcoded in cabin_categories table: Used only for pricing matrix and cabin description.
-  //         "iframe" => $item->iframe,
-  //         "images" => $item->images,
-  //         "full_title" => $item->getTitleAttribute(),
-  //         "description" => $item->description, // JSON object with multi-language descriptions
-  //         "price_and_availability" => self::getPriceDetails(
-  //           $categories,
-  //           $item->category_code
-  //         ),
-  //       ];
-  //     })
-  //     ->unique("code")
-  //     ->values();
-  // }
+  public static function getDecks($cabinCategoryId, $ticketType)
+  {
+    return DB::table('cabins')
+      ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
+      ->where('cabins.cabin_category_id', $cabinCategoryId)
+      ->where('cabins.cabin_type_id', $ticketType)
+      ->distinct()
+      ->pluck('cabin_specs.deck')
+      ->implode(',');
+  }
 
   public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
   {
@@ -82,13 +38,13 @@ class MatrixHelper
 
     // Map and transform the filtered categories in one step
     return $filteredCategories
-      ->map(function ($item) use ($categories) {
+      ->map(function ($item) use ($categories, $ticketType) {
         return [
           'name' => $item->spec->category_name,
           'cabin_category_id' => $item->spec->id,
           'code' => $item->spec->category_code,
           'display_order' => $item->spec->display_order,
-          'decks' => $item->spec->decks, // Dynamic decks info
+          'decks' => self::getDecks($item->spec->id, $ticketType), // Dynamic decks info
           'decks_static' => $item->spec->decks, // Static decks info
           'iframe' => $item->iframe,
           'images' => $item->images,
