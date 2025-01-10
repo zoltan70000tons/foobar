@@ -170,7 +170,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
           editMode={editMode}
         />
         {/* <Payment booking={booking} passenger={null} number={2} count={capacity} editMode={editMode} /> */}
-        <ActionList editMode={editMode} />
+        {/* <ActionList editMode={editMode} /> */}
         <BookingSidebar
           isOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}

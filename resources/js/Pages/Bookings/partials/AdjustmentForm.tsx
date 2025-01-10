@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
     Box,
@@ -15,8 +16,10 @@ import {
     ListItemIcon,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DiscountOutlined from '@mui/icons-material/DiscountOutlined';
-import AddOutlined from '@mui/icons-material/AddOutlined';
+import DiscountOutlined from "@mui/icons-material/DiscountOutlined";
+import AddOutlined from "@mui/icons-material/AddOutlined";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 type AdjustmentFormProps = {
     booking: Booking;
@@ -26,10 +29,11 @@ type AdjustmentFormProps = {
 
 type Booking = {
     id: number;
-    adjustments?: AdjustmentData[]; // List of adjustments associated with the booking
+    adjustments?: AdjustmentData[];
 };
 
 type AdjustmentData = {
+    id: number;
     type: "DISCOUNT" | "ADDON";
     operation: "FIXED" | "PERCENTAGE";
     value: number;
@@ -41,7 +45,6 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
     editMode,
     onSubmit,
 }) => {
-    // State for adjustment form data
     const [formData, setFormData] = useState<AdjustmentData>({
         type: "DISCOUNT",
         operation: "FIXED",
@@ -49,24 +52,21 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
         code: "",
     });
 
-    console.log(booking);
-
-    // Modal open/close state
-    const [open, setOpen] = useState(false);
-
-    // State to manage adjustments list
     const [adjustments, setAdjustments] = useState<AdjustmentData[]>(
         booking.adjustments || []
     );
 
-    // Load adjustments when booking data changes
+    const [open, setOpen] = useState(false);
+    const [currentEditingIndex, setCurrentEditingIndex] = useState<number | null>(
+        null
+    );
+
     useEffect(() => {
         if (booking.adjustments) {
             setAdjustments(booking.adjustments);
         }
     }, [booking]);
 
-    // Handle form input changes
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
@@ -77,8 +77,39 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
         }));
     };
 
-    // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleOpen = () => {
+        setFormData({
+            type: "DISCOUNT",
+            operation: "FIXED",
+            value: 0,
+            code: "",
+        });
+        setCurrentEditingIndex(null);
+        setOpen(true);
+    };
+
+    const handleEdit = (index: number) => {
+        setFormData(adjustments[index]);
+        setCurrentEditingIndex(index);
+        setOpen(true);
+    };
+
+    const handleDelete = async (index: number) => {
+        const adjustmentToDelete = adjustments[index];
+        try {
+
+            await axios.post(route('bookings.deleteAdjustment'), { id: adjustmentToDelete.id, booking_id: booking.id, event_id: booking.event_id });
+            const updatedAdjustments = adjustments.filter((_, i) => i !== index);
+            setAdjustments(updatedAdjustments);
+        } catch (error) {
+            console.error("Failed to delete adjustment:", error);
+            alert("An error occurred while trying to delete the adjustment.");
+        }
+    };
+
+    const handleClose = () => setOpen(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formData.value <= 0) {
@@ -86,51 +117,101 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
             return;
         }
 
-        // Call the onSubmit function provided by the parent component
-        onSubmit(formData);
+        try {
+            if (currentEditingIndex !== null) {
 
-        // Update adjustments list and reset form data
-        setAdjustments((prev) => [...prev, formData]);
-        setFormData({
-            type: "DISCOUNT",
-            operation: "FIXED",
-            value: 0,
-        });
-        setOpen(false);
+                const response = await axios.post(route('bookings.updateAdjustment'), {
+                    id: formData.id,
+                    code: formData.code,
+                    type: formData.type,
+                    operation: formData.operation,
+                    value: formData.value,
+                    restrictions: null,
+                    booking_id: booking.id,
+                    event_id: booking.event_id,
+                });
+
+                const updatedAdjustments = adjustments.map((adj, index) =>
+                    index === currentEditingIndex ? response.data.adjustment : adj
+                );
+                setAdjustments(updatedAdjustments);
+            } else {
+                // Crear un nuevo ajuste
+                const response = await axios.post(route('bookings.createAdjustment'), {
+                    code: formData.code,
+                    type: formData.type,
+                    operation: formData.operation,
+                    value: formData.value,
+                    restrictions: null,
+                    booking_id: booking.id,
+                    event_id: booking.event_id,
+                });
+
+                setAdjustments((prev) => [...prev, response.data.adjustment]);
+            }
+
+            // Cerrar el modal y reiniciar el formulario
+            setOpen(false);
+            setFormData({
+                type: "DISCOUNT",
+                operation: "FIXED",
+                value: 0,
+                code: "",
+            });
+            setCurrentEditingIndex(null);
+        } catch (error) {
+            console.error("Failed to save adjustment:", error);
+            alert("An error occurred while trying to save the adjustment.");
+        }
     };
 
-    // Open modal
-    const handleOpen = () => setOpen(true);
-
-    // Close modal
-    const handleClose = () => setOpen(false);
 
     return (
         <Box>
-            {/* Title displaying the booking ID */}
             <Typography variant="h5" mb={2}>
                 Adjustments
             </Typography>
             <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
-                {/* List of associated adjustments */}
                 <Box mb={3}>
                     {adjustments.length > 0 ? (
                         <List>
                             {adjustments.map((adjustment, index) => (
-                                <ListItem key={index}>
-                                    {['DISCOUNT', 'ADDON'].includes(adjustment.type) && (
-                                        <ListItemIcon>
-                                            {adjustment.type === 'DISCOUNT' ? (
-                                                <DiscountOutlined color="primary" />
-                                            ) : (
-                                                <AddOutlined color="secondary" />
-                                            )}
-                                        </ListItemIcon>
+                                <ListItem key={index} sx={{ p: 0 }} secondaryAction={
+                                    editMode && (
+                                        <>
+                                            <IconButton
+                                                edge="end"
+                                                aria-label="edit"
+                                                onClick={() => handleEdit(index)}
+                                            >
+                                                <EditIcon />
+                                            </IconButton>
+                                            <IconButton
+                                                edge="end"
+                                                aria-label="delete"
+                                                onClick={() => handleDelete(index)}
+                                            >
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </>
+                                    )
+                                }>
+                                    {adjustment && (
+                                        <>
+                                            <ListItemIcon>
+                                                {adjustment.type === "DISCOUNT" ? (
+                                                    <DiscountOutlined color="primary" />
+                                                ) : (
+                                                    <AddOutlined color="secondary" />
+                                                )}
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={`${adjustment.type} (${adjustment.code})`}
+                                                secondary={`Value: ${adjustment.value} ${adjustment.operation === "PERCENTAGE" ? "%" : ""
+                                                    }`}
+                                            />
+                                        </>
                                     )}
-                                    <ListItemText
-                                        primary={`${adjustment.type} (${adjustment.operation})`}
-                                        secondary={`Value: ${adjustment.value}`}
-                                    />
                                 </ListItem>
                             ))}
                         </List>
@@ -138,8 +219,6 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                         <Typography>No adjustments associated yet.</Typography>
                     )}
                 </Box>
-
-                {/* Button to open the modal for adding a new adjustment */}
                 {editMode && (
                     <Button
                         variant="contained"
@@ -150,12 +229,10 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                         Add Adjustment
                     </Button>
                 )}
-
-                {/* Modal for creating a new adjustment */}
                 <Modal open={open} onClose={handleClose}>
                     <Box
                         sx={{
-                            position: "absolute" as "absolute",
+                            position: "absolute",
                             top: "50%",
                             left: "50%",
                             transform: "translate(-50%, -50%)",
@@ -168,15 +245,10 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                         component="form"
                         onSubmit={handleSubmit}
                     >
-                        {/* Modal title */}
                         <Typography variant="h6" mb={2}>
-                            Create Adjustment
+                            {currentEditingIndex !== null ? "Edit Adjustment" : "Create Adjustment"}
                         </Typography>
-
-
-
                         <Grid container spacing={2}>
-                            {/* Input for entering code */}
                             <Grid item xs={12}>
                                 <TextField
                                     label="Code"
@@ -185,10 +257,8 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                                     value={formData.code}
                                     onChange={handleChange}
                                     fullWidth
-                                // inputProps={{ step: 0.01, min: 0 }}
                                 />
                             </Grid>
-                            {/* Dropdown for selecting type */}
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     select
@@ -202,8 +272,6 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                                     <MenuItem value="ADDON">Addon</MenuItem>
                                 </TextField>
                             </Grid>
-
-                            {/* Dropdown for selecting operation */}
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     select
@@ -217,8 +285,6 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                                     <MenuItem value="PERCENTAGE">Percentage</MenuItem>
                                 </TextField>
                             </Grid>
-
-                            {/* Input for entering value */}
                             <Grid item xs={12}>
                                 <TextField
                                     label="Value"
@@ -231,16 +297,9 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                                 />
                             </Grid>
                         </Grid>
-
-                        {/* Submit button for the modal */}
                         <Box mt={3}>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                            >
-                                Save Adjustment
+                            <Button type="submit" variant="contained" color="primary" fullWidth>
+                                {currentEditingIndex !== null ? "Update Adjustment" : "Save Adjustment"}
                             </Button>
                         </Box>
                     </Box>

@@ -162,7 +162,9 @@ Route::middleware("auth")->group(function () {
   });
 
   Route::prefix("adjustments")->group(function () {
-    Route::post("/add-to-booking", [AdjustmentsController::class, "createAdjustment"])->name("bookings.addAdjustment");
+    Route::post("/add-to-booking", [AdjustmentsController::class, "createAdjustment"])->name("bookings.createAdjustment");
+    Route::post("/delete", [AdjustmentsController::class, "deleteAdjustment"])->name("bookings.deleteAdjustment");
+    Route::post("/update", [AdjustmentsController::class, "updateAdjustment"])->name("bookings.updateAdjustment");
   });
 });
 

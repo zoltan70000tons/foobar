@@ -6,11 +6,19 @@ use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\User;
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\Auth;
 use Log;
 
 class PassengerRepository implements PassengerInterface
 {
+  protected PaymentService $paymentService;
+
+  public function __construct(
+    PaymentService $paymentService
+  ) {
+    $this->paymentService = $paymentService;
+  }
   public function create($data, Booking $booking): Passenger|bool
   {
     Log::info('PassengerRepository::create', ['data' => $data]);
@@ -74,7 +82,13 @@ class PassengerRepository implements PassengerInterface
       }
 
       if ($availableSeats > 0) {
-        $result = $this->fillAditionalSeats($availableSeats, $booking->id, $allocatedCost);
+        $installments = false;
+        if(is_numeric($data['number_of_installments']) && $data['number_of_installments'] > 1){
+            //here we have to enable installments
+            $installments = $data['number_of_installments'];
+           // $this->paymentService->createInstallments($passId, $installments);
+        }
+        $result = $this->fillAditionalSeats($availableSeats, $booking->id, $allocatedCost, $installments);
         if (!$result) {
           throw new \Exception('Error creating seats.');
         }
@@ -89,7 +103,7 @@ class PassengerRepository implements PassengerInterface
     }
   }
 
-  private function fillAditionalSeats($seats, $bookingId, $allocatedCost): bool
+  private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false): bool
   {
     try {
       for ($i = 0; $i < $seats; $i++) {
@@ -126,7 +140,10 @@ class PassengerRepository implements PassengerInterface
           'was_on_board' => false,
         ];
         \Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
-        Passenger::create($additionalPassengerData);
+        $seat = Passenger::create($additionalPassengerData);
+         if(is_numeric($installments) && $installments > 1){
+          $this->paymentService->createInstallments($seat->id, $installments);
+         }
       }
       return true;
     } catch (\Exception $e) {
