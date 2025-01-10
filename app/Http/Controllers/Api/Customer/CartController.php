@@ -12,69 +12,74 @@ use App\Models\CabinCategory;
 
 class CartController extends Controller
 {
-  // get items from cart session
+  /*
+  |--------------------------------------------------------------------------
+  | Index
+  |--------------------------------------------------------------------------
+  |
+  |  Fetch the cart data from session
+  |
+  */
   public function index(Request $request, $eventId)
   {
-    // if cart session is empty, return an empty array else return the cart session
+    // Reload session to ensure latest data
     $cart = $request->session()->get('cart', []);
     $eventId = $cart['event_id'] ?? $eventId;
 
-    $adjustments = Adjustment::where('event_id', $eventId)->first();
-    $taxAddon = $adjustments ? $adjustments->where('code', 'TAX')->first()->value : 0;
+    if (!$cart) {
+      \Log::info('Cart is empty');
+      return response()->json(['cart' => []], 200);
+    }
 
-    //$user = Auth::check() ? Auth::user() : null;
+    // Fetch adjustments and tax
+    $adjustments = Adjustment::where('event_id', $eventId)->get();
+    $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
 
-    // $customer = $user && $user->hasRole('Customer') ? $user : null;
-    //$membership = $customer ? $customer->membershipTypes->first() : null;
-
-    // 1. price cart get from database based on id
-    // 2. same with cabin capacity
-
-    if ($cart && isset($cart['cabin_price'])) {
-      $cabin = CabinCategory::where('event_id', $eventId)
-        ->where('id', $cart['cabin_category'])
-        ->first();
-
-      if (!$cabin) {
-        return response()->json(['message' => 'Cabin category not found'], 404);
-      }
-
-      $price = $cabin->price;
-      $capacity = $cabin->spec->capacity;
-
+    if (isset($cart['cabin_price'])) {
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
-        'cabinPrice' => $price,
-        'cabinCapacity' => $capacity,
-        'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
-        //'userDiscount' => $membership->discount_value ?? null,
+        'cabinPrice' => (float) $cart['cabin_price'],
+        'cabinCapacity' => (int) $cart['cabin_capacity'],
+        'cabinType' => $cart['cabin_type'] === 'private-cabin',
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
       ]);
 
-      // add the calculated price to the cart session
-      $cart['price_total'] = $priceCalc['total'];
-      $cart['price_total_passenger'] = $priceCalc['totalPassenger'];
-      $cart['price_save'] = $priceCalc['save'];
-      $cart['price_extras'] = $priceCalc['extras'];
-
-      // add static tax from adjustments to the cart session
-      $cart['tax'] = $taxAddon;
+      $cart = array_merge($cart, [
+        'price_total' => $priceCalc['total'],
+        'price_total_passenger' => $priceCalc['totalPassenger'],
+        'price_save' => $priceCalc['save'],
+        'price_extras' => $priceCalc['extras'],
+        'tax' => $taxAddon,
+      ]);
     }
 
     \Log::info('CartController@index', ['cart' => $cart]);
-
     return response()->json($cart, 200);
   }
 
-  // Only check the user have a cart session
-  public function check(Request $request)
-  {
-    $cart = $request->session()->get('cart', []);
+  /*
+  |--------------------------------------------------------------------------
+  | Check JG I WIll remove this but i want to keep it for now
+  |--------------------------------------------------------------------------
+  |
+  | Check if the cart data is in session
+  |
+  */
+  // public function check(Request $request)
+  // {
+  //   $cart = $request->session()->get('cart', []);
 
-    return response()->json(['cart' => $cart], 200);
-  }
+  //   return response()->json(['cart' => $cart], 200);
+  // }
 
-  // Add item to cart session
+  /*
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  |
+  | Store the cart data in session
+  |
+  */
   public function store(Request $request)
   {
     $validated = $request->validate([
@@ -88,7 +93,6 @@ class CartController extends Controller
       'cabin_number' => 'nullable|integer',
       'reservation_id' => 'nullable|integer',
       'reservation_timestamp' => 'nullable|string',
-      'cabin_type' => 'nullable|string',
       'cabin_price' => 'nullable|string',
       'cabin_capacity' => 'nullable|integer',
       'cabin_code' => 'nullable|string',
@@ -98,34 +102,44 @@ class CartController extends Controller
       'force_clear' => 'nullable|boolean',
     ]);
 
-    // set cabin number null
+    // Set cabin_number to null
     $validated['cabin_number'] = null;
 
-    // if force_clear is true, delete the reservation from db and forget it from session
+    // Force clear session if requested
     if ($request->input('force_clear', false)) {
-      if ($request->session()->has('reserved_cabin_id')) {
-        $reservationId = $request->session()->get('reserved_cabin_id');
-
-        $reservation = TemporaryReservation::find($reservationId);
-
-        if ($reservation) {
-          $reservation->delete();
-        }
-
-        $request->session()->forget('reserved_cabin_id');
-      }
+      \Log::info('Force clearing cart session');
+      $request->session()->forget('cart');
     }
 
-    if ($request->session()->has('cart')) {
-      $this->destroy($request);
-    }
+    // Save validated data to session
+    $defaultCart = [
+      'event_id' => null,
+      'cabin_type' => null,
+      'addons' => [],
+      'step' => null,
+      'reservation_id' => null,
+      'reservation_timestamp' => null,
+      'cabin_price' => null,
+      'cabin_capacity' => null,
+      'cabin_category' => null,
+    ];
 
-    session(['cart' => $validated]);
+    $mergedCart = array_merge($defaultCart, $validated);
+
+    \Log::info('Saving to session', ['cart' => $mergedCart]);
+    session(['cart' => $mergedCart]);
 
     return response()->json(['message' => 'Cart updated successfully'], 200);
   }
 
-  // Update cart session
+  /*
+  |--------------------------------------------------------------------------
+  | Update
+  |--------------------------------------------------------------------------
+  |
+  |  Update the cart data in session
+  |
+  */
   public function update(Request $request)
   {
     $validated = $request->validate([
@@ -152,7 +166,14 @@ class CartController extends Controller
     return response()->json(['message' => 'Cart updated successfully'], 200);
   }
 
-  // destroy cart session
+  /*
+  |--------------------------------------------------------------------------
+  | Destroy
+  |--------------------------------------------------------------------------
+  |
+  |  Clear the cart data from session
+  |
+  */
   public function destroy(Request $request)
   {
     $request->session()->forget('cart');

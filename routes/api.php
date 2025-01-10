@@ -78,7 +78,7 @@ Route::middleware(['one_booking_per_user'])->group(function () {
   Route::delete('/cart', [CartController::class, 'destroy']);
 });
 
-Route::get('/cart', [CartController::class, 'check']);
+//Route::get('/cart', [CartController::class, 'check']);
 Route::get('/cart/{eventId}', [CartController::class, 'index']);
 
 // get single category
