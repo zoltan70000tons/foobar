@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Box,
     Typography,
@@ -10,10 +10,11 @@ import {
     TableRow,
     Button,
     Grid,
-    IconButton,
     Avatar,
+    TableContainer,
+    TableHead,
+    Modal,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import SectionPercentage from "@/Components/SectionPercentage";
 
 const getOrdinalSuffix = (n: number): string => {
@@ -23,10 +24,20 @@ const getOrdinalSuffix = (n: number): string => {
     return "th";
 };
 
+type Payment = {
+    id: number;
+    amount: number;
+    transactionDate: string;
+    bipId?: string;
+};
+
 type Passenger = {
+    id: number;
+    name: string;
     lead_passenger: boolean;
     passenger_allocated_cost: number;
     passenger_balance: number;
+    payments: Payment[];
 };
 
 type Adjustment = {
@@ -47,6 +58,13 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     const passengers = booking.passengers;
     const totalPassengers = passengers.length;
     const pricePerPassenger = booking?.cabin?.category?.price;
+
+    console.log(booking);
+
+    // State for modal
+    const [open, setModalOpen] = useState(false);
+    const [currentPassenger, setCurrentPassenger] = useState<Passenger | null>(null);
+
     const calculateAdjustments = (allocatedCost: number) => {
         const grouped = booking.adjustments.reduce(
             (acc, adj) => {
@@ -74,6 +92,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             }
         );
         return grouped;
+    };
+
+    const handleOpenModal = (passenger: Passenger) => {
+        setCurrentPassenger(passenger); // Set the selected passenger
+        setModalOpen(true); // Open the modal
     };
 
     return (
@@ -137,12 +160,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                     passenger_allocated_cost: totalCostAfterAdjustments,
                                     passenger_balance: pax.passenger_balance,
                                 }}
-                                booking={{ payment_plan: booking.payment_plan }}
-                                installments={[
-                                    { due_date: "2025-01-10" },
-                                    { due_date: "2025-02-10" },
-                                    { due_date: "2025-03-10" },
-                                ]}
+                                booking={booking}
+                                installments={pax.installments}
                                 setIsBookingError={(error) => console.error("Booking Error:", error)}
                             />
 
@@ -178,7 +197,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         </TableCell>
                                     </TableRow>
 
-                                    {/* List Discounts */}
+
                                     {discounts.map((discount, i) => (
                                         <TableRow key={`discount-${i}`}>
                                             <TableCell>Discount ({discount.code}):</TableCell>
@@ -188,16 +207,13 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell style={{color:"#4CAF50" }}>Total Discounts:</TableCell>
+                                        <TableCell style={{ color: "#4CAF50" }}>Total Discounts:</TableCell>
                                         <TableCell align="right">
                                             <Box component="span" sx={{ color: "#4CAF50" }}>
                                                 -${totalDiscounts.toFixed(2)}
                                             </Box>
                                         </TableCell>
                                     </TableRow>
-
-
-                                    {/* List Addons */}
                                     {addons.map((addon, i) => (
                                         <TableRow key={`addon-${i}`}>
                                             <TableCell>Addon ({addon.code}):</TableCell>
@@ -207,7 +223,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell style={{color:"#FF9800" }}>Total Addons:</TableCell>
+                                        <TableCell style={{ color: "#FF9800" }}>Total Addons:</TableCell>
                                         <TableCell align="right">
                                             <Box component="span" sx={{ color: "#FF9800" }}>
                                                 +${totalAddons.toFixed(2)}
@@ -242,16 +258,82 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         fullWidth
                                         variant="outlined"
                                         sx={{ color: "white", borderColor: "gray" }}
+                                        onClick={() => handleOpenModal(pax)}
                                     >
                                         Payment history
                                     </Button>
                                 </Grid>
                             </Grid>
                         </Paper>
-                    </Box>
+                    </Box >
                 );
             })}
-        </Grid>
+
+            {/* Modal */}
+            <Modal open={open} onClose={() => setModalOpen(false)}>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "background.paper",
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: 2,
+                        width: "80%",
+                        maxHeight: "80%",
+                        overflowY: "auto",
+                    }}
+                >
+                    <Typography variant="h6" gutterBottom>
+                        Payment History for {currentPassenger?.full_name || "Unknown Passenger"}
+                    </Typography>
+
+                    {currentPassenger?.payments.length ? (
+                        <TableContainer component={Paper}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Type</TableCell>
+                                        <TableCell>Amount</TableCell>
+                                        <TableCell>Transaction Date</TableCell>
+                                        <TableCell>BIP ID</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {currentPassenger.payments.map((payment) => (
+                                        <TableRow key={payment.id}>
+                                            <TableCell>{payment.type}</TableCell>
+                                            <TableCell>
+                                                {payment.type === "PAYMENT" ? "+" : payment.type === "REFUND" ? "-" : ""}
+                                                {payment.amount}
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(payment.transaction_date).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>{payment.BIP_ID || "N/A"}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <Typography>No payments found for this passenger.</Typography>
+                    )}
+
+                    <Box mt={2}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setModalOpen(false)}
+                        >
+                            Close
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
+        </Grid >
     );
 };
 

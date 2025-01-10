@@ -59,7 +59,8 @@ class BookingSeeder extends Seeder
         $bookingData = [
           "event_id" => 1,
           "payment_plan" => $index % 2 === 0 ? "INSTALLMENTS" : "PAY_IN_FULL",
-          "customer_id" => $customer->id
+          "customer_id" => $customer->id,
+          "number_of_installments" => $index % 2 === 0 ? 3 : 4,
         ];
 
         $passengerData = [

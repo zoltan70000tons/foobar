@@ -142,6 +142,8 @@ class BookingRepository implements BookingInterface
       "passengers" => function ($query) {
         $query->orderBy("id", "asc");
       },
+      "passengers.installments",
+      "passengers.payments",
       'logs',
       'logs.user',
       'lockedBy',
@@ -341,7 +343,6 @@ class BookingRepository implements BookingInterface
 
       if (!$selectedCabin) {
         throw new \Exception('Cabin not found.');
-
         $availableCabins = $this->filterCabins(
           $selectedCabin->cabin_type_id,
           $selectedCabin->cabin_category_id,
@@ -362,13 +363,16 @@ class BookingRepository implements BookingInterface
       }
 
       $booking = new Booking();
+
       $booking->fill($bookingData);
       $booking->cabin_id = $selectedCabin->id;
+      unset($booking->number_of_installments);
       $booking->save();
 
       $passenger = null;
 
       if ($passengerData) {
+        $passengerData['number_of_installments'] = $bookingData['number_of_installments'] ?? null;
         $passenger = $this->passengerRepository->create($passengerData, $booking);
       }
 
