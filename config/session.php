@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 return [
-
   /*
     |--------------------------------------------------------------------------
     | Default Session Driver
@@ -75,7 +74,7 @@ return [
     |
     */
 
-  'connection' => env('SESSION_CONNECTION'),
+  'connection' => env('SESSION_CONNECTION', 'default'),
 
   /*
     |--------------------------------------------------------------------------
@@ -128,10 +127,7 @@ return [
     |
     */
 
-  'cookie' => env(
-    'SESSION_COOKIE',
-    Str::slug(env('APP_NAME', 'booking_engine'), '_') . '_session'
-  ),
+  'cookie' => env('SESSION_COOKIE', Str::slug(env('APP_NAME', 'booking_engine'), '_') . '_session'),
 
   /*
     |--------------------------------------------------------------------------
@@ -214,5 +210,4 @@ return [
     */
 
   'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
-
 ];
