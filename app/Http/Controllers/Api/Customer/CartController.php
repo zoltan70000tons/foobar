@@ -67,6 +67,7 @@ class CartController extends Controller
   */
   // public function check(Request $request)
   // {
+  //
   //   $cart = $request->session()->get('cart', []);
 
   //   return response()->json(['cart' => $cart], 200);
