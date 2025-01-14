@@ -207,6 +207,7 @@ const List = () => {
       
       <div style={{ height: 400, width: "100%", position: "relative" }}>
         <DataGrid
+            disableRowSelectionOnClick
             rows={rows}
             columns={columns}
             getRowId={(row) => row.id}

@@ -83,6 +83,7 @@ const List: React.FC = () => {
           <></>
         ) : (
           <DataGrid
+            disableRowSelectionOnClick
             rows={rows}
             columns={columns}
             getRowId={(row) => row.id}

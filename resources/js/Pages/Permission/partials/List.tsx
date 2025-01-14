@@ -187,6 +187,7 @@ const List = () => {
       </Box>)}
   
           <DataGrid
+            disableRowSelectionOnClick
             rows={rows}
             columns={columns}
             getRowId={(row) => row.id}
