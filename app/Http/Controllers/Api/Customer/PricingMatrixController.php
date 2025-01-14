@@ -6,6 +6,7 @@ use App\Helpers\MatrixHelper;
 use App\Http\Controllers\Controller;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
+use Illuminate\Support\Facades\Concurrency;
 
 class PricingMatrixController extends Controller
 {

@@ -71,15 +71,13 @@ Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
 Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
 Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']);
 
+Route::get('/cart/{eventId}', [CartController::class, 'index']);
 // --- CART ---
 Route::middleware(['one_booking_per_user'])->group(function () {
   Route::post('/cart', [CartController::class, 'store']);
   Route::put('/cart', [CartController::class, 'update']);
   Route::delete('/cart', [CartController::class, 'destroy']);
 });
-
-//Route::get('/cart', [CartController::class, 'check']);
-Route::get('/cart/{eventId}', [CartController::class, 'index']);
 
 // get single category
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
