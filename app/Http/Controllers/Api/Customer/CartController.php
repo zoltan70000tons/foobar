@@ -12,28 +12,24 @@ use App\Models\CabinCategory;
 
 class CartController extends Controller
 {
-  /*
-  |--------------------------------------------------------------------------
-  | Index
-  |--------------------------------------------------------------------------
-  |
-  |  Fetch the cart data from session
-  |
-  */
-  public function index(Request $request, $eventId)
+  private function getCartData(Request $request, $eventId)
   {
-    // Reload session to ensure latest data
+    // Fetch cart from session
     $cart = $request->session()->get('cart', []);
     $eventId = $cart['event_id'] ?? $eventId;
 
-    if (!$cart) {
-      \Log::info('Cart is empty');
-      return response()->json(['cart' => []], 200);
+    if (empty($cart)) {
+      return [];
     }
 
     // Fetch adjustments and tax
     $adjustments = Adjustment::where('event_id', $eventId)->get();
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
+
+    $errorCode = null;
+    if (Auth::check() && $eventId && Auth::user()->bookings()->where('event_id', $eventId)->count() > 0) {
+      $errorCode .= 'BOOKING_LIMIT_EXCEEDED';
+    }
 
     if (isset($cart['cabin_price'])) {
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
@@ -50,10 +46,26 @@ class CartController extends Controller
         'price_save' => $priceCalc['save'],
         'price_extras' => $priceCalc['extras'],
         'tax' => $taxAddon,
+        'error_code' => $errorCode,
       ]);
     }
 
-    \Log::info('CartController@index', ['cart' => $cart]);
+    return $cart;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Index
+  |--------------------------------------------------------------------------
+  |
+  |  Fetch the cart data from session
+  |
+  */
+  public function index(Request $request, $eventId)
+  {
+    $cart = $this->getCartData($request, $eventId);
+
+    \Log::info('CartController@index', ['cart' => $cart]) ?? null;
     return response()->json($cart, 200);
   }
 
@@ -103,16 +115,11 @@ class CartController extends Controller
       'force_clear' => 'nullable|boolean',
     ]);
 
-    // Set cabin_number to null
-    $validated['cabin_number'] = null;
-
-    // Force clear session if requested
     if ($request->input('force_clear', false)) {
       \Log::info('Force clearing cart session');
       $request->session()->forget('cart');
     }
 
-    // Save validated data to session
     $defaultCart = [
       'event_id' => null,
       'cabin_type' => null,
@@ -130,7 +137,15 @@ class CartController extends Controller
     \Log::info('Saving to session', ['cart' => $mergedCart]);
     session(['cart' => $mergedCart]);
 
-    return response()->json(['message' => 'Cart updated successfully'], 200);
+    $cart = $this->getCartData($request, $validated['event_id']) ?? null;
+
+    return response()->json(
+      [
+        'message' => 'Cart updated successfully',
+        'cart' => $cart,
+      ],
+      200
+    );
   }
 
   /*
@@ -164,7 +179,15 @@ class CartController extends Controller
 
     $request->session()->put('cart', $validated);
 
-    return response()->json(['message' => 'Cart updated successfully'], 200);
+    $cart = $this->getCartData($request, $validated['event_id']) ?? null;
+
+    return response()->json(
+      [
+        'message' => 'Cart updated successfully',
+        'cart' => $cart,
+      ],
+      200
+    );
   }
 
   /*
