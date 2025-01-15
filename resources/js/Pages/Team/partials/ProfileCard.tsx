@@ -85,7 +85,7 @@ export default function ProfileCard({ user }: ProfileCardProps) {
         </Grid>
         <Grid container>
           <Grid item xs={6}>
-            <Typography style={styles.details}>Organizacion</Typography>
+            <Typography style={styles.details}>Organization</Typography>
             <Typography style={styles.details}>Status</Typography>
             <Typography style={styles.details}>Role</Typography>
           </Grid>

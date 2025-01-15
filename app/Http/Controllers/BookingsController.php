@@ -13,7 +13,6 @@ use App\Interfaces\TeamRepositoryInterface;
 use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
-use App\Models\CabinCategory;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
@@ -23,12 +22,8 @@ use App\Repositories\TeamRepository;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
-use App\Rules\ValidDateFormat;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
-use Database\Seeders\BookingSeeder;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 class BookingsController extends Controller

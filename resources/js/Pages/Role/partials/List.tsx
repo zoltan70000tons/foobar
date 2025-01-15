@@ -26,7 +26,7 @@ import apiRoutes from "@/Helpers/ApiRoutes";
 import LoadingButton from "@mui/lab/LoadingButton";
 import LoadingOverlay from '../../../Components/LoadingOverlay'; 
 import {useTheme} from '@emotion/react';
-import SnackbarAlert from "@/Components/SnackbarAlert";
+import { useSnackbar} from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 
@@ -53,10 +53,7 @@ const List = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [permissionName, setPermissionName] = useState([]);
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
-
   const { hasPermission } = usePermissions();
-
   const createRolePermission = Permissions.CreateRoles;
   const editRolePermission = Permissions.EditRoles;
   const deleteRolePermission = Permissions.DeleteRoles;
@@ -79,8 +76,11 @@ const List = () => {
       });
   }, []);
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+  const {showSnackbar} = useSnackbar();
+
+  const sanitizeInput = (input) => {
+    const dangerousPattern = /['";<>\\\/`&{}[\]()=|%+*^$#@!]/g;
+    return input.replace(dangerousPattern, "").trim(); 
   };
 
   const handleEdit = async (role) => {
@@ -102,10 +102,10 @@ const List = () => {
       destroy(route('roles.destroy', id), {
         method: 'delete',
         onSuccess: () => {
-          setSnackbar({ open: true, severity: 'success', message: 'Role deleted successfully' });
+          showSnackbar('Role deleted successfully', 'success');
         },
         onError:() =>{
-          setSnackbar({ open: true, severity: 'error', message: 'Error deleting permission' });
+          showSnackbar('Error deleting role', 'error');
         }
       });
       setRows(rows.filter((row) => row.id !== id));
@@ -127,42 +127,59 @@ const List = () => {
     setPermissionName([]);
   };
 
-  const handleChange = (event) => setNewRole(event.target.value);
-  const handleEditChange = (event) => setEditRole({ ...editRole, role: event.target.value });
+  const handleChange = (event) => {
+    const sanitizedValue = sanitizeInput(event.target.value); // Sanitize input
+    setNewRole(sanitizedValue); // Set sanitized value
+  };
+  
+  const handleEditChange = (event) => {
+    const sanitizedValue = sanitizeInput(event.target.value); // Sanitize input
+    setEditRole({ ...editRole, role: sanitizedValue }); // Set sanitized value
+  };
   const handleChangeChips = (event) => setPermissionName(event.target.value);
 
   const handleSave = async () => {
+    if (!newRole.trim()) {
+      showSnackbar("Role name cannot be empty", "error");
+      return;
+    }
+  
     setSaveLoading(true);
     try {
       const { data } = await axios.post(apiRoutes.rolesUrl, { name: newRole });
       setRows([...rows, { id: data.data.id, role: data.data.name, system: data.data.system }]);
       handleClose();
-      setSnackbar({ open: true, severity: 'success', message: 'Role added successfully' });
+      showSnackbar("Role added successfully", "success");
     } catch (error) {
-      setSnackbar({ open: true, severity: 'error', message: 'Error adding role' });
+      showSnackbar("Error adding role", "error");
     } finally {
       setSaveLoading(false);
     }
   };
 
   const handleEditSave = async () => {
+    if (!editRole?.role.trim()) {
+      showSnackbar("Role name cannot be empty", "error");
+      return;
+    }
+  
     setEditLoading(true);
     try {
       const { data } = await axios.post(apiRoutes.addPermissionToRoleUrl, {
         name: editRole.role,
-        permissions: permissions.map(p => ({
+        permissions: permissions.map((p) => ({
           name: p.name,
           granted: permissionName.includes(p.name),
         })),
         role_id: editRole.id,
         org_id: 1,
       });
-
-      setRows(rows.map(row => row.id === data.data.id ? data.data : row));
-      setSnackbar({ open: true, severity: 'success', message: 'Role updated successfully' });
+  
+      setRows(rows.map((row) => (row.id === data.data.id ? data.data : row)));
+      showSnackbar("Role updated successfully", "success");
       handleEditClose();
     } catch (error) {
-      setSnackbar({ open: true, severity: 'error', message: 'Error updating role' });
+      showSnackbar("Error updating role", "error");
     } finally {
       setEditLoading(false);
     }
@@ -296,12 +313,6 @@ const List = () => {
   </Box>
 </Modal>
 
-      <SnackbarAlert
-        open={snackbar.open}
-        severity={snackbar.severity}
-        message={snackbar.message}
-        onClose={handleCloseSnackbar}
-      />
       <LoadingOverlay open={loading} />
     </Container>
   );

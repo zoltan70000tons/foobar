@@ -66,7 +66,6 @@ export default function Invite() {
     axios.post(apiRoutes.sendInvitationsUrl, data)
       .then(response => {
         setLoading(false);
-        console.log(response);
         setSnackbar({ open: true, severity: 'success', message: response.data.message });
       })
       .catch(error => {

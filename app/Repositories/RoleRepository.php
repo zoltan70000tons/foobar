@@ -103,21 +103,28 @@ class RoleRepository implements RoleRepositoryInterface
         try {
             setPermissionsTeamId($org_id);
             if ($role_id) {
-                $roles = Role::where(['team_id' => $org_id, 'id' => $role_id,])->orderBy('system', 'desc')->get();
+                $roles = Role::where(['team_id' => $org_id, 'id' => $role_id])
+                    ->orderBy('system', 'desc')
+                    ->get();
             } else {
                 $roles = Role::where(['team_id' => $org_id])->get();
             }
+            $roles = $roles->filter(function ($role) {
+                return strtolower($role->name) !== 'customer';
+            })->values();
             if (isset($user_id)) {
                 $roles->each(function ($role) use ($user_id) {
                     $role->granted = $role->users()->where('id', $user_id)->exists();
                     $role->user_id = $user_id;
                 });
             }
+    
             return $this->successResponse($roles, 'Roles listed successfully');
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
     }
+    
 
     public function listPermissionByRole($id)
     {

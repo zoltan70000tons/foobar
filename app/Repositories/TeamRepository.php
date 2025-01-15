@@ -38,12 +38,17 @@ class TeamRepository implements TeamRepositoryInterface
         $org = Organization::find($org_id);
         if ($org) {
             $members = User::with(['detail', 'roles'])
-            ->where('organization_id', $this->organizationId)
-            ->whereDoesntHave('roles', function ($query) {
-                $query->where('name', 'Customer');
-            })
-            ->get();
+                ->where('organization_id', $this->organizationId)
+                ->whereDoesntHave('roles', function ($query) {
+                    $query->where('name', 'Customer');
+                })
+                ->get();
+    
             $result = $members->map(function ($user) use ($org) {
+                $firstName = $user->detail->first_name ?? ''; // Default to an empty string if null
+                $lastName = $user->detail->last_name ?? '';  // Default to an empty string if null
+                $fullName = trim("$firstName $lastName");    // Combine and trim
+    
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -54,14 +59,16 @@ class TeamRepository implements TeamRepositoryInterface
                     'organization_id' => $org->id,
                     'organization_name' => $org->name,
                     'survivor_number' => $user->survivor_number,
-                    'detail' => $user->detail
+                    'detail' => $user->detail,
+                    'fullName' => $fullName, // Add fullName here
                 ];
             });
-
+    
             return $result;
         }
         return null;
     }
+    
 
     public function findMember($team, $id) {}
 
