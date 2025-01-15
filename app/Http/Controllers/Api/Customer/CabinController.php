@@ -9,6 +9,7 @@ use App\Models\CabinType;
 use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
 use Illuminate\Support\Facades\DB;
+use App\Services\ReservationService;
 
 class CabinController extends Controller
 {
@@ -122,30 +123,19 @@ class CabinController extends Controller
     return $this->createTemporaryReservation($cabin, $request, false, $reservationTime);
   }
 
-  /**
-   * Release the currently reserved cabin.
-   */
-  public function release(Request $request)
+  /*
+  |--------------------------------------------------------------------------
+  | Release cabin
+  |--------------------------------------------------------------------------
+  |
+  |  Relase logic as service, to use as separate endpoint or in CartController
+  |
+  */
+  public function release(Request $request, ReservationService $reservationService)
   {
-    if (!$request->session()->has('reserved_cabin_id')) {
-      return response()->json(['message' => 'No cabin reserved'], 404);
-    }
+    $response = $reservationService->releaseCabin($request);
 
-    $reservationId = $request->session()->get('reserved_cabin_id');
-    $reservation = TemporaryReservation::find($reservationId);
-
-    if (!$reservation) {
-      return response()->json(['message' => 'No reservation found'], 404);
-    }
-
-    if ($request->user() && $reservation->user_id !== $request->user()->id) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
-    $reservation->delete();
-    $request->session()->forget(['reserved_cabin_id', 'cart']);
-
-    return response()->json(['message' => 'Cabin released'], 200);
+    return response()->json(['message' => $response['message']], $response['status']);
   }
 
   /**
@@ -186,11 +176,14 @@ class CabinController extends Controller
 
       DB::commit();
 
-      return response()->json([
-        'success' => true,
-        'message' => 'Cabin reserved',
-        'reservation_id' => $reserved->id,
-      ], 200);
+      return response()->json(
+        [
+          'success' => true,
+          'message' => 'Cabin reserved',
+          'reservation_id' => $reserved->id,
+        ],
+        200
+      );
     } catch (\Exception $e) {
       DB::rollBack();
       return response()->json(['message' => 'Reservation failed'], 500);
