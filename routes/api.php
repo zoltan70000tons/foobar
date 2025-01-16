@@ -100,13 +100,6 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function
   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
 
-  // Booking
-  // --- booking init
-  Route::post('/booking-init', [BookingController::class, 'store']);
-  // --- all bookings
-  Route::get('/my-bookings', [BookingController::class, 'allBookings']);
-  // --- single booking
-  Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
   // ! ! ! ! ! --- delete booking THIS ROUTE SHOULD BE DELETED ON PROD! ! ! ! ! ! ! ! !
   //  Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
 });
@@ -118,6 +111,14 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
   Route::post('/my-bookings/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
   // add passenger via email
   Route::post('/my-bookings/{bookingCode}/add-passenger-via-email', [BookingController::class, 'addPassengerViaEmail']);
+
+  // Booking
+  // --- booking init
+  Route::post('/booking-init', [BookingController::class, 'store']);
+  // --- all bookings
+  Route::get('/my-bookings', [BookingController::class, 'allBookings']);
+  // --- single booking
+  Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
 });
 
 // --- ADD PAX ---
