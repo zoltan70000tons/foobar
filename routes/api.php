@@ -72,6 +72,7 @@ Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
 Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']);
 
 Route::get('/cart/{eventId}', [CartController::class, 'index']);
+
 // --- CART ---
 Route::middleware(['one_booking_per_user'])->group(function () {
   Route::post('/cart', [CartController::class, 'store']);
@@ -87,50 +88,62 @@ Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinControll
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 
 // This middleware will clear expired reservations from the session
-Route::middleware(['clear_expired_reservation'])->group(function () {
-  // reserve cabin
-  Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
-  Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
-  Route::post('/cabin/release', [CabinController::class, 'release']);
-});
+// Route::middleware(['clear_expired_reservation'])->group(function () {
+//   // reserve cabin
+//   Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
+//   Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
+//   Route::post('/cabin/release', [CabinController::class, 'release']);
+// });
 
 // --- AUTH GROUP ---
-Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
-  Route::get('/customer', [CustomerAuthController::class, 'customer']);
-  Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
-  Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
+// Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
+//   Route::get('/customer', [CustomerAuthController::class, 'customer']);
+//   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
+//   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
+// });
 
-  // ! ! ! ! ! --- delete booking THIS ROUTE SHOULD BE DELETED ON PROD! ! ! ! ! ! ! ! !
-  //  Route::delete("/my-bookings/{id}", [BookingController::class, "destroy"]);
-});
+Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status', 'clear_expired_reservation'])->group(
+  function () {
+    // reserve cabin
+    Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
+    Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
+    Route::post('/cabin/release', [CabinController::class, 'release']);
 
-Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'])->group(function () {
-  // set slot empty
-  Route::post('/my-bookings/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
-  // add passenger manually
-  Route::post('/my-bookings/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
-  // add passenger via email
-  Route::post('/my-bookings/{bookingCode}/add-passenger-via-email', [BookingController::class, 'addPassengerViaEmail']);
+    Route::get('/customer', [CustomerAuthController::class, 'customer']);
+    Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
+    Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
 
-  // Booking
-  // --- booking init
-  Route::post('/booking-init', [BookingController::class, 'store']);
-  // --- all bookings
-  Route::get('/my-bookings', [BookingController::class, 'allBookings']);
-  // --- single booking
-  Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
-});
+    // set slot empty
+    Route::post('/my-bookings/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
+    // add passenger manually
+    Route::post('/my-bookings/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
+    // add passenger via email
+    Route::post('/my-bookings/{bookingCode}/add-passenger-via-email', [
+      BookingController::class,
+      'addPassengerViaEmail',
+    ]);
 
-// --- ADD PAX ---
+    // Booking
+    // --- booking init
+    Route::post('/booking-init', [BookingController::class, 'store']);
+    // --- all bookings
+    Route::get('/my-bookings', [BookingController::class, 'allBookings']);
+    // --- single booking
+    Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
+  }
+);
+
+// Booking confirmation
+Route::get('/booking-confirmation/{bookingCode}', [BookingController::class, 'bookingConfirmation']);
+
+// Add pax
+// --- add pax form
 Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
   ->name('add.pax')
   ->middleware('signed:relative');
 
+// --- ADD PAX Booking
 Route::post('/add-pax/{bookingCode}', [BookingController::class, 'submitAddPassenger']);
 
-// --- ADD PAX PROFILE ---
+// --- ADD PAX PROFILE
 Route::post('/add-pax-profile', [AddPaxController::class, 'show']);
-
-// --- TEST PURPOSE FOR BROADCASTING ---
-// Route::get('/cabins', [CabinController::class, 'show']);
-// Route::get('/trigger-cabins', [CabinController::class, 'trigger']);
