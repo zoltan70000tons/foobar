@@ -18,6 +18,11 @@ class PresalePeriod extends Model
     'end_date',
   ];
 
+  protected $casts = [
+    'start_date' => 'datetime',
+    'end_date' => 'datetime',
+  ];
+
   public function membershipType()
   {
     return $this->belongsTo(MembershipType::class);
