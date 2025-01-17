@@ -34,6 +34,7 @@ return new class extends Migration {
       $table->string("emergency_c_name", 255)->nullable();
       $table->string("emergency_c_phone", length: 20)->nullable();
       $table->text("special_request")->nullable()->nullable();
+      $table->jsonb("special_options")->nullable();
       $table->string("hear_about", 255)->nullable();
       $table->boolean("newsletter")->default(false);
       $table->boolean("travel_info")->default(false);
