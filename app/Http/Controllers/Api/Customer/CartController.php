@@ -9,6 +9,7 @@ use App\Helpers\PriceCalculation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TemporaryReservation;
 use App\Models\CabinCategory;
+use App\Services\ReservationService;
 
 class CartController extends Controller
 {
@@ -93,7 +94,7 @@ class CartController extends Controller
   | Store the cart data in session
   |
   */
-  public function store(Request $request)
+  public function store(Request $request, ReservationService $reservationService)
   {
     $validated = $request->validate([
       'event_id' => 'required|string',
@@ -117,6 +118,17 @@ class CartController extends Controller
 
     if ($request->input('force_clear', false)) {
       \Log::info('Force clearing cart session');
+
+      // Attempt to release the cabin
+      $releaseResponse = $reservationService->releaseCabin($request);
+
+      if ($releaseResponse['status'] === 404) {
+        \Log::warning('No cabin reserved to release. Proceeding with clearing the cart.');
+      } elseif ($releaseResponse['status'] === 200) {
+        \Log::info('Cabin successfully released during force clear.');
+      }
+
+      // Always clear the cart regardless of the reservation status
       $request->session()->forget('cart');
     }
 
@@ -198,23 +210,17 @@ class CartController extends Controller
   |  Clear the cart data from session
   |
   */
-  public function destroy(Request $request)
+  public function destroy(Request $request, ReservationService $reservationService)
   {
     $request->session()->forget('cart');
 
-    //$request->session()->forget("reserved_cabin_id");
+    // Attempt to release the cabin
+    $releaseResponse = $reservationService->releaseCabin($request);
 
-    // if session have reserved_cabin_id, delete it from db and forget it from session
-    if ($request->session()->has('reserved_cabin_id')) {
-      $reservationId = $request->session()->get('reserved_cabin_id');
-
-      $reservation = TemporaryReservation::find($reservationId);
-
-      if ($reservation) {
-        $reservation->delete();
-      }
-
-      $request->session()->forget('reserved_cabin_id');
+    if ($releaseResponse['status'] === 404) {
+      \Log::warning('No cabin reserved to release. Proceeding with clearing the cart.');
+    } elseif ($releaseResponse['status'] === 200) {
+      \Log::info('Cabin successfully released during cart clear.');
     }
 
     return response()->json(['message' => 'Cart cleared successfully'], 200);

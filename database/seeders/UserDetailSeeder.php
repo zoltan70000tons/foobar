@@ -57,10 +57,10 @@ class UserDetailSeeder extends Seeder
                     'first_name' => $this->faker->firstName,
                     'middle_name' => $this->faker->optional()->firstName,
                     'last_name' => $this->faker->lastName,
-                    'phone' => $this->faker->phoneNumber,
+                    'phone' => $this->faker->e164PhoneNumber() ,
                     'avatar' => $this->faker->imageUrl(300, 300, 'people', true, 'Avatar'),
                     'emergency_c_name' => $this->faker->name,
-                    'emergency_c_phone' => $this->faker->phoneNumber,
+                    'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
                 ]
             );
         }
