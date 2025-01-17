@@ -15,6 +15,8 @@ import {
 import { router } from "@inertiajs/react";
 import { sanitizeInput } from '@/Helpers/inputSanitizer';
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 type FeesFormProps = {
     passenger_id: number;
@@ -31,6 +33,8 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id 
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<Fee>({ type: "", amount: 0 });
     const {showSnackbar} = useSnackbar();
+    const { hasPermission } = usePermissions();
+    const canCreateAdjustment = hasPermission(Permissions.CreateAdjustments);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -137,6 +141,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id 
                                 color="primary"
                                 fullWidth
                                 onClick={handleSubmit}
+                                
                             >
                                 Save
                             </Button>

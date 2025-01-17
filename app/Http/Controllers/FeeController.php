@@ -6,9 +6,8 @@ use App\Enums\Permissions;
 use App\Models\Fee;
 use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
-use App\Models\Payment;
+use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
-use App\Repositories\PaymentRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 
@@ -21,11 +20,11 @@ class FeeController extends Controller
     use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
-    protected PaymentRepository $paymentRepository;
-    public function __construct(PassengerRepository $passengerRepository, PaymentRepository $paymentRepository)
+    protected CalculationRepository $calculationRepository;
+    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository)
     {
         $this->passengerRepository = $passengerRepository;
-        $this->paymentRepository =$paymentRepository;
+        $this->calculationRepository =$calculationRepository;
     }
 
     public function store(Request $request)
@@ -41,8 +40,7 @@ class FeeController extends Controller
 
                 ]);
                 Fee::create($validated);
-               // $allocated_cost = $this->paymentRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
-
+                $allocated_cost = $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Fee',

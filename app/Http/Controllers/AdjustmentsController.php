@@ -43,7 +43,7 @@ class AdjustmentsController extends Controller
 
         try {
 
-            $this->withPermission([Permissions::CreateTaxes], function ($validated, $booking) {
+            return $this->withPermission([Permissions::CreateAdjustments], function ($validated, $booking) {
                 $adjustment = Adjustment::create([
                     'code' => $validated['code'],
                     'type' => $validated['type'],
@@ -62,24 +62,12 @@ class AdjustmentsController extends Controller
                 // Commit the transaction
                 DB::commit();
                 $this->saveBookingLog($booking->id, 'Added Adjustment', 'Added '. $adjustment->type.' '.$adjustment->operation.' '.' with value '.$adjustment->value );
-    
-                // return redirect()->route('bookings.show', [
-                //     'id' => $validated['event_id'],
-                //     'booking_code' => $booking->booking_code,
-                // ])->with([
-                //     'message' => 'Adjustment created and linked successfully.',
-                // ]);
-
                 return redirect()->back()->with('success', 'Adjustment created and linked successfully.');
             },  $validated,$booking);
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
-            return redirect()->back()->with('success', 'Failed to create adjustment.');
-            // return response()->json([
-            //     'message' => 'Failed to create adjustment.',
-            //     'error' => $e->getMessage(),
-            // ], 500);
+            return redirect()->back()->with('error', 'Failed to create adjustment.');
         }
     }
 

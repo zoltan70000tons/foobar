@@ -165,7 +165,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
         <Passengers booking={booking} editMode={editMode} />
-        <AdjustmentForm booking={booking} editMode={true} onSubmit={handleAddAdjustment} />
+        <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} />
         <Payment
           booking={booking}
           editMode={editMode}

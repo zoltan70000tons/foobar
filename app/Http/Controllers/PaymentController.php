@@ -6,6 +6,7 @@ use App\Enums\Permissions;
 use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Models\Payment;
+use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
@@ -19,9 +20,11 @@ class PaymentController extends Controller
     use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
-    public function __construct(PassengerRepository $passengerRepository)
+    protected CalculationRepository $calculationRepository;
+    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository)
     {
         $this->passengerRepository = $passengerRepository;
+        $this->calculationRepository = $calculationRepository;
     }
 
     public function store(Request $request)
@@ -29,6 +32,7 @@ class PaymentController extends Controller
         try {
             return $this->withPermission([Permissions::CreateFees], function ($request) {
                 $booking_id = $request->route('booking_id');
+                $event_id = $request->route('event_id');
                 $validated = $request->validate([
                     'passenger_id' => 'required|exists:passengers,id',
                     'BIP_ID' => 'nullable|string|max:50',
@@ -39,6 +43,7 @@ class PaymentController extends Controller
                 ]);
                 $validated['source'] = 'MANUAL';
                 Payment::create($validated);
+                $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Payment',

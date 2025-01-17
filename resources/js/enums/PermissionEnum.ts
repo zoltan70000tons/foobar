@@ -60,11 +60,26 @@ export enum Permissions {
     //Manage Inventory
     EditCabinInventory = "Edit Cabin Inventory",
     EditPassengers = "Edit Passengers",
-    ResetSeat = "Reset Seat"
+    ResetSeat = "Reset Seat",
 
 
+    //Manage fees
+    ViewFees = 'View Fees',
+    CreateFees = 'Create Fees',
+    EditFees = 'Edit Fees',
+    DeleteFees = 'Delete Fees',
 
 
+    //Manage Adjustments
+    ViewAdjustments = 'View Adjustments',
+    CreateAdjustments = 'Create Adjustments',
+    EditAdjustments = 'Edit Adjustments',
+    DeleteAdjustments = 'Delete Adjustments',
 
+    //Manage Payments
+    ViewPayments = 'View Payments',
+    CreatePayments = 'Create Payments',
+    EditPayments = 'Edit Payments',
+    DeletePayments = 'Delete Payments'
 
 }

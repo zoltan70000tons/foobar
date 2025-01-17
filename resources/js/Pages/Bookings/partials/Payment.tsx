@@ -14,12 +14,16 @@ import {
     TableContainer,
     TableHead,
     Modal,
+    Dialog,
+    DialogContent,
 } from "@mui/material";
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
 import FeesForm from "./FeesForm";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 const getOrdinalSuffix = (n: number): string => {
     if (n === 1) return "st";
@@ -63,9 +67,10 @@ type Booking = {
 const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean }) => {
     const passengers = booking.passengers;
     const totalPassengers = passengers.length;
-    const pricePerPassenger = booking?.cabin?.category?.price;
-
-    console.log(booking);
+    const { hasPermission } = usePermissions();
+    const canCreateFee = hasPermission(Permissions.CreateFees);
+    const canCreatePayment = hasPermission(Permissions.CreatePayments);
+    const canDeleteFee = hasPermission(Permissions.DeleteFees);
 
     // State for modal
     const [open, setModalOpen] = useState(false);
@@ -116,7 +121,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 const { discounts, addons, totalDiscounts, totalAddons } =
                     calculateAdjustments(allocatedCost);
 
-                const totalCostAfterAdjustments = pricePerPassenger - totalDiscounts + totalAddons;
+                const totalCostAfterAdjustments = allocatedCost - totalDiscounts + totalAddons;
 
                 return (
                     <Box key={index}>
@@ -199,7 +204,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                     <TableRow>
                                         <TableCell>Price Per Passenger:</TableCell>
                                         <TableCell align="right">
-                                            ${Number(pricePerPassenger || 0).toFixed(2)}
+                                            ${Number(totalCostAfterAdjustments || 0).toFixed(2)}
                                         </TableCell>
                                     </TableRow>
 
@@ -250,15 +255,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                             <Divider sx={{ my: 2, borderColor: "gray" }} />
 
                             <Grid container spacing={2}>
-                                <Grid item xs={12} sm={4}>
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <PaymentModal passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} />
+                                {canCreatePayment && (<Grid item xs={12} sm={4}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <PaymentModal passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} />
                                     </LocalizationProvider>
-                                </Grid>
-                                <Grid item xs={12} sm={4}>
-                                    <FeesForm  passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id}/>
-                                </Grid>
-
+                                </Grid>)}
+                                {canCreateFee && (<Grid item xs={12} sm={4}>
+                                    <FeesForm passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} />
+                                </Grid>)}
                                 <Grid item xs={12} sm={4}>
                                     <Button
                                         fullWidth
@@ -276,69 +280,65 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             })}
 
             {/* Modal */}
-            <Modal open={open} onClose={() => setModalOpen(false)}>
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        bgcolor: "background.paper",
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                        width: "80%",
-                        maxHeight: "80%",
-                        overflowY: "auto",
-                    }}
-                >
-                    <Typography variant="h6" gutterBottom>
-                        Payment History for {currentPassenger?.full_name || "Unknown Passenger"}
-                    </Typography>
+            <Dialog
+      open={open}
+      onClose={() => setModalOpen(false)}
+      fullWidth
+      maxWidth="md" // Define un tamaño máximo para el diálogo
+    >
+      <DialogContent>
+        <Box
+        >
+          <Typography variant="h6" gutterBottom>
+            Payment History for {currentPassenger?.full_name || "Unknown Passenger"}
+          </Typography>
 
-                    {currentPassenger?.payments.length ? (
-                        <TableContainer component={Paper}>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Type</TableCell>
-                                        <TableCell>Amount</TableCell>
-                                        <TableCell>Transaction Date</TableCell>
-                                        <TableCell>BIP ID</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {currentPassenger.payments.map((payment) => (
-                                        <TableRow key={payment.id}>
-                                            <TableCell>{payment.type}</TableCell>
-                                            <TableCell>
-                                                {payment.type === "PAYMENT" ? "+" : payment.type === "REFOUND" ? "-" : ""}
-                                                {payment.amount}
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(payment.transaction_date).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>{payment.BIP_ID || "N/A"}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    ) : (
-                        <Typography>No payments found for this passenger.</Typography>
-                    )}
+          {currentPassenger?.payments?.length ? (
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Transaction Date</TableCell>
+                    <TableCell>BIP ID</TableCell>
+                    <TableCell>SOURCE</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {currentPassenger.payments.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell>{payment.type}</TableCell>
+                      <TableCell>
+                        {payment.type === "PAYMENT"
+                          ? "+"
+                          : payment.type === "REFOUND"
+                          ? "-"
+                          : ""}
+                        {payment.amount}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(payment.transaction_date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{payment.BIP_ID || "N/A"}</TableCell>
+                      <TableCell>{payment.source || "N/A"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography>No payments found for this passenger.</Typography>
+          )}
 
-                    <Box mt={2}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => setModalOpen(false)}
-                        >
-                            Close
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button variant="outlined" color="secondary" onClick={() => setModalOpen(false)}>
+              Close
+            </Button>
+          </Box>
+        </Box>
+      </DialogContent>
+    </Dialog>
         </Grid >
     );
 };

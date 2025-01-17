@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Models\Passenger;
-use App\Models\User;
 use App\Services\PaymentService;
 use Illuminate\Support\Facades\Auth;
 use Log;
@@ -105,20 +104,19 @@ class PassengerRepository implements PassengerInterface
 
    public function find(int $event_id, $passenger_id, $booking_id): bool|Passenger
 {
-  return false;
-  //   try {
-  //     // Query the Passenger model and ensure conditions are met
-  //     $passenger = Passenger::where('id', $passenger_id)
-  //       ->whereHas('booking', function ($query) use ($event_id, $booking_id) {
-  //         $query->where('id', $booking_id)
-  //           ->where('event_id', $event_id);
-  //       })
-  //       ->first();
-  //     return $passenger ?: false;
-  //   } catch (\Exception $e) {
-  //     Log::error("Error finding passenger: {$e->getMessage()}");
-  //     return false;
-  //   }
+    try {
+      // Query the Passenger model and ensure conditions are met
+      $passenger = Passenger::where('id', $passenger_id)
+        ->whereHas('booking', function ($query) use ($event_id, $booking_id) {
+          $query->where('id', $booking_id)
+            ->where('event_id', $event_id);
+        })
+        ->first();
+      return $passenger ?: false;
+    } catch (\Exception $e) {
+      Log::error("Error finding passenger: {$e->getMessage()}");
+      return false;
+    }
    }
 
   private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false): bool
@@ -157,7 +155,7 @@ class PassengerRepository implements PassengerInterface
           'passenger_balance' => 0,
           'was_on_board' => false,
         ];
-        \Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
+        Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
         $seat = Passenger::create($additionalPassengerData);
         if (is_numeric($installments) && $installments > 1) {
           $this->paymentService->createInstallments($seat->id, $installments);
