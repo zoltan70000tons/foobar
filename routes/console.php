@@ -18,8 +18,8 @@ Artisan::command('inspire', function () {
  *
  */
 // Delete expired temporary reservations
-Schedule::call(function () {
-  TemporaryReservation::where('expires_at', '<', Carbon::now())->delete();
-})->everyMinute();
+// Schedule::call(function () {
+//   TemporaryReservation::where('expires_at', '<', Carbon::now())->delete();
+// })->everyMinute();
 
 Schedule::command('telescope:prune')->daily();

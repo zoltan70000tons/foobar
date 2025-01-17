@@ -6,12 +6,12 @@ use Closure;
 
 class TeamContext
 {
-    public function handle($request, Closure $next)
-    {
-        $teamId = Auth::user()->currentTeam->id ?? 1; 
+  public function handle($request, Closure $next)
+  {
+    $teamId = Auth::user()->currentTeam->id ?? 1;
 
-        setPermissionsTeamId($teamId); 
+    setPermissionsTeamId($teamId);
 
-        return $next($request);
-    }
+    return $next($request);
+  }
 }
