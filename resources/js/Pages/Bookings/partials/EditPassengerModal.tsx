@@ -392,32 +392,6 @@ const EditPassengerModal = ({
                                 disabled={isLeadPassenger || !canEdit}
                             />
                         </Grid>
-                        <Grid item xs={12} md={2}>
-                            <TextField
-                                label="Allocated Cost"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={passenger?.passenger_allocated_cost || ""}
-                                onChange={(e) => onChange("passenger_allocated_cost", e.target.value)}
-                                disabled={isLeadPassenger || !canEdit}
-                                error={!!validation?.passenger_allocated_cost}
-                                helperText={validation?.passenger_allocated_cost?.[0]}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={2}>
-                            <TextField
-                                label="Balance"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={passenger?.passenger_balance || ""}
-                                onChange={(e) => onChange("passenger_balance", e.target.value)}
-                                disabled={isLeadPassenger || !canEdit}
-                                error={!!validation?.passenger_balance}
-                                helperText={validation?.passenger_balance?.[0]}
-                            />
-                        </Grid>
                         <Grid item xs={12} md={3}>
                             <FormControl fullWidth size="small" error={!!validation?.payment_method}>
                                 <InputLabel>Payment Method</InputLabel>

@@ -16,6 +16,10 @@ import {
     Modal,
 } from "@mui/material";
 import SectionPercentage from "@/Components/SectionPercentage";
+import PaymentModal from "./PaymentModal";
+import FeesForm from "./FeesForm";
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const getOrdinalSuffix = (n: number): string => {
     if (n === 1) return "st";
@@ -52,6 +56,8 @@ type Booking = {
     passengers: Passenger[];
     payment_plan: string;
     adjustments: Adjustment[];
+    event_id: number;
+    cabin: object;
 };
 
 const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean }) => {
@@ -244,16 +250,16 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                             <Divider sx={{ my: 2, borderColor: "gray" }} />
 
                             <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
-                                    <Button
-                                        fullWidth
-                                        variant="outlined"
-                                        sx={{ color: "white", borderColor: "gray" }}
-                                    >
-                                        User details
-                                    </Button>
+                                <Grid item xs={12} sm={4}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <PaymentModal passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} />
+                                    </LocalizationProvider>
                                 </Grid>
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
+                                    <FeesForm  passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id}/>
+                                </Grid>
+
+                                <Grid item xs={12} sm={4}>
                                     <Button
                                         fullWidth
                                         variant="outlined"
@@ -306,7 +312,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         <TableRow key={payment.id}>
                                             <TableCell>{payment.type}</TableCell>
                                             <TableCell>
-                                                {payment.type === "PAYMENT" ? "+" : payment.type === "REFUND" ? "-" : ""}
+                                                {payment.type === "PAYMENT" ? "+" : payment.type === "REFOUND" ? "-" : ""}
                                                 {payment.amount}
                                             </TableCell>
                                             <TableCell>

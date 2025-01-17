@@ -18,6 +18,8 @@ return new class extends Migration
       $table->string('type', 255)->nullable();
       $table->date('transaction_date')->nullable();
       $table->decimal('amount', 10, 2);
+      $table->enum("source", ["SYSTEM", "MANUAL"])->default("SYSTEM");
+      $table->string('notes', length:255)->nullable();
       $table->timestamps();
     });
   }

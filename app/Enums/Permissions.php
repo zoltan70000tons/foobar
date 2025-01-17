@@ -67,4 +67,12 @@ enum Permissions: string
     case ResetSeat = "Reset Seat";
 
 
+    //Manage fees
+    
+    case ViewFees = 'View Fees';
+    case CreateFees = 'Create Fees';
+    case EditFees = 'Edit Fees';
+    case DeleteFees = 'Delete Fees';
+
+
 }

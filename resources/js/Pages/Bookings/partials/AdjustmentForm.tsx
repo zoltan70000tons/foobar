@@ -20,6 +20,7 @@ import DiscountOutlined from "@mui/icons-material/DiscountOutlined";
 import AddOutlined from "@mui/icons-material/AddOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { router } from "@inertiajs/react";
 
 type AdjustmentFormProps = {
     booking: Booking;
@@ -149,8 +150,6 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
 
                 setAdjustments((prev) => [...prev, response.data.adjustment]);
             }
-
-            // Cerrar el modal y reiniciar el formulario
             setOpen(false);
             setFormData({
                 type: "DISCOUNT",
@@ -159,6 +158,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                 code: "",
             });
             setCurrentEditingIndex(null);
+            router.reload({ only: ['user'] });
         } catch (error) {
             console.error("Failed to save adjustment:", error);
             alert("An error occurred while trying to save the adjustment.");
@@ -221,8 +221,8 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
                 </Box>
                 {editMode && (
                     <Button
-                        variant="contained"
-                        color="primary"
+                        variant="outlined"
+                        color="secondary"
                         startIcon={<AddIcon />}
                         onClick={handleOpen}
                     >

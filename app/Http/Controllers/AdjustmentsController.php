@@ -63,21 +63,23 @@ class AdjustmentsController extends Controller
                 DB::commit();
                 $this->saveBookingLog($booking->id, 'Added Adjustment', 'Added '. $adjustment->type.' '.$adjustment->operation.' '.' with value '.$adjustment->value );
     
-                return redirect()->route('bookings.show', [
-                    'id' => $validated['event_id'],
-                    'booking_code' => $booking->booking_code,
-                ])->with([
-                    'message' => 'Adjustment created and linked successfully.',
-                ]);
+                // return redirect()->route('bookings.show', [
+                //     'id' => $validated['event_id'],
+                //     'booking_code' => $booking->booking_code,
+                // ])->with([
+                //     'message' => 'Adjustment created and linked successfully.',
+                // ]);
+
+                return redirect()->back()->with('success', 'Adjustment created and linked successfully.');
             },  $validated,$booking);
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
-
-            return response()->json([
-                'message' => 'Failed to create adjustment.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return redirect()->back()->with('success', 'Failed to create adjustment.');
+            // return response()->json([
+            //     'message' => 'Failed to create adjustment.',
+            //     'error' => $e->getMessage(),
+            // ], 500);
         }
     }
 

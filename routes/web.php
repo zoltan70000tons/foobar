@@ -22,7 +22,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Events\TestMessageSent;
 use App\Http\Controllers\AdjustmentsController;
+use App\Http\Controllers\FeeController;
 use App\Http\Controllers\PassengerController;
+use App\Http\Controllers\PaymentController;
 
 Route::get("/", function () {
   return Inertia::render("Welcome", [
@@ -166,6 +168,13 @@ Route::middleware("auth")->group(function () {
     Route::post("/delete", [AdjustmentsController::class, "deleteAdjustment"])->name("bookings.deleteAdjustment");
     Route::post("/update", [AdjustmentsController::class, "updateAdjustment"])->name("bookings.updateAdjustment");
   });
+
+  Route::prefix("payments")->group(function () {
+    Route::post("{event_id}/{booking_id}/store", [PaymentController::class, "store"])->name("manual.payment");
+    Route::post("{event_id}/{booking_id}/fee/store", [FeeController::class, "store"])->name("manual.fee");
+  });
+
+
 });
 
 

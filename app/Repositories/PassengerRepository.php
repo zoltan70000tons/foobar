@@ -83,10 +83,10 @@ class PassengerRepository implements PassengerInterface
 
       if ($availableSeats > 0) {
         $installments = false;
-        if(is_numeric($data['number_of_installments']) && $data['number_of_installments'] > 1){
-            //here we have to enable installments
-            $installments = $data['number_of_installments'];
-           // $this->paymentService->createInstallments($passId, $installments);
+        if (is_numeric($data['number_of_installments']) && $data['number_of_installments'] > 1) {
+          //here we have to enable installments
+          $installments = $data['number_of_installments'];
+          // $this->paymentService->createInstallments($passId, $installments);
         }
         $result = $this->fillAditionalSeats($availableSeats, $booking->id, $allocatedCost, $installments);
         if (!$result) {
@@ -102,6 +102,24 @@ class PassengerRepository implements PassengerInterface
       return false;
     }
   }
+
+   public function find(int $event_id, $passenger_id, $booking_id): bool|Passenger
+{
+  return false;
+  //   try {
+  //     // Query the Passenger model and ensure conditions are met
+  //     $passenger = Passenger::where('id', $passenger_id)
+  //       ->whereHas('booking', function ($query) use ($event_id, $booking_id) {
+  //         $query->where('id', $booking_id)
+  //           ->where('event_id', $event_id);
+  //       })
+  //       ->first();
+  //     return $passenger ?: false;
+  //   } catch (\Exception $e) {
+  //     Log::error("Error finding passenger: {$e->getMessage()}");
+  //     return false;
+  //   }
+   }
 
   private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false): bool
   {
@@ -141,9 +159,9 @@ class PassengerRepository implements PassengerInterface
         ];
         \Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
         $seat = Passenger::create($additionalPassengerData);
-         if(is_numeric($installments) && $installments > 1){
+        if (is_numeric($installments) && $installments > 1) {
           $this->paymentService->createInstallments($seat->id, $installments);
-         }
+        }
       }
       return true;
     } catch (\Exception $e) {

@@ -37,6 +37,7 @@ import BookingSidebar from "./BookingSidebar";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
+import FeesForm from "./FeesForm";
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
@@ -152,8 +153,8 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         )}
 
         <Button
-          variant="contained"
-          color="primary"
+          variant="outlined"
+          color="secondary"
           startIcon={<CommentIcon />}
           onClick={toggleSidebar}
           sx={{ mb: 2 }}
