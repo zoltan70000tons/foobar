@@ -82,10 +82,10 @@ class UserSeeder extends Seeder
         'last_name' => $this->faker->lastName,
         'dob' => $this->faker->date(),
         'citizenship' => $this->faker->countryISOAlpha3(),
-        'phone' => $this->faker->phoneNumber,
+        'phone' => $this->faker->e164PhoneNumber() ,
         'avatar' => $this->faker->imageUrl(),
         'emergency_c_name' => $this->faker->name,
-        'emergency_c_phone' => $this->faker->phoneNumber,
+        'emergency_c_phone' => $this->faker->e164PhoneNumber(),
         'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
       ]);
       
@@ -122,10 +122,10 @@ class UserSeeder extends Seeder
         'last_name' => $this->faker->lastName,
         'dob' => $this->faker->date(),
         'citizenship' => $this->faker->countryISOAlpha3(),
-        'phone' => $this->faker->phoneNumber,
+        'phone' => $this->faker->e164PhoneNumber() ,
         'avatar' => $this->faker->imageUrl(),
         'emergency_c_name' => $this->faker->name,
-        'emergency_c_phone' => $this->faker->phoneNumber,
+        'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
         'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
       ]);
 
@@ -174,10 +174,10 @@ class UserSeeder extends Seeder
       'last_name' => $this->faker->lastName,
       'dob' => $this->faker->date(),
       'citizenship' => $this->faker->countryISOAlpha3(),
-      'phone' => $this->faker->phoneNumber,
+      'phone' => $this->faker->e164PhoneNumber() ,
       'avatar' => $this->faker->imageUrl(),
       'emergency_c_name' => $this->faker->name,
-      'emergency_c_phone' => $this->faker->phoneNumber,
+      'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
       'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
     ]);
 
@@ -239,10 +239,10 @@ class UserSeeder extends Seeder
         'last_name' => $this->faker->lastName,
         'dob' => $this->faker->date(),
         'citizenship' => $this->faker->countryISOAlpha3(),
-        'phone' => $this->faker->phoneNumber,
+        'phone' => $this->faker->e164PhoneNumber() ,
         'avatar' => $this->faker->imageUrl(),
         'emergency_c_name' => $this->faker->name,
-        'emergency_c_phone' => $this->faker->phoneNumber,
+        'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
         'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
       ]);
 
