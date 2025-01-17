@@ -17,8 +17,8 @@ class CreatePresalePeriodsTable extends Migration
       $table->uuid('id')->primary();
       $table->foreignId('event_id')->nullable()->constrained('events')->onDelete('cascade');
       $table->foreignId('membership_type_id')->constrained('membership_types')->onDelete('cascade');
-      $table->date('start_date');
-      $table->date('end_date');
+      $table->dateTime('start_date');
+      $table->dateTime('end_date');
       $table->timestamps();
     });
   }
