@@ -58,9 +58,14 @@ class CabinController extends Controller
     return response()->json($cabinTypes);
   }
 
-  /**
-   * Reserve a specific cabin for the user.
-   */
+  /*
+  |--------------------------------------------------------------------------
+  | Reserve a specific cabin for the user.
+  |--------------------------------------------------------------------------
+  |
+  |  User select a specific cabin.
+  |
+  */
   public function reserveCabinInType(Request $request)
   {
     if ($request->session()->has('reserved_cabin_id')) {
@@ -90,12 +95,18 @@ class CabinController extends Controller
     return $this->createTemporaryReservation($cabin, $request, 'clientSelect');
   }
 
-  /**
-   * Reserve a cabin type for customer service.
-   */
+  /*
+  |--------------------------------------------------------------------------
+  | Reserve a cabin type
+  |--------------------------------------------------------------------------
+  |
+  |  Reserve a cabin type byy customer service.
+  |  User did not choose a cabin, so we will assign one.
+  |
+  */
   public function reserveType(Request $request)
   {
-    $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME', 6);
+    // $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME', 6);
 
     if ($request->session()->has('reserved_cabin_id')) {
       return response()->json(['message' => 'You have already reserved a cabin.'], 403);
@@ -120,7 +131,7 @@ class CabinController extends Controller
       return response()->json(['message' => 'No available cabins found'], 404);
     }
 
-    return $this->createTemporaryReservation($cabin, $request, false, $reservationTime);
+    return $this->createTemporaryReservation($cabin, $request, false);
   }
 
   /*
@@ -141,8 +152,10 @@ class CabinController extends Controller
   /**
    * Helper method to create a temporary reservation.
    */
-  protected function createTemporaryReservation($cabin, Request $request, $selectionType, $reservationTime = 5)
+  protected function createTemporaryReservation($cabin, Request $request, $selectionType)
   {
+    $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME');
+
     try {
       DB::beginTransaction();
 
@@ -181,6 +194,7 @@ class CabinController extends Controller
           'success' => true,
           'message' => 'Cabin reserved',
           'reservation_id' => $reserved->id,
+          'time_to_cancel' => $reservationTime,
         ],
         200
       );

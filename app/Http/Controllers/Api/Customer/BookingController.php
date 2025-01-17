@@ -60,7 +60,7 @@ class BookingController extends Controller
       $reservationId = $validated['cart']['reservation_id'];
       $eventId = (int) $validated['cart']['event_id'];
       $paymentPlan = $validated['cart']['payment_plan'];
-      $numberOfInstallments = $validated['cart']['number_of_installments'];
+      $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ?? $validated['cart']['number_of_installments'];
       $isSigle = $validated['cart']['cabin_type'] === 'private-cabin' ? true : false;
 
       // Process booking data
@@ -68,7 +68,7 @@ class BookingController extends Controller
         'event_id' => $eventId,
         'customer_id' => $user->id,
         'payment_plan' => $paymentPlan,
-        'number_of_installments' => $numberOfInstallments,
+        'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'completed' => false,
         'is_cancelled' => false,
         'is_single_occupancy' => $isSigle,
@@ -144,6 +144,33 @@ class BookingController extends Controller
         500
       );
     }
+  }
+
+  /**
+   * Get booking confirmation
+   *
+   * @param string $bookingCode
+   * @return \Illuminate\Http\JsonResponse
+   *
+   */
+  public function bookingConfirmation($bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
+
+    if (!$result) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    $result->cabin->makeHidden(['cabin_number']);
+    $result->cabin->cabinSpec->makeHidden(['cabin_number']);
+
+    return response()->json($result);
   }
 
   /**
