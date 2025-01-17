@@ -50,10 +50,10 @@ class PresalePeriodSeeder extends Seeder
         $membershipTypes = MembershipType::all();
 
         // Initial presale period start date
-        $initialPresaleStartDate = Carbon::create(2024, 4, 10);
+        $initialPresaleStartDate = Carbon::create(2025, 1, 1);
         
         // Presale end date (same for all)
-        $presaleEndDate = Carbon::create(2024, 7, 12);
+        $presaleEndDate = Carbon::create(2025, 7, 12);
 
         // Create presale periods for each membership type
         foreach ($membershipTypes as $index => $membershipType) {

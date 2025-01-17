@@ -32,15 +32,13 @@ class StoreBookingRequest extends FormRequest
       'email' => 'required|email',
       'confirmEmail' => 'required|same:email',
       'info' => 'required|string',
+      'travelInfo' => 'nullable|boolean',
       'newsletter' => 'nullable|boolean',
+      'specialOptions' => 'nullable|array',
       'specialRequest' => 'nullable|string',
       'terms' => 'required|accepted',
       'paymentMethod' => 'required|string',
-
-      // Phone numbers
-      // "phone.prefix" => "required|string",
       'phoneNumber' => 'required|string',
-      // "emergencyContactPhone.prefix" => "required|string",
       'emergencyPhoneNumber' => 'required|string',
       'emergencyContactName' => 'required|string',
 
