@@ -13,6 +13,14 @@ use App\Services\ReservationService;
 
 class CartController extends Controller
 {
+  /*
+  |--------------------------------------------------------------------------
+  | GET CART DATA
+  |--------------------------------------------------------------------------
+  |
+  |  Private function for re-use the cart data
+  |
+  */
   private function getCartData(Request $request, $eventId)
   {
     // Fetch cart from session
@@ -72,22 +80,6 @@ class CartController extends Controller
 
   /*
   |--------------------------------------------------------------------------
-  | Check JG I WIll remove this but i want to keep it for now
-  |--------------------------------------------------------------------------
-  |
-  | Check if the cart data is in session
-  |
-  */
-  // public function check(Request $request)
-  // {
-  //
-  //   $cart = $request->session()->get('cart', []);
-
-  //   return response()->json(['cart' => $cart], 200);
-  // }
-
-  /*
-  |--------------------------------------------------------------------------
   | Store
   |--------------------------------------------------------------------------
   |
@@ -113,7 +105,9 @@ class CartController extends Controller
       'cabin_category' => 'nullable|integer',
       'cabin_category_decks' => 'nullable|string',
       'cabin_category_type' => 'nullable|string',
+      'cabin_conf_accp' => 'nullable|boolean',
       'force_clear' => 'nullable|boolean',
+      'single_t_agreement' => 'boolean',
     ]);
 
     if ($request->input('force_clear', false)) {
@@ -178,6 +172,7 @@ class CartController extends Controller
       'payment_plan' => 'nullable|string',
       'number_of_installments' => 'nullable|string',
       'choose_your_cabin' => 'nullable|boolean',
+      'cabin_conf_accp' => 'nullable|boolean',
       'cabin_number' => 'nullable|integer',
       'reservation_id' => 'nullable|integer',
       'reservation_timestamp' => 'nullable|string',
@@ -187,6 +182,8 @@ class CartController extends Controller
       'cabin_category' => 'nullable|integer',
       'cabin_category_decks' => 'nullable|string',
       'cabin_category_type' => 'required|string',
+      'single_t_agreement' => 'boolean',
+      'time_to_cancel' => 'nullable|integer',
     ]);
 
     $request->session()->put('cart', $validated);

@@ -40,6 +40,7 @@ class Passenger extends Model
         'emergency_c_name',
         'emergency_c_phone',
         'special_request',
+        'special_options',
         'hear_about',
         'newsletter',
         'travel_info',
@@ -53,6 +54,10 @@ class Passenger extends Model
     ];
 
     protected $appends = ['full_name', 'empty'];
+  
+    protected $casts = [
+        'special_options' => 'array',
+    ];
 
     /**
      * Relationship: A passenger belongs to a booking.

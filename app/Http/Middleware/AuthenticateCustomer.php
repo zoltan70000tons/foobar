@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-
 class AuthenticateCustomer
 {
   /**
@@ -19,14 +18,17 @@ class AuthenticateCustomer
    */
   public function handle(Request $request, Closure $next): Response
   {
-
     if (Auth::check() && Auth::user()->hasRole('Customer')) {
+      $teamId = Auth::user()->currentTeam->id ?? 1;
+      setPermissionsTeamId($teamId);
       return $next($request);
     }
 
-    return response()->json([
+    return response()->json(
+      [
         'message' => __('auth.unauthenticated'),
-    ], 401);
-
+      ],
+      401
+    );
   }
 }
