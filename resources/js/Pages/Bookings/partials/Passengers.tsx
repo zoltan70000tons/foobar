@@ -48,7 +48,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
 
   // Open edit modal and set passenger data
   const handleEditPassenger = (passenger) => {
-    console.log(passenger);
     setEditingPassenger(passenger);
     setEditedPassengerData(passenger);
     setEditPassengerOpen(true);
@@ -94,10 +93,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
       );
 
       if (response.status === 200) {
-        console.log("Seat released successfully");
         showSnackbar("Seat released succesfully!", "success");
         setEditPassengerOpen(false);
-        console.log(response);
         setEditedPassengerData(response.data);
         router.reload({ only: ['booking'], preserveScroll: true });
       } else {

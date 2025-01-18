@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
-use App\Events\BookingLocked;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;

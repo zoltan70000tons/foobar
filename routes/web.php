@@ -164,15 +164,21 @@ Route::middleware("auth")->group(function () {
   });
 
   Route::prefix("adjustments")->group(function () {
-    Route::post("/add-to-booking", [AdjustmentsController::class, "createAdjustment"])->name("bookings.createAdjustment");
-    Route::post("/delete", [AdjustmentsController::class, "deleteAdjustment"])->name("bookings.deleteAdjustment");
-    Route::post("/update", [AdjustmentsController::class, "updateAdjustment"])->name("bookings.updateAdjustment");
+    Route::post("{event_id}/{booking_id}/add-to-booking", [AdjustmentsController::class, "createAdjustment"])->name("bookings.createAdjustment");
+    Route::post("{event_id}/{booking_id}/delete", [AdjustmentsController::class, "deleteAdjustment"])->name("bookings.deleteAdjustment");
+    Route::post("{event_id}/{booking_id}/update", [AdjustmentsController::class, "updateAdjustment"])->name("bookings.updateAdjustment");
   });
 
   Route::prefix("payments")->group(function () {
     Route::post("{event_id}/{booking_id}/store", [PaymentController::class, "store"])->name("manual.payment");
-    Route::post("{event_id}/{booking_id}/fee/store", [FeeController::class, "store"])->name("manual.fee");
+    Route::post("{event_id}/{booking_id}/payment/delete", [PaymentController::class, "delete"])->name("payments.delete");
   });
+
+  Route::prefix("fees")->group(function () {
+    Route::post("{event_id}/{booking_id}/store", [FeeController::class, "store"])->name("manual.fee");
+    Route::post("{event_id}/{booking_id}/delete", [FeeController::class, "delete"])->name("fees.delete");
+  });
+
 
 
 });

@@ -46,7 +46,6 @@ const Index = ({
   errors,
 }: PageProps & { tab: string; data: any }) => {
 
-  console.log(newBookings, users);
   const { hasPermission } = usePermissions();
   const [selectedTab, setSelectedTab] = useState(0);
 
@@ -111,10 +110,20 @@ const Index = ({
   };
 
   const handleViewClick = (row) => {
-    router.get(
-      route("bookings.show", { id: event.id, booking_code: row.booking_code })
-    );
+    if (!event?.id || !row?.booking_code) {
+      console.error("Missing parameters: eventId or bookingCode is undefined.");
+      return;
+    }
+  
+    const url = `/events/${event.id}/bookings/${row.booking_code}`;
+    window.location.href = url; // Redirige al usuario
   };
+
+  // const handleViewClick = (row) => {
+  //   router.get(
+  //     route("bookings.show", { id: event.id, booking_code: row.booking_code })
+  //   );
+  // };
 
   const handleClick = (agent_id : String, booking_id: String) => {
     handleOpenModal(agent_id, booking_id);

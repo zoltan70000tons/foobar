@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Models\Booking;
 use App\Models\Fee;
 use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
@@ -51,6 +52,45 @@ class FeeController extends Controller
         } catch (\Exception $e) {
             $this->logException($e);
             return redirect()->back()->with('error', 'Error creating fee!');
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            return $this->withPermission([Permissions::DeleteFees], function ($request) {
+                $booking_id = $request->route('booking_id');
+                $event_id = $request->route('event_id');
+                $validated = $request->validate([
+                    'fee_id' => 'required|exists:fees,id',
+                    'passenger_id' => 'required|exists:passengers,id',
+                ]);
+                $booking = Booking::where('id', $booking_id)
+                    ->where('event_id', $event_id)
+                    ->first();
+                if (!$booking) {
+                    return redirect()->back()->with('error', 'Booking not found.');
+                }
+                $fee = Fee::where('id', $validated['fee_id'])
+                    ->where('passenger_id', $validated['passenger_id'])
+                    ->first();
+                if (!$fee) {
+                    return redirect()->back()->with('error', 'Fee not found.');
+                }
+                $amount = $fee->amount;
+                $type =$fee->type;
+                $fee->delete();
+                $allocated_cost = $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
+                $this->saveBookingLog(
+                    $booking_id,
+                    'Deleted Fee',
+                    "Fee: {$type} value: \${$amount} was deleted"
+                );
+                return redirect()->back()->with('success', 'Fee deleted successfully!');
+            }, $request);
+        } catch (\Exception $e) {
+            $this->logException($e);
+            return redirect()->back()->with('error', 'Error deleting fee!');
         }
     }
 }

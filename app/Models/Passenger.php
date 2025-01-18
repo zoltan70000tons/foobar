@@ -85,4 +85,8 @@ class Passenger extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function fees(){
+        return $this->hasMany(Fee::class);
+    }
 }

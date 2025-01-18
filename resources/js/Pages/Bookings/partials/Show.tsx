@@ -39,6 +39,8 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
 import FeesForm from "./FeesForm";
 
+
+
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
   const [locked, setLocked] = useState(booking.locked_by ? true : false);
@@ -98,7 +100,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
 
 
   const handleAddAdjustment = (data) => {
-    console.log(data);
     router.post(
       route("bookings.addAdjustment", {
         id: event.id,
