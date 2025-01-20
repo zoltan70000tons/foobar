@@ -36,6 +36,7 @@ return new class extends Migration {
       $table->text("special_request")->nullable()->nullable();
       $table->jsonb("special_options")->nullable();
       $table->string("hear_about", 255)->nullable();
+      $table->string("referral_details")->nullable();
       $table->boolean("newsletter")->default(false);
       $table->boolean("travel_info")->default(false);
       $table->boolean("terms_n_cons")->default(false);

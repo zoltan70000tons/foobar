@@ -69,6 +69,7 @@ class PassengerRepository implements PassengerInterface
         'newsletter' => $data['newsletter'] ?? null,
         'travel_info' => $data['travel_info'] ?? null,
         'hear_about' => $data['hear_about'] ?? null,
+        'referral_details' => $data['referral_details'] ?? null,
         'terms_n_cons' => $data['terms_n_cons'] ?? null,
         'cabin_conf_accp' => $data['cabin_conf_accp'] ?? null,
         'single_t_agreement' => $data['single_t_agreement'] ?? null,
