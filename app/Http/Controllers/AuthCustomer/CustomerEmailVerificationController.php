@@ -18,7 +18,6 @@ class CustomerEmailVerificationController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
-
     $language = $request->language;
     App::setLocale($language);
 
@@ -42,10 +41,9 @@ class CustomerEmailVerificationController extends Controller
    */
   public function verify(Request $request): JsonResponse|RedirectResponse
   {
-
     $customer = User::findOrFail($request->route('id'));
 
-    if (! hash_equals($request->route('hash'), sha1($customer->getEmailForVerification()))) {
+    if (!hash_equals($request->route('hash'), sha1($customer->getEmailForVerification()))) {
       return redirect()->to(config('app.frontend_url') . '/en/login?verified=errorSignature');
     }
 
@@ -56,6 +54,6 @@ class CustomerEmailVerificationController extends Controller
     $customer->markEmailAsVerified();
 
     // redirect to the customer dashboard in app
-    return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
+    return redirect()->to(config('app.frontend_url') . '/en');
   }
 }

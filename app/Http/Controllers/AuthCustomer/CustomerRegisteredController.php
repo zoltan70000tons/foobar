@@ -21,16 +21,14 @@ use App\Models\SurvivorNumber;
 
 class CustomerRegisteredController extends Controller
 {
-
-
   /**
    * Handle an incoming registration request.
-   * 
+   *
    * @JG 07/08/2024
    * We use there DB::beginTransaction() and DB::commit() to wrap the user creation in a transaction.
    * It mean that if an exception is thrown during the user creation, the transaction will be rolled back and the user won't be created.
    * It will prevent the database from being in an inconsistent state.
-   * 
+   *
    *       name,
    *       middlename,
    *       surname,
@@ -46,74 +44,76 @@ class CustomerRegisteredController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
+    $request->validate([
+      'name' => ['required', 'string', 'max:255'],
+      'middlename' => ['nullable', 'string', 'max:255'],
+      'surname' => ['required', 'string', 'max:255'],
+      'date_of_birth' => ['required', 'date'],
+      'country' => ['required', 'string', 'max:255'],
+      'gender' => ['required', 'string', 'max:255'],
+      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+      'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ]);
 
-      $request->validate([
-          'name' => ['required', 'string', 'max:255'],
-          'middlename' => ['nullable', 'string', 'max:255'],
-          'surname' => ['required', 'string', 'max:255'],
-          'date_of_birth' => ['required', 'date'],
-          'country' => ['required', 'string', 'max:255'],
-          'gender' => ['required', 'string', 'max:255'],
-          'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
-          'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    // make sure email is lowercase
+    $email = strtolower($request->email);
+    $request->merge(['email' => $email]);
+
+    // set language
+    $language = $request->language;
+    App::setLocale($language);
+
+    DB::beginTransaction();
+
+    try {
+      // Create the user
+      $user = User::create([
+        'email' => $request->email,
+        'password' => Hash::make($request->string('password')),
       ]);
 
-      // make sure email is lowercase
-      $email = strtolower($request->email);
-      $request->merge(['email' => $email]);
-      
-      // set language
-      $language = $request->language;
-      App::setLocale($language);
+      // Create the user details
+      $user->detail()->create([
+        'first_name' => $request->name,
+        'middle_name' => $request->middlename,
+        'last_name' => $request->surname,
+        'dob' => $request->date_of_birth,
+        'gender' => $request->gender,
+        'language' => $language,
+        'citizenship' => $request->country,
+      ]);
 
-      DB::beginTransaction();
+      // Assign the customer role
+      setPermissionsTeamId(1);
+      $user->assignRole('Customer');
 
-      try {
-          // Create the user
-          $user = User::create([
-              'email' => $request->email,
-              'password' => Hash::make($request->string('password')),
-          ]);
+      // Generate a unique numeric survivor number and store it
+      $survivorNumber = CustomerHelper::generateSurvivorNumber();
+      SurvivorNumber::create([
+        'user_id' => $user->id,
+        'survivor_number' => $survivorNumber,
+      ]);
 
-          // Create the user details
-          $user->detail()->create([
-            'first_name'    => $request->name,
-            'middle_name'   => $request->middlename,
-            'last_name'     => $request->surname,
-            'dob'           => $request->date_of_birth,
-            'gender'        => $request->gender,
-            'citizenship'   => $request->country,
-          ]);
+      // Trigger event for user registration
+      event(new Registered($user));
 
-          // Assign the customer role
-          setPermissionsTeamId(1);
-          $user->assignRole('Customer');
+      DB::commit();
 
-          // Generate a unique numeric survivor number and store it
-          $survivorNumber = CustomerHelper::generateSurvivorNumber();
-          SurvivorNumber::create([
-              'user_id' => $user->id,
-              'survivor_number' => $survivorNumber,
-          ]);
+      // Send a welcome email to the customer
+      $this->sendWelcomeEmail($user, $language, $survivorNumber);
 
-          // Trigger event for user registration
-          event(new Registered($user));
-
-          DB::commit();
-
-         // Send a welcome email to the customer
-         $this->sendWelcomeEmail($user, $language, $survivorNumber);
-
-          return response()->json([
-              'message' => __('auth.account_created'),
-          ], 204);
-      } catch (\Exception $e) {
-          DB::rollBack();
-          Log::error('User registration failed: ' . $e->getMessage());
-          return response()->json(['error' => 'User registration failed'], 500);
-      }
+      return response()->json(
+        [
+          'message' => __('auth.account_created'),
+        ],
+        204
+      );
+    } catch (\Exception $e) {
+      DB::rollBack();
+      Log::error('User registration failed: ' . $e->getMessage());
+      return response()->json(['message' => 'User registration failed'], 500);
+    }
   }
-
 
   /**
    * Send a welcome email to the customer.
@@ -125,13 +125,11 @@ class CustomerRegisteredController extends Controller
    */
   protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void
   {
-
     try {
       $email = $user->email;
       Mail::to($email)->send(new CustomerRegistered($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
-
   }
 }
