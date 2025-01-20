@@ -31,7 +31,8 @@ class StoreBookingRequest extends FormRequest
       'country' => 'required|string',
       'email' => 'required|email',
       'confirmEmail' => 'required|same:email',
-      'info' => 'required|string',
+      'info' => 'required|string', // aka 'hearAbout'
+      'referralDetails' => 'nullable|string',
       'travelInfo' => 'nullable|boolean',
       'newsletter' => 'nullable|boolean',
       'specialOptions' => 'nullable|array',
