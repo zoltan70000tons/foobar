@@ -32,7 +32,7 @@ class StoreBookingRequest extends FormRequest
       'email' => 'required|email',
       'confirmEmail' => 'required|same:email',
       'info' => 'required|string', // aka 'hearAbout'
-      'referralDetails' => 'nullable|string',
+      'referralDetails' => 'sometimes|nullable|string',
       'travelInfo' => 'nullable|boolean',
       'newsletter' => 'nullable|boolean',
       'specialOptions' => 'nullable|array',
