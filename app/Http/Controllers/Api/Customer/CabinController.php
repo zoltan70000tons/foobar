@@ -20,7 +20,7 @@ class CabinController extends Controller
    */
   public function show($cabinTypeId, $cabinCategoryId, $cabinDeck)
   {
-    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId, $cabinDeck);
+    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId, $cabinDeck, false);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
@@ -86,7 +86,7 @@ class CabinController extends Controller
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
     }
 
-    $cabin = $filteredCabins['cabins']->firstWhere('cabin_number', $cabinNumber);
+    $cabin = collect($filteredCabins['cabins'])->firstWhere('cabin_number', $cabinNumber);
 
     if (!$cabin) {
       return response()->json(['message' => 'Cabin not found or may be reserved'], 404);
@@ -125,7 +125,7 @@ class CabinController extends Controller
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
     }
 
-    $cabin = $filteredCabins['cabins']->first();
+    $cabin = collect($filteredCabins['cabins'])->first();
 
     if (!$cabin) {
       return response()->json(['message' => 'No available cabins found'], 404);
@@ -195,6 +195,7 @@ class CabinController extends Controller
           'message' => 'Cabin reserved',
           'reservation_id' => $reserved->id,
           'time_to_cancel' => $reservationTime,
+          'cabin_number' => $selectionType === 'clientSelect' ? $reserved->cabin_number : null,
         ],
         200
       );
