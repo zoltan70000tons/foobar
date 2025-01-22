@@ -28,6 +28,6 @@ This email is send when customer send a request to add a pax.
 @endsection
 
 @section('footer')
-    <p>{{ __('systemEmails.email_regards') }},</p>
-    <p>70000TONS OF METAL TEAM</p>
+    <p>{{ __('systemEmails.email_thanks') }},</p>
+    <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection
