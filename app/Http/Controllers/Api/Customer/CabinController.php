@@ -10,6 +10,7 @@ use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReservationService;
+use Log;
 
 class CabinController extends Controller
 {
@@ -65,11 +66,33 @@ class CabinController extends Controller
   |
   |  User select a specific cabin.
   |
+  |  If user have a reservation, and he want to create new.
+  |  Release the current cabin but keep reservation_timestamp in session.
+  |
   */
-  public function reserveCabinInType(Request $request)
+  public function reserveCabinInType(Request $request, ReservationService $reservationService)
   {
-    if ($request->session()->has('reserved_cabin_id')) {
-      return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+    $isCurrentReservation = $request->session()->has('reserved_cabin_id');
+    $keepOldTimeStamp = null;
+
+    Log::info('Reserve cabin in type', ['isCurrentReservation' => $isCurrentReservation]);
+
+    if ($isCurrentReservation) {
+      // return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+      $cart = $request->session()->get('cart', []);
+      $cartTimestampId = $cart['reservation_id'];
+
+      if (!$cartTimestampId) {
+        return response()->json(['message' => 'No reservation timestamp found'], 400);
+      }
+
+      // get from Temporary reservation table, and set expires_at to keepOldTimeStamp
+      $keepOldTimeStamp = TemporaryReservation::where('id', $cartTimestampId)->first()->expires_at;
+
+      Log::info('Keep old timestamp', ['keepOldTimeStamp' => $keepOldTimeStamp]);
+
+      // release the current reservation
+      $reservationService->releaseCabin($request);
     }
 
     $cabinNumber = $request->input('cabin_number');
@@ -92,7 +115,7 @@ class CabinController extends Controller
       return response()->json(['message' => 'Cabin not found or may be reserved'], 404);
     }
 
-    return $this->createTemporaryReservation($cabin, $request, 'clientSelect');
+    return $this->createTemporaryReservation($cabin, $request, 'clientSelect', $keepOldTimeStamp);
   }
 
   /*
@@ -152,9 +175,15 @@ class CabinController extends Controller
   /**
    * Helper method to create a temporary reservation.
    */
-  protected function createTemporaryReservation($cabin, Request $request, $selectionType)
+  protected function createTemporaryReservation($cabin, Request $request, $selectionType, $keepOldTimeStamp = null)
   {
     $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME');
+
+    Log::info('Creating temporary reservation', [
+      'cabin' => $cabin,
+      'selectionType' => $selectionType,
+      'keepOldTimeStamp' => $keepOldTimeStamp,
+    ]);
 
     try {
       DB::beginTransaction();
@@ -173,18 +202,20 @@ class CabinController extends Controller
         'user_id' => $request->user()->id ?? null,
         'cabin_id' => $cabin['id'],
         'cabin_number' => $cabin['cabin_number'],
-        'expires_at' => now()->addMinutes($reservationTime),
+        'expires_at' => $keepOldTimeStamp ? $keepOldTimeStamp : now()->addMinutes($reservationTime),
         'inventory' => 1,
       ]);
 
       $request->session()->put('reserved_cabin_id', $reserved->id);
+
+      $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
 
       $request->session()->put('cart', [
         'cabinSelection' => $selectionType,
         'reservationId' => $reserved->id,
         'cabin_number' => $cabin['cabin_number'],
         'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
-        'reservationTimestamp' => now()->timestamp,
+        'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
       ]);
 
       DB::commit();
@@ -195,6 +226,7 @@ class CabinController extends Controller
           'message' => 'Cabin reserved',
           'reservation_id' => $reserved->id,
           'time_to_cancel' => $reservationTime,
+          'updated_reservation' => $keepOldTimeStamp ? true : false,
           'cabin_number' => $selectionType === 'clientSelect' ? $reserved->cabin_number : null,
         ],
         200
