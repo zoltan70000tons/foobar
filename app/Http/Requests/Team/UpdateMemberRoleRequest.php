@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Team;
 
+use App\Rules\NoForbiddenCharacters;
 use App\Traits\JsonResponseTrait;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,7 +28,7 @@ class UpdateMemberRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'user_id' => 'required|string',
+                'user_id' => ['required', 'string', new NoForbiddenCharacters()],
                 'roles' => 'required|array'
         ];
     }

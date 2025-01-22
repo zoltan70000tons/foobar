@@ -67,4 +67,26 @@ enum Permissions: string
     case ResetSeat = "Reset Seat";
 
 
+    //Manage fees
+    
+    case ViewFees = 'View Fees';
+    case CreateFees = 'Create Fees';
+    case EditFees = 'Edit Fees';
+    case DeleteFees = 'Delete Fees';
+
+
+    //Manage Adjustments
+    case ViewAdjustments = 'View Adjustments';
+    case CreateAdjustments = 'Create Adjustments';
+    case EditAdjustments = 'Edit Adjustments';
+    case DeleteAdjustments = 'Delete Adjustments';
+
+    
+    //Manage Payments
+    case ViewPayments = 'View Payments';
+    case CreatePayments = 'Create Payments';
+    case EditPayments = 'Edit Payments';
+    case DeletePayments = 'Delete Payments';
+
+
 }

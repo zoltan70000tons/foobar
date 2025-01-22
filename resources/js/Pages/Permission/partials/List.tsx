@@ -7,8 +7,7 @@ import {
   Box,
   Typography,
   IconButton,
-  CircularProgress,
-  ButtonGroup
+
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
@@ -19,11 +18,11 @@ import axios from "axios";
 import { useTheme } from "@emotion/react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import apiRoutes from "@/Helpers/ApiRoutes";
-import { Link, useForm } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const List = () => {
   const [rows, setRows] = useState([]);
@@ -41,10 +40,12 @@ const List = () => {
   const createPermission = Permissions.CreatePermissions;
   const updatePermission = Permissions.EditPermissions;
   const deletePermission = Permissions.DeletePermissions;
-
   const { delete: destroy } = useForm({
     id: '',
   });
+
+  const {showSnackbar} = useSnackbar();
+
 
   useEffect(() => {
     axios.get(apiRoutes.orgPermissionUrl, { params: { org_id: 1 } })
@@ -62,6 +63,11 @@ const List = () => {
         setLoading(false);
       });
   }, []);
+
+  const sanitizeInput = (input) => {
+    const dangerousPattern = /['";<>\\\/`&{}[\]()=|%+*^$#@!]/g;
+    return input.replace(dangerousPattern, "").trim(); 
+  };
 
   const handleEdit = async (permission) => {
     setEditPermission(permission);
@@ -82,11 +88,15 @@ const List = () => {
     setEditPermission(null);
   };
 
-  const handleChange = (event) => setNewPermission(event.target.value);
+  const handleChange = (event) => {
+    const sanitizedValue = sanitizeInput(event.target.value);
+    setNewPermission(sanitizedValue);
+  }
 
   const handleEditChange = (event) => {
     if (editPermission) {
-      setEditPermission({ ...editPermission, role: event.target.value });
+      const sanitizedValue = sanitizeInput(event.target.value);
+      setEditPermission({ ...editPermission, role:sanitizedValue });
     }
   };
 
@@ -97,10 +107,10 @@ const List = () => {
       const newPermissionData = response.data.data;
       setRows([...rows, { id: newPermissionData.id, role: newPermissionData.name, system: newPermissionData.system }]);
       setSaveLoading(false);
-      setSnackbar({ open: true, severity: 'success', message: 'Permission created successfully' });
+      showSnackbar('Permission created successfully', 'success')
       handleClose();
     } catch (error) {
-      setSnackbar({ open: true, severity: 'error', message: 'Error creating permission' });
+      showSnackbar('Error creating permission', 'error')
       setSaveLoading(false);
     }
   };
@@ -119,10 +129,10 @@ const List = () => {
       ));
 
       setEditLoading(false);
-      setSnackbar({ open: true, severity: 'success', message: 'Permission updated successfully' });
+      showSnackbar('Permission updated successfully', 'success');
       handleEditClose();
     } catch (error) {
-      setSnackbar({ open: true, severity: 'error', message: 'Error updating permission' });
+      showSnackbar('Error updating permission', 'error')
       //console.error("Error updating permission:", error);
       setEditLoading(false);
     }
@@ -133,10 +143,10 @@ const List = () => {
       axios.delete(route('permissions.destroy', id))
         .then(() => {
           setRows(rows.filter(row => row.id !== id));
-          setSnackbar({ open: true, severity: 'success', message: 'Permission deleted successfully' });
+          showSnackbar('Permission deleted successfully', 'success');
         })
         .catch(error => {
-          setSnackbar({ open: true, severity: 'error', message: 'Error deleting permission' });
+          showSnackbar('Error deleting permission', 'error')
         });
     }
   };
@@ -187,6 +197,7 @@ const List = () => {
       </Box>)}
   
           <DataGrid
+            disableRowSelectionOnClick
             rows={rows}
             columns={columns}
             getRowId={(row) => row.id}
@@ -295,12 +306,6 @@ const List = () => {
           </Box>
         </Box>
       </Modal>
-      <SnackbarAlert
-        open={snackbar.open}
-        severity={snackbar.severity}
-        message={snackbar.message}
-        onClose={handleCloseSnackbar}
-      />
       <LoadingOverlay open={loading} />
     </Container>
   );

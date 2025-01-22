@@ -17,13 +17,22 @@ import {
   DialogActions,
 } from "@mui/material";
 import axios from "axios";
-import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, blueGrey, teal, green} from '@mui/material/colors';
+import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, blueGrey, teal, green } from '@mui/material/colors';
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import EditPassengerModal from "./EditPassengerModal";
 import { router } from "@inertiajs/react";
 
+type PassengersProps = {
+  booking: Booking;
+  editMode: boolean;
+};
 
-const Passengers = ({ booking }) => {
+type Booking = {
+  id: number;
+};
+
+
+const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -39,7 +48,6 @@ const Passengers = ({ booking }) => {
 
   // Open edit modal and set passenger data
   const handleEditPassenger = (passenger) => {
-    console.log(passenger);
     setEditingPassenger(passenger);
     setEditedPassengerData(passenger);
     setEditPassengerOpen(true);
@@ -63,46 +71,44 @@ const Passengers = ({ booking }) => {
       setErrors({});
       showSnackbar("Passenger data updated succesfully!", "success");
     } catch (error) {
-       setErrors(error);
-       showSnackbar("Error updating passenger data!", "error");
+      setErrors(error);
+      showSnackbar("Error updating passenger data!", "error");
     }
   };
 
   const onDelete = () => {
     setOpenConfirm(true);
-};
+  };
 
-const handleConfirm = async () => {
-  setOpenConfirm(false);
+  const handleConfirm = async () => {
+    setOpenConfirm(false);
 
-  try {
+    try {
       const response = await axios.post(
-          route('seat.release', { id: booking.event_id, booking_id: booking.id }), 
-          {
-              slotId: editedPassengerData.id,
-              bookingId: booking.id 
-          }
+        route('seat.release', { id: booking.event_id, booking_id: booking.id }),
+        {
+          slotId: editedPassengerData.id,
+          bookingId: booking.id
+        }
       );
 
       if (response.status === 200) {
-          console.log("Seat released successfully");
-          showSnackbar("Seat released succesfully!", "success");
-          setEditPassengerOpen(false);
-          console.log(response);
-          setEditedPassengerData(response.data);
-          router.reload({ only: ['booking'], preserveScroll: true });
+        showSnackbar("Seat released succesfully!", "success");
+        setEditPassengerOpen(false);
+        setEditedPassengerData(response.data);
+        router.reload({ only: ['booking'], preserveScroll: true });
       } else {
-          console.error("Failed to release seat", response.data);
-          showSnackbar("Failed to release seat", "error");
+        console.error("Failed to release seat", response.data);
+        showSnackbar("Failed to release seat", "error");
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error releasing seat:", error.response || error);
-  }
-};
+    }
+  };
 
-const handleCancel = () => {
+  const handleCancel = () => {
     setOpenConfirm(false);
-};
+  };
 
   return (
     <Box>
@@ -112,10 +118,10 @@ const handleCancel = () => {
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
           {passengers.map((passenger, index) => (
-            <Grid item xs={12} sm={3} key={passenger.id+passenger.email}>
+            <Grid item xs={12} sm={3} key={passenger.id + passenger.email}>
               <Box display="flex" alignItems="center">
                 <Avatar
-                  sx={{ width: 50, height: 50, mr: 2, cursor: "pointer",bgcolor: passenger.lead_passenger ? green[800] : passenger.empty ? grey[500] : colors[index][500] }}
+                  sx={{ width: 50, height: 50, mr: 2, cursor: "pointer", bgcolor: passenger.lead_passenger ? green[800] : passenger.empty ? grey[500] : colors[index][500] }}
                   onClick={() => handleEditPassenger(passenger)}
                 >
                   {passenger.full_name[0]}
@@ -128,7 +134,7 @@ const handleCancel = () => {
                       ? "Lead Passenger"
                       : `Passenger ${index + 1}`}
                   </Typography><br/> */}
-                  {passenger.empty ? <><br /><Chip label="available" size="small" color="info" sx={{color:"white"}} /></> : <></>}
+                  {passenger.empty ? <><br /><Chip label="available" size="small" color="info" sx={{ color: "white" }} /></> : <></>}
                 </Box>
               </Box>
             </Grid>
@@ -140,6 +146,7 @@ const handleCancel = () => {
         open={editPassengerOpen}
         onClose={() => setEditPassengerOpen(false)}
         passenger={editedPassengerData}
+        editMode={editMode}
         onSave={handleSavePassenger}
         onDelete={onDelete}
         onChange={(field, value) =>
@@ -147,23 +154,23 @@ const handleCancel = () => {
         }
         errors={errors}
       />
-      
+
       <Dialog open={openConfirm} onClose={handleCancel}>
-                <DialogTitle>Confirm Action</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to release this seat? This action cannot be undone.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCancel} color="secondary">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleConfirm} color="error" variant="contained">
-                        Confirm
-                    </Button>
-                </DialogActions>
-            </Dialog>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to release this seat? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirm} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Box>
   );

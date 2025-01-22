@@ -2,7 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Models\Adjustment;
+use App\Models\Booking;
+use App\Models\Fee;
 use App\Models\Installment;
+use Log;
 
 class PaymentRepository
 {
@@ -29,4 +33,6 @@ class PaymentRepository
       ]);
     }
   }
+
+  
 }

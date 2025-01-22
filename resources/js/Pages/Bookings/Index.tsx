@@ -27,13 +27,12 @@ import {
 } from "@/enums/CabinStatus";
 import { TagEnum } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
-import LoadingOverlay from "@/Components/LoadingOverlay";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import { Visibility } from "@mui/icons-material";
-import { current } from "@reduxjs/toolkit";
-import PersonIcon from '@mui/icons-material/Person';
 import UserSelectorModal from "@/Components/UserSelectorModal";
+import NewBookingModal from "./NewBookingModal";
+
 
 const Index = ({
   auth,
@@ -43,10 +42,11 @@ const Index = ({
   uploadedBookings,
   cancelledBookings,
   users,
+  cabinTypes,
+  cabinCategories,
   errors,
 }: PageProps & { tab: string; data: any }) => {
 
-  console.log(newBookings, users);
   const { hasPermission } = usePermissions();
   const [selectedTab, setSelectedTab] = useState(0);
 
@@ -55,7 +55,8 @@ const Index = ({
   const [openModal, setOpenModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
-  
+  console.log(cabinTypes);
+  console.log(cabinCategories);
 
   const handleOpenModal = (userId: string | null, booking_id : string | null) => {
     setSelectedBookingId(booking_id);
@@ -111,10 +112,20 @@ const Index = ({
   };
 
   const handleViewClick = (row) => {
-    router.get(
-      route("bookings.show", { id: event.id, booking_code: row.booking_code })
-    );
+    if (!event?.id || !row?.booking_code) {
+      console.error("Missing parameters: eventId or bookingCode is undefined.");
+      return;
+    }
+  
+    const url = `/events/${event.id}/bookings/${row.booking_code}`;
+    window.location.href = url; // Redirige al usuario
   };
+
+  // const handleViewClick = (row) => {
+  //   router.get(
+  //     route("bookings.show", { id: event.id, booking_code: row.booking_code })
+  //   );
+  // };
 
   const handleClick = (agent_id : String, booking_id: String) => {
     handleOpenModal(agent_id, booking_id);
@@ -277,7 +288,9 @@ const Index = ({
       </Toolbar>
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{textAlign:"right"}}>
+            
+             <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
             <Box>
               {/* Tabs for navigation */}
               <Tabs

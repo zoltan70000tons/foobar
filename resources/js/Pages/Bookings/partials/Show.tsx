@@ -37,31 +37,48 @@ import BookingSidebar from "./BookingSidebar";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
+import FeesForm from "./FeesForm";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+
+
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
   const [locked, setLocked] = useState(booking.locked_by ? true : false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const { hasPermission } = usePermissions();
-  const [comments, setComments] = useState(booking.comments || []); // Estado inicial
+  const [comments, setComments] = useState(booking.comments || []);
+  const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState(booking.logs || []);
   const theme = useTheme();
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
+  console.log(booking);
+  useEffect(() =>{
+    if(booking.locked_by && booking.locked_by.agent_id === auth.user.id){
+      setEditMode(true);
+    }
+  },[])
   const handleEditChange = (e) => {
-    setEditMode(e.target.checked);
+    setLoading(true);
     router.get(
-      route("bookings.editMode", {
-        booking_id: booking.id,
-        lock: e.target.checked,
-        event_id: event.id,
-      }),
-      {},
+      route("bookings.editMode"),
       {
-        only: ["booking", "event"],
-        preserveScroll: true,
-        preserveState: true,
+        booking_id: booking.id,
+        lock: e.target.checked ? "1" : "0",
+        event_id: event.id,
+      },
+      {
+        onSuccess: (response) => {
+          if (response.success) {
+            setEditMode(e.target.checked);
+            setLoading(false);
+          }
+        },
+        onError: (error) => {
+          setLoading(false);
+        },
       }
     );
   };
@@ -97,12 +114,11 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
 
 
   const handleAddAdjustment = (data) => {
-    console.log(data);
     router.post(
       route("bookings.addAdjustment", {
         id: event.id,
       }),
-      { 
+      {
         code: data.code,
         type: data.type,
         operation: data.operation,
@@ -110,7 +126,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         restrictions: null,
         event_id: event.id,
         booking_id: booking.id
-       }
+      }
     );
   };
 
@@ -152,8 +168,8 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         )}
 
         <Button
-          variant="contained"
-          color="primary"
+          variant="outlined"
+          color="secondary"
           startIcon={<CommentIcon />}
           onClick={toggleSidebar}
           sx={{ mb: 2 }}
@@ -164,7 +180,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
         <Passengers booking={booking} editMode={editMode} />
-        <AdjustmentForm booking={booking} editMode={true} onSubmit={handleAddAdjustment} />
+        <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} />
         <Payment
           booking={booking}
           editMode={editMode}
@@ -178,6 +194,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
           comments={comments}
           onAddComment={handleAddComment}
         />
+        <LoadingOverlay open={loading} />
       </Container>
     </AuthenticatedLayout>
   );

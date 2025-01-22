@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import Divider from "@mui/material/Divider";
-import Grid from "@mui/material/Grid";
+import {Card,CardContent, Divider, Grid, Button, Tabs, Tab, Box} from "@mui/material";
 import FormControl from "@mui/material/FormControl";
-import Button from "@mui/material/Button";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import CustomInput from "./CustomInput";
 import AssignRoles from "@/Components/AssignRoles";
-import { Box } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { useForm, usePage } from "@inertiajs/react";
-import { MuiTelInput } from 'mui-tel-input';
-import { CardContent, Snackbar, Alert } from "@mui/material";
 import { useTeamData } from "@/Hooks/useTeamData";
 import CustomSelect from "./CustomSelect";
-import SnackbarAlert from "@/Components/SnackbarAlert";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Permissions } from "@/enums/PermissionEnum";
+import PhoneNumber from "@/Components/PhoneNumber";
 
 interface User {
   id: number;
@@ -42,7 +35,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
   const { hasPermission } = usePermissions();
   const { rows, fetchData, loading } = useTeamData();
   const { errors, flash } = usePage().props;
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+  const { showSnackbar } = useSnackbar();
 
 
 
@@ -60,10 +53,12 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     gender: user?.detail?.gender || ''
   });
 
+
   const canEdit = hasPermission(Permissions.EditUsers);
 
   const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setData(event.target.name, event.target.value);
+    const { name, value } = event.target;
+    setData(name, value);
   };
 
   const handleChangePhone = (val) => {
@@ -76,6 +71,8 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
 
   const [tabValue, setTabValue] = useState("one");
 
+  
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setTabValue(newValue);
   };
@@ -85,24 +82,18 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     if (canEdit) {
       post(route('member.update', user.id), {
         onSuccess: () => {
-          setSnackbar({ open: true, severity: 'success', message: 'User updated successfully' });
+          showSnackbar("User updated successfully", "success");
           fetchData();
         },
         onError: () => {
-          setSnackbar({ open: true, severity: 'error', message: 'Error updating user' });
+           showSnackbar('Error updating user',"success");
         },
       });
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleChangeSelect = (value: object) => {
     setData('gender', value.target.value);
-    console.log(value.target);
-
   }
   return (
     <Card variant="outlined" sx={{ height: "100%", width: "100%" }}>
@@ -127,7 +118,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                 <Grid item xs={12} md={4}>
                   <CustomInput
                     name="firstname"
-                    value={data.firstname}
+                    value={data?.firstname || ""}
                     title="First Name"
                     onChange={handleUserChange}
                     dis={edit.disabled}
@@ -138,7 +129,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                 <Grid item xs={12} md={4}>
                   <CustomInput
                     name="lastname"
-                    value={data.lastname}
+                    value={data?.lastname || ""}
                     onChange={handleUserChange}
                     title="Last Name"
                     dis={edit.disabled}
@@ -149,7 +140,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                 <Grid item xs={12} md={4}>
                   <CustomInput
                     name="middlename"
-                    value={data.middlename}
+                    value={data?.middlename || ""}
                     onChange={handleUserChange}
                     title="Middle Name"
                     dis={edit.disabled}
@@ -159,22 +150,17 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
 
                 <Grid item xs={12} md={4}>
                   <Box>
-                    <MuiTelInput
-                      name="phone_number"
-                      value={data.phone_number}
+                    <PhoneNumber value={data?.phone_number || ""}
                       onChange={handleChangePhone}
-                      fullWidth size="small"
-                      disabled={edit.disabled}
-                      helperText={errors.phone_number}
-                      error={errors.phone_number} />
-                  </Box>
+                      forceDialCode={true} />
+                  </Box> 
                 </Grid>
 
                 {/* Third row */}
                 <Grid item xs={12} md={4}>
                   <CustomInput
                     name="email"
-                    value={data.email}
+                    value={data?.email || ""}
                     title="Email Address"
                     dis={true}
                     error={errors.email}
@@ -184,10 +170,11 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                 <Grid item xs={12} md={4}>
                   <CustomSelect
                     name="gender"
-                    value={data.gender}
+                    value={data?.gender || ""}
                     title="Gender"
                     onChange={handleChangeSelect}
                     options={[
+                      { value: '', label: '-'},
                       { value: 'M', label: 'Male' },
                       { value: 'F', label: 'Female' },
 
@@ -224,12 +211,6 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
         </CardContent>
       )}
 
-      <SnackbarAlert
-        open={snackbar.open}
-        severity={snackbar.severity}
-        message={snackbar.message}
-        onClose={handleCloseSnackbar}
-      />
     </Card>
   );
 };

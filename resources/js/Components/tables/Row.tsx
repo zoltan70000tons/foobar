@@ -334,7 +334,7 @@ const Row: FC<RowProps<any>> = ({
                         />
                       </TableCell>)}
                       {subColumns?.map((column) => (
-                        <TableCell key={column.accessor as string}>
+                        <TableCell key={`filter-${column.accessor as string}`}>
                           {column.sortable ? (
                             <TableSortLabel
                               active={subSort.key === column.accessor}
@@ -353,7 +353,7 @@ const Row: FC<RowProps<any>> = ({
                       <TableRow>
                         <TableCell />
                         {subColumns?.map((column) => (
-                          <TableCell key={column.accessor as string}>
+                          <TableCell key={`filter-${column.accessor as string}`}>
                             {column.filterable ? (
                               column.filterType === "select" ? (
                                 <FormControl
@@ -374,7 +374,7 @@ const Row: FC<RowProps<any>> = ({
                                       <em>All</em>
                                     </MenuItem>
                                     {column.filterOptions?.map((option) => (
-                                      <MenuItem key={option} value={option}>
+                                      <MenuItem key={`filter-option-${option}`} value={option}>
                                         {option}
                                       </MenuItem>
                                     ))}

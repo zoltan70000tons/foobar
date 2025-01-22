@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
     Box,
@@ -7,7 +6,10 @@ import {
     Button,
     Typography,
     Grid,
-    Modal,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
     List,
     ListItem,
     ListItemText,
@@ -20,291 +22,262 @@ import DiscountOutlined from "@mui/icons-material/DiscountOutlined";
 import AddOutlined from "@mui/icons-material/AddOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { router } from "@inertiajs/react";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 type AdjustmentFormProps = {
     booking: Booking;
     editMode: boolean;
-    onSubmit: (data: AdjustmentData) => void;
 };
 
 type Booking = {
     id: number;
+    event_id: number;
     adjustments?: AdjustmentData[];
 };
 
 type AdjustmentData = {
-    id: number;
+    id?: number;
     type: "DISCOUNT" | "ADDON";
     operation: "FIXED" | "PERCENTAGE";
     value: number;
     code: string;
 };
 
-const AdjustmentForm: React.FC<AdjustmentFormProps> = ({
-    booking,
-    editMode,
-    onSubmit,
-}) => {
-    const [formData, setFormData] = useState<AdjustmentData>({
-        type: "DISCOUNT",
-        operation: "FIXED",
-        value: 0,
-        code: "",
-    });
+const defaultFormData: AdjustmentData = {
+    type: "DISCOUNT",
+    operation: "FIXED",
+    value: 0,
+    code: "",
+};
 
-    const [adjustments, setAdjustments] = useState<AdjustmentData[]>(
-        booking.adjustments || []
-    );
-
+const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) => {
+    const [formData, setFormData] = useState<AdjustmentData>(defaultFormData);
+    const [adjustments, setAdjustments] = useState<AdjustmentData[]>(booking.adjustments || []);
     const [open, setOpen] = useState(false);
-    const [currentEditingIndex, setCurrentEditingIndex] = useState<number | null>(
-        null
-    );
+    const [currentEditingId, setCurrentEditingId] = useState<number | null>(null);
+    const { showSnackbar } = useSnackbar();
+    const {hasPermission} = usePermissions();
+    const canAddAdjustment = hasPermission(Permissions.CreateAdjustments);
+    const canDeleteAdjustment = hasPermission(Permissions.DeleteAdjustments);
+    const canEditAdjustment = hasPermission(Permissions.EditAdjustments);
 
     useEffect(() => {
-        if (booking.adjustments) {
-            setAdjustments(booking.adjustments);
-        }
+        setAdjustments(booking.adjustments || []);
     }, [booking]);
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
+        setFormData((prev) => ({
+            ...prev,
             [name]: name === "value" ? parseFloat(value) : value,
         }));
     };
 
+    const resetForm = () => {
+        setFormData(defaultFormData);
+        setCurrentEditingId(null);
+    };
+
     const handleOpen = () => {
-        setFormData({
-            type: "DISCOUNT",
-            operation: "FIXED",
-            value: 0,
-            code: "",
-        });
-        setCurrentEditingIndex(null);
+        resetForm();
         setOpen(true);
     };
 
-    const handleEdit = (index: number) => {
-        setFormData(adjustments[index]);
-        setCurrentEditingIndex(index);
-        setOpen(true);
-    };
-
-    const handleDelete = async (index: number) => {
-        const adjustmentToDelete = adjustments[index];
-        try {
-
-            await axios.post(route('bookings.deleteAdjustment'), { id: adjustmentToDelete.id, booking_id: booking.id, event_id: booking.event_id });
-            const updatedAdjustments = adjustments.filter((_, i) => i !== index);
-            setAdjustments(updatedAdjustments);
-        } catch (error) {
-            console.error("Failed to delete adjustment:", error);
-            alert("An error occurred while trying to delete the adjustment.");
+    const handleEdit = (id: number) => {
+        const adjustment = adjustments.find((adj) => adj.id === id);
+        if (adjustment) {
+            setFormData(adjustment);
+            setCurrentEditingId(id);
+            setOpen(true);
         }
     };
 
-    const handleClose = () => setOpen(false);
+    const handleDelete =  (id: number) => {
+        try {
+            router.post(
+                route("bookings.deleteAdjustment", { event_id: booking.event_id, booking_id: booking.id }),
+                { id }
+            );
+           // setAdjustments((prev) => prev.filter((adj) => adj.id !== id));
+            showSnackbar("Adjustment deleted successfully.", "success");
+        } catch (error) {
+            console.error("Failed to delete adjustment:", error);
+            showSnackbar("An error occurred while deleting the adjustment.", "error");
+        }
+    };
+
+    const createAdjustment = () => {
+        try {
+            router.post(
+                route("bookings.createAdjustment", { event_id: booking.event_id, booking_id: booking.id }),
+                formData
+            );
+            //setAdjustments((prev) => [...prev, response.data.adjustment]);
+            showSnackbar("Adjustment created successfully.", "success");
+        } catch (error) {
+            console.error("Failed to create adjustment:", error);
+            showSnackbar("An error occurred while creating the adjustment.", "error");
+        }
+    };
+
+    const updateAdjustment = async () => {
+        try {
+            const response = await router.post(
+                route("bookings.updateAdjustment", { event_id: booking.event_id, booking_id: booking.id }),
+                { id: currentEditingId, ...formData }
+            );
+            // setAdjustments((prev) =>
+            //     prev.map((adj) => (adj.id === currentEditingId ? response.data.adjustment : adj))
+            // );
+            showSnackbar("Adjustment updated successfully.", "success");
+        } catch (error) {
+            console.error("Failed to update adjustment:", error);
+            showSnackbar("An error occurred while updating the adjustment.", "error");
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (formData.value <= 0) {
-            alert("Value must be greater than 0");
+            showSnackbar("Value must be greater than 0.", "error");
             return;
         }
-
-        try {
-            if (currentEditingIndex !== null) {
-
-                const response = await axios.post(route('bookings.updateAdjustment'), {
-                    id: formData.id,
-                    code: formData.code,
-                    type: formData.type,
-                    operation: formData.operation,
-                    value: formData.value,
-                    restrictions: null,
-                    booking_id: booking.id,
-                    event_id: booking.event_id,
-                });
-
-                const updatedAdjustments = adjustments.map((adj, index) =>
-                    index === currentEditingIndex ? response.data.adjustment : adj
-                );
-                setAdjustments(updatedAdjustments);
-            } else {
-                // Crear un nuevo ajuste
-                const response = await axios.post(route('bookings.createAdjustment'), {
-                    code: formData.code,
-                    type: formData.type,
-                    operation: formData.operation,
-                    value: formData.value,
-                    restrictions: null,
-                    booking_id: booking.id,
-                    event_id: booking.event_id,
-                });
-
-                setAdjustments((prev) => [...prev, response.data.adjustment]);
-            }
-
-            // Cerrar el modal y reiniciar el formulario
-            setOpen(false);
-            setFormData({
-                type: "DISCOUNT",
-                operation: "FIXED",
-                value: 0,
-                code: "",
-            });
-            setCurrentEditingIndex(null);
-        } catch (error) {
-            console.error("Failed to save adjustment:", error);
-            alert("An error occurred while trying to save the adjustment.");
+        if (currentEditingId) {
+            await updateAdjustment();
+        } else {
+            await createAdjustment();
         }
+        resetForm();
+        setOpen(false);
     };
-
 
     return (
         <Box>
             <Typography variant="h5" mb={2}>
                 Adjustments
             </Typography>
-            <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
-                <Box mb={3}>
-                    {adjustments.length > 0 ? (
-                        <List>
-                            {adjustments.map((adjustment, index) => (
-                                <ListItem key={index} sx={{ p: 0 }} secondaryAction={
-                                    editMode && (
-                                        <>
-                                            <IconButton
-                                                edge="end"
-                                                aria-label="edit"
-                                                onClick={() => handleEdit(index)}
-                                            >
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton
-                                                edge="end"
-                                                aria-label="delete"
-                                                onClick={() => handleDelete(index)}
-                                            >
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </>
-                                    )
-                                }>
-                                    {adjustment && (
-                                        <>
-                                            <ListItemIcon>
-                                                {adjustment.type === "DISCOUNT" ? (
-                                                    <DiscountOutlined color="primary" />
-                                                ) : (
-                                                    <AddOutlined color="secondary" />
-                                                )}
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={`${adjustment.type} (${adjustment.code})`}
-                                                secondary={`Value: ${adjustment.value} ${adjustment.operation === "PERCENTAGE" ? "%" : ""
-                                                    }`}
-                                            />
-                                        </>
+            <Paper variant="outlined" sx={{ p: 2, mb: 4 }}>
+                {adjustments.length > 0 ? (
+                    <List>
+                        {adjustments.map((adjustment) => (
+                            <ListItem
+                                key={adjustment.id}
+                                secondaryAction={
+                                    <>
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="edit"
+                                            onClick={() => handleEdit(adjustment.id!)}
+                                            disabled={!canDeleteAdjustment || !editMode}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="delete"
+                                            onClick={() => handleDelete(adjustment.id!)}
+                                            disabled={!canDeleteAdjustment || !editMode} 
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </>
+                                }
+                            >
+                                <ListItemIcon>
+                                    {adjustment.type === "DISCOUNT" ? (
+                                        <DiscountOutlined color="primary" />
+                                    ) : (
+                                        <AddOutlined color="secondary" />
                                     )}
-                                </ListItem>
-                            ))}
-                        </List>
-                    ) : (
-                        <Typography>No adjustments associated yet.</Typography>
-                    )}
-                </Box>
-                {editMode && (
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<AddIcon />}
-                        onClick={handleOpen}
-                    >
-                        Add Adjustment
-                    </Button>
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={`${adjustment.type} (${adjustment.code})`}
+                                    secondary={`Value: ${adjustment.value} ${
+                                        adjustment.operation === "PERCENTAGE" ? "%" : ""
+                                    }`}
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                ) : (
+                    <Typography>No adjustments associated yet.</Typography>
                 )}
-                <Modal open={open} onClose={handleClose}>
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            width: 400,
-                            bgcolor: "background.paper",
-                            borderRadius: 2,
-                            boxShadow: 24,
-                            p: 4,
-                        }}
-                        component="form"
-                        onSubmit={handleSubmit}
-                    >
-                        <Typography variant="h6" mb={2}>
-                            {currentEditingIndex !== null ? "Edit Adjustment" : "Create Adjustment"}
-                        </Typography>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Code"
-                                    name="code"
-                                    type="text"
-                                    value={formData.code}
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    select
-                                    label="Type"
-                                    name="type"
-                                    value={formData.type}
-                                    onChange={handleChange}
-                                    fullWidth
-                                >
-                                    <MenuItem value="DISCOUNT">Discount</MenuItem>
-                                    <MenuItem value="ADDON">Addon</MenuItem>
-                                </TextField>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    select
-                                    label="Operation"
-                                    name="operation"
-                                    value={formData.operation}
-                                    onChange={handleChange}
-                                    fullWidth
-                                >
-                                    <MenuItem value="FIXED">Fixed</MenuItem>
-                                    <MenuItem value="PERCENTAGE">Percentage</MenuItem>
-                                </TextField>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Value"
-                                    name="value"
-                                    type="number"
-                                    value={formData.value}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    inputProps={{ step: 0.01, min: 0 }}
-                                />
-                            </Grid>
-                        </Grid>
-                        <Box mt={3}>
-                            <Button type="submit" variant="contained" color="primary" fullWidth>
-                                {currentEditingIndex !== null ? "Update Adjustment" : "Save Adjustment"}
-                            </Button>
-                        </Box>
-                    </Box>
-                </Modal>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpen}
+                    sx={{ mt: 2 }}
+                    disabled={!editMode || !canAddAdjustment}
+                >
+                    Add Adjustment
+                </Button>
             </Paper>
+
+            <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+                <DialogTitle>{currentEditingId ? "Edit Adjustment" : "Create Adjustment"}</DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Code"
+                                name="code"
+                                value={formData.code}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                select
+                                label="Type"
+                                name="type"
+                                value={formData.type}
+                                onChange={handleChange}
+                                fullWidth
+                            >
+                                <MenuItem value="DISCOUNT">Discount</MenuItem>
+                                <MenuItem value="ADDON">Addon</MenuItem>
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                select
+                                label="Operation"
+                                name="operation"
+                                value={formData.operation}
+                                onChange={handleChange}
+                                fullWidth
+                            >
+                                <MenuItem value="FIXED">Fixed</MenuItem>
+                                <MenuItem value="PERCENTAGE">Percentage</MenuItem>
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Value"
+                                name="value"
+                                type="number"
+                                value={formData.value}
+                                onChange={handleChange}
+                                fullWidth
+                                inputProps={{ step: 0.01, min: 0 }}
+                            />
+                        </Grid>
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="outlined" onClick={() => setOpen(false)} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button variant="contained" onClick={handleSubmit} color="primary">
+                        {currentEditingId ? "Update Adjustment" : "Save Adjustment"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

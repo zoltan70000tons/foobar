@@ -197,7 +197,7 @@ const Status = ({ event, booking, editMode, users }) => {
                 </Grid>
                 <Grid item xs={4}>
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     color="warning"
                     onClick={handleUpdateStatus}
                     disabled={!canEdit || !editMode}
@@ -223,7 +223,7 @@ const Status = ({ event, booking, editMode, users }) => {
               Cancel this booking:
             </Typography>
             <Button
-              variant="contained"
+              variant="outlined"
               color="warning"
               startIcon={<WarningIcon />}
               onClick={handleCancelDialogOpen}
@@ -248,7 +248,7 @@ const Status = ({ event, booking, editMode, users }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} color="secondary">
+          <Button onClick={handleDialogClose}  color="secondary">
             Cancel
           </Button>
           <Button onClick={handleUpdate} color="primary">

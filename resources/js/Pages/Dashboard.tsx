@@ -89,11 +89,11 @@ export default function Dashboard({ auth }: PageProps) {
             </Grid>
             
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
               <RecentOrders />
             </Paper>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </AuthenticatedLayout>

@@ -1,24 +1,38 @@
-import React from "react";
-import TextField from "@mui/material/TextField";
-import { Box } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 
-interface CustomInputProps {
-  name: string;
-  value: string;
-  title: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  dis?: boolean;
-  error?: string; 
-}
+const CustomInput: React.FC<CustomInputProps> = ({
+  name,
+  value,
+  title,
+  onChange,
+  dis,
+  error,
+}) => {
 
-const CustomInput: React.FC<CustomInputProps> = ({ name, value, title, onChange, dis, error }) => {
+  const sanitizeInput = (input: string) => {
+    const dangerousPattern = /['";<>\\\/`&{}[\]()=|%+*^$#@!]/g;
+    return input.replace(dangerousPattern, "");
+  };
+
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(event.target.value);
+    const sanitizedEvent = {
+      target: {
+        name: event.target.name,
+        value: sanitizedValue,
+      },
+    };
+    onChange(sanitizedEvent as unknown as React.ChangeEvent<HTMLInputElement>);
+  };
+
   return (
     <Box>
       <TextField
         name={name}
         value={value}
         label={title}
-        onChange={onChange}
+        onChange={handleChange}
         fullWidth
         disabled={dis}
         error={!!error}
@@ -27,7 +41,6 @@ const CustomInput: React.FC<CustomInputProps> = ({ name, value, title, onChange,
         size="small"
       />
     </Box>
-
   );
 };
 

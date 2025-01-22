@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button, DialogTitle, DialogContent } from "@mui/material";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ViewMember from './ViewMember';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
+import React, { useState } from "react";
+import {
+  IconButton,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogActions,
+  Button,
+  DialogTitle,
+  DialogContent,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ViewMember from "./ViewMember";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 interface ActionMenuProps {
   params: any;
@@ -15,23 +24,18 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { hasPermission } = usePermissions();
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
   const handleView = () => {
     setSelectedUser(params.row);
     setOpenViewModal(true);
-    handleClose();
-  };
-
-  const handleEdit = () => {
-    //Todo edit
-    handleClose();
+    handleMenuClose();
   };
 
   const handleCloseViewModal = () => {
@@ -40,41 +44,46 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
 
   return (
     <>
-     {hasPermission(Permissions.ViewUsers) &&(
-      <>
-      <IconButton
-      aria-label="more"
-      aria-controls="long-menu"
-      aria-haspopup="true"
-      onClick={handleClick}
-    >
-      <MoreVertIcon />
-    </IconButton>
-    <Menu
-      anchorEl={anchorEl}
-      keepMounted
-      open={Boolean(anchorEl)}
-      onClose={handleClose}
-    >
-      <MenuItem onClick={handleView}>View</MenuItem>
-    </Menu>
-      </>
-     )}
-      
+      {hasPermission(Permissions.ViewUsers) && (
+        <>
+          <IconButton
+            aria-label="more"
+            aria-controls="long-menu"
+            aria-haspopup="true"
+            onClick={handleMenuOpen}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose} 
+          >
+            <MenuItem onClick={handleView}>View</MenuItem>
+          </Menu>
+        </>
+      )}
 
       <Dialog
         maxWidth="xl"
         open={openViewModal}
-        onClose={handleCloseViewModal}
+        onClose={handleCloseViewModal} 
         aria-labelledby="view-dialog-title"
         aria-describedby="view-dialog-description"
       >
         <DialogTitle>Edit User Details</DialogTitle>
         <DialogContent>
-        <ViewMember selectedUser={selectedUser} />
+          <ViewMember selectedUser={selectedUser} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseViewModal} color="primary" variant="contained">Close</Button>
+          <Button
+            onClick={handleCloseViewModal}
+            color="primary"
+            variant="contained"
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </>

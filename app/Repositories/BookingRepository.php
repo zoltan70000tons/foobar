@@ -142,8 +142,9 @@ class BookingRepository implements BookingInterface
       'passengers' => function ($query) {
         $query->orderBy('id', 'asc');
       },
-      'passengers.installments',
-      'passengers.payments',
+      "passengers.installments",
+      "passengers.payments",
+      "passengers.fees",
       'logs',
       'logs.user',
       'lockedBy',
