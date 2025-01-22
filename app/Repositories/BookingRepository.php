@@ -135,12 +135,12 @@ class BookingRepository implements BookingInterface
   function findByCode($code)
   {
     return Booking::with([
-      "cabin",
-      "cabin.cabinType",
-      "cabin.category",
-      "adjustments",
-      "passengers" => function ($query) {
-        $query->orderBy("id", "asc");
+      'cabin',
+      'cabin.cabinType',
+      'cabin.category',
+      'adjustments',
+      'passengers' => function ($query) {
+        $query->orderBy('id', 'asc');
       },
       "passengers.installments",
       "passengers.payments",
@@ -169,7 +169,9 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id) {}
+  function delete($id)
+  {
+  }
 
   function assignAgent($code, $user)
   {
@@ -333,8 +335,13 @@ class BookingRepository implements BookingInterface
           throw new \Exception('Temporary booking ID not found.');
         }
 
+        Log::info('1. Temp reservation found', ['tempReservation' => $tempReservation]);
+
         $cabinId = $tempReservation->cabin_id;
         $selectedCabin = Cabin::find($cabinId);
+
+        Log::info('2. selectedCabin', ['selectedCabin' => $selectedCabin]);
+
         if (!$selectedCabin) {
           throw new \Exception('Cabin not found for the given reservation ID.');
         }
@@ -350,6 +357,8 @@ class BookingRepository implements BookingInterface
           null,
           true
         );
+
+        Log::info('3. availableCabins', ['availableCabins' => $availableCabins]);
 
         if (is_array($availableCabins) && array_key_exists('error', $availableCabins)) {
           throw new \Exception($availableCabins['error']);

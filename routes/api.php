@@ -112,6 +112,7 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::get('/customer', [CustomerAuthController::class, 'customer']);
     Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
     Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
+    Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
 
     // set slot empty
     Route::post('/my-bookings/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);

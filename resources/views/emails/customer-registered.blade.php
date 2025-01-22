@@ -34,6 +34,6 @@ We'll send a welcome email to the customer with new survivor number.
 @endsection
 
 @section('footer')
-    <p>{{ __('systemEmails.email_regards') }},</p>
-    <p>70000TONS OF METAL TEAM</p>
+    <p>{{ __('systemEmails.email_thanks') }},</p>
+    <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection

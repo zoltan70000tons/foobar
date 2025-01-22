@@ -108,6 +108,7 @@ class BookingController extends Controller
         'newsletter' => $validated['newsletter'],
         'travel_info' => $validated['travelInfo'],
         'hear_about' => $validated['info'],
+        'referral_details' => $validated['referralDetails'],
         'terms_n_cons' => $validated['terms'],
         'cabin_conf_accp' => $validated['cart']['cabin_conf_accp'],
         'single_t_agreement' => $validated['cart']['single_t_agreement'],

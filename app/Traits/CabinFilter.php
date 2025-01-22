@@ -73,6 +73,11 @@ trait CabinFilter
       ];
     }
 
-    return ['cabins' => $formattedCabins, 'status' => 200];
+    $formattedCabinsArray = $formattedCabins->values()->toArray();
+
+    return [
+      'cabins' => $formattedCabinsArray,
+      'status' => 200,
+    ];
   }
 }
