@@ -19,11 +19,20 @@ return [
   'email_verification_link_sent' => 'Verification link sent.',
 
   'email_hi' => 'Hi',
-  'email_thanks' => 'Thanks',
-  'email_regards' => 'Regards',
+  'email_thanks' => 'Cheers,',
+  'email_regards' => 'your 70000TONS OF METAL Team!',
   'email_excited' => 'We are excited to have you on board!',
   'email_account_created' => 'Your account has been created successfully.',
   'email_new_survivor_number' => 'Your new survivor number is:',
   'email_activate_account' => 'Please activate your account by clicking the link below, or copy and paste it into your browser:',
   'email_thank_you' => 'Thank you for choosing us.',
+  'update_email' => [
+    'subject' => 'Your email address has been updated',
+    'title' => 'Email Address Updated',
+    'greeting' => 'Hello :name,',
+    'default_name' => 'Customer',
+    'body' => 'Your account\'s email address has been successfully updated.',
+    'security_notice' => 'If you did not make this change, please contact our support team immediately to secure your account.',
+    'thank_you' => 'your 70000TONS OF METAL Team!',
+  ],
 ];

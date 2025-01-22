@@ -8,10 +8,12 @@ use App\Traits\HttpResponses;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmailUpdated;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\App;
+use App\Models\User;
 
 class CustomerAuthController extends Controller
 {
@@ -103,15 +105,15 @@ class CustomerAuthController extends Controller
 
     $validated = $request->validate([
       'phoneNumber' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
-      'language' => ['required', 'string', 'max:5'],
-      'country' => ['required', 'string', 'max:50'],
-      'state' => ['nullable', 'string', 'max:20'],
-      'addressLine1' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9 ]*$/'],
-      'addressLine2' => ['nullable', 'string', 'max:50', 'regex:/^[a-zA-Z0-9 ]*$/'],
-      'city' => ['required', 'string', 'max:30'],
-      'zipCode' => ['required', 'string', 'max:10'],
+      'language' => ['required', 'string', 'max:5', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'country' => ['required', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'state' => ['nullable', 'string', 'max:20', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'addressLine1' => ['required', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'addressLine2' => ['nullable', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'city' => ['required', 'string', 'max:30', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'zipCode' => ['required', 'string', 'max:10', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'emergencyContactName' => ['required', 'string', 'max:75'],
-      'emergencyPhoneNumber' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/', 'different:phoneNumber'],
+      'emergencyPhoneNumber' => ['required', 'string',],
     ]);
 
     // Update user details
@@ -141,5 +143,43 @@ class CustomerAuthController extends Controller
     return $this->successResponse([
       'message' => 'Profile updated successfully.'
     ]);
+  }
+
+  /**
+   * Updates the login email address of the authenticated user
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @return \Illuminate\Http\JsonResponse
+   *
+   */
+  public function updateEmail(Request $request)
+  {
+    $validated = $request->validate([
+      'new_email' => ['required', 'email', 'unique:users,email'],
+    ]);
+
+    $user = $request->user();
+
+    // Update the email address
+    $oldEmail = $user->email;
+    $user->email = $validated['new_email'];
+    $user->save();
+
+    $language = $user->detail->language ?? 'en';
+
+    // Send notification to the old email
+    // Send notification email
+    $this->sendEmailUpdateNotification($user, $oldEmail, $language);
+
+    return response()->json(['message' => __('systemEmails.update_email.updated_successfully')]);
+  }
+
+  protected function sendEmailUpdateNotification(User $user, string $oldEmail, string $language): void
+  {
+    try {
+      Mail::to($oldEmail)->send(new EmailUpdated($user, $language));
+    } catch (\Exception $e) {
+      Log::error('Failed to send email update notification to user ID ' . $user->id . ': ' . $e->getMessage());
+    }
   }
 }
