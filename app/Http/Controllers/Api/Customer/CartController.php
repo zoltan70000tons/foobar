@@ -110,7 +110,7 @@ class CartController extends Controller
       'single_t_agreement' => 'boolean',
     ]);
 
-    if ($request->input('force_clear', false)) {
+    if ($validated['force_clear'] === true) {
       \Log::info('Force clearing cart session');
 
       // Attempt to release the cabin

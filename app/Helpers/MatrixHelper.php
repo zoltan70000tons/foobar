@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use App\Enums\StatusCabin;
+use App\Models\CabinSpec;
+use App\Models\Cabin;
 use Illuminate\Support\Facades\DB;
 
 // use log
@@ -15,8 +17,10 @@ class MatrixHelper
   //  *
   //  * @return string | null
   //  */
-  public static function getDecks($cabinCategoryId, $ticketType)
+  public static function getDecks(int $cabinCategoryId, int $ticketType)
   {
+    // dump($cabinCategoryId, $ticketType);
+
     return DB::table('cabins')
       ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
       ->where('cabins.cabin_category_id', $cabinCategoryId)
@@ -24,6 +28,21 @@ class MatrixHelper
       ->distinct()
       ->pluck('cabin_specs.deck')
       ->implode(',');
+
+    // $cabinSpecIds = Cabin::where('cabin_category_id', $cabinCategoryId)
+    //   ->where('cabin_type_id', $ticketType)
+    //   ->distinct()
+    //   ->pluck('cabin_spec_id') // Only select the cabin_spec_id column
+    //   ->toArray();
+
+    // // Get all decks from CabinSpec based on the cabin_spec_ids
+    // $decks = CabinSpec::whereIn('id', $cabinSpecIds)
+    //   ->distinct()
+    //   ->pluck('deck') // Only select the deck column
+    //   ->toArray();
+
+    // // Return decks as a comma-separated string
+    // return implode(',', $decks);
   }
 
   public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
