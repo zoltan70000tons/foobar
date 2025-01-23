@@ -120,6 +120,8 @@ Route::middleware("auth")->group(function () {
   Route::get("/events/{id}/cabins/{cabin_id}/edit", [CabinsController::class, "edit"])->name("cabins.edit");
   Route::post("/events/{id}/cabins/{cabin_id}/update", [CabinsController::class, "update"])->name("cabins.update");
 
+  Route::post('/events/{id}/bookings/createManual', [BookingsController::class, 'store'])
+  ->name('bookings.createManual');
     //Booking controller
     Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
     ->where('id', '[0-9]+|all') 

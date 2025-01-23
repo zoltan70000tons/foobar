@@ -42,7 +42,7 @@ class Passenger extends Model
         'special_request',
         'special_options',
         'hear_about',
-        'referral_details',
+       // 'referral_details',
         'newsletter',
         'travel_info',
         'terms_n_cons',

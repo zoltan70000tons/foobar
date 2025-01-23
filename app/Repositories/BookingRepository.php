@@ -420,6 +420,7 @@ class BookingRepository implements BookingInterface
       Log::info($passenger);
       throw new \Exception('Error creating booking.');
     } catch (\Exception $e) {
+      dd($e->getMessage());
       Log::error($e->getMessage());
       FacadesDB::rollBack();
       return [

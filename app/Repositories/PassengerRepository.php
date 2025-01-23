@@ -45,7 +45,7 @@ class PassengerRepository implements PassengerInterface
         'booking_id' => $booking->id,
         'confirmed_booking_email' => false,
         'lead_passenger' => true,
-        'survivor_number' => $user->survivorNumber->survivor_number,
+        'survivor_number' => $user->survivorNumber->survivor_number ?? null,
         'gender' => $userDetails->gender ?? null,
         'first_name' => $userDetails->first_name ?? null,
         'middle_name' => $userDetails->middle_name ?? null,
@@ -68,7 +68,7 @@ class PassengerRepository implements PassengerInterface
         'newsletter' => $data['newsletter'] ?? null,
         'travel_info' => $data['travel_info'] ?? null,
         'hear_about' => $data['hear_about'] ?? null,
-        'referral_details' => $data['referral_details'] ?? null,
+       // 'referral_details' => $data['referral_details'] ?? null,
         'terms_n_cons' => $data['terms_n_cons'] ?? null,
         'cabin_conf_accp' => $data['cabin_conf_accp'] ?? null,
         'single_t_agreement' => $data['single_t_agreement'] ?? null,
@@ -99,6 +99,7 @@ class PassengerRepository implements PassengerInterface
       Log::info('Passenger Data: ' . json_encode($passengerData));
       return $leadPassenger;
     } catch (\Exception $e) {
+      dd($e->getMessage());
       Log::error($e->getMessage());
       Log::info('PassengerRepository@create: ' . $e->getMessage());
       return false;
@@ -166,6 +167,7 @@ class PassengerRepository implements PassengerInterface
       }
       return true;
     } catch (\Exception $e) {
+      dd($e->getMessage());
       Log::error('Error filling additional seats: ' . $e->getMessage());
       return false;
     }

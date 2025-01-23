@@ -24,6 +24,7 @@ use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class BookingsController extends Controller
 {
@@ -96,17 +97,87 @@ class BookingsController extends Controller
     }
   }
 
-  public function create()
-  {
-  }
+  public function create() {}
 
   public function store(Request $request)
   {
+    $validated = $request->validate([
+      'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
+      'payment_plan' => ['required', Rule::in(['INSTALLMENTS', 'PAY_IN_FULL'])],
+      'number_of_installments' => [
+        'nullable',
+        'integer', 
+        'min:1',  
+        'required_if:payment_plan,INSTALLMENTS', 
+    ],
+      'passenger.id' => ['required', 'string', 'exists:users,id'],
+      'passenger.first_name' => ['required', 'string', 'max:255'],
+      'passenger.middle_name' => ['nullable', 'string', 'max:255'],
+      'passenger.last_name' => ['required', 'string', 'max:255'],
+      'passenger.dob' => ['required', 'date', 'before:today'],
+      'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
+      'passenger.citizenship' => ['nullable', 'string', 'max:100'],
+      'passenger.survivor_number' => ['nullable', 'string', 'max:50'],
+      'passenger.email' => ['required', 'email', 'max:255'],
+      'passenger.phone' => ['nullable', 'string', 'max:20'],
+      'passenger.address_first' => ['required', 'string', 'max:255'],
+      'passenger.address_second' => ['nullable', 'string', 'max:255'],
+      'passenger.city' => ['required', 'string', 'max:255'],
+      'passenger.state' => ['nullable', 'string', 'max:255'],
+      'passenger.postal_code' => ['nullable', 'string', 'max:20'],
+      'passenger.country' => ['required', 'string', 'max:100'],
+      'passenger.emergency_c_name' => ['nullable', 'string', 'max:255'],
+      'passenger.emergency_c_phone' => ['nullable', 'string', 'max:20'],
+      'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
+      'passenger.special_request' => ['nullable', 'string', 'max:1000'],
+      'passenger.lead_passenger' => ['required', 'boolean'],
+      'passenger.confirmed_booking_email' => ['required', 'boolean'],
+      'passenger.travel_info' => ['required', 'boolean'],
+      'passenger.terms_n_cons' => ['required', 'boolean'],
+      'passenger.cabin_conf_accp' => ['required', 'boolean'],
+      'passenger.single_t_agreement' => ['required', 'boolean'],
+      'passenger.was_on_board' => ['nullable', 'boolean'],
+      'passenger.newsletter' => ['nullable', 'boolean'],
+      'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
+      'passenger.passenger_balance' => ['nullable', 'numeric', 'min:0'],
+    ]);
+
+    try {
+      $event_id = request()->route("id");
+      $user = $request->user();
+      $cabin_number = $validated['cabin_number'];
+      $passenger_data = $validated['passenger'];
+      $number_of_installments = $validated['number_of_installments'];
+      $payment_plan = 'INSTALLMENTS';
+
+      return $this->withPermission(
+        [Permissions::CreateBookings],
+        function ($event_id, $cabin_number, $user,$passenger_data,$payment_plan,$number_of_installments) {
+          $event = $this->eventRepository->find($event_id);
+          $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
+            $query->where('cabin_number', $cabin_number);
+        })->first();
+        if($cabin){
+          $bookingData = ['event_id' => $event_id, 'customer_id' => $passenger_data['id'], 'payment_plan' => $payment_plan,'number_of_installments' =>$number_of_installments];
+          $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
+          $bookig = $bookingData['booking'];
+          $this->logRepository->writeOnBooking($booking->id, "Booking created manually", $user);
+        }
+        },
+        $event_id,
+        $cabin_number,
+        $user,
+        $passenger_data,
+        $payment_plan,
+        $number_of_installments
+      );
+    } catch (\Exception $e) {
+    //dd($e->getMessage());
+      $this->logException($e);
+    }
   }
 
-  public function edit(Request $request)
-  {
-  }
+  public function edit(Request $request) {}
 
   public function assignAgent(Request $request)
   {
@@ -126,6 +197,7 @@ class BookingsController extends Controller
 
   public function update(Request $request)
   {
+
     try {
       $event_id = request()->route("id");
       $booking_code = request()->route("booking_code");
@@ -184,54 +256,50 @@ class BookingsController extends Controller
     }
   }
 
-  public function destroy(Cabin $cabin)
-  {
-  }
+  public function destroy(Cabin $cabin) {}
 
-  public function addTag(Request $request)
-  {
-  }
+  public function addTag(Request $request) {}
 
 
   public function editMode(Request $request)
   {
-      $booking_id = $request->input("booking_id");
-      $lock = $request->input("lock");
-      $event_id = $request->input("event_id");
-  
-      return $this->withPermission(
-          [Permissions::EditBookings],
-          function ($event_id, $booking_id, $lock) {
-              $event = $this->eventRepository->find($event_id);
-              $booking = Booking::find($booking_id);
-  
-              if ($lock == "1") {
-                  $bookingSession = new BookingAgentSessions();
-                  $bookingSession->agent_id = Auth::user()->id;
-                  $bookingSession->booking_id = $booking->id;
-                  $bookingSession->save();
+    $booking_id = $request->input("booking_id");
+    $lock = $request->input("lock");
+    $event_id = $request->input("event_id");
 
-                  return Inertia::location(url()->previous());
-              } elseif ($lock == "0") {
-                  $bookingSession = BookingAgentSessions::where("booking_id", $booking_id)->first();
-                  if ($bookingSession) {
-                      $bookingSession->delete();
-  
-                      return Inertia::location(url()->previous());
-                  }
-              }
-  
-              return response()->json([
-                  'success' => false,
-                  'message' => 'Invalid lock value.',
-              ], 400);
-          },
-          $event_id,
-          $booking_id,
-          $lock
-      );
+    return $this->withPermission(
+      [Permissions::EditBookings],
+      function ($event_id, $booking_id, $lock) {
+        $event = $this->eventRepository->find($event_id);
+        $booking = Booking::find($booking_id);
+
+        if ($lock == "1") {
+          $bookingSession = new BookingAgentSessions();
+          $bookingSession->agent_id = Auth::user()->id;
+          $bookingSession->booking_id = $booking->id;
+          $bookingSession->save();
+
+          return Inertia::location(url()->previous());
+        } elseif ($lock == "0") {
+          $bookingSession = BookingAgentSessions::where("booking_id", $booking_id)->first();
+          if ($bookingSession) {
+            $bookingSession->delete();
+
+            return Inertia::location(url()->previous());
+          }
+        }
+
+        return response()->json([
+          'success' => false,
+          'message' => 'Invalid lock value.',
+        ], 400);
+      },
+      $event_id,
+      $booking_id,
+      $lock
+    );
   }
-  
+
 
   public function statusUpdate(Request $request)
   {
