@@ -72,33 +72,33 @@ class CabinController extends Controller
   */
   public function reserveCabinInType(Request $request, ReservationService $reservationService)
   {
-    $isCurrentReservation = $request->session()->has('reserved_cabin_id');
+    // REQUEST INPUT DATA
+    $cabinNumber = $request->input('cabin_number');
+    $cabinTypeId = $request->input('cabin_type_id');
+    $cabinCategoryId = $request->input('cabin_category_id');
+
+    $cart = $request->session()->get('cart', []) ?? null;
+    $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
 
-    Log::info('Reserve cabin in type', ['isCurrentReservation' => $isCurrentReservation]);
-
-    if ($isCurrentReservation) {
-      // return response()->json(['message' => 'You have already reserved a cabin.'], 403);
-      $cart = $request->session()->get('cart', []);
-      $cartTimestampId = $cart['reservation_id'];
-
-      if (!$cartTimestampId) {
-        return response()->json(['message' => 'No reservation timestamp found'], 400);
-      }
-
+    // ------- If user have a reservation, and he want to create new.
+    if ($cart && $reservationId) {
       // get from Temporary reservation table, and set expires_at to keepOldTimeStamp
-      $keepOldTimeStamp = TemporaryReservation::where('id', $cartTimestampId)->first()->expires_at;
+      $keepOldTimeStamp = TemporaryReservation::where('id', $reservationId)->value('expires_at');
 
       Log::info('Keep old timestamp', ['keepOldTimeStamp' => $keepOldTimeStamp]);
 
       // release the current reservation
       $reservationService->releaseCabin($request);
+
+      // remove cabin_number from session, because if something went wrong.
+      // we don't want to keep the old cabin_number in session to prevent booking.
+      $request->session()->put('cart.cabin_number', null);
+      $request->session()->put('cart.reservation_id', null);
+      $request->session()->put('cart.reservation_timestamp', null);
     }
 
-    $cabinNumber = $request->input('cabin_number');
-    $cabinTypeId = $request->input('cabin_type_id');
-    $cabinCategoryId = $request->input('cabin_category_id');
-
+    // -------- Proceed with new reservation
     if (!$cabinNumber || !$cabinTypeId || !$cabinCategoryId) {
       return response()->json(['message' => 'Cabin number, type ID, and category ID are required.'], 400);
     }
