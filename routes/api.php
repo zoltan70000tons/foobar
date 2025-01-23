@@ -147,4 +147,4 @@ Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
 Route::post('/add-pax/{bookingCode}', [BookingController::class, 'submitAddPassenger']);
 
 // --- ADD PAX PROFILE
-Route::post('/add-pax-profile', [AddPaxController::class, 'show']);
+Route::post('/check-booking', [AddPaxController::class, 'show']);
