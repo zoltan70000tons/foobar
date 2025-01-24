@@ -13,6 +13,8 @@ use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
+use App\Mail\CustomerConfirmationBooking;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -119,12 +121,20 @@ class BookingController extends Controller
         'was_on_board' => false,
       ];
 
-      //call to booking repository method
+      // Call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
-      // delete current sesion
+      // Send confirmation email
+      //\Log::info('Booking created successfully', $result);
+
+      // Delete current sesion
       $request->session()->forget('cart');
       $request->session()->forget('reservation_id');
+
+      \Log::info('Booking created successfully', $result);
+
+      // Send confirmation email
+      //$this->sendConfirmationEmail($result, 'en');
 
       return response()->json(
         [
@@ -144,6 +154,26 @@ class BookingController extends Controller
         ],
         500
       );
+    }
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Send email confirmation
+  |--------------------------------------------------------------------------
+  |
+  |  This method trigger the email confirmation
+  |
+  */
+  protected function sendConfirmationEmail($booking, $language = 'en')
+  {
+    // Send email confirmation
+    // !!!!! IMPORTANT TO PASS THE LANGUAGE TO THE MAIL, WE HAVE TO GET INPUT LOCALE FROM THE USER
+
+    try {
+      Mail::to($booking->passenger->email)->send(new CustomerConfirmationBooking($booking, $language));
+    } catch (\Exception $e) {
+      \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
     }
   }
 
@@ -168,10 +198,9 @@ class BookingController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    $result->cabin->makeHidden(['cabin_number']);
-    $result->cabin->cabinSpec->makeHidden(['cabin_number']);
-
-    return response()->json($result);
+    return response()->json([
+      'status' => 'success',
+    ]);
   }
 
   /**
