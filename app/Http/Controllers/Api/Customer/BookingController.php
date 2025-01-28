@@ -133,14 +133,31 @@ class BookingController extends Controller
 
       \Log::info('Booking created successfully', $result);
 
+      $bookingCode = $result['booking']['booking_code'];
+      $passengerEmail = $passengerData['email'];
+
+      \Log::info('Sending confirmation email for booking code: ' . $bookingCode . ' to email: ' . $passengerEmail);
+
+      if (!$bookingCode || !$passengerEmail) {
+        return response()->json(
+          [
+            'message' => 'Booking created successfully, but failed to send confirmation email.',
+            'booking' => [
+              'booking_request_id' => $result['booking']['booking_request_id'],
+            ],
+          ],
+          201
+        );
+      }
+
       // Send confirmation email
-      //$this->sendConfirmationEmail($result, 'en');
+      $this->sendConfirmationEmail($bookingCode, $passengerEmail, 'en');
 
       return response()->json(
         [
           'message' => 'Booking created successfully.',
           'booking' => [
-            'booking_code' => $result['booking']['booking_code'],
+            'booking_request_id' => $result['booking']['booking_request_id'],
           ],
           // "passenger" => $result["passenger"],
         ],
@@ -157,6 +174,20 @@ class BookingController extends Controller
     }
   }
 
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  |--------------------------------------------------------------------------
+  | Send email TESTTTT !!!!!
+  |--------------------------------------------------------------------------
+  |
+  |  TO DELETE
+  |
+  */
+  public function sendBookingEmail(Request $request)
+  {
+    // $booking = Booking::find(1);
+    return;
+  }
+
   /*
   |--------------------------------------------------------------------------
   | Send email confirmation
@@ -165,15 +196,22 @@ class BookingController extends Controller
   |  This method trigger the email confirmation
   |
   */
-  protected function sendConfirmationEmail($booking, $language = 'en')
+  private function sendConfirmationEmail(string $bookingCode, string $passengerEmail, string $language): void
   {
-    // Send email confirmation
-    // !!!!! IMPORTANT TO PASS THE LANGUAGE TO THE MAIL, WE HAVE TO GET INPUT LOCALE FROM THE USER
-
     try {
-      Mail::to($booking->passenger->email)->send(new CustomerConfirmationBooking($booking, $language));
+      // Get booking data with relationships
+      $booking = Booking::where('booking_code', $bookingCode)
+        ->with(['cabin.category', 'passengers', 'adjustments'])
+        ->first();
+
+      if (!$booking) {
+        throw new \Exception('Booking not found');
+      }
+
+      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $language));
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+      throw $e;
     }
   }
 

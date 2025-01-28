@@ -9,6 +9,8 @@ use App\Models\BookingLog;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Hidehalo\Nanoid\Client;
+
 class Booking extends Model
 {
   use HasFactory;
@@ -16,6 +18,7 @@ class Booking extends Model
 
   protected $fillable = [
     'booking_code',
+    'booking_request_id',
     'event_id',
     'customer_id',
     'payment_plan',
@@ -232,6 +235,12 @@ class Booking extends Model
     static::creating(function ($booking) {
       if (!$booking->booking_code && $booking->cabin) {
         $booking->booking_code = $booking->generateBookingCode($booking->cabin);
+      }
+
+      // @JG BOOKING REQUEST CODE
+      if (!$booking->booking_request_id) {
+        $client = new Client();
+        $booking->booking_request_id = $client->formattedId('0123456789ABCDEFGHIJKLMNOPERSTUWXYZ', 10);
       }
       // Set status to 'NEW' if not already set
       if (!$booking->status) {
