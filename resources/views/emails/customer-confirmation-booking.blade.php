@@ -18,35 +18,35 @@
 @endsection
 
 @section('content')
-    <p>{{ __('confirmationBooking.cbe_hello') }} {{ $bookingResult['passenger']['App\\Models\\Passenger']['first_name'] ?? 'N/A' }},</p>
+    {{-- <p>{{ __('confirmationBooking.cbe_hello') }} {{ $bookingResult['passenger']['first_name'] ?? 'N/A' }},</p>
     <p>{{ __('confirmationBooking.cbe_thank_you') }}</p>
 
     <p>{{ __('confirmationBooking.cbe_please_note') }}</p>
 
     <p>{{ __('confirmationBooking.cbe_important') }}</p>
-    <p>{{ __('confirmationBooking.cbe_following_booking') }}</p>
+    <p>{{ __('confirmationBooking.cbe_following_booking') }}</p> --}}
 
     <!---- BOOKING INFO ---->
-    <table>
+    {{-- <table>
         <tr>
             <td>{{ __('confirmationBooking.cbe_booking_type') }}:</td>
-            <td>{{ $bookingResult['booking']['App\\Models\\Booking']['cabin']['cabin_type']['cabin_type'] ?? 'N/A' }}</td>
+            <td>{{ $bookingResult['booking']['cabin']['cabin_type']['cabin_type'] ?? 'N/A' }}</td>
           </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_cabin_category') }}:</td>
-            <td><!-- HERE --></td>
+            <td>{{ $bookingResult['booking']['cabin']['category']['category_name'] ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_form_of_payment') }}:</td>
-            <td><!-- HERE --></td>
+            <td>{{ $bookingResult['booking']['payment_plan'] ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_official_ticket_price_per_person') }}:</td>
-            <td><!-- HERE --></td>
+            <td>{{ $bookingResult['booking']['cabin']['category']['price'] ?? 'N/A' }}</td>
         </tr>
         <tr>
           <td>{{ __('confirmationBooking.cbe_pay_in_full_discount') }}:</td>
-          <td><!-- HERE --></td>
+          <td>{{ $bookingResult['booking']['cabin']['category']['price'] ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_net_ticket_price_per_person') }}:</td>
@@ -227,7 +227,7 @@
           <td>{{ __('confirmationBooking.cbe_todays_date') }}:</td>
           <td><!-- HERE --></td>
       </tr>
-    </table>
+    </table> --}}
 @endsection
 
 @section('footer')

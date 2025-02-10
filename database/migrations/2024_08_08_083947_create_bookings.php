@@ -10,11 +10,11 @@ return new class extends Migration {
    */
   public function up()
   {
-    Schema::create("bookings", function (Blueprint $table) {
+    Schema::create('bookings', function (Blueprint $table) {
       $table->id();
-
+      $table->string('booking_request_id')->unique(); // Booking request ID
       $table->string('booking_code')->unique(); // Unique booking code e.g. Cabin Number + Random String
-      $table->foreignId("event_id")->constrained("events"); // References events table
+      $table->foreignId('event_id')->constrained('events'); // References events table
       $table->uuid('customer_id')->references('id')->on('users')->onDelete('cascade'); // References users table
       $table->enum('payment_plan', ['PAY_IN_FULL', 'INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
       $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
@@ -34,6 +34,6 @@ return new class extends Migration {
    */
   public function down(): void
   {
-    Schema::dropIfExists("bookings");
+    Schema::dropIfExists('bookings');
   }
 };

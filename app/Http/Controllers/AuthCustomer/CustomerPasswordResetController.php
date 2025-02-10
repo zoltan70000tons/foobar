@@ -15,9 +15,17 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerResetPasswordSuccess;
 use Illuminate\Support\Facades\Log;
+use App\Services\EmailUniquenessService;
 
 class CustomerPasswordResetController extends Controller
 {
+  protected EmailUniquenessService $emailUniquenessService;
+
+  public function __construct(EmailUniquenessService $emailUniquenessService)
+  {
+    $this->emailUniquenessService = $emailUniquenessService;
+  }
+
   /**
    * Password reset request
    *
@@ -25,42 +33,49 @@ class CustomerPasswordResetController extends Controller
   public function requestReset(Request $request): JsonResponse
   {
     $request->validate([
-      "email" => "required|email",
-      "language" => "sometimes|string|in:en,es,fr", // Add supported languages
+      'email' => 'required|email',
+      'language' => 'sometimes|string|in:en,es,fr', // Add supported languages
     ]);
 
+    $email = $request->input('email');
+
+    if ($email) {
+      $uniquenessResponse = $this->emailUniquenessService->handleEmailUniqueness($email);
+      if ($uniquenessResponse) {
+        return $uniquenessResponse;
+      }
+    }
+
     // Set the application locale if language is provided
-    if ($request->has("language")) {
+    if ($request->has('language')) {
       App::setLocale($request->language);
     }
 
     // Check if the customer exists
-    $user = User::where("email", $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-    if (!$user || !$user->hasRole("Customer")) {
+    if (!$user || !$user->hasRole('Customer')) {
       return response()->json(
         [
-          "message" => __("passwords.user"),
+          'message' => __('passwords.user'),
         ],
         404
       );
     }
 
-    $status = Password::broker("customers")->sendResetLink(
-      $request->only("email")
-    );
+    $status = Password::broker('customers')->sendResetLink($request->only('email'));
 
     if ($status === Password::RESET_LINK_SENT) {
       return response()->json(
         [
-          "message" => __("passwords.sent"),
+          'message' => __('passwords.sent'),
         ],
         200
       );
     } else {
       return response()->json(
         [
-          "message" => __("passwords.throttled"),
+          'message' => __('passwords.throttled'),
         ],
         429
       );
@@ -74,30 +89,26 @@ class CustomerPasswordResetController extends Controller
   public function resetPassword(Request $request)
   {
     $request->validate([
-      "token" => "required",
-      "email" => "required|email",
-      "password" => [
-        "required",
-        "confirmed",
-        \Illuminate\Validation\Rules\Password::defaults(),
-      ],
+      'token' => 'required',
+      'email' => 'required|email',
+      'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
     ]);
 
     // Attempt to reset the password
-    $status = Password::broker("customers")->reset(
-      $request->only("email", "password", "password_confirmation", "token"),
+    $status = Password::broker('customers')->reset(
+      $request->only('email', 'password', 'password_confirmation', 'token'),
       function ($user) use ($request) {
         // Check if the user has the 'Customer' role
-        if (!$user->hasRole("Customer")) {
+        if (!$user->hasRole('Customer')) {
           throw ValidationException::withMessages([
-            "email" => [__("passwords.user")],
+            'email' => [__('passwords.user')],
           ]);
         }
 
         $user
           ->forceFill([
-            "password" => Hash::make($request->password),
-            "remember_token" => Str::random(60),
+            'password' => Hash::make($request->password),
+            'remember_token' => Str::random(60),
           ])
           ->save();
 
@@ -106,7 +117,7 @@ class CustomerPasswordResetController extends Controller
       }
     );
 
-    $user = User::where("email", $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
     if ($status == Password::PASSWORD_RESET) {
       // Send a email to the customer the password was reset
@@ -114,14 +125,14 @@ class CustomerPasswordResetController extends Controller
 
       return response()->json(
         [
-          "message" => __("passwords.reset"),
+          'message' => __('passwords.reset'),
         ],
         200
       );
     } else {
       return response()->json(
         [
-          "message" => __("passwords.token"),
+          'message' => __('passwords.token'),
         ],
         400
       );
@@ -140,12 +151,7 @@ class CustomerPasswordResetController extends Controller
       $email = $user->email;
       Mail::to($email)->send(new CustomerResetPasswordSuccess($user));
     } catch (\Exception $e) {
-      Log::error(
-        "Failed to send welcome email to user ID " .
-          $user->id .
-          ": " .
-          $e->getMessage()
-      );
+      Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
   }
 }
