@@ -18,6 +18,7 @@ class PriceCalculation
     $cabinType = (bool) $params['cabinType'];
     $selectedAdjustments = $params['selectedAdjustments'];
     $adjustments = $params['adjustments'];
+    $eventStatus = $params['eventStatus'];
 
     \Log::info('collected params', $params);
 
@@ -47,6 +48,11 @@ class PriceCalculation
 
         // Add the value only if the adjustment exists
         if ($adjustment && isset($adjustment->value)) {
+          // Apply MEMBERSHIP discount only if event status is PRE-SALE
+          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'pre-sale') {
+            continue;
+          }
+
           $sumOfPercentagesDiscounts += $adjustment->value;
         }
       }
@@ -61,6 +67,9 @@ class PriceCalculation
 
         // Add the value only if the adjustment exists
         if ($adjustment && isset($adjustment->value)) {
+          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'pre-sale') {
+            continue;
+          }
           $sumOfFixedDiscounts += $adjustment->value;
         }
       }
