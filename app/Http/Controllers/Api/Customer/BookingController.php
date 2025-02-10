@@ -13,6 +13,7 @@ use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
+use App\Models\Event;
 use App\Mail\CustomerConfirmationBooking;
 use Illuminate\Support\Facades\Mail;
 
@@ -80,12 +81,14 @@ class BookingController extends Controller
       // get price from session
       // $price = $validated["cart"]["price_total"];
       $adjustments = Adjustment::where('event_id', $eventId)->first();
+      $eventStatus = Event::find($eventId)->status;
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
         'cabinPrice' => $validated['cart']['cabin_price'],
         'cabinCapacity' => $validated['cart']['cabin_capacity'],
         'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
+        'eventStatus' => $eventStatus,
       ]);
 
       $totalPassenger = $priceCalc['totalPassenger'];

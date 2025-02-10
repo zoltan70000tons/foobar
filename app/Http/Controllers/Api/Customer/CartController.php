@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\TemporaryReservation;
 use App\Models\CabinCategory;
 use App\Services\ReservationService;
+use App\Models\Event;
 
 class CartController extends Controller
 {
@@ -34,6 +35,7 @@ class CartController extends Controller
     // Fetch adjustments and tax
     $adjustments = Adjustment::where('event_id', $eventId)->get();
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
+    $eventStatus = Event::find($eventId)->status;
 
     $errorCode = null;
     if (Auth::check() && $eventId && Auth::user()->bookings()->where('event_id', $eventId)->count() > 0) {
@@ -47,6 +49,7 @@ class CartController extends Controller
         'cabinType' => $cart['cabin_type'] === 'private-cabin',
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
+        'eventStatus' => $eventStatus,
       ]);
 
       $cart = array_merge($cart, [
