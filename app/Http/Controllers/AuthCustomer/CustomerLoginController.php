@@ -12,56 +12,15 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
 use App\Models\SurvivorNumber;
 use Illuminate\Support\Facades\Cookie;
+use App\Services\EmailUniquenessService;
 
 class CustomerLoginController extends Controller
 {
-  /**
-   * Check if the given email is unique among users.
-   * If not, generate signed URLs for account recovery.
-   *
-   * @param string $email
-   * @return \Illuminate\Http\JsonResponse|null
-   */
-  protected function handleEmailUniqueness(string $email): ?JsonResponse
+  protected EmailUniquenessService $emailUniquenessService;
+
+  public function __construct(EmailUniquenessService $emailUniquenessService)
   {
-    $usersWithEmailCount = User::where("email", $email)->count();
-
-    if ($usersWithEmailCount > 1) {
-      // Generate signed URLs for account recovery
-      $getSignedURL = URL::temporarySignedRoute(
-        "recover.account.form",
-        Carbon::now()->addMinutes(15),
-        [],
-        false // Generate relative URL
-      );
-
-      $postSignedURL = URL::temporarySignedRoute(
-        "recover.account.verify",
-        Carbon::now()->addMinutes(15),
-        [],
-        false // Generate relative URL
-      );
-
-      $registerSignedUrl = URL::temporarySignedRoute(
-        "recover.account.register",
-        Carbon::now()->addMinutes(15),
-        [],
-        false // Generate relative URL
-      );
-
-      return response()->json(
-        [
-          "status" => "error-uniqueness",
-          "message" => "Multiple accounts found with this email. Please recover your account.",
-          "get_signed_url" => $getSignedURL,
-          "post_signed_url" => $postSignedURL,
-          "register_signed_url" => $registerSignedUrl,
-        ],
-        400
-      );
-    }
-
-    return null; // Email is unique
+    $this->emailUniquenessService = $emailUniquenessService;
   }
 
   /**
@@ -71,129 +30,47 @@ class CustomerLoginController extends Controller
   {
     // Step 1: Validate the request data
     $request->validate([
-      "identifier" => "required|string",
-      "password" => "required|string",
-      "remember" => "boolean",
+      'identifier' => 'required|string',
+      'password' => 'required|string',
+      'remember' => 'boolean',
     ]);
 
-    $identifier = $request->input("identifier");
-    $password = $request->input("password");
-    $remember = $request->input("remember", false);
+    $identifier = $request->input('identifier');
+    $password = $request->input('password');
+    $remember = $request->input('remember', false);
 
     // Determine if the identifier is an email
     $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
 
-    if ($isEmail) {
-      // Step 3a: Handle email-based authentication
+    $email = $isEmail
+      ? $identifier
+      : optional(SurvivorNumber::where('survivor_number', $identifier)->first())->user->email;
 
-      // Check email uniqueness and handle recovery if necessary
-      $uniquenessResponse = $this->handleEmailUniqueness($identifier);
+    if ($email) {
+      $uniquenessResponse = $this->emailUniquenessService->handleEmailUniqueness($email);
       if ($uniquenessResponse) {
         return $uniquenessResponse;
       }
-
-      // Prepare credentials for email login
-      $credentials = [
-        "email" => $identifier,
-        "password" => $password,
-      ];
-
-      // Attempt to authenticate
-      if (Auth::attempt($credentials, $remember)) {
-        $user = Auth::user();
-
-        if ($user) {
-          // Check if user has the 'Customer' role
-          if ($user->hasRole("Customer")) {
-            $request->session()->regenerate();
-
-            return response()->json($user, 200);
-          } else {
-            Auth::logout();
-
-            return response()->json(
-              [
-                "message" => __("auth.failed"),
-              ],
-              403
-            );
-          }
-        }
-      }
-
-      // Authentication failed
-      return response()->json(
-        [
-          "message" => __("auth.failed"),
-        ],
-        401
-      );
-    } else {
-      // Handle survivor_number-based authentication
-
-      // Attempt to find the survivor number
-      $survivorNumber = SurvivorNumber::where("survivor_number", $identifier)->first();
-
-      if (!$survivorNumber) {
-        return response()->json(
-          [
-            "message" => __("auth.failed"),
-          ],
-          401
-        );
-      }
-
-      // Retrieve the associated user
-      $user = $survivorNumber->user;
-
-      if (!$user) {
-        return response()->json(
-          [
-            "message" => __("auth.failed"),
-          ],
-          401
-        );
-      }
-
-      // Check email uniqueness and handle recovery if necessary
-      $uniquenessResponse = $this->handleEmailUniqueness($user->email);
-      if ($uniquenessResponse) {
-        return $uniquenessResponse;
-      }
-
-      // Prepare credentials using the user's email
-      $credentials = [
-        "email" => $user->email,
-        "password" => $password,
-      ];
-
-      // Attempt to authenticate
-      if (Auth::attempt($credentials, $remember)) {
-        // Check if user has the 'Customer' role
-        if ($user->hasRole("Customer")) {
-          $request->session()->regenerate();
-
-          return response()->json($user, 200);
-        } else {
-          Auth::logout();
-
-          return response()->json(
-            [
-              "message" => __("auth.failed"),
-            ],
-            403
-          );
-        }
-      }
-
-      // Authentication failed
-      return response()->json(
-        [
-          "message" => __("auth.failed"),
-        ],
-        401
-      );
     }
+
+    $credentials = [
+      'email' => $email,
+      'password' => $password,
+    ];
+
+    if (Auth::attempt($credentials, $remember)) {
+      $user = Auth::user();
+
+      if ($user && $user->hasRole('Customer')) {
+        $request->session()->regenerate();
+        return response()->json($user, 200);
+      }
+
+      Auth::logout();
+      return response()->json(['message' => __('auth.failed')], 403);
+    }
+
+    return response()->json(['message' => __('auth.failed')], 401);
   }
 
   /**
@@ -201,7 +78,7 @@ class CustomerLoginController extends Controller
    */
   public function destroy(Request $request): JsonResponse
   {
-    Auth::guard("web")->logout();
+    Auth::guard('web')->logout();
 
     $request->session()->invalidate();
 
@@ -209,7 +86,7 @@ class CustomerLoginController extends Controller
 
     // destroy emaIl_verified cookie
     $response = response()->json(null, 204);
-    return $response->withCookie(Cookie::forget("email_verified"));
+    return $response->withCookie(Cookie::forget('email_verified'));
 
     //return response()->json(null, 204);
   }
