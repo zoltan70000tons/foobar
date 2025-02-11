@@ -13,6 +13,7 @@ use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
+use App\Models\CabinType;
 use App\Models\Event;
 use App\Mail\CustomerConfirmationBooking;
 use Illuminate\Support\Facades\Mail;
@@ -211,7 +212,9 @@ class BookingController extends Controller
         throw new \Exception('Booking not found');
       }
 
-      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $language));
+      $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
+
+      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $language));
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
       throw $e;

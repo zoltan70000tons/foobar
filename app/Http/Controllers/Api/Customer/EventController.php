@@ -22,15 +22,15 @@ class EventController extends Controller
   public function show()
   {
     // check if event exist and get only if pre-sale or public
-    $events = Event::where("status", "pre-sale")->orWhere("status", "public")->get();
+    $events = Event::where('status', 'pre-sale')->orWhere('status', 'public')->get();
 
     if ($events->isEmpty()) {
-      return response()->json(["message" => "no events found"]);
+      return response()->json(['message' => 'no events found']);
     }
 
     // return events if exist
     return response()->json([
-      "events" => $events,
+      'events' => $events,
     ]);
   }
 
@@ -39,7 +39,7 @@ class EventController extends Controller
    *
    * @param Request $request
    */
-  public function showOne(Request $request, $id, $language = "en")
+  public function showOne(Request $request, $id, $language = 'en')
   {
     App::setLocale($language);
 
@@ -48,29 +48,29 @@ class EventController extends Controller
 
     if (!$event) {
       return response()->json([
-        "status" => 404,
-        "message" => __("event.no_event_found"),
+        'status' => 404,
+        'message' => __('event.no_event_found'),
       ]);
     }
 
     // Check event status
-    if (!in_array($event->status, ["pre-sale", "public"])) {
+    if (!in_array($event->status, ['pre-sale', 'public'])) {
       return response()->json([
-        "status" => 403,
-        "message" => __("event.no_event_found"),
+        'status' => 403,
+        'message' => __('event.no_event_found'),
       ]);
     }
 
     // Get purchase access information from the request
-    $purchaseAccess = $request->get("purchase_access", false);
-    $accessMessage = $request->get("access_message", "");
+    $purchaseAccess = $request->get('purchase_access', false);
+    $accessMessage = $request->get('access_message', '');
 
     return response()->json([
-      "status" => 200,
-      "event_status" => $event->status,
-      "event" => $event,
-      "purchase_access" => $purchaseAccess,
-      "access_message" => $accessMessage,
+      'status' => 200,
+      'event_status' => $event->status,
+      'event' => $event,
+      'purchase_access' => $purchaseAccess,
+      'access_message' => $accessMessage,
     ]);
   }
 }
