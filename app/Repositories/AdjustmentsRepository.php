@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\MemberShip;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Adjustment;
@@ -33,5 +34,18 @@ class AdjustmentsRepository
       \Log::error("Failed to attach adjustments: " . $e->getMessage());
       return false;
     }
+  }
+
+  public function getAdjustments($user, $cabin, $cabinOffset = false, $singleTicket = false){
+       $memberType = strtoupper($user->membership->memberType->name);
+       $price = $cabin->category->price;
+       dd($price);
+       foreach (MemberShip::cases() as $membership) {
+        if($memberType == $membership->value){
+          $result = Adjustment::where('code', '=', $membership->name)->get();
+        }
+        
+      }
+
   }
 }

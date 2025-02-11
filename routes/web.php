@@ -74,7 +74,7 @@ Route::middleware("auth")->group(function () {
   Route::get("/organization/permissions", "App\Http\Controllers\Permission\PermissionController@listByOrganization");
   Route::get("/organization/roles", "App\Http\Controllers\Role\RoleController@listByOrganization");
   Route::get("/organization/getTeam", "App\Http\Controllers\Api\TeamController@listMembersByOrganization");
-  Route::put("/organization/members/updateRole", "App\Http\Controllers\Api\TeamController@updateMemberRoles");
+  Route::put("/organization/members/updateRole", "App\Http\Controllers\Api\TeamController@updateMemberRoles")->name('member.updateRole');
   Route::get("/users/getPermissions", "App\Http\Controllers\Role\RoleController@getPermissions");
   Route::post("/team/send-invitations", "App\Http\Controllers\InvitationController@store");
   Route::post("/member/update", "App\Http\Controllers\Api\TeamController@updateMember")->name("member.update");

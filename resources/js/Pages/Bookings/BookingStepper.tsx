@@ -17,15 +17,31 @@ import {
     CircularProgress,
     Grid,
     Checkbox,
+    TableContainer,
+    Table,
+    TableCell,
+    TableRow,
+    TableBody,
+    Paper,
+    Tab,
+    Tabs, 
+    ToggleButton
 } from "@mui/material";
 
 import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { ToggleButton } from "react-aria-components";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { router } from "@inertiajs/react";
+import {FilterList} from "@mui/icons-material";
+
+const TabPanel = ({ children, value, index }) => {
+    return (
+        <div role="tabpanel" hidden={value !== index}>
+            {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
+        </div>
+    );
+};
 
 const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     const [activeStep, setActiveStep] = useState(0);
@@ -84,6 +100,11 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     }, {
         id: 'PAY_IN_FULL', value: 'PAY_IN_FULL'
     }];
+    const [tabValue, setTabValue] = useState(0);
+
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
 
     useEffect(() => {
         setIsNextDisabled(!validateStep());
@@ -105,7 +126,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
         switch (activeStep) {
             case 0:
                 let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber;
-                if(paymentPlan?.value === 'INSTALLMENTS'){
+                if (paymentPlan?.value === 'INSTALLMENTS') {
                     rule = rule && numberOfInstallments;
                 }
                 return !!(rule);
@@ -220,6 +241,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             cabin_number: cabinNumber,
             payment_plan: paymentPlan.value,
             number_of_installments: numberOfInstallments.value,
+            carbon_offset: carbonOffset,
             passenger: {
                 id: passenger.id,
                 first_name: passenger.first_name,
@@ -272,6 +294,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     };
 
 
+
+
+
     const fetchAvailableCabins = async () => {
         try {
             const response = await axios.get(route("cabins.available"), {
@@ -304,40 +329,40 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             </Stepper>
 
             <Box>
-            {activeStep === 0 && (
-                <Box>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} md={3}>
-                            <FormControl fullWidth sx={{ mt: 2 }}>
-                                <Autocomplete
-                                    fullWidth
-                                    options={cabinTypes}
-                                    getOptionLabel={(option) => option.cabin_type}
-                                    value={cabinType}
-                                    onChange={(event, newValue) => setCabinType(newValue)}
-                                    renderInput={(params) => <TextField {...params} label="Cabin Type" />}
-                                    sx={{ mb: 2 }}
-                                />
-                            </FormControl>
-                        </Grid>
+                {activeStep === 0 && (
+                    <Box>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={3}>
+                                <FormControl fullWidth sx={{ mt: 2 }}>
+                                    <Autocomplete
+                                        fullWidth
+                                        options={cabinTypes}
+                                        getOptionLabel={(option) => option.cabin_type}
+                                        value={cabinType}
+                                        onChange={(event, newValue) => setCabinType(newValue)}
+                                        renderInput={(params) => <TextField {...params} label="Cabin Type" />}
+                                        sx={{ mb: 2 }}
+                                    />
+                                </FormControl>
+                            </Grid>
 
-                        <Grid item xs={12} md={6}>
-                            <FormControl fullWidth sx={{ mt: 2 }}>
-                                <Autocomplete
-                                    fullWidth
-                                    options={cabinCategories}
-                                    getOptionLabel={(option) => option.title}
-                                    value={cabinCategory}
-                                    onChange={(event, newValue) => setCabinCategory(newValue)}
-                                    renderInput={(params) => <TextField {...params} label="Cabin Category" />}
-                                    sx={{ mb: 2 }}
-                                />
-                            </FormControl>
-                        </Grid>
+                            <Grid item xs={12} md={6}>
+                                <FormControl fullWidth sx={{ mt: 2 }}>
+                                    <Autocomplete
+                                        fullWidth
+                                        options={cabinCategories}
+                                        getOptionLabel={(option) => option.title}
+                                        value={cabinCategory}
+                                        onChange={(event, newValue) => setCabinCategory(newValue)}
+                                        renderInput={(params) => <TextField {...params} label="Cabin Category" />}
+                                        sx={{ mb: 2 }}
+                                    />
+                                </FormControl>
+                            </Grid>
 
-                        <Grid item xs={12} md={3} sx={{mt:2}}>
-                            <FormControl fullWidth>
-                            <FormControlLabel
+                            <Grid item xs={12} md={3} sx={{ mt: 2 }}>
+                                <FormControl fullWidth>
+                                    {/* <FormControlLabel
                                         control={
                                             <Switch
                                                 checked={advancedFilters}
@@ -345,124 +370,124 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                             />
                                         }
                                         label="Advanced Filters"
-                                    />
-                                {/* <ToggleButton
+                                    /> */}
+                                    <ToggleButton
                                     value="advancedFilters"
                                     selected={advancedFilters}
                                     onChange={() => setAdvancedFilters(!advancedFilters)}
                                 >
-                                    <FilterListIcon />
+                                    <FilterList />
                                     Advanced Filters
-                                </ToggleButton> */}
-                            </FormControl>
+                                </ToggleButton>
+                                </FormControl>
 
-                        </Grid>
-                        {advancedFilters && (
-                            <>
-                                <Grid item xs={12} md={3}>
-                                    <FormControl fullWidth >
-                                        <Autocomplete
-                                            fullWidth
-                                            options={Object.values(DeckEnum).filter((value) => typeof value === "number")}
-                                            getOptionLabel={(option) => `Deck ${option}`}
-                                            value={selectedDeck}
-                                            onChange={(event, newValue) => setSelectedDeck(newValue)}
-                                            renderInput={(params) => <TextField {...params} label="Deck" />}
-                                            sx={{ mb: 2 }}
+                            </Grid>
+                            {advancedFilters && (
+                                <>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControl fullWidth >
+                                            <Autocomplete
+                                                fullWidth
+                                                options={Object.values(DeckEnum).filter((value) => typeof value === "number")}
+                                                getOptionLabel={(option) => `Deck ${option}`}
+                                                value={selectedDeck}
+                                                onChange={(event, newValue) => setSelectedDeck(newValue)}
+                                                renderInput={(params) => <TextField {...params} label="Deck" />}
+                                                sx={{ mb: 2 }}
+                                            />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControl fullWidth >
+                                            <InputLabel id="location-label">Location</InputLabel>
+                                            <Select
+                                                labelId="location-label"
+                                                value={selectedLocation}
+                                                onChange={(e) => setSelectedLocation(e.target.value)}
+                                            >
+                                                {Object.values(LocationEnum).map((location) => (
+                                                    <MenuItem key={location} value={location}>
+                                                        {location}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={onlyBalcony}
+                                                    onChange={(e) => setOnlyBalcony(e.target.checked)}
+                                                />
+                                            }
+                                            label="Only Balcony"
                                         />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={12} md={3}>
-                                    <FormControl fullWidth >
-                                        <InputLabel id="location-label">Location</InputLabel>
-                                        <Select
-                                            labelId="location-label"
-                                            value={selectedLocation}
-                                            onChange={(e) => setSelectedLocation(e.target.value)}
-                                        >
-                                            {Object.values(LocationEnum).map((location) => (
-                                                <MenuItem key={location} value={location}>
-                                                    {location}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={12} md={3}>
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                checked={onlyBalcony}
-                                                onChange={(e) => setOnlyBalcony(e.target.checked)}
-                                            />
-                                        }
-                                        label="Only Balcony"
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={onlyAccessible}
+                                                    onChange={(e) => setOnlyAccessible(e.target.checked)}
+                                                />
+                                            }
+                                            label="Only Accessible"
+                                        />
+                                    </Grid>
+
+
+
+                                </>
+                            )}
+
+                            <Grid item xs={12} md={3}>
+                                <FormControl fullWidth>
+                                    <Autocomplete
+                                        fullWidth
+                                        options={availableCabins}
+                                        getOptionLabel={(option) => option.cabin_number}
+                                        value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
+                                        onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
+                                        renderInput={(params) => <TextField {...params} label="Available Cabins" />}
                                     />
-                                </Grid>
-                                <Grid item xs={12} md={3}>
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                checked={onlyAccessible}
-                                                onChange={(e) => setOnlyAccessible(e.target.checked)}
-                                            />
-                                        }
-                                        label="Only Accessible"
-                                    />
-                                </Grid>
+                                </FormControl>
 
+                            </Grid>
 
-
-                            </>
-                        )}
-
-                        <Grid item xs={12} md={3}>
-                            <FormControl fullWidth>
-                                <Autocomplete
-                                    fullWidth
-                                    options={availableCabins}
-                                    getOptionLabel={(option) => option.cabin_number}
-                                    value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-                                    onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
-                                    renderInput={(params) => <TextField {...params} label="Available Cabins" />}
-                                />
-                            </FormControl>
-
-                        </Grid>
-
-                        {/*Payment Plan */}
-                        <Grid item xs={12} md={3}>
-                            <FormControl fullWidth >
-                                <Autocomplete
-                                    fullWidth
-                                    options={paymentPlanOptions}
-                                    getOptionLabel={(option) => option.value}
-                                    value={paymentPlan}
-                                    onChange={(event, newValue) => setPaymentPlan(newValue)}
-                                    renderInput={(params) => <TextField {...params} label="Payment Plan" />}
-                                    sx={{ mb: 2 }}
-                                />
-                            </FormControl>
-                        </Grid>
-
-                        {/* Number of Installments */}
-                        {paymentPlan?.value === 'INSTALLMENTS' && (
-                            <Grid item xs={12} md={4}>
+                            {/*Payment Plan */}
+                            <Grid item xs={12} md={3}>
                                 <FormControl fullWidth >
                                     <Autocomplete
                                         fullWidth
-                                        options={[{ id: 3, value: 3 }, { id: 4, value: 4 }]}
-                                        getOptionLabel={(option) => `${option.value}`}
-                                        value={numberOfInstallments}
-                                        onChange={(event, newValue) => setNumberOfInstallments(newValue)}
-                                        renderInput={(params) => <TextField {...params} label="Number of Installments" />}
+                                        options={paymentPlanOptions}
+                                        getOptionLabel={(option) => option.value}
+                                        value={paymentPlan}
+                                        onChange={(event, newValue) => setPaymentPlan(newValue)}
+                                        renderInput={(params) => <TextField {...params} label="Payment Plan" />}
                                         sx={{ mb: 2 }}
                                     />
                                 </FormControl>
                             </Grid>
-                        )}
-                    </Grid>
-                </Box>)}
+
+                            {/* Number of Installments */}
+                            {paymentPlan?.value === 'INSTALLMENTS' && (
+                                <Grid item xs={12} md={4}>
+                                    <FormControl fullWidth >
+                                        <Autocomplete
+                                            fullWidth
+                                            options={[{ id: 3, value: 3 }, { id: 4, value: 4 }]}
+                                            getOptionLabel={(option) => `${option.value}`}
+                                            value={numberOfInstallments}
+                                            onChange={(event, newValue) => setNumberOfInstallments(newValue)}
+                                            renderInput={(params) => <TextField {...params} label="Number of Installments" />}
+                                            sx={{ mb: 2 }}
+                                        />
+                                    </FormControl>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Box>)}
 
                 {activeStep === 1 && (
                     <Box sx={{ mt: 4 }}>
@@ -840,24 +865,142 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
 
                 {activeStep === 4 && (
                     <Box>
-                        <Typography variant="h6">Confirm Booking</Typography>
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Cabin Type:</strong> {cabinType.cabin_type}
+                        <Typography variant="h6" gutterBottom>
+                            Confirm Booking
                         </Typography>
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Cabin Category:</strong> {cabinCategory.title}
-                        </Typography>
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Cabin Number:</strong> {cabinNumber}
-                        </Typography>
-                        <Typography variant="body1" sx={{ mt: 1 }}>
-                            <strong>Lead Passenger:</strong> {passenger.first_name + ' ' + passenger.last_name}
-                        </Typography>
-                        <Typography variant="body1" sx={{ mt: 1 }}>
-                            <strong>Email:</strong> {passenger.email}
-                        </Typography>
-                    </Box>
-                )}
+                        <Tabs
+                            value={tabValue}
+                            onChange={handleTabChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            sx={{ mb: 2 }}
+                            aria-label="Booking Details Tabs"
+                        >
+                            <Tab label="Cabin Details" />
+                            <Tab label="Lead Passenger" />
+                            <Tab label="Payment Info"/>
+                        </Tabs>
+
+                        {/* Tab Panel for Cabin Details */}
+                        <TabPanel value={tabValue} index={0}>
+                            <TableContainer component={Paper} elevation={3}>
+                                <Table size="small">
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Type:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinType.cabin_type}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Category:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinCategory.title}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Number:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinNumber}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Capacity:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinCategory.spec.capacity}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Price Per Person:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinCategory.price}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+
+                        {/* Tab Panel for Lead Passenger */}
+                        <TabPanel value={tabValue} index={1}>
+                            <TableContainer component={Paper} elevation={3}>
+                                <Table size="small">
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Name:</strong>
+                                            </TableCell>
+                                            <TableCell>
+                                                {passenger.first_name} {passenger.last_name}
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Email:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.email}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Phone:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.phone}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Gender:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.gender}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>First Address:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.first_address}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>City:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.city}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Country:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.country}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+                        <TabPanel value={tabValue} index={2}>
+                            <TableContainer component={Paper} elevation={3}>
+                            <Table size="small">
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Payment Plan:</strong>
+                                            </TableCell>
+                                            <TableCell>{paymentPlan.value}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Payment Method:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.payment_method}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Number of Installments:</strong>
+                                            </TableCell>
+                                            <TableCell>{numberOfInstallments.value}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+                    </Box>)}
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
                     <Button

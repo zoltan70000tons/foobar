@@ -33,8 +33,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id 
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<Fee>({ type: "", amount: 0 });
     const {showSnackbar} = useSnackbar();
-    const { hasPermission } = usePermissions();
-    const canCreateAdjustment = hasPermission(Permissions.CreateAdjustments);
+
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

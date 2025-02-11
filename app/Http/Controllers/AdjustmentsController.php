@@ -68,8 +68,6 @@ class AdjustmentsController extends Controller
                 return redirect()->back()->with('success', 'Adjustment created and linked successfully.');
             },  $validated,$booking,$event_id);
         } catch (\Exception $e) {
-             
-            dd($e->getMessage());
             // Rollback the transaction on error
             DB::rollBack();
             return redirect()->back()->with('error', 'Failed to create adjustment.');

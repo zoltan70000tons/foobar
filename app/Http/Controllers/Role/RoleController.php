@@ -46,7 +46,7 @@ class RoleController extends Controller
         $request
       );
     } catch (\Exception $e) {
-      //throw $th;
+      $this->logException($e);
     }
   }
 
@@ -61,8 +61,8 @@ class RoleController extends Controller
         },
         $request
       );
-    } catch (\Throwable $th) {
-      //throw $th;
+    } catch (\Exception $e) {
+      $this->logException($e);
     }
   }
 
@@ -79,7 +79,7 @@ class RoleController extends Controller
         $request
       );
     } catch (\Exception $e) {
-      //throw $th;
+      $this->logException($e);
     }
 
   }
@@ -97,7 +97,7 @@ class RoleController extends Controller
         $request
       );
     } catch (\Exception $e) {
-      //throw $th;
+      $this->logException($e);
     }
     
   }
@@ -113,7 +113,7 @@ class RoleController extends Controller
       $role
     );
    } catch (\Exception $e) {
-    //throw $th;
+    $this->logException($e);
    }
 
   }
@@ -130,7 +130,7 @@ class RoleController extends Controller
         $request
       );
     } catch (\Exception $e) {
-      //throw $th;
+      $this->logException($e);
     }
     
 

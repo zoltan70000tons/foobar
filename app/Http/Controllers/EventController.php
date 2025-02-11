@@ -2,33 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permissions;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
-use App\Rules\ValidDateFormat;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
+use App\Traits\ExceptionLogger;
+use App\Traits\HandlePermissions;
 
 class EventController extends Controller
 {
-    public function index()
+    use HandlePermissions;
+    use ExceptionLogger;
+    public function index(Request $request)
     {
-        $events = Event::all();
-         return Inertia::render('Event/Index', [
-            'events' => $events
-         ]);
+        try {
+            return $this->withPermission([Permissions::ViewPermissions], function ($request) {
+                $events = Event::all();
+                return Inertia::render('Event/Index', [
+                    'events' => $events
+                ]);
+            }, $request);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function create()
     {
-       return Inertia::render('Event/Create');
+        return Inertia::render('Event/Create');
     }
 
 
     public function store(Request $request)
     {
-
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -38,24 +45,24 @@ class EventController extends Controller
             'end_date' => 'nullable|date_format:Y/m/d|after_or_equal:start_date',
             'status' => 'required|string'
         ];
-
         $request->validate($rules);
-
         try {
-            $path = $request->file('image')->storePublicly('events', 's3');
-            $publicPath = Storage::url($path);
-            $event = new Event();
-            $event->name = $request->name;
-            $event->description = $request->description;
-            $event->image = $publicPath;
-            $event->status = $request->status;
-            $event->organization_id = 1;
-            $event->address = $request->destination;
-            $event->start_date = $request->start_date ? $request->start_date : null;
-            $event->end_date = $request->end_date ? $request->end_date : null;
-            $event->save();
+            return $this->withPermission([Permissions::CreateEvents], function ($request) {
+                $path = $request->file('image')->storePublicly('events', 's3');
+                $publicPath = Storage::url($path);
+                $event = new Event();
+                $event->name = $request->name;
+                $event->description = $request->description;
+                $event->image = $publicPath;
+                $event->status = $request->status;
+                $event->organization_id = 1;
+                $event->address = $request->destination;
+                $event->start_date = $request->start_date ? $request->start_date : null;
+                $event->end_date = $request->end_date ? $request->end_date : null;
+                $event->save();
 
-            return redirect()->route('events.index')->with('flash', 'Event created successfully.');
+                return redirect()->route('events.index')->with('flash', 'Event created successfully.');
+            }, $request);
         } catch (\Exception $e) {
             return redirect()->route('events.index')->with('error', 'Problem creating event.');
         }
@@ -70,19 +77,9 @@ class EventController extends Controller
 
     public function update(Request $request, Event $event)
     {
-        $rules = [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'destination' => 'required|string',
-            //'start_date' => 'nullable|date_format:Y/m/d',
-            'start_date' => ['nullable', new ValidDateFormat],
-            'end_date' => ['nullable', new ValidDateFormat, 'after_or_equal:start_date'],
-            'status' => 'required|string'
-        ];
-
-        $validated = $request->validate($rules);
 
         try {
+
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->storePublicly('events', 's3');
                 $publicPath = Storage::url($path);
@@ -99,7 +96,7 @@ class EventController extends Controller
             $event->save();
 
             return redirect()->route('events.edit', $event->id)
-                 ->with('success', 'Event updated successfully.');
+                ->with('success', 'Event updated successfully.');
         } catch (\Exception $e) {
             return redirect()->route('events.edit', $event->id)->with('error', 'Problem updating event.');
         }
@@ -107,12 +104,24 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-         return Inertia::render('Event/View',['event' => $event]);
+        try {
+            return $this->withPermission([Permissions::ViewEvents], function ($event) {
+                return Inertia::render('Event/View', ['event' => $event]);
+            }, $event);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function destroy(Event $event)
     {
-        $event->delete();
-        return redirect()->route('events.index')->with('success', 'Event deleted successfully.');
+        try {
+            return $this->withPermission([Permissions::DeleteEvents], function ($event) {
+                $event->delete();
+                return redirect()->route('events.index')->with('success', 'Event deleted successfully.');
+            }, $event);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 }

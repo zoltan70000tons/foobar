@@ -104,12 +104,13 @@ class BookingsController extends Controller
     $validated = $request->validate([
       'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
       'payment_plan' => ['required', Rule::in(['INSTALLMENTS', 'PAY_IN_FULL'])],
+      'carbon_offset' => ['required', 'boolean'],
       'number_of_installments' => [
         'nullable',
-        'integer', 
-        'min:1',  
-        'required_if:payment_plan,INSTALLMENTS', 
-    ],
+        'integer',
+        'min:1',
+        'required_if:payment_plan,INSTALLMENTS',
+      ],
       'passenger.id' => ['required', 'string', 'exists:users,id'],
       'passenger.first_name' => ['required', 'string', 'max:255'],
       'passenger.middle_name' => ['nullable', 'string', 'max:255'],
@@ -118,7 +119,7 @@ class BookingsController extends Controller
       'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
       'passenger.citizenship' => ['nullable', 'string', 'max:100'],
       'passenger.survivor_number' => ['nullable', 'string', 'max:50'],
-      'passenger.email' => ['required', 'email', 'max:255'],
+      'passenger.email' => ['required', 'email', 'unique:passengers,email'],
       'passenger.phone' => ['nullable', 'string', 'max:20'],
       'passenger.address_first' => ['required', 'string', 'max:255'],
       'passenger.address_second' => ['nullable', 'string', 'max:255'],
@@ -140,6 +141,8 @@ class BookingsController extends Controller
       'passenger.newsletter' => ['nullable', 'boolean'],
       'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
       'passenger.passenger_balance' => ['nullable', 'numeric', 'min:0'],
+    ], [
+      'passenger.email.unique' => 'Email already registered in the passengers list.',
     ]);
 
     try {
@@ -152,17 +155,17 @@ class BookingsController extends Controller
 
       return $this->withPermission(
         [Permissions::CreateBookings],
-        function ($event_id, $cabin_number, $user,$passenger_data,$payment_plan,$number_of_installments) {
+        function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments) {
           $event = $this->eventRepository->find($event_id);
           $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
             $query->where('cabin_number', $cabin_number);
-        })->first();
-        if($cabin){
-          $bookingData = ['event_id' => $event_id, 'customer_id' => $passenger_data['id'], 'payment_plan' => $payment_plan,'number_of_installments' =>$number_of_installments];
-          $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
-          $bookig = $bookingData['booking'];
-          $this->logRepository->writeOnBooking($booking->id, "Booking created manually", $user);
-        }
+          })->first();
+          if ($cabin) {
+            $bookingData = ['event_id' => $event_id, 'customer_id' => $passenger_data['id'], 'payment_plan' => $payment_plan, 'number_of_installments' => $number_of_installments];
+            $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
+            $bookig = $bookingData['booking'];
+            $this->logRepository->writeOnBooking($booking->id, "Booking created manually", $user);
+          }
         },
         $event_id,
         $cabin_number,
@@ -172,7 +175,7 @@ class BookingsController extends Controller
         $number_of_installments
       );
     } catch (\Exception $e) {
-    //dd($e->getMessage());
+      //dd($e->getMessage());
       $this->logException($e);
     }
   }
@@ -181,23 +184,32 @@ class BookingsController extends Controller
 
   public function assignAgent(Request $request)
   {
-    $request->validate([
-      "agent_id" => "required|exists:users,id",
-      "booking_code" => "required|exists:bookings,booking_code",
-    ]);
-    $agent_id = $request->input("agent_id");
-    $booking_code = $request->input("booking_code");
-    $booking = $this->bookingRepository->findByCode($booking_code);
-    if ($booking) {
-      $booking->agent_id = $agent_id;
-      $booking->save();
-      return redirect()->back()->with("message", "User assigned successfully.");
+    try {
+      return $this->withPermission(
+        [Permissions::EditBookings],
+        function ($request) {
+          $request->validate([
+            "agent_id" => "required|exists:users,id",
+            "booking_code" => "required|exists:bookings,booking_code",
+          ]);
+          $agent_id = $request->input("agent_id");
+          $booking_code = $request->input("booking_code");
+          $booking = $this->bookingRepository->findByCode($booking_code);
+          if ($booking) {
+            $booking->agent_id = $agent_id;
+            $booking->save();
+            return redirect()->back()->with("message", "User assigned successfully.");
+          }
+        },
+        $request
+      );
+    } catch (\Exception $e) {
+      $this->logException($e);
     }
   }
 
   public function update(Request $request)
   {
-
     try {
       $event_id = request()->route("id");
       $booking_code = request()->route("booking_code");
@@ -263,41 +275,45 @@ class BookingsController extends Controller
 
   public function editMode(Request $request)
   {
-    $booking_id = $request->input("booking_id");
-    $lock = $request->input("lock");
-    $event_id = $request->input("event_id");
+    try {
+      $booking_id = $request->input("booking_id");
+      $lock = $request->input("lock");
+      $event_id = $request->input("event_id");
 
-    return $this->withPermission(
-      [Permissions::EditBookings],
-      function ($event_id, $booking_id, $lock) {
-        $event = $this->eventRepository->find($event_id);
-        $booking = Booking::find($booking_id);
+      return $this->withPermission(
+        [Permissions::EditBookings],
+        function ($event_id, $booking_id, $lock) {
+          $event = $this->eventRepository->find($event_id);
+          $booking = Booking::find($booking_id);
 
-        if ($lock == "1") {
-          $bookingSession = new BookingAgentSessions();
-          $bookingSession->agent_id = Auth::user()->id;
-          $bookingSession->booking_id = $booking->id;
-          $bookingSession->save();
-
-          return Inertia::location(url()->previous());
-        } elseif ($lock == "0") {
-          $bookingSession = BookingAgentSessions::where("booking_id", $booking_id)->first();
-          if ($bookingSession) {
-            $bookingSession->delete();
+          if ($lock == "1") {
+            $bookingSession = new BookingAgentSessions();
+            $bookingSession->agent_id = Auth::user()->id;
+            $bookingSession->booking_id = $booking->id;
+            $bookingSession->save();
 
             return Inertia::location(url()->previous());
-          }
-        }
+          } elseif ($lock == "0") {
+            $bookingSession = BookingAgentSessions::where("booking_id", $booking_id)->first();
+            if ($bookingSession) {
+              $bookingSession->delete();
 
-        return response()->json([
-          'success' => false,
-          'message' => 'Invalid lock value.',
-        ], 400);
-      },
-      $event_id,
-      $booking_id,
-      $lock
-    );
+              return Inertia::location(url()->previous());
+            }
+          }
+
+          return response()->json([
+            'success' => false,
+            'message' => 'Invalid lock value.',
+          ], 400);
+        },
+        $event_id,
+        $booking_id,
+        $lock
+      );
+    } catch (\Exception $e) {
+      $this->logException($e);
+    }
   }
 
 

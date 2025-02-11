@@ -39,6 +39,7 @@ class TeamRepository implements TeamRepositoryInterface
         if ($org) {
             $members = User::with(['detail', 'roles'])
                 ->where('organization_id', $this->organizationId)
+                ->whereNotIn('username', ['SuperAdmin','admin', 'system'])
                 ->whereDoesntHave('roles', function ($query) {
                     $query->where('name', 'Customer');
                 })
@@ -63,7 +64,6 @@ class TeamRepository implements TeamRepositoryInterface
                     'fullName' => $fullName, // Add fullName here
                 ];
             });
-    
             return $result;
         }
         return null;
@@ -82,7 +82,7 @@ class TeamRepository implements TeamRepositoryInterface
             setPermissionsTeamId($org_id);
             $user = User::find($user_id);
             $user->syncRoles($roles);
-            return $this->successResponse($roles, 'Roles updated successfully');
+           // return $this->successResponse($roles, 'Roles updated successfully');
         } catch (\Exception $ex) {
             return $this->errorResponse($ex->getMessage());
         }

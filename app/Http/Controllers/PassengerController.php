@@ -191,7 +191,7 @@ class PassengerController extends Controller
                     'single_t_agreement' => $user->detail->single_t_agreement ?? null,
                     'passenger_allocated_cost' => $user->detail->passenger_allocated_cost ?? null,
                     'passenger_balance' => $user->detail->passenger_balance ?? null,
-                    'was_on_board' => $user->detail->was_on_board ?? null,
+                    'was_on_board' => $user->detail->was_on_board ?? null
                 ];
             });
 

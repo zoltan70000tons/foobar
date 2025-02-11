@@ -19,6 +19,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import apiRoutes from "@/Helpers/ApiRoutes";
 import axios from "axios";
 import { Permissions } from "@/enums/PermissionEnum";
+import { router } from "@inertiajs/react";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 
 interface Permission {
@@ -60,6 +62,7 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   const [permissionName, setPermissionName] = useState<string[]>([]);
   const [loading, setLoading] = useState(true); 
   const [saveLoading, setSaveLoading] = useState(false);
+  const {showSnackbar} = useSnackbar();
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -92,7 +95,21 @@ const AssignRoles: React.FC<AssignRolesProps> = ({ userId, orgId }) => {
   const handleSubmit = async () => {
     try {
       setSaveLoading(true);
-      await axios.put(apiRoutes.updateRole, { roles: permissionName, user_id: userId , org_id:1});
+      router.put(apiRoutes.updateRole, { 
+        roles: permissionName, 
+        user_id: userId, 
+        org_id: 1 
+    }, {
+        preserveState:false, 
+        onSuccess: () => {
+          console.log('Role updated successfully!');
+          showSnackbar('Role updated successfully', 'success');
+        },
+        onError: (errors) => {
+          console.error('Failed to update role:', errors)
+          showSnackbar('Failed to update role', 'error');
+        },
+    });
       setSaveLoading(false);
     } catch (error) {
       console.error("Error saving roles", error);
