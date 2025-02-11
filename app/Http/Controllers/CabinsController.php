@@ -37,27 +37,33 @@ class CabinsController extends Controller
     }
     public function index()
     {
-        $event_id = request()->route('id');
-        $cabins = [];
-        $categories = [];
+        try {
+            return $this->withPermission([Permissions::ViewCabins], function () {
+                $event_id = request()->route('id');
+                $cabins = [];
+                $categories = [];
 
-        if ($event_id == 'all') {
-            $events = $this->eventRepository->getAll();
-            return Inertia::render('Cabin/partials/Events', [
-                'events' => $events
-            ]);
-        }
+                if ($event_id == 'all') {
+                    $events = $this->eventRepository->getAll();
+                    return Inertia::render('Cabin/partials/Events', [
+                        'events' => $events
+                    ]);
+                }
 
-        if (is_numeric($event_id)) {
-            $event = $this->eventRepository->find($event_id);
-            $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
-            $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
-            return Inertia::render('Cabin/Index', [
-                'cabins' => $cabins,
-                'categories' => $categories,
-                'event' => $event
+                if (is_numeric($event_id)) {
+                    $event = $this->eventRepository->find($event_id);
+                    $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
+                    $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
+                    return Inertia::render('Cabin/Index', [
+                        'cabins' => $cabins,
+                        'categories' => $categories,
+                        'event' => $event
 
-            ]);
+                    ]);
+                }
+            }, null);
+        } catch (\Exception $e) {
+            $this->logException($e);
         }
     }
 
@@ -132,8 +138,7 @@ class CabinsController extends Controller
                 });
                 $this->cabinRepository->update($sanitized, $cabin_id);
                 return redirect()->route('cabins.edit', ['event_id' => $event_id, 'cabin_id' => $cabin_id])
-                ->with('success', 'Cabin updated successfully.');
-
+                    ->with('success', 'Cabin updated successfully.');
             }, $event_id, $cabin_id, $validated);
         } catch (\Exception $e) {
             $this->logException($e);
@@ -142,58 +147,80 @@ class CabinsController extends Controller
 
     public function show(Cabin $cabin)
     {
-        return Inertia::render('Cabins/View', ['cabin' => $cabin]);
+        try {
+            return $this->withPermission([Permissions::ViewCabins], function ($cabin) {
+                return Inertia::render('Cabins/View', ['cabin' => $cabin]);
+            }, $cabin);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function destroy(Cabin $cabin)
     {
-        $cabin->delete();
-        return redirect()->route('cabins.index')->with('success', 'Cabin deleted successfully.');
+        try {
+            return $this->withPermission([Permissions::DeleteCabins], function ($cabin) {
+                $cabin->delete();
+                return redirect()->route('cabins.index')->with('success', 'Cabin deleted successfully.');
+            }, $cabin);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 
     public function addTag(Request $request)
     {
-        $validatedData = $request->validate([
-            'rows' => 'required|array|min:1',
-            'tags' => 'required|array|min:1',
-            'tags.*' => 'string|max:255',
-        ]);
-        $tags = $validatedData['tags'];
-        $cabinIds = $validatedData['rows'];
+        try {
+            $validatedData = $request->validate([
+                'rows' => 'required|array|min:1',
+                'tags' => 'required|array|min:1',
+                'tags.*' => 'string|max:255',
+            ]);
+            $tags = $validatedData['tags'];
+            $cabinIds = $validatedData['rows'];
 
-        $cabins = Cabin::whereIn('id', $cabinIds)->get();
+            $cabins = Cabin::whereIn('id', $cabinIds)->get();
 
-        foreach ($cabins as $cabin) {
-            // $existingTags = $cabin->tags ?? [];
-            // $updatedTags = array_unique(array_merge($existingTags, $tags));
-            // $updatedTags = array_values($updatedTags); 
-            // $cabin->tags = $updatedTags;
-            // $cabin->save();
-            $cabin->tags = array_values($tags);
-            $cabin->save();
+            foreach ($cabins as $cabin) {
+                // $existingTags = $cabin->tags ?? [];
+                // $updatedTags = array_unique(array_merge($existingTags, $tags));
+                // $updatedTags = array_values($updatedTags); 
+                // $cabin->tags = $updatedTags;
+                // $cabin->save();
+                $cabin->tags = array_values($tags);
+                $cabin->save();
+            }
+
+            return response()->json([
+                'message' => 'Tags added succefully.',
+            ], 200);
+        } catch (\Exception $e) {
+            $this->logException($e);
         }
-
-        return response()->json([
-            'message' => 'Tags added succefully.',
-        ], 200);
     }
 
     public function updateStatus(Request $request)
     {
-        $validatedData = $request->validate([
-            'rows' => 'required|array|min:1',
-            'status' => 'required|string',
-        ]);
-        $status = $validatedData['status'];
-        $cabinIds = $validatedData['rows'];
-        $cabins = Cabin::whereIn('id', $cabinIds)->get();
-        foreach ($cabins as $cabin) {
-            $cabin->status = $status;
-            $cabin->save();
-        }
+        try {
+            return $this->withPermission([Permissions::EditCabins], function ($request) {
+                $validatedData = $request->validate([
+                    'rows' => 'required|array|min:1',
+                    'status' => 'required|string',
+                ]);
+                $status = $validatedData['status'];
+                $cabinIds = $validatedData['rows'];
+                $cabins = Cabin::whereIn('id', $cabinIds)->get();
+                foreach ($cabins as $cabin) {
+                    $cabin->status = $status;
+                    $cabin->save();
+                }
 
-        return response()->json([
-            'message' => 'Status updated successfully',
-        ], 200);
+                return response()->json([
+                    'message' => 'Status updated successfully',
+                ], 200);
+            }, $request);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
 }

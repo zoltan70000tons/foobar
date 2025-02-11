@@ -91,4 +91,8 @@ class User extends Authenticatable implements CanResetPassword
   {
     return $this->hasOne(CustomerAddress::class, "user_id");
   }
+
+  public function memberShip(){
+    return $this->hasOne(Membership::class, foreignKey:'user_id');
+  }
 }

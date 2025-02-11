@@ -48,7 +48,6 @@ const List: React.FC = () => {
   );
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 70 },
     {
       field: "fullName",
       headerName: "Name",

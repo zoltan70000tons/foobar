@@ -17,19 +17,37 @@ import {
     CircularProgress,
     Grid,
     Checkbox,
+    TableContainer,
+    Table,
+    TableCell,
+    TableRow,
+    TableBody,
+    Paper,
+    Tab,
+    Tabs, 
+    ToggleButton
 } from "@mui/material";
 
 import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { ToggleButton } from "react-aria-components";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
+import { router } from "@inertiajs/react";
+import {FilterList} from "@mui/icons-material";
+
+const TabPanel = ({ children, value, index }) => {
+    return (
+        <div role="tabpanel" hidden={value !== index}>
+            {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
+        </div>
+    );
+};
 
 const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [cabin, setCabin] = useState("");
     const [passenger, setPassenger] = useState({
+        id: "",
         first_name: "",
         middle_name: "",
         last_name: "",
@@ -73,57 +91,105 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [paymentPlan, setPaymentPlan] = useState(null);
+    const [numberOfInstallments, setNumberOfInstallments] = useState(null);
+    const [isNextDisabled, setIsNextDisabled] = useState(true);
+    const [carbonOffset, setCarbonOffset] = useState(false);
+    const paymentPlanOptions = [{
+        id: 'INSTALLMENTS', value: 'INSTALLMENTS'
+    }, {
+        id: 'PAY_IN_FULL', value: 'PAY_IN_FULL'
+    }];
+    const [tabValue, setTabValue] = useState(0);
+
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
+
+    useEffect(() => {
+        setIsNextDisabled(!validateStep());
+        console.log(isNextDisabled);
+        console.log('Category', cabinCategory, 'CabinNumber', cabinNumber, 'PASSENGER', passenger, 'PAYMENT PLAN', paymentPlan);
+    }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
+
 
     const { showSnackbar } = useSnackbar();
 
-    const steps = ["Select Cabin", "Passenger Details", "Confirm & Submit"];
+    const steps = ["Select Cabin", "Passenger Details", "Special Request", "Discounts/Addons", "Confirm & Submit"];
 
+    const onChange = (field, value) => {
+        setPassenger((prev) => ({ ...prev, [field]: value }));
+    }
+
+    const validateStep = () => {
+        console.log(activeStep);
+        switch (activeStep) {
+            case 0:
+                let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber;
+                if (paymentPlan?.value === 'INSTALLMENTS') {
+                    rule = rule && numberOfInstallments;
+                }
+                return !!(rule);
+            case 1:
+                return !!(
+                    passenger.first_name &&
+                    passenger.last_name &&
+                    passenger.address_first &&
+                    passenger.city &&
+                    passenger.country &&
+                    passenger.email &&
+                    passenger.dob &&
+                    passenger.gender &&
+                    passenger.payment_method
+                );
+            case 2:
+                return true;
+            case 3:
+                return true;
+            case 4:
+                return true;
+            default:
+                return false;
+        }
+    };
 
 
     const handlePrefill = () => {
         if (!selectedUser) return;
-        //inputs
-        onChange("first_name", selectedUser.first_name);
-        onChange("middle_name", selectedUser.middle_name || "");
-        onChange("last_name", selectedUser.last_name);
-        onChange("email", selectedUser.email);
-        onChange("phone", selectedUser.phone || "");
-        onChange("address_first", selectedUser.address_first || "");
-        onChange("address_second", selectedUser.address_second || "");
-        onChange("city", selectedUser.city || "");
-        onChange("state", selectedUser.state || "");
-        onChange("postal_code", selectedUser.postal_code || "");
-        onChange("country", selectedUser.country || "");
-        onChange("emergency_c_name", selectedUser.emergency_c_name || "");
-        onChange("emergency_c_phone", selectedUser.emergency_c_phone || "");
-        onChange("passenger_allocated_cost", selectedUser.passenger_allocated_cost || "");
-        onChange("passenger_balance", selectedUser.passenger_balance || "");
-        onChange("survivor_number", selectedUser.survivor_number || "");
 
-        //select
-        onChange("gender", selectedUser.gender || "");
-        onChange("payment_method", selectedUser.payment_method || "");
-        onChange("citizenship", selectedUser.citizenship || "");
-
-        //date
-        onChange("dob", selectedUser.dob || "");
-
-
-        //text area
-        onChange("special_request", selectedUser.special_request || "");
-
-        //checkboxs
-        onChange("lead_passenger", selectedUser.lead_passenger || false);
-        onChange("confirmed_booking_email", selectedUser.confirmed_booking_email || false);
-        onChange("travel_info", selectedUser.travel_info || false);
-        onChange("terms_n_cons", selectedUser.term_n_cons || false);
-        onChange("cabin_conf_accp", selectedUser.cabin_conf_accp || false);
-        onChange("single_t_agreement", selectedUser.single_t_agreement || false);
-        onChange("was_on_board", selectedUser.was_on_board || false);
-        onChange("newsletter", selectedUser.newsletter || false);
-
-
-
+        setPassenger((prev) => ({
+            ...prev,
+            id: selectedUser.id,
+            first_name: selectedUser.first_name,
+            middle_name: selectedUser.middle_name || "",
+            last_name: selectedUser.last_name,
+            dob: selectedUser.dob || "",
+            gender: selectedUser.gender || "",
+            citizenship: selectedUser.citizenship || "",
+            survivor_number: selectedUser.survivor_number || "",
+            email: selectedUser.email,
+            phone: selectedUser.phone || "",
+            address_first: selectedUser.address_first || "",
+            address_second: selectedUser.address_second || "",
+            city: selectedUser.city || "",
+            state: selectedUser.state || "",
+            postal_code: selectedUser.postal_code || "",
+            country: selectedUser.country || "",
+            emergency_c_name: selectedUser.emergency_c_name || "",
+            emergency_c_phone: selectedUser.emergency_c_phone || "",
+            payment_method: selectedUser.payment_method || "",
+            special_request: selectedUser.special_request || "",
+            lead_passenger: selectedUser.lead_passenger || false,
+            confirmed_booking_email: selectedUser.confirmed_booking_email || false,
+            travel_info: selectedUser.travel_info || false,
+            terms_n_cons: selectedUser.terms_n_cons || false,
+            cabin_conf_accp: selectedUser.cabin_conf_accp || false,
+            single_t_agreement: selectedUser.single_t_agreement || false,
+            was_on_board: selectedUser.was_on_board || false,
+            newsletter: selectedUser.newsletter || false,
+            passenger_allocated_cost: selectedUser.passenger_allocated_cost || "",
+            passenger_balance: selectedUser.passenger_balance || "",
+        }));
     };
 
     // Handlers for navigation
@@ -139,6 +205,12 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     useEffect(() => {
         console.log(cabinNumber);
     }, [cabinNumber]);
+
+    useEffect(() => {
+        console.log(cabinCategory);
+    }, [cabinCategory]);
+
+
 
 
     useEffect(() => {
@@ -162,25 +234,68 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
         fetchSuggestions();
     }, [searchQuery]);
 
-    // Handlers for form data
-    const handleCabinChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-        setCabin(event.target.value as string);
-    };
 
-    const handlePassengerChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        setPassengerData({
-            ...passengerData,
-            [event.target.name]: event.target.value,
+
+    const handleSubmit = () => {
+        const payload = {
+            cabin_number: cabinNumber,
+            payment_plan: paymentPlan.value,
+            number_of_installments: numberOfInstallments.value,
+            carbon_offset: carbonOffset,
+            passenger: {
+                id: passenger.id,
+                first_name: passenger.first_name,
+                middle_name: passenger.middle_name,
+                last_name: passenger.last_name,
+                dob: passenger.dob,
+                gender: passenger.gender,
+                citizenship: passenger.citizenship,
+                survivor_number: passenger.survivor_number,
+                email: passenger.email,
+                phone: passenger.phone,
+                address_first: passenger.address_first,
+                address_second: passenger.address_second,
+                city: passenger.city,
+                state: passenger.state,
+                postal_code: passenger.postal_code,
+                country: passenger.country,
+                emergency_c_name: passenger.emergency_c_name,
+                emergency_c_phone: passenger.emergency_c_phone,
+                payment_method: passenger.payment_method,
+                special_request: passenger.special_request,
+                lead_passenger: passenger.lead_passenger,
+                confirmed_booking_email: passenger.confirmed_booking_email,
+                travel_info: passenger.travel_info,
+                terms_n_cons: passenger.terms_n_cons,
+                cabin_conf_accp: passenger.cabin_conf_accp,
+                single_t_agreement: passenger.single_t_agreement,
+                was_on_board: passenger.was_on_board,
+                newsletter: passenger.newsletter,
+                passenger_allocated_cost: passenger.passenger_allocated_cost,
+                passenger_balance: passenger.passenger_balance,
+            },
+        };
+
+        if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
+            showSnackbar('Please fill all required fields!', 'error');
+            return;
+        }
+
+        router.post(route('bookings.createManual', { id: 1 }), payload, {
+            onSuccess: () => {
+                showSnackbar('Booking created successfully!', 'success');
+                setActiveStep(0);
+            },
+            onError: (errors) => {
+                console.error('Error creating booking:', errors);
+                showSnackbar('Failed to create booking. Please try again.', 'error');
+            },
         });
     };
 
-    const handleSubmit = () => {
-        console.log("Booking Confirmed:", { cabin, passengerData });
-        alert("Booking Submitted Successfully!");
-        setActiveStep(0); // Reset the stepper
-    };
+
+
+
 
     const fetchAvailableCabins = async () => {
         try {
@@ -213,111 +328,171 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                 ))}
             </Stepper>
 
-            <Box sx={{ mt: 3 }} sx={{ maxWidth: '100%' }}>
+            <Box>
                 {activeStep === 0 && (
                     <Box>
-                        <Typography variant="h6">Select a Cabin Type</Typography>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
-                            <InputLabel id="cabin-type-label">Cabin Type</InputLabel>
-                            <Autocomplete
-                                fullWidth
-                                options={cabinTypes}
-                                getOptionLabel={(option) => option.cabin_type}
-                                value={cabinType}
-                                onChange={(event, newValue) => setCabinType(newValue)}
-                                renderInput={(params) => <TextField {...params} label="Cabin Type" />}
-                                sx={{ mb: 2 }}
-                            />
-                        </FormControl>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
-                            <InputLabel id="cabin-label">Cabin</InputLabel>
-                            <Autocomplete
-                                fullWidth
-                                options={cabinCategories}
-                                getOptionLabel={(option) => option.title}
-                                value={cabinCategory}
-                                onChange={(event, newValue) => setCabinCategory(newValue)}
-                                renderInput={(params) => <TextField {...params} label="Cabin Category" />}
-                                sx={{ mb: 2 }}
-                            />
-                        </FormControl>
-
-                        <Box sx={{ mb: 2 }}>
-                            <ToggleButton
-                                value="advancedFilters"
-                                selected={advancedFilters}
-                                onChange={() => setAdvancedFilters(!advancedFilters)}
-                            >
-                                <FilterListIcon />
-                                Advanced Filters
-                            </ToggleButton>
-                        </Box>
-                        {advancedFilters && (
-                            <>
-                                <Autocomplete
-                                    fullWidth
-                                    options={Object.values(DeckEnum).filter((value) => typeof value === "number")}
-                                    getOptionLabel={(option) => `Deck ${option}`}
-                                    value={selectedDeck}
-                                    onChange={(event, newValue) => setSelectedDeck(newValue)}
-                                    renderInput={(params) => <TextField {...params} label="Cabin Deck" />}
-                                    sx={{ mb: 2 }}
-                                />
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            checked={onlyBalcony}
-                                            onChange={(e) => setOnlyBalcony(e.target.checked)}
-                                        />
-                                    }
-                                    label="Only Balcony"
-                                />
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={3}>
                                 <FormControl fullWidth sx={{ mt: 2 }}>
-                                    <InputLabel id="location-label">Location</InputLabel>
-                                    <Select
-                                        labelId="location-label"
-                                        value={selectedLocation}
-                                        onChange={(e) => setSelectedLocation(e.target.value)}
-                                    >
-                                        {Object.values(LocationEnum).map((location) => (
-                                            <MenuItem key={location} value={location}>
-                                                {location}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
+                                    <Autocomplete
+                                        fullWidth
+                                        options={cabinTypes}
+                                        getOptionLabel={(option) => option.cabin_type}
+                                        value={cabinType}
+                                        onChange={(event, newValue) => setCabinType(newValue)}
+                                        renderInput={(params) => <TextField {...params} label="Cabin Type" />}
+                                        sx={{ mb: 2 }}
+                                    />
                                 </FormControl>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            checked={onlyAccessible}
-                                            onChange={(e) => setOnlyAccessible(e.target.checked)}
-                                        />
-                                    }
-                                    label="Only Accessible"
-                                />
-                            </>
-                        )}
+                            </Grid>
 
-                        <Box>
-                            <Typography variant="body1" sx={{ mb: 1 }}>
-                                Select a cabin for this booking.
-                            </Typography>
-                            <Autocomplete
-                                fullWidth
-                                options={availableCabins}
-                                getOptionLabel={(option) => option.cabin_number}
-                                value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-                                onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
-                                renderInput={(params) => <TextField {...params} label="Available Cabins" />}
-                            />
-                        </Box>
-                    </Box>
-                )}
+                            <Grid item xs={12} md={6}>
+                                <FormControl fullWidth sx={{ mt: 2 }}>
+                                    <Autocomplete
+                                        fullWidth
+                                        options={cabinCategories}
+                                        getOptionLabel={(option) => option.title}
+                                        value={cabinCategory}
+                                        onChange={(event, newValue) => setCabinCategory(newValue)}
+                                        renderInput={(params) => <TextField {...params} label="Cabin Category" />}
+                                        sx={{ mb: 2 }}
+                                    />
+                                </FormControl>
+                            </Grid>
+
+                            <Grid item xs={12} md={3} sx={{ mt: 2 }}>
+                                <FormControl fullWidth>
+                                    {/* <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={advancedFilters}
+                                                onChange={() => setAdvancedFilters(!advancedFilters)}
+                                            />
+                                        }
+                                        label="Advanced Filters"
+                                    /> */}
+                                    <ToggleButton
+                                    value="advancedFilters"
+                                    selected={advancedFilters}
+                                    onChange={() => setAdvancedFilters(!advancedFilters)}
+                                >
+                                    <FilterList />
+                                    Advanced Filters
+                                </ToggleButton>
+                                </FormControl>
+
+                            </Grid>
+                            {advancedFilters && (
+                                <>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControl fullWidth >
+                                            <Autocomplete
+                                                fullWidth
+                                                options={Object.values(DeckEnum).filter((value) => typeof value === "number")}
+                                                getOptionLabel={(option) => `Deck ${option}`}
+                                                value={selectedDeck}
+                                                onChange={(event, newValue) => setSelectedDeck(newValue)}
+                                                renderInput={(params) => <TextField {...params} label="Deck" />}
+                                                sx={{ mb: 2 }}
+                                            />
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControl fullWidth >
+                                            <InputLabel id="location-label">Location</InputLabel>
+                                            <Select
+                                                labelId="location-label"
+                                                value={selectedLocation}
+                                                onChange={(e) => setSelectedLocation(e.target.value)}
+                                            >
+                                                {Object.values(LocationEnum).map((location) => (
+                                                    <MenuItem key={location} value={location}>
+                                                        {location}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={onlyBalcony}
+                                                    onChange={(e) => setOnlyBalcony(e.target.checked)}
+                                                />
+                                            }
+                                            label="Only Balcony"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={onlyAccessible}
+                                                    onChange={(e) => setOnlyAccessible(e.target.checked)}
+                                                />
+                                            }
+                                            label="Only Accessible"
+                                        />
+                                    </Grid>
+
+
+
+                                </>
+                            )}
+
+                            <Grid item xs={12} md={3}>
+                                <FormControl fullWidth>
+                                    <Autocomplete
+                                        fullWidth
+                                        options={availableCabins}
+                                        getOptionLabel={(option) => option.cabin_number}
+                                        value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
+                                        onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
+                                        renderInput={(params) => <TextField {...params} label="Available Cabins" />}
+                                    />
+                                </FormControl>
+
+                            </Grid>
+
+                            {/*Payment Plan */}
+                            <Grid item xs={12} md={3}>
+                                <FormControl fullWidth >
+                                    <Autocomplete
+                                        fullWidth
+                                        options={paymentPlanOptions}
+                                        getOptionLabel={(option) => option.value}
+                                        value={paymentPlan}
+                                        onChange={(event, newValue) => setPaymentPlan(newValue)}
+                                        renderInput={(params) => <TextField {...params} label="Payment Plan" />}
+                                        sx={{ mb: 2 }}
+                                    />
+                                </FormControl>
+                            </Grid>
+
+                            {/* Number of Installments */}
+                            {paymentPlan?.value === 'INSTALLMENTS' && (
+                                <Grid item xs={12} md={4}>
+                                    <FormControl fullWidth >
+                                        <Autocomplete
+                                            fullWidth
+                                            options={[{ id: 3, value: 3 }, { id: 4, value: 4 }]}
+                                            getOptionLabel={(option) => `${option.value}`}
+                                            value={numberOfInstallments}
+                                            onChange={(event, newValue) => setNumberOfInstallments(newValue)}
+                                            renderInput={(params) => <TextField {...params} label="Number of Installments" />}
+                                            sx={{ mb: 2 }}
+                                        />
+                                    </FormControl>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Box>)}
 
                 {activeStep === 1 && (
-                    <Box>
+                    <Box sx={{ mt: 4 }}>
                         <Typography variant="h6">Lead Passenger Details</Typography>
-                        <Box sx={{mb:2}}>
+                        <Box sx={{ mt: 2, mb: 2 }}>
                             <Grid container spacing={2} alignItems="center">
                                 <Grid item xs>
                                     <Autocomplete
@@ -414,10 +589,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                         value={passenger?.gender || ""}
                                         onChange={(e) => onChange("gender", e.target.value)}
 
-                                    >
+                                    >   <MenuItem value=""></MenuItem>
                                         <MenuItem value="M">Male</MenuItem>
                                         <MenuItem value="F">Female</MenuItem>
-                                        <MenuItem value="O">Other</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
@@ -588,18 +762,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                     label="Terms"
                                 />
                             </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Special Request"
-                                    variant="outlined"
-                                    fullWidth
-                                    multiline
-                                    rows={3}
-                                    size="small"
-                                    value={passenger?.special_request || ""}
-                                    onChange={(e) => onChange("special_request", e.target.value)}
-                                />
-                            </Grid>
                             <Grid item xs={12} md={2}>
                                 <FormControlLabel
                                     control={
@@ -664,21 +826,181 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                         </Grid>
                     </Box>
                 )}
+                {activeStep === 2 && (<Box sx={{ mt: 4 }}>
+                    <Grid item xs={12}>
+                        <TextField
+                            label="Special Request"
+                            variant="outlined"
+                            fullWidth
+                            multiline
+                            rows={3}
+                            size="small"
+                            value={passenger?.special_request || ""}
+                            onChange={(e) => onChange("special_request", e.target.value)}
+                        />
+                    </Grid>
+                </Box>)}
 
-                {activeStep === 2 && (
+                {activeStep === 3 && (
+
                     <Box>
-                        <Typography variant="h6">Confirm Your Booking</Typography>
                         <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Cabin:</strong> {cabin}
+                            Carbon Offset
                         </Typography>
-                        <Typography variant="body1" sx={{ mt: 1 }}>
-                            <strong>Name:</strong> {passengerData.name}
-                        </Typography>
-                        <Typography variant="body1" sx={{ mt: 1 }}>
-                            <strong>Email:</strong> {passengerData.email}
-                        </Typography>
+                        <Grid item xs={12} md={2}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        size="small"
+                                        checked={carbonOffset}
+                                        onChange={(e) => setCarbonOffset(!carbonOffset)}
+                                    />
+                                }
+                                label="Carbon Offset"
+                            />
+                        </Grid>
                     </Box>
                 )}
+
+
+                {activeStep === 4 && (
+                    <Box>
+                        <Typography variant="h6" gutterBottom>
+                            Confirm Booking
+                        </Typography>
+                        <Tabs
+                            value={tabValue}
+                            onChange={handleTabChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            sx={{ mb: 2 }}
+                            aria-label="Booking Details Tabs"
+                        >
+                            <Tab label="Cabin Details" />
+                            <Tab label="Lead Passenger" />
+                            <Tab label="Payment Info"/>
+                        </Tabs>
+
+                        {/* Tab Panel for Cabin Details */}
+                        <TabPanel value={tabValue} index={0}>
+                            <TableContainer component={Paper} elevation={3}>
+                                <Table size="small">
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Type:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinType.cabin_type}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Category:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinCategory.title}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Number:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinNumber}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Capacity:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinCategory.spec.capacity}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Price Per Person:</strong>
+                                            </TableCell>
+                                            <TableCell>{cabinCategory.price}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+
+                        {/* Tab Panel for Lead Passenger */}
+                        <TabPanel value={tabValue} index={1}>
+                            <TableContainer component={Paper} elevation={3}>
+                                <Table size="small">
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Name:</strong>
+                                            </TableCell>
+                                            <TableCell>
+                                                {passenger.first_name} {passenger.last_name}
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Email:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.email}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Phone:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.phone}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Gender:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.gender}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>First Address:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.first_address}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>City:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.city}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Country:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.country}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+                        <TabPanel value={tabValue} index={2}>
+                            <TableContainer component={Paper} elevation={3}>
+                            <Table size="small">
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Payment Plan:</strong>
+                                            </TableCell>
+                                            <TableCell>{paymentPlan.value}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Payment Method:</strong>
+                                            </TableCell>
+                                            <TableCell>{passenger.payment_method}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <strong>Number of Installments:</strong>
+                                            </TableCell>
+                                            <TableCell>{numberOfInstallments.value}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+                    </Box>)}
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
                     <Button
@@ -689,22 +1011,22 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                         Back
                     </Button>
                     {activeStep === steps.length - 1 ? (
-                        <Button onClick={handleSubmit} variant="contained" color="primary">
-                            Submit
+                        <Button onClick={handleSubmit} variant="outlined" color="success">
+                            Create Booking
                         </Button>
                     ) : (
                         <Button
                             onClick={handleNext}
                             variant="contained"
                             color="primary"
-                            disabled={activeStep === 0 && (!cabinType || !cabinCategory || !cabinNumber)}
+                            disabled={isNextDisabled}
                         >
                             Next
                         </Button>
                     )}
                 </Box>
             </Box>
-        </Box>
+        </Box >
     );
 };
 

@@ -74,7 +74,7 @@ Route::middleware("auth")->group(function () {
   Route::get("/organization/permissions", "App\Http\Controllers\Permission\PermissionController@listByOrganization");
   Route::get("/organization/roles", "App\Http\Controllers\Role\RoleController@listByOrganization");
   Route::get("/organization/getTeam", "App\Http\Controllers\Api\TeamController@listMembersByOrganization");
-  Route::put("/organization/members/updateRole", "App\Http\Controllers\Api\TeamController@updateMemberRoles");
+  Route::put("/organization/members/updateRole", "App\Http\Controllers\Api\TeamController@updateMemberRoles")->name('member.updateRole');
   Route::get("/users/getPermissions", "App\Http\Controllers\Role\RoleController@getPermissions");
   Route::post("/team/send-invitations", "App\Http\Controllers\InvitationController@store");
   Route::post("/member/update", "App\Http\Controllers\Api\TeamController@updateMember")->name("member.update");
@@ -120,6 +120,8 @@ Route::middleware("auth")->group(function () {
   Route::get("/events/{id}/cabins/{cabin_id}/edit", [CabinsController::class, "edit"])->name("cabins.edit");
   Route::post("/events/{id}/cabins/{cabin_id}/update", [CabinsController::class, "update"])->name("cabins.update");
 
+  Route::post('/events/{id}/bookings/createManual', [BookingsController::class, 'store'])
+  ->name('bookings.createManual');
     //Booking controller
     Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
     ->where('id', '[0-9]+|all') 

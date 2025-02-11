@@ -45,7 +45,10 @@ class TeamController extends Controller
             return $this->withPermission([Permissions::EditUsers], function ($request) {
                 $user_id = $request->user_id;
                 $roles = $request->roles;
-                return $this->teamRepositoryInterface->updateMemberRoles($user_id, $this->organizationId, $roles);
+                $data = $this->teamRepositoryInterface->updateMemberRoles($user_id, $this->organizationId, $roles);
+                //return Redirect::route('teams')->with('success', 'Role updated.');
+                //return to_route();
+                return redirect()->back()->with('success', 'User role updated successfully');
             }, $request);
         } catch (\Exception $e) {
             $this->logException($e);

@@ -11,12 +11,7 @@ import {
   Tabs,
   Tab,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
+  Checkbox,
   Avatar,
 } from "@mui/material";
 import MuiTable from "@/Components/tables/MuiTable";
@@ -58,7 +53,7 @@ const Index = ({
   console.log(cabinTypes);
   console.log(cabinCategories);
 
-  const handleOpenModal = (userId: string | null, booking_id : string | null) => {
+  const handleOpenModal = (userId: string | null, booking_id: string | null) => {
     setSelectedBookingId(booking_id);
     setSelectedUserId(userId);
     setOpenModal(true);
@@ -71,7 +66,7 @@ const Index = ({
   const handleSave = (userId: string | null) => {
     if (!userId) return;
     router.put(
-      route("bookings.assignAgent", { id:event.id }),
+      route("bookings.assignAgent", { id: event.id }),
       { agent_id: userId, booking_code: selectedBookingId },
       {
         onSuccess: () => {
@@ -116,7 +111,7 @@ const Index = ({
       console.error("Missing parameters: eventId or bookingCode is undefined.");
       return;
     }
-  
+
     const url = `/events/${event.id}/bookings/${row.booking_code}`;
     window.location.href = url; // Redirige al usuario
   };
@@ -127,7 +122,7 @@ const Index = ({
   //   );
   // };
 
-  const handleClick = (agent_id : String, booking_id: String) => {
+  const handleClick = (agent_id: String, booking_id: String) => {
     handleOpenModal(agent_id, booking_id);
 
   }
@@ -229,10 +224,15 @@ const Index = ({
 
   const subColumns = useMemo(
     () => [
-      // {
-      //   header: "Id",
-      //   accessor: "id",
-      // },
+      {
+        header: "Lead Passenger",
+        accessor: "lead_passenger",
+        draw: (row) => (
+          <div style={{ display: "flex", gap: "10px" }}>
+            {row.lead_passenger ? <Checkbox size="small" defaultChecked disabled/> : ''}
+          </div>
+        ),
+      },
       {
         header: "Passenger",
         accessor: "full_name",
@@ -288,9 +288,9 @@ const Index = ({
       </Toolbar>
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} sx={{textAlign:"right"}}>
-            
-             <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
+          <Grid item xs={12} sx={{ textAlign: "right" }}>
+
+            <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
             <Box>
               {/* Tabs for navigation */}
               <Tabs

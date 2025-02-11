@@ -9,6 +9,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.2",
+    "http-interop/http-factory-guzzle": "^1.2",
     "hidehalo/nanoid-php": "^2.0",
     "inertiajs/inertia-laravel": "^1.0",
     "laravel/framework": "^11.9",
@@ -19,6 +20,7 @@
     "laravel/tinker": "^2.9",
     "league/csv": "9.16.0",
     "league/flysystem-aws-s3-v3": "^3.0",
+    "meilisearch/meilisearch-php": "^1.12",
     "propaganistas/laravel-phone": "^5.3",
     "spatie/laravel-permission": "^6.9",
     "tightenco/ziggy": "^2.0"

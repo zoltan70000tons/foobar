@@ -22,6 +22,7 @@ type FeesFormProps = {
     passenger_id: number;
     event_id:number;
     booking_id:number;
+    editMode:boolean;
 };
 
 type Fee = {
@@ -29,12 +30,11 @@ type Fee = {
     amount: number;
 };
 
-const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id }) => {
+const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id,editMode }) => {
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<Fee>({ type: "", amount: 0 });
     const {showSnackbar} = useSnackbar();
-    const { hasPermission } = usePermissions();
-    const canCreateAdjustment = hasPermission(Permissions.CreateAdjustments);
+
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -92,6 +92,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id 
                 variant="outlined"
                 sx={{ color: "white", borderColor: "gray" }}
                 onClick={handleOpen}
+                disabled={!editMode}
             >
                 Add Fee
             </Button>
