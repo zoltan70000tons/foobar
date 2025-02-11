@@ -13,6 +13,10 @@ use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
+use App\Models\CabinType;
+use App\Models\Event;
+use App\Mail\CustomerConfirmationBooking;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -78,12 +82,14 @@ class BookingController extends Controller
       // get price from session
       // $price = $validated["cart"]["price_total"];
       $adjustments = Adjustment::where('event_id', $eventId)->first();
+      $eventStatus = Event::find($eventId)->status;
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
         'cabinPrice' => $validated['cart']['cabin_price'],
         'cabinCapacity' => $validated['cart']['cabin_capacity'],
         'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
+        'eventStatus' => $eventStatus,
       ]);
 
       $totalPassenger = $priceCalc['totalPassenger'];
@@ -119,18 +125,43 @@ class BookingController extends Controller
         'was_on_board' => false,
       ];
 
-      //call to booking repository method
+      // Call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
-      // delete current sesion
+      // Send confirmation email
+      //\Log::info('Booking created successfully', $result);
+
+      // Delete current sesion
       $request->session()->forget('cart');
       $request->session()->forget('reservation_id');
+
+      \Log::info('Booking created successfully', $result);
+
+      $bookingCode = $result['booking']['booking_code'];
+      $passengerEmail = $passengerData['email'];
+
+      \Log::info('Sending confirmation email for booking code: ' . $bookingCode . ' to email: ' . $passengerEmail);
+
+      if (!$bookingCode || !$passengerEmail) {
+        return response()->json(
+          [
+            'message' => 'Booking created successfully, but failed to send confirmation email.',
+            'booking' => [
+              'booking_request_id' => $result['booking']['booking_request_id'],
+            ],
+          ],
+          201
+        );
+      }
+
+      // Send confirmation email
+      $this->sendConfirmationEmail($bookingCode, $passengerEmail, 'en');
 
       return response()->json(
         [
           'message' => 'Booking created successfully.',
           'booking' => [
-            'booking_code' => $result['booking']['booking_code'],
+            'booking_request_id' => $result['booking']['booking_request_id'],
           ],
           // "passenger" => $result["passenger"],
         ],
@@ -144,6 +175,49 @@ class BookingController extends Controller
         ],
         500
       );
+    }
+  }
+
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  |--------------------------------------------------------------------------
+  | Send email TESTTTT !!!!!
+  |--------------------------------------------------------------------------
+  |
+  |  TO DELETE
+  |
+  */
+  public function sendBookingEmail(Request $request)
+  {
+    // $booking = Booking::find(1);
+    return;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Send email confirmation
+  |--------------------------------------------------------------------------
+  |
+  |  This method trigger the email confirmation
+  |
+  */
+  private function sendConfirmationEmail(string $bookingCode, string $passengerEmail, string $language): void
+  {
+    try {
+      // Get booking data with relationships
+      $booking = Booking::where('booking_code', $bookingCode)
+        ->with(['cabin.category', 'passengers', 'adjustments'])
+        ->first();
+
+      if (!$booking) {
+        throw new \Exception('Booking not found');
+      }
+
+      $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
+
+      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $language));
+    } catch (\Exception $e) {
+      \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+      throw $e;
     }
   }
 
@@ -168,10 +242,9 @@ class BookingController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    $result->cabin->makeHidden(['cabin_number']);
-    $result->cabin->cabinSpec->makeHidden(['cabin_number']);
-
-    return response()->json($result);
+    return response()->json([
+      'status' => 'success',
+    ]);
   }
 
   /**
