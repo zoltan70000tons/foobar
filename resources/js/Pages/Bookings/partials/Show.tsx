@@ -55,11 +55,11 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
   console.log(booking);
-  useEffect(() =>{
-    if(booking.locked_by && booking.locked_by.agent_id === auth.user.id){
+  useEffect(() => {
+    if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
       setEditMode(true);
     }
-  },[])
+  }, [])
   const handleEditChange = (e) => {
     setLoading(true);
     router.get(
@@ -138,25 +138,45 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
       <Head title="Booking " />
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <FormGroup>
-          {booking.is_cancelled ? (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              <AlertTitle>Info</AlertTitle>
-              This booking has been cancelled and cannot be edited.
-            </Alert>
-          ) : (
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={editMode || (booking.locked_by && booking.locked_by.agent_id === auth.user.id)}
-                  onChange={handleEditChange}
-                  disabled={booking.locked_by && booking.locked_by.agent_id !== auth.user.id}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Grid item xs={6}>
+            <FormGroup>
+              {booking.is_cancelled ? (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  <AlertTitle>Info</AlertTitle>
+                  This booking has been cancelled and cannot be edited.
+                </Alert>
+              ) : (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={editMode || (booking.locked_by && booking.locked_by.agent_id === auth.user.id)}
+                      onChange={handleEditChange}
+                      disabled={booking.locked_by && booking.locked_by.agent_id !== auth.user.id}
+                    />
+                  }
+                  label="Edit Mode"
                 />
-              }
-              label="Edit Mode"
-            />
-          )}
-        </FormGroup>
+              )}
+            </FormGroup>
+          </Grid>
+
+          <Grid item xs={6} sx={{ textAlign: "right" }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<CommentIcon />}
+              onClick={toggleSidebar}
+              sx={{ mb: 2 }}
+            >
+              View Comments & Logs
+            </Button>
+          </Grid>
+        </Box>
+
+
+
+
 
         {booking.locked_by && !booking.is_cancelled && (
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -167,15 +187,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
           </Alert>
         )}
 
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<CommentIcon />}
-          onClick={toggleSidebar}
-          sx={{ mb: 2 }}
-        >
-          View Comments & Logs
-        </Button>
+
 
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />

@@ -25,14 +25,29 @@ import {
   FormControl,
   Alert,
   AlertTitle,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItem,
+  ListItemText,
+  Chip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import InboxIcon from '@mui/icons-material/Inbox';
 import FilterListIcon from "@mui/icons-material/FilterList";
 import axios from "axios";
 import { router } from "@inertiajs/react";
 import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
+import GroupIcon from '@mui/icons-material/Group';
+import PinIcon from '@mui/icons-material/Pin';
+import PaymentIcon from '@mui/icons-material/Payment';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
@@ -129,18 +144,127 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     );
   };
 
+  console.log(event);
+
   return (
     <>
       <Box>
         <Typography variant="h5" mb={2}>
-          Cabin Details
+          Booking Details - {event.name}
         </Typography>
         <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
+              <img src={event.image} alt="" width={'100%'} />
+            </Grid>
+            <Grid item xs={12} md={8}>
+              {/* <List >
+                <ListItem disablePadding >
+                  <ListItemButton disableGutters disableRipple>
+                    <ListItemIcon >
+                      <InboxIcon fontSize="10px"/>
+                    </ListItemIcon>
+                    <ListItemText primary="Event Date :" />
+                  </ListItemButton>
+                </ListItem>
+                </List> */}
               <Table size="small">
                 <TableBody>
                   <TableRow>
+                    <TableCell width={250}>
+                      <Box display="flex" alignItems="center">
+                        <DateRangeIcon sx={{ mr: 1 }} /> Event Date:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {event.start_date + " - " + event.end_date}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell width={250}>
+                      <Box display="flex" alignItems="center">
+                        <VisibilityIcon sx={{ mr: 1 }} /> Event Status:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={event.status} />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <LocationOnIcon sx={{ mr: 1 }} /> Destination:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {event.address}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <ConfirmationNumberIcon sx={{ mr: 1 }} /> Booking Type:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {booking?.cabin?.cabin_type?.cabin_type}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <DirectionsBoatIcon sx={{ mr: 1 }} /> Cabin Category:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {booking?.cabin?.category?.title}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <GroupIcon sx={{ mr: 1 }} /> Cabin Capacity:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {booking?.cabin?.category?.capacity}
+                    </TableCell>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <PaymentIcon sx={{ mr: 1 }} /> Payment Plan:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {booking?.payment_plan == 'INSTALLMENTS' ? 'Installments' : 'Pay In Full At Booking'}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center" >
+                        <PinIcon sx={{ mr: 1 }} /> Cabin Number:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {booking?.cabin?.cabin_number} <IconButton color="secondary" disabled={!editMode} onClick={handleEditClick}>
+                        <EditIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                  {/* <TableRow>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <PinIcon sx={{ mr: 1 }} /> Deck:
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                    {booking?.cabin?.cabin_number}
+                    </TableCell>
+                  </TableRow> */}
+
+                  {/* <TableRow>
                     <TableCell>Cabin Type</TableCell>
                     <TableCell>{booking?.cabin?.cabin_type?.cabin_type}</TableCell>
                     <TableCell align="right">
@@ -148,27 +272,27 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                         <EditIcon />
                       </IconButton>
                     </TableCell>
-                  </TableRow>
-                  <TableRow>
+                  </TableRow> */}
+                  {/* <TableRow>
                     <TableCell>Category</TableCell>
                     <TableCell>{booking?.cabin?.category?.title}</TableCell>
-                  </TableRow>
-                  <TableRow>
+                  </TableRow> */}
+                  {/* <TableRow>
                     <TableCell>Number</TableCell>
                     <TableCell>{booking?.cabin?.cabin_number}</TableCell>
-                  </TableRow>
-                  <TableRow>
+                  </TableRow>*/}
+                  {/* <TableRow> 
                     <TableCell>Deck</TableCell>
                     <TableCell>{booking?.cabin?.deck}</TableCell>
-                  </TableRow>
-                  <TableRow>
+                  </TableRow>*/}
+                  {/* <TableRow> 
                     <TableCell>Location</TableCell>
                     <TableCell>{booking?.cabin?.location}</TableCell>
-                  </TableRow>
-                  <TableRow>
+                  </TableRow> */}
+                  {/* <TableRow>
                     <TableCell>Capacity</TableCell>
                     <TableCell>{booking?.cabin?.category?.capacity}</TableCell>
-                  </TableRow>
+                  </TableRow> */}
                 </TableBody>
               </Table>
             </Grid>
@@ -179,7 +303,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
       {/* Dialog for Editing Cabin Details */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Cabin Details</DialogTitle>
-        <DialogContent sx={{paddingTop: '1rem !important'}}>
+        <DialogContent sx={{ paddingTop: '1rem !important' }}>
           <Autocomplete
             fullWidth
             options={cabinTypes}

@@ -47,7 +47,13 @@ class BookingRepository implements BookingInterface
 
   function getByTag($tags, $keyword = null)
   {
-    $query = Booking::with(['cabin', 'cabin.cabinType', 'customer', 'customer.detail', 'passengers'])
+    $query = Booking::with([
+      'cabin',
+      'cabin.cabinType',
+      'customer',
+      'customer.detail',
+      'passengers'
+    ])
       ->withSum('passengers as balance', 'passenger_balance')
       ->withSum('passengers as cost', 'passenger_allocated_cost');
 
@@ -96,6 +102,10 @@ class BookingRepository implements BookingInterface
     $results->each(function ($booking) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
+
+      if ($booking->passengers) {
+        $booking->passengers = $booking->passengers->sortByDesc('lead_passenger')->values();
+      }
       $booking->subRows = $booking->passengers ?? [];
     });
 
@@ -118,14 +128,21 @@ class BookingRepository implements BookingInterface
       ->where('status', '=', $status);
 
     $results = $query->get();
-    $results->each(function ($booking) {
+
+    $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
+      // Sort passengers to place lead passenger first
+      if ($booking->passengers && $index == 1) {
+        $booking->passengers = $booking->passengers->sortByDesc('lead_passenger')->values();
+      }
+
       $booking->subRows = $booking->passengers ?? [];
     });
 
     return $results;
   }
+
 
   function find($id)
   {
@@ -169,9 +186,7 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id)
-  {
-  }
+  function delete($id) {}
 
   function assignAgent($code, $user)
   {
@@ -373,12 +388,10 @@ class BookingRepository implements BookingInterface
       }
 
       $booking = new Booking();
-
       $booking->fill($bookingData);
       $booking->cabin_id = $selectedCabin->id;
       unset($booking->number_of_installments);
       $booking->save();
-
       $passenger = null;
 
       if ($passengerData) {

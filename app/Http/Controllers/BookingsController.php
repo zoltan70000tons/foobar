@@ -72,10 +72,13 @@ class BookingsController extends Controller
           $newBookings = $this->bookingRepository->getByStatus("NEW", $keyword);
           $inProgressBookings = $this->bookingRepository->getByStatus("ON HOLD", $keyword);
           $uploadedBookings = $this->bookingRepository->getByStatus("UPLOADED", $keyword);
+          $cancelledBookings = $this->bookingRepository->getByStatus("CANCELLED", $keyword);
+          
+          
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
-          $cancelledBookings = [];
+          //$cancelledBookings = [];
           $event = $this->eventRepository->find($event_id);
           return Inertia::render("Bookings/Index", [
             "event" => $event,

@@ -21,6 +21,7 @@ type PaymentModalProps = {
     passenger_id: number;
     booking_id: number;
     event_id: number;
+    editMode: boolean;
 };
 
 type Payment = {
@@ -35,6 +36,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     passenger_id,
     booking_id,
     event_id,
+    editMode
 }) => {
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<Payment>({
@@ -120,6 +122,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 variant="outlined"
                 sx={{ color: "white", borderColor: "gray" }}
                 onClick={handleOpen}
+                disabled={!editMode}
             >
                 Add Payment
             </Button>

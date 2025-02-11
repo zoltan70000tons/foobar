@@ -159,7 +159,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) =>
             <Typography variant="h5" mb={2}>
                 Adjustments
             </Typography>
-            <Paper variant="outlined" sx={{ p: 2, mb: 4 }}>
+            <Paper variant="outlined" sx={{ p: 2, mb: 4 ,backgroundColor: "#1c1c1c"}}>
                 {adjustments.length > 0 ? (
                     <List>
                         {adjustments.map((adjustment) => (

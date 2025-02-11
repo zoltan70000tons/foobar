@@ -158,9 +158,9 @@ const Status = ({ event, booking, editMode, users }) => {
             <Grid item xs={12} md={4} display="flex" flexDirection="column" gap={1}>
               <Box display="flex" alignItems="center" gap={1}>
                 <Typography variant="h6">{booking.booking_code}</Typography>
-                <IconButton onClick={handleDialogOpen} size="small" disabled={!canEdit || !editMode}>
+                {/* <IconButton onClick={handleDialogOpen} size="small" disabled={!canEdit || !editMode}>
                   <EditIcon />
-                </IconButton>
+                </IconButton> */}
               </Box>
               <Chip
                 key={booking.id}
@@ -234,7 +234,7 @@ const Status = ({ event, booking, editMode, users }) => {
           </Paper>
         )}
       </Box>
-      <Dialog open={isDialogOpen} onClose={handleDialogClose} maxWidth="md" fullWidth>
+      {/* <Dialog open={isDialogOpen} onClose={handleDialogClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Booking Code</DialogTitle>
         <DialogContent >
           <TextField
@@ -262,7 +262,7 @@ const Status = ({ event, booking, editMode, users }) => {
         onSave={handleAgentSelection}
         initialUserId={selectedUserId}
         users={users}
-      />
+      /> */}
       {/* Confirm Cancel Booking Dialog */}
       <Dialog open={isCancelDialogOpen} onClose={handleCancelDialogClose}>
         <DialogTitle>Cancel Booking</DialogTitle>

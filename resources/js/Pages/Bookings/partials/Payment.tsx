@@ -120,6 +120,24 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         return grouped;
     };
 
+    const getSummaryAllocatedCost = (booking: Booking): number => {
+        return booking.passengers.reduce(
+            (sum, passenger) => sum + Number(passenger.passenger_allocated_cost || 0),
+            0
+        );
+    };
+    const getSummaryBalance = (booking: Booking): number => {
+        return booking.passengers.reduce(
+            (sum, passenger) => sum + Number(passenger.passenger_balance || 0),
+            0
+        );
+    };
+
+    const summaryAllocatedCost = getSummaryAllocatedCost(booking);
+    const summaryBalance = getSummaryBalance(booking);
+    const summaryToPay = summaryAllocatedCost - summaryBalance;
+
+
     const handleOpenModal = (passenger: Passenger) => {
         setCurrentPassenger(passenger); // Set the selected passenger
         setModalOpen(true); // Open the modal
@@ -208,6 +226,29 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
     return (
         <Grid>
+            <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
+                Payment Summary
+            </Typography>
+            <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c", mb: 4 }} >
+                <Box>
+                    <Table size="small" sx={{ mt: 2, color: "white" }}>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>Total Cost:</TableCell>
+                                <TableCell align="right">${summaryAllocatedCost}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Paid:</TableCell>
+                                <TableCell align="right">${summaryBalance}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>To Pay:</TableCell>
+                                <TableCell align="right">${summaryToPay}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </Box>
+            </Paper>
             {passengers.map((pax, index) => {
                 const displayText = pax.lead_passenger
                     ? "Lead Passenger"
@@ -286,19 +327,37 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         <TableCell></TableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell>Cabin Price Per Person:</TableCell>
-                                        <TableCell align="right" >
+                                        <TableCell>Amount to Pay:</TableCell>
+                                        <TableCell align="right">
+                                            <Box component="span" sx={{ color: "#2196F3", fontWeight: '600', fontSize: '1.2rem' }}>
+                                                ${totalCostAfterAdjustments.toFixed(2)}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell></TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell sx={{ pl: "2rem" }}>Cabin Price Per Person:</TableCell>
+                                        <TableCell align="right">
                                             ${Number(pricePerPerson || 0).toFixed(2)}
+                                        </TableCell>
+                                        <TableCell></TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell style={{ fontWeight: "400", color:'#FFC107' }} sx={{ pl: "2rem" }}>Total Fees:</TableCell>
+                                        <TableCell align="right" style={{ fontWeight: "400", color:'#FFC107' }}>
+                                            {totalFees > 0 ? `+$${totalFees.toFixed(2)}` : `$${totalFees.toFixed(2)}`}
                                         </TableCell>
                                         <TableCell></TableCell>
                                     </TableRow>
                                     {pax.fees.map((fee, i) => (
                                         <TableRow key={`fee-${i}`}>
-                                            <TableCell>Fee ({fee.type}):</TableCell>
+                                            <TableCell sx={{ pl: "3rem" }}>Fee ({fee.type}):</TableCell>
                                             <TableCell align="right">
+                                            <Box component="span" >
                                                 {Number(fee.amount) > 0
                                                     ? `+$${Number(fee.amount).toFixed(2)}`
                                                     : `$${Number(fee.amount).toFixed(2)}`}
+                                                    </Box>
                                             </TableCell>
                                             <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
                                                 <IconButton
@@ -314,23 +373,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell style={{ fontWeight: "400" }}>Total Fees:</TableCell>
-                                        <TableCell align="right" style={{ fontWeight: "400" }}>
-                                            {totalFees > 0 ? `+$${totalFees.toFixed(2)}` : `$${totalFees.toFixed(2)}`}
-                                        </TableCell>
-                                        <TableCell></TableCell>
-                                    </TableRow>
-                                    {addons.map((addon, i) => (
-                                        <TableRow key={`addon-${i}`}>
-                                            <TableCell>Addon ({addon.code}):</TableCell>
-                                            <TableCell align="right">
-                                                +${addon.value.toFixed(2)}
-                                            </TableCell>
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    ))}
-                                    <TableRow>
-                                        <TableCell style={{ color: "#FF9800" }}>Total Addons:</TableCell>
+                                        <TableCell style={{ color: "#FF9800" }} sx={{ pl: "2rem" }}>Total Addons:</TableCell>
                                         <TableCell align="right">
                                             <Box component="span" sx={{ color: "#FF9800" }}>
                                                 {totalAddons > 0 ? `+$${totalAddons.toFixed(2)}` : `$${totalAddons.toFixed(2)}`}
@@ -338,17 +381,17 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         </TableCell>
                                         <TableCell></TableCell>
                                     </TableRow>
-                                    {discounts.map((discount, i) => (
-                                        <TableRow key={`discount-${i}`}>
-                                            <TableCell>Discount ({discount.code}):</TableCell>
+                                    {addons.map((addon, i) => (
+                                        <TableRow key={`addon-${i}`}>
+                                            <TableCell sx={{ pl: "3rem" }}>Addon ({addon.code}):</TableCell>
                                             <TableCell align="right">
-                                                {discount.value > 0 ? `-$${discount.value.toFixed(2)}` : `$${discount.value.toFixed(2)}`}
+                                                +${addon.value.toFixed(2)}
                                             </TableCell>
                                             <TableCell></TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell style={{ color: "#4CAF50" }}>Total Discounts:</TableCell>
+                                        <TableCell style={{ color: "#4CAF50" }} sx={{ pl: "2rem" }}>Total Discounts:</TableCell>
                                         <TableCell align="right">
                                             <Box component="span" sx={{ color: "#4CAF50" }}>
                                                 {totalDiscounts > 0 ? `-$${totalDiscounts.toFixed(2)}` : `$${totalDiscounts.toFixed(2)}`}
@@ -356,15 +399,16 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                                         </TableCell>
                                         <TableCell></TableCell>
                                     </TableRow>
-                                    <TableRow>
-                                        <TableCell>Amount to Pay:</TableCell>
-                                        <TableCell align="right">
-                                            <Box component="span" sx={{ color: "#2196F3" }}>
-                                                ${totalCostAfterAdjustments.toFixed(2)}
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell></TableCell>
-                                    </TableRow>
+                                    {discounts.map((discount, i) => (
+                                        <TableRow key={`discount-${i}`}>
+                                            <TableCell sx={{ pl: "3rem" }}>Discount ({discount.code}):</TableCell>
+                                            <TableCell align="right">
+                                                {discount.value > 0 ? `-$${discount.value.toFixed(2)}` : `$${discount.value.toFixed(2)}`}
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    ))}
+                                    
                                     <TableRow>
                                         <TableCell>Paid:</TableCell>
                                         <TableCell align="right" >
@@ -387,13 +431,13 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                             <Divider sx={{ my: 2, borderColor: "gray" }} />
 
                             <Grid container spacing={2}>
-                                {canCreatePayment && (<Grid item xs={12} sm={4}>
+                                {canCreatePayment  && (<Grid item xs={12} sm={4}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <PaymentModal passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} />
+                                        <PaymentModal passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} editMode={editMode} />
                                     </LocalizationProvider>
                                 </Grid>)}
-                                {canCreateFee && (<Grid item xs={12} sm={4}>
-                                    <FeesForm passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} />
+                                {canCreateFee  && (<Grid item xs={12} sm={4}>
+                                    <FeesForm passenger_id={pax.id} booking_id={booking.id} event_id={booking.event_id} editMode={editMode} />
                                 </Grid>)}
                                 <Grid item xs={12} sm={4}>
                                     <Button
@@ -416,7 +460,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 open={open}
                 onClose={() => setModalOpen(false)}
                 fullWidth
-                maxWidth="md" // Define un tamaño máximo para el diálogo
+                maxWidth="md" 
             >
                 <DialogContent>
                     <Box
@@ -499,8 +543,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 </DialogActions>
             </Dialog>
 
-             {/* Confirm Dialog */}
-             <Dialog open={openConfirmPayment} onClose={handleCancelPaymentDelete}>
+            {/* Confirm Dialog */}
+            <Dialog open={openConfirmPayment} onClose={handleCancelPaymentDelete}>
                 <DialogTitle>Confirm Action</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
