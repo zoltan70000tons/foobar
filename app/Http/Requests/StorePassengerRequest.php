@@ -23,26 +23,27 @@ class StorePassengerRequest extends FormRequest
   {
     return [
       // Passenger-related validation rules
-      "firstName" => "required|string",
-      "middleName" => "nullable|string",
-      "lastName" => "required|string",
-      "dateOfBirth" => "required|date",
-      "citizenship" => "required|string",
-      "addressLine1" => "required|string",
-      "addressLine2" => "nullable|string",
-      "city" => "required|string",
-      "state" => "nullable|string",
-      "zipCode" => "required|string",
-      "country" => "required|string",
-      "email" => "required|email",
-      "confirmEmail" => "required|same:email",
-      "newsletter" => "nullable|boolean",
-      "specialRequest" => "nullable|string",
+      'firstName' => 'required|string',
+      'middleName' => 'nullable|string',
+      'lastName' => 'required|string',
+      'dateOfBirth' => 'required|date',
+      'citizenship' => 'required|string',
+      'addressLine1' => 'required|string',
+      'addressLine2' => 'nullable|string',
+      'city' => 'required|string',
+      'gender' => 'required|string',
+      'state' => 'nullable|string',
+      'zipCode' => 'required|string',
+      'country' => 'required|string',
+      'email' => 'required|email',
+      'confirmEmail' => 'required|same:email',
+      'newsletter' => 'nullable|boolean',
+      'specialRequest' => 'nullable|string',
 
       // Phone numbers
-      "phoneNumber" => "required|string",
-      "emergencyPhoneNumber" => "required|string",
-      "emergencyContactName" => "required|string",
+      'phoneNumber' => 'required|string',
+      'emergencyPhoneNumber' => 'required|string',
+      'emergencyContactName' => 'required|string',
     ];
   }
 }

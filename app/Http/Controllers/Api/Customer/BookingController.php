@@ -178,20 +178,6 @@ class BookingController extends Controller
     }
   }
 
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  |--------------------------------------------------------------------------
-  | Send email TESTTTT !!!!!
-  |--------------------------------------------------------------------------
-  |
-  |  TO DELETE
-  |
-  */
-  public function sendBookingEmail(Request $request)
-  {
-    // $booking = Booking::find(1);
-    return;
-  }
-
   /*
   |--------------------------------------------------------------------------
   | Send email confirmation
@@ -335,7 +321,7 @@ class BookingController extends Controller
       return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $result = $this->customerBookingService->setEmptySeat($bookingCode);
+    $result = $this->customerBookingRepository->setEmptySeat($bookingCode);
 
     return $result;
   }
@@ -369,7 +355,7 @@ class BookingController extends Controller
     $validated = $request->validated();
 
     // create passenger with booking id
-    $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
+    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $validated);
 
     return $result;
   }
@@ -460,7 +446,7 @@ class BookingController extends Controller
   {
     $validated = $request->validated();
     // create passenger with booking id
-    $result = $this->customerBookingService->addPassengerManually($bookingCode, $validated);
+    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $validated);
 
     return $result;
   }
