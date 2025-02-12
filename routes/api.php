@@ -135,8 +135,8 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
 );
 
 // ----- ---- FOR TEST ONLY!!!!!!!
-Route::post('/send-booking-email', [BookingController::class, 'sendBookingEmail']);
-Route::get('/booking-data', [BookingController::class, 'bookingData']);
+// Route::post('/send-booking-email', [BookingController::class, 'sendBookingEmail']);
+// Route::get('/booking-data', [BookingController::class, 'bookingData']);
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 // Booking confirmation
