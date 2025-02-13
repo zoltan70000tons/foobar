@@ -176,6 +176,8 @@ return [
       'rule-name' => 'custom-message',
     ],
   ],
+  
+  'unique_activated_email' => 'The email has already been taken.',
 
   /*
     |--------------------------------------------------------------------------

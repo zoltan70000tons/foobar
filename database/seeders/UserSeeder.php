@@ -57,7 +57,7 @@ class UserSeeder extends Seeder
         'password' => Hash::make(Str::random(32)), // Generate a random, strong password
         'created_at' => now(),
         'updated_at' => now(),
-        'organization_id' => env('ORGANIZATION_ID', 1)
+        'organization_id' => env('ORGANIZATION_ID', 1),
       ]
     );
 
@@ -71,7 +71,7 @@ class UserSeeder extends Seeder
           'created_at' => $this->faker->dateTime($max = 'now'),
           'updated_at' => $this->faker->dateTime($max = 'now'),
           'organization_id' => env('ORGANIZATION_ID', 1),
-          'username' => $name . $index
+          'username' => $name . $index,
         ]
       );
       UserDetail::create([
@@ -82,13 +82,13 @@ class UserSeeder extends Seeder
         'last_name' => $this->faker->lastName,
         'dob' => $this->faker->date(),
         'citizenship' => $this->faker->countryISOAlpha3(),
-        'phone' => $this->faker->e164PhoneNumber() ,
+        'phone' => $this->faker->e164PhoneNumber(),
         'avatar' => $this->faker->imageUrl(),
         'emergency_c_name' => $this->faker->name,
         'emergency_c_phone' => $this->faker->e164PhoneNumber(),
         'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
       ]);
-      
+
       CustomerAddress::updateOrCreate(
         ['user_id' => $user->id],
         [
@@ -103,15 +103,15 @@ class UserSeeder extends Seeder
     }
 
     // Seed 2 users with the same email address but different names and survivor numbers
-    $commonEmail1 = 'common1@customers.test';
-    foreach (range(1, 2) as $index) {
+    $commonEmail2 = 'common2@customers.test';
+    foreach (range(1, 12) as $index) {
       $name = 'cus' . $this->faker->firstname;
       $user = User::create([
-        'email' => $commonEmail1,
+        'email' => $commonEmail2,
         'password' => Hash::make('password'),
         'created_at' => $this->faker->dateTime($max = 'now'),
         'updated_at' => $this->faker->dateTime($max = 'now'),
-        'organization_id' => env('ORGANIZATION_ID', 1)
+        'organization_id' => env('ORGANIZATION_ID', 1),
       ]);
 
       UserDetail::create([
@@ -122,10 +122,10 @@ class UserSeeder extends Seeder
         'last_name' => $this->faker->lastName,
         'dob' => $this->faker->date(),
         'citizenship' => $this->faker->countryISOAlpha3(),
-        'phone' => $this->faker->e164PhoneNumber() ,
+        'phone' => $this->faker->e164PhoneNumber(),
         'avatar' => $this->faker->imageUrl(),
         'emergency_c_name' => $this->faker->name,
-        'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
+        'emergency_c_phone' => $this->faker->e164PhoneNumber(),
         'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
       ]);
 
@@ -156,55 +156,57 @@ class UserSeeder extends Seeder
     }
 
     // Seed another user with a different email address
-    $commonEmail2 = 'common2@customers.test';
-    $name = 'cus' . $this->faker->firstname;
-    $user = User::create([
-      'email' => $commonEmail2,
-      'password' => Hash::make('password'),
-      'created_at' => $this->faker->dateTime($max = 'now'),
-      'updated_at' => $this->faker->dateTime($max = 'now'),
-      'organization_id' => env('ORGANIZATION_ID', 1)
-    ]);
+    $commonEmail1 = 'common1@customers.test';
+    foreach (range(1, 2) as $index) {
+      $name = 'cus' . $this->faker->firstname;
+      $user = User::create([
+        'email' => $commonEmail1,
+        'password' => Hash::make('password'),
+        'created_at' => $this->faker->dateTime($max = 'now'),
+        'updated_at' => $this->faker->dateTime($max = 'now'),
+        'organization_id' => env('ORGANIZATION_ID', 1),
+      ]);
 
-    UserDetail::create([
-      'user_id' => $user->id,
-      'gender' => $this->faker->randomElement(['M', 'F']),
-      'first_name' => $this->faker->firstname,
-      'middle_name' => $this->faker->firstName,
-      'last_name' => $this->faker->lastName,
-      'dob' => $this->faker->date(),
-      'citizenship' => $this->faker->countryISOAlpha3(),
-      'phone' => $this->faker->e164PhoneNumber() ,
-      'avatar' => $this->faker->imageUrl(),
-      'emergency_c_name' => $this->faker->name,
-      'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
-      'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
-    ]);
+      UserDetail::create([
+        'user_id' => $user->id,
+        'gender' => $this->faker->randomElement(['M', 'F']),
+        'first_name' => $this->faker->firstname,
+        'middle_name' => $this->faker->firstName,
+        'last_name' => $this->faker->lastName,
+        'dob' => $this->faker->date(),
+        'citizenship' => $this->faker->countryISOAlpha3(),
+        'phone' => $this->faker->e164PhoneNumber(),
+        'avatar' => $this->faker->imageUrl(),
+        'emergency_c_name' => $this->faker->name,
+        'emergency_c_phone' => $this->faker->e164PhoneNumber(),
+        'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
+      ]);
 
-    CustomerAddress::updateOrCreate(
-      ['user_id' => $user->id],
-      [
-        'address_first' => $this->faker->streetAddress,
-        'address_second' => $this->faker->secondaryAddress,
-        'city' => $this->faker->city,
-        'state' => $this->faker->state,
-        'postal_code' => $this->faker->postcode,
-        'country' => $this->faker->countryISOAlpha3(),
-      ]
-    );
+      CustomerAddress::updateOrCreate(
+        ['user_id' => $user->id],
+        [
+          'address_first' => $this->faker->streetAddress,
+          'address_second' => $this->faker->secondaryAddress,
+          'city' => $this->faker->city,
+          'state' => $this->faker->state,
+          'postal_code' => $this->faker->postcode,
+          'country' => $this->faker->countryISOAlpha3(),
+        ]
+      );
 
-    // Assign 'Customer' role
-    setPermissionsTeamId(1);
-    $user->assignRole('Customer');
+      // Assign 'Customer' role
+      setPermissionsTeamId(1);
+      $user->assignRole('Customer');
 
-    // Generate a unique survivor number
-    $survivorNumber = CustomerHelper::generateSurvivorNumber();
+      // Generate a unique survivor number
+      $survivorNumber = CustomerHelper::generateSurvivorNumber();
 
-    // Save survivor number in the survivor_numbers table
-    SurvivorNumber::create([
-      'user_id' => $user->id,
-      'survivor_number' => $survivorNumber,
-    ]);
+      // Save survivor number in the survivor_numbers table
+      SurvivorNumber::create([
+        'user_id' => $user->id,
+        'survivor_number' => $survivorNumber,
+      ]);
+    }
 
     foreach (range(1, 16) as $index) {
       $name = 'cus' . $this->faker->firstname;
@@ -239,10 +241,10 @@ class UserSeeder extends Seeder
         'last_name' => $this->faker->lastName,
         'dob' => $this->faker->date(),
         'citizenship' => $this->faker->countryISOAlpha3(),
-        'phone' => $this->faker->e164PhoneNumber() ,
+        'phone' => $this->faker->e164PhoneNumber(),
         'avatar' => $this->faker->imageUrl(),
         'emergency_c_name' => $this->faker->name,
-        'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
+        'emergency_c_phone' => $this->faker->e164PhoneNumber(),
         'language' => $this->faker->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
       ]);
 

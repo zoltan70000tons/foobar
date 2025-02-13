@@ -53,9 +53,10 @@ class CustomerLoginController extends Controller
       }
     }
 
+    // Step 2: Attempt to authenticate the activated user
     $credentials = [
       'email' => $email,
-      'password' => $password,
+      'password' => $password
     ];
 
     if (Auth::attempt($credentials, $remember)) {
