@@ -53,103 +53,21 @@ class CustomerBookingService
     // Fetch the booking data using the repository
     $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
 
-    // Get the cabin's total capacity
-    $cabinCapacity = $booking->cabin->category->capacity;
-
     // Get the list of passengers associated with the booking
     $passengers = $booking->passengers;
 
     // Filter passengers where first_name, gender, and dob are null
     $emptySeats = $passengers->filter(function ($passenger) {
-      return $passenger->first_name === null && $passenger->gender === null && $passenger->dob === null;
+      return $passenger->first_name === null &&
+        $passenger->gender === null &&
+        $passenger->dob === null &&
+        $passenger->empty_seat === false;
     });
 
     // Count the number of empty seats
     $availableSeats = $emptySeats->count();
 
     return $availableSeats;
-  }
-  /*
-  |--------------------------------------------------------------------------
-  | Set empty seat
-  |--------------------------------------------------------------------------
-  |
-  | This method will add an empty seat to the booking
-  |
-  */
-  public function setEmptySeat($bookingCode)
-  {
-    $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
-
-    $cabinCapacity = $booking->cabin->category->capacity;
-    $passengers = $booking->passengers;
-
-    if (count($passengers) < $cabinCapacity) {
-      // add one null passenger to the same booking
-      try {
-        $this->customerBookingRepository->createPassenger([
-          'booking_id' => $booking->id,
-          'empty_seat' => true,
-          'passenger_allocated_cost' => 0,
-          'passenger_balance' => 0,
-        ]);
-      } catch (\Exception $e) {
-        return response()->json(['message' => 'Error while adding empty seat'], 500);
-      }
-
-      return response()->json(['message' => 'Empty seat added'], 200);
-    }
-
-    return response()->json(['message' => 'No empty seats available'], 404);
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Add passenger manually
-  |--------------------------------------------------------------------------
-  |
-  | This method will add a passenger to the booking manually
-  |
-  */
-  public function addPassengerManually($bookingCode, $validated)
-  {
-    $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
-
-    $cabinCapacity = $booking->cabin->category->capacity;
-    $passengers = $booking->passengers;
-
-    if (count($passengers) < $cabinCapacity) {
-      try {
-        $this->customerBookingRepository->createPassenger([
-          'booking_id' => $booking->id,
-          'first_name' => $validated['firstName'],
-          'middle_name' => $validated['middleName'],
-          'last_name' => $validated['lastName'],
-          'dob' => $validated['dateOfBirth'],
-          'citizenship' => $validated['citizenship'],
-          'address_first' => $validated['addressLine1'],
-          'address_second' => $validated['addressLine2'],
-          'city' => $validated['city'],
-          'state' => $validated['state'],
-          'postal_code' => $validated['zipCode'],
-          'country' => $validated['country'],
-          'email' => $validated['email'],
-          'phone' => $validated['phoneNumber'],
-          'emergency_c_name' => $validated['emergencyContactName'],
-          'emergency_c_phone' => $validated['emergencyPhoneNumber'],
-          'special_request' => $validated['specialRequest'],
-          'passenger_allocated_cost' => 0.0,
-          'passenger_balance' => 0.0,
-        ]);
-      } catch (\Exception $e) {
-        \Log::error('Error while adding passenger: ' . $e->getMessage());
-        return response()->json(['message' => 'Error while adding passenger'], 500);
-      }
-
-      return response()->json(['message' => 'Passenger added'], 200);
-    }
-
-    return response()->json(['message' => 'No empty seats available'], 404);
   }
 
   /*
