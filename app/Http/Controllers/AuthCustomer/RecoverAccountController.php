@@ -11,9 +11,19 @@ use App\Models\User;
 use App\Models\SurvivorNumber;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rules;
+use App\Rules\UniqueActivatedEmail;
+use App\Repositories\UserRepository;
 
 class RecoverAccountController extends Controller
 {
+
+  protected UserRepository $userRepository;
+
+  public function __construct(UserRepository $userRepository)
+  {
+    $this->userRepository = $userRepository;
+  }
+
   /**
    * Show the recover form
    *
@@ -101,26 +111,12 @@ class RecoverAccountController extends Controller
 
     $request->validate([
       'survivor_number' => ['required'],
-      'language' => ['required', 'string', 'max:255'],
-      'name' => ['required', 'string', 'max:255'],
-      'middlename' => ['nullable', 'string', 'max:255'],
-      'surname' => ['required', 'string', 'max:255'],
-      'date_of_birth' => ['required', 'date'],
-      'country' => ['required', 'string', 'max:255'],
-      'gender' => ['required', 'string', 'max:255'],
-      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+      'email' => ['required', 'string', 'lowercase', 'email', 'max:255', new UniqueActivatedEmail()],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
     ]);
 
     $survivorNumber = $request->input('survivor_number');
-    $language = $request->input('language') ?? 'en';
     $newEmail = $request->input('email');
-    $newUsername = $request->input('name');
-    $newMiddleName = $request->input('middlename');
-    $newSurname = $request->input('surname');
-    $newDateOfBirth = $request->input('date_of_birth');
-    $newCountry = $request->input('country');
-    $newGender = $request->input('gender');
     $newPassword = $request->input('password');
 
     // Retrieve and decrypt the stored survivor number from the session
@@ -151,24 +147,17 @@ class RecoverAccountController extends Controller
       setPermissionsTeamId(1);
       $user->assignRole('Customer');
 
-      // Update user's email, username, and password
-      $user->email = $newEmail;
-      $user->username = null;
-      $user->password = Hash::make($newPassword);
-      $user->user_activated_at = now();
-      $user->email_verified_at = now();
-      $user->save();
-
-      $user->detail()->create([
-        'first_name' => $newUsername,
-        'middle_name' => $newMiddleName,
-        'last_name' => $newSurname,
-        'dob' => $newDateOfBirth,
-        'gender' => $newGender,
-        'language' => $language,
-        'citizenship' => $newCountry,
+      // Update the claiming user
+      $user->update([
+        'email' => $newEmail,
+        'username' => null,
+        'password' => Hash::make($newPassword),
+        'user_activated_at' => now(),
+        'email_verified_at' => now(),
       ]);
 
+      // Update duplicate emails using the repository method
+      $this->userRepository->updateDuplicateEmails($newEmail, $user->id);
       // forget session encrypted_user_ids
       $request->session()->forget('encrypted_user_ids');
 
