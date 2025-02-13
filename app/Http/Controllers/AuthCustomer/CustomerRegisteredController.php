@@ -5,6 +5,8 @@ namespace App\Http\Controllers\AuthCustomer;
 use App\Http\Controllers\Controller;
 
 use App\Models\User;
+use App\Models\UserDetail;
+use App\Models\SurvivorNumber;
 
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -17,7 +19,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
 use App\Helpers\CustomerHelper;
-use App\Models\SurvivorNumber;
 
 class CustomerRegisteredController extends Controller
 {
@@ -113,6 +114,53 @@ class CustomerRegisteredController extends Controller
       Log::error('User registration failed: ' . $e->getMessage());
       return response()->json(['message' => 'User registration failed'], 500);
     }
+  }
+
+  /**
+   *
+   *
+   */
+  public function storeUserSurvivor(Request $request): JsonResponse
+  {
+    $request->validate([
+      'survivor_number' => ['required', 'string', 'max:9'],
+      'name' => ['required', 'string', 'max:255'],
+      'date_of_birth' => ['required', 'date'],
+      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+      'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ]);
+
+    // check the survivor number exist in the database
+    $survivorNumber = $request->survivor_number;
+
+    $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
+
+    if (!$survivor) {
+      return response()->json(['message' => 'Invalid survivor number.'], 404);
+    }
+
+    // get user details from the survivor number
+    $userDetail = UserDetail::where('user_id', $survivor->user_id)->first();
+
+    // if user details not found return error
+    if (!$userDetail) {
+      return response()->json(['message' => 'User details not found.'], 404);
+    }
+
+    // check date of birth is equal to dob and name to first_name
+    if ($userDetail->dob !== $request->date_of_birth || $userDetail->first_name !== $request->name) {
+      return response()->json(['message' => 'Invalid survivor number.'], 404);
+    }
+
+    // if is correct get the user and set the email and new password
+    $user = User::find($survivor->user_id);
+
+    $user->update([
+      'email' => $request->email,
+      'password' => Hash::make($request->password),
+    ]);
+
+    return response()->json(['message' => 'Account updated successfully.'], 200);
   }
 
   /**
