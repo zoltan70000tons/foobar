@@ -125,18 +125,25 @@ class CustomerRegisteredController extends Controller
     $request->validate([
       'survivor_number' => ['required', 'string', 'max:9'],
       'name' => ['required', 'string', 'max:255'],
+      'last_name' => ['required', 'string', 'max:255'],
       'date_of_birth' => ['required', 'date'],
       'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
     ]);
 
+    // set language
+    $language = $request->language;
+    App::setLocale($language);
+
     // check the survivor number exist in the database
     $survivorNumber = $request->survivor_number;
+    $first_name = strtoupper($request->name);
+    $last_name = strtoupper($request->last_name);
 
     $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
 
     if (!$survivor) {
-      return response()->json(['message' => 'Invalid survivor number.'], 404);
+      return response()->json(['message' => 'Survivor Number not found.'], 404);
     }
 
     // get user details from the survivor number
@@ -148,8 +155,8 @@ class CustomerRegisteredController extends Controller
     }
 
     // check date of birth is equal to dob and name to first_name
-    if ($userDetail->dob !== $request->date_of_birth || $userDetail->first_name !== $request->name) {
-      return response()->json(['message' => 'Invalid survivor number.'], 404);
+    if ($userDetail->dob !== $request->date_of_birth || $userDetail->first_name !== $first_name || $userDetail->last_name !== $last_name) {
+      return response()->json(['message' => 'The information provided does not match our records, please make sure you are entering the correct information.'], 404);
     }
 
     // if is correct get the user and set the email and new password
@@ -159,6 +166,9 @@ class CustomerRegisteredController extends Controller
       'email' => $request->email,
       'password' => Hash::make($request->password),
     ]);
+
+    // Send a welcome email to the customer
+    $this->sendWelcomeEmail($user, $language, $survivorNumber);
 
     return response()->json(['message' => 'Account updated successfully.'], 200);
   }

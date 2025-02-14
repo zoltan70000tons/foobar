@@ -6,23 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Carbon;
 use App\Models\SurvivorNumber;
-use Illuminate\Support\Facades\Cookie;
-use App\Services\EmailUniquenessService;
 
 class CustomerLoginController extends Controller
 {
-  // protected EmailUniquenessService $emailUniquenessService;
-
-  // public function __construct(EmailUniquenessService $emailUniquenessService)
-  // {
-  //   $this->emailUniquenessService = $emailUniquenessService;
-  // }
-
   /**
    * Handle an incoming authentication request.
    */
@@ -45,13 +32,6 @@ class CustomerLoginController extends Controller
     $email = $isEmail
       ? $identifier
       : optional(SurvivorNumber::where('survivor_number', $identifier)->first())->user->email;
-
-    // if ($email) {
-    //   $uniquenessResponse = $this->emailUniquenessService->handleEmailUniqueness($email);
-    //   if ($uniquenessResponse) {
-    //     return $uniquenessResponse;
-    //   }
-    // }
 
     // if email is null return error
     if (!$email) {

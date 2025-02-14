@@ -37,15 +37,6 @@ class CustomerPasswordResetController extends Controller
       'language' => 'sometimes|string|in:en,es,fr', // Add supported languages
     ]);
 
-    $email = $request->input('email');
-
-    if ($email) {
-      $uniquenessResponse = $this->emailUniquenessService->handleEmailUniqueness($email);
-      if ($uniquenessResponse) {
-        return $uniquenessResponse;
-      }
-    }
-
     // Set the application locale if language is provided
     if ($request->has('language')) {
       App::setLocale($request->language);
