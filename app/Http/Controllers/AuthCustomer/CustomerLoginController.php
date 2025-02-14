@@ -70,10 +70,6 @@ class CustomerLoginController extends Controller
 
     $request->session()->regenerateToken();
 
-    // destroy emaIl_verified cookie
-    // $response = response()->json(null, 204);
-    // return $response;
-
     return response()->json(null, 204);
   }
 }

@@ -28,16 +28,16 @@ class CustomerAuthController extends Controller
     // Get the authenticated customer by guard
     //$customer = Auth::user()->role === 'Customer' ? Auth::user() : null;
     $user = Auth::user();
-    $customer = $user->hasRole("Customer") ? $user : null;
+    $customer = $user->hasRole('Customer') ? $user : null;
 
     if (!$customer) {
-      return $this->errorResponse("Unauthorized", 401);
+      return $this->errorResponse('Unauthorized', 401);
     }
 
     // check the customer have verified email
-    if (!$customer->hasVerifiedEmail()) {
-      return $this->errorResponse("Email not verified", 409);
-    }
+    // if (!$customer->hasVerifiedEmail()) {
+    //   return $this->errorResponse('Email not verified', 409);
+    // }
 
     // Get the first membership type of the customer
     $membership = $customer->membershipTypes->first() ?? null;
@@ -49,15 +49,15 @@ class CustomerAuthController extends Controller
     $address = $customer->customerAddress ?? null;
 
     return $this->successResponse([
-      "name" => $customer->detail->first_name ?? null,
-      "membership_type" => $membership->name ?? null,
-      "membership_discount" => $membership->discount_value ?? null,
-      "email" => $customer->email,
-      "email_verified_at" => $customer->email_verified_at ?? null,
-      "survivor_number" => $customer->survivorNumber->survivor_number ?? null,
-      "details" => $customerDetails ? $customerDetails->makeHidden(['user_id, id'])->toArray() : null,
-      "address" => $address ? $address->makeHidden(['user_id, id'])->toArray() : null,
-    ])->withCookie("email_verified", "true", 60);
+      'name' => $customer->detail->first_name ?? null,
+      'membership_type' => $membership->name ?? null,
+      'membership_discount' => $membership->discount_value ?? null,
+      'email' => $customer->email,
+      'email_verified_at' => $customer->email_verified_at ?? null,
+      'survivor_number' => $customer->survivorNumber->survivor_number ?? null,
+      'details' => $customerDetails ? $customerDetails->makeHidden(['user_id, id'])->toArray() : null,
+      'address' => $address ? $address->makeHidden(['user_id, id'])->toArray() : null,
+    ]);
   }
 
   /**
@@ -69,23 +69,23 @@ class CustomerAuthController extends Controller
    */
   public function update(Request $request)
   {
-    $language = $request->input("language", "en");
+    $language = $request->input('language', 'en');
     App::setLocale($language);
 
-    if (!Hash::check($request->input("current_password"), $request->user()->password)) {
-      return response()->json(["message" => __("auth.current_password_incorrect")], 422);
+    if (!Hash::check($request->input('current_password'), $request->user()->password)) {
+      return response()->json(['message' => __('auth.current_password_incorrect')], 422);
     }
 
     $validated = $request->validate([
-      "password" => ["required", Password::defaults(), "confirmed"],
+      'password' => ['required', Password::defaults(), 'confirmed'],
     ]);
 
     // Update the user's password
     $request->user()->update([
-      "password" => Hash::make($validated["password"]),
+      'password' => Hash::make($validated['password']),
     ]);
 
-    return response()->json(["message" => __("auth.password_updated_successfully")]);
+    return response()->json(['message' => __('auth.password_updated_successfully')]);
   }
 
   /**
@@ -99,8 +99,8 @@ class CustomerAuthController extends Controller
   {
     $user = Auth::user();
 
-    if (!$user->hasRole("Customer")) {
-      return $this->errorResponse("Unauthorized", 401);
+    if (!$user->hasRole('Customer')) {
+      return $this->errorResponse('Unauthorized', 401);
     }
 
     $validated = $request->validate([
@@ -113,7 +113,7 @@ class CustomerAuthController extends Controller
       'city' => ['required', 'string', 'max:30', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'zipCode' => ['required', 'string', 'max:10', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'emergencyContactName' => ['required', 'string', 'max:75'],
-      'emergencyPhoneNumber' => ['required', 'string',],
+      'emergencyPhoneNumber' => ['required', 'string'],
     ]);
 
     // Update user details
@@ -141,7 +141,7 @@ class CustomerAuthController extends Controller
     );
 
     return $this->successResponse([
-      'message' => 'Profile updated successfully.'
+      'message' => 'Profile updated successfully.',
     ]);
   }
 

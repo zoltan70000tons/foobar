@@ -11,6 +11,7 @@ use App\Models\SurvivorNumber;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
@@ -131,46 +132,95 @@ class CustomerRegisteredController extends Controller
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
     ]);
 
-    // set language
+    // Set language
     $language = $request->language;
     App::setLocale($language);
 
-    // check the survivor number exist in the database
+    // Normalize inputs
     $survivorNumber = $request->survivor_number;
-    $first_name = strtoupper($request->name);
-    $last_name = strtoupper($request->last_name);
+    $inputFirstName = $this->normalizeString($request->name);
+    $inputLastName = $this->normalizeString($request->last_name);
+    $inputDob = $request->date_of_birth;
 
+    // Fetch survivor
     $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
 
     if (!$survivor) {
       return response()->json(['message' => 'Survivor Number not found.'], 404);
     }
 
-    // get user details from the survivor number
+    // Fetch user details
     $userDetail = UserDetail::where('user_id', $survivor->user_id)->first();
 
-    // if user details not found return error
     if (!$userDetail) {
       return response()->json(['message' => 'User details not found.'], 404);
     }
 
-    // check date of birth is equal to dob and name to first_name
-    if ($userDetail->dob !== $request->date_of_birth || $userDetail->first_name !== $first_name || $userDetail->last_name !== $last_name) {
-      return response()->json(['message' => 'The information provided does not match our records, please make sure you are entering the correct information.'], 404);
+    // Normalize stored values
+    $storedFirstName = $this->normalizeString($userDetail->first_name);
+    $storedLastName = $this->normalizeString($userDetail->last_name);
+    $storedDob = $userDetail->dob;
+
+    // Check similarity instead of strict equality
+    $nameSimilarity = $this->isSimilar($inputFirstName, $storedFirstName);
+    $lastNameSimilarity = $this->isSimilar($inputLastName, $storedLastName);
+
+    if ($storedDob !== $inputDob || !$nameSimilarity || !$lastNameSimilarity) {
+      return response()->json(
+        [
+          'message' =>
+            'The information provided does not match our records, please make sure you are entering the correct information.',
+        ],
+        404
+      );
     }
 
-    // if is correct get the user and set the email and new password
+    // Update user credentials
     $user = User::find($survivor->user_id);
-
     $user->update([
       'email' => $request->email,
       'password' => Hash::make($request->password),
     ]);
 
-    // Send a welcome email to the customer
+    // Send welcome email
     $this->sendWelcomeEmail($user, $language, $survivorNumber);
 
     return response()->json(['message' => 'Account updated successfully.'], 200);
+  }
+
+  /**
+   * Normalize a string by removing special characters and converting to uppercase.
+   */
+  private function normalizeString(string $string): string
+  {
+    // Remove accents
+    $string = Str::ascii($string);
+
+    // Convert to uppercase and remove spaces
+    return strtoupper(trim($string));
+  }
+
+  /**
+   * Check if two strings are similar based on Levenshtein distance or soundex.
+  |-------------------------------------------------------------------|
+  | Input Name   | Stored Name | Match? | Why?                        |
+  |--------------|------------|--------|------------------------------|
+  | José         | JOSE       | ✅     | Special character removed    |
+  | O’Connor     | OCONNOR    | ✅     | Apostrophe removed           |
+  | MacDonald    | MCDONALD   | ✅     | Similar pronunciation        |
+  | John         | Jon        | ✅     | Levenshtein distance = 1     |
+  | Marry        | Mary       | ❌     | Too different (distance = 3) |
+  */
+  private function isSimilar(string $input, string $stored): bool
+  {
+    // Check if Soundex (similar sounding) matches
+    if (soundex($input) === soundex($stored)) {
+      return true;
+    }
+
+    // Use Levenshtein distance for typo tolerance
+    $distance = levenshtein($input, $stored);
+    return $distance <= 2; // Allow minor typos (adjust threshold if needed)
   }
 
   /**
