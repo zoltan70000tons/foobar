@@ -5,10 +5,13 @@ namespace App\Http\Controllers\AuthCustomer;
 use App\Http\Controllers\Controller;
 
 use App\Models\User;
+use App\Models\UserDetail;
+use App\Models\SurvivorNumber;
 
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +20,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
 use App\Helpers\CustomerHelper;
-use App\Models\SurvivorNumber;
 
 class CustomerRegisteredController extends Controller
 {
@@ -113,6 +115,112 @@ class CustomerRegisteredController extends Controller
       Log::error('User registration failed: ' . $e->getMessage());
       return response()->json(['message' => 'User registration failed'], 500);
     }
+  }
+
+  /**
+   *
+   *
+   */
+  public function storeUserSurvivor(Request $request): JsonResponse
+  {
+    $request->validate([
+      'survivor_number' => ['required', 'string', 'max:9'],
+      'name' => ['required', 'string', 'max:255'],
+      'last_name' => ['required', 'string', 'max:255'],
+      'date_of_birth' => ['required', 'date'],
+      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+      'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ]);
+
+    // Set language
+    $language = $request->language;
+    App::setLocale($language);
+
+    // Normalize inputs
+    $survivorNumber = $request->survivor_number;
+    $inputFirstName = $this->normalizeString($request->name);
+    $inputLastName = $this->normalizeString($request->last_name);
+    $inputDob = $request->date_of_birth;
+
+    // Fetch survivor
+    $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
+
+    if (!$survivor) {
+      return response()->json(['message' => 'Survivor Number not found.'], 404);
+    }
+
+    // Fetch user details
+    $userDetail = UserDetail::where('user_id', $survivor->user_id)->first();
+
+    if (!$userDetail) {
+      return response()->json(['message' => 'User details not found.'], 404);
+    }
+
+    // Normalize stored values
+    $storedFirstName = $this->normalizeString($userDetail->first_name);
+    $storedLastName = $this->normalizeString($userDetail->last_name);
+    $storedDob = $userDetail->dob;
+
+    // Check similarity instead of strict equality
+    $nameSimilarity = $this->isSimilar($inputFirstName, $storedFirstName);
+    $lastNameSimilarity = $this->isSimilar($inputLastName, $storedLastName);
+
+    if ($storedDob !== $inputDob || !$nameSimilarity || !$lastNameSimilarity) {
+      return response()->json(
+        [
+          'message' =>
+            'The information provided does not match our records, please make sure you are entering the correct information.',
+        ],
+        404
+      );
+    }
+
+    // Update user credentials
+    $user = User::find($survivor->user_id);
+    $user->update([
+      'email' => $request->email,
+      'password' => Hash::make($request->password),
+    ]);
+
+    // Send welcome email
+    $this->sendWelcomeEmail($user, $language, $survivorNumber);
+
+    return response()->json(['message' => 'Account updated successfully.'], 200);
+  }
+
+  /**
+   * Normalize a string by removing special characters and converting to uppercase.
+   */
+  private function normalizeString(string $string): string
+  {
+    // Remove accents
+    $string = Str::ascii($string);
+
+    // Convert to uppercase and remove spaces
+    return strtoupper(trim($string));
+  }
+
+  /**
+   * Check if two strings are similar based on Levenshtein distance or soundex.
+  |-------------------------------------------------------------------|
+  | Input Name   | Stored Name | Match? | Why?                        |
+  |--------------|------------|--------|------------------------------|
+  | José         | JOSE       | ✅     | Special character removed    |
+  | O’Connor     | OCONNOR    | ✅     | Apostrophe removed           |
+  | MacDonald    | MCDONALD   | ✅     | Similar pronunciation        |
+  | John         | Jon        | ✅     | Levenshtein distance = 1     |
+  | Marry        | Mary       | ❌     | Too different (distance = 3) |
+  */
+  private function isSimilar(string $input, string $stored): bool
+  {
+    // Check if Soundex (similar sounding) matches
+    if (soundex($input) === soundex($stored)) {
+      return true;
+    }
+
+    // Use Levenshtein distance for typo tolerance
+    $distance = levenshtein($input, $stored);
+    return $distance <= 2; // Allow minor typos (adjust threshold if needed)
   }
 
   /**

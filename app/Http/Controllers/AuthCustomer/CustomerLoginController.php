@@ -6,23 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Carbon;
 use App\Models\SurvivorNumber;
-use Illuminate\Support\Facades\Cookie;
-use App\Services\EmailUniquenessService;
 
 class CustomerLoginController extends Controller
 {
-  protected EmailUniquenessService $emailUniquenessService;
-
-  public function __construct(EmailUniquenessService $emailUniquenessService)
-  {
-    $this->emailUniquenessService = $emailUniquenessService;
-  }
-
   /**
    * Handle an incoming authentication request.
    */
@@ -46,17 +33,15 @@ class CustomerLoginController extends Controller
       ? $identifier
       : optional(SurvivorNumber::where('survivor_number', $identifier)->first())->user->email;
 
-    if ($email) {
-      $uniquenessResponse = $this->emailUniquenessService->handleEmailUniqueness($email);
-      if ($uniquenessResponse) {
-        return $uniquenessResponse;
-      }
+    // if email is null return error
+    if (!$email) {
+      return response()->json(['message' => __('auth.failed')], 401);
     }
 
     // Step 2: Attempt to authenticate the activated user
     $credentials = [
       'email' => $email,
-      'password' => $password
+      'password' => $password,
     ];
 
     if (Auth::attempt($credentials, $remember)) {
@@ -85,10 +70,6 @@ class CustomerLoginController extends Controller
 
     $request->session()->regenerateToken();
 
-    // destroy emaIl_verified cookie
-    $response = response()->json(null, 204);
-    return $response->withCookie(Cookie::forget('email_verified'));
-
-    //return response()->json(null, 204);
+    return response()->json(null, 204);
   }
 }

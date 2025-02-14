@@ -7,7 +7,6 @@ use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
-use App\Http\Controllers\AuthCustomer\RecoverAccountController;
 use App\Http\Controllers\Api\Customer\BookingController;
 use App\Http\Controllers\Api\Customer\CabinController;
 use App\Http\Controllers\Api\Customer\PricingMatrixController;
@@ -30,19 +29,6 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 // --- LOGIN ---
 Route::post('/login-customer', [CustomerLoginController::class, 'store']);
 
-// --- Customer recover account ---
-Route::get('/recover-account', [RecoverAccountController::class, 'showRecoverForm'])
-  ->name('recover.account.form')
-  ->middleware('signed:relative');
-
-Route::post('/recover-account-verify', [RecoverAccountController::class, 'recoverAccountVerify'])
-  ->name('recover.account.verify')
-  ->middleware('signed:relative');
-
-Route::post('/recover-account-register', [RecoverAccountController::class, 'recoverAccount'])
-  ->name('recover.account.register')
-  ->middleware('signed:relative');
-
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])->middleware([
   'auth:sanctum',
@@ -55,6 +41,7 @@ Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::cl
 
 // --- REGISTER ---
 Route::post('/register', [CustomerRegisteredController::class, 'store']);
+Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor']);
 
 // --- LOGOUT ---
 Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(['auth:sanctum', 'auth.customer']);
@@ -133,11 +120,6 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
   }
 );
-
-// ----- ---- FOR TEST ONLY!!!!!!!
-// Route::post('/send-booking-email', [BookingController::class, 'sendBookingEmail']);
-// Route::get('/booking-data', [BookingController::class, 'bookingData']);
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 // Booking confirmation
 Route::get('/booking-confirmation/{bookingCode}', [BookingController::class, 'bookingConfirmation']);

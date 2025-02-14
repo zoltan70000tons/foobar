@@ -21,32 +21,31 @@ class EnsureEmailIsVerified
     if (!$user) {
       return response()->json(
         [
-          "message" => __("auth.user_not_found"),
+          'message' => __('auth.user_not_found'),
         ],
         404
       );
     }
 
-    if ($user->hasRole("Customer") && is_null($user->email_verified_at)) {
-      return response()
-        ->json([
-          "message" => __("auth.email_not_verified"),
-          "status" => "email_not_verified",
-          "user" => [
-            "name" => $user->detail->first_name ?? null,
-            "email_verified_at" => $user->email_verified_at ?? null,
-            "membership_type" => $user->membershipTypes->first()->name ?? null,
-            "membership_discount" => $user->membershipTypes->first()->discount_value ?? null,
-          ],
-        ])
-        ->cookie(
-          "email_verified", // Cookie name
-          "false", // Cookie value
-          60 // Expiration in minutes
-        );
+    if ($user->hasRole('Customer') && is_null($user->email_verified_at)) {
+      // Store verification status in the session
+      session(['email_verified' => false]);
+
+      return response()->json([
+        'message' => __('auth.email_not_verified'),
+        'status' => 'email_not_verified',
+        'user' => [
+          'name' => $user->detail->first_name ?? null,
+          'email_verified_at' => $user->email_verified_at ?? null,
+          'membership_type' => $user->membershipTypes->first()->name ?? null,
+          'membership_discount' => $user->membershipTypes->first()->discount_value ?? null,
+        ],
+      ]);
     }
 
-    // Proceed with the request and include the user in the response
+    // Set the session when the email is verified
+    session(['email_verified' => true]);
+
     return $next($request);
   }
 }
