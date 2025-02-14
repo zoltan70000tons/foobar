@@ -15,17 +15,21 @@ class CustomerConfirmationBooking extends Mailable
   public $booking;
   public $cabinType;
   public $language;
+  public $installments;
 
-  public function __construct($booking, string $cabinType, string $language)
+  public function __construct($booking, string $cabinType, array $installments, string $language)
   {
     $this->booking = $booking;
     $this->cabinType = $cabinType;
     $this->language = $language;
+    $this->installments = $installments;
   }
 
+  // PREPARE DATA FOR TEMPLATE
   private function prepareDataForTemplate()
   {
     \Log::info('Booking ----> data: ' . json_encode($this->booking));
+    \Log::info('Installments ----> data: ' . json_encode($this->installments));
 
     $passenger =
       collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
@@ -54,8 +58,8 @@ class CustomerConfirmationBooking extends Mailable
         'how_did_you_hear_about_us' => $passenger->hear_about ?? 'N/A',
         'receive_newsletter' => $passenger->newsletter ?? 'N/A',
         'receive_partner_information' => $passenger->travel_info ?? 'N/A',
-        'accept_bed_configuration' => $passenger->cabin_conf_accp ?? 'N/A',
-        'accept_terms' => $passenger->terms_n_cons ?? 'N/A',
+        'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'true' : 'N/A',
+        'accept_terms' => $passenger->terms_n_cons ? 'true' : 'N/A',
       ],
       'booking' => (object) [
         'booking_type' => $this->cabinType ?? 'N/A',
@@ -76,13 +80,23 @@ class CustomerConfirmationBooking extends Mailable
           $this->booking->cabin->capacity ?? 1,
           $this->cabinType
         ),
-        'payment_schedule' => $this->booking->payment_plan ?? 'N/A',
+        'payment_schedule' => !empty($this->installments)
+          ? collect($this->installments)
+            ->map(
+              fn($installment) => 'Due: ' .
+                $installment['due_date'] .
+                ', Amount: $' .
+                number_format($installment['amount'], 2)
+            )
+            ->implode("\n")
+          : 'N/A',
         'todays_date' => now()->format('Y-m-d'),
         'booking_request_id' => $this->booking->booking_request_id ?? 'N/A',
       ],
     ];
   }
 
+  // CALCULATE NET TICKET PRICE
   private function calculateNetTicketPrice($price, $adjustments)
   {
     $percentageDiscount = collect($adjustments)
@@ -94,19 +108,22 @@ class CustomerConfirmationBooking extends Mailable
 
     $totalDiscount = ($price * $percentageDiscount) / 100 + $fixedDiscount;
 
-    return max(0, $price - $totalDiscount);
+    return round(max(0, $price - $totalDiscount), 2);
   }
 
+  // CALCULATE TOTAL TICKET PRICE
   private function calculateTotalTicketPrice($price, $capacity, $cabinType)
   {
     return $cabinType === 'Private Cabin' ? $price * $capacity : $price;
   }
 
+  // GET TAX ADJUSTMENT
   private function getTaxAdjustment($adjustments)
   {
     return collect($adjustments)->firstWhere('code', 'TAX')->value ?? 0;
   }
 
+  // GET SINGLE TICKET FEE
   private function getSingleTicketFee($adjustments)
   {
     return collect($adjustments)->firstWhere('code', 'SINGLE_TICKET_FEE')->value ?? 0;

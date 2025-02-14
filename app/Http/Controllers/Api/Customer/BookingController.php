@@ -15,6 +15,7 @@ use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
 use App\Models\CabinType;
 use App\Models\Event;
+use App\Models\Installment;
 use App\Mail\CustomerConfirmationBooking;
 use Illuminate\Support\Facades\Mail;
 
@@ -191,19 +192,51 @@ class BookingController extends Controller
     try {
       // Get booking data with relationships
       $booking = Booking::where('booking_code', $bookingCode)
-        ->with(['cabin.category', 'passengers', 'adjustments'])
+        ->with(['cabin.category', 'passengers.installments', 'adjustments'])
         ->first();
 
-      if (!$booking) {
-        throw new \Exception('Booking not found');
-      }
+      // Convert booking to array for logging
+      \Log::info('EMAIL Booking data', ['booking' => $booking->toArray()]);
 
       $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
 
-      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $language));
+      // if payment installments attach the payment plan
+      $installments = [];
+
+      if ($booking->payment_plan === 'INSTALLMENTS') {
+        // Get passenger_id from booking
+        $passenger = $booking->passengers()->first();
+        // Get installments
+        $passInstallments = $passenger->installments; // FIXED: Use $passenger, not $booking->passengers->installments
+
+        // Convert installments to array for logging
+        \Log::info('EMAIL passInstallments data', ['installments 2' => $passInstallments->toArray()]);
+
+        // Count installments properly
+        $installmentCount = $passInstallments->count();
+
+        if ($installmentCount > 0) {
+          $totalPrice = $passenger->passenger_allocated_cost;
+          $totalPriceDivided = floatval($totalPrice) / $installmentCount;
+
+          // Map to array
+          $installments = $passInstallments
+            ->map(function ($installment) use ($totalPriceDivided) {
+              return [
+                'due_date' => $installment->due_date,
+                'amount' => round($totalPriceDivided, 2),
+              ];
+            })
+            ->toArray();
+        }
+
+        // Convert installments to array for logging
+        \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
+      }
+
+      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $installments, $language));
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
-      throw $e;
     }
   }
 
