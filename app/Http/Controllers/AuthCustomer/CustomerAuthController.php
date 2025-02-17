@@ -34,11 +34,6 @@ class CustomerAuthController extends Controller
       return $this->errorResponse('Unauthorized', 401);
     }
 
-    // check the customer have verified email
-    // if (!$customer->hasVerifiedEmail()) {
-    //   return $this->errorResponse('Email not verified', 409);
-    // }
-
     // Get the first membership type of the customer
     $membership = $customer->membershipTypes->first() ?? null;
 

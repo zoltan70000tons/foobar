@@ -23,7 +23,16 @@
       padding: 20px;
       /* border: 2px solid #444; */
       border-radius: 5px;
-      background-color: #010101;
+      background-color: #000;
+    }
+
+    .content {
+      border-radius: 12px;
+      padding: 20px;
+      border: solid 1px #000;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      background-color: #191919;
     }
 
     h2 {
