@@ -21,7 +21,7 @@
       max-width: 700px;
       margin: 0 auto;
       padding: 20px;
-      border: 2px solid #444;
+      /* border: 2px solid #444; */
       border-radius: 5px;
       background-color: #010101;
     }
