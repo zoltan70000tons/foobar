@@ -13,9 +13,8 @@ class PassengerRepository implements PassengerInterface
 {
   protected PaymentService $paymentService;
 
-  public function __construct(
-    PaymentService $paymentService
-  ) {
+  public function __construct(PaymentService $paymentService)
+  {
     $this->paymentService = $paymentService;
   }
   public function create($data, Booking $booking): Passenger|bool
@@ -44,7 +43,7 @@ class PassengerRepository implements PassengerInterface
       $passengerData = [
         'booking_id' => $booking->id,
         'confirmed_booking_email' => false,
-        'lead_passenger' => true,
+        'lead_passenger' => $data['lead_passenger'] ?? false,
         'survivor_number' => $user->survivorNumber->survivor_number ?? null,
         'gender' => $userDetails->gender ?? null,
         'first_name' => $userDetails->first_name ?? null,
@@ -68,11 +67,12 @@ class PassengerRepository implements PassengerInterface
         'newsletter' => $data['newsletter'] ?? null,
         'travel_info' => $data['travel_info'] ?? null,
         'hear_about' => $data['hear_about'] ?? null,
-       // 'referral_details' => $data['referral_details'] ?? null,
+        // 'referral_details' => $data['referral_details'] ?? null,
         'terms_n_cons' => $data['terms_n_cons'] ?? null,
         'cabin_conf_accp' => $data['cabin_conf_accp'] ?? null,
         'single_t_agreement' => $data['single_t_agreement'] ?? null,
         'passenger_allocated_cost' => $allocatedCost,
+        'passenger_order' => 0,
         'passenger_balance' => 0,
         'was_on_board' => false,
       ];
@@ -106,14 +106,13 @@ class PassengerRepository implements PassengerInterface
     }
   }
 
-   public function find(int $event_id, $passenger_id, $booking_id): bool|Passenger
-{
+  public function find(int $event_id, $passenger_id, $booking_id): bool|Passenger
+  {
     try {
       // Query the Passenger model and ensure conditions are met
       $passenger = Passenger::where('id', $passenger_id)
         ->whereHas('booking', function ($query) use ($event_id, $booking_id) {
-          $query->where('id', $booking_id)
-            ->where('event_id', $event_id);
+          $query->where('id', $booking_id)->where('event_id', $event_id);
         })
         ->first();
       return $passenger ?: false;
@@ -121,11 +120,13 @@ class PassengerRepository implements PassengerInterface
       Log::error("Error finding passenger: {$e->getMessage()}");
       return false;
     }
-   }
+  }
 
   private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false): bool
   {
     try {
+      $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 0;
+
       for ($i = 0; $i < $seats; $i++) {
         $additionalPassengerData = [
           'booking_id' => $bookingId,
@@ -156,6 +157,7 @@ class PassengerRepository implements PassengerInterface
           'cabin_conf_accp' => false,
           'single_t_agreement' => false,
           'passenger_allocated_cost' => $allocatedCost,
+          'passenger_order' => $currentMaxOrder + $i + 1,
           'passenger_balance' => 0,
           'was_on_board' => false,
         ];

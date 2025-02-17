@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
+use App\Mail\ActivateSurvivor;
 use App\Helpers\CustomerHelper;
 
 class CustomerRegisteredController extends Controller
@@ -118,7 +119,7 @@ class CustomerRegisteredController extends Controller
   }
 
   /**
-   *
+   * Store a user survivor account after validate.
    *
    */
   public function storeUserSurvivor(Request $request): JsonResponse
@@ -183,7 +184,7 @@ class CustomerRegisteredController extends Controller
     ]);
 
     // Send welcome email
-    $this->sendWelcomeEmail($user, $language, $survivorNumber);
+    $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);
 
     return response()->json(['message' => 'Account updated successfully.'], 200);
   }
@@ -223,14 +224,14 @@ class CustomerRegisteredController extends Controller
     return $distance <= 2; // Allow minor typos (adjust threshold if needed)
   }
 
-  /**
-   * Send a welcome email to the customer.
-   *
-   * @param User $user
-   * @param string $language
-   * @param string $survivorNumber
-   * @return void
-   */
+  /*
+  |--------------------------------------------------------------------------
+  | Send welcome email NEW USER
+  |--------------------------------------------------------------------------
+  |
+  |  This email is send to the user after registration.
+  |
+  */
   protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void
   {
     try {
@@ -238,6 +239,24 @@ class CustomerRegisteredController extends Controller
       Mail::to($email)->send(new CustomerRegistered($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+    }
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Send welcome email ACTIVATE SURVIVOR USER
+  |--------------------------------------------------------------------------
+  |
+  |  This email is send, when user successfully activate survivor account.
+  |
+  */
+  protected function sendActivateSurvivorEmail(User $user, string $language, string $survivorNumber): void
+  {
+    try {
+      $email = $user->email;
+      Mail::to($email)->send(new ActivateSurvivor($user, $language, $survivorNumber));
+    } catch (\Exception $e) {
+      Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
   }
 }
