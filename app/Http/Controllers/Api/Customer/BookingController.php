@@ -66,7 +66,6 @@ class BookingController extends Controller
       $eventId = (int) $validated['cart']['event_id'];
       $paymentPlan = $validated['cart']['payment_plan'];
       $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ? $validated['cart']['number_of_installments'] : null;
-      $isSigle = $validated['cart']['cabin_type'] !== 'private-cabin' ? true : false;
 
       // Process booking data
       $bookingData = [
@@ -76,7 +75,7 @@ class BookingController extends Controller
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'completed' => false,
         'is_cancelled' => false,
-        'is_single_occupancy' => $isSigle,
+        'is_single_occupancy' => false,
         'tags' => json_encode(['New']),
       ];
 
