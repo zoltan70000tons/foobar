@@ -241,7 +241,7 @@ const Status = ({ event, booking, editMode, users }) => {
               Email Templates:
             </Typography>
 
-            <EmailTemplateSelector />
+            <EmailTemplateSelector booking={booking}/>
           </Paper>
         )}
       </Box>

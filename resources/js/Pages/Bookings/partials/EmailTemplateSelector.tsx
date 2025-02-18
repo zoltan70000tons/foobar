@@ -4,7 +4,7 @@ import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 
 const LANGUAGES = ["en", "es", "de"]; // Available languages
 
-const EmailTemplateEditor: React.FC = () => {
+const EmailTemplateEditor: React.FC = ({booking}) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -75,7 +75,8 @@ const EmailTemplateEditor: React.FC = () => {
             lang,
             template_name: selectedTemplate,
             email_content: html,
-            recipient: "leonardo@70000tons.com"
+            event_id: booking.event_id,
+            booking_id: booking.id,
           }),
         });
 
@@ -128,7 +129,7 @@ const EmailTemplateEditor: React.FC = () => {
       </Button>
 
       {/* Email Editor Dialog */}
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} fullWidth maxWidth="lg">
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} fullWidth maxWidth="lg" style={{ height: "100%" }}>
         <DialogTitle>Edit Email Template</DialogTitle>
         <DialogContent style={{ height: "500px" }}>
           <EmailEditor ref={emailEditorRef} onReady={onEditorReady} />
