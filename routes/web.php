@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Events\TestMessageSent;
 use App\Http\Controllers\AdjustmentsController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FeeController;
 use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\PaymentController;
@@ -181,7 +182,9 @@ Route::middleware("auth")->group(function () {
     Route::post("{event_id}/{booking_id}/delete", [FeeController::class, "delete"])->name("fees.delete");
   });
 
-
+  Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('email.send');
+  Route::get('/get-email-templates', [EmailController::class, 'getEmailTemplates'])->name('email.getTemplates');
+  Route::get('/get-email-template', [EmailController::class, 'getEmailTemplate'])->name('email.getTemplate');
 
 });
 
