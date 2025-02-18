@@ -17,12 +17,20 @@ This template is used to send a reset password link to the customer.
 @endsection
 
 @section('content')
-    <p>Hi {{ $customer->username }},</p>
+    <p>Hi {{ $customer->detail->first_name }},</p>
     <p>You are receiving this email because we received a password reset request for your account.</p>
-    <p><a href="{{ $resetUrl }}">Reset Password</a></p>
-    <p>If you did not request a password reset, no further action is required.</p>
-@endsection
+    @include('emails.components.button', [
+        'url' => $resetUrl,
+        'slot' => 'Reset Password'
+    ])
+    <p>{{ __('systemEmails.email_cant_see_button') }}</p>
 
+    @include('emails.components.long-string', [
+        'url' => $resetUrl,
+        'slot' => $resetUrl
+    ])
+    
+@endsection
 @section('regards')
     <p>{{ __('systemEmails.email_thanks') }}</p>
     <p>{{ __('systemEmails.email_regards') }}</p>

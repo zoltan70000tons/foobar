@@ -17,7 +17,7 @@ This template is used to send confirmation email to the customer after resetting
 @endsection
 
 @section('content')
-    <p>Hi {{ $customer->username }},</p>
+    <p>Hi {{ $customer->detail->first_name }},</p>
     <p>We would like to inform you that your password has been successfully reset.</p>
 @endsection
 

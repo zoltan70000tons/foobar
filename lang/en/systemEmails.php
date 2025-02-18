@@ -39,4 +39,9 @@ return [
       'If you did not make this change, please contact our support team immediately to secure your account.',
     'thank_you' => '70000TONS OF METAL Team!',
   ],
+
+  'email_request_to_add_pax' => 'You got a request to add a passenger to your booking.',
+  'email_request_to_add_pax_body' =>
+    'You have 24 hours to add your details to the booking. If you do not add the details within this time, the request will be canceled.',
+  'email_request_to_add_pax_cta' => 'Add details',
 ];

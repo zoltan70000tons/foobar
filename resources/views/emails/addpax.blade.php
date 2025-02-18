@@ -18,13 +18,14 @@ This email is send when customer send a request to add a pax.
 @endsection
 
 @section('content')
-    <p>You got a request to add a pax portal.</p>
+    <p>{{ __('systemEmails.email_request_to_add_pax')}}</p>
 
-    <p>You have 24 hours to add your details to the booking</p>
-    <p>
-        Click on bellow link to add your details.
-        <a href="{{ $getSignedURL }}">{{ $getSignedURL }}</a>
-    </p>
+    <p>{{ __('systemEmails.email_request_to_add_pax_body')}}</p>
+
+    @include('emails.components.button', [
+        'url' => $getSignedURL,
+        'slot' => __('systemEmails.email_cta_add_pax')
+    ])
 @endsection
 
 @section('regards')
