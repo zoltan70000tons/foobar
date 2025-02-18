@@ -22,6 +22,8 @@ return [
   'email_regards' => 'Grüße',
   'email_excited' => 'Wir freuen uns, dass Sie an Bord sind!',
   'email_account_created' => 'Ihr Konto wurde erfolgreich erstellt.',
+  'email_cta_activate_account' => 'Konto aktivieren',
+  'email_cant_see_button' => 'Wenn Sie die Schaltfläche nicht sehen können, klicken Sie bitte auf den folgenden Link:',
   'email_activated_account' => 'Ihr Konto ist jetzt aktiv.',
   'email_new_survivor_number' => 'Ihre neue Überlebensnummer lautet:',
   'email_activate_account' =>

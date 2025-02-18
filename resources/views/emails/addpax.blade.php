@@ -27,7 +27,7 @@ This email is send when customer send a request to add a pax.
     </p>
 @endsection
 
-@section('footer')
-    <p>{{ __('systemEmails.email_thanks') }},</p>
+@section('regards')
+    <p>{{ __('systemEmails.email_thanks') }}</p>
     <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection

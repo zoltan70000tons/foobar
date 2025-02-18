@@ -19,12 +19,12 @@
 @section('content')
     <p>{{ __('systemEmails.email_hi') }} {{ $customer->first_name }},</p>
     <p>{{ __('systemEmails.email_excited') }}</p>
-    <p>{{ __('systemEmails.email_activated_account') }}
+    <p>{{ __('systemEmails.email_activated_account') }}</p>
 
-    <p>{{ __('systemEmails.email_thank_you') }}</p>
+
 @endsection
 
-@section('footer')
-    <p>{{ __('systemEmails.email_thanks') }},</p>
+@section('regards')
+    <p>{{ __('systemEmails.email_thanks') }}</p>
     <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection

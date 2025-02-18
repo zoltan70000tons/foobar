@@ -23,7 +23,7 @@ This template is used to send a reset password link to the customer.
     <p>If you did not request a password reset, no further action is required.</p>
 @endsection
 
-@section('footer')
-    <p>{{ __('systemEmails.email_regards') }},</p>
-    <p>70000TONS OF METAL TEAM</p>
+@section('regards')
+    <p>{{ __('systemEmails.email_thanks') }}</p>
+    <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection
