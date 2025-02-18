@@ -15,7 +15,7 @@ use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
 use App\Models\CabinType;
 use App\Models\Event;
-use App\Models\Installment;
+use App\Models\PassengerInvitation;
 use App\Mail\CustomerConfirmationBooking;
 use Illuminate\Support\Facades\Mail;
 
@@ -418,6 +418,8 @@ class BookingController extends Controller
       return response()->json(['message' => 'This booking is single occupancy'], 400);
     }
 
+    $passengerOrder = $request->input('passenger_order');
+
     // get email and survivor number from request
     $email = $request->input('email');
 
@@ -425,14 +427,20 @@ class BookingController extends Controller
       return response()->json(['message' => 'Email and survivor number are required'], 400);
     }
 
-    // if booking have passenger with this email
-    $passenger = $booking->passengers()->where('email', $email)->first();
+    // if booking have passenger with this email or passenger_order is taken
+    $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
 
-    if ($passenger) {
-      return response()->json(['message' => 'Passenger already exists'], 400);
+    \Log::info('Passenger data---->', ['passenger' => $passenger]);
+
+    $passengerInvitation = PassengerInvitation::where('booking_id', $booking->id)
+      ->where('passenger_id', $passenger->id)
+      ->first();
+
+    if ($passengerInvitation) {
+      return response()->json(['message' => 'Passenger already invited'], 400);
     }
 
-    $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
+    $result = $this->customerBookingService->addPassengerViaEmail($booking, $passenger, $email);
 
     return $result;
   }

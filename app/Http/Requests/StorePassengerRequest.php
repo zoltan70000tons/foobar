@@ -39,6 +39,7 @@ class StorePassengerRequest extends FormRequest
       'confirmEmail' => 'required|same:email',
       'newsletter' => 'nullable|boolean',
       'specialRequest' => 'nullable|string',
+      'passengerOrder' => 'nullable|integer',
 
       // Phone numbers
       'phoneNumber' => 'required|string',

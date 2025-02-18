@@ -31,7 +31,14 @@ class CustomerBookingRepository
   {
     $user_survivor_number = $user->survivor_number ?? null;
 
-    $booking = Booking::with('passengers.fees', 'passengers.installments', 'cabin.category', 'cabin.cabinType', 'event')
+    $booking = Booking::with(
+      'passengers.fees',
+      'passengers.installments',
+      'passengers.passengerInvitation',
+      'cabin.category',
+      'cabin.cabinType',
+      'event'
+    )
       ->where('booking_code', $bookingCode)
       ->first();
 

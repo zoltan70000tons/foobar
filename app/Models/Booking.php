@@ -253,29 +253,28 @@ class Booking extends Model
       $booking->cabin->updateInventoryOnBooking();
     });
 
-    static::updated(function($booking) {
-        $cabin = $booking->cabin;
-        if($booking->status == 'CANCELLED'){
-          if($cabin->cabinType->id == 1){
-                // back to zero and set available
-                $cabin->status = 'AVAILABLE';
-                $cabin->inventory = 0;
-                $cabin->save();
-          }else{
-             // reduce by 1
-             if($cabin->cabinType->id == 2 || $cabin->cabinType == 3){
-              $cabin->inventory = $cabin->inventory - 1;
-              if($cabin->inventory <= 0){
-                $cabin->status = 'AVAILABLE';
-                $cabin->inventory = 0;
-              }
-              $cabin->save();
-             }
-
+    static::updated(function ($booking) {
+      $cabin = $booking->cabin;
+      if ($booking->status == 'CANCELLED') {
+        if ($cabin->cabinType->id == 1) {
+          // back to zero and set available
+          $cabin->status = 'AVAILABLE';
+          $cabin->inventory = 0;
+          $cabin->save();
+        } else {
+          // reduce by 1
+          if ($cabin->cabinType->id == 2 || $cabin->cabinType == 3) {
+            $cabin->inventory = $cabin->inventory - 1;
+            if ($cabin->inventory <= 0) {
+              $cabin->status = 'AVAILABLE';
+              $cabin->inventory = 0;
+            }
+            $cabin->save();
           }
-         // dd($cabin->category->title);
-         // if($cabin)
         }
+        // dd($cabin->category->title);
+        // if($cabin)
+      }
     });
 
     static::deleted(function ($booking) {

@@ -69,6 +69,11 @@ class Passenger extends Model
     return $this->belongsTo(Booking::class);
   }
 
+  public function passengerInvitation()
+  {
+    return $this->hasMany(PassengerInvitation::class, 'passenger_id');
+  }
+
   public function getFullNameAttribute()
   {
     return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
