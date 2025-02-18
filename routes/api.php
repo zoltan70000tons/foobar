@@ -30,7 +30,7 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 Route::post('/login-customer', [CustomerLoginController::class, 'store']);
 
 // --- EMAIL VERIFICATION ---
-Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'store'])->middleware([
+Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
   'auth:sanctum',
   'throttle:6,1',
 ]);

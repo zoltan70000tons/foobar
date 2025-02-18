@@ -35,6 +35,11 @@
       background-color: #191919;
     }
 
+    h1 {
+      color: #FF0000;
+      text-transform: uppercase;
+    }
+
     h2 {
       color: #FF0000;
       text-transform: uppercase;
@@ -66,6 +71,7 @@
       color: #777;
       border-top: 1px solid #444;
       padding-top: 10px;
+      paddding-bottom: 15px;
       text-align: center;
     }
 
@@ -79,6 +85,11 @@
       width: 38px;
       margin: 0 5px;
     }
+
+    .regards p {
+      margin-top: 20px;
+      color: #fefefe;
+    }
   </style>
 </head>
 
@@ -91,8 +102,13 @@
     <div class="content">
       @yield('content')
     </div>
+    <div class="regards">
+      @yield('regards')
+    </div>
     <div class="footer">
-      <p>@yield('footer')</p>
+      <p>70000TONS, 70000TONS OF METAL and the 70000TONS OF METAL logo are registered trademarks <br> 
+        of Properties of Metal Ltd. and are used under license. <br>
+        © 2009-2025 UMCruises International Ltd. All Rights Reserved.</p>
       <div class="social-icons">
         <a href="http://www.facebook.com/70000TONS" target="_blank">
           <img src="https://70000tons.com/_mailinglist/media/icon/facebook_icon.png" alt="Facebook">

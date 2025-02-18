@@ -22,9 +22,16 @@ return [
   'email_regards' => 'Grüße',
   'email_excited' => 'Wir freuen uns, dass Sie an Bord sind!',
   'email_account_created' => 'Ihr Konto wurde erfolgreich erstellt.',
+  'email_cta_activate_account' => 'Konto aktivieren',
+  'email_cant_see_button' => 'Wenn Sie die Schaltfläche nicht sehen können, klicken Sie bitte auf den folgenden Link:',
   'email_activated_account' => 'Ihr Konto ist jetzt aktiv.',
   'email_new_survivor_number' => 'Ihre neue Überlebensnummer lautet:',
   'email_activate_account' =>
     'Bitte aktivieren Sie Ihr Konto, indem Sie auf den folgenden Link klicken oder ihn in Ihren Browser kopieren und einfügen:',
   'email_thank_you' => 'Vielen Dank, dass Sie uns gewählt haben.',
+
+  'email_request_to_add_pax' => 'Sie haben eine Anfrage erhalten, einen Passagier zu Ihrer Buchung hinzuzufügen.',
+  'email_request_to_add_pax_body' =>
+    'Sie haben 24 Stunden Zeit, Ihre Details zur Buchung hinzuzufügen. Wenn Sie die Details nicht innerhalb dieser Zeit hinzufügen, wird die Anfrage storniert.',
+  'email_request_to_add_pax_cta' => 'Details hinzufügen',
 ];

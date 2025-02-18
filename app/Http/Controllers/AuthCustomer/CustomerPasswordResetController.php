@@ -15,16 +15,16 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerResetPasswordSuccess;
 use Illuminate\Support\Facades\Log;
-use App\Services\EmailUniquenessService;
+//use App\Services\EmailUniquenessService;
 
 class CustomerPasswordResetController extends Controller
 {
-  protected EmailUniquenessService $emailUniquenessService;
+  // protected EmailUniquenessService $emailUniquenessService;
 
-  public function __construct(EmailUniquenessService $emailUniquenessService)
-  {
-    $this->emailUniquenessService = $emailUniquenessService;
-  }
+  // public function __construct(EmailUniquenessService $emailUniquenessService)
+  // {
+  //   $this->emailUniquenessService = $emailUniquenessService;
+  // }
 
   /**
    * Password reset request

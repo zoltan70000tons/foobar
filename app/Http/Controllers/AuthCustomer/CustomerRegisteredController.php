@@ -24,27 +24,14 @@ use App\Helpers\CustomerHelper;
 
 class CustomerRegisteredController extends Controller
 {
-  /**
-   * Handle an incoming registration request.
-   *
-   * @JG 07/08/2024
-   * We use there DB::beginTransaction() and DB::commit() to wrap the user creation in a transaction.
-   * It mean that if an exception is thrown during the user creation, the transaction will be rolled back and the user won't be created.
-   * It will prevent the database from being in an inconsistent state.
-   *
-   *       name,
-   *       middlename,
-   *       surname,
-   *       date_of_birth,
-   *       country,
-   *       gender,
-   *       email,
-   *       password,
-   *       password_confirmation,
-   *       language
-   *
-   * @throws \Illuminate\Validation\ValidationException
-   */
+  /*
+  |--------------------------------------------------------------------------
+  |  Store new customer
+  |--------------------------------------------------------------------------
+  |
+  |  This method is responsible for storing a new customer.
+  |
+  */
   public function store(Request $request): JsonResponse
   {
     $request->validate([
@@ -90,6 +77,8 @@ class CustomerRegisteredController extends Controller
       setPermissionsTeamId(1);
       $user->assignRole('Customer');
 
+      Log::info('User data', ['user' => $user->load('detail')]);
+
       // Generate a unique numeric survivor number and store it
       $survivorNumber = CustomerHelper::generateSurvivorNumber();
       SurvivorNumber::create([
@@ -118,10 +107,17 @@ class CustomerRegisteredController extends Controller
     }
   }
 
-  /**
-   * Store a user survivor account after validate.
-   *
-   */
+  /*
+  |--------------------------------------------------------------------------
+  |  Store survivor user
+  |--------------------------------------------------------------------------
+  |
+  |  Difference between store and storeUserSurvivor is that storeUserSurvivor
+  |  is used to update the user credentials of an existing survivor.
+  |  We check if the provided information matches the stored information,
+  |  and if it does, we update the user's email and password.
+  |
+  */
   public function storeUserSurvivor(Request $request): JsonResponse
   {
     $request->validate([
@@ -235,6 +231,7 @@ class CustomerRegisteredController extends Controller
   protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void
   {
     try {
+      $user->load('detail');
       $email = $user->email;
       Mail::to($email)->send(new CustomerRegistered($user, $language, $survivorNumber));
     } catch (\Exception $e) {
@@ -254,6 +251,8 @@ class CustomerRegisteredController extends Controller
   {
     try {
       $email = $user->email;
+      $user->load('detail');
+
       Mail::to($email)->send(new ActivateSurvivor($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());

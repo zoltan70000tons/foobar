@@ -182,7 +182,7 @@
     </table>
 @endsection
 
-@section('footer')
-    <p>{{ __('confirmationBooking.cbe_questions') }},</p>
-    <p>{{ __('confirmationBooking.cbe_or_call') }}</p>
+@section('regards')
+    <p>{{ __('systemEmails.email_thanks') }}</p>
+    <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection
