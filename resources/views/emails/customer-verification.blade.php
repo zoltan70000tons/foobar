@@ -1,31 +1,31 @@
 <?php
 /*
 |--------------------------------------------------------------------------
-| Add Pax email
+| Customer Re send Verification Email
 |--------------------------------------------------------------------------
-
-This email is send when customer send a request to add a pax.
-
+| This template is used to send a verification email to the customer. 
+|
 */
 ?>
 
 @extends('emails.layouts.systemLayout')
 
-@section('title', 'Add Pax')
+@section('title', 'Verify Your Email Address')
 
 @section('header')
     70000TONS OF METAL
 @endsection
 
 @section('content')
-    <p>{{ __('systemEmails.email_request_to_add_pax')}}</p>
-
-    <p>{{ __('systemEmails.email_request_to_add_pax_body')}}</p>
+    <p>Hello {{ $user->detail->first_name ?? 'Sailor' }},</p>
+    <p>Please click the button below to verify your email address:</p>
 
     @include('emails.components.button', [
-        'url' => $getSignedURL,
-        'slot' => __('systemEmails.email_cta_add_pax')
+        'url' => $verificationUrl,
+        'slot' => 'Verify Email Address'
     ])
+
+    <p>If you did not create an account, no further action is required.</p>
 @endsection
 
 @section('regards')

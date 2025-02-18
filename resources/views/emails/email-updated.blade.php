@@ -24,6 +24,7 @@ This template is used to send a notifiation to the old customer's email when thi
     <p>{{ __('systemEmails.update_email.security_notice', [], $language) }}</p>
 @endsection
 
-@section('footer')
-    <p>{{ __('systemEmails.email_regards', [], $language) }},</p>
+@section('regards')
+    <p>{{ __('systemEmails.email_thanks') }}</p>
+    <p>{{ __('systemEmails.email_regards') }}</p>
 @endsection

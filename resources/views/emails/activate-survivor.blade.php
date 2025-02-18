@@ -1,24 +1,27 @@
 <?php
 /*
 |--------------------------------------------------------------------------
-| Customer Reset Password Confirmation Email
+| Activate Survivor Email
 |--------------------------------------------------------------------------
-
-This template is used to send confirmation email to the customer after resetting the password.
+|
+| This email is send when survivor is successfully activated.
 */
 ?>
 
 @extends('emails.layouts.systemLayout')
 
-@section('title', 'Reset Password')
+@section('title', 'Account activated')
 
 @section('header')
     70000TONS OF METAL
 @endsection
 
 @section('content')
-    <p>Hi {{ $customer->detail->first_name }},</p>
-    <p>We would like to inform you that your password has been successfully reset.</p>
+    <p>{{ __('systemEmails.email_hi') }} {{ $customer->first_name }},</p>
+    <p>{{ __('systemEmails.email_excited') }}</p>
+    <p>{{ __('systemEmails.email_activated_account') }}</p>
+
+
 @endsection
 
 @section('regards')

@@ -10,20 +10,22 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 
-class CustomerResetPassword extends Mailable
+class ActivateSurvivor extends Mailable
 {
   use Queueable, SerializesModels;
 
   public $customer;
-  public $resetUrl;
+  public $language;
+  public $survivorNumber;
 
   /**
    * Create a new message instance.
    */
-  public function __construct(User $user, string $resetUrl)
+  public function __construct(User $customer, string $language, string $survivorNumber)
   {
-    $this->customer = $user;
-    $this->resetUrl = $resetUrl;
+    $this->customer = $customer;
+    $this->language = $language;
+    $this->survivorNumber = $survivorNumber;
   }
 
   /**
@@ -31,7 +33,7 @@ class CustomerResetPassword extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(from: 'smtp@bspmi.com', subject: 'Customer Reset Password');
+    return new Envelope(from: 'smtp@bspmi.com', subject: '70000TONS OF METAL - SURVIVOR YOUR ACCOUNT IS ACTIVE!');
   }
 
   /**
@@ -40,10 +42,11 @@ class CustomerResetPassword extends Mailable
   public function content(): Content
   {
     return new Content(
-      view: 'emails.customer-reset-password',
+      view: 'emails.activate-survivor',
       with: [
         'customer' => $this->customer,
-        'resetUrl' => $this->resetUrl,
+        'language' => $this->language,
+        'survivorNumber' => $this->survivorNumber,
       ]
     );
   }

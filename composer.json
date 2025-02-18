@@ -9,8 +9,8 @@
   "license": "MIT",
   "require": {
     "php": "^8.2",
-    "http-interop/http-factory-guzzle": "^1.2",
     "hidehalo/nanoid-php": "^2.0",
+    "http-interop/http-factory-guzzle": "^1.2",
     "inertiajs/inertia-laravel": "^1.0",
     "laravel/framework": "^11.9",
     "laravel/pulse": "^1.2",

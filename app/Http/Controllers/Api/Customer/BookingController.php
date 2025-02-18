@@ -15,6 +15,7 @@ use App\Helpers\PriceCalculation;
 use App\Models\Adjustment;
 use App\Models\CabinType;
 use App\Models\Event;
+use App\Models\Installment;
 use App\Mail\CustomerConfirmationBooking;
 use Illuminate\Support\Facades\Mail;
 
@@ -64,8 +65,7 @@ class BookingController extends Controller
       $reservationId = $validated['cart']['reservation_id'];
       $eventId = (int) $validated['cart']['event_id'];
       $paymentPlan = $validated['cart']['payment_plan'];
-      $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ?? $validated['cart']['number_of_installments'];
-      $isSigle = $validated['cart']['cabin_type'] === 'private-cabin' ? true : false;
+      $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ? $validated['cart']['number_of_installments'] : null;
 
       // Process booking data
       $bookingData = [
@@ -75,7 +75,7 @@ class BookingController extends Controller
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'completed' => false,
         'is_cancelled' => false,
-        'is_single_occupancy' => $isSigle,
+        'is_single_occupancy' => false,
         'tags' => json_encode(['New']),
       ];
 
@@ -97,7 +97,7 @@ class BookingController extends Controller
       // Process passenger data
       $passengerData = [
         'confirmed_booking_email' => false,
-        'lead_passenger' => $validated['cart']['cabin_type'] === 'private-cabin',
+        'lead_passenger' => $validated['cart']['cabin_type'] === 'private-cabin' ? true : false,
         'payment_method' => $validated['paymentMethod'],
         'address_first' => $validated['addressLine1'],
         'address_second' => $validated['addressLine2'],
@@ -191,19 +191,51 @@ class BookingController extends Controller
     try {
       // Get booking data with relationships
       $booking = Booking::where('booking_code', $bookingCode)
-        ->with(['cabin.category', 'passengers', 'adjustments'])
+        ->with(['cabin.category', 'passengers.installments', 'adjustments'])
         ->first();
 
-      if (!$booking) {
-        throw new \Exception('Booking not found');
-      }
+      // Convert booking to array for logging
+      \Log::info('EMAIL Booking data', ['booking' => $booking->toArray()]);
 
       $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
 
-      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $language));
+      // if payment installments attach the payment plan
+      $installments = [];
+
+      if ($booking->payment_plan === 'INSTALLMENTS') {
+        // Get passenger_id from booking
+        $passenger = $booking->passengers()->first();
+        // Get installments
+        $passInstallments = $passenger->installments; // FIXED: Use $passenger, not $booking->passengers->installments
+
+        // Convert installments to array for logging
+        \Log::info('EMAIL passInstallments data', ['installments 2' => $passInstallments->toArray()]);
+
+        // Count installments properly
+        $installmentCount = $passInstallments->count();
+
+        if ($installmentCount > 0) {
+          $totalPrice = $passenger->passenger_allocated_cost;
+          $totalPriceDivided = floatval($totalPrice) / $installmentCount;
+
+          // Map to array
+          $installments = $passInstallments
+            ->map(function ($installment) use ($totalPriceDivided) {
+              return [
+                'due_date' => $installment->due_date,
+                'amount' => round($totalPriceDivided, 2),
+              ];
+            })
+            ->toArray();
+        }
+
+        // Convert installments to array for logging
+        \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
+      }
+
+      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $installments, $language));
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
-      throw $e;
     }
   }
 

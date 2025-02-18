@@ -5,10 +5,13 @@ namespace App\Http\Controllers\AuthCustomer;
 use App\Http\Controllers\Controller;
 
 use App\Models\User;
+use App\Models\UserDetail;
+use App\Models\SurvivorNumber;
 
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
@@ -16,32 +19,19 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
+use App\Mail\ActivateSurvivor;
 use App\Helpers\CustomerHelper;
-use App\Models\SurvivorNumber;
 
 class CustomerRegisteredController extends Controller
 {
-  /**
-   * Handle an incoming registration request.
-   *
-   * @JG 07/08/2024
-   * We use there DB::beginTransaction() and DB::commit() to wrap the user creation in a transaction.
-   * It mean that if an exception is thrown during the user creation, the transaction will be rolled back and the user won't be created.
-   * It will prevent the database from being in an inconsistent state.
-   *
-   *       name,
-   *       middlename,
-   *       surname,
-   *       date_of_birth,
-   *       country,
-   *       gender,
-   *       email,
-   *       password,
-   *       password_confirmation,
-   *       language
-   *
-   * @throws \Illuminate\Validation\ValidationException
-   */
+  /*
+  |--------------------------------------------------------------------------
+  |  Store new customer
+  |--------------------------------------------------------------------------
+  |
+  |  This method is responsible for storing a new customer.
+  |
+  */
   public function store(Request $request): JsonResponse
   {
     $request->validate([
@@ -87,6 +77,8 @@ class CustomerRegisteredController extends Controller
       setPermissionsTeamId(1);
       $user->assignRole('Customer');
 
+      Log::info('User data', ['user' => $user->load('detail')]);
+
       // Generate a unique numeric survivor number and store it
       $survivorNumber = CustomerHelper::generateSurvivorNumber();
       SurvivorNumber::create([
@@ -115,21 +107,155 @@ class CustomerRegisteredController extends Controller
     }
   }
 
+  /*
+  |--------------------------------------------------------------------------
+  |  Store survivor user
+  |--------------------------------------------------------------------------
+  |
+  |  Difference between store and storeUserSurvivor is that storeUserSurvivor
+  |  is used to update the user credentials of an existing survivor.
+  |  We check if the provided information matches the stored information,
+  |  and if it does, we update the user's email and password.
+  |
+  */
+  public function storeUserSurvivor(Request $request): JsonResponse
+  {
+    $request->validate([
+      'survivor_number' => ['required', 'string', 'max:9'],
+      'name' => ['required', 'string', 'max:255'],
+      'last_name' => ['required', 'string', 'max:255'],
+      'date_of_birth' => ['required', 'date'],
+      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+      'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ]);
+
+    // Set language
+    $language = $request->language;
+    App::setLocale($language);
+
+    // Normalize inputs
+    $survivorNumber = $request->survivor_number;
+    $inputFirstName = $this->normalizeString($request->name);
+    $inputLastName = $this->normalizeString($request->last_name);
+    $inputDob = $request->date_of_birth;
+
+    // Fetch survivor
+    $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
+
+    if (!$survivor) {
+      return response()->json(['message' => 'Survivor Number not found.'], 404);
+    }
+
+    // Fetch user details
+    $userDetail = UserDetail::where('user_id', $survivor->user_id)->first();
+
+    if (!$userDetail) {
+      return response()->json(['message' => 'User details not found.'], 404);
+    }
+
+    // Normalize stored values
+    $storedFirstName = $this->normalizeString($userDetail->first_name);
+    $storedLastName = $this->normalizeString($userDetail->last_name);
+    $storedDob = $userDetail->dob;
+
+    // Check similarity instead of strict equality
+    $nameSimilarity = $this->isSimilar($inputFirstName, $storedFirstName);
+    $lastNameSimilarity = $this->isSimilar($inputLastName, $storedLastName);
+
+    if ($storedDob !== $inputDob || !$nameSimilarity || !$lastNameSimilarity) {
+      return response()->json(
+        [
+          'message' =>
+            'The information provided does not match our records, please make sure you are entering the correct information.',
+        ],
+        404
+      );
+    }
+
+    // Update user credentials
+    $user = User::find($survivor->user_id);
+    $user->update([
+      'email' => $request->email,
+      'password' => Hash::make($request->password),
+    ]);
+
+    // Send welcome email
+    $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);
+
+    return response()->json(['message' => 'Account updated successfully.'], 200);
+  }
+
   /**
-   * Send a welcome email to the customer.
-   *
-   * @param User $user
-   * @param string $language
-   * @param string $survivorNumber
-   * @return void
+   * Normalize a string by removing special characters and converting to uppercase.
    */
+  private function normalizeString(string $string): string
+  {
+    // Remove accents
+    $string = Str::ascii($string);
+
+    // Convert to uppercase and remove spaces
+    return strtoupper(trim($string));
+  }
+
+  /**
+   * Check if two strings are similar based on Levenshtein distance or soundex.
+  |-------------------------------------------------------------------|
+  | Input Name   | Stored Name | Match? | Why?                        |
+  |--------------|------------|--------|------------------------------|
+  | José         | JOSE       | ✅     | Special character removed    |
+  | O’Connor     | OCONNOR    | ✅     | Apostrophe removed           |
+  | MacDonald    | MCDONALD   | ✅     | Similar pronunciation        |
+  | John         | Jon        | ✅     | Levenshtein distance = 1     |
+  | Marry        | Mary       | ❌     | Too different (distance = 3) |
+  */
+  private function isSimilar(string $input, string $stored): bool
+  {
+    // Check if Soundex (similar sounding) matches
+    if (soundex($input) === soundex($stored)) {
+      return true;
+    }
+
+    // Use Levenshtein distance for typo tolerance
+    $distance = levenshtein($input, $stored);
+    return $distance <= 2; // Allow minor typos (adjust threshold if needed)
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Send welcome email NEW USER
+  |--------------------------------------------------------------------------
+  |
+  |  This email is send to the user after registration.
+  |
+  */
   protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void
   {
     try {
+      $user->load('detail');
       $email = $user->email;
       Mail::to($email)->send(new CustomerRegistered($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+    }
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Send welcome email ACTIVATE SURVIVOR USER
+  |--------------------------------------------------------------------------
+  |
+  |  This email is send, when user successfully activate survivor account.
+  |
+  */
+  protected function sendActivateSurvivorEmail(User $user, string $language, string $survivorNumber): void
+  {
+    try {
+      $email = $user->email;
+      $user->load('detail');
+
+      Mail::to($email)->send(new ActivateSurvivor($user, $language, $survivorNumber));
+    } catch (\Exception $e) {
+      Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
   }
 }

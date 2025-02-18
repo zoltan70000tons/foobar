@@ -19,7 +19,8 @@ class AddPaxController extends Controller
   public function show(Request $request)
   {
     $request->validate([
-      'email' => 'required|email',
+      'name' => 'required|string',
+      'last_name' => 'required|string',
       'bookingCode' => 'required|string',
     ]);
 
@@ -29,7 +30,12 @@ class AddPaxController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    $passenger = Passenger::where('email', $request->email)
+    // Capitalize first letter of each word (to match DB format)
+    $formattedName = ucfirst(strtolower($request->name));
+    $formattedLastName = ucfirst(strtolower($request->last_name));
+
+    $passenger = Passenger::where('first_name', $formattedName)
+      ->where('last_name', $formattedLastName)
       ->where('booking_id', $booking->id)
       ->first();
 
@@ -38,11 +44,6 @@ class AddPaxController extends Controller
     }
 
     $event = Event::find($booking->event_id);
-
-    // return booking but only with the passegner where email is same as the request email
-    // $booking->passengers = $booking->passengers->filter(function ($passenger) use ($request) {
-    //   return $passenger->email === $request->email;
-    // });
 
     // schema to return
     $booking = [

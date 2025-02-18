@@ -8,22 +8,23 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
 
-class CustomerResetPassword extends Mailable
+class CustomerVerificationEmail extends Mailable
 {
   use Queueable, SerializesModels;
-
-  public $customer;
-  public $resetUrl;
 
   /**
    * Create a new message instance.
    */
-  public function __construct(User $user, string $resetUrl)
+  public $user;
+  public $verificationUrl;
+  public $language;
+
+  public function __construct($user, $verificationUrl, $language)
   {
-    $this->customer = $user;
-    $this->resetUrl = $resetUrl;
+    $this->user = $user;
+    $this->verificationUrl = $verificationUrl;
+    $this->language = $language;
   }
 
   /**
@@ -31,7 +32,7 @@ class CustomerResetPassword extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(from: 'smtp@bspmi.com', subject: 'Customer Reset Password');
+    return new Envelope(from: 'smtp@bspmi.com', subject: 'Customer Verification Email');
   }
 
   /**
@@ -40,10 +41,10 @@ class CustomerResetPassword extends Mailable
   public function content(): Content
   {
     return new Content(
-      view: 'emails.customer-reset-password',
+      view: 'emails.customer-verification',
       with: [
-        'customer' => $this->customer,
-        'resetUrl' => $this->resetUrl,
+        'user' => $this->user,
+        'verificationUrl' => $this->verificationUrl,
       ]
     );
   }

@@ -8,15 +8,23 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use App\Models\User;
-use App\Notifications\CustomerEmailVerification;
+use App\Mail\CustomerVerificationEmail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 
 class CustomerEmailVerificationController extends Controller
 {
-  /**
-   * Send a new email verification notification.
-   */
-  public function store(Request $request): JsonResponse
+  /*
+  |--------------------------------------------------------------------------
+  | Resend email verification
+  |--------------------------------------------------------------------------
+  |
+  |  Resend the email verification link to the customer.
+  |
+  */
+  public function reSend(Request $request): JsonResponse
   {
     $language = $request->language;
     App::setLocale($language);
@@ -28,7 +36,23 @@ class CustomerEmailVerificationController extends Controller
       ]);
     }
 
-    $request->user()->notify(new CustomerEmailVerification());
+    $user = User::findOrFail($request->user()->id);
+
+    if ($user->hasVerifiedEmail()) {
+      return response()->json([
+        'status' => 'already-verified',
+        'message' => __('systemEmails.email_verified_already'),
+      ]);
+    }
+
+    // Generate verification link
+    $verificationUrl = URL::temporarySignedRoute('verificationApi.verify', Carbon::now()->addMinutes(60), [
+      'id' => $user->getKey(),
+      'hash' => sha1($user->getEmailForVerification()),
+    ]);
+
+    Mail::to($user->email)->send(new CustomerVerificationEmail($user, $verificationUrl, $language));
+    // $request->user()->notify(new CustomerVerification());
 
     return response()->json([
       'status' => 'verification-link-sent',
@@ -36,9 +60,14 @@ class CustomerEmailVerificationController extends Controller
     ]);
   }
 
-  /**
-   * Handle email verification confirmation.
-   */
+  /*
+  |--------------------------------------------------------------------------
+  | Handle email verification
+  |--------------------------------------------------------------------------
+  |
+  |  Verify the email address of a customer.
+  |
+  */
   public function verify(Request $request): JsonResponse|RedirectResponse
   {
     $customer = User::findOrFail($request->route('id'));

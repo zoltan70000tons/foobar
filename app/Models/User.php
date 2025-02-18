@@ -12,6 +12,8 @@ use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UUID;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerResetPassword;
 
 use Laravel\Sanctum\HasApiTokens;
 
@@ -19,21 +21,21 @@ class User extends Authenticatable implements CanResetPassword
 {
   use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
 
-  protected $guard_name = "web";
+  protected $guard_name = 'web';
 
   /**
    * The attributes that are mass assignable.
    *
    * @var array<int, string>
    */
-  protected $fillable = ["email", "password", "phone", "organization_id"];
+  protected $fillable = ['email', 'password', 'phone', 'organization_id'];
 
   /**
    * The attributes that should be hidden for serialization.
    *
    * @var array<int, string>
    */
-  protected $hidden = ["password", "remember_token"];
+  protected $hidden = ['password', 'remember_token'];
 
   /**
    * Get the attributes that should be cast.
@@ -43,41 +45,41 @@ class User extends Authenticatable implements CanResetPassword
   protected function casts(): array
   {
     return [
-      "email_verified_at" => "datetime",
-      "password" => "hashed",
+      'email_verified_at' => 'datetime',
+      'password' => 'hashed',
     ];
   }
 
   // bookings
   public function bookings()
   {
-    return $this->hasMany(Booking::class, "customer_id");
+    return $this->hasMany(Booking::class, 'customer_id');
   }
 
   // Membership types
   public function membershipTypes()
   {
-    return $this->belongsToMany(MembershipType::class, "memberships", "user_id", "membership_id");
+    return $this->belongsToMany(MembershipType::class, 'memberships', 'user_id', 'membership_id');
   }
 
   // Organizations
   public function organizations(): BelongsToMany
   {
     return $this->belongsToMany(Organization::class)
-      ->withPivot("user_id")
+      ->withPivot('user_id')
       ->withTimestamps();
   }
 
   // teams
   public function teams()
   {
-    return $this->belongsToMany(Team::class, "team_user", "user_id", "team_id");
+    return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
   }
 
   // detail
   public function detail(): HasOne
   {
-    return $this->hasOne(UserDetail::class, "user_id");
+    return $this->hasOne(UserDetail::class, 'user_id');
   }
 
   // survivor number
@@ -89,10 +91,23 @@ class User extends Authenticatable implements CanResetPassword
   // Customer address
   public function customerAddress(): HasOne
   {
-    return $this->hasOne(CustomerAddress::class, "user_id");
+    return $this->hasOne(CustomerAddress::class, 'user_id');
   }
 
-  public function memberShip(){
-    return $this->hasOne(Membership::class, foreignKey:'user_id');
+  public function memberShip()
+  {
+    return $this->hasOne(Membership::class, foreignKey: 'user_id');
+  }
+
+  // send password
+  public function sendPasswordResetNotification($token)
+  {
+    // front end url
+    $url = config('app.frontend_url');
+    $email = $this->email;
+
+    $tokenToSend = $url . '/en/password-reset?token=' . $token . '&email=' . $email;
+
+    return Mail::to($this->email)->send(new CustomerResetPassword($this, $tokenToSend));
   }
 }
