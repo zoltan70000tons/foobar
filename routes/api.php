@@ -110,6 +110,8 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
       BookingController::class,
       'addPassengerViaEmail',
     ]);
+    // cancel invitation
+    Route::post('/my-bookings/{bookingCode}/cancel-invitation', [BookingController::class, 'cancelInvitation']);
 
     // Booking
     // --- booking init
@@ -131,7 +133,7 @@ Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
   ->middleware('signed:relative');
 
 // --- ADD PAX Booking
-Route::post('/add-pax/{bookingCode}', [BookingController::class, 'submitAddPassenger']);
+Route::post('/add-pax/{bookingCode}/{token}', [BookingController::class, 'submitAddPassenger']);
 
 // --- ADD PAX PROFILE
 Route::post('/check-booking', [AddPaxController::class, 'show']);

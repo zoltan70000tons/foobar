@@ -42,6 +42,6 @@ return [
 
   'email_request_to_add_pax' => 'You got a request to add a passenger to your booking.',
   'email_request_to_add_pax_body' =>
-    'You have 24 hours to add your details to the booking. If you do not add the details within this time, the request will be canceled.',
+    'You have 72 hours to add your details to the booking. If you do not add the details within this time, the request will be canceled.',
   'email_request_to_add_pax_cta' => 'Add details',
 ];

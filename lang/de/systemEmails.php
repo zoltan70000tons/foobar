@@ -32,6 +32,6 @@ return [
 
   'email_request_to_add_pax' => 'Sie haben eine Anfrage erhalten, einen Passagier zu Ihrer Buchung hinzuzufügen.',
   'email_request_to_add_pax_body' =>
-    'Sie haben 24 Stunden Zeit, Ihre Details zur Buchung hinzuzufügen. Wenn Sie die Details nicht innerhalb dieser Zeit hinzufügen, wird die Anfrage storniert.',
+    'Sie haben 72 Stunden Zeit, Ihre Details zur Buchung hinzuzufügen. Wenn Sie die Details nicht innerhalb dieser Zeit hinzufügen, wird die Anfrage storniert.',
   'email_request_to_add_pax_cta' => 'Details hinzufügen',
 ];

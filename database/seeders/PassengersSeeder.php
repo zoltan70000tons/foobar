@@ -63,7 +63,7 @@ class PassengersSeeder extends Seeder
             'cabin_conf_accp' => $faker->boolean,
             'single_t_agreement' => $faker->boolean,
             'passenger_allocated_cost' => $pricePerPerson,
-            'passenger_order' => 0,
+            'passenger_order' => 1,
             'passenger_balance' => $faker->randomFloat(2, 0, $pricePerPerson),
             'was_on_board' => $faker->boolean,
           ]
@@ -115,7 +115,7 @@ class PassengersSeeder extends Seeder
             'terms_n_cons' => true,
             'cabin_conf_accp' => $faker->boolean,
             'single_t_agreement' => $faker->boolean,
-            'passenger_order' => 0,
+            'passenger_order' => 1,
             'passenger_allocated_cost' => $pricePerPerson,
             'passenger_balance' => $faker->randomFloat(2, 0, $pricePerPerson),
             'was_on_board' => $faker->boolean,
@@ -169,7 +169,7 @@ class PassengersSeeder extends Seeder
             'cabin_conf_accp' => $faker->boolean,
             'single_t_agreement' => $faker->boolean,
             'passenger_allocated_cost' => $pricePerPerson,
-            'passenger_order' => 0,
+            'passenger_order' => 1,
             'passenger_balance' => $faker->randomFloat(2, 1000, $pricePerPerson),
             'was_on_board' => $faker->boolean,
           ]
@@ -208,7 +208,7 @@ class PassengersSeeder extends Seeder
               'cabin_conf_accp' => $faker->boolean,
               'single_t_agreement' => $faker->boolean,
               'passenger_allocated_cost' => $pricePerPerson,
-              'passenger_order' => $i,
+              'passenger_order' => $i + 1,
               'passenger_balance' => $faker->randomFloat(2, 0, $pricePerPerson),
               'was_on_board' => $faker->boolean,
             ]

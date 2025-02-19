@@ -96,7 +96,7 @@ class CustomerBookingService
     $getSignedURL = URL::temporarySignedRoute(
       'add.pax',
       Carbon::now()->addHours(72),
-      ['bookingCode' => $booking->booking_code, 'token' => $token],
+      ['token' => $token],
       false // Generate relative URL
     );
 
