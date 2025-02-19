@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Cabin;
+use App\Models\PassengerInvitation;
+use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class CustomerBookingRepository
 {
@@ -31,7 +33,14 @@ class CustomerBookingRepository
   {
     $user_survivor_number = $user->survivor_number ?? null;
 
-    $booking = Booking::with('passengers.fees', 'passengers.installments', 'cabin.category', 'cabin.cabinType', 'event')
+    $booking = Booking::with(
+      'passengers.fees',
+      'passengers.installments',
+      'passengers.passengerInvitation',
+      'cabin.category',
+      'cabin.cabinType',
+      'event'
+    )
       ->where('booking_code', $bookingCode)
       ->first();
 
@@ -84,6 +93,76 @@ class CustomerBookingRepository
   public function createPassenger($data)
   {
     return Passenger::create($data);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Add passenger non authenticated
+  |--------------------------------------------------------------------------
+  | 
+  | This method will add a passenger to the booking without authentication ADD PAX
+  |
+  */
+  public function addPassengerNonAuth($bookingCode, $validated, $token)
+  {
+    $booking = $this->getBookingByCode($bookingCode);
+
+    if (!$token || !$bookingCode) {
+      return response()->json(['message' => 'Invalid token'], 400);
+    }
+
+    // log params
+    \Log::info('Add passenger non authenticated: ' . json_encode($validated));
+
+    $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
+      ->where('token', $token)
+      ->first();
+
+    if (!$passengerSlotId) {
+      return response()->json(['message' => 'Invalid token'], 400);
+    }
+
+    // check the bookingCode === booking_code
+    if ($booking->booking_code !== $bookingCode) {
+      return response()->json(['message' => 'Invalid booking code'], 400);
+    }
+
+    $emptyPassenger = Passenger::where('id', $passengerSlotId->passenger_id)->first();
+
+    // update passenger id and remove PassengerInvitation
+    if ($emptyPassenger) {
+      try {
+        $emptyPassenger->update([
+          'booking_id' => $booking->id,
+          'first_name' => $validated['firstName'],
+          'middle_name' => $validated['middleName'] ?? null,
+          'last_name' => $validated['lastName'],
+          'dob' => $validated['dateOfBirth'],
+          'gender' => $validated['gender'],
+          'citizenship' => $validated['citizenship'],
+          'address_first' => $validated['addressLine1'],
+          'address_second' => $validated['addressLine2'],
+          'city' => $validated['city'],
+          'state' => $validated['state'],
+          'postal_code' => $validated['zipCode'],
+          'country' => $validated['country'],
+          'email' => $validated['email'],
+          'phone' => $validated['phoneNumber'],
+          'emergency_c_name' => $validated['emergencyContactName'],
+          'emergency_c_phone' => $validated['emergencyPhoneNumber'],
+          'special_request' => $validated['specialRequest'],
+        ]);
+
+        $passengerSlotId->delete();
+      } catch (\Exception $e) {
+        \Log::error('Error while adding passenger: ' . $e->getMessage());
+        return response()->json(['message' => 'Error while adding passenger'], 500);
+      }
+
+      return response()->json(['message' => 'Passenger added'], 200);
+    }
+
+    return response()->json(['message' => 'No empty seats available'], 404);
   }
 
   /*
@@ -154,23 +233,43 @@ class CustomerBookingRepository
   | This method will add an empty seat to the booking
   |
   */
-  public function setEmptySeat($bookingCode)
+  public function setEmptySeat($bookingCode, $passengerOrder)
   {
     $booking = $this->getBookingByCode($bookingCode);
 
     //$cabinCapacity = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;
 
+    // get passenger based on passenger order
     $emptyPassenger = $passengers
-      ->filter(function ($passenger) {
-        return $passenger->first_name === null &&
-          $passenger->gender === null &&
-          $passenger->dob === null &&
-          $passenger->empty_seat === false;
+      ->filter(function ($passenger) use ($passengerOrder) {
+        return $passenger->passenger_order === $passengerOrder;
       })
       ->first();
 
-    if ($emptyPassenger) {
+    // $emptyPassenger = $passengers
+    //   ->filter(function ($passenger) {
+    //     return $passenger->first_name === null &&
+    //       $passenger->gender === null &&
+    //       $passenger->dob === null &&
+    //       $passenger->empty_seat === false;
+    //   })
+    //   ->first();
+
+    $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
+      ->where('passenger_id', $emptyPassenger->id)
+      ->first();
+
+    if ($passengerSlotId) {
+      return response()->json(['message' => 'Passenger with this slot has already been taken'], 400);
+    }
+
+    if (
+      $emptyPassenger &&
+      $emptyPassenger->first_name === null &&
+      $emptyPassenger->dob === null &&
+      $emptyPassenger->empty_seat === false
+    ) {
       // add one null passenger to the same booking
       try {
         $emptyPassenger->update([
