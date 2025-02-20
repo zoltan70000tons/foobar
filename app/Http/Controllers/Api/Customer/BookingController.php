@@ -390,8 +390,16 @@ class BookingController extends Controller
 
     $validated = $request->validated();
 
+    $passengerOrder = $request->input('passenger_order');
+
+    // Check if passenger order is already taken
+    $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
+    if ($passenger->email) {
+      return response()->json(['message' => 'Passenger order is already taken'], 400);
+    }
+
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $validated);
+    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $passenger, $validated);
 
     return $result;
   }

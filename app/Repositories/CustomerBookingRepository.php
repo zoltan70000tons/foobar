@@ -39,6 +39,7 @@ class CustomerBookingRepository
       'passengers.passengerInvitation',
       'cabin.category',
       'cabin.cabinType',
+      'passengers.payments',
       'event'
     )
       ->where('booking_code', $bookingCode)
@@ -173,7 +174,7 @@ class CustomerBookingRepository
   | This method will add a passenger to the booking manually
   |
   */
-  public function addPassengerManually($bookingCode, $validated)
+  public function addPassengerManually($bookingCode, $passenger, $validated)
   {
     $booking = $this->getBookingByCode($bookingCode);
 
@@ -181,20 +182,20 @@ class CustomerBookingRepository
     \Log::info('Add passenger manually: ' . json_encode($validated));
 
     //$cabinCapacity = $booking->cabin->category->capacity;
-    $passengers = $booking->passengers;
+    // $passengers = $booking->passengers;
 
-    $emptyPassenger = $passengers
-      ->filter(function ($passenger) {
-        return $passenger->first_name === null &&
-          $passenger->gender === null &&
-          $passenger->dob === null &&
-          $passenger->empty_seat === false;
-      })
-      ->first();
+    // $emptyPassenger = $passengers
+    //   ->filter(function ($passenger) {
+    //     return $passenger->first_name === null &&
+    //       $passenger->gender === null &&
+    //       $passenger->dob === null &&
+    //       $passenger->empty_seat === false;
+    //   })
+    //   ->first();
 
-    if ($emptyPassenger) {
+    if ($passenger) {
       try {
-        $emptyPassenger->update([
+        $passenger->update([
           'booking_id' => $booking->id,
           'first_name' => $validated['firstName'],
           'middle_name' => $validated['middleName'] ?? null,
