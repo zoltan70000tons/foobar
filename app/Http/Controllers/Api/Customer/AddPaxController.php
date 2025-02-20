@@ -32,6 +32,11 @@ class AddPaxController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
+    // if booking status is not public or pre-sale, return error
+    if (!in_array($booking->event->status, ['public', 'pre-sale'])) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
     // Normalize input names
     $formattedName = $this->normalizeString($request->name);
     $formattedLastName = $this->normalizeString($request->lastName);

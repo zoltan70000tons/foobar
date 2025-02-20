@@ -25,23 +25,33 @@ class PricingMatrixController extends Controller
   /**
    * Index method: return name and id of cabin types.
    */
-  public function index()
-  {
-    $cabinTypes = CabinType::select('id', 'cabin_type')->get();
-    return response()->json($cabinTypes);
-  }
+  // public function index()
+  // {
+  //   $cabinTypes = CabinType::select('id', 'cabin_type')->get();
+  //   return response()->json($cabinTypes);
+  // }
 
   /**
    * Show cabins grouped by ticket type.
    */
-  public function show($ticketType)
+  public function show($eventId, $cabinTypeId)
   {
+    if (!$eventId || !$cabinTypeId) {
+      return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
+    }
+
     // \DB::enableQueryLog();
     // Fetch categories with cabins and specs based on ticket type
-    $categories = CabinCategory::with([
-      'cabins' => fn($query) => $query->where('cabin_type_id', $ticketType),
-      'spec',
-    ])->get();
+    $categories = CabinCategory::where('event_id', $eventId)
+      ->with([
+        'cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId),
+        'spec',
+      ])
+      ->get();
+
+    if (!$categories->count()) {
+      return response()->json(['message' => 'No categories found'], 404);
+    }
 
     // Group categories by type, sort, and select the first for each type
     $groupedCategories = $categories
@@ -51,7 +61,7 @@ class PricingMatrixController extends Controller
 
     // Format categories for response
     $formattedCategories = $groupedCategories->map(
-      fn($category) => $this->formatCategory($category, $categories, $ticketType)
+      fn($category) => $this->formatCategory($category, $categories, $cabinTypeId)
     );
 
     return response()->json($formattedCategories->values());
@@ -60,13 +70,13 @@ class PricingMatrixController extends Controller
   /**
    * Format a category for response.
    */
-  protected function formatCategory($category, $categories, $ticketType)
+  protected function formatCategory($category, $categories, $cabinTypeId)
   {
     $categorySpec = $category->spec;
 
     // Determine max capacity
     $maxCapacity =
-      $ticketType !== '1'
+      $cabinTypeId !== '1'
         ? 4 // Single Ticket max capacity
         : ($categorySpec->category_type === 'Suite'
           ? 8
@@ -77,7 +87,7 @@ class PricingMatrixController extends Controller
         'name' => $categorySpec->category_type,
         'display_order' => $categorySpec->display_order,
         'max_capacity' => $maxCapacity,
-        'categories' => $this->getCategories($categorySpec->category_type, $categories, $ticketType),
+        'categories' => $this->getCategories($categorySpec->category_type, $categories, $cabinTypeId),
       ],
     ];
   }
@@ -85,7 +95,7 @@ class PricingMatrixController extends Controller
   /**
    * Get categories based on category type.
    */
-  public function getCategories($category_type, $categories, $ticketType)
+  public function getCategories($category_type, $categories, $cabinTypeId)
   {
     // Filter, group, and sort categories by category type
     $filteredCategories = $categories
@@ -97,20 +107,20 @@ class PricingMatrixController extends Controller
 
     // Map categories for response
     return $filteredCategories->map(
-      fn($category) => $this->formatFilteredCategory($category, $categories, $ticketType)
+      fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId)
     );
   }
 
   /**
    * Format a filtered category for response.
    */
-  protected function formatFilteredCategory($category, $categories, $ticketType)
+  protected function formatFilteredCategory($category, $categories, $cabinTypeId)
   {
     return [
       'name' => $category->category_name,
       'cabin_category_id' => $category->id,
       'display_order' => $category->display_order,
-      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $ticketType),
+      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId),
     ];
   }
 }
