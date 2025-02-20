@@ -7,53 +7,93 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Event;
+use Illuminate\Support\Str;
 
 class AddPaxController extends Controller
 {
   /**
-   * 1. User send email and booking code.
-   * 2. Check if booking code exist.
-   * 3. Check the email is same as passenger with booking code.
+   * 1. User sends email and booking code.
+   * 2. Check if booking code exists.
+   * 3. Check if the name & last name match any passenger in that booking.
    * 4. Return the booking details.
    */
   public function show(Request $request)
   {
     $request->validate([
       'name' => 'required|string',
-      'last_name' => 'required|string',
+      'lastName' => 'required|string',
       'bookingCode' => 'required|string',
     ]);
 
+    // Find booking by booking code
     $booking = Booking::where('booking_code', $request->bookingCode)->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    // Capitalize first letter of each word (to match DB format)
-    $formattedName = ucfirst(strtolower($request->name));
-    $formattedLastName = ucfirst(strtolower($request->last_name));
+    // if booking status is not public or pre-sale, return error
+    if (!in_array($booking->event->status, ['public', 'pre-sale'])) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
 
-    $passenger = Passenger::where('first_name', $formattedName)
-      ->where('last_name', $formattedLastName)
-      ->where('booking_id', $booking->id)
-      ->first();
+    // Normalize input names
+    $formattedName = $this->normalizeString($request->name);
+    $formattedLastName = $this->normalizeString($request->lastName);
 
-    if (!$passenger) {
+    \Log::info('Formatted name: ', ['name' => $formattedName, 'lastName' => $formattedLastName]);
+
+    // Fetch all passengers for this booking
+    $passengers = Passenger::where('booking_id', $booking->id)->get();
+
+    \Log::info('Passengers: ', ['passengers' => $passengers]);
+
+    // Try to find a passenger with a similar name
+    $matchedPassenger = $passengers->first(function ($passenger) use ($formattedName, $formattedLastName) {
+      return $this->isSimilar($this->normalizeString($passenger->first_name ?? ''), $formattedName) &&
+        $this->isSimilar($this->normalizeString($passenger->last_name ?? ''), $formattedLastName);
+    });
+
+    if (!$matchedPassenger) {
       return response()->json(['message' => 'Passenger not found'], 404);
     }
 
+    // Fetch event related to booking
     $event = Event::find($booking->event_id);
 
-    // schema to return
-    $booking = [
-      'booking_code' => $booking->booking_code,
-      'event' => $event,
-      'passengers' => $passenger,
-    ];
-
     return response()->json([
-      'booking' => $booking,
+      'booking' => [
+        'booking_code' => $booking->booking_code,
+        'event' => $event,
+        'passengers' => $matchedPassenger,
+      ],
     ]);
+  }
+
+  /**
+   * Normalize a string by removing special characters and converting to uppercase.
+   */
+  private function normalizeString(string $string): string
+  {
+    return strtoupper(trim(Str::ascii($string))); // Remove accents and normalize casing
+  }
+
+  /**
+   * Check if two strings are similar based on Levenshtein distance and Soundex.
+   */
+  private function isSimilar(string $input, string $stored): bool
+  {
+    // Direct match
+    if ($input === $stored) {
+      return true;
+    }
+
+    // Check Soundex (similar pronunciation)
+    if (soundex($input) === soundex($stored)) {
+      return true;
+    }
+
+    // Allow minor typos with Levenshtein distance (threshold: 2)
+    return levenshtein($input, $stored) <= 2;
   }
 }

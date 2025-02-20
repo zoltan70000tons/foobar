@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\App;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class CustomerAuthController extends Controller
 {
@@ -176,5 +177,56 @@ class CustomerAuthController extends Controller
     } catch (\Exception $e) {
       Log::error('Failed to send email update notification to user ID ' . $user->id . ': ' . $e->getMessage());
     }
+  }
+
+  /**
+   * Delete the authenticated user
+   *
+   * Set null to the user's email and password
+   * Set null to the user's details
+   *
+   * @param  \Illuminate\Http\Request  $request
+   *
+   */
+  public function deleteAccount(Request $request)
+  {
+    $user = Auth::user();
+
+    if (!$user->hasRole('Customer')) {
+      return $this->errorResponse('Unauthorized', 401);
+    }
+
+    // Anonymize email to prevent duplicate uniqueness constraint issues
+    $user->update([
+      'email' => 'deleted_' . $user->id . '@example.test',
+      'email_verified_at' => null,
+      'password' => bcrypt(Str::random(32)), // Securely randomize password
+      'remember_token' => null,
+    ]);
+
+    // Anonymize user details
+    if ($user->detail) {
+      $user->detail()->update([
+        'first_name' => 'Deleted',
+        'middle_name' => null,
+        'last_name' => 'User',
+        'dob' => null,
+        'phone' => null,
+        'avatar' => null,
+        'emergency_c_name' => null,
+        'emergency_c_phone' => null,
+      ]);
+    }
+
+    // kill session
+    Auth::guard('web')->logout();
+
+    $request->session()->invalidate();
+
+    $request->session()->regenerateToken();
+
+    return $this->successResponse([
+      'message' => 'Account deleted successfully.',
+    ]);
   }
 }

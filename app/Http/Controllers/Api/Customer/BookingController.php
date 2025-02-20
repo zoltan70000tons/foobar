@@ -12,11 +12,13 @@ use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
+use App\Interfaces\PassengerInterface;
 use App\Models\Adjustment;
 use App\Models\CabinType;
 use App\Models\Event;
-use App\Models\Installment;
+use App\Models\PassengerInvitation;
 use App\Mail\CustomerConfirmationBooking;
+use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
@@ -328,7 +330,7 @@ class BookingController extends Controller
   |  This method call the service to set an empty seat in the booking
   |
   */
-  public function emptySeat($bookingCode)
+  public function emptySeat(Request $request, $bookingCode)
   {
     $user = Auth::user();
 
@@ -353,7 +355,9 @@ class BookingController extends Controller
       return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $result = $this->customerBookingRepository->setEmptySeat($bookingCode);
+    $passengerOrder = $request->input('passenger_order');
+
+    $result = $this->customerBookingRepository->setEmptySeat($bookingCode, $passengerOrder);
 
     return $result;
   }
@@ -386,8 +390,16 @@ class BookingController extends Controller
 
     $validated = $request->validated();
 
+    $passengerOrder = $request->input('passenger_order');
+
+    // Check if passenger order is already taken
+    $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
+    if ($passenger->email) {
+      return response()->json(['message' => 'Passenger order is already taken'], 400);
+    }
+
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $validated);
+    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $passenger, $validated);
 
     return $result;
   }
@@ -418,6 +430,7 @@ class BookingController extends Controller
       return response()->json(['message' => 'This booking is single occupancy'], 400);
     }
 
+    $passengerOrder = $request->input('passenger_order');
     // get email and survivor number from request
     $email = $request->input('email');
 
@@ -425,14 +438,37 @@ class BookingController extends Controller
       return response()->json(['message' => 'Email and survivor number are required'], 400);
     }
 
-    // if booking have passenger with this email
-    $passenger = $booking->passengers()->where('email', $email)->first();
-
-    if ($passenger) {
-      return response()->json(['message' => 'Passenger already exists'], 400);
+    // if booking have passenger with this email or passenger_order is taken
+    // Check if passenger already exists with this email
+    $existingPassenger = $booking->passengers()->where('email', $email)->first();
+    if ($existingPassenger) {
+      return response()->json(['message' => 'A passenger with this email is already added to the booking'], 400);
     }
 
-    $result = $this->customerBookingService->addPassengerViaEmail($bookingCode, $email);
+    // Check if passenger order is already taken
+    $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
+    if ($passenger->email) {
+      return response()->json(['message' => 'Passenger order is already taken'], 400);
+    }
+
+    // Check if an invitation already exists for this email and booking
+    $passengerInvitation = PassengerInvitation::where('booking_id', $booking->id)
+      ->where('email', $email)
+      ->first();
+
+    if ($passengerInvitation) {
+      return response()->json(['message' => 'Passenger with this email has already been invited'], 400);
+    }
+
+    $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
+      ->where('passenger_id', $passenger->id)
+      ->first();
+
+    if ($passengerSlotId) {
+      return response()->json(['message' => 'Passenger with this slot has already been taken'], 400);
+    }
+
+    $result = $this->customerBookingService->addPassengerViaEmail($booking, $passenger, $email);
 
     return $result;
   }
@@ -447,15 +483,25 @@ class BookingController extends Controller
   */
   public function validateAddPassenger(Request $request)
   {
-    $bookingCode = $request->input('bookingCode');
-
     // Validate the signed URL
     if (!$request->hasValidSignature(false)) {
       return response()->json(['message' => 'Invalid or expired URL'], 403);
     }
 
+    $token = $request->input('token');
+    //$bookingCode = $request->input('bookingCode');
+
+    // check the invitation exist
+    $passengerInvitation = PassengerInvitation::where('token', $token)->first();
+
+    \Log::info('passengerInvitation', ['pass invi' => $passengerInvitation]);
+
+    if (!$passengerInvitation) {
+      return response()->json(['message' => 'Invitation not found'], 404);
+    }
+
     // Fetch the booking and check if it exists
-    $booking = Booking::where('booking_code', $bookingCode)->first();
+    $booking = Booking::where('id', $passengerInvitation->booking_id)->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
@@ -474,12 +520,60 @@ class BookingController extends Controller
   |--------------------------------------------------------------------------
   |
   */
-  public function submitAddPassenger(StorePassengerRequest $request, $bookingCode)
+  public function submitAddPassenger(StorePassengerRequest $request, $bookingCode, $token)
   {
     $validated = $request->validated();
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $validated);
+    $result = $this->customerBookingRepository->addPassengerNonAuth($bookingCode, $validated, $token);
 
     return $result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Cancel invitation
+  |--------------------------------------------------------------------------
+  |
+  |  Delete the invitation row
+  |
+  */
+  public function cancelInvitation(Request $request, $bookingCode)
+  {
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $booking = Booking::where('booking_code', $bookingCode)->first();
+
+    if (!$booking) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    // passenger_id: passengerId,
+    // passenger_inivtation_id: invitationId,
+    // passenger_inivtation_token: token,
+    $passengerId = $request->input('passenger_id');
+    $invitationId = $request->input('passenger_inivtation_id');
+    $token = $request->input('passenger_inivtation_token');
+
+    if (!$passengerId || !$invitationId || !$token) {
+      return response()->json(['message' => 'Passenger ID, Invitation ID, and Token are required'], 400);
+    }
+
+    $passengerInvitation = PassengerInvitation::where('id', $invitationId)
+      ->where('booking_id', $booking->id)
+      ->where('passenger_id', $passengerId)
+      ->where('token', $token)
+      ->first();
+
+    if (!$passengerInvitation) {
+      return response()->json(['message' => 'Invitation not found'], 404);
+    }
+
+    $passengerInvitation->delete();
+
+    return response()->json(['message' => 'Invitation cancelled'], 200);
   }
 }

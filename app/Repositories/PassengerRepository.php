@@ -72,7 +72,7 @@ class PassengerRepository implements PassengerInterface
         'cabin_conf_accp' => $data['cabin_conf_accp'] ?? null,
         'single_t_agreement' => $data['single_t_agreement'] ?? null,
         'passenger_allocated_cost' => $allocatedCost,
-        'passenger_order' => 0,
+        'passenger_order' => 1,
         'passenger_balance' => 0,
         'was_on_board' => false,
       ];
@@ -125,7 +125,7 @@ class PassengerRepository implements PassengerInterface
   private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false): bool
   {
     try {
-      $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 0;
+      $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 1;
 
       for ($i = 0; $i < $seats; $i++) {
         $additionalPassengerData = [

@@ -55,8 +55,8 @@ Route::middleware(['membership_sales'])->group(function () {
 });
 
 Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
-Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
-Route::get('/pricing-matrix/{cabinId}', [PricingMatrixController::class, 'show']);
+//Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
+Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show']);
 
 Route::get('/cart/{eventId}', [CartController::class, 'index']);
 
@@ -100,6 +100,7 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
     Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
     Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
+    Route::post('/delete-account', [CustomerAuthController::class, 'deleteAccount']);
 
     // set slot empty
     Route::post('/my-bookings/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
@@ -110,6 +111,8 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
       BookingController::class,
       'addPassengerViaEmail',
     ]);
+    // cancel invitation
+    Route::post('/my-bookings/{bookingCode}/cancel-invitation', [BookingController::class, 'cancelInvitation']);
 
     // Booking
     // --- booking init
@@ -131,7 +134,7 @@ Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
   ->middleware('signed:relative');
 
 // --- ADD PAX Booking
-Route::post('/add-pax/{bookingCode}', [BookingController::class, 'submitAddPassenger']);
+Route::post('/add-pax/{bookingCode}/{token}', [BookingController::class, 'submitAddPassenger']);
 
 // --- ADD PAX PROFILE
 Route::post('/check-booking', [AddPaxController::class, 'show']);

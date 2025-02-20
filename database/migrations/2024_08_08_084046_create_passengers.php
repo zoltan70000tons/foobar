@@ -15,7 +15,7 @@ return new class extends Migration {
       $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
       $table->boolean('confirmed_booking_email')->default(false);
       $table->boolean('lead_passenger')->default(false);
-      $table->integer('passenger_order')->default(0);
+      $table->integer('passenger_order')->default(1);
       $table->string('survivor_number', 9)->nullable();
       $table->enum('payment_method', ['CREDIT_CARD', 'BANK_TRANSFER'])->default('CREDIT_CARD');
       $table->string('gender', 50)->nullable();

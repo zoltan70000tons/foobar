@@ -24,7 +24,7 @@ This email is send when customer send a request to add a pax.
 
     @include('emails.components.button', [
         'url' => $getSignedURL,
-        'slot' => __('systemEmails.email_cta_add_pax')
+        'slot' => 'Complete the form'
     ])
 @endsection
 

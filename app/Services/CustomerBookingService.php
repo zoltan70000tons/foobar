@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
 use App\Repositories\CustomerBookingRepository;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Models\PassengerInvitation;
 use App\Mail\AddPassenger;
 
 class CustomerBookingService
@@ -78,20 +80,30 @@ class CustomerBookingService
   | This method will send an email to the user with a signed URL to add a passenger
   |
   */
-  public function addPassengerViaEmail($bookingCode, $email)
+  public function addPassengerViaEmail($booking, $passenger, $email)
   {
+    $token = Str::random(32);
+
+    $invitation = PassengerInvitation::create([
+      'passenger_id' => $passenger->id,
+      'booking_id' => $booking->id,
+      'token' => $token,
+      'email' => $email,
+      'sent_at' => now(),
+    ]);
+
     // generate signed url
     $getSignedURL = URL::temporarySignedRoute(
       'add.pax',
-      Carbon::now()->addHours(24),
-      ['bookingCode' => $bookingCode],
+      Carbon::now()->addHours(72),
+      ['token' => $token],
       false // Generate relative URL
     );
 
     // send email to the user
     try {
-      $email = $email;
-      Mail::to($email)->send(new AddPassenger($getSignedURL, $bookingCode));
+      $emailTo = $invitation->email;
+      Mail::to($emailTo)->send(new AddPassenger($getSignedURL, $booking->booking_code));
     } catch (\Exception $e) {
       \Log::error('Failed to send email to user: ' . $e->getMessage());
       return response()->json(['message' => 'Failed to send email to user'], 500);

@@ -32,6 +32,6 @@ return [
 
   'email_request_to_add_pax' => 'Ha recibido una solicitud para agregar un pasajero a su reserva.',
   'email_request_to_add_pax_body' =>
-    'Tiene 24 horas para agregar sus detalles a la reserva. Si no agrega los detalles dentro de este tiempo, la solicitud se cancelará.',
+    'Tiene 72 horas para agregar sus detalles a la reserva. Si no agrega los detalles dentro de este tiempo, la solicitud se cancelará.',
   'email_request_to_add_pax_cta' => 'Agregar detalles',
 ];
