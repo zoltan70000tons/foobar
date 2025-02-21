@@ -17,61 +17,46 @@ class MatrixHelper
   //  *
   //  * @return string | null
   //  */
-  public static function getDecks(int $cabinCategoryId, int $ticketType)
+  public static function getDecks(array $cabinCategoryIds, int $ticketType)
   {
-    // dump($cabinCategoryId, $ticketType);
-
     return DB::table('cabins')
       ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
-      ->where('cabins.cabin_category_id', $cabinCategoryId)
+      ->whereIn('cabins.cabin_category_id', $cabinCategoryIds) // Batch fetch for all categories
       ->where('cabins.cabin_type_id', $ticketType)
       ->distinct()
       ->pluck('cabin_specs.deck')
       ->implode(',');
-
-    // $cabinSpecIds = Cabin::where('cabin_category_id', $cabinCategoryId)
-    //   ->where('cabin_type_id', $ticketType)
-    //   ->distinct()
-    //   ->pluck('cabin_spec_id') // Only select the cabin_spec_id column
-    //   ->toArray();
-
-    // // Get all decks from CabinSpec based on the cabin_spec_ids
-    // $decks = CabinSpec::whereIn('id', $cabinSpecIds)
-    //   ->distinct()
-    //   ->pluck('deck') // Only select the deck column
-    //   ->toArray();
-
-    // // Return decks as a comma-separated string
-    // return implode(',', $decks);
   }
+
 
   public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
   {
-    // Filter categories in memory by parentCategoryName
+    // Filter categories once and extract IDs upfront
     $filteredCategories = $categories->filter(fn($item) => $item->category_name === $parentCategoryName);
+    $cabinCategoryIds = $filteredCategories->pluck('spec.id')->toArray();
 
     // Filter further by ticketType using already loaded cabins
     $filteredCategories = $filteredCategories->filter(
       fn($item) => $item->cabins->contains('cabin_type_id', $ticketType)
     );
 
-    // Map and transform the filtered categories in one step
+    // Fetch decks in one batch query
+    $decks = self::getDecks($cabinCategoryIds, $ticketType);
+
     return $filteredCategories
-      ->map(function ($item) use ($categories, $ticketType) {
-        return [
-          'name' => $item->spec->category_name,
-          'cabin_category_id' => $item->spec->id,
-          'code' => $item->spec->category_code,
-          'display_order' => $item->spec->display_order,
-          'decks' => self::getDecks($item->spec->id, $ticketType), // Dynamic decks info
-          'decks_static' => $item->spec->decks, // Static decks info
-          'iframe' => $item->iframe,
-          'images' => $item->images,
-          'full_title' => $item->getTitleAttribute(),
-          'description' => $item->description,
-          'price_and_availability' => self::getPriceDetails($categories, $item->category_code),
-        ];
-      })
+      ->map(fn($item) => [
+        'name' => $item->spec->category_name,
+        'cabin_category_id' => $item->spec->id,
+        'code' => $item->spec->category_code,
+        'display_order' => $item->spec->display_order,
+        'decks' => $decks, // Use Dynamic pre-fetched decks
+        'decks_static' => $item->spec->decks, // Static decks label
+        'iframe' => $item->iframe,
+        'images' => $item->images,
+        'full_title' => $item->getTitleAttribute(),
+        'description' => $item->description,
+        'price_and_availability' => self::getPriceDetails($categories, $item->category_code),
+      ])
       ->unique('code') // Ensure uniqueness by code
       ->values(); // Reset collection keys
   }
@@ -86,18 +71,12 @@ class MatrixHelper
     $filteredCategories = $categories
       ->where('category_code', $code)
       ->groupBy('capacity')
-      ->map(function ($group) {
-        return $group->sortBy('display_order')->first();
-      })
-      ->sortBy('display_order')
+      ->map(fn($group) => $group->sortBy('display_order')->first())
       ->values();
 
-    $prices = [];
-    for ($capacity = 2; $capacity <= 8; $capacity++) {
-      $prices["price_capacity_$capacity"] = self::getSinglePrice($filteredCategories, $capacity);
-    }
-
-    return $prices;
+    return collect(range(2, 8))->mapWithKeys(fn($capacity) => [
+      "price_capacity_$capacity" => self::getSinglePrice($filteredCategories, $capacity),
+    ])->toArray();
   }
 
   // Single price for a specific capacity
