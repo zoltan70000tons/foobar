@@ -12,7 +12,9 @@ import {
   IconButton,
   Tooltip,
   Chip,
-  DialogContentText
+  DialogContentText,
+  TextField,
+  FormControl
 } from "@mui/material";
 import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
@@ -25,7 +27,7 @@ const LANGUAGES = ["en", "es", "de"];
 const EmailTemplateEditor: React.FC = ({ booking }) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] =  useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
@@ -33,6 +35,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [subject, setSubject] = useState<string>("");
 
   const { showSnackbar } = useSnackbar();
 
@@ -54,7 +57,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
         const data = await response.json();
         console.log(data);
         setTemplates(data.templates);
-        setSelectedTemplate("");
+        setSelectedTemplate(null);
       } catch (error) {
         console.error("Error loading templates:", error);
       } finally {
@@ -100,10 +103,10 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
 
     const unlayer = emailEditorRef.current?.editor;
     if (!unlayer) return;
-
+   console.log(selectedTemplate);
 
     unlayer.exportHtml(async (data) => {
-      const { html } = data;
+      const { html} = data;
       const formData = new FormData();
       formData.append("lang", lang);
       formData.append("template_name", selectedTemplate.name);
@@ -111,6 +114,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       formData.append("event_id", booking.event_id);
       formData.append("booking_id", booking.id);
       formData.append("template_id", selectedTemplate.id);
+      formData.append("subject", subject)
       attachments.forEach((file) => formData.append("attachments", file));
 
       try {
@@ -153,11 +157,12 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
         <CircularProgress />
       ) : (
         <Select
-          value={selectedTemplate ? JSON.stringify(selectedTemplate) : ""} 
+          value={selectedTemplate ? JSON.stringify(selectedTemplate) : ""}
           onChange={(e) => {
             const selectedObject = JSON.parse(e.target.value);
             console.log(selectedObject);
             setSelectedTemplate(selectedObject);
+            setSubject(selectedObject.subject);
           }}
           displayEmpty
           style={{ width: 250 }}
@@ -166,7 +171,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
             Select an email template
           </MenuItem>
           {templates.map((template) => (
-            <MenuItem key={template.id} value={JSON.stringify(template)}> 
+            <MenuItem key={template.id} value={JSON.stringify(template)}>
               {template.subject}
             </MenuItem>
           ))}
@@ -186,6 +191,17 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
           </IconButton>
         </DialogTitle>
         <DialogContent style={{ display: "flex", flexDirection: "column", height: "calc(100% - 60px)", padding: 0 }}>
+          <FormControl fullWidth style={{paddingRight: '1rem'}}>
+            <TextField
+              label="Email Subject"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              style={{ margin: "10px 10px 10px 10px" }}
+            />
+          </FormControl>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <EmailEditor
               ref={emailEditorRef}
