@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BookingEmail;
 use App\Models\Booking;
 use App\Services\EmailTemplateService;
 use App\Services\MailService;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Validator;
+use Log;
 
 class EmailController extends Controller
 {
@@ -22,41 +24,34 @@ class EmailController extends Controller
         $this->emailTemplateService = $emailTemplateService;
     }
 
-    /**
-     * Sends an email with the specified template.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    
+    
     public function sendEmail(Request $request)
     {
-        $validated = Validator::make($request->all(), [
+        $validated = $request->validate([
             'lang' => 'required|string|in:en,es,fr,de',
             'template_name' => 'required|string|exists:email_templates,name',
             'email_content' => 'required|string',
             'event_id' => 'required|integer',
             'booking_id' => 'required|integer|exists:bookings,id',
-        ])->validate();
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
+        ]);
+    
+       try {
         $booking = Booking::find($validated['booking_id']);
         $passengers = $booking->passengers;
-
-        try {
-            foreach ($passengers as $passenger) {
-                Mail::html($validated['email_content'], function ($message) use ($validated, $passenger) {
-                    $message->to($passenger->email) 
-                            ->subject('Email from 70000TONS OF METAL');
-                });
-            }
-        
-            return response()->json(['message' => 'Emails sent successfully'], 200);
-
-            //return response()->json(['message' => 'Email sent successfully'], 200);
-        } catch (\Exception $e) {
-            //throw $th;
-            dd($e->getMessage());
+        $attachments = $request->file('attachments', []);
+    
+        foreach ($passengers as $passenger) {
+            Mail::to($passenger->email)->send(new BookingEmail('Test1',$validated['email_content'], $attachments));
         }
+    
+        return response()->json(['message' => 'Emails sent successfully'], 200);
+       } catch (\Exception $ex) {
+        return response()->json(['message' => 'Error sending email'], 400);
+       }
     }
-
+    
     public function getEmailTemplates(Request $request)
     {
         $validated = Validator::make($request->all(), [

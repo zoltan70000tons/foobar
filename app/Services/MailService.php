@@ -37,8 +37,17 @@ class MailService
             ->where([
                 ['event_id', '=', $eventId],
                 ['lang', '=', $lang],
-                ['name', '=', $section] // Now `bodyName` can be dynamic
+                ['name', '=', $section] 
             ])
             ->value('body') ?? ''; // Return empty string if null
     }
+
+
+    function replacePlaceholders(string $template, array $variables): string
+{
+    foreach ($variables as $key => $value) {
+        $template = str_replace("{{" . $key . "}}", $value, $template);
+    }
+    return $template;
+}
 }

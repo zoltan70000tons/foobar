@@ -1,52 +1,80 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, CircularProgress } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  MenuItem,
+  Select,
+  CircularProgress,
+  Paper,
+  IconButton,
+  Tooltip,
+  Chip,
+  DialogContentText
+} from "@mui/material";
 import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
-const LANGUAGES = ["en", "es", "de"]; // Available languages
+const LANGUAGES = ["en", "es", "de"];
 
-const EmailTemplateEditor: React.FC = ({booking}) => {
+const EmailTemplateEditor: React.FC = ({ booking }) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSending, setIsSending] = useState<boolean>(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const emailEditorRef = useRef<EditorRef | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  /** Fetch available email templates when the language changes */
+  const { showSnackbar } = useSnackbar();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setAttachments([...attachments, ...Array.from(event.target.files)]);
+    }
+  };
+
+  const handleRemoveAttachment = (fileToRemove: File) => {
+    setAttachments(attachments.filter((file) => file !== fileToRemove));
+  };
+
   useEffect(() => {
     const fetchTemplates = async () => {
-      setIsLoading(true);
+      setIsSending(true);
       try {
         const response = await fetch(`/get-email-templates?lang=${lang}`);
         const data = await response.json();
         setTemplates(data.templates);
-        setSelectedTemplate(""); // Reset selection when changing language
+        setSelectedTemplate("");
       } catch (error) {
         console.error("Error loading templates:", error);
       } finally {
-        setIsLoading(false);
+        setIsSending(false);
       }
     };
     fetchTemplates();
   }, [lang]);
 
-  /** Fetch and load selected template when the editor is ready */
   const onEditorReady: EmailEditorProps["onReady"] = async (unlayer) => {
-    console.log("EmailEditor is ready!");
-
     if (!selectedTemplate) return;
-
     try {
       const response = await fetch(`/get-email-template?lang=${lang}&template_name=${selectedTemplate}`);
       const data = await response.json();
-      
       if (data.design && typeof data.design === "object") {
-        console.log("Loading design into Unlayer:", data.design);
         unlayer.loadDesign(data.design);
       } else {
         console.error("Invalid template format:", data);
       }
     } catch (error) {
+      showSnackbar("Error loading template content", "error");
       console.error("Error loading template content:", error);
     }
   };
@@ -55,39 +83,50 @@ const EmailTemplateEditor: React.FC = ({booking}) => {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
   };
 
-  /** Handle sending the email */
+  const onLoad: EmailEditorProps["onLoad"] = () => {
+    const unlayer = emailEditorRef.current?.editor;
+    if (unlayer) {
+      console.log("Unlayer editor is ready!");
+    }
+  };
+
   const handleSendEmail = () => {
+    setIsConfirmDialogOpen(false);
+    setIsSending(true);
+
     const unlayer = emailEditorRef.current?.editor;
     if (!unlayer) return;
 
     unlayer.exportHtml(async (data) => {
       const { html } = data;
-      console.log("Sending email with content:\n", html);
+      const formData = new FormData();
+      formData.append("lang", lang);
+      formData.append("template_name", selectedTemplate);
+      formData.append("email_content", html);
+      formData.append("event_id", booking.event_id);
+      formData.append("booking_id", booking.id);
+      attachments.forEach((file) => formData.append("attachments", file));
 
       try {
         const response = await fetch("/send-email", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": getCsrfToken(), // Add CSRF token here
-          },
-          body: JSON.stringify({
-            lang,
-            template_name: selectedTemplate,
-            email_content: html,
-            event_id: booking.event_id,
-            booking_id: booking.id,
-          }),
+          headers: { "X-CSRF-TOKEN": getCsrfToken() },
+          body: formData,
         });
 
         if (response.ok) {
-          alert("Email sent successfully!");
-        //  setIsDialogOpen(false);
+          showSnackbar("✅ Email sent successfully!", "success");
+          setAttachments([]);
         } else {
-          throw new Error("Failed to send email.");
+          showSnackbar("❌ Failed to send email.", "error");
+          throw new Error("❌ Failed to send email.");
         }
       } catch (error) {
+        showSnackbar("⚠️ Error sending email, please try again.", "error");
+        //alert("⚠️ Error sending email, please try again.");
         console.error("Error sending email:", error);
+      } finally {
+        setIsSending(false);
       }
     });
   };
@@ -104,7 +143,7 @@ const EmailTemplateEditor: React.FC = ({booking}) => {
       </Select>
 
       {/* Template Selector */}
-      {isLoading ? (
+      {isSending ? (
         <CircularProgress />
       ) : (
         <Select
@@ -129,17 +168,81 @@ const EmailTemplateEditor: React.FC = ({booking}) => {
       </Button>
 
       {/* Email Editor Dialog */}
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} fullWidth maxWidth="lg" style={{ height: "100%" }}>
-        <DialogTitle>Edit Email Template</DialogTitle>
-        <DialogContent style={{ height: "500px" }}>
-          <EmailEditor ref={emailEditorRef} onReady={onEditorReady} />
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} fullWidth maxWidth="lg" fullScreen={isFullscreen}>
+        <DialogTitle>
+          Edit Email Template
+          <IconButton onClick={() => setIsFullscreen(!isFullscreen)} style={{ float: "right" }}>
+            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+        </DialogTitle>
+        <DialogContent style={{ height: "100%", position: "relative", paddingBottom: "60px" }}>
+        <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+          <EmailEditor ref={emailEditorRef} onReady={onEditorReady}  onLoad={onLoad} options={{ projectId: 1234, displayMode: "email" }} style={{ flex: 1, height: "100%" }}/>
+        </div>
+          {/* Fixed Bottom Bar */}
+          <Paper
+            elevation={3}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: "100%",
+              padding: "10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor: "#131313",
+            }}
+          >
+            <div>
+              {attachments.map((file, index) => (
+                <Chip
+                  key={index}
+                  label={file.name}
+                  onDelete={() => handleRemoveAttachment(file)}
+                  style={{ marginRight: "5px" }}
+                />
+              ))}
+            </div>
+            <Tooltip title="Attach Files">
+              <IconButton onClick={() => fileInputRef.current?.click()}>
+                <AttachFileIcon />
+              </IconButton>
+            </Tooltip>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              multiple
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </Paper>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsDialogOpen(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleSendEmail} variant="contained" color="primary">
-            Send Email
+          <Button onClick={() => setIsConfirmDialogOpen(true)} variant="contained" color="primary" disabled={isSending}>
+            {isSending ? "Sending..." : "Send Email"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Send Email Dialog */}
+      <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)}>
+        <DialogTitle>
+          Confirm Send Email
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to send this email?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsConfirmDialogOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSendEmail} color="primary" variant="contained" disabled={isSending}>
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
