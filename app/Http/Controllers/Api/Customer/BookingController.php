@@ -37,14 +37,14 @@ class BookingController extends Controller
     $this->customerBookingRepository = $customerBookingRepository;
   }
 
-  /**
-   * Store a new booking
-   *
-   * Validate the request and use BookingRepository to create a new booking
-   *
-   * @param StoreBookingRequest $request
-   *
-   */
+  /*
+  |--------------------------------------------------------------------------
+  |  Store new booking
+  |--------------------------------------------------------------------------
+  |
+  |  Store a new booking
+  |
+  */
   public function store(StoreBookingRequest $request)
   {
     $validated = $request->validated();
@@ -241,39 +241,41 @@ class BookingController extends Controller
     }
   }
 
-  /**
-   * Get booking confirmation
-   *
-   * @param string $bookingCode
-   * @return \Illuminate\Http\JsonResponse
-   *
-   */
-  public function bookingConfirmation($bookingCode)
-  {
-    $user = Auth::user();
+  /*
+  |--------------------------------------------------------------------------
+  |  Get booking confirmation
+  |--------------------------------------------------------------------------
+  |
+  |  This method is used to confirm the booking it's out 
+  |
+  */
+  // public function bookingConfirmation($bookingCode)
+  // {
+  //   $user = Auth::user();
 
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
+  //   if (!$user) {
+  //     return response()->json(['message' => 'Unauthorized'], 403);
+  //   }
 
-    $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
+  //   $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
 
-    if (!$result) {
-      return response()->json(['message' => 'Booking not found'], 404);
-    }
+  //   if (!$result) {
+  //     return response()->json(['message' => 'Booking not found'], 404);
+  //   }
 
-    return response()->json([
-      'status' => 'success',
-    ]);
-  }
+  //   return response()->json([
+  //     'status' => 'success',
+  //   ]);
+  // }
 
-  /**
-   * Get booking by booking code
-   *
-   * @param string $bookingCode
-   * @return \Illuminate\Http\JsonResponse
-   *
-   */
+  /*
+  |--------------------------------------------------------------------------
+  |  Get booking by code
+  |--------------------------------------------------------------------------
+  |
+  |  This method return single booking by code related to the user
+  |
+  */
   public function singleBooking($bookingCode)
   {
     $user = Auth::user();
@@ -283,30 +285,41 @@ class BookingController extends Controller
     }
 
     $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
-    $available_seats = $this->customerBookingService->getAvailableSeats($bookingCode);
 
     if (!$result) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
+    // hide cabin number if status is new or cancelled
     if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
       $result->cabin->makeHidden(['cabin_number']);
       $result->cabin->cabinSpec->makeHidden(['cabin_number']);
     }
 
+    // hide
+    $result->passengers->map(function ($passenger) {
+      $passenger->payments->map(function ($payment) {
+        $payment->makeHidden(['BIP_ID']);
+        $payment->makeHidden(['notes']);
+      });
+    });
+
     $schema = [
       'booking' => $result,
-      'available_seats' => $available_seats,
+      // 'available_seats' => $available_seats,
     ];
 
     return response()->json($schema);
   }
 
-  /**
-   * Get all bookings for the authenticated user
-   *
-   * @return \Illuminate\Http\JsonResponse
-   */
+  /*
+  |--------------------------------------------------------------------------
+  |  Get all bokings
+  |--------------------------------------------------------------------------
+  |
+  |  This method return all bokings related to the user
+  |
+  */
   public function allBookings()
   {
     $user = Auth::user();
