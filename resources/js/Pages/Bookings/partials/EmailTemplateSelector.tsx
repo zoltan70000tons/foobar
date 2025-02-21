@@ -52,6 +52,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       try {
         const response = await fetch(`/get-email-templates?lang=${lang}`);
         const data = await response.json();
+        console.log(data);
         setTemplates(data.templates);
         setSelectedTemplate("");
       } catch (error) {
@@ -66,10 +67,13 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
   const onEditorReady: EmailEditorProps["onReady"] = async (unlayer) => {
     if (!selectedTemplate) return;
     try {
-      const response = await fetch(`/get-email-template?lang=${lang}&template_name=${selectedTemplate}`);
+      const response = await fetch(`/get-email-template?lang=${lang}&template_name=${selectedTemplate.name}`);
       const data = await response.json();
       if (data.design && typeof data.design === "object") {
         unlayer.loadDesign(data.design);
+        unlayer.setBodyValues({
+          contentWidth: 'inherit', // Set the content width to 100%
+        })
       } else {
         console.error("Invalid template format:", data);
       }
@@ -97,14 +101,16 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
     const unlayer = emailEditorRef.current?.editor;
     if (!unlayer) return;
 
+
     unlayer.exportHtml(async (data) => {
       const { html } = data;
       const formData = new FormData();
       formData.append("lang", lang);
-      formData.append("template_name", selectedTemplate);
+      formData.append("template_name", selectedTemplate.name);
       formData.append("email_content", html);
       formData.append("event_id", booking.event_id);
       formData.append("booking_id", booking.id);
+      formData.append("template_id", selectedTemplate.id);
       attachments.forEach((file) => formData.append("attachments", file));
 
       try {
@@ -113,7 +119,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
           headers: { "X-CSRF-TOKEN": getCsrfToken() },
           body: formData,
         });
-
+        console.log(response);
         if (response.ok) {
           showSnackbar("✅ Email sent successfully!", "success");
           setAttachments([]);
@@ -147,8 +153,12 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
         <CircularProgress />
       ) : (
         <Select
-          value={selectedTemplate}
-          onChange={(e) => setSelectedTemplate(e.target.value)}
+          value={selectedTemplate ? JSON.stringify(selectedTemplate) : ""} 
+          onChange={(e) => {
+            const selectedObject = JSON.parse(e.target.value);
+            console.log(selectedObject);
+            setSelectedTemplate(selectedObject);
+          }}
           displayEmpty
           style={{ width: 250 }}
         >
@@ -156,8 +166,8 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
             Select an email template
           </MenuItem>
           {templates.map((template) => (
-            <MenuItem key={template} value={template}>
-              {template.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+            <MenuItem key={template.id} value={JSON.stringify(template)}> 
+              {template.subject}
             </MenuItem>
           ))}
         </Select>
@@ -175,23 +185,38 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
             {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
           </IconButton>
         </DialogTitle>
-        <DialogContent style={{ height: "100%", position: "relative", paddingBottom: "60px" }}>
-        <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-          <EmailEditor ref={emailEditorRef} onReady={onEditorReady}  onLoad={onLoad} options={{ projectId: 1234, displayMode: "email" }} style={{ flex: 1, height: "100%" }}/>
-        </div>
-          {/* Fixed Bottom Bar */}
+        <DialogContent style={{ display: "flex", flexDirection: "column", height: "calc(100% - 60px)", padding: 0 }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <EmailEditor
+              ref={emailEditorRef}
+              onReady={onEditorReady}
+              onLoad={onLoad}
+              options={{
+                projectId: 1234,
+                displayMode: "email",
+                appearance: {
+                  theme: "dark",
+                  panels: {
+                    tools: {
+                      collapsible: true,
+                    },
+                  },
+                },
+              }}
+              style={{ flex: 1, minHeight: "100px" }}
+            />
+          </div>
+
           <Paper
             elevation={3}
             style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
               width: "100%",
               padding: "10px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               backgroundColor: "#131313",
+              zIndex: 10,
             }}
           >
             <div>
@@ -219,6 +244,8 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
             />
           </Paper>
         </DialogContent>
+
+
         <DialogActions>
           <Button onClick={() => setIsDialogOpen(false)} color="secondary">
             Cancel

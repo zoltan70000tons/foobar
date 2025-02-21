@@ -32,6 +32,7 @@ class EmailController extends Controller
             'lang' => 'required|string|in:en,es,fr,de',
             'template_name' => 'required|string|exists:email_templates,name',
             'email_content' => 'required|string',
+            'template_id' => 'required|integer',
             'event_id' => 'required|integer',
             'booking_id' => 'required|integer|exists:bookings,id',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
@@ -41,9 +42,13 @@ class EmailController extends Controller
         $booking = Booking::find($validated['booking_id']);
         $passengers = $booking->passengers;
         $attachments = $request->file('attachments', []);
+        $template =  DB::table('email_templates')
+        ->select(['id', 'name', 'lang', 'subject'])
+        ->where('lang', $validated['lang'])->where('id', $validated['template_id'])
+        ->first();
     
         foreach ($passengers as $passenger) {
-            Mail::to($passenger->email)->send(new BookingEmail('Test1',$validated['email_content'], $attachments));
+            Mail::to($passenger->email)->send(new BookingEmail($template->subject,$validated['email_content'], $attachments));
         }
     
         return response()->json(['message' => 'Emails sent successfully'], 200);
@@ -57,13 +62,13 @@ class EmailController extends Controller
         $validated = Validator::make($request->all(), [
             'lang' => 'required|string|in:en,es,de',
         ])->validate();
-
+    
         $templates = DB::table('email_templates')
+            ->select(['id', 'name', 'lang', 'subject'])
             ->where('lang', $validated['lang'])
-            ->distinct()
-            ->pluck('name')
-            ->toArray();
-
+            ->distinct() 
+            ->get(); 
+    
         return response()->json(['templates' => $templates]);
     }
 
