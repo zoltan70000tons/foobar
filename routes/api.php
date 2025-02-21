@@ -125,7 +125,7 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
 );
 
 // Booking confirmation
-Route::get('/booking-confirmation/{bookingCode}', [BookingController::class, 'bookingConfirmation']);
+//Route::get('/booking-confirmation/{bookingCode}', [BookingController::class, 'bookingConfirmation']);
 
 // Add pax
 // --- add pax form

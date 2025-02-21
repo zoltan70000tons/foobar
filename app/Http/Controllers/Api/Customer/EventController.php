@@ -22,7 +22,7 @@ class EventController extends Controller
   public function show()
   {
     // check if event exist and get only if pre-sale or public
-    $events = Event::where('status', 'pre-sale')->orWhere('status', 'public')->get();
+    $events = Event::where('status', 'PRE-SALE')->orWhere('status', 'PUBLIC')->get();
 
     if ($events->isEmpty()) {
       return response()->json(['message' => 'no events found']);
@@ -54,7 +54,7 @@ class EventController extends Controller
     }
 
     // Check event status
-    if (!in_array($event->status, ['pre-sale', 'public'])) {
+    if (!in_array($event->status, ['PRE-SALE', 'PUBLIC'])) {
       return response()->json([
         'status' => 403,
         'message' => __('event.no_event_found'),

@@ -49,7 +49,7 @@ class PriceCalculation
         // Add the value only if the adjustment exists
         if ($adjustment && isset($adjustment->value)) {
           // Apply MEMBERSHIP discount only if event status is PRE-SALE
-          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'pre-sale') {
+          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'PRE-SALE') {
             continue;
           }
 
@@ -67,7 +67,7 @@ class PriceCalculation
 
         // Add the value only if the adjustment exists
         if ($adjustment && isset($adjustment->value)) {
-          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'pre-sale') {
+          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'PRE-SALE') {
             continue;
           }
           $sumOfFixedDiscounts += $adjustment->value;
