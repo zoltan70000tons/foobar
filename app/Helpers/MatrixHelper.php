@@ -17,48 +17,48 @@ class MatrixHelper
   //  *
   //  * @return string | null
   //  */
-  public static function getDecks(array $cabinCategoryIds, int $ticketType)
+  public static function getDecks(string $categoryCode, int $ticketType)
   {
-    return DB::table('cabins')
-      ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
-      ->whereIn('cabins.cabin_category_id', $cabinCategoryIds) // Batch fetch for all categories
-      ->where('cabins.cabin_type_id', $ticketType)
-      ->distinct()
-      ->pluck('cabin_specs.deck')
-      ->implode(',');
+    static $cache = [];
+
+    $key = "$categoryCode-$ticketType";
+    if (!isset($cache[$key])) {
+      $cache[$key] = DB::table('cabins')
+        ->join('cabin_categories', 'cabins.cabin_category_id', '=', 'cabin_categories.id')
+        ->join('cabin_category_specs', 'cabin_categories.cabin_category_spec_id', '=', 'cabin_category_specs.id')
+        ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
+        ->where('cabins.cabin_type_id', $ticketType)
+        ->where('cabin_category_specs.category_code', $categoryCode)
+        ->distinct()
+        ->pluck('cabin_specs.deck')
+        ->implode(',');
+    }
+
+    return $cache[$key];
   }
 
 
   public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
   {
-    // Filter categories once and extract IDs upfront
-    $filteredCategories = $categories->filter(fn($item) => $item->category_name === $parentCategoryName);
-    $cabinCategoryIds = $filteredCategories->pluck('spec.id')->toArray();
+    $filteredCategories = $categories
+      ->where('category_name', $parentCategoryName)
+      ->filter(fn($category) => $category->cabins->contains('cabin_type_id', $ticketType));
 
-    // Filter further by ticketType using already loaded cabins
-    $filteredCategories = $filteredCategories->filter(
-      fn($item) => $item->cabins->contains('cabin_type_id', $ticketType)
-    );
-
-    // Fetch decks in one batch query
-    $decks = self::getDecks($cabinCategoryIds, $ticketType);
-
-    return $filteredCategories
-      ->map(fn($item) => [
-        'name' => $item->spec->category_name,
-        'cabin_category_id' => $item->spec->id,
-        'code' => $item->spec->category_code,
-        'display_order' => $item->spec->display_order,
-        'decks' => $decks, // Use Dynamic pre-fetched decks
-        'decks_static' => $item->spec->decks, // Static decks label
-        'iframe' => $item->iframe,
-        'images' => $item->images,
-        'full_title' => $item->getTitleAttribute(),
-        'description' => $item->description,
-        'price_and_availability' => self::getPriceDetails($categories, $item->category_code),
-      ])
+    return $filteredCategories->map(fn($category) => [
+      'name' => $category->spec->category_name,
+      'cabin_category_id' => $category->spec->id,
+      'code' => $category->spec->category_code,
+      'display_order' => $category->spec->display_order,
+      'decks' => self::getDecks($category->spec->category_code, $ticketType), // Use Dynamic pre-fetched decks
+      'decks_static' => $category->spec->decks, // Static decks label
+      'iframe' => $category->iframe,
+      'images' => $category->images,
+      'full_title' => $category->getTitleAttribute(),
+      'description' => $category->description,
+      'price_and_availability' => self::getPriceDetails($categories, $category->category_code),
+    ])
       ->unique('code') // Ensure uniqueness by code
-      ->values(); // Reset collection keys
+      ->values();
   }
 
   /**
