@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\EmailTemplate;
 use App\Models\User;
 use App\Models\Event;
+use Blade;
 use DB;
 
 class EmailTemplateService
@@ -18,27 +19,52 @@ class EmailTemplateService
      * @param array $extraData (optional)
      * @return string
      */
-    public function getProcessedTemplate(int $bookingId, string $lang = 'en', string $name, array $extraData = []): string
+    public function getProcessedTemplate(int $bookingId, string $lang = 'en', int $id, array $extraData = []): string
     {
         $booking = Booking::find($bookingId);
         if (!$booking) {
             throw new \Exception('Booking not found');
         }
         $eventId = $booking->event_id;
-        $template = DB::table('email_templates')->where('event_id', $eventId)->where('lang', $lang)->where('name', $name)->first();
-
-        if (!$template) {
-            throw new \Exception('Email template not found');
+        switch($lang) {
+            case 'en':
+                $footer_template = '70000TONS_email_footer_ENG';
+                break;
+            case 'es':
+                $footer_template = '70000TONS_email_footer_ESP';
+                break;
+            case 'de':
+                $footer_template = '70000TONS_email_footer_DEU';
+                break;
+            default:
+                //$lang = 'en';
+                break;
         }
 
-        // get placeholders from template
-        $placeholders = $this->extractPlaceholders($template->body);
+        $bodyContent = DB::table('email_templates')
+            ->where('id', $id)
+            ->where('lang', $lang)
+            ->value('body');
 
-        // search for values of placeholders in DB or extra data
-        $values = $this->fetchPlaceholderValues($placeholders, $booking, $extraData);
+        $data = [
+            'header' => DB::table('email_templates')->where('name', '70000TONS_email_header_ENG')->where('lang', 'en')->value('body'),
+            'footer' => DB::table('email_templates')->where('name', $footer_template)->where('lang', $lang)->value('body'),
+        ];
+        $processedBody = Blade::render($bodyContent, $data);
+        return $processedBody;
+        //dd($data['footer']);
+       // return response($processedBody);
 
-        // replace placeholders in template
-        return $this->replacePlaceholders($template->body, $values);
+        // // get placeholders from template
+        // $placeholders = $this->extractPlaceholders($template->body);
+
+        // // search for values of placeholders in DB or extra data
+        // $values = $this->fetchPlaceholderValues($placeholders, $booking, $extraData);
+        // $footer_values = $this->fetchPlaceholderValues($this->extractPlaceholders($footer_template->body), $booking, $extraData);
+        // // replace placeholders in template
+        // $body = $this->replacePlaceholders($template->body, $values);
+        // $footer = $this->replacePlaceholders($footer_template->body, $footer_values);
+        // return $body . $footer;
     }
 
     /**
@@ -142,4 +168,6 @@ class EmailTemplateService
         }
         return $template;
     }
+
+    
 }
