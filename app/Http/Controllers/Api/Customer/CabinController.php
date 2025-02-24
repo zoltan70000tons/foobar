@@ -19,9 +19,9 @@ class CabinController extends Controller
   /**
    * Show cabins filtered by type, category, and deck.
    */
-  public function show($cabinTypeId, $cabinCategoryId, $cabinDeck)
+  public function show($cabinTypeId, $cabinCategoryCode, $cabinDeck)
   {
-    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId, $cabinDeck, false);
+    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId = null, $cabinDeck, false, $cabinCategoryCode);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
