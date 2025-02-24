@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
 use Illuminate\Support\Facades\Concurrency;
+use App\Enums\StatusCabin;
 
 class PricingMatrixController extends Controller
 {
@@ -21,15 +22,6 @@ class PricingMatrixController extends Controller
     $this->cabinType = $cabinType;
     $this->cabinCategory = $cabinCategory;
   }
-
-  /**
-   * Index method: return name and id of cabin types.
-   */
-  // public function index()
-  // {
-  //   $cabinTypes = CabinType::select('id', 'cabin_type')->get();
-  //   return response()->json($cabinTypes);
-  // }
 
   /**
    * Show cabins grouped by ticket type.
@@ -74,10 +66,10 @@ class PricingMatrixController extends Controller
     // Determine max capacity
     $maxCapacity =
       $cabinTypeId !== '1'
-      ? 4 // Single Ticket max capacity
-      : ($categorySpec->category_type === 'Suite'
-        ? 8
-        : 6); // Private Cabin max capacity
+        ? 4 // Single Ticket max capacity
+        : ($categorySpec->category_type === 'Suite'
+          ? 8
+          : 6); // Private Cabin max capacity
 
     return [
       'main_category' => [
