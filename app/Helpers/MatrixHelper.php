@@ -12,31 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class MatrixHelper
 {
-  // /**
-  //  * Return array for table
-  //  *
-  //  * @return string | null
-  //  */
-  // public static function getDecks(string $categoryCode, int $ticketType)
-  // {
-  //   static $cache = [];
-
-  //   $key = "$categoryCode-$ticketType";
-  //   if (!isset($cache[$key])) {
-  //     $cache[$key] = DB::table('cabins')
-  //       ->join('cabin_categories', 'cabins.cabin_category_id', '=', 'cabin_categories.id')
-  //       ->join('cabin_category_specs', 'cabin_categories.cabin_category_spec_id', '=', 'cabin_category_specs.id')
-  //       ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
-  //       ->where('cabins.cabin_type_id', $ticketType)
-  //       ->where('cabin_category_specs.category_code', $categoryCode)
-  //       ->distinct()
-  //       ->pluck('cabin_specs.deck')
-  //       ->implode(',');
-  //   }
-
-  //   return $cache[$key];
-  // }
-
   public static function getUniqueDecks($cabins)
   {
     $decks = $cabins
