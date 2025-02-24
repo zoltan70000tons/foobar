@@ -23,11 +23,11 @@ use App\Http\Controllers\Api\Customer\AddPaxController;
  */
 
 // --- PASSWORD RESET ---
-Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset']);
-Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword']);
+Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware('throttle:6,1');
+Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware('throttle:6,1');
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store']);
+Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware('throttle:10,1');
 
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
@@ -40,8 +40,10 @@ Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::cl
   ->name('verificationApi.verify');
 
 // --- REGISTER ---
-Route::post('/register', [CustomerRegisteredController::class, 'store']);
-Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor']);
+Route::post('/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:6,1');
+Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor'])->middleware(
+  'throttle:6,1'
+);
 
 // --- LOGOUT ---
 Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(['auth:sanctum', 'auth.customer']);
@@ -60,7 +62,7 @@ Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::
 Route::get('/cart/{eventId}', [CartController::class, 'index']);
 
 // --- CART ---
-Route::middleware(['one_booking_per_user'])->group(function () {
+Route::middleware(['throttle:40,1', 'one_booking_per_user'])->group(function () {
   Route::post('/cart', [CartController::class, 'store']);
   Route::put('/cart', [CartController::class, 'update']);
   Route::delete('/cart', [CartController::class, 'destroy']);
@@ -118,7 +120,9 @@ Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
   ->middleware('signed:relative');
 
 // --- ADD PAX Booking
-Route::post('/add-pax/{bookingCode}/{token}', [BookingController::class, 'submitAddPassenger']);
+Route::post('/add-pax/{bookingCode}/{token}', [BookingController::class, 'submitAddPassenger'])->middleware([
+  'throttle:10,1',
+]);
 
 // --- ADD PAX PROFILE
-Route::post('/check-booking', [AddPaxController::class, 'show']);
+Route::post('/check-booking', [AddPaxController::class, 'show'])->middleware(['throttle:15,1']);
