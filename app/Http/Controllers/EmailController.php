@@ -6,6 +6,7 @@ use App\Mail\BookingEmail;
 use App\Models\Booking;
 use App\Services\EmailTemplateService;
 use App\Services\MailService;
+use Blade;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -13,6 +14,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Validator;
 use Log;
+use View;
 
 class EmailController extends Controller
 {
@@ -83,11 +85,12 @@ class EmailController extends Controller
     {
         $validated = Validator::make($request->all(), [
             'lang' => 'required|string|in:en,es,de',
-            'template_name' => 'required|string|exists:email_templates,name',
+            'template_id' => 'required|integer'
         ])->validate();
 
+
         //$htmlContent = MailService::buildEmailTemplate(1, );
-        $htmlContent = $this->emailTemplateService->getProcessedTemplate(1, $validated['lang'], $validated['template_name'], []);
+        $htmlContent = $this->emailTemplateService->getProcessedTemplate(1, $validated['lang'], $validated['template_id'], []);
         // $htmlContent = DB::table('email_templates')
         //     ->where('lang', $validated['lang'])
         //     ->where('name', $validated['template_name'])
@@ -138,4 +141,21 @@ class EmailController extends Controller
 
         return response()->json(['design' => $unlayerJson], 200, ['Content-Type' => 'application/json']);
     }
+
+    public function showEmail()
+    {
+        $bodyContent = DB::table('email_templates')
+            ->where('name', '70000TONS OF METAL 2025 - Survivor Referral Credits XXXX')
+            ->where('lang', 'en')
+            ->value('body');
+
+        $data = [
+            'header' => DB::table('email_templates')->where('name', '70000TONS_email_header_ENG')->where('lang', 'en')->value('body'),
+            'footer' => DB::table('email_templates')->where('name', '70000TONS_email_footer_ENG')->where('lang', 'en')->value('body'),
+        ];
+        $processedBody = Blade::render($bodyContent, $data);
+        //dd($data['footer']);
+        return response($processedBody);
+    }
+    
 }

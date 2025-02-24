@@ -70,7 +70,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
   const onEditorReady: EmailEditorProps["onReady"] = async (unlayer) => {
     if (!selectedTemplate) return;
     try {
-      const response = await fetch(`/get-email-template?lang=${lang}&template_name=${selectedTemplate.name}`);
+      const response = await fetch(`/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}`);
       const data = await response.json();
       if (data.design && typeof data.design === "object") {
         unlayer.loadDesign(data.design);
