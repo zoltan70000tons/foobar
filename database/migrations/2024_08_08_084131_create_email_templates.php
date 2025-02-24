@@ -18,6 +18,7 @@ return new class extends Migration
       $table->string('subject', 255);
       $table->text('body');
       $table->text('placeholders')->nullable();
+      $table->string('lang', 10); // en, es, de
       $table->timestamps();
     });
   }

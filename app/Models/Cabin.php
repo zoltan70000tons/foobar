@@ -68,13 +68,11 @@ class Cabin extends Model
    */
   public function bookings()
   {
-    if (in_array($this->cabin_type_id, [2, 3])) {
-      // One-to-many relationship for single-ticket cabins
-      return $this->hasMany(Booking::class, 'cabin_id');
-    } else {
+    return $this->cabin_type_id === 1
       // One-to-one relationship for private cabins
-      return $this->hasOne(Booking::class, 'cabin_id');
-    }
+      ? $this->hasOne(Booking::class, 'cabin_id')
+      // One-to-many relationship for single-ticket cabins
+      : $this->hasMany(Booking::class, 'cabin_id');
   }
 
   // ==========================

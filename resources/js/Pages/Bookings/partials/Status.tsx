@@ -27,6 +27,7 @@ import UserSelectorModal from "@/Components/UserSelectorModal";
 import { Permissions } from "@/enums/PermissionEnum";
 import { StatusEnum } from "@/enums/StatusEnum";
 import Tags from "./Tags";
+import EmailTemplateSelector from "./EmailTemplateSelector";
 
 
 
@@ -144,6 +145,7 @@ const Status = ({ event, booking, editMode, users }) => {
           //centered
         >
           <Tab label="Status" />
+          <Tab label="Email Templates" />
           <Tab label="Danger Zone" />
         </Tabs>
 
@@ -217,7 +219,7 @@ const Status = ({ event, booking, editMode, users }) => {
             </Grid>
           </Grid>
         </Paper>)}
-        {activeTab === 1 && (
+        {activeTab === 2 && (
           <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mt: 2, minHeight: '150px' }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Cancel this booking:
@@ -231,6 +233,15 @@ const Status = ({ event, booking, editMode, users }) => {
             >
               Cancel Booking
             </Button>
+          </Paper>
+        )}
+        {activeTab === 1 && (
+          <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mt: 2, minHeight: '150px' }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Email Templates:
+            </Typography>
+
+            <EmailTemplateSelector booking={booking}/>
           </Paper>
         )}
       </Box>

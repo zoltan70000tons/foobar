@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
             BookingSeeder::class,
             PassengersSeeder::class,
             AdjustmentsSeeder::class,
-            PaymentSeeder::class,            
+            PaymentSeeder::class,
+            EmailTemplatesSeeder::class,       
         ]);
     }
 }
