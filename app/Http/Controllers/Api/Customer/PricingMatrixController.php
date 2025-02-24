@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
 use Illuminate\Support\Facades\Concurrency;
+use App\Enums\StatusCabin;
 
 class PricingMatrixController extends Controller
 {
@@ -21,15 +22,6 @@ class PricingMatrixController extends Controller
     $this->cabinType = $cabinType;
     $this->cabinCategory = $cabinCategory;
   }
-
-  /**
-   * Index method: return name and id of cabin types.
-   */
-  // public function index()
-  // {
-  //   $cabinTypes = CabinType::select('id', 'cabin_type')->get();
-  //   return response()->json($cabinTypes);
-  // }
 
   /**
    * Show cabins grouped by ticket type.
@@ -94,36 +86,6 @@ class PricingMatrixController extends Controller
    */
   public function getCategories($categoryType, $categories, $cabinTypeId)
   {
-    // \Log::info('Category type: ' . $category_type);
-
-    // \Log::info('categoriescategories: ', ['categories' => $categories]);
-
-    // // Debug original data
-    // \Log::info('All categories:', [
-    //   'count' => $categories->count(),
-    //   'data' => $categories->map(
-    //     fn($c) => [
-    //       'id' => $c->id,
-    //       'category_type' => $c->category_type,
-    //       'category_name' => $c->category_name,
-    //     ]
-    //   ),
-    // ]);
-
-    // // Debug after first filter
-    // $afterFirstFilter = $categories->filter(fn($category) => $category->category_type === $category_type);
-    // \Log::info('After category_type filter:', [
-    //   'count' => $afterFirstFilter->count(),
-    //   'category_type' => $category_type,
-    //   'data' => $afterFirstFilter->map(
-    //     fn($c) => [
-    //       'id' => $c->id,
-    //       'category_type' => $c->category_type,
-    //       'category_name' => $c->category_name,
-    //     ]
-    //   ),
-    // ]);
-
     // Filter, group, and sort categories by category type
     return $categories
       ->where('category_type', $categoryType)

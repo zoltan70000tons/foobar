@@ -47,7 +47,6 @@ Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 
 Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(['auth:sanctum', 'auth.customer']);
 
 // ---- EVENTS ----
-// --- GROUP WITHOUT MIDDLEWARE ---
 Route::get('/events', [EventController::class, 'show']);
 // --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
 Route::middleware(['membership_sales'])->group(function () {
@@ -67,30 +66,15 @@ Route::middleware(['one_booking_per_user'])->group(function () {
   Route::delete('/cart', [CartController::class, 'destroy']);
 });
 
+// get cabins
+Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 // get single category
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
 
-// get cabins
-Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
-Route::get('/cabins/types', [CabinController::class, 'showTypes']);
-
-// This middleware will clear expired reservations from the session
-// Route::middleware(['clear_expired_reservation'])->group(function () {
-//   // reserve cabin
-//   Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
-//   Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
-//   Route::post('/cabin/release', [CabinController::class, 'release']);
-// });
-
-// --- AUTH GROUP ---
-// Route::middleware(['auth:sanctum', 'auth.customer', 'verified'])->group(function () {
-//   Route::get('/customer', [CustomerAuthController::class, 'customer']);
-//   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
-//   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
-// });
-
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status', 'clear_expired_reservation'])->group(
   function () {
+    Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
+
     // reserve cabin
     Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
     Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
