@@ -97,6 +97,36 @@ class PricingMatrixController extends Controller
    */
   public function getCategories($category_type, $categories, $cabinTypeId)
   {
+    // \Log::info('Category type: ' . $category_type);
+
+    // \Log::info('categoriescategories: ', ['categories' => $categories]);
+
+    // // Debug original data
+    // \Log::info('All categories:', [
+    //   'count' => $categories->count(),
+    //   'data' => $categories->map(
+    //     fn($c) => [
+    //       'id' => $c->id,
+    //       'category_type' => $c->category_type,
+    //       'category_name' => $c->category_name,
+    //     ]
+    //   ),
+    // ]);
+
+    // // Debug after first filter
+    // $afterFirstFilter = $categories->filter(fn($category) => $category->category_type === $category_type);
+    // \Log::info('After category_type filter:', [
+    //   'count' => $afterFirstFilter->count(),
+    //   'category_type' => $category_type,
+    //   'data' => $afterFirstFilter->map(
+    //     fn($c) => [
+    //       'id' => $c->id,
+    //       'category_type' => $c->category_type,
+    //       'category_name' => $c->category_name,
+    //     ]
+    //   ),
+    // ]);
+
     // Filter, group, and sort categories by category type
     $filteredCategories = $categories
       ->filter(fn($category) => $category->category_type === $category_type)
@@ -104,6 +134,8 @@ class PricingMatrixController extends Controller
       ->map(fn($group) => $group->sortBy(fn($category) => $category->display_order)->first())
       ->sortBy(fn($category) => $category->display_order)
       ->values();
+
+    \Log::info('Filtered categories: ', ['categories' => $filteredCategories]);
 
     // Map categories for response
     return $filteredCategories->map(

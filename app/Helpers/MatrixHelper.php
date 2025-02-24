@@ -17,14 +17,14 @@ class MatrixHelper
   //  *
   //  * @return string | null
   //  */
-  public static function getDecks(int $cabinCategoryId, int $ticketType)
+  public static function getDecks(int $cabinCategoryId, int $cabinTypeId)
   {
     // dump($cabinCategoryId, $ticketType);
 
     return DB::table('cabins')
       ->join('cabin_specs', 'cabins.cabin_spec_id', '=', 'cabin_specs.id')
       ->where('cabins.cabin_category_id', $cabinCategoryId)
-      ->where('cabins.cabin_type_id', $ticketType)
+      ->where('cabins.cabin_type_id', $cabinTypeId)
       ->distinct()
       ->pluck('cabin_specs.deck')
       ->implode(',');
@@ -45,25 +45,29 @@ class MatrixHelper
     // return implode(',', $decks);
   }
 
-  public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
+  public static function getUniqueCategories($categories, $parentCategoryName, $cabinTypeId)
   {
     // Filter categories in memory by parentCategoryName
     $filteredCategories = $categories->filter(fn($item) => $item->category_name === $parentCategoryName);
 
     // Filter further by ticketType using already loaded cabins
     $filteredCategories = $filteredCategories->filter(
-      fn($item) => $item->cabins->contains('cabin_type_id', $ticketType)
+      fn($item) => $item->cabins->contains('cabin_type_id', $cabinTypeId)
     );
+
+    // $testDeck = self::getDecks(14, $cabinTypeId);
+
+    // Log::info('Test deck: ' . $testDeck);
 
     // Map and transform the filtered categories in one step
     return $filteredCategories
-      ->map(function ($item) use ($categories, $ticketType) {
+      ->map(function ($item) use ($categories, $cabinTypeId) {
         return [
           'name' => $item->spec->category_name,
           'cabin_category_id' => $item->spec->id,
           'code' => $item->spec->category_code,
           'display_order' => $item->spec->display_order,
-          'decks' => self::getDecks($item->spec->id, $ticketType), // Dynamic decks info
+          'decks' => self::getDecks($item->spec->id, $cabinTypeId), // Dynamic decks info
           'decks_static' => $item->spec->decks, // Static decks info
           'iframe' => $item->iframe,
           'images' => $item->images,
