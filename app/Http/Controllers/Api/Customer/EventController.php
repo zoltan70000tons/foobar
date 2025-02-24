@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Facades\App;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
@@ -51,6 +52,19 @@ class EventController extends Controller
         'status' => 404,
         'message' => __('event.no_event_found'),
       ]);
+    }
+
+    // check the event is past
+    if ($event->start_date < Carbon::now()) {
+      return response()->json(
+        [
+          'event' => [
+            'purchase_access' => false,
+            'access_message' => 'event_past',
+          ],
+        ],
+        200
+      );
     }
 
     // Check event status
