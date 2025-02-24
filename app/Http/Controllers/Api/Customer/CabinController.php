@@ -136,13 +136,13 @@ class CabinController extends Controller
     }
 
     $cabinTypeId = $request->input('cabin_type_id');
-    $cabinCategoryId = $request->input('cabin_category_id');
+    $cabinCategoryCode = $request->input('category_code');
 
-    if (!$cabinTypeId || !$cabinCategoryId) {
-      return response()->json(['message' => 'Cabin type and category are required.'], 400);
+    if (!$cabinTypeId || !$cabinCategoryCode) {
+      return response()->json(['message' => 'Cabin category code and category are required.'], 400);
     }
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId);
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, null, false, $cabinCategoryCode);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
