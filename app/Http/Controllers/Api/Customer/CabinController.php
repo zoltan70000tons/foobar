@@ -75,7 +75,7 @@ class CabinController extends Controller
     // REQUEST INPUT DATA
     $cabinNumber = $request->input('cabin_number');
     $cabinTypeId = $request->input('cabin_type_id');
-    $cabinCategoryId = $request->input('cabin_category_id');
+    $cabinCategoryCode = $request->input('category_code');
 
     $cart = $request->session()->get('cart', []) ?? null;
     $reservationId = $cart['reservation_id'] ?? null;
@@ -99,11 +99,11 @@ class CabinController extends Controller
     }
 
     // -------- Proceed with new reservation
-    if (!$cabinNumber || !$cabinTypeId || !$cabinCategoryId) {
+    if (!$cabinNumber || !$cabinTypeId || !$cabinCategoryCode) {
       return response()->json(['message' => 'Cabin number, type ID, and category ID are required.'], 400);
     }
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId);
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, null, false, $cabinCategoryCode);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);

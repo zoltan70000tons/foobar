@@ -39,21 +39,7 @@ class MatrixHelper
 
   public static function getUniqueDecks($cabins)
   {
-    // $decks = $cabins
-    //   ->map(function ($cabin) {
-    //     return $cabin->cabinSpec->deck;
-    //   })
-    //   ->unique()
-    //   ->sort();
-
-    // return $decks->implode(',');
-
     $decks = $cabins
-      // Only include cabins with AVAILABLE status.
-      // ->filter(function ($cabin) {
-      //   return $cabin->status === StatusCabin::AVAILABLE->value;
-      // })
-      // Extract the deck from the associated cabinSpec.
       ->map(function ($cabin) {
         return $cabin->cabinSpec->deck;
       })
