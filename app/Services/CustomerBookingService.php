@@ -44,36 +44,6 @@ class CustomerBookingService
 
   /*
   |--------------------------------------------------------------------------
-  | Get available seats
-  |--------------------------------------------------------------------------
-  |
-  |  This method will return the number of available seats in the cabin
-  |
-  */
-  public function getAvailableSeats($bookingCode)
-  {
-    // Fetch the booking data using the repository
-    $booking = $this->customerBookingRepository->getBookingByCode($bookingCode);
-
-    // Get the list of passengers associated with the booking
-    $passengers = $booking->passengers;
-
-    // Filter passengers where first_name, gender, and dob are null
-    $emptySeats = $passengers->filter(function ($passenger) {
-      return $passenger->first_name === null &&
-        $passenger->gender === null &&
-        $passenger->dob === null &&
-        $passenger->empty_seat === false;
-    });
-
-    // Count the number of empty seats
-    $availableSeats = $emptySeats->count();
-
-    return $availableSeats;
-  }
-
-  /*
-  |--------------------------------------------------------------------------
   | Add passenger via email
   |--------------------------------------------------------------------------
   |
@@ -93,12 +63,7 @@ class CustomerBookingService
     ]);
 
     // generate signed url
-    $getSignedURL = URL::temporarySignedRoute(
-      'add.pax',
-      Carbon::now()->addHours(72),
-      ['token' => $token],
-      false // Generate relative URL
-    );
+    $getSignedURL = URL::temporarySignedRoute('add.pax', Carbon::now()->addHours(72), ['token' => $token], false);
 
     // send email to the user
     try {

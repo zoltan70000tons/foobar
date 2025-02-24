@@ -33,7 +33,7 @@ class AddPaxController extends Controller
     }
 
     // if booking status is not public or pre-sale, return error
-    if (!in_array($booking->event->status, ['public', 'pre-sale'])) {
+    if (!in_array($booking->event->status, ['PUBLIC', 'PRE-SALE'])) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
 

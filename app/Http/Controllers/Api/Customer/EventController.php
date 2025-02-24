@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Facades\App;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
@@ -22,7 +23,7 @@ class EventController extends Controller
   public function show()
   {
     // check if event exist and get only if pre-sale or public
-    $events = Event::where('status', 'pre-sale')->orWhere('status', 'public')->get();
+    $events = Event::where('status', 'PRE-SALE')->orWhere('status', 'PUBLIC')->get();
 
     if ($events->isEmpty()) {
       return response()->json(['message' => 'no events found']);
@@ -53,8 +54,21 @@ class EventController extends Controller
       ]);
     }
 
+    // check the event is past
+    if ($event->start_date < Carbon::now()) {
+      return response()->json(
+        [
+          'event' => [
+            'purchase_access' => false,
+            'access_message' => 'event_past',
+          ],
+        ],
+        200
+      );
+    }
+
     // Check event status
-    if (!in_array($event->status, ['pre-sale', 'public'])) {
+    if (!in_array($event->status, ['PRE-SALE', 'PUBLIC'])) {
       return response()->json([
         'status' => 403,
         'message' => __('event.no_event_found'),

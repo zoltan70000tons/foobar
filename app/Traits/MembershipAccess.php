@@ -11,7 +11,7 @@ trait MembershipAccess
 {
   /**
    * Check if the user has access to sales based on their membership type
-   * 
+   *
    * @param  \App\Models\MembershipType|null  $membership
    * @param  string|null  $currentDateTime
    * @param  int|null  $id
@@ -33,23 +33,21 @@ trait MembershipAccess
 
     // Allow access to booking if event is public
     // No matter if user has membership or not
-    if ($event->status === 'public') {
+    if ($event->status === 'PUBLIC') {
       return ['status' => true];
     }
 
     // Block access to presale events if user has no membership
     // Returns error message to prompt user to sign in to determine membership
-    if (!$membership && $event->status === 'pre-sale') {
+    if (!$membership && $event->status === 'PRE-SALE') {
       return [
         'status' => false,
-        'message' => "PRESALE_NO_ACCOUNT",
+        'message' => 'PRESALE_NO_ACCOUNT',
       ];
     }
 
     // Query the presale periods table to get the relevant dates
-    $presalePeriod = $membership
-      ? PresalePeriod::where('membership_type_id', $membership->id)->first()
-      : null;
+    $presalePeriod = $membership ? PresalePeriod::where('membership_type_id', $membership->id)->first() : null;
 
     // Interpret start_date and end_date as America/New_York
     $startDateTime = Carbon::createFromFormat(
@@ -69,25 +67,22 @@ trait MembershipAccess
 
     // Check if membership is not allowed to access presale events
     // By comparing the current time with the membership presale start time
-    if ($event->status === 'pre-sale' && $currentDateTime->lt($startDateTime)) {
+    if ($event->status === 'PRE-SALE' && $currentDateTime->lt($startDateTime)) {
       return [
         'status' => false,
         'message' => [
-          'code' => "NO_MEMBERSHIP_ACCESS",
+          'code' => 'NO_MEMBERSHIP_ACCESS',
           'membership' => $membership->name,
           'start_time' => $startDateTimeUTC->toIso8601String(), // UTC time for frontend
-        ]
+        ],
       ];
     }
 
     // Allow access to booking if the current time is within the presale period for the membership
-    if (
-      ($currentDateTime->gte($startDateTime) &&
-        $currentDateTime->lte($endDateTime))
-    ) {
+    if ($currentDateTime->gte($startDateTime) && $currentDateTime->lte($endDateTime)) {
       return [
         'status' => true,
-        'message' => "ALLOWED_MEMBERSHIP_ACCESS",
+        'message' => 'ALLOWED_MEMBERSHIP_ACCESS',
       ];
     }
 

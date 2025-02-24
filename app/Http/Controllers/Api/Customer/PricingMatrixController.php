@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
 use Illuminate\Support\Facades\Concurrency;
+use App\Enums\StatusCabin;
 
 class PricingMatrixController extends Controller
 {
@@ -23,15 +24,6 @@ class PricingMatrixController extends Controller
   }
 
   /**
-   * Index method: return name and id of cabin types.
-   */
-  // public function index()
-  // {
-  //   $cabinTypes = CabinType::select('id', 'cabin_type')->get();
-  //   return response()->json($cabinTypes);
-  // }
-
-  /**
    * Show cabins grouped by ticket type.
    */
   public function show($eventId, $cabinTypeId)
@@ -43,10 +35,7 @@ class PricingMatrixController extends Controller
     // \DB::enableQueryLog();
     // Fetch categories with cabins and specs based on ticket type
     $categories = CabinCategory::where('event_id', $eventId)
-      ->with([
-        'cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId),
-        'spec',
-      ])
+      ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
       ->get();
 
     if (!$categories->count()) {
@@ -95,20 +84,15 @@ class PricingMatrixController extends Controller
   /**
    * Get categories based on category type.
    */
-  public function getCategories($category_type, $categories, $cabinTypeId)
+  public function getCategories($categoryType, $categories, $cabinTypeId)
   {
     // Filter, group, and sort categories by category type
-    $filteredCategories = $categories
-      ->filter(fn($category) => $category->category_type === $category_type)
-      ->groupBy(fn($category) => $category->category_name)
-      ->map(fn($group) => $group->sortBy(fn($category) => $category->display_order)->first())
-      ->sortBy(fn($category) => $category->display_order)
-      ->values();
-
-    // Map categories for response
-    return $filteredCategories->map(
-      fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId)
-    );
+    return $categories
+      ->where('category_type', $categoryType)
+      ->sortBy('display_order')
+      ->unique('category_name')
+      ->map(fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId))
+      ->values(); // Reset collection keys
   }
 
   /**

@@ -10,7 +10,6 @@ use Carbon\Carbon;
 
 class EventSeeder extends Seeder
 {
-
   /**
    * The current Faker instance.
    *
@@ -44,14 +43,15 @@ class EventSeeder extends Seeder
   {
     DB::table('events')->insert([
       'name' => '70000TONS OF METAL 2025',
-      'description' => '60 Bands, 4 Days, 1 Cruise Ship, and only 3000 Tickets. This is 70000TONS OF METAL®, The Original, The World’s Biggest Heavy Metal Cruise!',
+      'description' =>
+        '60 Bands, 4 Days, 1 Cruise Ship, and only 3000 Tickets. This is 70000TONS OF METAL®, The Original, The World’s Biggest Heavy Metal Cruise!',
       'image' => 'http://umc-dev-assets.s3.us-east-2.amazonaws.com/events/res7u5JtjbgCTz2zoiu3bd8StkckaZwLpeCvNPWW.jpg',
       'address' => 'Miami, Florida - Ocho Rios Jamaica',
-      'start_date' => '2025-01-30',
-      'end_date' => '2025-02-04',
-      'status' => 'pre-sale',
+      'start_date' => '2026-01-30',
+      'end_date' => '2026-02-04',
+      'status' => 'PRE-SALE',
       'created_at' => Carbon::now(),
-      'organization_id' => env('ORGANIZATION_ID', 1)
+      'organization_id' => env('ORGANIZATION_ID', 1),
     ]);
   }
 }
