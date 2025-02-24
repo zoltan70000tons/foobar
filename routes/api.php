@@ -71,9 +71,12 @@ Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 // get single category
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
 
+/// TEMP
+Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinDeck}', [CabinController::class, 'show']);
+
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status', 'clear_expired_reservation'])->group(
   function () {
-    Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
+    //Route::get('/cabins/{cabinTypeId}/{cabinCategoryId}/{cabinDeck}', [CabinController::class, 'show']);
 
     // reserve cabin
     Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);

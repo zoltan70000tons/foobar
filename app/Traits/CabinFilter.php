@@ -8,13 +8,17 @@ use App\Enums\StatusCabin;
 
 trait CabinFilter
 {
-  public function filterCabins($cabinTypeId, $cabinCategoryId, $cabinDeck = null, $onlyAvailable = true)
-  {
+  public function filterCabins(
+    $cabinTypeId,
+    $cabinCategoryId = null,
+    $cabinDeck = null,
+    $onlyAvailable = true,
+    $cabinCategoryCode = null
+  ) {
     $currentTime = Carbon::now();
 
     $cabinsQuery = Cabin::with(['category.spec']) // Eager load spec for deck filtering: https://laravel.com/docs/11.x/pennant#eager-loading
       ->where('cabin_type_id', $cabinTypeId)
-      ->where('cabin_category_id', $cabinCategoryId)
       ->when($onlyAvailable, function ($query) {
         // Only return cabins that are available
         return $query->where('status', StatusCabin::AVAILABLE->value);
@@ -24,6 +28,16 @@ trait CabinFilter
           $query->where('expires_at', '>', $currentTime);
         },
       ]);
+
+    if ($cabinCategoryId) {
+      $cabinsQuery->where('cabin_category_id', $cabinCategoryId);
+    }
+
+    if ($cabinCategoryCode) {
+      $cabinsQuery->whereHas('category.spec', function ($query) use ($cabinCategoryCode) {
+        $query->where('category_code', $cabinCategoryCode);
+      });
+    }
 
     // Filter by deck using the spec relation
     if ($cabinDeck) {

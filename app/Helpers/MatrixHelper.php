@@ -65,29 +65,39 @@ class MatrixHelper
 
   public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
   {
+    // Filter categories by parent category name and ticket type
     $filteredCategories = $categories
       ->where('category_name', $parentCategoryName)
       ->filter(fn($category) => $category->cabins->contains('cabin_type_id', $ticketType));
 
-    return $filteredCategories
-      ->map(
-        fn($category) => [
-          'name' => $category->spec->category_name,
-          'cabin_category_id' => $category->spec->id,
-          'code' => $category->spec->category_code,
-          'display_order' => $category->spec->display_order,
-          'decks' => self::getUniqueDecks($category->cabins),
-          // Use Dynamic pre-fetched decks,
-          'decks_static' => $category->spec->decks, // Static decks label
-          'iframe' => $category->iframe,
-          'images' => $category->images,
-          'full_title' => $category->getTitleAttribute(),
-          'description' => $category->description,
-          'price_and_availability' => self::getPriceDetails($categories, $category->category_code),
-        ]
-      )
-      ->unique('code') // Ensure uniqueness by code
-      ->values();
+    // Group the filtered categories by their spec code to ensure uniqueness by code
+    $groupedByCode = $filteredCategories->groupBy(fn($category) => $category->spec->category_code);
+
+    // Map each group to a single entry, merging decks across all categories in the group
+    $result = $groupedByCode->map(function ($group) use ($categories) {
+      $firstCategory = $group->first();
+
+      $allCabins = $group->flatMap(fn($category) => $category->cabins);
+
+      $decks = self::getUniqueDecks($allCabins);
+
+      return [
+        'name' => $firstCategory->spec->category_name,
+        'cabin_category_id' => $firstCategory->spec->id,
+        'code' => $firstCategory->spec->category_code,
+        'display_order' => $firstCategory->spec->display_order,
+        'decks' => $decks,
+        'decks_static' => $firstCategory->spec->decks, // your static label if needed
+        'iframe' => $firstCategory->iframe,
+        'images' => $firstCategory->images,
+        'full_title' => $firstCategory->getTitleAttribute(),
+        'description' => $firstCategory->description,
+        'price_and_availability' => self::getPriceDetails($categories, $firstCategory->category_code),
+      ];
+    });
+
+    // Sort the result if needed and reset collection keys
+    return $result->sortBy('display_order')->values();
   }
 
   /**
