@@ -20,8 +20,6 @@ class PriceCalculation
     $adjustments = $params['adjustments'];
     $eventStatus = $params['eventStatus'];
 
-    \Log::info('collected params', $params);
-
     // Helper function to round to two decimal places
     $roundToTwoDecimals = fn($value) => round($value * 100) / 100;
 
@@ -87,13 +85,6 @@ class PriceCalculation
     // Calculate base price after discount
     $discountedPrice = $roundToTwoDecimals($cabinPrice - $cabinPrice * $totalDiscountPercentage);
 
-    \Log::info('discounted price', [
-      'validatedPaymentDiscount' => $validatedPaymentDiscount,
-      'sumOfPercentagesDiscounts' => $sumOfPercentagesDiscounts,
-      'totalDiscountPercentage' => $totalDiscountPercentage,
-      'discountedPrice' => $discountedPrice,
-    ]);
-
     /*
     |--------------------------------------------------------------------------
     | Addons
@@ -140,19 +131,9 @@ class PriceCalculation
 
     $total = $totalPassenger * ($cabinType ? $cabinCapacity : 1);
 
-    \Log::info('total price', [
-      'total' => $total,
-      'totalPassenger' => $totalPassenger,
-      'sumOfFixedAddons' => $sumOfFixedAddons,
-    ]);
-
     // Calculate total savings
     $saveCalc = $cabinPrice - $discountedPrice;
     $save = number_format($saveCalc, 2, '.', '');
-
-    \Log::info('total savings', [
-      'save' => $save,
-    ]);
 
     return [
       'total' => $total,

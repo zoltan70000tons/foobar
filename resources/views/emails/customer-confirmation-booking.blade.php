@@ -72,11 +72,26 @@
             <td>{{ __('confirmationBooking.cbe_grand_total_booking_price') }}:</td>
             <td>{{ $bookingResult->booking->grand_total_booking_price }}</td>
         </tr>
-        <tr>
-            <td>{{ __('confirmationBooking.cbe_payment_schedule') }}:</td>
-            <td>{{ $bookingResult->booking->payment_schedule }}</td>
-        </tr>
     </table>
+    @if($bookingResult->booking->payment_schedule !== 'N/A')
+        <h2>{{ __('confirmationBooking.cbe_grand_total_booking_price') }}</h2>
+        <table class="table-bordered">
+            <thead>
+                <tr>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($bookingResult->booking->payment_schedule as $installment)
+                    <tr>
+                        <td>{{ $installment['due_date'] }}</td>
+                        <td>USD {{ $installment['amount'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
     <!---- Lead pass details ---->
     <p>{{ __('confirmationBooking.cbe_lead_passenger_details') }}</p>
     <table>

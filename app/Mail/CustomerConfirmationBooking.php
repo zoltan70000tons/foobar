@@ -15,13 +15,15 @@ class CustomerConfirmationBooking extends Mailable
   public $booking;
   public $cabinType;
   public $language;
+  public $cart;
   public $installments;
 
-  public function __construct($booking, string $cabinType, array $installments, string $language)
+  public function __construct($booking, string $cabinType, array $installments, array $cart, string $language)
   {
     $this->booking = $booking;
     $this->cabinType = $cabinType;
     $this->language = $language;
+    $this->cart = $cart;
     $this->installments = $installments;
   }
 
@@ -29,7 +31,7 @@ class CustomerConfirmationBooking extends Mailable
   private function prepareDataForTemplate()
   {
     \Log::info('Booking ----> data: ' . json_encode($this->booking));
-    \Log::info('Installments ----> data: ' . json_encode($this->installments));
+    \Log::info('Cart ----> data: ' . ['cart' => $this->cart]);
 
     $passenger =
       collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
@@ -58,8 +60,8 @@ class CustomerConfirmationBooking extends Mailable
         'how_did_you_hear_about_us' => $passenger->hear_about ?? 'N/A',
         'receive_newsletter' => $passenger->newsletter ?? 'N/A',
         'receive_partner_information' => $passenger->travel_info ?? 'N/A',
-        'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'true' : 'N/A',
-        'accept_terms' => $passenger->terms_n_cons ? 'true' : 'N/A',
+        'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
+        'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
       ],
       'booking' => (object) [
         'booking_type' => $this->cabinType ?? 'N/A',
@@ -83,12 +85,12 @@ class CustomerConfirmationBooking extends Mailable
         'payment_schedule' => !empty($this->installments)
           ? collect($this->installments)
             ->map(
-              fn($installment) => 'Due: ' .
-                $installment['due_date'] .
-                ', Amount: $' .
-                number_format($installment['amount'], 2)
+              fn($installment) => [
+                'due_date' => $installment['due_date'],
+                'amount' => number_format($installment['amount'], 2),
+              ]
             )
-            ->implode("\n")
+            ->toArray()
           : 'N/A',
         'todays_date' => now()->format('Y-m-d'),
         'booking_request_id' => $this->booking->booking_request_id ?? 'N/A',
@@ -114,7 +116,9 @@ class CustomerConfirmationBooking extends Mailable
   // CALCULATE TOTAL TICKET PRICE
   private function calculateTotalTicketPrice($price, $capacity, $cabinType)
   {
-    return $cabinType === 'Private Cabin' ? $price * $capacity : $price;
+    $total = $cabinType === 'Private Cabin' ? $price * $capacity : $price;
+
+    return number_format($total, 2);
   }
 
   // GET TAX ADJUSTMENT
@@ -135,7 +139,7 @@ class CustomerConfirmationBooking extends Mailable
 
     return new Envelope(
       from: env('SMTP_SYSTEM_EMAIL_ADDRESS', 'smtp@bspmi.com'),
-      subject: "{$data->passenger->first_name} - your Booking Request for 70000TONS OF METAL 2025!"
+      subject: "{$data->passenger->first_name} - your Booking Request for 70000TONS OF METAL 2026!"
     );
   }
 
