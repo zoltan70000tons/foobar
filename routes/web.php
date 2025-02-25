@@ -185,6 +185,7 @@ Route::middleware("auth")->group(function () {
   Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('email.send');
   Route::get('/get-email-templates', [EmailController::class, 'getEmailTemplates'])->name('email.getTemplates');
   Route::get('/get-email-template', [EmailController::class, 'getEmailTemplate'])->name('email.getTemplate');
+  Route::get('/show-email', [EmailController::class, 'showEmail'])->name('email.show');
 
 });
 
