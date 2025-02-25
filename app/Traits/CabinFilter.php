@@ -13,7 +13,8 @@ trait CabinFilter
     $cabinCategoryId = null,
     $cabinDeck = null,
     $onlyAvailable = true,
-    $cabinCategoryCode = null
+    $cabinCategoryCode = null,
+    $cabinCapacity = null
   ) {
     $currentTime = Carbon::now();
 
@@ -28,6 +29,12 @@ trait CabinFilter
           $query->where('expires_at', '>', $currentTime);
         },
       ]);
+
+    if ($cabinCapacity) {
+      $cabinsQuery->whereHas('category.spec', function ($query) use ($cabinCapacity) {
+        $query->where('capacity', '=', $cabinCapacity);
+      });
+    }
 
     if ($cabinCategoryId) {
       $cabinsQuery->where('cabin_category_id', $cabinCategoryId);

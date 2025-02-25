@@ -123,7 +123,7 @@ class CabinController extends Controller
   | Reserve a cabin type
   |--------------------------------------------------------------------------
   |
-  |  Reserve a cabin type byy customer service.
+  |  Reserve a cabin type by customer service.
   |  User did not choose a cabin, so we will assign one.
   |
   */
@@ -137,9 +137,10 @@ class CabinController extends Controller
 
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCategoryCode = $request->input('category_code');
+    $cabinCapcity = $request->input('capacity');
 
-    if (!$cabinTypeId || !$cabinCategoryCode) {
-      return response()->json(['message' => 'Cabin category code and category are required.'], 400);
+    if (!$cabinTypeId || !$cabinCategoryCode || !$cabinCapcity) {
+      return response()->json(['message' => 'Cabin category code, capacity and cabin type are required.'], 400);
     }
 
     $filteredCabins = $this->filterCabins($cabinTypeId, null, null, false, $cabinCategoryCode);
