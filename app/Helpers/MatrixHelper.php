@@ -3,12 +3,6 @@
 namespace App\Helpers;
 
 use App\Enums\StatusCabin;
-use App\Models\CabinSpec;
-use App\Models\Cabin;
-use Illuminate\Support\Facades\DB;
-
-// use log
-use Illuminate\Support\Facades\Log;
 
 class MatrixHelper
 {
@@ -38,16 +32,16 @@ class MatrixHelper
     $result = $groupedByCode->map(function ($group) use ($categories) {
       $firstCategory = $group->first();
 
-      $allCabins = $group->flatMap(fn($category) => $category->cabins);
+      // $allCabins = $group->flatMap(fn($category) => $category->cabins);
 
-      $decks = self::getUniqueDecks($allCabins);
+      //$decks = self::getUniqueDecks($allCabins);
 
       return [
         'name' => $firstCategory->spec->category_name,
         'cabin_category_id' => $firstCategory->spec->id,
         'code' => $firstCategory->spec->category_code,
         'display_order' => $firstCategory->spec->display_order,
-        'decks' => $decks,
+        //'decks' => $decks,
         'decks_static' => $firstCategory->spec->decks, // your static label if needed
         'iframe' => $firstCategory->iframe,
         'images' => $firstCategory->images,
@@ -94,6 +88,7 @@ class MatrixHelper
       return [
         'price' => null,
         'capacity' => $capacity,
+        'decks' => null,
         'is_available' => false,
         'cabin_category_id' => null,
       ];
@@ -111,6 +106,7 @@ class MatrixHelper
     return [
       'price' => $cabin->price,
       'capacity' => $capacity,
+      'decks' => self::getUniqueDecks($cabin->cabins),
       'is_available' => $isAvailable,
       'cabin_category_id' => $cabin->id,
     ];
