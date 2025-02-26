@@ -31,7 +31,7 @@ class CustomerConfirmationBooking extends Mailable
   private function prepareDataForTemplate()
   {
     \Log::info('Booking ----> data: ' . json_encode($this->booking));
-    \Log::info('Cart ----> data: ' . ['cart' => $this->cart]);
+    \Log::info('Cart ----> data: ', ['cart' => $this->cart]);
 
     $passenger =
       collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
@@ -67,21 +67,21 @@ class CustomerConfirmationBooking extends Mailable
         'booking_type' => $this->cabinType ?? 'N/A',
         'cabin_category' => $this->booking->cabin->category->category_name ?? 'N/A',
         'form_of_payment' => $this->booking->payment_plan ?? 'N/A',
-        'official_ticket_price_per_person' => number_format($this->booking->cabin->category->price ?? 0, 2),
+        'official_ticket_price_per_person' => number_format($this->cart['cabin_price'] ?? 0, 2),
         'pay_in_full_discount' => $this->booking->cabin->category->discount ?? 0,
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
-          $passenger->passenger_allocated_cost ?? 0,
-          $this->booking->adjustments ?? []
+          $this->cart['cabin_price'],
+          $this->cart['price_save'],
+          $this->cart['cabin_capacity']
         ),
-        'taxes_and_fees_per_person' => $this->getTaxAdjustment($this->booking->adjustments ?? []),
-        'single_traveler_surcharge' => $this->getSingleTicketFee($this->booking->adjustments ?? []),
+        'taxes_and_fees_per_person' => $this->getTaxAdjustment(
+          $this->cart['price_extras'],
+          $this->cart['cabin_type'] !== 'private-cabin' ? 1 : $this->cart['cabin_capacity']
+        ),
+        'single_traveler_surcharge' => $this->cart['cabin_type'] !== 'private-cabin' ? '100' : 'N/A',
         'total_ticket_price' => $passenger->passenger_allocated_cost ?? 0,
-        'number_of_passengers' => $this->booking->cabin->capacity ?? 1,
-        'grand_total_booking_price' => $this->calculateTotalTicketPrice(
-          $passenger->passenger_allocated_cost ?? 0,
-          $this->booking->cabin->capacity ?? 1,
-          $this->cabinType
-        ),
+        'number_of_passengers' => $this->cart['cabin_capacity'] ?? 1,
+        'grand_total_booking_price' => $this->cart['price_total'] ?? 'N/A',
         'payment_schedule' => !empty($this->installments)
           ? collect($this->installments)
             ->map(
@@ -99,38 +99,20 @@ class CustomerConfirmationBooking extends Mailable
   }
 
   // CALCULATE NET TICKET PRICE
-  private function calculateNetTicketPrice($price, $adjustments)
+  private function calculateNetTicketPrice($cabinPrice, $save, $capacity)
   {
-    $percentageDiscount = collect($adjustments)
-      ->where('type', 'DISCOUNT')
-      ->where('operation', 'PERCENTAGE')
-      ->sum('value');
+    $totalSave = $save * $capacity;
+    $netPrice = $cabinPrice - $totalSave;
 
-    $fixedDiscount = collect($adjustments)->where('type', 'DISCOUNT')->where('operation', 'FIXED')->sum('value');
-
-    $totalDiscount = ($price * $percentageDiscount) / 100 + $fixedDiscount;
-
-    return round(max(0, $price - $totalDiscount), 2);
-  }
-
-  // CALCULATE TOTAL TICKET PRICE
-  private function calculateTotalTicketPrice($price, $capacity, $cabinType)
-  {
-    $total = $cabinType === 'Private Cabin' ? $price * $capacity : $price;
-
-    return number_format($total, 2);
+    return number_format($netPrice, 2);
   }
 
   // GET TAX ADJUSTMENT
-  private function getTaxAdjustment($adjustments)
+  private function getTaxAdjustment($extras, $capacity)
   {
-    return collect($adjustments)->firstWhere('code', 'TAX')->value ?? 0;
-  }
+    $addons = $extras * $capacity;
 
-  // GET SINGLE TICKET FEE
-  private function getSingleTicketFee($adjustments)
-  {
-    return collect($adjustments)->firstWhere('code', 'SINGLE_TICKET_FEE')->value ?? 0;
+    return number_format($addons, 2);
   }
 
   public function envelope(): Envelope

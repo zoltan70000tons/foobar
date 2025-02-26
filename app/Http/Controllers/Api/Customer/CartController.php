@@ -111,6 +111,11 @@ class CartController extends Controller
       'cabin_conf_accp' => 'nullable|boolean',
       'force_clear' => 'nullable|boolean',
       'single_t_agreement' => 'boolean',
+      'price_total' => 'nullable|numeric|sometimes',
+      'price_total_passenger' => 'nullable|numeric|sometimes',
+      'price_save' => 'nullable|string|sometimes',
+      'price_extras' => 'nullable|numeric|sometimes',
+      'tax' => 'nullable|numeric|sometimes',
     ]);
 
     if ($validated['force_clear'] === true) {
