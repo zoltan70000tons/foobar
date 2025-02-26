@@ -44,16 +44,16 @@ class EmailController extends Controller
             'booking_id' => 'required|integer|exists:bookings,id',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
         ]);
-    
+
         try {
             $booking = Booking::find($validated['booking_id']);
             $passengers = $booking->passengers;
-    
+
             $attachments = collect($request->file('attachments', []))
                 ->filter(fn($file) => $file instanceof \Illuminate\Http\UploadedFile)
                 ->values()
                 ->all();
-    
+
             foreach ($passengers as $passenger) {
                 Mail::send([], [], function ($message) use ($passenger, $validated, $attachments) {
                     $message->to($passenger->email)
@@ -70,7 +70,7 @@ class EmailController extends Controller
             }
             return response()->json(['message' => 'Emails sent successfully'], 200);
         } catch (\Exception $ex) {
-            Log::info('Error sending email' ,['error' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
+            Log::info('Error sending email', ['error' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
             return response()->json(['message' => 'Error sending email'], 400);
         }
     }
@@ -189,6 +189,34 @@ class EmailController extends Controller
             return $pdf->stream();
         } catch (\Throwable $th) {
             //throw $th;
+        }
+    }
+
+    public function generateBookingImg(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'booking_id' => 'required|integer'
+        ])->validate();
+
+        try {
+            $booking = Booking::findOrFail($validated['booking_id']);
+            $eventImage = $booking->event->image;
+
+            if (!filter_var($eventImage, FILTER_VALIDATE_URL)) {
+                return response()->json(['error' => 'Invalid image URL'], 400);
+            }
+
+            $imageData = file_get_contents($eventImage);
+            if (!$imageData) {
+                return response()->json(['error' => 'Could not retrieve image'], 404);
+            }
+
+            $mimeType = get_headers($eventImage, 1)["Content-Type"] ?? 'image/jpeg';
+            
+
+            return response($imageData, 200)->header("Content-Type", $mimeType);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => 'Error retrieving image'], 500);
         }
     }
 }

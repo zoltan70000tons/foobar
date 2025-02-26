@@ -23,6 +23,8 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 const LANGUAGES = ["en", "es", "de"];
 
@@ -118,6 +120,26 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       setIsSending(false); 
     }
   };
+
+  const handleInsertImg = async () => {
+    setIsSending(true); 
+    try {
+      const response = await fetch(`/generate-img?booking_id=${booking.id}`);
+
+      if (!response.ok) throw new Error("Failed to generate Img");
+      const blob = await response.blob(); 
+      const file = new File([blob], `IMG_${booking.id}.jpg`, { type: blob.type });
+      setAttachments((prev) => [...prev, file]);
+      showSnackbar("📄 Image attached!", "success");
+
+    } catch (error) {
+      console.error("Error inserting Image:", error);
+      showSnackbar("⚠️ Failed to attach Image.", "error");
+    } finally {
+      setIsSending(false); 
+    }
+};
+
 
   const handlePreview = (file) => {
     const fileURL = URL.createObjectURL(file);
@@ -283,7 +305,13 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
 
     <Tooltip title="Insert Booking Confirmation PDF">
       <IconButton onClick={handleInsertPDF}>
-        <InsertDriveFileIcon />
+        <PictureAsPdfIcon />
+      </IconButton>
+    </Tooltip>
+
+    <Tooltip title="Insert Event Image">
+      <IconButton onClick={handleInsertImg}>
+        <InsertPhotoIcon />
       </IconButton>
     </Tooltip>
 
