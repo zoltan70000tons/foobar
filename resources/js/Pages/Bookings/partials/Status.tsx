@@ -229,7 +229,7 @@ const Status = ({ event, booking, editMode, users }) => {
               color="warning"
               startIcon={<WarningIcon />}
               onClick={handleCancelDialogOpen}
-              disabled={booking.is_cancelled || !editMode}
+              disabled={booking.status === "CANCELLED" || !editMode}
             >
               Cancel Booking
             </Button>
