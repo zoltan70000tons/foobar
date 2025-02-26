@@ -38,9 +38,6 @@ class CartController extends Controller
     $eventStatus = Event::find($eventId)->status;
 
     $errorCode = null;
-    if (Auth::check() && $eventId && Auth::user()->bookings()->where('event_id', $eventId)->count() > 0) {
-      $errorCode .= 'BOOKING_LIMIT_EXCEEDED';
-    }
 
     if (isset($cart['cabin_price'])) {
       $priceCalc = PriceCalculation::calculatePricePerPassenger([

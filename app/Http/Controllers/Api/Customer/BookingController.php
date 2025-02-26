@@ -75,8 +75,6 @@ class BookingController extends Controller
         'customer_id' => $user->id,
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
-        'completed' => false,
-        'is_cancelled' => false,
         'is_single_occupancy' => false,
         'tags' => json_encode(['New']),
       ];

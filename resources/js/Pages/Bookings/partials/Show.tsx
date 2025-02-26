@@ -141,7 +141,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Grid item xs={6}>
             <FormGroup>
-              {booking.is_cancelled ? (
+              {booking.status === "CANCELLED" ? (
                 <Alert severity="error" sx={{ mb: 2 }}>
                   <AlertTitle>Info</AlertTitle>
                   This booking has been cancelled and cannot be edited.
@@ -178,7 +178,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
 
 
 
-        {booking.locked_by && !booking.is_cancelled && (
+        {booking.locked_by && booking.status !== "CANCELLED" && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Warning</AlertTitle>
             {booking.locked_by.agent_id === auth.user.id
