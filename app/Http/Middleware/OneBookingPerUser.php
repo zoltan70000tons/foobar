@@ -16,6 +16,7 @@ class OneBookingPerUser
       Auth::user()
         ->bookings()
         ->where("event_id", $request->event_id)
+        ->where("status", "!=" , "CANCELLED")
         ->count() > 0
     ) {
       return response()->json(
