@@ -21,13 +21,15 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const LANGUAGES = ["en", "es", "de"];
 
 const EmailTemplateEditor: React.FC = ({ booking }) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
-  const [selectedTemplate, setSelectedTemplate] =  useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
@@ -97,16 +99,48 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
     }
   };
 
+  const handleInsertPDF = async () => {
+    setIsSending(true); 
+    try {
+      const response = await fetch(`/generate-booking-pdf?booking_id=${booking.id}`);
+      
+      if (!response.ok) throw new Error("Failed to generate PDF");
+  
+      const blob = await response.blob();
+      const file = new File([blob], `booking_confirmation_${booking.id}.pdf`, { type: "application/pdf" });
+      console.log(file);
+      setAttachments((prev) => [...prev, file]);
+      showSnackbar("📄 Booking confirmation PDF attached!", "success");
+    } catch (error) {
+      console.error("Error inserting PDF:", error);
+      showSnackbar("⚠️ Failed to attach PDF.", "error");
+    } finally {
+      setIsSending(false); 
+    }
+  };
+
+  const handlePreview = (file) => {
+    const fileURL = URL.createObjectURL(file);
+    window.open(fileURL, "_blank");
+  };
+  
+  
   const handleSendEmail = () => {
     setIsConfirmDialogOpen(false);
     setIsSending(true);
 
+    console.log("emailEditorRef.current:", emailEditorRef.current);
+    console.log("emailEditorRef.current?.editor:", emailEditorRef.current?.editor);
+
     const unlayer = emailEditorRef.current?.editor;
+    console.log('hola');
     if (!unlayer) return;
-   console.log(selectedTemplate);
+    console.log(selectedTemplate);
+
+    console.log('test');
 
     unlayer.exportHtml(async (data) => {
-      const { html} = data;
+      const { html } = data;
       const formData = new FormData();
       formData.append("lang", lang);
       formData.append("template_name", selectedTemplate.name);
@@ -115,7 +149,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       formData.append("booking_id", booking.id);
       formData.append("template_id", selectedTemplate.id);
       formData.append("subject", subject)
-      attachments.forEach((file) => formData.append("attachments", file));
+      attachments.forEach((file) => formData.append("attachments[]", file));
 
       try {
         const response = await fetch("/send-email", {
@@ -191,7 +225,7 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
           </IconButton>
         </DialogTitle>
         <DialogContent style={{ display: "flex", flexDirection: "column", height: "calc(100% - 60px)", padding: 0 }}>
-          <FormControl fullWidth style={{paddingRight: '1rem'}}>
+          <FormControl fullWidth style={{ paddingRight: '1rem' }}>
             <TextField
               label="Email Subject"
               variant="outlined"
@@ -223,42 +257,47 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
             />
           </div>
 
-          <Paper
-            elevation={3}
-            style={{
-              width: "100%",
-              padding: "10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              backgroundColor: "#131313",
-              zIndex: 10,
-            }}
-          >
-            <div>
-              {attachments.map((file, index) => (
-                <Chip
-                  key={index}
-                  label={file.name}
-                  onDelete={() => handleRemoveAttachment(file)}
-                  style={{ marginRight: "5px" }}
-                />
-              ))}
-            </div>
-            <Tooltip title="Attach Files">
-              <IconButton onClick={() => fileInputRef.current?.click()}>
-                <AttachFileIcon />
-              </IconButton>
-            </Tooltip>
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png,.pdf"
-              multiple
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
-          </Paper>
+          <Paper elevation={3} style={{ width: "100%", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#131313", zIndex: 10 }}>
+  <div>
+    {attachments.map((file, index) => (
+      <Chip
+        key={index}
+        label={file.name}
+        onDelete={() => handleRemoveAttachment(file)}
+        style={{ marginRight: "5px" }}
+        icon={
+          <IconButton onClick={() => handlePreview(file)} size="small">
+            <VisibilityIcon />
+          </IconButton>
+        }
+      />
+    ))}
+  </div>
+  
+  <div>
+    <Tooltip title="Attach Files">
+      <IconButton onClick={() => fileInputRef.current?.click()}>
+        <AttachFileIcon />
+      </IconButton>
+    </Tooltip>
+
+    <Tooltip title="Insert Booking Confirmation PDF">
+      <IconButton onClick={handleInsertPDF}>
+        <InsertDriveFileIcon />
+      </IconButton>
+    </Tooltip>
+
+    <input
+      type="file"
+      accept=".jpg,.jpeg,.png,.pdf"
+      multiple
+      ref={fileInputRef}
+      style={{ display: "none" }}
+      onChange={handleFileChange}
+    />
+  </div>
+</Paper>
+
         </DialogContent>
 
 

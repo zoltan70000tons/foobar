@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\BookingEmail;
 use App\Models\Booking;
+use App\Repositories\PaymentRepository;
 use App\Services\EmailTemplateService;
 use App\Services\MailService;
+use App\Services\PaymentInfoService;
+use App\Services\PaymentService;
+use App\Services\PDFService;
 use Blade;
 use DB;
 use Illuminate\Http\Request;
@@ -26,8 +30,8 @@ class EmailController extends Controller
         $this->emailTemplateService = $emailTemplateService;
     }
 
-    
-    
+
+
     public function sendEmail(Request $request)
     {
         $validated = $request->validate([
@@ -41,37 +45,48 @@ class EmailController extends Controller
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
         ]);
     
-       try {
-        $booking = Booking::find($validated['booking_id']);
-        $passengers = $booking->passengers;
-        $attachments = $request->file('attachments', []);
-        // $template =  DB::table('email_templates')
-        // ->select(['id', 'name', 'lang', 'subject'])
-        // ->where('lang', $validated['lang'])->where('id', $validated['template_id'])
-        // ->first();
+        try {
+            $booking = Booking::find($validated['booking_id']);
+            $passengers = $booking->passengers;
     
-        foreach ($passengers as $passenger) {
-            Mail::to($passenger->email)->send(new BookingEmail($validated['subject'],$validated['email_content'], $attachments));
+            $attachments = collect($request->file('attachments', []))
+                ->filter(fn($file) => $file instanceof \Illuminate\Http\UploadedFile)
+                ->values()
+                ->all();
+    
+            foreach ($passengers as $passenger) {
+                Mail::send([], [], function ($message) use ($passenger, $validated, $attachments) {
+                    $message->to($passenger->email)
+                        ->subject($validated['subject'])
+                        ->html($validated['email_content']);
+                    foreach ($attachments as $file) {
+                        $message->attachData(
+                            file_get_contents($file->getRealPath()),
+                            $file->getClientOriginalName(),
+                            ['mime' => $file->getMimeType()]
+                        );
+                    }
+                });
+            }
+            return response()->json(['message' => 'Emails sent successfully'], 200);
+        } catch (\Exception $ex) {
+            Log::info('Error sending email' ,['error' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
+            return response()->json(['message' => 'Error sending email'], 400);
         }
-    
-        return response()->json(['message' => 'Emails sent successfully'], 200);
-       } catch (\Exception $ex) {
-        return response()->json(['message' => 'Error sending email'], 400);
-       }
     }
-    
+
     public function getEmailTemplates(Request $request)
     {
         $validated = Validator::make($request->all(), [
             'lang' => 'required|string|in:en,es,de',
         ])->validate();
-    
+
         $templates = DB::table('email_templates')
             ->select(['id', 'name', 'lang', 'subject'])
             ->where('lang', $validated['lang'])
-            ->distinct() 
-            ->get(); 
-    
+            ->distinct()
+            ->get();
+
         return response()->json(['templates' => $templates]);
     }
 
@@ -144,18 +159,36 @@ class EmailController extends Controller
 
     public function showEmail()
     {
-        $bodyContent = DB::table('email_templates')
-            ->where('name', '70000TONS OF METAL 2025 - Survivor Referral Credits XXXX')
-            ->where('lang', 'en')
-            ->value('body');
+        $service = new PDFService();
+        $pdf = $service->generateBookingConfirmationPDF(Booking::find(1));
+        return $pdf->stream();
+        // $bodyContent = DB::table('email_templates')
+        //     ->where('name', '70000TONS OF METAL 2025 - Survivor Referral Credits XXXX')
+        //     ->where('lang', 'en')
+        //     ->value('body');
 
-        $data = [
-            'header' => DB::table('email_templates')->where('name', '70000TONS_email_header_ENG')->where('lang', 'en')->value('body'),
-            'footer' => DB::table('email_templates')->where('name', '70000TONS_email_footer_ENG')->where('lang', 'en')->value('body'),
-        ];
-        $processedBody = Blade::render($bodyContent, $data);
-        //dd($data['footer']);
-        return response($processedBody);
+        // $data = [
+        //     'header' => DB::table('email_templates')->where('name', '70000TONS_email_header_ENG')->where('lang', 'en')->value('body'),
+        //     'footer' => DB::table('email_templates')->where('name', '70000TONS_email_footer_ENG')->where('lang', 'en')->value('body'),
+        // ];
+        // $processedBody = Blade::render($bodyContent, $data);
+        // //dd($data['footer']);
+        // return response($processedBody);
     }
-    
+
+    public function generateBookingPDF(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            // 'lang' => 'required|string|in:en,es,de',
+            'booking_id' => 'required|integer'
+        ])->validate();
+        try {
+            $booking = Booking::find($validated['booking_id'])->first();
+            $service = new PDFService();
+            $pdf = $service->generateBookingConfirmationPDF($booking);
+            return $pdf->stream();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
 }
