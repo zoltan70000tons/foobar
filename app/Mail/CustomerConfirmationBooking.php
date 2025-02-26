@@ -76,9 +76,9 @@ class CustomerConfirmationBooking extends Mailable
         ),
         'taxes_and_fees_per_person' => $this->getTaxAdjustment(
           $this->cart['price_extras'],
-          $this->cart['cabin_type'] !== 'private-cabin' ? 1 : $this->cart['cabin_capacity']
+          $this->cabinType !== 'Private Cabin' ? 1 : $this->cart['cabin_capacity']
         ),
-        'single_traveler_surcharge' => $this->cart['cabin_type'] !== 'private-cabin' ? '100' : 'N/A',
+        'single_traveler_surcharge' => $this->cabinType !== 'Private Cabin' ? '100' : 'N/A',
         'total_ticket_price' => $passenger->passenger_allocated_cost ?? 0,
         'number_of_passengers' => $this->cart['cabin_capacity'] ?? 1,
         'grand_total_booking_price' => $this->cart['price_total'] ?? 'N/A',
