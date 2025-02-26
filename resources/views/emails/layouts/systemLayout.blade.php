@@ -90,6 +90,17 @@
       margin-top: 20px;
       color: #fefefe;
     }
+
+    table.table-bordered {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    table.table-bordered td,
+    table.table-bordered th {
+      border: 1px solid #333333;
+      padding: 8px;
+    }
   </style>
 </head>
 

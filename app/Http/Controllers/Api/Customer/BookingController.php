@@ -155,7 +155,7 @@ class BookingController extends Controller
       }
 
       // Send confirmation email
-      $this->sendConfirmationEmail($bookingCode, $passengerEmail, 'en');
+      $this->sendConfirmationEmail($bookingCode, $passengerEmail, $cart, 'en');
 
       return response()->json(
         [
@@ -186,8 +186,12 @@ class BookingController extends Controller
   |  This method trigger the email confirmation
   |
   */
-  private function sendConfirmationEmail(string $bookingCode, string $passengerEmail, string $language): void
-  {
+  private function sendConfirmationEmail(
+    string $bookingCode,
+    string $passengerEmail,
+    array $cart,
+    string $language
+  ): void {
     try {
       // Get booking data with relationships
       $booking = Booking::where('booking_code', $bookingCode)
@@ -233,7 +237,9 @@ class BookingController extends Controller
         \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
       }
 
-      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $installments, $language));
+      Mail::to($passengerEmail)->send(
+        new CustomerConfirmationBooking($booking, $cabinType, $installments, $cart, $language)
+      );
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
     }

@@ -108,6 +108,11 @@ class CartController extends Controller
       'cabin_conf_accp' => 'nullable|boolean',
       'force_clear' => 'nullable|boolean',
       'single_t_agreement' => 'boolean',
+      'price_total' => 'nullable|numeric|sometimes',
+      'price_total_passenger' => 'nullable|numeric|sometimes',
+      'price_save' => 'nullable|string|sometimes',
+      'price_extras' => 'nullable|numeric|sometimes',
+      'tax' => 'nullable|numeric|sometimes',
     ]);
 
     if ($validated['force_clear'] === true) {
@@ -184,6 +189,11 @@ class CartController extends Controller
       'cabin_category_type' => 'required|string',
       'single_t_agreement' => 'boolean',
       'time_to_cancel' => 'nullable|integer',
+      'price_total' => 'nullable|numeric|sometimes',
+      'price_total_passenger' => 'nullable|numeric|sometimes',
+      'price_save' => 'nullable|string|sometimes',
+      'price_extras' => 'nullable|numeric|sometimes',
+      'tax' => 'nullable|numeric|sometimes',
     ]);
 
     $request->session()->put('cart', $validated);
