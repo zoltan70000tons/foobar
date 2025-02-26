@@ -23,9 +23,9 @@ return new class extends Migration {
       $table->uuid('agent_id')->nullable()->references('id')->on('users'); // References users table for agent tracking
       $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'])->default('NEW');
       $table->timestamps(); // created_at and updated_at timestamps
-    
+
       // Composite unique key
-      $table->primary(['id', 'cabin_id']); // Composite primary key
+      // $table->primary(['id', 'cabin_id']); // Composite primary key
     });
   }
 
