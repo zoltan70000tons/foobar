@@ -22,10 +22,10 @@ class Booking extends Model
     'event_id',
     'customer_id',
     'payment_plan',
-    'carbon_offset',
     'cabin_id',
-    'completed',
-    'event_id',
+    'is_single_occupancy',
+    'agent_id',
+    'status',
     'tags',
   ];
 
@@ -202,7 +202,6 @@ class Booking extends Model
       $segments[1] = $randomSegment;
       $this->booking_code = implode('-', $segments);
       $this->status = 'CANCELLED';
-      $this->is_cancelled = true;
       $this->save();
 
       return true;
