@@ -97,7 +97,7 @@ class BookingController extends Controller
       // Process passenger data
       $passengerData = [
         'confirmed_booking_email' => false,
-        'lead_passenger' => $validated['cart']['cabin_type'] === 'private-cabin' ? true : false,
+        'lead_passenger' =>  true,
         'payment_method' => $validated['paymentMethod'],
         'address_first' => $validated['addressLine1'],
         'address_second' => $validated['addressLine2'],
