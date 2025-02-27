@@ -129,18 +129,18 @@ class BookingController extends Controller
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
       // Send confirmation email
-      //\Log::info('Booking created successfully', $result);
+      \Log::info('Booking created successfully', $result);
 
       // Delete current sesion
       $request->session()->forget('cart');
       $request->session()->forget('reservation_id');
 
-      \Log::info('Booking created successfully', $result);
+      \Log::info('Result ----> data: ', ['result' => $result]);
+      \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);
+      \Log::info('Cart ----> data: ', ['cart' => $cart]);
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
-
-      \Log::info('Sending confirmation email for booking code: ' . $bookingCode . ' to email: ' . $passengerEmail);
 
       if (!$bookingCode || !$passengerEmail) {
         return response()->json(
@@ -155,7 +155,7 @@ class BookingController extends Controller
       }
 
       // Send confirmation email
-      $this->sendConfirmationEmail($bookingCode, $passengerEmail, $cart, 'en');
+      $this->sendConfirmationEmail($result, $passengerData, $cart, 'en');
 
       return response()->json(
         [
@@ -186,64 +186,69 @@ class BookingController extends Controller
   |  This method trigger the email confirmation
   |
   */
-  private function sendConfirmationEmail(
-    string $bookingCode,
-    string $passengerEmail,
-    array $cart,
-    string $language
-  ): void {
-    try {
-      // Get booking data with relationships
-      $booking = Booking::where('booking_code', $bookingCode)
-        ->with(['cabin.category', 'passengers.installments', 'adjustments'])
-        ->first();
-
-      // Convert booking to array for logging
-      \Log::info('EMAIL Booking data', ['booking' => $booking->toArray()]);
-
-      $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
-
-      // if payment installments attach the payment plan
-      $installments = [];
-
-      if ($booking->payment_plan === 'INSTALLMENTS') {
-        // Get passenger_id from booking
-        $passenger = $booking->passengers()->first();
-        // Get installments
-        $passInstallments = $passenger->installments; // FIXED: Use $passenger, not $booking->passengers->installments
-
-        // Convert installments to array for logging
-        \Log::info('EMAIL passInstallments data', ['installments 2' => $passInstallments->toArray()]);
-
-        // Count installments properly
-        $installmentCount = $passInstallments->count();
-
-        if ($installmentCount > 0) {
-          $totalPrice = $passenger->passenger_allocated_cost;
-          $totalPriceDivided = floatval($totalPrice) / $installmentCount;
-
-          // Map to array
-          $installments = $passInstallments
-            ->map(function ($installment) use ($totalPriceDivided) {
-              return [
-                'due_date' => $installment->due_date,
-                'amount' => round($totalPriceDivided, 2),
-              ];
-            })
-            ->toArray();
-        }
-
-        // Convert installments to array for logging
-        \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
-      }
-
-      Mail::to($passengerEmail)->send(
-        new CustomerConfirmationBooking($booking, $cabinType, $installments, $cart, $language)
-      );
-    } catch (\Exception $e) {
-      \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
-    }
+  private function sendConfirmationEmail()
+  {
+    //
   }
+
+  // private function sendConfirmationEmail(
+  //   string $bookingCode,
+  //   string $passengerEmail,
+  //   array $cart,
+  //   string $language
+  // ): void {
+  //   try {
+  //     // Get booking data with relationships
+  //     $booking = Booking::where('booking_code', $bookingCode)
+  //       ->with(['cabin.category', 'passengers.installments', 'adjustments'])
+  //       ->first();
+
+  //     // Convert booking to array for logging
+  //     \Log::info('EMAIL Booking data', ['booking' => $booking->toArray()]);
+
+  //     $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
+
+  //     // if payment installments attach the payment plan
+  //     $installments = [];
+
+  //     if ($booking->payment_plan === 'INSTALLMENTS') {
+  //       // Get passenger_id from booking
+  //       $passenger = $booking->passengers()->first();
+  //       // Get installments
+  //       $passInstallments = $passenger->installments; // FIXED: Use $passenger, not $booking->passengers->installments
+
+  //       // Convert installments to array for logging
+  //       \Log::info('EMAIL passInstallments data', ['installments 2' => $passInstallments->toArray()]);
+
+  //       // Count installments properly
+  //       $installmentCount = $passInstallments->count();
+
+  //       if ($installmentCount > 0) {
+  //         $totalPrice = $passenger->passenger_allocated_cost;
+  //         $totalPriceDivided = floatval($totalPrice) / $installmentCount;
+
+  //         // Map to array
+  //         $installments = $passInstallments
+  //           ->map(function ($installment) use ($totalPriceDivided) {
+  //             return [
+  //               'due_date' => $installment->due_date,
+  //               'amount' => round($totalPriceDivided, 2),
+  //             ];
+  //           })
+  //           ->toArray();
+  //       }
+
+  //       // Convert installments to array for logging
+  //       \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
+  //     }
+
+  //     Mail::to($passengerEmail)->send(
+  //       new CustomerConfirmationBooking($booking, $cabinType, $installments, $cart, $language)
+  //     );
+  //   } catch (\Exception $e) {
+  //     \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+  //   }
+  // }
 
   /*
   |--------------------------------------------------------------------------

@@ -42,7 +42,7 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_official_ticket_price_per_person') }}:</td>
-            <td>{{ $bookingResult->booking->official_ticket_price_per_person }}</td>
+            <td>USD {{ $bookingResult->booking->official_ticket_price_per_person }}</td>
         </tr>
         <tr>
           <td>{{ __('confirmationBooking.cbe_pay_in_full_discount') }}:</td>
@@ -50,11 +50,11 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_net_ticket_price_per_person') }}:</td>
-            <td>{{ $bookingResult->booking->net_ticket_price_per_person }}</td>
+            <td>USD {{ $bookingResult->booking->net_ticket_price_per_person }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_taxes_and_fees_per_person') }}:</td>
-            <td>{{ $bookingResult->booking->taxes_and_fees_per_person }}</td>
+            <td>USD {{ $bookingResult->booking->taxes_and_fees_per_person }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_single_traveler_surcharge') }}:</td>
@@ -62,7 +62,7 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_total_ticket_price') }}:</td>
-            <td>{{ $bookingResult->booking->total_ticket_price }}</td>
+            <td>USD {{ $bookingResult->booking->total_ticket_price }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_number_of_passengers') }}:</td>
@@ -70,11 +70,11 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_grand_total_booking_price') }}:</td>
-            <td>{{ $bookingResult->booking->grand_total_booking_price }}</td>
+            <td>USD {{ $bookingResult->booking->grand_total_booking_price }}</td>
         </tr>
     </table>
     @if($bookingResult->booking->payment_schedule !== 'N/A')
-        <h2>{{ __('confirmationBooking.cbe_grand_total_booking_price') }}</h2>
+        <h2>{{ __('confirmationBooking.cbe_payment_schedule') }}</h2>
         <table class="table-bordered">
             <thead>
                 <tr>
