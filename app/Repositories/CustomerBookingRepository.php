@@ -34,6 +34,7 @@ class CustomerBookingRepository
     $user_survivor_number = $user->survivor_number ?? null;
 
     $booking = Booking::with(
+      'adjustments',
       'passengers.fees',
       'passengers.installments',
       'passengers.passengerInvitation',

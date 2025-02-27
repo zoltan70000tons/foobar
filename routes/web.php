@@ -186,6 +186,9 @@ Route::middleware("auth")->group(function () {
   Route::get('/get-email-templates', [EmailController::class, 'getEmailTemplates'])->name('email.getTemplates');
   Route::get('/get-email-template', [EmailController::class, 'getEmailTemplate'])->name('email.getTemplate');
   Route::get('/show-email', [EmailController::class, 'showEmail'])->name('email.show');
+  Route::get('/generate-booking-pdf', [EmailController::class, 'generateBookingPDF'])->name('email.generateBookingPDF');
+  Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
+
 
 });
 
