@@ -7,35 +7,42 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Booking;
 
 class CustomerConfirmationBooking extends Mailable
 {
   use Queueable, SerializesModels;
 
   public $booking;
-  public $cabinType;
-  public $language;
   public $cart;
   public $installments;
+  public $language;
 
-  public function __construct($booking, string $cabinType, array $installments, array $cart, string $language)
+  public function __construct(Booking $booking, array $cart, array $installments, string $language)
   {
     $this->booking = $booking;
-    $this->cabinType = $cabinType;
-    $this->language = $language;
     $this->cart = $cart;
     $this->installments = $installments;
+    $this->language = $language;
   }
 
   // PREPARE DATA FOR TEMPLATE
   private function prepareDataForTemplate()
   {
-    \Log::info('Booking ----> data: ' . json_encode($this->booking));
-    \Log::info('Cart ----> data: ', ['cart' => $this->cart]);
+    // \Log::info('Result ----> data: ' . json_encode($this->booking));
+    // \Log::info('Passenger ----> data: ' . json_encode($this->booking->passengers));
+    // \Log::info('Cart ----> data: ', ['cart' => $this->cart]);
 
+    // $passenger =
+    //   collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
+    //   collect($this->booking->passengers)->first();
+
+    $booking = $this->booking;
+    $cabin = $booking->cabin ?? null;
+    $category = $cabin->category ?? null;
+    $adjustments = $booking->adjustments ?? null;
     $passenger =
-      collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
-      collect($this->booking->passengers)->first();
+      collect($booking->passengers)->firstWhere('lead_passenger', true) ?? collect($booking->passengers)->first();
 
     return (object) [
       'passenger' => (object) [
@@ -58,31 +65,28 @@ class CustomerConfirmationBooking extends Mailable
         'special_request' => $passenger->special_request ?? 'N/A',
         'survivor_referal_number' => $passenger->referral_details ?? 'N/A',
         'how_did_you_hear_about_us' => $passenger->hear_about ?? 'N/A',
-        'receive_newsletter' => $passenger->newsletter ?? 'N/A',
-        'receive_partner_information' => $passenger->travel_info ?? 'N/A',
+        'newsletter' => $passenger->newsletter === true ? 'YES' : 'NO',
+        'receive_partner_information' => $passenger->travel_info === true ? 'YES' : 'NO',
         'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
         'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
       ],
       'booking' => (object) [
-        'booking_type' => $this->cabinType ?? 'N/A',
-        'cabin_category' => $this->booking->cabin->category->category_name ?? 'N/A',
-        'form_of_payment' => $this->booking->payment_plan ?? 'N/A',
+        'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
+        'cabin_category' => $category->category_name ?? 'N/A',
+        'form_of_payment' => $passenger->payment_method ?? 'N/A',
         'official_ticket_price_per_person' => number_format($this->cart['cabin_price'] ?? 0, 2),
-        'pay_in_full_discount' => $this->booking->cabin->category->discount ?? 0,
+        'pay_in_full_discount' => $adjustments->where('code', 'PAID_IN_FULL')->first()->value ?? 'N/A',
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
           $this->cart['cabin_price'],
-          $this->cart['price_save'],
-          $this->cart['cabin_capacity']
+          $this->cart['price_save']
         ),
-        'taxes_and_fees_per_person' => $this->getTaxAdjustment(
-          $this->cart['price_extras'],
-          $this->cabinType !== 'Private Cabin' ? 1 : $this->cart['cabin_capacity']
-        ),
-        'single_traveler_surcharge' => $this->cabinType !== 'Private Cabin' ? '100' : 'N/A',
-        'total_ticket_price' => $passenger->passenger_allocated_cost ?? 0,
+        'taxes_and_fees_per_person' => number_format($this->cart['price_extras'] ?? 0, 2),
+        'single_traveler_surcharge' => $adjustments->where('code', 'SINGLE_TICKET_FEE')->first()->value ?? 'N/A',
+        'total_ticket_price' => number_format($passenger->passenger_allocated_cost ?? 0, 2),
         'number_of_passengers' => $this->cart['cabin_capacity'] ?? 1,
-        'grand_total_booking_price' => $this->cart['price_total'] ?? 'N/A',
-        'payment_schedule' => !empty($this->installments)
+        'grand_total_booking_price' => number_format($this->cart['price_total'] ?? 0, 2),
+        'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
+        'payment_schedule_installments' => !empty($this->installments)
           ? collect($this->installments)
             ->map(
               fn($installment) => [
@@ -93,28 +97,36 @@ class CustomerConfirmationBooking extends Mailable
             ->toArray()
           : 'N/A',
         'todays_date' => now()->format('Y-m-d'),
-        'booking_request_id' => $this->booking->booking_request_id ?? 'N/A',
+        'booking_request_id' => $booking->booking_request_id ?? 'N/A',
       ],
     ];
   }
 
+  // BOOKING TYPE
+  private function getBookingType($bookingType)
+  {
+    if ($bookingType == 'single-male') {
+      return 'Single Male';
+    } elseif ($bookingType == 'single-female') {
+      return 'Single Female';
+    } else {
+      return 'Private Cabin';
+    }
+  }
+
   // CALCULATE NET TICKET PRICE
-  private function calculateNetTicketPrice($cabinPrice, $save, $capacity)
+  private function calculateNetTicketPrice($cabinPrice, $save)
   {
-    $totalSave = $save * $capacity;
-    $netPrice = $cabinPrice - $totalSave;
+    // Convert all inputs to the correct types
+    $cabinPrice = (float) $cabinPrice;
+    $save = (float) $save;
 
-    return number_format($netPrice, 2);
+    $netPrice = $cabinPrice - $save;
+
+    return number_format($netPrice, 2, '.', '');
   }
 
-  // GET TAX ADJUSTMENT
-  private function getTaxAdjustment($extras, $capacity)
-  {
-    $addons = $extras * $capacity;
-
-    return number_format($addons, 2);
-  }
-
+  // envelope
   public function envelope(): Envelope
   {
     $data = $this->prepareDataForTemplate();

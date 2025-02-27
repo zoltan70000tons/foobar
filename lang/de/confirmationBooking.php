@@ -56,6 +56,7 @@ return [
   'cbe_accept_bed_configuration' => 'Bettenkonfiguration akzeptieren',
   'cbe_accept_terms' => 'AGB akzeptieren',
   'cbe_todays_date' => 'Heutiges Datum',
+  'cbe_request_id' => 'Buchungsanfrage-ID',
   // footer
   'cbe_questions' => 'Wenn Sie Fragen oder Anliegen haben, zögern Sie bitte nicht, uns zu kontaktieren unter',
   'cbe_or_call' => 'oder rufen Sie die 70000TONS OF METAL Hotline an',
