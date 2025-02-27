@@ -56,6 +56,7 @@ return [
   'cbe_accept_bed_configuration' => 'Aceptar Configuración de Cama',
   'cbe_accept_terms' => 'Aceptar Términos',
   'cbe_todays_date' => 'Fecha de Hoy',
+  'cbe_request_id' => 'ID de Solicitud de Reserva',
   // footer
   'cbe_questions' => 'Si tiene alguna pregunta o inquietud, no dude en contactarnos en',
   'cbe_or_call' => 'o llame a la línea directa de 70000TONS OF METAL',
