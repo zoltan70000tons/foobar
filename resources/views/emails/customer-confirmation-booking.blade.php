@@ -46,7 +46,7 @@
         </tr>
         <tr>
           <td>{{ __('confirmationBooking.cbe_pay_in_full_discount') }}:</td>
-          <td>{{ $bookingResult->booking->pay_in_full_discount }}</td>
+          <td>{{ $bookingResult->booking->pay_in_full_discount }} %</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_net_ticket_price_per_person') }}:</td>
@@ -58,7 +58,7 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_single_traveler_surcharge') }}:</td>
-            <td>{{ $bookingResult->booking->single_traveler_surcharge }}</td>
+            <td>USD {{ $bookingResult->booking->single_traveler_surcharge }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_total_ticket_price') }}:</td>
@@ -73,7 +73,15 @@
             <td>USD {{ $bookingResult->booking->grand_total_booking_price }}</td>
         </tr>
     </table>
-    @if($bookingResult->booking->payment_schedule !== 'N/A')
+    @if($bookingResult->booking->payment_schedule === 'PAID IN FULL')
+    <table>
+        <tr>
+            <td>{{ __('confirmationBooking.cbe_payment_schedule') }}:</td>
+            <td>{{ $bookingResult->booking->payment_schedule }}</td>
+        </tr>
+    </table>
+    @endif
+    @if($bookingResult->booking->payment_schedule_installments !== 'N/A')
         <h2>{{ __('confirmationBooking.cbe_payment_schedule') }}</h2>
         <table class="table-bordered">
             <thead>
@@ -176,7 +184,7 @@
       </tr>
       <tr>
           <td>{{ __('confirmationBooking.cbe_receive_newsletter') }}:</td>
-          <td>{{ $bookingResult->passenger->receive_newsletter }}</td>
+          <td>{{ $bookingResult->passenger->newsletter }}</td>
       </tr>
       <tr>
           <td>{{ __('confirmationBooking.cbe_receive_partner_information') }}:</td>
@@ -193,6 +201,10 @@
       <tr>
           <td>{{ __('confirmationBooking.cbe_todays_date') }}:</td>
           <td>{{ $bookingResult->booking->todays_date }}</td>
+      </tr>
+      <tr>
+          <td>{{ __('confirmationBooking.cbe_request_id') }}:</td>
+          <td>{{ $bookingResult->booking->booking_request_id }}</td>
       </tr>
     </table>
 @endsection

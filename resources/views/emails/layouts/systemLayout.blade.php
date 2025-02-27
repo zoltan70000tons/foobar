@@ -11,7 +11,7 @@
       font-family: 'Verdana', sans-serif;
       color: #fefefe;
       line-height: 1.6;
-      font-size: 16px;
+      font-size: 14px;
       margin: 0;
       padding: 0;
       min-width: 100% !important;
@@ -24,15 +24,6 @@
       /* border: 2px solid #444; */
       border-radius: 5px;
       background-color: #000;
-    }
-
-    .content {
-      border-radius: 12px;
-      padding: 20px;
-      border: solid 1px #000;
-      margin-top: 20px;
-      margin-bottom: 20px;
-      background-color: #191919;
     }
 
     h1 {
