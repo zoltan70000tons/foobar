@@ -119,7 +119,7 @@ class BookingsController extends Controller
         'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
         'passenger.citizenship' => ['nullable', 'string', 'max:100'],
         'passenger.survivor_number' => ['nullable', 'string', 'max:50'],
-        'passenger.email' => ['required', 'email', 'unique:passengers,email'],
+        'passenger.email' => ['required', 'email', 'email'],
         'passenger.phone' => ['nullable', 'string', 'max:20'],
         'passenger.address_first' => ['required', 'string', 'max:255'],
         'passenger.address_second' => ['nullable', 'string', 'max:255'],
@@ -141,9 +141,6 @@ class BookingsController extends Controller
         'passenger.newsletter' => ['nullable', 'boolean'],
         'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
         'passenger.passenger_balance' => ['nullable', 'numeric', 'min:0'],
-      ],
-      [
-        'passenger.email.unique' => 'Email already registered in the passengers list.',
       ]
     );
 
