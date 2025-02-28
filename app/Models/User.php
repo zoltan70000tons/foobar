@@ -17,11 +17,18 @@ use App\Mail\CustomerResetPassword;
 
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property UserDetail|null $detail
+ * @property SurvivorNumber|null $survivorNumber
+ * @property CustomerAddress|null $customerAddress
+ * @property string|null $email
+ * @property string|null $username
+ */
 class User extends Authenticatable implements CanResetPassword
 {
   use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
 
-  protected $guard_name = 'web';
+    protected $guard_name = 'web';
 
   /**
    * The attributes that are mass assignable.

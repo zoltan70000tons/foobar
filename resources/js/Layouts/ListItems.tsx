@@ -14,7 +14,8 @@ import {
   Workspaces as WorkspacesIcon,
   LocalActivity as LocalActivityIcon,
   Logout as LogoutIcon,
-  RoomPreferences as RoomPreferenceIcon
+  RoomPreferences as RoomPreferenceIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 
 
@@ -35,6 +36,7 @@ const MenuItems: React.FC = () => {
   const isDashboardRoute = currentPath.includes("dashboard");
   const isTeamRoute = currentPath.includes("team");
   const isCabinsRoute = currentPath.includes("cabins");
+  const isCustomersRoute = currentPath.includes("customer");
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -154,6 +156,19 @@ const MenuItems: React.FC = () => {
                 <WorkspacesIcon />
               </IconButton>
             </Tooltip>
+          )}
+          {hasPermission(Permissions.ViewCustomers) && (
+              <Tooltip title="Customers" placement="right">
+                <IconButton
+                    component={Link}
+                    href={route("customers.index")}
+                    style={{
+                      backgroundColor: isCustomersRoute ? "#2f4f4f" : "transparent",
+                    }}
+                >
+                  <PersonIcon />
+                </IconButton>
+              </Tooltip>
           )}
           <Tooltip title="Logout" placement="right">
             <IconButton onClick={() => router.post(route("logout"))}>
