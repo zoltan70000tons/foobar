@@ -94,6 +94,8 @@ class BookingController extends Controller
 
       $totalPassenger = $priceCalc['totalPassenger'];
 
+      $language = $validated['language'] ?? 'en';
+
       // Process passenger data
       $passengerData = [
         'confirmed_booking_email' => false,
@@ -155,7 +157,7 @@ class BookingController extends Controller
       }
 
       // Send confirmation email
-      $this->sendConfirmationEmail($bookingCode, $passengerData, $cart, 'en');
+      $this->sendConfirmationEmail($bookingCode, $passengerData, $cart, $language);
 
       return response()->json(
         [
