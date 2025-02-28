@@ -21,7 +21,7 @@ class CabinController extends Controller
    */
   public function show($cabinTypeId, $cabinCategoryCode, $cabinDeck)
   {
-    $filteredCabins = $this->filterCabins($cabinTypeId, $cabinCategoryId = null, $cabinDeck, false, $cabinCategoryCode);
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, null);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
@@ -85,8 +85,6 @@ class CabinController extends Controller
     if ($cart && $reservationId) {
       // get from Temporary reservation table, and set expires_at to keepOldTimeStamp
       $keepOldTimeStamp = TemporaryReservation::where('id', $reservationId)->value('expires_at');
-
-      Log::info('Keep old timestamp', ['keepOldTimeStamp' => $keepOldTimeStamp]);
 
       // release the current reservation
       $reservationService->releaseCabin($request);

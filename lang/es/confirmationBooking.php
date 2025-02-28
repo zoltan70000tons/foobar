@@ -27,6 +27,8 @@ return [
   'cbe_taxes_and_fees_per_person' => 'Impuestos y Tarifas por Persona',
   'cbe_single_traveler_surcharge' => 'Recargo para Viajero Solitario',
   'cbe_total_ticket_price' => 'Precio Total del Ticket',
+  'cbe_carbon_offset_per_person' => 'Compensación de Carbono por Persona',
+  'cbe_choose_your_cabin_per_person' => 'Elija su Cabina por Persona',
   'cbe_number_of_passengers' => 'Número de Pasajeros',
   'cbe_grand_total_booking_price' => 'Precio Total de la Reserva',
   'cbe_payment_schedule' => 'Plan de Pago',

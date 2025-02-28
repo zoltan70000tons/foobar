@@ -2,12 +2,14 @@
 
 namespace App\Mail;
 
+use App;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Booking;
+use Illuminate\Support\Str;
 
 class CustomerConfirmationBooking extends Mailable
 {
@@ -65,25 +67,30 @@ class CustomerConfirmationBooking extends Mailable
         'special_request' => $passenger->special_request ?? 'N/A',
         'survivor_referal_number' => $passenger->referral_details ?? 'N/A',
         'how_did_you_hear_about_us' => $passenger->hear_about ?? 'N/A',
-        'newsletter' => $passenger->newsletter === true ? 'YES' : 'NO',
-        'receive_partner_information' => $passenger->travel_info === true ? 'YES' : 'NO',
+        'newsletter' => $passenger->newsletter == true ? 'YES' : 'NO',
+        'receive_partner_information' => $passenger->travel_info == true ? 'YES' : 'NO',
         'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
         'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
       ],
       'booking' => (object) [
         'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
-        'cabin_category' => $category->category_name ?? 'N/A',
-        'form_of_payment' => $passenger->payment_method ?? 'N/A',
+        'cabin_category' => $category->title ?? 'N/A',
+        'form_of_payment' => $passenger->payment_method == 'CREDIT_CARD' ? 'Credit Card' : 'Bank Transfer',
         'official_ticket_price_per_person' => number_format($this->cart['cabin_price'] ?? 0, 2),
-        'pay_in_full_discount' => $adjustments->where('code', 'PAID_IN_FULL')->first()->value ?? 'N/A',
+        'pay_in_full_discount' => isset($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
+          ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
+          : 0,
+        'choose_your_cabin' => $adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0,
+        'carbon_offset' =>
+          $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
           $this->cart['cabin_price'],
           $this->cart['price_save']
         ),
-        'taxes_and_fees_per_person' => number_format($this->cart['price_extras'] ?? 0, 2),
+        'taxes_and_fees_per_person' => number_format($this->cart['tax'] ?? 0, 2, '.', ','),
         'single_traveler_surcharge' => $adjustments->where('code', 'SINGLE_TICKET_FEE')->first()->value ?? 'N/A',
         'total_ticket_price' => number_format($passenger->passenger_allocated_cost ?? 0, 2),
-        'number_of_passengers' => $this->cart['cabin_capacity'] ?? 1,
+        'number_of_passengers' => $this->cart['cabin_type'] === 'private-cabin' ? $this->cart['cabin_capacity'] : 1,
         'grand_total_booking_price' => number_format($this->cart['price_total'] ?? 0, 2),
         'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
         'payment_schedule_installments' => !empty($this->installments)
@@ -139,6 +146,8 @@ class CustomerConfirmationBooking extends Mailable
 
   public function content(): Content
   {
+    App::setLocale($this->language);
+
     return new Content(
       view: 'emails.customer-confirmation-booking',
       with: [
