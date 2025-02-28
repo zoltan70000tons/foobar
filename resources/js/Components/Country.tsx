@@ -40,8 +40,6 @@ const Country: React.FC<Props> = ({
   nameOfField,
   disabled = false,
 }) => {
-  //const language = useLocale(); // e.g., "en", "es", "de"
-
   // Function to get country name based on language
   const getCountryName = (countryCode: string) => {
     return (

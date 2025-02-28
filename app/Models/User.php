@@ -28,7 +28,7 @@ class User extends Authenticatable implements CanResetPassword
 {
   use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
 
-    protected $guard_name = 'web';
+  protected $guard_name = 'web';
 
   /**
    * The attributes that are mass assignable.
