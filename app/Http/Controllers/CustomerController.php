@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerCreateRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
@@ -45,9 +46,13 @@ class CustomerController extends Controller
         }
     }
 
-    public function create()
+    public function create(): InertiaResponse
     {
-        return Inertia::render('Customer/Create');
+        $survivorNumber = CustomerHelper::generateSurvivorNumber();
+
+        return Inertia::render('Customer/Create', [
+            'survivorNumber' => $survivorNumber,
+        ]);
     }
 
     public function store(CustomerCreateRequest $request): RedirectResponse|Response|InertiaResponse

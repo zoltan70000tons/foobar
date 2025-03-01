@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { router } from "@inertiajs/react";
@@ -22,11 +22,12 @@ import PhoneNumber from "@/Components/PhoneNumber";
 import {usePermissions} from "@/Providers/PermissionContext";
 
 const Create = ({ auth, errors }: PageProps) => {
+  const { survivorNumber }: PageProps = usePage().props;
   const { hasPermission } = usePermissions();
   const { data, setData, post, processing } = useForm({
     username: "",
     email: "",
-    survivor_number: "",
+    survivor_number: survivorNumber,
     first_name: "",
     last_name: "",
     middle_name: "",

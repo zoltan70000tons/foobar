@@ -1,8 +1,8 @@
-import React, {ChangeEvent, useState} from "react";
-import {Head, useForm, usePage} from "@inertiajs/react";
-import {PageProps} from "@/types";
+import React, { ChangeEvent, useState } from "react";
+import { Head, useForm, usePage } from "@inertiajs/react";
+import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import {router} from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import {
     Container,
     Paper,
@@ -15,9 +15,9 @@ import {
     Select,
     MenuItem,
 } from "@mui/material";
-import {usePermissions} from "@/Providers/PermissionContext";
+import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
-import {Permissions} from "@/enums/PermissionEnum";
+import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
 
@@ -55,10 +55,10 @@ type PageProps = {
 }
 
 const Edit = ({auth, errors}: PageProps) => {
-    const {customer}: PageProps = usePage().props;
+    const { customer }: PageProps = usePage().props;
     const [snackbar, setSnackbar] = useState({open: false, severity: 'success', message: ''});
-    const {hasPermission} = usePermissions();
-    console.log(customer)
+    const { hasPermission } = usePermissions();
+
     const [year, month, day] = customer?.detail?.dob.split("-");
     const {data, setData, head, processing} = useForm({
         survivor_number: customer.survivor_number.survivor_number || "",
