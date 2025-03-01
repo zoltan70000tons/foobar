@@ -1,16 +1,16 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import {Head, router, useForm} from "@inertiajs/react";
-import {PageProps} from "@/types";
+import { Head, router, useForm } from "@inertiajs/react";
+import { PageProps } from "@/types";
 import {
     Container,
     Grid,
     Toolbar,
     Box, Button,
 } from "@mui/material";
-import {usePermissions} from "@/Providers/PermissionContext";
+import { usePermissions } from "@/Providers/PermissionContext";
 import "dayjs/locale/en";
-import {Permissions} from "@/enums/PermissionEnum";
+import { Permissions } from "@/enums/PermissionEnum";
 import MuiTable from "@/Components/tables/MuiTable";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { Visibility } from "@mui/icons-material";
