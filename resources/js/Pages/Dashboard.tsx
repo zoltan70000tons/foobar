@@ -86,7 +86,6 @@ export default function Dashboard({ auth }: PageProps) {
                 />
               </Grid>
               )}
-
               {hasPermission(Permissions.ViewCustomers) && (
                 <Grid item xs={12} sm={6} md={3}>
                   <DashboardCard
@@ -97,9 +96,7 @@ export default function Dashboard({ auth }: PageProps) {
                   />
                 </Grid>
               )}
-
             </Grid>
-            
           </Grid>
           {/* <Grid item xs={12}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
