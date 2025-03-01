@@ -62,10 +62,11 @@ class CustomerController extends Controller
             'email' => 'required|string|max:255|unique:users',
             'survivor_number' => 'nullable|string|max:9',
         ];
+
         $request->validate($rules);
+
         try {
             return $this->withPermission([Permissions::CreateUsers], function ($request) {
-
                 $this->customerRepository->store($request);
 
                 return redirect()->route('customers.index')->with('flash', 'Customer created successfully.');
@@ -75,9 +76,10 @@ class CustomerController extends Controller
         }
     }
 
-    public function edit(User $user)
+    public function edit(User $user): InertiaResponse
     {
         $user->load(['detail', 'survivorNumber', 'customerAddress']);
+
         return Inertia::render('Customer/Edit', [
             'customer' => $user,
         ]);
@@ -95,28 +97,33 @@ class CustomerController extends Controller
         }
     }
 
-    public function show(User $user)
+    public function show(User $user): RedirectResponse|Response|InertiaResponse
     {
-        //dd($user);
         try {
             return $this->withPermission([Permissions::ViewUsers], function ($user) {
                 $user->load(['detail', 'survivorNumber', 'customerAddress']);
+
                 return Inertia::render('Customer/View', ['customer' => $user]);
             }, $user);
         } catch (\Exception $e) {
             $this->logException($e);
+
+            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
         }
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse|Response|InertiaResponse
     {
         try {
             return $this->withPermission([Permissions::DeleteCustomers], function ($user) {
                 $user->delete();
+
                 return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
             }, $user);
         } catch (\Exception $e) {
             $this->logException($e);
+
+            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
         }
     }
 }
