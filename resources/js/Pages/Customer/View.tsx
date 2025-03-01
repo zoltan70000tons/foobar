@@ -26,7 +26,7 @@ const View = ({ auth, customer }: PageProps) => {
   const [year, month, day] = customer?.detail?.dob.split("-");
 
   const handleEdit = () => {
-    get(route('customers.edit', { customer: customer.id}));
+    get(route('customers.edit', { customer: customer.id }));
   }
 
   const handleBack = () => {
@@ -41,254 +41,253 @@ const View = ({ auth, customer }: PageProps) => {
   };
 
   return (
-    <AuthenticatedLayout user={auth.user} header={"Customers"}>
-      <Head title="View Customer" />
-      <Toolbar />
+    <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
+      <Head title="View Customer"/>
+      <Toolbar/>
 
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Grid container spacing={3}>
-          {hasPermission(Permissions.ViewCustomers) && (
-              <>
-                <Paper
-                    sx={{
-                      p: 2,
+      <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
+        <Grid container spacing={ 3 }>
+          { hasPermission(Permissions.ViewCustomers) && (
+            <>
+              <Paper
+                sx={ {
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: 240,
+                  width: "100%",
+                } }
+              >
+                <Box sx={ { width: "100%" } }>
+                  <Grid container spacing={ 2 }>
+                    <Grid item xs={ 6 } sx={ { mr: 2 } }>
+                      <TextField
+                        fullWidth
+                        label="Survivor Number"
+                        variant="outlined"
+                        value={ customer.survivor_number.survivor_number }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="First Name"
+                        variant="outlined"
+                        value={ customer.detail.first_name }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Middle Name"
+                        variant="outlined"
+                        value={ customer.detail.middle_name }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Last Name"
+                        variant="outlined"
+                        value={ customer.detail.last_name }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <Select
+                        fullWidth
+                        label="Gender"
+                        variant="outlined"
+                        value={ customer.detail.gender }
+                      >
+                        <MenuItem value={ "M" }>Male</MenuItem>
+                        <MenuItem value={ "F" }>Female</MenuItem>
+                      </Select>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                  Date of Birth
+                </Typography>
+                <Box sx={ { width: "100%" } }>
+                  <Grid container spacing={ 2 }>
+                    <Grid item xs={ 2 }>
+                      <TextField
+                        fullWidth
+                        label="Year"
+                        variant="outlined"
+                        value={ year }
+                      />
+                    </Grid>
+                    <Grid item xs={ 2 }>
+                      <TextField
+                        fullWidth
+                        label="Month"
+                        variant="outlined"
+                        value={ month }
+                      />
+                    </Grid>
+                    <Grid item xs={ 2 }>
+                      <TextField
+                        fullWidth
+                        label="Day"
+                        variant="outlined"
+                        value={ day }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <Country
+                        fullWidth
+                        label="Citizenship"
+                        variant="outlined"
+                        value={ customer.detail.citizenship }
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                  Phone Number
+                </Typography>
+                <Box sx={ { width: "100%" } }>
+                  <Grid container spacing={ 2 }>
+                    <Grid item xs={ 6 }>
+                      <PhoneNumber
+                        value={ customer.detail.phone || "" }
+                        forceDialCode={ true }
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                  Address Information
+                </Typography>
+                <Box sx={ { width: "100%" } }>
+                  <Grid container spacing={ 2 }>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Address Line 1"
+                        variant="outlined"
+                        value={ customer?.customer_address?.address_first }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Address Line 2"
+                        variant="outlined"
+                        value={ customer?.customer_address?.address_second }
+                      />
+                    </Grid>
+
+                    <Grid item xs={ 4 }>
+                      <TextField
+                        fullWidth
+                        label="City"
+                        variant="outlined"
+                        value={ customer?.customer_address?.city }
+                      />
+                    </Grid>
+                    <Grid item xs={ 4 }>
+                      <TextField
+                        fullWidth
+                        label="State"
+                        variant="outlined"
+                        value={ customer?.customer_address?.state }
+                      />
+                    </Grid>
+                    <Grid item xs={ 4 }>
+                      <TextField
+                        fullWidth
+                        label="Zip Code"
+                        variant="outlined"
+                        value={ customer?.customer_address?.postal_code }
+                      />
+                    </Grid>
+
+                    <Grid item xs={ 12 }>
+                      <Country
+                        fullWidth
+                        label="Country"
+                        variant="outlined"
+                        value={ customer.customer_address.country }
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                  Emergency Contact
+                </Typography>
+                <Box sx={ { width: "100%" } }>
+                  <Grid container spacing={ 2 }>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Contact Full Name"
+                        variant="outlined"
+                        value={ customer?.detail?.emergency_c_name }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <PhoneNumber
+                        value={ customer?.detail?.emergency_c_phone || "" }
+                        forceDialCode={ true }
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                  Preferred Language
+                </Typography>
+                <Box sx={ { width: "100%" } }>
+                  <Grid container spacing={ 2 }>
+                    <Grid item xs={ 6 }>
+                      <Select
+                        fullWidth
+                        label="Preferred Language"
+                        variant="outlined"
+                        value={ customer.detail.language }
+                      >
+                        <MenuItem value={ "de" }>Deutsch</MenuItem>
+                        <MenuItem value={ "en" }>English</MenuItem>
+                        <MenuItem value={ "es" }>Español</MenuItem>
+                      </Select>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Box sx={ { mt: 4 } }>
+                  <div
+                    style={ {
                       display: "flex",
-                      flexDirection: "column",
-                      minHeight: 240,
-                      width: "100%",
-                    }}
-                >
-                  <Box sx={{ width: "100%" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6} sx={{mr:2}}>
-                        <TextField
-                            fullWidth
-                            label="Survivor Number"
-                            variant="outlined"
-                            value={customer.survivor_number.survivor_number}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="First Name"
-                            variant="outlined"
-                            value={customer.detail.first_name}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Middle Name"
-                            variant="outlined"
-                            value={customer.detail.middle_name}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Last Name"
-                            variant="outlined"
-                            value={customer.detail.last_name}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Select
-                            fullWidth
-                            label="Gender"
-                            variant="outlined"
-                            value={customer.detail.gender}
-                        >
-                          <MenuItem value={"M"}>Male</MenuItem>
-                          <MenuItem value={"F"}>Female</MenuItem>
-                        </Select>
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                    Date of Birth
-                  </Typography>
-                  <Box sx={{ width: "100%" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={2}>
-                        <TextField
-                            fullWidth
-                            label="Year"
-                            variant="outlined"
-                            value={year}
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <TextField
-                            fullWidth
-                            label="Month"
-                            variant="outlined"
-                            value={month}
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <TextField
-                            fullWidth
-                            label="Day"
-                            variant="outlined"
-                            value={day}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Country
-                            fullWidth
-                            label="Citizenship"
-                            variant="outlined"
-                            value={customer.detail.citizenship}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                    Phone Number
-                  </Typography>
-                  <Box sx={{ width: "100%" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <PhoneNumber
-                            value={customer.detail.phone || ""}
-                            forceDialCode={true}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                    Address Information
-                  </Typography>
-                  <Box sx={{ width: "100%" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Address Line 1"
-                            variant="outlined"
-                            value={customer?.customer_address?.address_first}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Address Line 2"
-                            variant="outlined"
-                            value={customer?.customer_address?.address_second}
-                        />
-                      </Grid>
-
-                      <Grid item xs={4}>
-                        <TextField
-                            fullWidth
-                            label="City"
-                            variant="outlined"
-                            value={customer?.customer_address?.city}
-                        />
-                      </Grid>
-                      <Grid item xs={4}>
-                        <TextField
-                            fullWidth
-                            label="State"
-                            variant="outlined"
-                            value={customer?.customer_address?.state}
-                        />
-                      </Grid>
-                      <Grid item xs={4}>
-                        <TextField
-                            fullWidth
-                            label="Zip Code"
-                            variant="outlined"
-                            value={customer?.customer_address?.postal_code}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Country
-                            fullWidth
-                            label="Country"
-                            variant="outlined"
-                            value={customer.customer_address.country}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                    Emergency Contact
-                  </Typography>
-                  <Box sx={{ width: "100%" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Contact Full Name"
-                            variant="outlined"
-                            value={customer?.detail?.emergency_c_name}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <PhoneNumber
-                            value={customer?.detail?.emergency_c_phone || ""}
-                            forceDialCode={true}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                    Preferred Language
-                  </Typography>
-                  <Box sx={{ width: "100%" }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Select
-                            fullWidth
-                            label="Preferred Language"
-                            variant="outlined"
-                            value={customer.detail.language}
-                        >
-                          <MenuItem value={"de"}>Deutsch</MenuItem>
-                          <MenuItem value={"en"}>English</MenuItem>
-                          <MenuItem value={"es"}>Español</MenuItem>
-                        </Select>
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Box sx={{ mt: 4 }}>
-                    <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          gap: "8px",
-                        }}
-                    >
-                      <Tooltip title="Back">
-                        <IconButton color="primary" onClick={handleBack}>
-                          <ArrowBack />
-                        </IconButton>
-                      </Tooltip>
-                      {hasPermission(Permissions.EditCustomers) && (<Tooltip title="Edit">
-                        <IconButton color="primary" onClick={handleEdit}>
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>)}
-                      {hasPermission(Permissions.DeleteCustomers) && (<Tooltip title="Delete">
-                        <IconButton color="error" onClick={handleDelete}>
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>) }
-
-                    </div>
-                  </Box>
-                </Paper>
-              </>
-          )}
+                      justifyContent: "flex-end",
+                      gap: "8px",
+                    } }
+                  >
+                    <Tooltip title="Back">
+                      <IconButton color="primary" onClick={ handleBack }>
+                        <ArrowBack/>
+                      </IconButton>
+                    </Tooltip>
+                    { hasPermission(Permissions.EditCustomers) && (<Tooltip title="Edit">
+                      <IconButton color="primary" onClick={ handleEdit }>
+                        <Edit/>
+                      </IconButton>
+                    </Tooltip>) }
+                    { hasPermission(Permissions.DeleteCustomers) && (<Tooltip title="Delete">
+                      <IconButton color="error" onClick={ handleDelete }>
+                        <Delete/>
+                      </IconButton>
+                    </Tooltip>) }
+                  </div>
+                </Box>
+              </Paper>
+            </>
+          ) }
         </Grid>
       </Container>
     </AuthenticatedLayout>
