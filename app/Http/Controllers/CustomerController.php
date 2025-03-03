@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
-use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerCreateRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
@@ -67,9 +66,11 @@ class CustomerController extends Controller
     public function edit(User $user): InertiaResponse
     {
         $user->load(['detail', 'survivorNumber', 'customerAddress']);
+        $bookings = $this->customerRepository->getBookingDataForCustomer($user);
 
         return Inertia::render('Customer/Edit', [
             'customer' => $user,
+            'bookings' => $bookings,
         ]);
     }
 
@@ -89,14 +90,18 @@ class CustomerController extends Controller
     {
         try {
             return $this->withPermission([Permissions::ViewUsers], function ($user) {
-                $user->load(['detail', 'survivorNumber', 'customerAddress']);
+                $user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings']);
+                $bookings = $this->customerRepository->getBookingDataForCustomer($user);
 
-                return Inertia::render('Customer/View', ['customer' => $user]);
+                return Inertia::render('Customer/View', [
+                    'customer' => $user,
+                    'bookings' => $bookings,
+                ]);
             }, $user);
         } catch (\Exception $e) {
             $this->logException($e);
 
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
     }
 

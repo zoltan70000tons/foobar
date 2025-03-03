@@ -6,6 +6,7 @@ use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerCreateRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
+use App\Models\Booking;
 use App\Models\CustomerAddress;
 use App\Models\SurvivorNumber;
 use App\Models\User;
@@ -205,6 +206,22 @@ class CustomerRepository implements CustomerInterface
                     'dob' => $user->detail->dob,
                     'survivor_number' => $user->survivorNumber->survivor_number,
                     'membership_type' => optional($user->membershipTypes->first())->name,
+                ];
+            });
+    }
+
+    function getBookingDataForCustomer(User $user): DBCollection|Collection
+    {
+        return Booking::with(['event', 'cabin.cabinType', 'cabin.category'])
+            ->where('customer_id', $user->id)
+            ->get()
+            ->map(function ($booking) {
+                return [
+                    'booking_id' => $booking->id,
+                    'cabin_type' => $booking->cabin->cabinType->cabin_type,
+                    'event_name' => $booking->event->name,
+                    'booking_code' => $booking->booking_code,
+                    'category_full_title' => $booking->cabin->category->getTitleAttribute(),
                 ];
             });
     }

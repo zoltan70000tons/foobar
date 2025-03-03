@@ -21,4 +21,6 @@ interface CustomerInterface
     function delete($id);
 
     function getAllCustomerData();
+
+    function getBookingDataForCustomer(User $user);
 }

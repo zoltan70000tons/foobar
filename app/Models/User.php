@@ -23,6 +23,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property CustomerAddress|null $customerAddress
  * @property string|null $email
  * @property string|null $username
+ * @property uuid $id
  */
 class User extends Authenticatable implements CanResetPassword
 {

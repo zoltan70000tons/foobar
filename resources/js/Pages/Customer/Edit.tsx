@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { useState } from "react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -14,12 +14,15 @@ import {
   Typography,
   Select,
   MenuItem,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
+import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
 
 type Nullable<T> = T | null;
 
@@ -55,8 +58,9 @@ type PageProps = {
 }
 
 const Edit = ({ auth, errors }: PageProps) => {
-  const { customer }: PageProps = usePage().props;
+  const { customer, bookings }: PageProps = usePage().props;
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+  const [selectedTab, setSelectedTab] = useState(0);
   const { hasPermission } = usePermissions();
 
   const [year, month, day] = customer?.detail?.dob.split("-");
@@ -125,13 +129,25 @@ const Edit = ({ auth, errors }: PageProps) => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="Edit Customer"/>
       <Toolbar/>
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.EditCustomers) && (<Paper
+          <Tabs
+            value={ selectedTab }
+            onChange={ handleTabChange }
+            aria-label="customer data and related bookings"
+          >
+            <Tab label="CUSTOMER DATA"/>
+            <Tab label="BOOKING HISTORY"/>
+          </Tabs>
+          { (hasPermission(Permissions.EditCustomers) && selectedTab === 0) && (<Paper
               sx={ {
                 p: 2,
                 display: "flex",
@@ -393,6 +409,10 @@ const Edit = ({ auth, errors }: PageProps) => {
                 </Box>
               </form>
             </Paper>
+          ) }
+
+          { (hasPermission(Permissions.ViewBookings) && selectedTab === 1) && (
+            <BookingHistory auth={ auth } bookings={ bookings }/>
           ) }
           <SnackbarAlert
             open={ snackbar.open }

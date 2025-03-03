@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -11,18 +11,24 @@ import {
   Box,
   Typography,
   Tooltip,
-  IconButton, MenuItem, Select,
+  IconButton,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
 import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
+import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
 
-const View = ({ auth, customer }: PageProps) => {
+const View = ({ auth, customer, bookings }: PageProps) => {
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
 
+  const [selectedTab, setSelectedTab] = useState(0);
   const [year, month, day] = customer?.detail?.dob.split("-");
 
   const handleEdit = () => {
@@ -40,6 +46,10 @@ const View = ({ auth, customer }: PageProps) => {
     }
   };
 
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="View Customer"/>
@@ -47,7 +57,15 @@ const View = ({ auth, customer }: PageProps) => {
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.ViewCustomers) && (
+          <Tabs
+            value={ selectedTab }
+            onChange={ handleTabChange }
+            aria-label="customer data and related bookings"
+          >
+            <Tab label="CUSTOMER DATA"/>
+            <Tab label="BOOKING HISTORY"/>
+          </Tabs>
+          { (hasPermission(Permissions.ViewCustomers) && selectedTab === 0) && (
             <>
               <Paper
                 sx={ {
@@ -287,6 +305,10 @@ const View = ({ auth, customer }: PageProps) => {
                 </Box>
               </Paper>
             </>
+          ) }
+
+          { (hasPermission(Permissions.ViewBookings) && selectedTab === 1) && (
+            <BookingHistory auth={ auth } bookings={ bookings }/>
           ) }
         </Grid>
       </Container>
