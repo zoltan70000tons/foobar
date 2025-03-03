@@ -28,6 +28,8 @@ return [
   'cbe_net_ticket_price_per_person' => 'Net Ticket Price per Person',
   'cbe_taxes_and_fees_per_person' => 'Taxes and Fees per Person',
   'cbe_single_traveler_surcharge' => 'Single Traveler Surcharge',
+  'cbe_carbon_offset_per_person' => 'Carbon Offset per Person',
+  'cbe_choose_your_cabin_per_person' => 'Choose Your Cabin per Person',
   'cbe_total_ticket_price' => 'Total Ticket Price',
   'cbe_number_of_passengers' => 'Number of Passengers',
   'cbe_grand_total_booking_price' => 'Grand Total Booking Price',
@@ -58,6 +60,7 @@ return [
   'cbe_accept_bed_configuration' => 'Accept Bed Configuration',
   'cbe_accept_terms' => 'Accept Terms',
   'cbe_todays_date' => 'Today\'s Date',
+  'cbe_request_id' => 'Booking Request ID',
   // footer
   'cbe_questions' => 'If you have any questions or concerns please don\'t hesitate to contact us at',
   'cbe_or_call' => 'or call the 70000TONS OF METAL Hotline',

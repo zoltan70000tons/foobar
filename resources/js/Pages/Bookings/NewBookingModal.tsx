@@ -15,7 +15,7 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
 
   return (
     <>
-      <Button variant="outlined" color="secondary" onClick={handleOpen} disabled={!canCreateBooking}>
+      <Button variant="outlined" color="secondary" onClick={handleOpen} disabled={!canCreateBooking} style={{height:'40px'}}>
         New Booking
       </Button>
 

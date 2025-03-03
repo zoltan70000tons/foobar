@@ -8,12 +8,23 @@ use App\Enums\StatusCabin;
 
 trait CabinFilter
 {
+  /**
+   * @param int $cabinTypeId
+   * @param int|null $cabinCategoryId
+   * @param int|null $cabinDeck
+   * @param bool $onlyAvailable
+   * @param string|null $cabinCategoryCode
+   * @param int|null $cabinCapacity
+   *
+   */
+
   public function filterCabins(
     $cabinTypeId,
     $cabinCategoryId = null,
     $cabinDeck = null,
     $onlyAvailable = true,
-    $cabinCategoryCode = null
+    $cabinCategoryCode = null,
+    $cabinCapacity = null
   ) {
     $currentTime = Carbon::now();
 
@@ -28,6 +39,12 @@ trait CabinFilter
           $query->where('expires_at', '>', $currentTime);
         },
       ]);
+
+    if ($cabinCapacity) {
+      $cabinsQuery->whereHas('category.spec', function ($query) use ($cabinCapacity) {
+        $query->where('capacity', '=', $cabinCapacity);
+      });
+    }
 
     if ($cabinCategoryId) {
       $cabinsQuery->where('cabin_category_id', $cabinCategoryId);

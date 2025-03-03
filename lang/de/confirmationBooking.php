@@ -27,6 +27,8 @@ return [
   'cbe_taxes_and_fees_per_person' => 'Steuern und Gebühren pro Person',
   'cbe_single_traveler_surcharge' => 'Einzelreisenden-Zuschlag',
   'cbe_total_ticket_price' => 'Gesamt-Ticketpreis',
+  'cbe_carbon_offset_per_person' => 'CO2-Kompensation pro Person',
+  'cbe_choose_your_cabin_per_person' => 'Wählen Sie Ihre Kabine pro Person',
   'cbe_number_of_passengers' => 'Anzahl der Passagiere',
   'cbe_grand_total_booking_price' => 'Gesamter Buchungspreis',
   'cbe_payment_schedule' => 'Zahlungsplan',
@@ -56,6 +58,7 @@ return [
   'cbe_accept_bed_configuration' => 'Bettenkonfiguration akzeptieren',
   'cbe_accept_terms' => 'AGB akzeptieren',
   'cbe_todays_date' => 'Heutiges Datum',
+  'cbe_request_id' => 'Buchungsanfrage-ID',
   // footer
   'cbe_questions' => 'Wenn Sie Fragen oder Anliegen haben, zögern Sie bitte nicht, uns zu kontaktieren unter',
   'cbe_or_call' => 'oder rufen Sie die 70000TONS OF METAL Hotline an',

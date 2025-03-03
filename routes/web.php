@@ -125,7 +125,7 @@ Route::middleware("auth")->group(function () {
   Route::post('/events/{id}/bookings/createManual', [BookingsController::class, 'store'])
   ->name('bookings.createManual');
     //Booking controller
-    Route::get('/events/{id}/bookings', [BookingsController::class, 'index'])
+    Route::match(['GET', 'POST'], '/events/{id}/bookings', [BookingsController::class, 'index'])
     ->where('id', '[0-9]+|all') 
     ->name('bookings.index');
     Route::post('/events/{id}/bookings/update-cabin', [BookingsController::class, 'cabinUpdate'])
@@ -194,6 +194,10 @@ Route::middleware("auth")->group(function () {
   Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('email.send');
   Route::get('/get-email-templates', [EmailController::class, 'getEmailTemplates'])->name('email.getTemplates');
   Route::get('/get-email-template', [EmailController::class, 'getEmailTemplate'])->name('email.getTemplate');
+  Route::get('/show-email', [EmailController::class, 'showEmail'])->name('email.show');
+  Route::get('/generate-booking-pdf', [EmailController::class, 'generateBookingPDF'])->name('email.generateBookingPDF');
+  Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
+
 
 });
 

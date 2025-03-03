@@ -45,7 +45,7 @@ class CustomerRegistered extends Mailable
   {
     return new Envelope(
       from: 'smtp@bspmi.com',
-      subject: '70000TONS OF METAL - WELCOME ON BOARD SAILOR!',
+      subject: 'Welcome On Board, Sailor!',
     );
   }
 

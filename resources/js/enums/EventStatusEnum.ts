@@ -1,13 +1,13 @@
 export enum EventStatus {
-    PRE_SALE = 'pre-sale',
-    PUBLIC = 'public',
-    CLOSED = 'closed',
-    DRAFT = 'draft',
+    PRE_SALE = 'PRE-SALE',
+    PUBLIC = 'PUBLIC',
+    CLOSED = 'CLOSED',
+    DRAFT = 'DRAFT',
 }
 
 export const EventStatusLabels: Record<EventStatus, string> = {
-    [EventStatus.PRE_SALE]: 'Pre-sale',
-    [EventStatus.PUBLIC]: 'Public',
-    [EventStatus.CLOSED]: 'Closed',
-    [EventStatus.DRAFT]: 'Draft',
+    [EventStatus.PRE_SALE]: 'PRE_SALE',
+    [EventStatus.PUBLIC]: 'PUBLIC',
+    [EventStatus.CLOSED]: 'CLOSE',
+    [EventStatus.DRAFT]: 'DRAFT',
 };

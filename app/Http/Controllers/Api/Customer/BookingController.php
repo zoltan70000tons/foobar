@@ -75,8 +75,6 @@ class BookingController extends Controller
         'customer_id' => $user->id,
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
-        'completed' => false,
-        'is_cancelled' => false,
         'is_single_occupancy' => false,
         'tags' => json_encode(['New']),
       ];
@@ -86,8 +84,8 @@ class BookingController extends Controller
       $adjustments = Adjustment::where('event_id', $eventId)->first();
       $eventStatus = Event::find($eventId)->status;
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
-        'cabinPrice' => $validated['cart']['cabin_price'],
-        'cabinCapacity' => $validated['cart']['cabin_capacity'],
+        'cabinPrice' => (float) $validated['cart']['cabin_price'],
+        'cabinCapacity' => (int) $validated['cart']['cabin_capacity'],
         'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
@@ -96,10 +94,12 @@ class BookingController extends Controller
 
       $totalPassenger = $priceCalc['totalPassenger'];
 
+      $language = $validated['language'] ?? 'en';
+
       // Process passenger data
       $passengerData = [
         'confirmed_booking_email' => false,
-        'lead_passenger' => $validated['cart']['cabin_type'] === 'private-cabin' ? true : false,
+        'lead_passenger' => true,
         'payment_method' => $validated['paymentMethod'],
         'address_first' => $validated['addressLine1'],
         'address_second' => $validated['addressLine2'],
@@ -131,18 +131,18 @@ class BookingController extends Controller
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
       // Send confirmation email
-      //\Log::info('Booking created successfully', $result);
+      //      \Log::info('Booking created successfully', $result);
 
       // Delete current sesion
       $request->session()->forget('cart');
       $request->session()->forget('reservation_id');
 
-      \Log::info('Booking created successfully', $result);
+      // \Log::info('Result ----> data: ', ['result' => $result]);
+      // \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);
+      // \Log::info('Cart ----> data: ', ['cart' => $cart]);
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
-
-      \Log::info('Sending confirmation email for booking code: ' . $bookingCode . ' to email: ' . $passengerEmail);
 
       if (!$bookingCode || !$passengerEmail) {
         return response()->json(
@@ -157,7 +157,7 @@ class BookingController extends Controller
       }
 
       // Send confirmation email
-      $this->sendConfirmationEmail($bookingCode, $passengerEmail, 'en');
+      $this->sendConfirmationEmail($bookingCode, $passengerData, $cart, $language);
 
       return response()->json(
         [
@@ -188,7 +188,8 @@ class BookingController extends Controller
   |  This method trigger the email confirmation
   |
   */
-  private function sendConfirmationEmail(string $bookingCode, string $passengerEmail, string $language): void
+
+  private function sendConfirmationEmail($bookingCode, $passengerData, $cart, $language): void
   {
     try {
       // Get booking data with relationships
@@ -217,7 +218,7 @@ class BookingController extends Controller
         $installmentCount = $passInstallments->count();
 
         if ($installmentCount > 0) {
-          $totalPrice = $passenger->passenger_allocated_cost;
+          $totalPrice = $cart['price_total'];
           $totalPriceDivided = floatval($totalPrice) / $installmentCount;
 
           // Map to array
@@ -235,7 +236,9 @@ class BookingController extends Controller
         \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
       }
 
-      Mail::to($passengerEmail)->send(new CustomerConfirmationBooking($booking, $cabinType, $installments, $language));
+      Mail::to($passengerData['email'])->send(
+        new CustomerConfirmationBooking($booking, $cart, $installments, $language)
+      );
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
     }

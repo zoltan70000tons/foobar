@@ -42,27 +42,35 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_official_ticket_price_per_person') }}:</td>
-            <td>{{ $bookingResult->booking->official_ticket_price_per_person }}</td>
+            <td>USD {{ $bookingResult->booking->official_ticket_price_per_person }}</td>
         </tr>
         <tr>
           <td>{{ __('confirmationBooking.cbe_pay_in_full_discount') }}:</td>
-          <td>{{ $bookingResult->booking->pay_in_full_discount }}</td>
+          <td>{{ $bookingResult->booking->pay_in_full_discount }} %</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_net_ticket_price_per_person') }}:</td>
-            <td>{{ $bookingResult->booking->net_ticket_price_per_person }}</td>
+            <td>USD {{ $bookingResult->booking->net_ticket_price_per_person }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_taxes_and_fees_per_person') }}:</td>
-            <td>{{ $bookingResult->booking->taxes_and_fees_per_person }}</td>
+            <td>USD {{ $bookingResult->booking->taxes_and_fees_per_person }}</td>
+        </tr>
+        <tr>
+            <td>{{ __('confirmationBooking.cbe_carbon_offset_per_person') }}:</td>
+            <td>USD {{ $bookingResult->booking->carbon_offset }}</td>
+        </tr>
+        <tr>
+            <td>{{ __('confirmationBooking.cbe_choose_your_cabin_per_person') }}:</td>
+            <td>USD {{ $bookingResult->booking->choose_your_cabin }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_single_traveler_surcharge') }}:</td>
-            <td>{{ $bookingResult->booking->single_traveler_surcharge }}</td>
+            <td>USD {{ $bookingResult->booking->single_traveler_surcharge }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_total_ticket_price') }}:</td>
-            <td>{{ $bookingResult->booking->total_ticket_price }}</td>
+            <td>USD {{ $bookingResult->booking->total_ticket_price }}</td>
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_number_of_passengers') }}:</td>
@@ -70,13 +78,36 @@
         </tr>
         <tr>
             <td>{{ __('confirmationBooking.cbe_grand_total_booking_price') }}:</td>
-            <td>{{ $bookingResult->booking->grand_total_booking_price }}</td>
+            <td>USD {{ $bookingResult->booking->grand_total_booking_price }}</td>
         </tr>
+    </table>
+    @if($bookingResult->booking->payment_schedule === 'PAID IN FULL')
+    <table>
         <tr>
             <td>{{ __('confirmationBooking.cbe_payment_schedule') }}:</td>
             <td>{{ $bookingResult->booking->payment_schedule }}</td>
         </tr>
     </table>
+    @endif
+    @if($bookingResult->booking->payment_schedule_installments !== 'N/A')
+    <h2>{{ __('confirmationBooking.cbe_payment_schedule') }}</h2>
+    <table class="table-bordered">
+        <thead>
+            <tr>
+                <th>Due Date</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($bookingResult->booking->payment_schedule_installments as $installment)
+                <tr>
+                    <td>{{ $installment['due_date'] }}</td>
+                    <td>USD {{ $installment['amount'] }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
     <!---- Lead pass details ---->
     <p>{{ __('confirmationBooking.cbe_lead_passenger_details') }}</p>
     <table>
@@ -161,7 +192,7 @@
       </tr>
       <tr>
           <td>{{ __('confirmationBooking.cbe_receive_newsletter') }}:</td>
-          <td>{{ $bookingResult->passenger->receive_newsletter }}</td>
+          <td>{{ $bookingResult->passenger->newsletter }}</td>
       </tr>
       <tr>
           <td>{{ __('confirmationBooking.cbe_receive_partner_information') }}:</td>
@@ -179,7 +210,34 @@
           <td>{{ __('confirmationBooking.cbe_todays_date') }}:</td>
           <td>{{ $bookingResult->booking->todays_date }}</td>
       </tr>
+      <tr>
+          <td>{{ __('confirmationBooking.cbe_request_id') }}:</td>
+          <td>{{ $bookingResult->booking->booking_request_id }}</td>
+      </tr>
     </table>
+    <!---- Contact details ---->
+    <table width="100%" cellspacing="0" cellpadding="0">
+        <tr><td height="10"></td></tr> 
+        <tr>
+            <td>
+                <p>{{ __('confirmationBooking.cbe_questions') }}</p>
+            </td>
+        </tr>
+        <tr><td height="10"></td></tr>
+    </table>
+    
+    @include('emails.components.contact-email')
+    
+    <table width="100%" cellspacing="0" cellpadding="0">
+        <tr><td height="10"></td></tr>
+        <tr>
+            <td>
+                <p>{{ __('confirmationBooking.cbe_or_call') }}</p>
+            </td>
+        </tr>
+    </table>
+    
+    @include('emails.components.contact-hotline')
 @endsection
 
 @section('regards')

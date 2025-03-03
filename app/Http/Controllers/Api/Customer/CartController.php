@@ -9,6 +9,7 @@ use App\Helpers\PriceCalculation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TemporaryReservation;
 use App\Models\CabinCategory;
+use App\Models\CabinCategorySpec;
 use App\Services\ReservationService;
 use App\Models\Event;
 
@@ -35,12 +36,13 @@ class CartController extends Controller
     // Fetch adjustments and tax
     $adjustments = Adjustment::where('event_id', $eventId)->get();
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
+    $cabinTitle = CabinCategorySpec::where('category_code', $cart['cabin_code'])
+      ->where('capacity', $cart['cabin_capacity'])
+      ->first()
+      ->cabinCategories()->first()->getTitleAttribute();
     $eventStatus = Event::find($eventId)->status;
 
     $errorCode = null;
-    if (Auth::check() && $eventId && Auth::user()->bookings()->where('event_id', $eventId)->count() > 0) {
-      $errorCode .= 'BOOKING_LIMIT_EXCEEDED';
-    }
 
     if (isset($cart['cabin_price'])) {
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
@@ -59,6 +61,7 @@ class CartController extends Controller
         'price_extras' => $priceCalc['extras'],
         'tax' => $taxAddon,
         'error_code' => $errorCode,
+        'cabin_title' => $cabinTitle,
       ]);
     }
 
@@ -111,6 +114,11 @@ class CartController extends Controller
       'cabin_conf_accp' => 'nullable|boolean',
       'force_clear' => 'nullable|boolean',
       'single_t_agreement' => 'boolean',
+      'price_total' => 'nullable|numeric|sometimes',
+      'price_total_passenger' => 'nullable|numeric|sometimes',
+      'price_save' => 'nullable|string|sometimes',
+      'price_extras' => 'nullable|numeric|sometimes',
+      'tax' => 'nullable|numeric|sometimes',
     ]);
 
     if ($validated['force_clear'] === true) {
@@ -187,6 +195,11 @@ class CartController extends Controller
       'cabin_category_type' => 'required|string',
       'single_t_agreement' => 'boolean',
       'time_to_cancel' => 'nullable|integer',
+      'price_total' => 'nullable|numeric|sometimes',
+      'price_total_passenger' => 'nullable|numeric|sometimes',
+      'price_save' => 'nullable|string|sometimes',
+      'price_extras' => 'nullable|numeric|sometimes',
+      'tax' => 'nullable|numeric|sometimes',
     ]);
 
     $request->session()->put('cart', $validated);

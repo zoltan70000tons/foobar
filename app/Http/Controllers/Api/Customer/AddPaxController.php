@@ -23,6 +23,7 @@ class AddPaxController extends Controller
       'name' => 'required|string',
       'lastName' => 'required|string',
       'bookingCode' => 'required|string',
+      'dateOfBirth' => 'required|string',
     ]);
 
     // Find booking by booking code
@@ -37,16 +38,15 @@ class AddPaxController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
+    $dateOfBirth = $request->dateOfBirth;
     // Normalize input names
     $formattedName = $this->normalizeString($request->name);
     $formattedLastName = $this->normalizeString($request->lastName);
 
-    \Log::info('Formatted name: ', ['name' => $formattedName, 'lastName' => $formattedLastName]);
-
     // Fetch all passengers for this booking
-    $passengers = Passenger::where('booking_id', $booking->id)->get();
-
-    \Log::info('Passengers: ', ['passengers' => $passengers]);
+    $passengers = Passenger::where('booking_id', $booking->id)
+      ->where('dob', $dateOfBirth)
+      ->get();
 
     // Try to find a passenger with a similar name
     $matchedPassenger = $passengers->first(function ($passenger) use ($formattedName, $formattedLastName) {
