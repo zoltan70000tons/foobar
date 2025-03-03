@@ -251,15 +251,15 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           <Table size="small" sx={{ mt: 2, color: "white" }}>
             <TableBody>
               <TableRow>
-                <TableCell>Total Cost:</TableCell>
+                <TableCell>Grand Total Booking Price:</TableCell>
                 <TableCell align="right">{formatCurrency(summaryAllocatedCost)}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Paid:</TableCell>
+                <TableCell>Total Balance:</TableCell>
                 <TableCell align="right">{formatCurrency(summaryBalance)}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>To Pay:</TableCell>
+                <TableCell>Remaining balance:</TableCell>
                 <TableCell align="right">{formatCurrency(summaryToPay)}</TableCell>
               </TableRow>
             </TableBody>
