@@ -48,23 +48,11 @@ class CustomerController extends Controller
 
     public function create(): InertiaResponse
     {
-        $survivorNumber = CustomerHelper::generateSurvivorNumber();
-
-        return Inertia::render('Customer/Create', [
-            'survivorNumber' => $survivorNumber,
-        ]);
+        return Inertia::render('Customer/Create');
     }
 
     public function store(CustomerCreateRequest $request): RedirectResponse|Response|InertiaResponse
     {
-        $rules = [
-            'username' => 'required|string|max:255|unique:users',
-            'email' => 'required|string|max:255|unique:users',
-            'survivor_number' => 'nullable|string|max:9',
-        ];
-
-        $request->validate($rules);
-
         try {
             return $this->withPermission([Permissions::CreateUsers], function ($request) {
                 $this->customerRepository->store($request);

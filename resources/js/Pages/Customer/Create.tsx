@@ -22,12 +22,11 @@ import PhoneNumber from "@/Components/PhoneNumber";
 import { usePermissions } from "@/Providers/PermissionContext";
 
 const Create = ({ auth, errors }: PageProps) => {
-  const { survivorNumber }: PageProps = usePage().props;
   const { hasPermission } = usePermissions();
   const { data, setData, post, processing } = useForm({
     username: "",
     email: "",
-    survivor_number: survivorNumber,
+    survivor_number: "",
     first_name: "",
     last_name: "",
     middle_name: "",
@@ -69,11 +68,13 @@ const Create = ({ auth, errors }: PageProps) => {
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+    setSnackbar({ ...snackbar, open: false, message: "" });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    setSnackbar({ ...snackbar, message: "" });
 
     const formData = new FormData();
     for (const key in data) {
@@ -89,11 +90,11 @@ const Create = ({ auth, errors }: PageProps) => {
         });
       },
       onError: (errors) => {
-        console.log(errors);
+        const errorMessages = Object.values(errors).join("\n");
         setSnackbar({
           open: true,
           severity: "error",
-          message: "Error creating customer",
+          message: `Error creating customer\n${errorMessages}`,
         });
       },
     });
@@ -118,16 +119,6 @@ const Create = ({ auth, errors }: PageProps) => {
               <form onSubmit={ handleSubmit } encType="multipart/form-data">
                 <Box sx={ { width: "100%" } }>
                   <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 } sx={ { mr: 2 } }>
-                      <TextField
-                        fullWidth
-                        label="Survivor Number"
-                        variant="outlined"
-                        value={ data.survivor_number }
-                        name={ "survivor_number" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
                     <Grid item xs={ 6 }>
                       <TextField
                         fullWidth

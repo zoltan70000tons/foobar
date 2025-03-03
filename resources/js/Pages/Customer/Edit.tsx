@@ -111,7 +111,12 @@ const Edit = ({ auth, errors }: PageProps) => {
         setSnackbar({ open: true, severity: 'success', message: 'Customer edited successfully' });
       },
       onError: (errors) => {
-        setSnackbar({ open: true, severity: 'error', message: 'Error editing customer' });
+        const errorMessages = Object.values(errors).join("\n");
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: `Error editing customer\n${errorMessages}`,
+        });
       },
     });
   };
@@ -126,7 +131,7 @@ const Edit = ({ auth, errors }: PageProps) => {
       <Toolbar/>
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.EditEvents) && (<Paper
+          { hasPermission(Permissions.EditCustomers) && (<Paper
               sx={ {
                 p: 2,
                 display: "flex",
@@ -135,7 +140,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                 width: "100%",
               } }
             >
-              <h1>Edit Event</h1>
+              <h1>Edit Customer</h1>
               <form onSubmit={ handleSubmit } encType="multipart/form-data">
                 <Box sx={ { width: "100%" } }>
                   <Grid container spacing={ 2 }>

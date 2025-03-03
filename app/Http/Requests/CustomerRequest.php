@@ -111,4 +111,12 @@ class CustomerRequest extends FormRequest
             ],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            '*.required' => 'The :attribute field is required. Please provide a valid :attribute.',
+            '*.string' => 'The :attribute field is required. Please provide a valid :attribute.',
+        ];
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerCreateRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
@@ -168,11 +169,9 @@ class CustomerRepository implements CustomerInterface
             $user->detail()->save($userDetail);
             $user->customerAddress()->save($customerAddress);
 
-            if ($request->filled('survivor_number')) {
-                $survivorNumber = new SurvivorNumber();
-                $survivorNumber->survivor_number = $request->input('survivor_number');
-                $user->survivorNumber()->save($survivorNumber);
-            }
+            $survivorNumber = new SurvivorNumber();
+            $survivorNumber->survivor_number = CustomerHelper::generateSurvivorNumber();
+            $user->survivorNumber()->save($survivorNumber);
 
             setPermissionsTeamId(1);
             $user->assignRole('Customer');

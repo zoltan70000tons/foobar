@@ -26,11 +26,14 @@ class CustomerCreateRequest extends CustomerRequest
                 'max:255',
                 'unique:users,username',
             ],
-            'survivor_number' => [
-                'nullable',
-                'max:9',
-                'string',
-            ]
         ]);
+    }
+
+    public function messages(): array
+    {
+        return [
+            '*.required' => 'The :attribute field is required. Please provide a valid :attribute.',
+            '*.string' => 'The :attribute field is required. Please provide a valid :attribute.',
+        ];
     }
 }

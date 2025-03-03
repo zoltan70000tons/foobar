@@ -34,7 +34,7 @@ const View = ({ auth, customer }: PageProps) => {
   }
 
   const handleDelete = () => {
-    const confirmed = window.confirm('Are you sure you want to delete this event?');
+    const confirmed = window.confirm('Are you sure you want to delete this customer?');
     if (confirmed) {
       destroy(route('customers.destroy', { customer: customer.id }));
     }
