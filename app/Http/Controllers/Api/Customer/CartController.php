@@ -9,6 +9,7 @@ use App\Helpers\PriceCalculation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TemporaryReservation;
 use App\Models\CabinCategory;
+use App\Models\CabinCategorySpec;
 use App\Services\ReservationService;
 use App\Models\Event;
 
@@ -35,6 +36,10 @@ class CartController extends Controller
     // Fetch adjustments and tax
     $adjustments = Adjustment::where('event_id', $eventId)->get();
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
+    $cabinTitle = CabinCategorySpec::where('category_code', $cart['cabin_code'])
+      ->where('capacity', $cart['cabin_capacity'])
+      ->first()
+      ->cabinCategories()->first()->getTitleAttribute();
     $eventStatus = Event::find($eventId)->status;
 
     $errorCode = null;
@@ -56,6 +61,7 @@ class CartController extends Controller
         'price_extras' => $priceCalc['extras'],
         'tax' => $taxAddon,
         'error_code' => $errorCode,
+        'cabin_title' => $cabinTitle,
       ]);
     }
 
