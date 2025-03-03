@@ -19,9 +19,14 @@ class CabinController extends Controller
   /**
    * Show cabins filtered by type, category, and deck.
    */
-  public function show($cabinTypeId, $cabinCategoryCode, $cabinDeck)
+  public function show($cabinTypeId, $cabinCategoryCode, $cabinCapacity, $cabinDeck)
   {
-    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, null);
+    // Convert parameters to the correct type
+    $cabinTypeId = intval($cabinTypeId);
+    $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
+    $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
+
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
@@ -75,6 +80,7 @@ class CabinController extends Controller
     // REQUEST INPUT DATA
     $cabinNumber = $request->input('cabin_number');
     $cabinTypeId = $request->input('cabin_type_id');
+    $cabinCapacity = $request->input('cabin_capacity');
     $cabinCategoryCode = $request->input('category_code');
 
     $cart = $request->session()->get('cart', []) ?? null;
@@ -97,11 +103,11 @@ class CabinController extends Controller
     }
 
     // -------- Proceed with new reservation
-    if (!$cabinNumber || !$cabinTypeId || !$cabinCategoryCode) {
-      return response()->json(['message' => 'Cabin number, type ID, and category ID are required.'], 400);
+    if (!$cabinNumber || !$cabinTypeId || !$cabinCategoryCode || !$cabinCapacity) {
+      return response()->json(['message' => 'Cabin number, type ID, capacity, and category ID are required.'], 400);
     }
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, null, null, false, $cabinCategoryCode);
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, null, false, $cabinCategoryCode, $cabinCapacity);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
