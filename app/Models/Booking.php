@@ -254,27 +254,29 @@ class Booking extends Model
 
     static::updated(function ($booking) {
       $cabin = $booking->cabin;
-      if ($booking->status == 'CANCELLED') {
-        if ($cabin->cabinType->id == 1) {
-          // back to zero and set available
-          $cabin->status = 'AVAILABLE';
-          $cabin->inventory = 0;
-          $cabin->save();
-        } else {
-          // reduce by 1
-          if ($cabin->cabinType->id == 2 || $cabin->cabinType == 3) {
-            $cabin->inventory = $cabin->inventory - 1;
-            if ($cabin->inventory <= 0) {
-              $cabin->status = 'AVAILABLE';
-              $cabin->inventory = 0;
-            }
-            $cabin->save();
-          }
-        }
-        // dd($cabin->category->title);
-        // if($cabin)
+      // Process only if the booking is cancelled
+      if ($booking->status !== 'CANCELLED') {
+        return;
       }
+      $cabinTypeId = $cabin->cabinType->id;
+      $cabin->inventory += 1; // Increase inventory on cancellation
+      // If cabin type is 1, always set to AVAILABLE
+      if ($cabinTypeId === 1) {
+        $cabin->status = 'AVAILABLE';
+      } else {
+        // Determine cabin status based on inventory levels
+        $capacity = $cabin->category->capacity;
+
+        if ($cabin->inventory > 0 && $cabin->inventory < $capacity) {
+          $cabin->status = 'PARTIALLY_BOOKED';
+        } elseif ($cabin->inventory == $capacity) {
+          $cabin->status = 'AVAILABLE';
+        }
+      }
+      $cabin->save();
+      
     });
+
 
     static::deleted(function ($booking) {
       $booking->saveBookingLog($booking->id, 'Deleted', 'The booking was deleted');
