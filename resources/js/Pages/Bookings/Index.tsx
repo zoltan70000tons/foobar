@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 import {
@@ -13,6 +13,8 @@ import {
   Chip,
   Checkbox,
   Avatar,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import MuiTable from "@/Components/tables/MuiTable";
 import {
@@ -24,9 +26,12 @@ import { TagEnum } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
-import { Visibility } from "@mui/icons-material";
+import { Visibility, Clear } from "@mui/icons-material";
 import UserSelectorModal from "@/Components/UserSelectorModal";
 import NewBookingModal from "./NewBookingModal";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import debounce from "lodash/debounce";
+
 
 
 const Index = ({
@@ -40,18 +45,38 @@ const Index = ({
   cabinTypes,
   cabinCategories,
   errors,
+  tabIndex
 }: PageProps & { tab: string; data: any }) => {
 
   const { hasPermission } = usePermissions();
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(tabIndex);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
-  console.log(cabinTypes);
-  console.log(cabinCategories);
+  const [loading, setLoading] = useState(false);
+
+
+  useEffect(() => {
+    setLoading(true); 
+    
+    router.post(
+      `/events/${event.id}/bookings`,
+      { status: getStatusFromTab(selectedTab), keyword }, 
+      {
+        preserveState: true,
+        replace: true,
+        onFinish: () => setLoading(false), 
+      }
+    );
+  }, [selectedTab]);
+
+  const getStatusFromTab = (tabIndex) => {
+    const statuses = ["NEW", "ON HOLD", "UPLOADED", "CANCELLED"];
+    return statuses[tabIndex] || "NEW"; 
+  };
 
   const handleOpenModal = (userId: string | null, booking_id: string | null) => {
     setSelectedBookingId(booking_id);
@@ -229,7 +254,7 @@ const Index = ({
         accessor: "lead_passenger",
         draw: (row) => (
           <div style={{ display: "flex", gap: "10px" }}>
-            {row.lead_passenger ? <Checkbox size="small" defaultChecked disabled/> : ''}
+            {row.lead_passenger ? <Checkbox size="small" defaultChecked disabled /> : ''}
           </div>
         ),
       },
@@ -266,15 +291,38 @@ const Index = ({
     []
   );
 
+  const handleFilter = useCallback(
+    debounce((searchTerm) => {
+      setLoading(true);
+      router.post(
+        `/events/${event.id}/bookings`,
+        { keyword: searchTerm },
+        {
+          preserveState: true,
+          replace: true,
+          onSuccess: (data) => {
+            if (data.props.tabIndex !== undefined) {
+              setSelectedTab(data.props.tabIndex); 
+            }
+          },
+          onFinish: () => setLoading(false),
+        }
+      );
+    }, 300),
+    []
+  );
+
+  const clearFilter = () => {
+    setKeyword("");
+    handleFilter("");
+  }
+
   const customFilter = (e) => {
     let currentKeyword = e.target.value;
     setKeyword(currentKeyword);
-    router.get(
-      `/events/${event.id}/bookings`,
-      { keyword: currentKeyword },
-      { preserveState: true, replace: true }
-    );
+    handleFilter(currentKeyword);
   };
+
   return (
     <AuthenticatedLayout user={auth.user} header={"Bookings"}>
       <Head title="Bookings" />
@@ -289,8 +337,29 @@ const Index = ({
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} sx={{ textAlign: "right" }}>
-
-            <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "stretch",
+                  gap: 2,
+                }}
+              >
+                <Box sx={{ minHeight: "40px", display: "flex", alignItems: "center" }}>
+                  <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
+                </Box>
+                <TextField size="small" name="filter" value={keyword} placeholder="Search" sx={{ minHeight: "40px" }} onChange={customFilter} InputProps={{
+                  endAdornment: keyword && ( // 🔥 Solo muestra la "X" si hay texto
+                    <InputAdornment position="end">
+                      <IconButton onClick={clearFilter} size="small">
+                        <Clear />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }} />
+              </Box>
+            </Grid>
             <Box>
               {/* Tabs for navigation */}
               <Tabs
@@ -313,7 +382,7 @@ const Index = ({
                   subColumns={subColumns}
                   showCheckBox={false}
                   showSubCheckBox={false}
-                  showCustomFilter={true}
+                  //showCustomFilter={true}
                   onCustomFilter={customFilter}
                 />
               </Box>
@@ -327,7 +396,7 @@ const Index = ({
                   subColumns={subColumns}
                   showCheckBox={false}
                   showSubCheckBox={false}
-                  showCustomFilter={true}
+                  //showCustomFilter={true}
                   onCustomFilter={customFilter}
                 />
               </Box>
@@ -341,7 +410,7 @@ const Index = ({
                   subColumns={subColumns}
                   showCheckBox={false}
                   showSubCheckBox={false}
-                  showCustomFilter={true}
+                  // showCustomFilter={true}
                   onCustomFilter={customFilter}
                 />
               </Box>
@@ -354,7 +423,7 @@ const Index = ({
                 subColumns={subColumns}
                 showCheckBox={false}
                 showSubCheckBox={false}
-                showCustomFilter={true}
+                //showCustomFilter={true}
                 onCustomFilter={customFilter}
               />
             </Box>
@@ -375,6 +444,7 @@ const Index = ({
             />
           </Grid>
         </Grid>
+        <LoadingOverlay open={loading} />
       </Container>
     </AuthenticatedLayout>
   );
