@@ -59,7 +59,6 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       try {
         const response = await fetch(`/get-email-templates?lang=${lang}`);
         const data = await response.json();
-        console.log(data);
         setTemplates(data.templates);
         setSelectedTemplate(null);
       } catch (error) {
@@ -110,7 +109,6 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
   
       const blob = await response.blob();
       const file = new File([blob], `booking_confirmation_${booking.id}.pdf`, { type: "application/pdf" });
-      console.log(file);
       setAttachments((prev) => [...prev, file]);
       showSnackbar("📄 Booking confirmation PDF attached!", "success");
     } catch (error) {

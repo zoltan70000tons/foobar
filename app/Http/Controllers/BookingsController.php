@@ -58,8 +58,8 @@ class BookingsController extends Controller
   {
     try {
       $event_id = request()->route('id');
-      $tag = $request->filled('tag') ? $request->tag : null;
-      $keyword = $request->filled('keyword') ? $request->keyword : null;
+      $keyword = $request->input('keyword');
+      $tag = $request->input('tag');
       if ($event_id == 'all') {
         $events = $this->eventRepository->getAll();
         return Inertia::render('Bookings/partials/Events', [
@@ -73,10 +73,15 @@ class BookingsController extends Controller
           $inProgressBookings = $this->bookingRepository->getByStatus('ON HOLD', $keyword);
           $uploadedBookings = $this->bookingRepository->getByStatus('UPLOADED', $keyword);
           $cancelledBookings = $this->bookingRepository->getByStatus('CANCELLED', $keyword);
-
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+          $tabIndex = 0; 
+          if (count($newBookings) > 0) $tabIndex = 0;
+          elseif (count($inProgressBookings) > 0) $tabIndex = 1;
+          elseif (count($uploadedBookings) > 0) $tabIndex = 2;
+          elseif (count($cancelledBookings) > 0) $tabIndex = 3;
+
           //$cancelledBookings = [];
           $event = $this->eventRepository->find($event_id);
           return Inertia::render('Bookings/Index', [
@@ -88,6 +93,7 @@ class BookingsController extends Controller
             'users' => $users,
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
+            'tabIndex' => $tabIndex,
           ]);
         },
         $event_id,
@@ -537,6 +543,34 @@ class BookingsController extends Controller
         ],
         500
       );
+    }
+  }
+
+
+
+  public function filter(Request $request)
+  {
+    try {
+      $event_id = request()->route('id');
+      $filters = $request->all();
+
+      return $this->withPermission(
+        [Permissions::ViewBookings],
+        function ($event_id, $filters) {
+          $event = $this->eventRepository->find($event_id);
+          $bookings = $this->bookingRepository->filterBookings($event_id, $filters);
+
+          return Inertia::render('Bookings/Index', [
+            'event' => $event,
+            'bookings' => $bookings,
+            'filters' => $filters,
+          ]);
+        },
+        $event_id,
+        $filters
+      );
+    } catch (\Exception $e) {
+      $this->logException($e);
     }
   }
 }
