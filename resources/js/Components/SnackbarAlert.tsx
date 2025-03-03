@@ -21,7 +21,12 @@ const SnackbarAlert: React.FC<SnackAlertProps> = ({ message, severity = 'success
       key={vertical + horizontal}
     >
       <Alert onClose={onClose} severity={severity} sx={{ width: '100%' }}>
-        {message}
+        {message.split("\n").map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
       </Alert>
     </Snackbar>
   );
