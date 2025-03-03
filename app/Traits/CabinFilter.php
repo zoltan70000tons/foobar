@@ -8,6 +8,16 @@ use App\Enums\StatusCabin;
 
 trait CabinFilter
 {
+  /**
+   * @param int $cabinTypeId
+   * @param int|null $cabinCategoryId
+   * @param int|null $cabinDeck
+   * @param bool $onlyAvailable
+   * @param string|null $cabinCategoryCode
+   * @param int|null $cabinCapacity
+   *
+   */
+
   public function filterCabins(
     $cabinTypeId,
     $cabinCategoryId = null,
