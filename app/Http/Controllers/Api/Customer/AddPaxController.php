@@ -27,7 +27,16 @@ class AddPaxController extends Controller
     ]);
 
     // Find booking by booking code
-    $booking = Booking::where('booking_code', $request->bookingCode)->first();
+    $booking = Booking::with(
+      'cabin.category',
+      'cabin.cabinType',
+      'adjustments',
+      'passengers.fees',
+      'passengers.installments',
+      'passengers.payments'
+    )
+      ->where('booking_code', $request->bookingCode)
+      ->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
@@ -63,7 +72,7 @@ class AddPaxController extends Controller
 
     return response()->json([
       'booking' => [
-        'booking_code' => $booking->booking_code,
+        'booking' => $booking,
         'event' => $event,
         'passengers' => $matchedPassenger,
       ],
