@@ -68,52 +68,63 @@ class CabinRepository implements CabinInterface
     $cabin->save();
   }
   function delete($id) {}
-
   function getCategoriesAndCabins($event_id)
-  {
-    // Eager load only for cabins and cabinType
-    $categoriesWithCabins = CabinCategory::where('event_id', '=', $event_id)->with(['cabins.cabinType'])
-      ->get()
-      ->map(function ($category) {
-        // Count total and availables
-        $totalCabins = $category->cabins->count();
-        $availableCabins = $category->cabins->where('status', StatusCabin::AVAILABLE->value)->count();
-
-        return [
-          'id' => $category->id,
-          'category_type' => $category->category_type,
-          'category_code' => "{$category->category_code}_{$category->capacity}",
-          'category_name' => $category->category_name,
-          'price'         => $category->price,
-          'availability'  => "{$availableCabins}/{$totalCabins}",
-          'capacity'      => $category->capacity,
-          'title'         => $category->title,
-          'display_order' => $category->display_order,
-          'subRows'       => $category->cabins->map(function ($cabin) use ($category) {
-            $ticketInventory = $cabin->inventory;
-            // If cabin type is not PRIVATE CABIN, then show the split tickets
-            // e.g. 2/4, 3/6, 4/8
-            if ($cabin->cabinType->id !== 1) {
-              $ticketInventory = "{$ticketInventory} / {$category->capacity}";
+{
+    $categoriesWithCabins = CabinCategory::where('event_id', $event_id)
+        ->with([
+            'cabins' => function ($query) {
+                $query->with([
+                    'cabinType:id,cabin_type',
+                    'cabinSpec:id,cabin_number,deck,balcony,obstructed_view,location,accessible'
+                ])
+                ->select([
+                    'id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'status', 'cabin_type_id'
+                ]);
             }
-
+        ])
+        ->withCount([
+            'cabins as total_cabins',
+            'cabins as available_cabins' => function ($query) {
+                $query->where('status', StatusCabin::AVAILABLE->value);
+            }
+        ])
+        ->orderBy('id')
+        ->get()
+        ->map(function ($category) {
             return [
-              'id' => $cabin->id,
-              'deck' => $cabin->deck,
-              'total_berths'    => $cabin->total_berths,
-              'cabin_number'    => $cabin->cabin_number,
-              'cabin_status'    => $cabin->status,
-              'ticket_inventory' => $ticketInventory,
-              'cabin_type'      => $cabin->cabinType->cabin_type,
-              'cabin_tags'      => $cabin->tags
+                'id'             => $category->id,
+                'category_type'  => $category->category_type,
+                'category_code'  => "{$category->category_code}_{$category->capacity}",
+                'category_name'  => $category->category_name,
+                'price'          => $category->price,
+                'availability'   => "{$category->available_cabins}/{$category->total_cabins}",
+                'capacity'       => $category->capacity,
+                'title'          => $category->title,
+                'display_order'  => $category->display_order,
+                'subRows'        => $category->cabins->map(function ($cabin) use ($category) {
+                    return [
+                        'id'               => $cabin->id,
+                        'deck'             => $cabin->cabinSpec?->deck,
+                        'cabin_number'     => $cabin->cabinSpec?->cabin_number,
+                        'balcony'          => $cabin->cabinSpec?->balcony ?? false,
+                        'obstructed_view'  => $cabin->cabinSpec?->obstructed_view ?? false,
+                        'location'         => $cabin->cabinSpec?->location,
+                        'accessible'       => $cabin->cabinSpec?->accessible,
+                        'cabin_status'     => $cabin->status,
+                        'ticket_inventory' => $cabin->cabinType->id !== 1 
+                            ? "{$cabin->inventory} / {$category->capacity}" 
+                            : $cabin->inventory,
+                        'cabin_type'       => $cabin->cabinType->cabin_type,
+                        'cabin_tags'       => $cabin->tags,
+                    ];
+                })
             ];
-          })
-        ];
-      })
-      ->sortBy('display_order');
+        });
+       // dd($categoriesWithCabins);
 
     return $categoriesWithCabins;
-  }
+}
+
 
   function addTags(array $tags, array $cabins) {}
 
