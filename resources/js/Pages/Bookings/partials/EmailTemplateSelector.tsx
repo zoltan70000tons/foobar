@@ -14,21 +14,24 @@ import {
   Chip,
   DialogContentText,
   TextField,
-  FormControl
+  FormControl,
+  Grid
 } from "@mui/material";
 import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 const LANGUAGES = ["en", "es", "de"];
 
-const EmailTemplateEditor: React.FC = ({ booking }) => {
+const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
@@ -40,6 +43,10 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [subject, setSubject] = useState<string>("");
+
+  const {hasPermission} = usePermissions();
+
+  const canSendEmail = !hasPermission(Permissions.SendEmails) || !editMode;
 
   const { showSnackbar } = useSnackbar();
 
@@ -101,12 +108,12 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
   };
 
   const handleInsertPDF = async () => {
-    setIsSending(true); 
+    setIsSending(true);
     try {
       const response = await fetch(`/generate-booking-pdf?booking_id=${booking.id}`);
-      
+
       if (!response.ok) throw new Error("Failed to generate PDF");
-  
+
       const blob = await response.blob();
       const file = new File([blob], `booking_confirmation_${booking.id}.pdf`, { type: "application/pdf" });
       setAttachments((prev) => [...prev, file]);
@@ -115,17 +122,17 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       console.error("Error inserting PDF:", error);
       showSnackbar("⚠️ Failed to attach PDF.", "error");
     } finally {
-      setIsSending(false); 
+      setIsSending(false);
     }
   };
 
   const handleInsertImg = async () => {
-    setIsSending(true); 
+    setIsSending(true);
     try {
       const response = await fetch(`/generate-img?booking_id=${booking.id}`);
 
       if (!response.ok) throw new Error("Failed to generate Img");
-      const blob = await response.blob(); 
+      const blob = await response.blob();
       const file = new File([blob], `IMG_${booking.id}.jpg`, { type: blob.type });
       setAttachments((prev) => [...prev, file]);
       showSnackbar("📄 Image attached!", "success");
@@ -134,30 +141,23 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
       console.error("Error inserting Image:", error);
       showSnackbar("⚠️ Failed to attach Image.", "error");
     } finally {
-      setIsSending(false); 
+      setIsSending(false);
     }
-};
+  };
 
 
   const handlePreview = (file) => {
     const fileURL = URL.createObjectURL(file);
     window.open(fileURL, "_blank");
   };
-  
-  
+
+
   const handleSendEmail = () => {
     setIsConfirmDialogOpen(false);
     setIsSending(true);
 
-    console.log("emailEditorRef.current:", emailEditorRef.current);
-    console.log("emailEditorRef.current?.editor:", emailEditorRef.current?.editor);
-
     const unlayer = emailEditorRef.current?.editor;
-    console.log('hola');
     if (!unlayer) return;
-    console.log(selectedTemplate);
-
-    console.log('test');
 
     unlayer.exportHtml(async (data) => {
       const { html } = data;
@@ -177,8 +177,8 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
           headers: { "X-CSRF-TOKEN": getCsrfToken() },
           body: formData,
         });
-        console.log(response);
-        if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
           showSnackbar("✅ Email sent successfully!", "success");
           setAttachments([]);
         } else {
@@ -197,44 +197,70 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      {/* Language Selector */}
-      <Select value={lang} onChange={(e) => setLang(e.target.value)} style={{ width: 150 }}>
-        {LANGUAGES.map((language) => (
-          <MenuItem key={language} value={language}>
-            {language.toUpperCase()}
-          </MenuItem>
-        ))}
-      </Select>
+      <Grid container spacing={2}>
+        {/* Language Selector */}
+        <Grid item xs={4}>
+          <Select
+            size="small"
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            fullWidth
+            disabled={canSendEmail}
+          >
+            {LANGUAGES.map((language) => (
+              <MenuItem key={language} value={language}>
+                {language.toUpperCase()}
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
 
-      {/* Template Selector */}
-      {isSending ? (
-        <CircularProgress />
-      ) : (
-        <Select
-          value={selectedTemplate ? JSON.stringify(selectedTemplate) : ""}
-          onChange={(e) => {
-            const selectedObject = JSON.parse(e.target.value);
-            console.log(selectedObject);
-            setSelectedTemplate(selectedObject);
-            setSubject(selectedObject.subject);
-          }}
-          displayEmpty
-          style={{ width: 250 }}
-        >
-          <MenuItem value="" disabled>
-            Select an email template
-          </MenuItem>
-          {templates.map((template) => (
-            <MenuItem key={template.id} value={JSON.stringify(template)}>
-              {template.subject}
-            </MenuItem>
-          ))}
-        </Select>
-      )}
+        {/* Template Selector */}
+        <Grid item xs={4}>
+          {isSending ? (
+            <CircularProgress />
+          ) : (
+            <Select
+              size="small"
+              disabled={canSendEmail}
+              value={selectedTemplate ? JSON.stringify(selectedTemplate) : ""}
+              onChange={(e) => {
+                const selectedObject = JSON.parse(e.target.value);
+                setSelectedTemplate(selectedObject);
+                setSubject(selectedObject.subject);
+              }}
+              displayEmpty
+              fullWidth
+            >
+              <MenuItem value="" disabled>
+                Select an email template
+              </MenuItem>
+              {templates.map((template) => (
+                <MenuItem key={template.id} value={JSON.stringify(template)}>
+                  {template.subject}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        </Grid>
 
-      <Button variant="contained" color="primary" onClick={() => setIsDialogOpen(true)} disabled={!selectedTemplate}>
-        Edit & Send
-      </Button>
+        {/* Button */}
+        <Grid item xs={4}>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={!selectedTemplate}
+            fullWidth
+            style={{height:'40px'}}
+            startIcon={<EditIcon />}
+            disabled={canSendEmail}
+          >
+            Edit & Send
+          </Button>
+        </Grid>
+      </Grid>
+
 
       {/* Email Editor Dialog */}
       <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} fullWidth maxWidth="lg" fullScreen={isFullscreen}>
@@ -278,51 +304,51 @@ const EmailTemplateEditor: React.FC = ({ booking }) => {
           </div>
 
           <Paper elevation={3} style={{ width: "100%", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#131313", zIndex: 10 }}>
-  <div>
-    {attachments.map((file, index) => (
-      <Chip
-        key={index}
-        label={file.name}
-        onDelete={() => handleRemoveAttachment(file)}
-        style={{ marginRight: "5px" }}
-        icon={
-          <IconButton onClick={() => handlePreview(file)} size="small">
-            <VisibilityIcon />
-          </IconButton>
-        }
-      />
-    ))}
-  </div>
-  
-  <div>
-    <Tooltip title="Attach Files">
-      <IconButton onClick={() => fileInputRef.current?.click()}>
-        <AttachFileIcon />
-      </IconButton>
-    </Tooltip>
+            <div>
+              {attachments.map((file, index) => (
+                <Chip
+                  key={index}
+                  label={file.name}
+                  onDelete={() => handleRemoveAttachment(file)}
+                  style={{ marginRight: "5px" }}
+                  icon={
+                    <IconButton onClick={() => handlePreview(file)} size="small">
+                      <VisibilityIcon />
+                    </IconButton>
+                  }
+                />
+              ))}
+            </div>
 
-    <Tooltip title="Insert Booking Confirmation PDF">
-      <IconButton onClick={handleInsertPDF}>
-        <PictureAsPdfIcon />
-      </IconButton>
-    </Tooltip>
+            <div>
+              <Tooltip title="Attach Files">
+                <IconButton onClick={() => fileInputRef.current?.click()}>
+                  <AttachFileIcon />
+                </IconButton>
+              </Tooltip>
 
-    <Tooltip title="Insert Event Image">
-      <IconButton onClick={handleInsertImg}>
-        <InsertPhotoIcon />
-      </IconButton>
-    </Tooltip>
+              <Tooltip title="Insert Booking Confirmation PDF">
+                <IconButton onClick={handleInsertPDF}>
+                  <PictureAsPdfIcon />
+                </IconButton>
+              </Tooltip>
 
-    <input
-      type="file"
-      accept=".jpg,.jpeg,.png,.pdf"
-      multiple
-      ref={fileInputRef}
-      style={{ display: "none" }}
-      onChange={handleFileChange}
-    />
-  </div>
-</Paper>
+              <Tooltip title="Insert Event Image">
+                <IconButton onClick={handleInsertImg}>
+                  <InsertPhotoIcon />
+                </IconButton>
+              </Tooltip>
+
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                multiple
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+            </div>
+          </Paper>
 
         </DialogContent>
 
