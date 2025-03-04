@@ -27,14 +27,7 @@ class AddPaxController extends Controller
     ]);
 
     // Find booking by booking code
-    $booking = Booking::with(
-      'cabin.category',
-      'cabin.cabinType',
-      'adjustments',
-      'passengers.fees',
-      'passengers.installments',
-      'passengers.payments'
-    )
+    $booking = Booking::with('cabin.category', 'cabin.cabinType', 'adjustments')
       ->where('booking_code', $request->bookingCode)
       ->first();
 
@@ -53,7 +46,8 @@ class AddPaxController extends Controller
     $formattedLastName = $this->normalizeString($request->lastName);
 
     // Fetch all passengers for this booking
-    $passengers = Passenger::where('booking_id', $booking->id)
+    $passengers = Passenger::with('fees', 'installments')
+      ->where('booking_id', $booking->id)
       ->where('dob', $dateOfBirth)
       ->get();
 
@@ -70,12 +64,13 @@ class AddPaxController extends Controller
     // Fetch event related to booking
     $event = Event::find($booking->event_id);
 
+    // hide agent_id from booking
+    unset($booking->agent_id);
+
     return response()->json([
-      'booking' => [
-        'booking' => $booking,
-        'event' => $event,
-        'passengers' => $matchedPassenger,
-      ],
+      'booking' => $booking,
+      'event' => $event,
+      'passengers' => $matchedPassenger,
     ]);
   }
 
