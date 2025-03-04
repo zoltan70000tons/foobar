@@ -36,13 +36,14 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
-  const [passengers, setPassengers] = useState(booking.passengers);
+  const [passengers, setPassengers] = useState(
+    [...booking.passengers].sort((a, b) => a.passenger_order - b.passenger_order)
+  );
   const [editingPassenger, setEditingPassenger] = useState(null);
   const [editedPassengerData, setEditedPassengerData] = useState({});
   const [errors, setErrors] = useState({});
   const colors = [blueGrey, deepPurple, red, yellow];
   const { showSnackbar } = useSnackbar();
-
 
 
 
@@ -121,7 +122,15 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
             <Grid item xs={12} sm={3} key={passenger.id + passenger.email}>
               <Box display="flex" alignItems="center">
                 <Avatar
-                  sx={{ width: 50, height: 50, mr: 2, cursor: "pointer", bgcolor: passenger.lead_passenger ? green[800] : passenger.empty ? grey[500] : colors[index][500] }}
+                  sx={{
+                    width: 50, height: 50, mr: 2, cursor: "pointer", bgcolor: passenger.lead_passenger
+                      ? green[800]
+                      : passenger.empty
+                        ? grey[500]
+                        : colors[index]
+                          ? colors[index][500]
+                          : grey[300]
+                  }}
                   onClick={() => handleEditPassenger(passenger)}
                 >
                   {passenger.full_name[0]}
@@ -129,11 +138,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
                 <Box>
                   <Typography>{passenger.full_name}</Typography>
                   {passenger.lead_passenger ? <Chip label="Lead Passenger" size="small" color="warning" /> : `Passenger ${index + 1}`}
-                  {/* <Typography variant="caption" color={passenger.lead_passenger ? 'green' : 'grey'}>
-                    {passenger.lead_passenger
-                      ? "Lead Passenger"
-                      : `Passenger ${index + 1}`}
-                  </Typography><br/> */}
                   {passenger.empty ? <><br /><Chip label="available" size="small" color="info" sx={{ color: "white" }} /></> : <></>}
                 </Box>
               </Box>
