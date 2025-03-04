@@ -10,6 +10,7 @@ use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReservationService;
+use Illuminate\Support\Facades\Auth;
 use Log;
 
 class CabinController extends Controller
@@ -87,6 +88,8 @@ class CabinController extends Controller
     $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
 
+    $user = Auth::user();
+
     // ------- If user have a reservation, and he want to create new.
     if ($cart && $reservationId) {
       // get from Temporary reservation table, and set expires_at to keepOldTimeStamp
@@ -100,6 +103,16 @@ class CabinController extends Controller
       $request->session()->put('cart.cabin_number', null);
       $request->session()->put('cart.reservation_id', null);
       $request->session()->put('cart.reservation_timestamp', null);
+    }
+
+    // ------- If user id is in tepmorary reservation table, thriow error
+    if ($user) {
+      $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
+
+      // if user have a reservation throw error
+      if ($tempReservationId->isNotEmpty()) {
+        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+      }
     }
 
     // -------- Proceed with new reservation
@@ -142,6 +155,18 @@ class CabinController extends Controller
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCategoryCode = $request->input('category_code');
     $cabinCapacity = $request->input('capacity');
+
+    $user = Auth::user();
+
+    // ------- If user id is in tepmorary reservation table, thriow error
+    if ($user) {
+      $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
+
+      // if user have a reservation throw error
+      if ($tempReservationId->isNotEmpty()) {
+        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+      }
+    }
 
     if (!$cabinTypeId || !$cabinCategoryCode || !$cabinCapacity) {
       return response()->json(['message' => 'Cabin category code, capacity and cabin type are required.'], 400);
