@@ -79,7 +79,7 @@ class CalculationRepository
       $payments = Payment::where('passenger_id', $passengerId)
         ->selectRaw("
                     SUM(CASE WHEN type = 'PAYMENT' THEN amount ELSE 0 END) -
-                    SUM(CASE WHEN type = 'REFOUND' THEN amount ELSE 0 END) AS balance
+                    SUM(CASE WHEN type = 'REFUND' THEN amount ELSE 0 END) AS balance
                 ")
         ->first();
       $balance = $payments->balance ?? 0;

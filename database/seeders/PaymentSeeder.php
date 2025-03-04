@@ -91,7 +91,7 @@ class PaymentSeeder extends Seeder
      */
     private function makeFullPayment($passenger, $booking): void
     {
-        $paymentType = rand(1, 100) <= 20 ? 'REFOUND' : 'PAYMENT';
+        $paymentType = rand(1, 100) <= 20 ? 'REFUND' : 'PAYMENT';
         $paymentAmount = rand(1, 100) <= 70 
         ? $booking->cabin->category->price 
         : 0; 
@@ -104,7 +104,7 @@ class PaymentSeeder extends Seeder
         ]);
 
         
-        if($payment->type == 'REFOUND'){
+        if($payment->type == 'REFUND'){
             $passenger->passenger_balance = $paymentAmount - $payment->amount;
         }else{
             $passenger->passenger_balance = $paymentAmount;
