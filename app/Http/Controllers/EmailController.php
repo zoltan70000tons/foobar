@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permissions;
 use App\Mail\BookingEmail;
 use App\Models\Booking;
 use App\Repositories\PaymentRepository;
@@ -10,6 +11,7 @@ use App\Services\MailService;
 use App\Services\PaymentInfoService;
 use App\Services\PaymentService;
 use App\Services\PDFService;
+use App\Traits\HandlePermissions;
 use Blade;
 use DB;
 use Illuminate\Http\Request;
@@ -24,6 +26,8 @@ class EmailController extends Controller
 {
 
     protected $emailTemplateService;
+
+    use HandlePermissions;
 
     public function __construct(EmailTemplateService $emailTemplateService)
     {
@@ -46,32 +50,40 @@ class EmailController extends Controller
         ]);
 
         try {
-            $booking = Booking::find($validated['booking_id']);
-            $passengers = $booking->passengers;
 
-            $attachments = collect($request->file('attachments', []))
-                ->filter(fn($file) => $file instanceof \Illuminate\Http\UploadedFile)
-                ->values()
-                ->all();
+            return $this->withPermission(
+                [Permissions::ViewBookings],
+                function ($validated,$request) {
+                    $booking = Booking::find($validated['booking_id']);
+                    $passengers = $booking->passengers;
 
-            foreach ($passengers as $passenger) {
-                Mail::send([], [], function ($message) use ($passenger, $validated, $attachments) {
-                    $message->to($passenger->email)
-                        ->subject($validated['subject'])
-                        ->html($validated['email_content']);
-                    foreach ($attachments as $file) {
-                        $message->attachData(
-                            file_get_contents($file->getRealPath()),
-                            $file->getClientOriginalName(),
-                            ['mime' => $file->getMimeType()]
-                        );
+                    $attachments = collect($request->file('attachments', []))
+                        ->filter(fn($file) => $file instanceof \Illuminate\Http\UploadedFile)
+                        ->values()
+                        ->all();
+
+                    foreach ($passengers as $passenger) {
+                        Mail::send([], [], function ($message) use ($passenger, $validated, $attachments) {
+                            $message->to($passenger->email)
+                                ->subject($validated['subject'])
+                                ->html($validated['email_content']);
+                            foreach ($attachments as $file) {
+                                $message->attachData(
+                                    file_get_contents($file->getRealPath()),
+                                    $file->getClientOriginalName(),
+                                    ['mime' => $file->getMimeType()]
+                                );
+                            }
+                        });
                     }
-                });
-            }
-            return response()->json(['message' => 'Emails sent successfully'], 200);
+                    return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
+                },
+                $validated,
+                $request
+            );
         } catch (\Exception $ex) {
             Log::info('Error sending email', ['error' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
-            return response()->json(['message' => 'Error sending email'], 400);
+            return response()->json(['message' => 'Error sending email', 'success' => false], 400);
         }
     }
 
@@ -212,7 +224,7 @@ class EmailController extends Controller
             }
 
             $mimeType = get_headers($eventImage, 1)["Content-Type"] ?? 'image/jpeg';
-            
+
 
             return response($imageData, 200)->header("Content-Type", $mimeType);
         } catch (\Throwable $th) {

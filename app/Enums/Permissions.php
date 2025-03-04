@@ -88,5 +88,9 @@ enum Permissions: string
     case EditPayments = 'Edit Payments';
     case DeletePayments = 'Delete Payments';
 
+    //Send EMails
+
+    case SendEmail = 'Send Emails';
+
 
 }

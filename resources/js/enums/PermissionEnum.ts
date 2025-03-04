@@ -80,6 +80,10 @@ export enum Permissions {
     ViewPayments = 'View Payments',
     CreatePayments = 'Create Payments',
     EditPayments = 'Edit Payments',
-    DeletePayments = 'Delete Payments'
+    DeletePayments = 'Delete Payments',
+
+    // Emails
+
+    SendEmails = 'Send Emails'
 
 }
