@@ -513,7 +513,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                       <TableRow key={payment.id}>
                         <TableCell>{payment.type}</TableCell>
                         <TableCell>
-                          {payment.type === "PAYMENT" ? "+" : payment.type === "REFOUND" ? "-" : ""}
+                          {payment.type === "PAYMENT" ? "+" : payment.type === "REFUND" ? "-" : ""}
                           {formatCurrency(payment.amount)}
                         </TableCell>
                         <TableCell>{new Date(payment.transaction_date).toLocaleDateString()}</TableCell>

@@ -69,9 +69,10 @@ const InstallmentPayment: React.FC<InstallmentPaymentProps> = ({
         sx={{
           display: "flex",
           mt: "5px",
-          alignItems: "center",
+          alignItems: "flex-start",
+          flexDirection: "column",
           justifyContent: "space-between",
-          px: 1,
+          p: 1,
           my: 1,
           backgroundColor: alpha("#fff", 0.1),
           color: isOverdue ? red[500] : "white",
@@ -221,7 +222,7 @@ const SectionPercentage: React.FC<Props> = ({
           {`${passengerPercentageRounded}%`}
         </Typography>
       </Box>
-      <Typography sx={{ mt: 4, fontSize: "14px" }}>
+      <Typography sx={{ mt: 10, fontSize: "14px" }}>
         <InfoRounded
           sx={{
             fontSize: "1rem",

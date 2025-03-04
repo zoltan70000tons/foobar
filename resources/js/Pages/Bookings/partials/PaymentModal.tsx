@@ -27,7 +27,7 @@ type PaymentModalProps = {
 type Payment = {
     BIP_ID: string;
     amount: number;
-    type: "PAYMENT" | "REFOUND";
+    type: "PAYMENT" | "REFUND";
     notes?: string;
     transaction_date: Dayjs | null;
 };
@@ -167,7 +167,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                                 required
                             >
                                 <MenuItem value="PAYMENT">Payment</MenuItem>
-                                <MenuItem value="REFOUND">Refound</MenuItem>
+                                <MenuItem value="REFUND">Refund</MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12} md={4}>
