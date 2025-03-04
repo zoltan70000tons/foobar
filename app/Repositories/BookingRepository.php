@@ -118,7 +118,9 @@ class BookingRepository implements BookingInterface
       'cabin.cabinType',
       'customer',
       'customer.detail',
-      'passengers',
+      'passengers' => function ($query) {
+        $query->orderBy('passenger_order', 'asc');
+      },
       'agent',
       'agent.detail',
     ])
@@ -160,10 +162,12 @@ class BookingRepository implements BookingInterface
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
-      // Sort passengers to place lead passenger first
+/*       // Sort passengers to place lead passenger first
       if ($booking->passengers && $index == 1) {
-        $booking->passengers = $booking->passengers->sortByDesc('lead_passenger')->values();
-      }
+        $booking->passengers = $booking->passengers
+        ->sortBy('passenger_order') 
+        ->values(); 
+      } */
 
       $booking->subRows = $booking->passengers ?? [];
     });
@@ -185,7 +189,7 @@ class BookingRepository implements BookingInterface
       'cabin.category',
       'adjustments',
       'passengers' => function ($query) {
-        $query->orderBy('id', 'asc');
+        $query->orderBy('passenger_order', 'asc');
       },
       "passengers.installments",
       "passengers.payments",
