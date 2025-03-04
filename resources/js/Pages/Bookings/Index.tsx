@@ -16,6 +16,7 @@ import {
   TextField,
   InputAdornment,
 } from "@mui/material";
+import { Person } from "@mui/icons-material";
 import MuiTable from "@/Components/tables/MuiTable";
 import {
   CabinStatus,
@@ -60,22 +61,22 @@ const Index = ({
 
 
   useEffect(() => {
-    setLoading(true); 
-    
+    setLoading(true);
+
     router.post(
       `/events/${event.id}/bookings`,
-      { status: getStatusFromTab(selectedTab), keyword }, 
+      { status: getStatusFromTab(selectedTab), keyword },
       {
         preserveState: true,
         replace: true,
-        onFinish: () => setLoading(false), 
+        onFinish: () => setLoading(false),
       }
     );
   }, [selectedTab]);
 
   const getStatusFromTab = (tabIndex) => {
     const statuses = ["NEW", "ON HOLD", "UPLOADED", "CANCELLED"];
-    return statuses[tabIndex] || "NEW"; 
+    return statuses[tabIndex] || "NEW";
   };
 
   const handleOpenModal = (userId: string | null, booking_id: string | null) => {
@@ -151,6 +152,14 @@ const Index = ({
     handleOpenModal(agent_id, booking_id);
 
   }
+
+  const toCamelCase = (str) => {
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   const bookingColumns = useMemo(
     () => [
@@ -249,19 +258,26 @@ const Index = ({
 
   const subColumns = useMemo(
     () => [
-      {
-        header: "Lead Passenger",
-        accessor: "lead_passenger",
-        draw: (row) => (
-          <div style={{ display: "flex", gap: "10px" }}>
-            {row.lead_passenger ? <Checkbox size="small" defaultChecked disabled /> : ''}
-          </div>
-        ),
-      },
+
       {
         header: "Passenger",
-        accessor: "full_name",
+        accessor: "lead_passenger",
+        width: '25%',
+        draw: (row) => (
+          <Box display="flex" alignItems="center" gap={1} key={row.passenger_order}>
+            <Person
+              titleAccess={row.lead_passenger ? "Lead Passenger" : "Passenger"}
+              sx={{
+                color: row.lead_passenger ? "#f39c12" : "gray",
+              }}
+            />
+            <Typography>
+            {toCamelCase(row.full_name)}
+            </Typography>
+          </Box>
+        ),
       },
+
       {
         header: "Email",
         accessor: "email",
@@ -302,7 +318,7 @@ const Index = ({
           replace: true,
           onSuccess: (data) => {
             if (data.props.tabIndex !== undefined) {
-              setSelectedTab(data.props.tabIndex); 
+              setSelectedTab(data.props.tabIndex);
             }
           },
           onFinish: () => setLoading(false),
