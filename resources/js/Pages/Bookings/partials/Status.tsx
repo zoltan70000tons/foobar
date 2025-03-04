@@ -28,6 +28,8 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { StatusEnum } from "@/enums/StatusEnum";
 import Tags from "./Tags";
 import EmailTemplateSelector from "./EmailTemplateSelector";
+import { LoadingButton } from "@mui/lab";
+import SaveIcon from '@mui/icons-material/Save';
 
 
 
@@ -49,10 +51,8 @@ const Status = ({ event, booking, editMode, users }) => {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const handleCancelDialogOpen = () => setIsCancelDialogOpen(true);
   const handleCancelDialogClose = () => setIsCancelDialogOpen(false);
-  const handleDialogOpen = () => setIsDialogOpen(true);
-  const handleDialogClose = () => setIsDialogOpen(false);
-  const handleCloseUserModal = () => setUserOpenModal(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedStatus(event.target.value as StatusEnum[]);
@@ -82,6 +82,7 @@ const Status = ({ event, booking, editMode, users }) => {
   };
 
   const handleUpdateStatus = () => {
+    setStatusLoading(true);
     router.post(route("bookings.updateStatus", { id: event.id }), {
       status: selectedStatus,
       booking_id: booking.id,
@@ -93,6 +94,9 @@ const Status = ({ event, booking, editMode, users }) => {
       onError: (errors) => {
         showSnackbar("Error updating booking status!", "error");
       },
+      onFinish: () =>{
+        setStatusLoading(false);
+      }
     });
   };
 
@@ -198,11 +202,14 @@ const Status = ({ event, booking, editMode, users }) => {
                   </Select>
                 </Grid>
                 <Grid item xs={4}>
-                  <Button
+                  <LoadingButton
+                    loading={statusLoading}
+                    loadingPosition="start"
                     variant="outlined"
                     color="warning"
                     onClick={handleUpdateStatus}
                     disabled={!canEdit || !editMode}
+                    endIcon={<SaveIcon />}
                     sx={{
                       height: "100%",
                       color: "#fff",
@@ -210,7 +217,7 @@ const Status = ({ event, booking, editMode, users }) => {
                     }}
                   >
                     Update
-                  </Button>
+                  </LoadingButton>
                 </Grid>
               </Grid>
               <Grid container mt={2}>
@@ -245,35 +252,6 @@ const Status = ({ event, booking, editMode, users }) => {
           </Paper>
         )}
       </Box>
-      {/* <Dialog open={isDialogOpen} onClose={handleDialogClose} maxWidth="md" fullWidth>
-        <DialogTitle>Edit Booking Code</DialogTitle>
-        <DialogContent >
-          <TextField
-            sx={{marginTop:'1rem !important'}}
-            fullWidth
-            value={updatedBookingCode}
-            onChange={(e) => setUpdatedBookingCode(e.target.value)}
-            label="Booking Code"
-            variant="outlined"
-            autoFocus
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose}  color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleUpdate} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <UserSelectorModal
-        open={openUserModal}
-        onClose={handleCloseUserModal}
-        onSave={handleAgentSelection}
-        initialUserId={selectedUserId}
-        users={users}
-      /> */}
       {/* Confirm Cancel Booking Dialog */}
       <Dialog open={isCancelDialogOpen} onClose={handleCancelDialogClose}>
         <DialogTitle>Cancel Booking</DialogTitle>

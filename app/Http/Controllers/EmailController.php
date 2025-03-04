@@ -11,6 +11,7 @@ use App\Services\MailService;
 use App\Services\PaymentInfoService;
 use App\Services\PaymentService;
 use App\Services\PDFService;
+use App\Traits\BookingLogTrait;
 use App\Traits\HandlePermissions;
 use Blade;
 use DB;
@@ -28,6 +29,7 @@ class EmailController extends Controller
     protected $emailTemplateService;
 
     use HandlePermissions;
+    use BookingLogTrait;
 
     public function __construct(EmailTemplateService $emailTemplateService)
     {
@@ -76,11 +78,14 @@ class EmailController extends Controller
                             }
                         });
                     }
+                    
+                    $this->saveBookingLog($booking->id,'Email Sent to Costumer', $validated['subject']);
                     return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
                 },
                 $validated,
                 $request
             );
+
         } catch (\Exception $ex) {
             Log::info('Error sending email', ['error' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
             return response()->json(['message' => 'Error sending email', 'success' => false], 400);
