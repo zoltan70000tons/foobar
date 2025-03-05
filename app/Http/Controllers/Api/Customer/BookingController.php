@@ -517,7 +517,9 @@ class BookingController extends Controller
     }
 
     // Fetch the booking and check if it exists
-    $booking = Booking::where('id', $passengerInvitation->booking_id)->first();
+    $booking = Booking::with('event', 'cabin.category', 'cabin.cabinType')
+      ->where('id', $passengerInvitation->booking_id)
+      ->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
