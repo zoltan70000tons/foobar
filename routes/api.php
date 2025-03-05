@@ -39,7 +39,7 @@ Route::post('/email/verification-notification', [CustomerEmailVerificationContro
 ]);
 
 Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
-  ->middleware(['signed'])
+  ->middleware(['web', 'signed'])
   ->withoutMiddleware([ApiRedirectHttp::class])
   ->name('verificationApi.verify');
 

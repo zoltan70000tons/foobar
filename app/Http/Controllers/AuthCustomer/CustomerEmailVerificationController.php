@@ -76,6 +76,11 @@ class CustomerEmailVerificationController extends Controller
       return redirect()->to(config('app.frontend_url') . '/en/login?verified=errorSignature');
     }
 
+    // Log in the customer
+    Auth::login($customer);
+    // Regenerate session for security
+    $request->session()->regenerate();
+
     if ($customer->hasVerifiedEmail()) {
       return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
     }
