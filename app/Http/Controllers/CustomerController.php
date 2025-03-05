@@ -109,7 +109,7 @@ class CustomerController extends Controller
     {
         try {
             return $this->withPermission([Permissions::DeleteCustomers], function ($user) {
-                $user->delete();
+                $this->customerRepository->delete($user);
 
                 return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
             }, $user);

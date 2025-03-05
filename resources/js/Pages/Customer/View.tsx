@@ -16,6 +16,7 @@ import {
   Select,
   Tab,
   Tabs,
+  InputLabel,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
@@ -111,7 +112,9 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
-                      <Select
+                      <TextField
+                        select
+                        disabled
                         fullWidth
                         label="Gender"
                         variant="outlined"
@@ -119,7 +122,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                       >
                         <MenuItem value={ "M" }>Male</MenuItem>
                         <MenuItem value={ "F" }>Female</MenuItem>
-                      </Select>
+                      </TextField>
                     </Grid>
                   </Grid>
                 </Box>
@@ -159,6 +162,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Citizenship"
                         variant="outlined"
                         value={ customer.detail.citizenship }
+                        disabled
                       />
                     </Grid>
                   </Grid>
@@ -173,6 +177,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                       <PhoneNumber
                         value={ customer.detail.phone || "" }
                         forceDialCode={ true }
+                        disabled
                       />
                     </Grid>
                   </Grid>
@@ -231,6 +236,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Country"
                         variant="outlined"
                         value={ customer.customer_address.country }
+                        disabled
                       />
                     </Grid>
                   </Grid>
@@ -253,6 +259,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                       <PhoneNumber
                         value={ customer?.detail?.emergency_c_phone || "" }
                         forceDialCode={ true }
+                        disabled
                       />
                     </Grid>
                   </Grid>
@@ -264,7 +271,9 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                 <Box sx={ { width: "100%" } }>
                   <Grid container spacing={ 2 }>
                     <Grid item xs={ 6 }>
-                      <Select
+                      <TextField
+                        select
+                        disabled
                         fullWidth
                         label="Preferred Language"
                         variant="outlined"
@@ -273,7 +282,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         <MenuItem value={ "de" }>Deutsch</MenuItem>
                         <MenuItem value={ "en" }>English</MenuItem>
                         <MenuItem value={ "es" }>Español</MenuItem>
-                      </Select>
+                      </TextField>
                     </Grid>
                   </Grid>
                 </Box>

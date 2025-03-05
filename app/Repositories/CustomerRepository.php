@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection as DBCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Throwable;
 
 class CustomerRepository implements CustomerInterface
@@ -55,6 +56,10 @@ class CustomerRepository implements CustomerInterface
 
             if ($request->filled('middle_name')) {
                 $user->detail->middle_name = $request->input('middle_name');
+            }
+
+            if ($request->filled('email')) {
+                $user->email = $request->input('email');
             }
 
             if ($request->filled('gender')) {
@@ -125,6 +130,7 @@ class CustomerRepository implements CustomerInterface
                 $user->customerAddress->country = $request->input('country');
             }
 
+            $user->save();
             $user->detail->save();
             $user->customerAddress->save();
             $user->save();
@@ -183,8 +189,29 @@ class CustomerRepository implements CustomerInterface
         }
     }
 
-    function delete($id)
+    function delete(User $user): void
     {
+        // Anonymize email to prevent duplicate uniqueness constraint issues
+        $user->update([
+            'email' => 'deleted_' . $user->id . '@example.test',
+            'email_verified_at' => null,
+            'password' => bcrypt(Str::random(32)), // Securely randomize password
+            'remember_token' => null,
+        ]);
+
+        // Anonymize user details
+        if ($user->detail) {
+            $user->detail()->update([
+                'first_name' => 'Deleted',
+                'middle_name' => null,
+                'last_name' => 'User',
+                'dob' => null,
+                'phone' => null,
+                'avatar' => null,
+                'emergency_c_name' => null,
+                'emergency_c_phone' => null,
+            ]);
+        }
     }
 
     function getAllCustomerData(): DBCollection|Collection

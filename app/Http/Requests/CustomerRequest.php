@@ -19,17 +19,20 @@ class CustomerRequest extends FormRequest
                 'max:13',
                 'min:2',
                 'required',
+                'regex:/^[A-Za-z0-9 ]+$/',
             ],
             'middle_name' => [
                 'string',
                 'max:13',
                 'nullable',
+                'regex:/^[A-Za-z0-9 ]+$/',
             ],
             'last_name' => [
                 'string',
                 'max:18',
                 'min:2',
                 'required',
+                'regex:/^[A-Za-z0-9 ]+$/',
             ],
             'phone' => [
                 'string',
@@ -59,11 +62,13 @@ class CustomerRequest extends FormRequest
                 'string',
                 'max:50',
                 'required',
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
             ],
             'address_second' => [
                 'string',
                 'max:50',
                 'nullable',
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
             ],
             'city' => [
                 'string',
@@ -74,11 +79,13 @@ class CustomerRequest extends FormRequest
                 'string',
                 'max:10',
                 'required',
+                'regex:/^[A-Za-z0-9 -]+$/',
             ],
             'emergency_c_name' => [
                 'string',
                 'max:75',
                 'required',
+                'regex:/^[A-Za-z0-9 ]+$/',
             ],
             'emergency_c_phone' => [
                 'string',
@@ -96,18 +103,27 @@ class CustomerRequest extends FormRequest
                 'string',
                 'min:4',
                 'max:4',
+                'regex:/^[0-9]*$/',
+                'gt:1909',
+                'before_or_equal:' . date('Y'),
             ],
             'month' => [
                 'required',
                 'string',
                 'min:2',
                 'max:2',
+                'regex:/^[0-9]*$/',
+                'gt:0',
+                'lt:13',
             ],
             'day' => [
                 'required',
                 'string',
                 'min:2',
                 'max:2',
+                'regex:/^[0-9]*$/',
+                'gt:0',
+                'lt:32',
             ],
         ];
     }

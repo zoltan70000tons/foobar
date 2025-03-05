@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -66,6 +66,7 @@ const Edit = ({ auth, errors }: PageProps) => {
   const [year, month, day] = customer?.detail?.dob.split("-");
   const { data, setData, head, processing } = useForm({
     survivor_number: customer.survivor_number.survivor_number || "",
+    email: customer.email || "",
     first_name: customer.detail.first_name || "",
     last_name: customer.detail.last_name || "",
     middle_name: customer.detail.middle_name || "",
@@ -98,6 +99,10 @@ const Edit = ({ auth, errors }: PageProps) => {
     value: string, name: string
   ) => {
     setData(name as keyof TForm, value as TForm[keyof TForm]);
+  };
+
+  const handleBack = () => {
+    window.history.back();
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -133,10 +138,19 @@ const Edit = ({ auth, errors }: PageProps) => {
     setSelectedTab(newValue);
   };
 
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    console.log(customer, bookings)
+  }, [customer, bookings]);
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="Edit Customer"/>
-      <Toolbar/>
+      <Toolbar sx={ { mt: 8, mb: 4 } }>
+        <Button variant="outlined" color="secondary" onClick={ handleBack }>
+          Back
+        </Button>
+      </Toolbar>
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
           <Tabs
@@ -160,13 +174,23 @@ const Edit = ({ auth, errors }: PageProps) => {
               <form onSubmit={ handleSubmit } encType="multipart/form-data">
                 <Box sx={ { width: "100%" } }>
                   <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 } sx={ { mr: 2 } }>
+                    <Grid item xs={ 6 }>
                       <TextField
                         fullWidth
                         label="Survivor Number"
                         variant="outlined"
                         value={ data.survivor_number }
                         disabled
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Email"
+                        variant="outlined"
+                        value={ data.email }
+                        name={ "email" }
+                        onChange={ handleChange }
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
