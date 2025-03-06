@@ -20,6 +20,7 @@ export interface MUIPhoneProps extends BaseTextFieldProps {
   value: string;
   onChange: (phone: string) => void;
   forceDialCode?: boolean;
+  disabled?: boolean;
 }
 
 export default function PhoneNumber({
@@ -82,6 +83,7 @@ export default function PhoneNumber({
         startAdornment: (
           <FormControl sx={{ minWidth: "50px" }}>
             <Select
+              disabled={restProps.disabled ?? false}
               value={country.iso2}
               onChange={(e) => setCountry(e.target.value as CountryIso2)}
               MenuProps={{

@@ -18,7 +18,7 @@ interface CustomerInterface
 
     function store(CustomerCreateRequest $request);
 
-    function delete($id);
+    function delete(User $user);
 
     function getAllCustomerData();
 
