@@ -26,6 +26,7 @@ interface ColumnProps<T> {
   draw?: (row: T) => React.ReactNode;
   filterType?: "text" | "select";
   filterOptions?: string[];
+  width?: string;
 }
 
 interface DataGridProps<T> {
@@ -124,9 +125,28 @@ const MuiTable: FC<DataGridProps<any>> = ({
     });
   });
 
+  const sortedData = [...filteredData].sort((a, b) => {
+    const key = sort.key as keyof typeof a;
+    const aValue = a[key] ?? null; // Handle null/undefined
+    const bValue = b[key] ?? null;
+
+    // Handle null/undefined values:
+    if (aValue === null && bValue !== null) return sort.direction === "asc" ? 1 : -1;
+    if (bValue === null && aValue !== null) return sort.direction === "asc" ? -1 : 1;
+    if (aValue === null && bValue === null) return 0;
+
+    // Convert values to lowercase strings for case-insensitive sorting
+    const aStr = aValue.toString().toLowerCase();
+    const bStr = bValue.toString().toLowerCase();
+
+    if (aStr < bStr) return sort.direction === "asc" ? -1 : 1;
+    if (aStr > bStr) return sort.direction === "asc" ? 1 : -1;
+    return 0;
+  });
+
   const displayedData = serverSidePagination
     ? paginatedData
-    : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleSelectRow = (id: string | number) => {
     setSelectedRows((prevSelectedRows) =>
@@ -177,10 +197,10 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const handleSort = (key: keyof any | string) => {
     setSort((prevSort) => ({
       key,
-      direction:
-        prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
+      direction: prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
     }));
   };
+
 
   const handlePageChange = (
     event: MouseEvent<HTMLButtonElement> | null,
@@ -217,7 +237,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
         </Box>
       )}
       <TableContainer>
-        <Table>
+        <Table  sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
             {/* first row for headers */}
             <TableRow>
@@ -235,7 +255,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
               )}
               <TableCell />
               {columns.map((column) => (
-                <TableCell key={column.accessor as string}>
+                <TableCell key={column.accessor as string} sx={column.width ? { width: column.width } : {}}>
                   {column.sortable ? (
                     <TableSortLabel
                       active={sort.key === column.accessor}

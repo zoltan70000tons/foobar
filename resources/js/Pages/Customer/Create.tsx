@@ -30,7 +30,7 @@ const Create = ({ auth, errors }: PageProps) => {
     first_name: "",
     last_name: "",
     middle_name: "",
-    gender: "",
+    gender: "M",
     year: "",
     month: "",
     day: "",

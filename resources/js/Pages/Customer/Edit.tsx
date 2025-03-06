@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -23,6 +23,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
 import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 type Nullable<T> = T | null;
 
@@ -61,11 +62,13 @@ const Edit = ({ auth, errors }: PageProps) => {
   const { customer, bookings }: PageProps = usePage().props;
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const [selectedTab, setSelectedTab] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { hasPermission } = usePermissions();
 
   const [year, month, day] = customer?.detail?.dob.split("-");
   const { data, setData, head, processing } = useForm({
     survivor_number: customer.survivor_number.survivor_number || "",
+    email: customer.email || "",
     first_name: customer.detail.first_name || "",
     last_name: customer.detail.last_name || "",
     middle_name: customer.detail.middle_name || "",
@@ -100,8 +103,13 @@ const Edit = ({ auth, errors }: PageProps) => {
     setData(name as keyof TForm, value as TForm[keyof TForm]);
   };
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const formData = new FormData();
     for (const key in data) {
@@ -122,6 +130,9 @@ const Edit = ({ auth, errors }: PageProps) => {
           message: `Error editing customer\n${errorMessages}`,
         });
       },
+      onFinish: () => {
+        setLoading(false);
+      },
     });
   };
 
@@ -133,10 +144,20 @@ const Edit = ({ auth, errors }: PageProps) => {
     setSelectedTab(newValue);
   };
 
+  useEffect(() => {
+    if (customer) {
+      setLoading(false);
+    }
+  }, [customer, bookings]);
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="Edit Customer"/>
-      <Toolbar/>
+      <Toolbar sx={ { mt: 8, mb: 4 } }>
+        <Button variant="outlined" color="secondary" onClick={ handleBack }>
+          Back
+        </Button>
+      </Toolbar>
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
           <Tabs
@@ -160,13 +181,23 @@ const Edit = ({ auth, errors }: PageProps) => {
               <form onSubmit={ handleSubmit } encType="multipart/form-data">
                 <Box sx={ { width: "100%" } }>
                   <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 } sx={ { mr: 2 } }>
+                    <Grid item xs={ 6 }>
                       <TextField
                         fullWidth
                         label="Survivor Number"
                         variant="outlined"
                         value={ data.survivor_number }
                         disabled
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
+                        label="Email"
+                        variant="outlined"
+                        value={ data.email }
+                        name={ "email" }
+                        onChange={ handleChange }
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
@@ -423,6 +454,7 @@ const Edit = ({ auth, errors }: PageProps) => {
             vertical={ "top" }
           />
         </Grid>
+        <LoadingOverlay open={loading} />
       </Container>
     </AuthenticatedLayout>
   );
