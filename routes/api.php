@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Customer\AddPaxController;
 
 // middleware
 use App\Http\Middleware\ApiRedirectHttp;
+use App\Http\Middleware\EnsureUserIsNotCustomer;
 
 /**
  * Auth API Routes
@@ -40,7 +41,7 @@ Route::post('/email/verification-notification', [CustomerEmailVerificationContro
 
 Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
   ->middleware(['web', 'signed'])
-  ->withoutMiddleware([ApiRedirectHttp::class])
+  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
   ->name('verificationApi.verify');
 
 // --- REGISTER ---
