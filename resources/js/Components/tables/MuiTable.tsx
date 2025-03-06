@@ -26,6 +26,7 @@ interface ColumnProps<T> {
   draw?: (row: T) => React.ReactNode;
   filterType?: "text" | "select";
   filterOptions?: string[];
+  width?: string;
 }
 
 interface DataGridProps<T> {
@@ -236,7 +237,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
         </Box>
       )}
       <TableContainer>
-        <Table>
+        <Table  sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
             {/* first row for headers */}
             <TableRow>
@@ -254,7 +255,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
               )}
               <TableCell />
               {columns.map((column) => (
-                <TableCell key={column.accessor as string}>
+                <TableCell key={column.accessor as string} sx={column.width ? { width: column.width } : {}}>
                   {column.sortable ? (
                     <TableSortLabel
                       active={sort.key === column.accessor}

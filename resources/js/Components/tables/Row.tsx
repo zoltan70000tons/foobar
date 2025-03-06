@@ -31,6 +31,7 @@ interface ColumnProps<T> {
   filterType?: "text" | "select";
   filterOptions?: string[];
   filterFunction?: (cellValue: any, filterValue: string) => boolean;
+  width?: string;
 }
 
 interface RowProps<T> {
@@ -233,7 +234,7 @@ const Row: FC<RowProps<any>> = ({
           ) : null}
         </TableCell>
         {columns.map((column) => (
-          <TableCell key={column.accessor as string}>
+          <TableCell key={column.accessor as string} sx={column.width ? { width: column.width, wordWrap: "break-word" } : {}}>
             {column.draw ? column.draw(row) : row[column.accessor]}
           </TableCell>
         ))}

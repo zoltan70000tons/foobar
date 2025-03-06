@@ -34,41 +34,48 @@ const Index = ({ auth, customers }: PageProps) => {
         accessor: "email",
         filterable: true,
         sortable: true,
+        width: "26%",
       },
       {
         accessor: "first_name",
         header: "First Name",
         filterable: true,
         sortable: true,
+        width: "17%",
       },
       {
         accessor: "last_name",
         header: "Last Name",
         filterable: true,
         sortable: true,
+        width: "17%",
       },
       {
         accessor: "dob",
         header: "Date of Birth",
         filterable: true,
         sortable: true,
+        width: "17%",
       },
       {
         accessor: "survivor_number",
         header: "Survivor Number",
         filterable: true,
         sortable: true,
+        width: "17%",
       },
       {
         accessor: "membership_type",
         header: "Membership",
         filterable: true,
         sortable: true,
+        width: "13%",
       },
       {
         header: "Actions",
         accessor: "id",
         disableFilter: true,
+        width: "13%",
         draw: (row) => (
           <div style={ { display: "flex", gap: "10px" } }>
             { hasPermission(Permissions.ViewCustomers) && (
@@ -108,6 +115,7 @@ const Index = ({ auth, customers }: PageProps) => {
                 { customers ? (<MuiTable
                   columns={ columns }
                   data={ customers }
+                  showCheckBox={false}
                 />) : <></> }
               </Box>
             </Box>

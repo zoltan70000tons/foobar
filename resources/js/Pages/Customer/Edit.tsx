@@ -23,6 +23,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
 import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 type Nullable<T> = T | null;
 
@@ -61,6 +62,7 @@ const Edit = ({ auth, errors }: PageProps) => {
   const { customer, bookings }: PageProps = usePage().props;
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const [selectedTab, setSelectedTab] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { hasPermission } = usePermissions();
 
   const [year, month, day] = customer?.detail?.dob.split("-");
@@ -107,6 +109,7 @@ const Edit = ({ auth, errors }: PageProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const formData = new FormData();
     for (const key in data) {
@@ -127,6 +130,9 @@ const Edit = ({ auth, errors }: PageProps) => {
           message: `Error editing customer\n${errorMessages}`,
         });
       },
+      onFinish: () => {
+        setLoading(false);
+      },
     });
   };
 
@@ -138,9 +144,10 @@ const Edit = ({ auth, errors }: PageProps) => {
     setSelectedTab(newValue);
   };
 
-  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    console.log(customer, bookings)
+    if (customer) {
+      setLoading(false);
+    }
   }, [customer, bookings]);
 
   return (
@@ -447,6 +454,7 @@ const Edit = ({ auth, errors }: PageProps) => {
             vertical={ "top" }
           />
         </Grid>
+        <LoadingOverlay open={loading} />
       </Container>
     </AuthenticatedLayout>
   );
