@@ -101,7 +101,8 @@ const MuiTable: FC<DataGridProps<any>> = ({
       const fetchTableData = async () => {
         setLoading(true);
         try {
-          const response = await fetchData(page, rowsPerPage, subFilters, sort);
+          //const response = await fetchData(page, rowsPerPage, subFilters, sort);
+          const response = await fetchData(page, rowsPerPage, filters, sort);
           setPaginatedData(response.data);
           setTotalCount(response.total);
         } catch (error) {
@@ -113,22 +114,24 @@ const MuiTable: FC<DataGridProps<any>> = ({
 
       fetchTableData();
     }
-  }, [page, rowsPerPage, subFilters, sort, serverSidePagination, fetchData]);
+  //}, [page, rowsPerPage, subFilters, sort, serverSidePagination, fetchData]);
+  }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
 
   const dataArray = Array.isArray(data) ? data : Object.values(data);
 
   const filteredData = dataArray.filter((row) => {
     return Object.keys(filters).every((key) => {
       const filterValue = filters[key]?.toLowerCase() || "";
-      const rowValue = (row[key] || "").toString().toLowerCase();
+      const rowValue = (row && row[key] ? row[key] : "").toString().toLowerCase();
       return rowValue.includes(filterValue);
     });
   });
 
   const sortedData = [...filteredData].sort((a, b) => {
     const key = sort.key as keyof typeof a;
-    const aValue = a[key] ?? null; // Handle null/undefined
-    const bValue = b[key] ?? null;
+
+    const aValue = (a && a[key]) ? a[key] : null; // Handle null/undefined
+    const bValue = (b && b[key]) ? b[key] : null;
 
     // Handle null/undefined values:
     if (aValue === null && bValue !== null) return sort.direction === "asc" ? 1 : -1;

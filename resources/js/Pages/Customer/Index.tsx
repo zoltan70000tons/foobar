@@ -14,6 +14,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import MuiTable from "@/Components/tables/MuiTable";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { Visibility } from "@mui/icons-material";
+import axios from "axios";
 
 const Index = ({ auth, customers }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -26,6 +27,30 @@ const Index = ({ auth, customers }: PageProps) => {
       setLoading(false);
     }
   }, [customers]);
+
+  //const [page, setPage] = useState(0);
+  //const [rowsPerPage, setRowsPerPage] = useState(50);
+  //const [sort, setSort] = useState({key: 'email', direction: 'asc'});
+  //const [filters, setFilters] = useState<{ [key: string]: string }>({});
+  //const [customers, setCustomers] = useState([]);
+
+  /*useEffect(() => {
+    setLoading(true);
+    const fetchMe = async () => {
+      const response = await axios.get("/customers/paginated", {
+        params: {
+          page,
+          per_page: rowsPerPage,
+          ...filters, // Spread filters as query parameters
+          sort_by: sort.key,
+          sort_direction: sort.direction,
+        },
+      });
+      console.log('resp', response.data.data)
+      setCustomers(response.data.data)
+    }
+    fetchMe().finally(() => setLoading(false));
+  }, [page, rowsPerPage, filters, sort])*/
 
   const columns = useMemo(
     () => [
@@ -99,6 +124,36 @@ const Index = ({ auth, customers }: PageProps) => {
     get(route('customers.create', {}));
   }
 
+  const fetchCustomers = async (
+    page: number,
+    rowsPerPage: number,
+    filters: { [key: string]: string },
+    sort: { key: string; direction: "asc" | "desc" }
+  ): Promise<{ data: any[]; total: number }> => {
+    try {
+      const response = await axios.get("/customers/paginated", {
+        params: {
+          page,
+          per_page: rowsPerPage,
+          sort_by: sort.key,
+          sort_direction: sort.direction,
+          filters: JSON.stringify(filters),
+        },
+        paramsSerializer: (params) => {
+          return new URLSearchParams(params as any).toString();
+        },
+      });
+
+      return {
+        data: response.data?.data ?? [],
+        total: response.data?.total ?? 0
+      };
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      return { data: [], total: 0 };
+    }
+  };
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="Customers"/>
@@ -116,6 +171,8 @@ const Index = ({ auth, customers }: PageProps) => {
                   columns={ columns }
                   data={ customers }
                   showCheckBox={false}
+                  serverSidePagination={true}
+                  fetchData={fetchCustomers}
                 />) : <></> }
               </Box>
             </Box>

@@ -147,6 +147,8 @@ Route::middleware("auth")->group(function () {
     Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
     Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
 
+
+    Route::get("/customers/paginated", [CustomerController::class, "getPaginated"])->name("customers.paginated");
     Route::get("/customers/create", [CustomerController::class, "create"])->name("customers.create");
     Route::post("/customers", [CustomerController::class, "store"])->name("customers.store");
     Route::get("/customers/{user}", [CustomerController::class, "show"])->name("customers.show");

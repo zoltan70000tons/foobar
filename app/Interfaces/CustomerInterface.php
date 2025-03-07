@@ -20,7 +20,9 @@ interface CustomerInterface
 
     function delete(User $user);
 
-    function getAllCustomerData();
+    function getAllCustomerData(int $perPage);
+
+    function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters);
 
     function getBookingDataForCustomer(User $user);
 }
