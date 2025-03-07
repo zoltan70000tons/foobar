@@ -78,9 +78,43 @@ class InvitationController extends Controller
     }
 
     $booking = $passengerInvitation->booking;
+    $invitedBy = $booking->passengers()->where('lead_passenger', true)->first();
 
     return response()->json([
       'booking' => $booking,
+      'invited_by' => $invitedBy->email,
     ]);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  |  Add passenger to booking
+  |--------------------------------------------------------------------------
+  |
+  |  Add passenger via invitation token
+  |
+  */
+  public function addPax(StorePassengerRequest $request, $bookingCode, $token)
+  {
+    $validated = $request->validated();
+    // create passenger with booking id
+    $result = $this->customerBookingRepository->addPassengerNonAuth($bookingCode, $validated, $token);
+
+    return $result;
+    //
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  |  Remove invitation
+  |--------------------------------------------------------------------------
+  |
+  |  Remove invitation via invitation token
+  |
+  */
+  public function removeInvitation(Request $request, $bookingCode, $token)
+  {
+    $user = Auth::user();
+    //
   }
 }
