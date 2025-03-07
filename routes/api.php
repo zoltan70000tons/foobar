@@ -119,6 +119,13 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
     // --- single invitation
     Route::get('/my-bookings/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
+    // --- single invitation add pax
+    Route::post('/my-bookings/{bookingCode}/invitation/{token}/add-pax', [InvitationController::class, 'addPax']);
+    // --- single invitation remove invitation
+    Route::post('/my-bookings/{bookingCode}/invitation/{token}/remove-invitation', [
+      InvitationController::class,
+      'removeInvitation',
+    ]);
   }
 );
 
