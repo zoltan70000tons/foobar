@@ -73,4 +73,12 @@ if (! function_exists('sanitizeInput')) {
             return $sanitized;
         }
     }
+
+    if (!function_exists('formatCurrency')) {
+        function formatCurrency(float $amount): string
+        {
+            return 'USD ' . number_format($amount, 2, '.', ',');
+        }
+    }
+    
 }

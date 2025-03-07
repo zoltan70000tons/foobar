@@ -78,7 +78,7 @@ class EmailController extends Controller
                             }
                         });
                     }
-                    
+
                     $this->saveBookingLog($booking->id,'Email Sent to Costumer', $validated['subject']);
                     return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
                 },
@@ -178,6 +178,7 @@ class EmailController extends Controller
     {
         $service = new PDFService();
         $pdf = $service->generateBookingConfirmationPDF(Booking::find(1));
+        $pdf->setPaper('letter', 'potrait');
         return $pdf->stream();
         // $bodyContent = DB::table('email_templates')
         //     ->where('name', '70000TONS OF METAL 2025 - Survivor Referral Credits XXXX')

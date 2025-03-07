@@ -13,7 +13,7 @@ class PDFService
     public function generateBookingConfirmationPDF(Booking $booking)
     {
         $paymentService = new PaymentInfoService();
-        $paymentInfo= $paymentService->getPaymentInfo($booking);
+        $paymentInfo = $paymentService->getPaymentInfo($booking);
         $logoUrl = 'https://70000tons.com/wp-content/uploads/2019/04/70K_Logo_Claim_BW_HiRes.jpg';
         $logoData = base64_encode(file_get_contents($logoUrl));
         $logoSrc = 'data:image/jpeg;base64,' . $logoData;
@@ -31,13 +31,35 @@ class PDFService
             'category_specs' => $booking->cabin->category->spec,
             'logo' => $logoSrc,
         ];
-        
-        $html = View::make('pdf.booking_confirmation', ['data' => $data, 'paymentInfo' =>$paymentInfo])->render();
+
+        $html = View::make('pdf.booking_confirmation', ['data' => $data, 'paymentInfo' => $paymentInfo])->render();
 
         // Load HTML into DomPDF
         $pdf = FacadePdf::loadHTML($html)
-            ->setPaper('a4', 'portrait') // Set page size and orientation
-            ->setOptions(['defaultFont' => 'sans-serif']); // Optional font config
+            ->setPaper('letter', 'portrait') // Set page size and orientation
+            ->setOptions(['defaultFont' => 'sans-serif',]); // Optional font config
+        $pdf->render();
+        $canvas = $pdf->getDomPDF()->getCanvas();
+        $w = $canvas->get_width();
+        $h = $canvas->get_height();
+        $footerText = [
+            "UMCruises International Ltd.",
+            "Suite 205A Saffrey Square • Bank Lane and Bay Street • Nassau • BAHAMAS",
+            "70000TONS OF METAL HOTLINE: North America TOLL FREE: 1 888 705 8667 • All other areas: +1 305 777 4878",
+            "Fax: +1 302 336 2639 • eMail: booking@70000tons.com • www.70000tons.com",
+            "",
+            "Page {PAGE_NUM} of {PAGE_COUNT}"
+        ];
+        $font = null;
+        $size = 6;
+        $lineHeight = 8;
+        $y = $h - (count($footerText) * $lineHeight) - 10;
+        foreach ($footerText as $line) {
+            $textWidth = $canvas->get_text_width($line, $font, $size);
+            $x = ($w - $textWidth) / 2;
+            $canvas->page_text($x, $y, $line, $font, $size);
+            $y += $lineHeight;
+        }
 
         return $pdf;
     }

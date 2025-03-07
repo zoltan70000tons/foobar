@@ -22,6 +22,7 @@ import {
 import axios from "axios";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import { LoadingButton } from "@mui/lab";
 
 
 
@@ -33,7 +34,9 @@ const EditPassengerModal = ({
     onDelete,
     onChange,
     errors,
-    editMode
+    editMode,
+    savingLoading,
+    releaseLoading
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
@@ -524,12 +527,12 @@ const EditPassengerModal = ({
                         <Box display="flex" gap={1}>
                             {!isLeadPassenger && canEdit && (
                                 <>
-                                    <Button variant="contained" color="primary" onClick={onSave}  disabled={editable}>
+                                    <LoadingButton loading={savingLoading} variant="outlined" color="primary" onClick={onSave}  disabled={editable}>
                                         Save Changes
-                                    </Button>
-                                    {canReset && (<Button variant="contained" color="error" onClick={onDelete} disabled={editable}>
+                                    </LoadingButton>
+                                    {canReset && (<LoadingButton loading={releaseLoading} variant="outlined" color="error" onClick={onDelete} disabled={editable}>
                                         Release
-                                    </Button>)}
+                                    </LoadingButton>)}
                                 </>
                             )}
                         </Box>

@@ -54,7 +54,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
-  console.log(booking);
   useEffect(() => {
     if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
       setEditMode(true);
@@ -187,11 +186,9 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
           </Alert>
         )}
 
-
-
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
-        <Passengers booking={booking} editMode={editMode} />
+        <Passengers booking={booking} editMode={editMode} setLoading={setLoading} />
         <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} />
         <Payment
           booking={booking}

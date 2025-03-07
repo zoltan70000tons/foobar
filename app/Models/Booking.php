@@ -75,9 +75,9 @@ class Booking extends Model
 
   public function passengers()
   {
-    return $this->hasMany(Passenger::class, foreignKey: 'booking_id');
+      return $this->hasMany(Passenger::class, 'booking_id')->orderBy('passenger_order');
   }
-
+  
   /**
    * Assign a cabin to the booking and update the cabin's inventory and status.
    *
