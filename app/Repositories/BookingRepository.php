@@ -244,7 +244,11 @@ class BookingRepository implements BookingInterface
         $this->saveBookingLog(
           $booking->id,
           'Changed booking tags',
-          sprintf('Booking tags changed from [%s] to [%s].', implode(', ', $originalTags ?? []), implode(', ', $tags))
+          sprintf(
+            'Booking tags changed from [%s] to [%s].',
+            implode(', ', is_array($originalTags) ? $originalTags : []),
+            implode(', ', is_array($tags) ? $tags : [])
+          )
         );
       }
 
