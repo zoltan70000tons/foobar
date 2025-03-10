@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { PageProps } from "@/types";
 import {
   Avatar,
@@ -13,13 +13,16 @@ import dayjs from "dayjs";
 import "dayjs/locale/en";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { router } from "@inertiajs/react";
+import LoadingOverlay from "./LoadingOverlay";
 
 const EventSelector = ({ events, url }: PageProps) => {
   const theme = useTheme();
+  const [loading, setLoading] = useState(false);
   dayjs.extend(localizedFormat);
 
 
   const handleClick = (eventId: string) => {
+    setLoading(true);
     router.get(`/events/${eventId}${url}`);
   };
 
@@ -90,6 +93,8 @@ const EventSelector = ({ events, url }: PageProps) => {
           </Box>
         </Grid>
       ))}
+
+      <LoadingOverlay  open={loading}/>
     </Grid>
   );
 };
