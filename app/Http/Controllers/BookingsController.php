@@ -485,7 +485,8 @@ class BookingsController extends Controller
 
   public function getAvailableCabins(Request $request)
   {
-    $categoryId = $request->get('category_id');
+    try {
+      $categoryId = $request->get('category_id');
     $typeId = $request->get('type_id');
     $deck = $request->get('deck');
     $balcony = $request->boolean('balcony');
@@ -520,6 +521,9 @@ class BookingsController extends Controller
     return response()->json([
       'cabins' => $filteredCabins->values()->all(),
     ]);
+    } catch (\Exception  $e) {
+      //throw $th;
+    }
   }
 
   public function cancel(Request $request)
