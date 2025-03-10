@@ -125,7 +125,7 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({ isOpen, toggleSidebar, 
                                         <HistoryIcon color="info" />
                                     </ListItemIcon>
                                     <ListItemText
-                                        primary={`${dayjs(log.date).format("DD/MM/YYYY hh:mm A")} - @${log.user.username}`}
+                                        primary={`${dayjs(log.created_at).format("DD/MM/YYYY hh:mm A")} - @${log.user.username || "System"}`}
                                         secondary={
                                             <>
                                                 {log.action}

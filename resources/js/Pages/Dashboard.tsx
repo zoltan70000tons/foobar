@@ -12,6 +12,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
+import PersonIcon from '@mui/icons-material/Person';
 
 
 export default function Dashboard({ auth }: PageProps) {
@@ -85,9 +86,17 @@ export default function Dashboard({ auth }: PageProps) {
                 />
               </Grid>
               )}
-
+              {hasPermission(Permissions.ViewCustomers) && (
+                <Grid item xs={12} sm={6} md={3}>
+                  <DashboardCard
+                      title="Customers"
+                      description="Manage customers"
+                      Icon={PersonIcon}
+                      link="/customers"
+                  />
+                </Grid>
+              )}
             </Grid>
-            
           </Grid>
           {/* <Grid item xs={12}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>

@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "watch": "vite build --watch"
     },
     "devDependencies": {
         "@inertiajs/react": "^1.0.0",
@@ -40,6 +41,8 @@
         "date-fns": "^3.6.0",
         "dayjs": "^1.11.12",
         "lodash": "^4.17.21",
+        "flag-icons": "^7.3.2",
+        "i18n-iso-countries": "^7.14.0",
         "mui-tel-input": "^5.1.2",
         "react-aria-components": "^1.3.3",
         "react-international-phone": "^4.4.0",

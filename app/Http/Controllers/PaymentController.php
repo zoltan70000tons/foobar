@@ -38,7 +38,7 @@ class PaymentController extends Controller
                     'passenger_id' => 'required|exists:passengers,id',
                     'BIP_ID' => 'nullable|string|max:50',
                     'amount' => 'required|numeric|min:0.01',
-                    'type' => 'required|in:PAYMENT,REFOUND',
+                    'type' => 'required|in:PAYMENT,REFUND',
                     'notes' => 'nullable|string|max:255',
                     'transaction_date' => 'required|date'
                 ]);

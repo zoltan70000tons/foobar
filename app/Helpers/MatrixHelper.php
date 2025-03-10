@@ -96,7 +96,8 @@ class MatrixHelper
 
     // Check if any of the cabins are available
     $isAvailable = $filteredCabins->first()->cabins->contains(function ($cabin) {
-      return $cabin->status === StatusCabin::AVAILABLE->value;
+      return $cabin->status === StatusCabin::AVAILABLE->value ||
+        $cabin->status === StatusCabin::PARTIALLY_BOOKED->value;
     });
 
     // Get first instance just to get category attributes

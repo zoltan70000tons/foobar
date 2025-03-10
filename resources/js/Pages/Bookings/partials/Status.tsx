@@ -158,7 +158,7 @@ const Status = ({ event, booking, editMode, users }) => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={2}>
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Booking ID:
+                Booking Code:
               </Typography>
             </Grid>
             <Grid item xs={12} md={4} display="flex" flexDirection="column" gap={1}>

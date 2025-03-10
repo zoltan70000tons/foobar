@@ -246,33 +246,6 @@ class BookingController extends Controller
 
   /*
   |--------------------------------------------------------------------------
-  |  Get booking confirmation
-  |--------------------------------------------------------------------------
-  |
-  |  This method is used to confirm the booking it's out 
-  |
-  */
-  // public function bookingConfirmation($bookingCode)
-  // {
-  //   $user = Auth::user();
-
-  //   if (!$user) {
-  //     return response()->json(['message' => 'Unauthorized'], 403);
-  //   }
-
-  //   $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
-
-  //   if (!$result) {
-  //     return response()->json(['message' => 'Booking not found'], 404);
-  //   }
-
-  //   return response()->json([
-  //     'status' => 'success',
-  //   ]);
-  // }
-
-  /*
-  |--------------------------------------------------------------------------
   |  Get booking by code
   |--------------------------------------------------------------------------
   |
@@ -331,10 +304,38 @@ class BookingController extends Controller
       return response()->json(['message' => 'Unauthorized'], 403);
     }
 
+    $invitations = PassengerInvitation::with(
+      'booking',
+      'booking.event',
+      'booking.cabin.category',
+      'booking.cabin.cabinType'
+    )
+      ->where('email', $user->email)
+      ->get();
+
+    // unset agent_id
+    if ($invitations) {
+      $invitations->map(function ($invitation) {
+        // Remove agent_id from the booking.
+        unset($invitation->booking->agent_id);
+
+        // Get the lead passenger from the passengers table where booking_id matches and lead_passenger is true.
+        $leadPassenger = Passenger::where('booking_id', $invitation->booking->id)
+          ->where('lead_passenger', true)
+          ->first();
+
+        // Attach the lead passenger data to the invitation.
+        $invitation->invited_by = $leadPassenger->email;
+
+        return $invitation;
+      });
+    }
+
     $result = $this->customerBookingService->getMyBookings($user);
 
     return response()->json([
       'bookings' => $result,
+      'invitations' => $invitations ?? [],
     ]);
   }
 
@@ -517,7 +518,9 @@ class BookingController extends Controller
     }
 
     // Fetch the booking and check if it exists
-    $booking = Booking::where('id', $passengerInvitation->booking_id)->first();
+    $booking = Booking::with('event', 'cabin.category', 'cabin.cabinType')
+      ->where('id', $passengerInvitation->booking_id)
+      ->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);

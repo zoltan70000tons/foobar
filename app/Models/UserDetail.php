@@ -5,6 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $first_name
+ * @property string $last_name
+ * @property string|null $middle_name
+ * @property string|null $dob
+ * @property string|null $citizenship
+ * @property string|null $phone
+ * @property string|null $emergency_c_name
+ * @property string|null $emergency_c_phone
+ * @property string|null $language
+ * @property string|null $gender
+ * @property string $user_id
+ * @property int $id
+ */
 class UserDetail extends Model
 {
     use HasFactory;

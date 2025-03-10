@@ -14,9 +14,11 @@ use App\Http\Controllers\Api\Customer\AdjustmentsController;
 use App\Http\Controllers\Api\Customer\EventController;
 use App\Http\Controllers\Api\Customer\CartController;
 use App\Http\Controllers\Api\Customer\AddPaxController;
+use App\Http\Controllers\Api\Customer\InvitationController;
 
 // middleware
 use App\Http\Middleware\ApiRedirectHttp;
+use App\Http\Middleware\EnsureUserIsNotCustomer;
 
 /**
  * Auth API Routes
@@ -39,8 +41,8 @@ Route::post('/email/verification-notification', [CustomerEmailVerificationContro
 ]);
 
 Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
-  ->middleware(['signed'])
-  ->withoutMiddleware([ApiRedirectHttp::class])
+  ->middleware(['web', 'signed'])
+  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
   ->name('verificationApi.verify');
 
 // --- REGISTER ---
@@ -77,11 +79,13 @@ Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 // get single category
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
 
-Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [CabinController::class, 'show']);
-
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status', 'clear_expired_reservation'])->group(
   function () {
     // Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinDeck}', [CabinController::class, 'show']);
+    Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [
+      CabinController::class,
+      'show',
+    ]);
 
     // reserve cabin
     Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
@@ -113,6 +117,15 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::get('/my-bookings', [BookingController::class, 'allBookings']);
     // --- single booking
     Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
+    // --- single invitation
+    Route::get('/my-bookings/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
+    // --- single invitation add pax
+    Route::post('/my-bookings/{bookingCode}/invitation/{token}/add-pax', [InvitationController::class, 'addPax']);
+    // --- single invitation remove invitation
+    Route::post('/my-bookings/{bookingCode}/invitation/{token}/remove-invitation', [
+      InvitationController::class,
+      'removeInvitation',
+    ]);
   }
 );
 

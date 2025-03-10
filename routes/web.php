@@ -26,6 +26,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FeeController;
 use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\PaymentController;
+use \App\Http\Controllers\CustomerController;
 
 Route::get("/", function () {
   return Inertia::render("Welcome", [
@@ -146,6 +147,14 @@ Route::middleware("auth")->group(function () {
     Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
     Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
 
+    Route::get("/customers/create", [CustomerController::class, "create"])->name("customers.create");
+    Route::post("/customers", [CustomerController::class, "store"])->name("customers.store");
+    Route::get("/customers/{user}", [CustomerController::class, "show"])->name("customers.show");
+    Route::get("/customers/{user}/edit", [CustomerController::class, "edit"])->name("customers.edit");
+    Route::put("/customers/{user}/update", [CustomerController::class, "update"])->name("customers.update");
+    Route::delete("/customers/{user}", [CustomerController::class, "destroy"])->name("customers.destroy");
+    Route::get("/customers", [CustomerController::class, "index"])->name("customers.index");
+    Route::resource("customers", CustomerController::class);
 
     Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
     Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
