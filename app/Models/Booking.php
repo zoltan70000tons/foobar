@@ -159,15 +159,21 @@ class Booking extends Model
       }
 
       $prevCabin = $booking->cabin;
-      $prevCabin->inventory = $prevCabin->inventory + 1;
-      $prevCabin->save();
+
+      if ($cabin->cabinType->id !== $prevCabin->cabinType->id) {
+        throw new \Exception('This cabin is not of the same type as the current booking.');
+      }
+
+      // Release the previous cabin
+      $prevCabin->releaseCabin();
+      
       // Assign the new cabin to the booking
       $this->assignCabin($cabin);
       $blog = new BookingLog();
       $blog->booking_id = $this->id;
       $blog->user_id = Auth::user()->id(); // Obtener el usuario actual
       $blog->action = 'Changed Cabin';
-      $blog->description = "Cabin changed to {$cabin->cabin_number}.";
+      $blog->description = "{$prevCabin->cabin_number} Cabin changed to {$cabin->cabin_number}.";
       $blog->save();
 
       return $this;
