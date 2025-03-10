@@ -22,7 +22,7 @@ import EventSelector from "@/Components/EventSelector";
 
 const Events = ({ auth, events }: PageProps) => {
   const { hasPermission } = usePermissions();
-  const theme = useTheme(); // Para usar colores del tema
+  const theme = useTheme(); 
   dayjs.extend(localizedFormat);
 
   return (
