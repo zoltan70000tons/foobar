@@ -28,30 +28,6 @@ const Index = ({ auth, customers }: PageProps) => {
     }
   }, [customers]);
 
-  //const [page, setPage] = useState(0);
-  //const [rowsPerPage, setRowsPerPage] = useState(50);
-  //const [sort, setSort] = useState({key: 'email', direction: 'asc'});
-  //const [filters, setFilters] = useState<{ [key: string]: string }>({});
-  //const [customers, setCustomers] = useState([]);
-
-  /*useEffect(() => {
-    setLoading(true);
-    const fetchMe = async () => {
-      const response = await axios.get("/customers/paginated", {
-        params: {
-          page,
-          per_page: rowsPerPage,
-          ...filters, // Spread filters as query parameters
-          sort_by: sort.key,
-          sort_direction: sort.direction,
-        },
-      });
-      console.log('resp', response.data.data)
-      setCustomers(response.data.data)
-    }
-    fetchMe().finally(() => setLoading(false));
-  }, [page, rowsPerPage, filters, sort])*/
-
   const columns = useMemo(
     () => [
       {

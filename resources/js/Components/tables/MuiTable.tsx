@@ -101,7 +101,6 @@ const MuiTable: FC<DataGridProps<any>> = ({
       const fetchTableData = async () => {
         setLoading(true);
         try {
-          //const response = await fetchData(page, rowsPerPage, subFilters, sort);
           const response = await fetchData(page, rowsPerPage, filters, sort);
           setPaginatedData(response.data);
           setTotalCount(response.total);
@@ -114,7 +113,6 @@ const MuiTable: FC<DataGridProps<any>> = ({
 
       fetchTableData();
     }
-  //}, [page, rowsPerPage, subFilters, sort, serverSidePagination, fetchData]);
   }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
 
   const dataArray = Array.isArray(data) ? data : Object.values(data);
