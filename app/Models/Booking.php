@@ -75,9 +75,9 @@ class Booking extends Model
 
   public function passengers()
   {
-      return $this->hasMany(Passenger::class, 'booking_id')->orderBy('passenger_order');
+    return $this->hasMany(Passenger::class, 'booking_id')->orderBy('passenger_order');
   }
-  
+
   /**
    * Assign a cabin to the booking and update the cabin's inventory and status.
    *
@@ -134,12 +134,15 @@ class Booking extends Model
     return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
   }
 
-  public function changeCabin($booking, $number)
+  public function changeCabin($number)
   {
+
     try {
       // Find the cabin by its number
-      $cabin = Cabin::where('cabin_number', $number)->first();
-
+      //$cabin = Cabin::where('cabin_number', $number)->first();
+      $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($number) {
+        $query->where('cabin_number', $number);
+      })->first();
       // Validate that the cabin exists
       if (!$cabin) {
         throw new \Exception("Cabin with number {$number} does not exist.");
@@ -154,21 +157,21 @@ class Booking extends Model
         throw new \Exception('This cabin is already fully booked.');
       }
 
-      if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
-        throw new \Exception('This cabin is already partially booked.');
-      }
+      // if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
+      //   throw new \Exception('This cabin is already partially booked.');
+      // }
 
-      $prevCabin = $booking->cabin;
+      $prevCabin = $this->cabin;
       $prevCabin->inventory = $prevCabin->inventory + 1;
       $prevCabin->save();
       // Assign the new cabin to the booking
       $this->assignCabin($cabin);
-      $blog = new BookingLog();
-      $blog->booking_id = $this->id;
-      $blog->user_id = Auth::user()->id(); // Obtener el usuario actual
-      $blog->action = 'Changed Cabin';
-      $blog->description = "Cabin changed to {$cabin->cabin_number}.";
-      $blog->save();
+      //$this->saveBookingLog($this->id,'Cabin changed to {$number}.', '');
+      // $blog = new BookingLog();
+      // $blog->booking_id = $this->id;
+      // $blog->action = 'Changed Cabin';
+      // $blog->description = "Cabin changed to {$cabin->cabin_number}.";
+      //$blog->save();
 
       return $this;
     } catch (\Exception $e) {
@@ -274,7 +277,6 @@ class Booking extends Model
         }
       }
       $cabin->save();
-      
     });
 
 

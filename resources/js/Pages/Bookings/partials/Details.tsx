@@ -31,6 +31,7 @@ import {
   ListItem,
   ListItemText,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import InboxIcon from '@mui/icons-material/Inbox';
@@ -62,6 +63,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [onlyAccessible, setOnlyAccessible] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { showSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {
@@ -80,6 +82,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
 
   const fetchAvailableCabins = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(route("cabins.available"), {
         params: {
           type_id: cabinType?.id,
@@ -96,6 +99,8 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
       showSnackbar("Error fetching available cabins!", "error");
       console.error("Error fetching available cabins:", error);
       setAvailableCabins([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,6 +124,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
 
   const handleSave = () => {
     setConfirmOpen(false);
+    setLoading(true);
     router.post(
       route("bookings.updateCabin", { id: event.id }),
       {
@@ -140,11 +146,13 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           showSnackbar("Error updating cabin!", "error");
           console.error(errors);
         },
+        onFinish: ()=> {
+          setLoading(false);
+        }
       }
     );
   };
 
-  console.log(event);
 
   return (
     <>
@@ -304,6 +312,24 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Cabin Details</DialogTitle>
         <DialogContent sx={{ paddingTop: '1rem !important' }}>
+          {loading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                // bgcolor: "rgba(255,255,255,0.7)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+
           <Autocomplete
             fullWidth
             options={cabinTypes}
@@ -329,6 +355,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
               value="advancedFilters"
               selected={advancedFilters}
               onChange={() => setAdvancedFilters(!advancedFilters)}
+              disabled={loading}
             >
               <FilterListIcon />
               Advanced Filters
@@ -344,12 +371,14 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                 onChange={(event, newValue) => setSelectedDeck(newValue)}
                 renderInput={(params) => <TextField {...params} label="Cabin Deck" />}
                 sx={{ mb: 2 }}
+                disabled={loading}
               />
               <FormControlLabel
                 control={
                   <Switch
                     checked={onlyBalcony}
                     onChange={(e) => setOnlyBalcony(e.target.checked)}
+                    disabled={loading}
                   />
                 }
                 label="Only Balcony"
@@ -360,6 +389,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                   labelId="location-label"
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value)}
+                  disabled={loading}
                 >
                   {Object.values(LocationEnum).map((location) => (
                     <MenuItem key={location} value={location}>
@@ -373,6 +403,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                   <Switch
                     checked={onlyAccessible}
                     onChange={(e) => setOnlyAccessible(e.target.checked)}
+                    disabled={loading}
                   />
                 }
                 label="Only Accessible"
@@ -390,14 +421,16 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
               value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
               onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
               renderInput={(params) => <TextField {...params} label="Available Cabins" />}
+              disabled={loading}
             />
           </Box>
+
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">
+          <Button onClick={handleClose} color="secondary" variant="outlined">
             Cancel
           </Button>
-          <Button onClick={() => setConfirmOpen(true)} color="primary" disabled={!cabinNumber}>
+          <Button onClick={() => setConfirmOpen(true)} color="primary" variant="outlined" disabled={!cabinNumber || loading}>
             Save
           </Button>
         </DialogActions>

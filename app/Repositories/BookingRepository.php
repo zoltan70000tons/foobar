@@ -257,7 +257,8 @@ class BookingRepository implements BookingInterface
 
   function changeCabin(Booking $booking, $cabin_number)
   {
-    $booking = $booking->changeCabin($booking, $cabin_number);
+
+    $booking = $booking->changeCabin($cabin_number);
     if ($booking) {
       $cabin = $booking->cabin;
       $this->saveBookingLog(
