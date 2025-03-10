@@ -6,6 +6,8 @@ use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Cabin;
 use App\Models\PassengerInvitation;
+use Illuminate\Support\Str;
+use App\Models\User;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class CustomerBookingRepository
@@ -290,5 +292,29 @@ class CustomerBookingRepository
     }
 
     return response()->json(['message' => 'No empty seats available'], 404);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Create passenger invitation
+  |--------------------------------------------------------------------------
+  | 
+  | This method will create a passenger invitation
+  |
+  */
+
+  public function createPassengerInvitation($passenger, $booking, $email)
+  {
+    $token = Str::random(32);
+
+    $invitation = PassengerInvitation::create([
+      'passenger_id' => $passenger->id,
+      'booking_id' => $booking->id,
+      'token' => $token,
+      'email' => $email,
+      'sent_at' => now(),
+    ]);
+
+    return $invitation;
   }
 }

@@ -34,4 +34,7 @@ return [
   'email_request_to_add_pax_body' =>
     'Tiene 72 horas para agregar sus detalles a la reserva. Si no agrega los detalles dentro de este tiempo, la solicitud se cancelará.',
   'email_request_to_add_pax_cta' => 'Agregar detalles',
+  'email_invitation_on_your_account' => 'Tiene una invitación en su cuenta.',
+  'email_invitation_on_your_account_body' =>
+    'Tiene 72 horas para aceptar la invitación. Si no acepta la invitación dentro de este tiempo, la invitación se cancelará. Puede consultar sus invitaciones en su página de Reservas en su cuenta. Si tiene alguna pregunta, comuníquese con nuestro equipo de soporte.',
 ];
