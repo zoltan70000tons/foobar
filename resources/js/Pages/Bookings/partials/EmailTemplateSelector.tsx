@@ -17,7 +17,6 @@ import {
   FormControl,
   Grid
 } from "@mui/material";
-import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
@@ -28,6 +27,7 @@ import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import UnlayerEditor from "@/Components/UnlayerEditor";
 
 const LANGUAGES = ["en", "es", "de"];
 
@@ -37,14 +37,14 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [isLoading,setIsLoading] = useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
-  const emailEditorRef = useRef<EditorRef | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [subject, setSubject] = useState<string>("");
 
-  const {hasPermission} = usePermissions();
+  const { hasPermission } = usePermissions();
 
   const canSendEmail = !hasPermission(Permissions.SendEmails) || !editMode;
 
@@ -77,22 +77,40 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     fetchTemplates();
   }, [lang]);
 
-  const onEditorReady: EmailEditorProps["onReady"] = async (unlayer) => {
-    if (!selectedTemplate) return;
+
+  const onEditorReady = async (unlayer) => {
+    if (!selectedTemplate) {
+      console.warn("No selected template available.");
+      return;
+    }
+
     try {
-      const response = await fetch(`/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}`);
+      const response = await fetch(
+        `/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
       const data = await response.json();
-      if (data.design && typeof data.design === "object") {
+
+      if (
+        data.design &&
+        typeof data.design === "object" &&
+        data.design.body &&
+        Array.isArray(data.design.body.rows)
+      ) {
         unlayer.loadDesign(data.design);
         unlayer.setBodyValues({
-          contentWidth: 'inherit', // Set the content width to 100%
-        })
+          contentWidth: "inherit",
+        });
       } else {
-        console.error("Invalid template format:", data);
+        throw new Error("Invalid or incomplete design structure received.");
       }
     } catch (error) {
       showSnackbar("Error loading template content", "error");
-      console.error("Error loading template content:", error);
+      console.error("Detailed error:", error.message);
     }
   };
 
@@ -100,34 +118,28 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
   };
 
-  const onLoad: EmailEditorProps["onLoad"] = () => {
-    const unlayer = emailEditorRef.current?.editor;
-    if (unlayer) {
-      console.log("Unlayer editor is ready!");
-    }
-  };
 
   const handleInsertPDF = async () => {
-    setIsSending(true);
+    setIsLoading(true);
     try {
       const response = await fetch(`/generate-booking-pdf?booking_id=${booking.id}`);
 
       if (!response.ok) throw new Error("Failed to generate PDF");
 
       const blob = await response.blob();
-      const file = new File([blob], `booking_confirmation_${booking.id}.pdf`, { type: "application/pdf" });
+      const file = new File([blob], `${booking.booking_code}.pdf`, { type: "application/pdf" });
       setAttachments((prev) => [...prev, file]);
       showSnackbar("📄 Booking confirmation PDF attached!", "success");
     } catch (error) {
       console.error("Error inserting PDF:", error);
       showSnackbar("⚠️ Failed to attach PDF.", "error");
     } finally {
-      setIsSending(false);
+      setIsLoading(false);
     }
   };
 
   const handleInsertImg = async () => {
-    setIsSending(true);
+    setIsLoading(true);
     try {
       const response = await fetch(`/generate-img?booking_id=${booking.id}`);
 
@@ -141,7 +153,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
       console.error("Error inserting Image:", error);
       showSnackbar("⚠️ Failed to attach Image.", "error");
     } finally {
-      setIsSending(false);
+      setIsLoading(false);
     }
   };
 
@@ -156,7 +168,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     setIsConfirmDialogOpen(false);
     setIsSending(true);
 
-    const unlayer = emailEditorRef.current?.editor;
+    const unlayer = window.unlayer;
     if (!unlayer) return;
 
     unlayer.exportHtml(async (data) => {
@@ -194,6 +206,11 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
       }
     });
   };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setAttachments([]);
+  }
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -252,9 +269,9 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
             onClick={() => setIsDialogOpen(true)}
             disabled={!selectedTemplate}
             fullWidth
-            style={{height:'40px'}}
+            style={{ height: '40px' }}
             startIcon={<EditIcon />}
-            disabled={canSendEmail}
+            disabled={canSendEmail || !selectedTemplate}
           >
             Edit & Send
           </Button>
@@ -263,7 +280,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
 
 
       {/* Email Editor Dialog */}
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} fullWidth maxWidth="lg" fullScreen={isFullscreen}>
+      <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="lg" fullScreen={isFullscreen}>
         <DialogTitle>
           Edit Email Template
           <IconButton onClick={() => setIsFullscreen(!isFullscreen)} style={{ float: "right" }}>
@@ -271,6 +288,20 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
           </IconButton>
         </DialogTitle>
         <DialogContent style={{ display: "flex", flexDirection: "column", height: "calc(100% - 60px)", padding: 0 }}>
+          {isLoading && (
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0,
+              width: '100%', height: '100%',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+            }}>
+              <CircularProgress />
+            </div>
+          )}
           <FormControl fullWidth style={{ paddingRight: '1rem' }}>
             <TextField
               label="Email Subject"
@@ -283,23 +314,12 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
             />
           </FormControl>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <EmailEditor
-              ref={emailEditorRef}
+            <UnlayerEditor
               onReady={onEditorReady}
-              onLoad={onLoad}
               options={{
-                projectId: 1234,
-                displayMode: "email",
-                appearance: {
-                  theme: "dark",
-                  panels: {
-                    tools: {
-                      collapsible: true,
-                    },
-                  },
-                },
+                appearance: { theme: "dark" },
               }}
-              style={{ flex: 1, minHeight: "100px" }}
+              style={{ width: '100%' }}
             />
           </div>
 
@@ -354,10 +374,10 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
 
 
         <DialogActions>
-          <Button onClick={() => setIsDialogOpen(false)} color="secondary">
+          <Button onClick={handleCloseDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={() => setIsConfirmDialogOpen(true)} variant="contained" color="primary" disabled={isSending}>
+          <Button onClick={() => setIsConfirmDialogOpen(true)} variant="contained" color="primary" disabled={isSending || isLoading}>
             {isSending ? "Sending..." : "Send Email"}
           </Button>
         </DialogActions>

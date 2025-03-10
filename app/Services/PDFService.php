@@ -39,9 +39,11 @@ class PDFService
             ->setPaper('letter', 'portrait') // Set page size and orientation
             ->setOptions(['defaultFont' => 'sans-serif',]); // Optional font config
         $pdf->render();
+
         $canvas = $pdf->getDomPDF()->getCanvas();
         $w = $canvas->get_width();
         $h = $canvas->get_height();
+
         $footerText = [
             "UMCruises International Ltd.",
             "Suite 205A Saffrey Square • Bank Lane and Bay Street • Nassau • BAHAMAS",
@@ -50,14 +52,23 @@ class PDFService
             "",
             "Page {PAGE_NUM} of {PAGE_COUNT}"
         ];
-        $font = null;
+
+        $font = $pdf->getFontMetrics()->getFont('Helvetica', 'normal');
         $size = 6;
         $lineHeight = 8;
         $y = $h - (count($footerText) * $lineHeight) - 10;
-        foreach ($footerText as $line) {
-            $textWidth = $canvas->get_text_width($line, $font, $size);
-            $x = ($w - $textWidth) / 2;
-            $canvas->page_text($x, $y, $line, $font, $size);
+
+        for ($i = 0; $i < count($footerText); $i++) {
+            $line = $footerText[$i];
+
+            if ($i === count($footerText) - 1) {
+                $canvas->page_text($w / 2, $y, $line, $font, $size, [0, 0, 0], 1);
+            } else {
+                $textWidth = $canvas->get_text_width($line, $font, $size);
+                $x = ($w - $textWidth) / 2;
+                $canvas->page_text($x, $y, $line, $font, $size, [0, 0, 0]);
+            }
+
             $y += $lineHeight;
         }
 

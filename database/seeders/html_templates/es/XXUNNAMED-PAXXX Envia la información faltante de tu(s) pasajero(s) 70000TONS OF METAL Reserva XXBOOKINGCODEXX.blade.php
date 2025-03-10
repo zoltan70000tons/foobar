@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXUNNAMED-PAXXX Envía la información faltante de tu(s)
-      pasajero(s) 70000TONS OF METAL Reserva XXBOOKINGCODEXX</title>
+      pasajero(s) 70000TONS OF METAL Reserva {BOOKING_CODE}</title>
   </head>
   <body>
     <table

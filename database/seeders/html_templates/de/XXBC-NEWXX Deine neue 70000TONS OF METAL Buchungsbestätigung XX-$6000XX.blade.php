@@ -99,7 +99,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Dein<span>&nbsp;</span><strong>NEUER</strong><span>&nbsp;</span>Booking
 
-                                            Code ist:<span>&nbsp;</span><strong>XXBOOKINGCODEXX</strong><br>
+                                            Code ist:<span>&nbsp;</span><strong>{BOOKING_CODE}</strong><br>
                                             <br>
                                             Im Anhang findest Du Deine
                                             Buchungsbestätigung und
@@ -187,7 +187,7 @@ style="display:
                                             Mitreisenden zusammen
                                             bezahlst, ist der
                                             Gesamtbetrag: USD
-                                            XXGRANDTOTAL$XX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Bitte informiere
                                               Deine Bank vor Deiner

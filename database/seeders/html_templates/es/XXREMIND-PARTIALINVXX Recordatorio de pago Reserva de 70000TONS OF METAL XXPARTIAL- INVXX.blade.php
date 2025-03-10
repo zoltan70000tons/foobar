@@ -142,7 +142,7 @@ style="display:
                                               (USD) únicamente.</strong><br>
                                             <br>
                                             Tu Código de Reserva es:
-                                            XXBOOKINGCODEXX<br>
+                                            {BOOKING_CODE}<br>
                                             <br>
                                             Por favor imprime la factura
                                             adjunta y llévala a tu

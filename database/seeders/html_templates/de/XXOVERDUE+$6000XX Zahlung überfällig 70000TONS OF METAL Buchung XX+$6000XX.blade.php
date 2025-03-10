@@ -145,7 +145,7 @@ style="display:
                                             Mitreisenden zusammen
                                             bezahlst, ist der
                                             Gesamtbetrag: USD
-                                            XXGRANDTOTAL$XX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Zu Deiner eigenen
                                               Sicherheit wird jeder

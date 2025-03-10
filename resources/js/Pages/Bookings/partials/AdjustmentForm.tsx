@@ -16,6 +16,9 @@ import {
     IconButton,
     Paper,
     ListItemIcon,
+    Select,
+    FormControl,
+    InputLabel
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DiscountOutlined from "@mui/icons-material/DiscountOutlined";
@@ -30,6 +33,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 type AdjustmentFormProps = {
     booking: Booking;
     editMode: boolean;
+    list: AdjustmentData[]; // Asegurar que `list` tenga ajustes disponibles
 };
 
 type Booking = {
@@ -53,13 +57,15 @@ const defaultFormData: AdjustmentData = {
     code: "",
 };
 
-const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) => {
+const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list }) => {
     const [formData, setFormData] = useState<AdjustmentData>(defaultFormData);
     const [adjustments, setAdjustments] = useState<AdjustmentData[]>(booking.adjustments || []);
     const [open, setOpen] = useState(false);
     const [currentEditingId, setCurrentEditingId] = useState<number | null>(null);
+    const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<number | "new">("new");
+
     const { showSnackbar } = useSnackbar();
-    const {hasPermission} = usePermissions();
+    const { hasPermission } = usePermissions();
     const canAddAdjustment = hasPermission(Permissions.CreateAdjustments);
     const canDeleteAdjustment = hasPermission(Permissions.DeleteAdjustments);
     const canEditAdjustment = hasPermission(Permissions.EditAdjustments);
@@ -76,9 +82,24 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) =>
         }));
     };
 
+    const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+        const selectedId = event.target.value as number | "new";
+        setSelectedAdjustmentId(selectedId);
+
+        if (selectedId === "new") {
+            setFormData(defaultFormData);
+        } else {
+            const selectedAdjustment = list.find((adj) => adj.id === selectedId);
+            if (selectedAdjustment) {
+                setFormData(selectedAdjustment);
+            }
+        }
+    };
+
     const resetForm = () => {
         setFormData(defaultFormData);
         setCurrentEditingId(null);
+        setSelectedAdjustmentId("new");
     };
 
     const handleOpen = () => {
@@ -95,13 +116,9 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) =>
         }
     };
 
-    const handleDelete =  (id: number) => {
+    const handleDelete = (id: number) => {
         try {
-            router.post(
-                route("bookings.deleteAdjustment", { event_id: booking.event_id, booking_id: booking.id }),
-                { id }
-            );
-           // setAdjustments((prev) => prev.filter((adj) => adj.id !== id));
+            router.post(route("bookings.deleteAdjustment", { event_id: booking.event_id, booking_id: booking.id }), { id });
             showSnackbar("Adjustment deleted successfully.", "success");
         } catch (error) {
             console.error("Failed to delete adjustment:", error);
@@ -111,11 +128,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) =>
 
     const createAdjustment = () => {
         try {
-            router.post(
-                route("bookings.createAdjustment", { event_id: booking.event_id, booking_id: booking.id }),
-                formData
-            );
-            //setAdjustments((prev) => [...prev, response.data.adjustment]);
+            router.post(route("bookings.createAdjustment", { event_id: booking.event_id, booking_id: booking.id }), formData);
             showSnackbar("Adjustment created successfully.", "success");
         } catch (error) {
             console.error("Failed to create adjustment:", error);
@@ -125,13 +138,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) =>
 
     const updateAdjustment = async () => {
         try {
-            const response = await router.post(
-                route("bookings.updateAdjustment", { event_id: booking.event_id, booking_id: booking.id }),
-                { id: currentEditingId, ...formData }
-            );
-            // setAdjustments((prev) =>
-            //     prev.map((adj) => (adj.id === currentEditingId ? response.data.adjustment : adj))
-            // );
+            await router.post(route("bookings.updateAdjustment", { event_id: booking.event_id, booking_id: booking.id }), { id: currentEditingId, ...formData });
             showSnackbar("Adjustment updated successfully.", "success");
         } catch (error) {
             console.error("Failed to update adjustment:", error);
@@ -156,70 +163,56 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode }) =>
 
     return (
         <Box>
-            <Typography variant="h5" mb={2}>
-                Adjustments
-            </Typography>
-            <Paper variant="outlined" sx={{ p: 2, mb: 4 ,backgroundColor: "#1c1c1c"}}>
+            <Typography variant="h5" mb={2}>Adjustments</Typography>
+            <Paper variant="outlined" sx={{ p: 2, mb: 4, backgroundColor: "#1c1c1c" }}>
                 {adjustments.length > 0 ? (
                     <List>
                         {adjustments.map((adjustment) => (
-                            <ListItem
-                                key={adjustment.id}
-                                secondaryAction={
-                                    <>
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="edit"
-                                            onClick={() => handleEdit(adjustment.id!)}
-                                            disabled={!canDeleteAdjustment || !editMode}
-                                        >
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => handleDelete(adjustment.id!)}
-                                            disabled={!canDeleteAdjustment || !editMode} 
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </>
-                                }
-                            >
+                            <ListItem key={adjustment.id} secondaryAction={
+                                <>
+                                    <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(adjustment.id!)} disabled={!canEditAdjustment || !editMode}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(adjustment.id!)} disabled={!canDeleteAdjustment || !editMode}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </>
+                            }>
                                 <ListItemIcon>
-                                    {adjustment.type === "DISCOUNT" ? (
-                                        <DiscountOutlined color="primary" />
-                                    ) : (
-                                        <AddOutlined color="secondary" />
-                                    )}
+                                    {adjustment.type === "DISCOUNT" ? <DiscountOutlined color="primary" /> : <AddOutlined color="secondary" />}
                                 </ListItemIcon>
-                                <ListItemText
-                                    primary={`${adjustment.type} (${adjustment.code})`}
-                                    secondary={`Value: ${adjustment.value} ${
-                                        adjustment.operation === "PERCENTAGE" ? "%" : ""
-                                    }`}
-                                />
+                                <ListItemText primary={`${adjustment.type} (${adjustment.code})`} secondary={`Value: ${adjustment.value} ${adjustment.operation === "PERCENTAGE" ? "%" : ""}`} />
                             </ListItem>
                         ))}
                     </List>
                 ) : (
                     <Typography>No adjustments associated yet.</Typography>
                 )}
-                <Button
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<AddIcon />}
-                    onClick={handleOpen}
-                    sx={{ mt: 2 }}
-                    disabled={!editMode || !canAddAdjustment}
-                >
+                <Button variant="outlined" color="secondary" startIcon={<AddIcon />} onClick={handleOpen} sx={{ mt: 2 }} disabled={!editMode || !canAddAdjustment}>
                     Add Adjustment
                 </Button>
             </Paper>
 
             <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
                 <DialogTitle>{currentEditingId ? "Edit Adjustment" : "Create Adjustment"}</DialogTitle>
-                <DialogContent>
+                <DialogContent >
+                    <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>
+                        <InputLabel id="adjustment-select-label">Select an Adjustment Or Create New</InputLabel>
+                        <Select
+                            labelId="adjustment-select-label"
+                            value={selectedAdjustmentId}
+                            onChange={handleSelectChange}
+                            label="Select an Adjustment Or Create New"
+                        >
+                            <MenuItem value="new">New Adjustment</MenuItem>
+                            {list.map((adj) => (
+                                <MenuItem key={adj.id} value={adj.id}>
+                                    {adj.code}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             <TextField

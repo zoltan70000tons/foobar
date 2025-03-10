@@ -42,7 +42,7 @@ import LoadingOverlay from "@/Components/LoadingOverlay";
 
 
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
   const [locked, setLocked] = useState(booking.locked_by ? true : false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -189,7 +189,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
         <Passengers booking={booking} editMode={editMode} setLoading={setLoading} />
-        <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} />
+        <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} list={adjustments} />
         <Payment
           booking={booking}
           editMode={editMode}

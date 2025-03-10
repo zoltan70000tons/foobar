@@ -134,7 +134,7 @@ style="display:
                                               Please send United States
                                               Dollars (USD) only.</strong><br>
                                             <br>
-                                            Your Booking Code is:<strong><span>&nbsp;</span>XXXX</strong><br>
+                                            Your Booking Code is:<strong><span>&nbsp;</span>{BOOKING_CODE}</strong><br>
                                             <br>
                                             All of the required account
                                             information to make the

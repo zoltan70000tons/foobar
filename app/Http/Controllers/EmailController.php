@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Permissions;
 use App\Mail\BookingEmail;
 use App\Models\Booking;
+use App\Models\Passenger;
 use App\Repositories\PaymentRepository;
 use App\Services\EmailTemplateService;
 use App\Services\MailService;
@@ -117,34 +118,23 @@ class EmailController extends Controller
     {
         $validated = Validator::make($request->all(), [
             'lang' => 'required|string|in:en,es,de',
-            'template_id' => 'required|integer'
+            'template_id' => 'required|integer',
+            'booking_id' => 'required|integer'
         ])->validate();
-
-
-        //$htmlContent = MailService::buildEmailTemplate(1, );
-        $htmlContent = $this->emailTemplateService->getProcessedTemplate(1, $validated['lang'], $validated['template_id'], []);
-        // $htmlContent = DB::table('email_templates')
-        //     ->where('lang', $validated['lang'])
-        //     ->where('name', $validated['template_name'])
-        //     ->value('body');
-
+        $htmlContent = $this->emailTemplateService->getProcessedTemplate($validated['booking_id'], $validated['lang'], $validated['template_id'], []);
         if (!$htmlContent) {
             return response()->json(['error' => 'Template not found'], 404);
         }
 
         $unlayerJson = [
             'body' => [
-                'id' => uniqid('MJ_'),
                 'rows' => [
                     [
-                        'id' => uniqid('-cir_'),
                         'cells' => [1],
                         'columns' => [
                             [
-                                'id' => uniqid('cle_'),
                                 'contents' => [
                                     [
-                                        'id' => uniqid('text_'),
                                         'type' => 'text',
                                         'values' => [
                                             'text' => $htmlContent,
@@ -152,47 +142,32 @@ class EmailController extends Controller
                                         ],
                                     ],
                                 ],
-                                'values' => [],
                             ],
                         ],
-                        'values' => [],
                     ],
                 ],
                 'values' => [
-                    "contentAlign" => "center",
-                    "contentWidth" => "100%",
+                    'contentWidth' => '100%',
                     'backgroundColor' => '#ffffff',
-                    //   '_meta' => [
-                    //     'htmlID' => 'u_body',
-                    //     'htmlClassNames' => 'u_body',
-                    //   ],
                 ],
             ],
-            'schemaVersion' => 12,
-        ];
-
-        return response()->json(['design' => $unlayerJson], 200, ['Content-Type' => 'application/json']);
+        'schemaVersion' => 12,
+      ];
+      return response()->json(['design' => $unlayerJson]);
     }
 
-    public function showEmail()
-    {
-        $service = new PDFService();
-        $pdf = $service->generateBookingConfirmationPDF(Booking::find(1));
-        $pdf->setPaper('letter', 'potrait');
-        return $pdf->stream();
-        // $bodyContent = DB::table('email_templates')
-        //     ->where('name', '70000TONS OF METAL 2025 - Survivor Referral Credits XXXX')
-        //     ->where('lang', 'en')
-        //     ->value('body');
+    // public function showEmail(Request $request)
+    // {
+    //     $booking_id = $request->input('id');
+    //     $booking = Booking::find($booking_id);
+    //     $service = new PDFService();
+    //     $paymentService = new PaymentInfoService();
+    //     $paymentService->syncAllocatedCost($booking, Passenger::find(1));
 
-        // $data = [
-        //     'header' => DB::table('email_templates')->where('name', '70000TONS_email_header_ENG')->where('lang', 'en')->value('body'),
-        //     'footer' => DB::table('email_templates')->where('name', '70000TONS_email_footer_ENG')->where('lang', 'en')->value('body'),
-        // ];
-        // $processedBody = Blade::render($bodyContent, $data);
-        // //dd($data['footer']);
-        // return response($processedBody);
-    }
+    //     $pdf = $service->generateBookingConfirmationPDF($booking);
+    //     $pdf->setPaper('letter', 'potrait');
+    //     return $pdf->stream();
+    // }
 
     public function generateBookingPDF(Request $request)
     {
@@ -201,7 +176,7 @@ class EmailController extends Controller
             'booking_id' => 'required|integer'
         ])->validate();
         try {
-            $booking = Booking::find($validated['booking_id'])->first();
+            $booking = Booking::find($validated['booking_id']);
             $service = new PDFService();
             $pdf = $service->generateBookingConfirmationPDF($booking);
             return $pdf->stream();

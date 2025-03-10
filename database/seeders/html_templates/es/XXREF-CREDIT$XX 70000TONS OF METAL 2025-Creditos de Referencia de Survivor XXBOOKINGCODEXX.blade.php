@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXREF-CREDIT$XX 70000TONS OF METAL 2025 – Créditos de
-      Referencia de Survivor XXBOOKINGCODEXX</title>
+      Referencia de Survivor {BOOKING_CODE}</title>
   </head>
   <body>
     <table
