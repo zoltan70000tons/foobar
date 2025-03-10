@@ -20,6 +20,7 @@ use App\Models\PassengerInvitation;
 use App\Mail\CustomerConfirmationBooking;
 use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
 class BookingController extends Controller
 {
@@ -432,13 +433,20 @@ class BookingController extends Controller
   public function addPassengerViaEmail(Request $request, $bookingCode)
   {
     $user = Auth::user();
-
     if (!$user) {
       return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $booking = Booking::where('booking_code', $bookingCode)->first();
+    $email = $request->input('email');
+    if (!$email) {
+      return response()->json(['message' => 'Email is required'], 400);
+    }
 
+    if ($email === $user->email) {
+      return response()->json(['message' => 'You cannot send an email invitation to yourself. Use manual add'], 400);
+    }
+
+    $booking = Booking::where('booking_code', $bookingCode)->first();
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
@@ -448,46 +456,47 @@ class BookingController extends Controller
     }
 
     $passengerOrder = $request->input('passenger_order');
-    // get email and survivor number from request
-    $email = $request->input('email');
 
-    if (!$email) {
-      return response()->json(['message' => 'Email and survivor number are required'], 400);
-    }
-
-    // if booking have passenger with this email or passenger_order is taken
-    // Check if passenger already exists with this email
-    $existingPassenger = $booking->passengers()->where('email', $email)->first();
-    if ($existingPassenger) {
+    // Check if a passenger with this email is already added to the booking
+    if ($booking->passengers()->where('email', $email)->exists()) {
       return response()->json(['message' => 'A passenger with this email is already added to the booking'], 400);
     }
 
-    // Check if passenger order is already taken
+    // Check if the passenger order is already taken
     $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
-    if ($passenger->email) {
+    if ($passenger && $passenger->email) {
       return response()->json(['message' => 'Passenger order is already taken'], 400);
     }
 
     // Check if an invitation already exists for this email and booking
-    $passengerInvitation = PassengerInvitation::where('booking_id', $booking->id)
-      ->where('email', $email)
-      ->first();
-
-    if ($passengerInvitation) {
+    if (
+      PassengerInvitation::where('booking_id', $booking->id)
+        ->where('email', $email)
+        ->exists()
+    ) {
       return response()->json(['message' => 'Passenger with this email has already been invited'], 400);
     }
 
-    $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
-      ->where('passenger_id', $passenger->id)
-      ->first();
-
-    if ($passengerSlotId) {
-      return response()->json(['message' => 'Passenger with this slot has already been taken'], 400);
+    // Check if this slot is already taken
+    if (
+      PassengerInvitation::where('booking_id', $booking->id)
+        ->where('passenger_id', $passenger->id)
+        ->exists()
+    ) {
+      return response()->json(['message' => 'Passenger slot is already taken'], 400);
     }
 
-    $result = $this->customerBookingService->addPassengerViaEmail($booking, $passenger, $email);
+    $customer = User::where('email', $email)->first();
 
-    return $result;
+    $invitation = $this->customerBookingRepository->createPassengerInvitation($passenger, $booking, $email);
+
+    if ($customer) {
+      $this->customerBookingService->addPassengerViaEmailDirectly($booking, $email);
+    } else {
+      $this->customerBookingService->addPassengerViaEmail($booking, $invitation, $email);
+    }
+
+    return response()->json(['message' => 'Invitation sent'], 200);
   }
 
   /*
