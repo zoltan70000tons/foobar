@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
   Avatar,
@@ -54,6 +54,8 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
+
+  const { flash, error } = usePage().props;
   useEffect(() => {
     if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
       setEditMode(true);
@@ -84,6 +86,11 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
+  useEffect(()=>{
+    if(flash.error){
+      showSnackbar(flash.error, 'error');
+    }
+  },[flash]);
 
 
   const handleAddComment = (comment: string) => {
