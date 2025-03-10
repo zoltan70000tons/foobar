@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXBC-UPDATEDXX Deine aktualisierte 70000TONS OF METAL
-      Buchungsbestätigung XXBOOKINGCODEXX</title>
+      Buchungsbestätigung {BOOKING_CODE}</title>
   </head>
   <body>
     <table

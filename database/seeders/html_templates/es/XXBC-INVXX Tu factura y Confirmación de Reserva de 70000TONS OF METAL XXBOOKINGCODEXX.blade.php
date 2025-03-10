@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXBC-INVXX Tu factura y Confirmación de Reserva de 70000TONS
-      OF METAL XXBOOKINGCODEXX</title>
+      OF METAL { booking_code }</title>
   </head>
   <body>
     <table
@@ -182,7 +182,7 @@ style="display:
                                               dólares estadounidenses
                                               (USD) exclusivamente.</strong><br>
                                             <br>
-                                            Tu Código de Reserva es:<strong><span>&nbsp;</span>XXBOOKINGCODEXX</strong><br>
+                                            Tu Código de Reserva es:<strong><span>&nbsp;</span>{BOOKING_CODE}</strong><br>
                                             <br>
                                             Toda la información de
                                             cuenta necesaria para

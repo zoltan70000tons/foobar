@@ -12,6 +12,7 @@ use App\Interfaces\TeamRepositoryInterface;
 use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
+use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
@@ -38,6 +39,7 @@ class BookingsController extends Controller
   protected TeamRepositoryInterface $teamRepository;
   protected CabinInterface $cabinRepository;
   protected CabinCategoryInterface $cabinCategoryRepository;
+  protected AdjustmentsRepository $adjustmentsRepository;
 
   public function __construct(
     EventRepository $eventRepository,
@@ -45,7 +47,8 @@ class BookingsController extends Controller
     LogRepository $logRepository,
     TeamRepository $teamRepository,
     CabinRepository $cabinRepository,
-    CabinCategoryRepository $cabinCategoryRepository
+    CabinCategoryRepository $cabinCategoryRepository,
+    AdjustmentsRepository $adjustmentsRepository
   ) {
     $this->eventRepository = $eventRepository;
     $this->bookingRepository = $bookingRepository;
@@ -53,6 +56,7 @@ class BookingsController extends Controller
     $this->teamRepository = $teamRepository;
     $this->cabinRepository = $cabinRepository;
     $this->cabinCategoryRepository = $cabinCategoryRepository;
+    $this->adjustmentsRepository = $adjustmentsRepository;
   }
   public function index(Request $request)
   {
@@ -260,6 +264,7 @@ class BookingsController extends Controller
           $isEditable = $booking->agent_id === Auth::user()->id;
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
+          $adjustments = $this->adjustmentsRepository->listAdjustments();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
@@ -268,6 +273,7 @@ class BookingsController extends Controller
             'isEditable' => $isEditable,
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
+            'adjustments' => $adjustments
           ]);
         },
         $event_id,

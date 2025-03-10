@@ -54,8 +54,8 @@ class PassengerController extends Controller
             'terms_n_cons' => 'required|boolean',
             // 'cabin_conf_accp' => 'required|boolean',
             //'single_t_agreement' => 'required|boolean',
-            'passenger_allocated_cost' => 'required|numeric',
-            'passenger_balance' => 'required|numeric',
+            //'passenger_allocated_cost' => 'required|numeric',
+            //'passenger_balance' => 'required|numeric',
             // 'was_on_board' => 'required|boolean',
         ]);
 

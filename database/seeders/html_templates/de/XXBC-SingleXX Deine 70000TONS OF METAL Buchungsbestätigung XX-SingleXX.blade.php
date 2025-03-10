@@ -136,7 +136,7 @@ style="display:
                                               underline;">Zahlungsangaben:</strong><br>
                                             <br>
                                             Der Gesamtbetrag ist: USD
-                                            XXGRANDTOTAL$XX<br>
+                                            {GRAND_TOTAL}<br>
                                             <strong>Bitte informiere
                                               Deine Bank vor Deiner
                                               Onlinezahlung.</strong><br>

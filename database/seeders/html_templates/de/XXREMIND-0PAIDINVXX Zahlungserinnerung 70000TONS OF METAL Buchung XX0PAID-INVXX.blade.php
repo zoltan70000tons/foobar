@@ -133,7 +133,7 @@ style="display:
                                               ausschließlich US-Dollars
                                               senden!</strong><br>
                                             <br>
-                                            Dein Booking Code ist:<strong><span>&nbsp;</span>XXBOOKINGCODEXX</strong><br>
+                                            Dein Booking Code ist:<strong><span>&nbsp;</span>{BOOKING_CODE}</strong><br>
                                             <br>
                                             In der Rechnung sind alle
                                             für internationale

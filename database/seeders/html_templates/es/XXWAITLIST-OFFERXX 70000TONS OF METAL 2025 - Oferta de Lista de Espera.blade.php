@@ -143,7 +143,7 @@ style="color: rgb(102, 102,
                                             <strong>Precio Total de la
                                               Reserva:</strong><span>&nbsp;</span>USD
 
-                                            XXGRANDTOTAL$XX<br>
+                                            {GRAND_TOTAL}<br>
                                             <i><br>
                                             </i><i>*Impuestos,
                                               gratificaciones
