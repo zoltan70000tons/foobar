@@ -100,8 +100,8 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
         showSnackbar(response.data.error, 'error');
       }
     } catch (error) {
-      if(response?.data?.error){
-        showSnackbar(response.data.error, 'error');
+      if(error.response?.data?.error){
+        showSnackbar(error.response.data.error, 'error');
       }
       //showSnackbar("Error fetching available cabins!", "error");
       console.error("Error fetching available cabins:", error);
