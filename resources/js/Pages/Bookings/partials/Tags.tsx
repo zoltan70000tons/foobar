@@ -109,7 +109,7 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
                     </Button>
                 </DialogActions>
             </Dialog>
-            <LoadingOverlay open={loading}/>
+            {/* <LoadingOverlay open={loading}/> */}
 
         </Box>
     );
