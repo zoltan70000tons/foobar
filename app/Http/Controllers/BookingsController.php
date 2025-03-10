@@ -381,10 +381,15 @@ class BookingsController extends Controller
           $event = $this->eventRepository->find($event_id);
           $booking = Booking::find($booking_id);
           $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
-          if ($result) {
+          if ($result instanceof Booking) {
             return redirect()
               ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
               ->with('success', 'Cabin updated successfully.');
+          }else{
+           // dd($result['error']);
+            return redirect()
+              ->route('bookings.show', ['id' => $event_id, 'booking_code' => $booking->booking_code])
+              ->with('error', $result['error']);
           }
         },
         $event_id,

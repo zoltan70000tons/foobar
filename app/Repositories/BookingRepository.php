@@ -128,41 +128,41 @@ class BookingRepository implements BookingInterface
       ->withSum('passengers as cost', 'passenger_allocated_cost')
       ->where('status', '=', $status);
 
-      if (!empty($keyword)) {
-        $keyword = strtolower($keyword);
-        $query->where(function ($query) use ($keyword) {
-          $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%');
-  
-          $query->orWhereHas('customer.detail', function ($query) use ($keyword) {
-            $query->where(function ($query) use ($keyword) {
-              $query
-                ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
-                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
-                ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
-            });
-          });
-  
-          $query->orWhereHas('cabin.cabinType', function ($query) use ($keyword) {
-            $query->where(DB::raw('LOWER(cabin_type)'), 'like', '%' . $keyword . '%');
-          });
-  
-          $query->orWhereHas('passengers', function ($query) use ($keyword) {
-            $query->where(function ($query) use ($keyword) {
-              $query
-                ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
-                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
-                ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
-            });
+    if (!empty($keyword)) {
+      $keyword = strtolower($keyword);
+      $query->where(function ($query) use ($keyword) {
+        $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%');
+
+        $query->orWhereHas('customer.detail', function ($query) use ($keyword) {
+          $query->where(function ($query) use ($keyword) {
+            $query
+              ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
           });
         });
-      }
+
+        $query->orWhereHas('cabin.cabinType', function ($query) use ($keyword) {
+          $query->where(DB::raw('LOWER(cabin_type)'), 'like', '%' . $keyword . '%');
+        });
+
+        $query->orWhereHas('passengers', function ($query) use ($keyword) {
+          $query->where(function ($query) use ($keyword) {
+            $query
+              ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
+              ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
+          });
+        });
+      });
+    }
 
     $results = $query->get();
 
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
-/*       // Sort passengers to place lead passenger first
+      /*       // Sort passengers to place lead passenger first
       if ($booking->passengers && $index == 1) {
         $booking->passengers = $booking->passengers
         ->sortBy('passenger_order') 
@@ -257,17 +257,20 @@ class BookingRepository implements BookingInterface
 
   function changeCabin(Booking $booking, $cabin_number)
   {
-
-    $booking = $booking->changeCabin($cabin_number);
-    if ($booking) {
-      $cabin = $booking->cabin;
-      $this->saveBookingLog(
-        $booking->id,
-        'Changed cabin number',
-        "Cabin number changed from {$cabin->cabin_number} to {$cabin_number}."
-      );
+    $result = $booking->changeCabin($cabin_number);
+    if (is_array($result) && array_key_exists('error', $result)) {
+      return $result;
+    } elseif ($result instanceof App\Models\Booking) {
+      if ($result) {
+        $cabin = $booking->cabin;
+        $this->saveBookingLog(
+          $booking->id,
+          'Changed cabin number',
+          "Cabin number changed from {$cabin->cabin_number} to {$cabin_number}."
+        );
+      }
+      return $booking;
     }
-    return $booking;
   }
 
   function changeCode(Booking $booking, $new_code)

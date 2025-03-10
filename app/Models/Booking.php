@@ -175,7 +175,7 @@ class Booking extends Model
 
       return $this;
     } catch (\Exception $e) {
-      return false;
+      return array('error' => $e->getMessage());
     }
   }
 
