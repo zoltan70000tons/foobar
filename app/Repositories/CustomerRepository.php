@@ -177,12 +177,14 @@
         $user->detail()->save($userDetail);
         $user->customerAddress()->save($customerAddress);
 
-        $survivorNumber = new SurvivorNumber();
-        $survivorNumber->survivor_number = CustomerHelper::generateSurvivorNumber();
-        $user->survivorNumber()->save($survivorNumber);
+        SurvivorNumber::create([
+          'user_id' => $user->id,
+          'survivor_number' => CustomerHelper::generateSurvivorNumber(),
+        ]);
 
         setPermissionsTeamId(1);
         $user->assignRole('Customer');
+        $user->save();
 
         DB::commit();
       } catch (Exception $e) {
