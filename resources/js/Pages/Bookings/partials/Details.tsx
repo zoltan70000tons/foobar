@@ -49,6 +49,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import PinIcon from '@mui/icons-material/Pin';
 import PaymentIcon from '@mui/icons-material/Payment';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { formatDeckNumber } from "@/Helpers/format";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
@@ -95,6 +96,9 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
       });
       setAvailableCabins(response.data.cabins || []);
       setCabinNumber(null);
+      if(response?.data?.error){
+        showSnackbar(response.data.error, 'error');
+      }
     } catch (error) {
       showSnackbar("Error fetching available cabins!", "error");
       console.error("Error fetching available cabins:", error);
@@ -143,10 +147,11 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           showSnackbar("Cabin updated successfully!", "success");
         },
         onError: (errors) => {
+
           showSnackbar("Error updating cabin!", "error");
           console.error(errors);
         },
-        onFinish: ()=> {
+        onFinish: () => {
           setLoading(false);
         }
       }
@@ -365,7 +370,10 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             <>
               <Autocomplete
                 fullWidth
-                options={Object.values(DeckEnum).filter((value) => typeof value === "number")}
+                options={Object.values(DeckEnum)
+                  .filter((value) =>
+                    typeof value === "number" && formatDeckNumber(cabinCategory.decks).includes(value)
+                  )}
                 getOptionLabel={(option) => `Deck ${option}`}
                 value={selectedDeck}
                 onChange={(event, newValue) => setSelectedDeck(newValue)}
