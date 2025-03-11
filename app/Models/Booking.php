@@ -161,17 +161,23 @@ class Booking extends Model
       //   throw new \Exception('This cabin is already partially booked.');
       // }
 
-      $prevCabin = $this->cabin;
-      $prevCabin->inventory = $prevCabin->inventory + 1;
-      $prevCabin->save();
+      $prevCabin = $booking->cabin;
+
+      if ($cabin->cabinType->id !== $prevCabin->cabinType->id) {
+        throw new \Exception('This cabin is not of the same type as the current booking.');
+      }
+
+      // Release the previous cabin
+      $prevCabin->releaseCabin();
+      
       // Assign the new cabin to the booking
       $this->assignCabin($cabin);
-      //$this->saveBookingLog($this->id,'Cabin changed to {$number}.', '');
-      // $blog = new BookingLog();
-      // $blog->booking_id = $this->id;
-      // $blog->action = 'Changed Cabin';
-      // $blog->description = "Cabin changed to {$cabin->cabin_number}.";
-      //$blog->save();
+      $blog = new BookingLog();
+      $blog->booking_id = $this->id;
+      $blog->user_id = Auth::user()->id(); // Obtener el usuario actual
+      $blog->action = 'Changed Cabin';
+      $blog->description = "{$prevCabin->cabin_number} Cabin changed to {$cabin->cabin_number}.";
+      $blog->save();
 
       return $this;
     } catch (\Exception $e) {
