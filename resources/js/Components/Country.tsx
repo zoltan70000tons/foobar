@@ -24,7 +24,7 @@ countries.registerLocale(deLocale);
 type Props = {
   nameOfField?: string;
   label?: string;
-  value: string; // Country code
+  value?: string | undefined; // Country code
   onChange: (value: string) => void;
   error?: boolean;
   helperText?: string;
