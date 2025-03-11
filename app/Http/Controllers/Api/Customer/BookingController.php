@@ -21,6 +21,7 @@ use App\Mail\CustomerConfirmationBooking;
 use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
+use Illuminate\Validation\Rules\Numeric;
 
 class BookingController extends Controller
 {
@@ -53,10 +54,6 @@ class BookingController extends Controller
     // Get authenticated user
     $user = Auth::user();
     $cart = $request->session()->get('cart', []);
-
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
 
     if (!$cart) {
       return response()->json(['message' => 'Cart is empty'], 400);
@@ -189,7 +186,6 @@ class BookingController extends Controller
   |  This method trigger the email confirmation
   |
   */
-
   private function sendConfirmationEmail($bookingCode, $passengerData, $cart, $language): void
   {
     try {
@@ -200,8 +196,6 @@ class BookingController extends Controller
 
       // Convert booking to array for logging
       \Log::info('EMAIL Booking data', ['booking' => $booking->toArray()]);
-
-      $cabinType = CabinType::find($booking->cabin->cabin_type_id)->cabin_type;
 
       // if payment installments attach the payment plan
       $installments = [];
@@ -253,15 +247,11 @@ class BookingController extends Controller
   |  This method return single booking by code related to the user
   |
   */
-  public function singleBooking($bookingCode)
+  public function singleBooking(int $eventId, string $bookingCode)
   {
     $user = Auth::user();
 
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
-    $result = $this->customerBookingRepository->getBookingByCode($bookingCode, $user);
+    $result = $this->customerBookingRepository->getBookingByCode($eventId, $bookingCode, $user);
 
     if (!$result) {
       return response()->json(['message' => 'Booking not found'], 404);
@@ -283,7 +273,6 @@ class BookingController extends Controller
 
     $schema = [
       'booking' => $result,
-      // 'available_seats' => $available_seats,
     ];
 
     return response()->json($schema);
@@ -300,10 +289,6 @@ class BookingController extends Controller
   public function allBookings()
   {
     $user = Auth::user();
-
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
 
     $invitations = PassengerInvitation::with(
       'booking',
@@ -348,16 +333,11 @@ class BookingController extends Controller
   |  This method call the service to set an empty seat in the booking
   |
   */
-  public function emptySeat(Request $request, $bookingCode)
+  public function emptySeat(Request $request, int $eventId, string $bookingCode)
   {
     $user = Auth::user();
 
-    // no user
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
-    $booking = Booking::where('booking_code', $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     // no booking
     if (!$booking) {
@@ -375,7 +355,7 @@ class BookingController extends Controller
 
     $passengerOrder = $request->input('passenger_order');
 
-    $result = $this->customerBookingRepository->setEmptySeat($bookingCode, $passengerOrder);
+    $result = $this->customerBookingRepository->setEmptySeat($eventId, $bookingCode, $passengerOrder);
 
     return $result;
   }
@@ -388,15 +368,9 @@ class BookingController extends Controller
   |  This method call the service to add a passenger to a booking manually
   |
   */
-  public function addPassenger(StorePassengerRequest $request, $bookingCode)
+  public function addPassenger(StorePassengerRequest $request, int $eventId, string $bookingCode)
   {
-    $user = Auth::user();
-
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
-    $booking = Booking::where('booking_code', $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
@@ -409,6 +383,16 @@ class BookingController extends Controller
     $validated = $request->validated();
 
     $passengerOrder = $request->input('passenger_order');
+    $survivorNumber = $request->input('survivor_number') ?? null;
+
+    if ($survivorNumber) {
+      // check this suvivor number is not used in passengers
+      $passenger = $booking->passengers()->where('survivor_number', $survivorNumber)->first();
+
+      if ($passenger) {
+        return response()->json(['message' => 'This user already is assigned to other booking'], 400);
+      }
+    }
 
     // Check if passenger order is already taken
     $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
@@ -417,7 +401,7 @@ class BookingController extends Controller
     }
 
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerManually($bookingCode, $passenger, $validated);
+    $result = $this->customerBookingRepository->addPassengerManually($eventId, $bookingCode, $passenger, $validated);
 
     return $result;
   }
@@ -430,12 +414,9 @@ class BookingController extends Controller
   |  This method call the service to add a passenger to a booking via email
   |
   */
-  public function addPassengerViaEmail(Request $request, $bookingCode)
+  public function addPassengerViaEmail(Request $request, int $eventId, string $bookingCode)
   {
     $user = Auth::user();
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
 
     $email = $request->input('email');
     if (!$email) {
@@ -446,7 +427,8 @@ class BookingController extends Controller
       return response()->json(['message' => 'You cannot send an email invitation to yourself. Use manual add'], 400);
     }
 
-    $booking = Booking::where('booking_code', $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
+
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
@@ -501,79 +483,15 @@ class BookingController extends Controller
 
   /*
   |--------------------------------------------------------------------------
-  | Add Pax
-  |--------------------------------------------------------------------------
-  |
-  |  This method is checking the signed URL and returning the booking
-  |
-  */
-  public function validateAddPassenger(Request $request)
-  {
-    // Validate the signed URL
-    if (!$request->hasValidSignature(false)) {
-      return response()->json(['message' => 'Invalid or expired URL'], 403);
-    }
-
-    $token = $request->input('token');
-    //$bookingCode = $request->input('bookingCode');
-
-    // check the invitation exist
-    $passengerInvitation = PassengerInvitation::where('token', $token)->first();
-
-    \Log::info('passengerInvitation', ['pass invi' => $passengerInvitation]);
-
-    if (!$passengerInvitation) {
-      return response()->json(['message' => 'Invitation not found'], 404);
-    }
-
-    // Fetch the booking and check if it exists
-    $booking = Booking::with('event', 'cabin.category', 'cabin.cabinType')
-      ->where('id', $passengerInvitation->booking_id)
-      ->first();
-
-    if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
-    }
-
-    // You can add any additional logic here, such as checking if the passenger can be added
-    return response()->json([
-      'message' => 'Valid URL',
-      'booking' => $booking,
-    ]);
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Submit booking via email
-  |--------------------------------------------------------------------------
-  |
-  */
-  public function submitAddPassenger(StorePassengerRequest $request, $bookingCode, $token)
-  {
-    $validated = $request->validated();
-    // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerNonAuth($bookingCode, $validated, $token);
-
-    return $result;
-  }
-
-  /*
-  |--------------------------------------------------------------------------
   | Cancel invitation
   |--------------------------------------------------------------------------
   |
   |  Delete the invitation row
   |
   */
-  public function cancelInvitation(Request $request, $bookingCode)
+  public function cancelInvitation(Request $request, int $eventId, string $bookingCode)
   {
-    $user = Auth::user();
-
-    if (!$user) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
-    $booking = Booking::where('booking_code', $bookingCode)->first();
+    $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);

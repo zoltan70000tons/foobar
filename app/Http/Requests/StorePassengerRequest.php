@@ -23,6 +23,7 @@ class StorePassengerRequest extends FormRequest
   {
     return [
       // Passenger-related validation rules
+      'survivorNumber' => 'sometimes|string',
       'firstName' => 'required|string',
       'middleName' => 'nullable|string',
       'lastName' => 'required|string',
