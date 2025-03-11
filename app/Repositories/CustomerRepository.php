@@ -46,7 +46,9 @@
     {
       $currentDob = $user->detail->dob ? explode('-', $user->detail->dob) : [null, null, null];
 
-      DB::transaction(function () use ($user, $request, $currentDob) {
+      try {
+        DB::beginTransaction();
+
         if ($request->filled('first_name')) {
           $user->detail->first_name = $request->input('first_name');
         }
@@ -107,35 +109,54 @@
           $user->detail->dob = sprintf('%04d-%02d-%02d', $year, $month, $day);
         }
 
+        $customerAddressData = [];
+
         if ($request->filled('address_first')) {
-          $user->customerAddress->address_first = $request->input('address_first');
+          //$user->customerAddress->address_first = $request->input('address_first');
+          $customerAddressData['address_first'] = $request->input('address_first');
         }
 
         if ($request->filled('address_second')) {
-          $user->customerAddress->address_second = $request->input('address_second');
+          //$user->customerAddress->address_second = $request->input('address_second');
+          $customerAddressData['address_second'] = $request->input('address_second');
         }
 
         if ($request->filled('city')) {
-          $user->customerAddress->city = $request->input('city');
+          //$user->customerAddress->city = $request->input('city');
+          $customerAddressData['city'] = $request->input('city');
         }
 
         if ($request->filled('state')) {
-          $user->customerAddress->state = $request->input('state');
+          //$user->customerAddress->state = $request->input('state');
+          $customerAddressData['state'] = $request->input('state');
         }
 
         if ($request->filled('postal_code')) {
-          $user->customerAddress->postal_code = $request->input('postal_code');
+          //$user->customerAddress->postal_code = $request->input('postal_code');
+          $customerAddressData['postal_code'] = $request->input('postal_code');
         }
 
         if ($request->filled('country')) {
-          $user->customerAddress->country = $request->input('country');
+          //$user->customerAddress->country = $request->input('country');
+          $customerAddressData['country'] = $request->input('country');
         }
+
+        // Update or create the customer address for the user
+        $user->customerAddress()->updateOrCreate(
+          ['user_id' => $user->id], // Match by user_id
+          $customerAddressData // Data to insert or update
+        );
 
         $user->save();
         $user->detail->save();
         $user->customerAddress->save();
         $user->save();
-      });
+
+        DB::commit();
+      } catch (Exception $e) {
+        dd($e->getMessage());
+        DB::rollBack();
+      }
     }
 
     /**
@@ -188,7 +209,6 @@
 
         DB::commit();
       } catch (Exception $e) {
-        dd($e->getMessage());
         DB::rollBack();
       }
     }

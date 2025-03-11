@@ -51,7 +51,9 @@ const View = ({ auth, customer, bookings }: PageProps) => {
 
   const handleBack = () => {
     //window.history.back(); //Keeps ordering and filtering, does not reload when data changed on EDIT
-    router.get(route("customers.index")); //Loses ordering and filtering, update to date data
+    router.visit(route("customers.index"), {
+      only: ['users'],
+    })
   }
 
   const handleDelete = () => {
