@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('customer_addresses', function (Blueprint $table) {
-          $table->string('state')->nullable()->change();
-        });
+      Schema::table('bookings', function (Blueprint $table) {
+        $table->bigInteger('cabin_id')->nullable()->change();
+      });
     }
 
     /**
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('customer_addresses', function (Blueprint $table) {
-          $table->string('state')->nullable(false)->change();
-        });
+      Schema::table('bookings', function (Blueprint $table) {
+        $table->bigInteger('cabin_id')->nullable(false)->change();
+      });
     }
 };
