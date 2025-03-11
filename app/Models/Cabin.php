@@ -154,4 +154,29 @@ class Cabin extends Model
 
     $this->save();
   }
+
+  /**
+   * Release the cabin from a booking.
+   */
+  public function releaseCabin()
+  {
+    Log::info('Releasing cabin');
+
+    if ($this->cabin_type_id == 1) {
+      // Private cabins, mark as available
+      $this->status = 'AVAILABLE';
+      $this->inventory = 1;
+    } elseif (in_array($this->cabin_type_id, [2, 3])) {
+      // Single ticket cabins, increase inventory
+      $this->inventory++;
+
+      if ($this->inventory == $this->category->capacity) {
+        $this->status = 'AVAILABLE';
+      } else {
+        $this->status = 'PARTIALLY_BOOKED';
+      }
+    }
+
+    $this->save();
+  }
 }
