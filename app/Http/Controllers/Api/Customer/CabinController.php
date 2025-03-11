@@ -111,7 +111,7 @@ class CabinController extends Controller
 
       // if user have a reservation throw error
       if ($tempReservationId->isNotEmpty()) {
-        return response()->json(['message' => 'Looks like you have another booking in progress. Please clear all ongoing bookings before proceding with a new one.'], 403);
+        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
       }
     }
 
