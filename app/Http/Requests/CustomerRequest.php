@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidPastDate;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CustomerRequest extends FormRequest
@@ -56,7 +57,8 @@ class CustomerRequest extends FormRequest
             'state' => [
                 'string',
                 'max:20',
-                'nullable',
+                'required',
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
             ],
             'address_first' => [
                 'string',
@@ -74,6 +76,7 @@ class CustomerRequest extends FormRequest
                 'string',
                 'max:30',
                 'required',
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
             ],
             'postal_code' => [
                 'string',
@@ -106,6 +109,7 @@ class CustomerRequest extends FormRequest
                 'regex:/^[0-9]*$/',
                 'gt:1909',
                 'before_or_equal:' . date('Y'),
+                new ValidPastDate(),
             ],
             'month' => [
                 'required',

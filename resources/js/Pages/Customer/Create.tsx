@@ -13,7 +13,7 @@ import {
   Button,
   Typography,
   Select,
-  MenuItem,
+  MenuItem, FormControl, InputLabel,
 } from "@mui/material";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
@@ -200,15 +200,35 @@ const Create = ({ auth, errors }: PageProps) => {
                         onChange={ handleChange }
                       />
                     </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Month"
-                        variant="outlined"
-                        value={ data.month }
-                        name={ "month" }
-                        onChange={ handleChange }
-                      />
+                    <Grid item xs={2}>
+                      <FormControl fullWidth variant="outlined">
+                        <InputLabel>Month</InputLabel>
+                        <Select
+                          value={data.month}
+                          name="month"
+                          onChange={handleChange}
+                          label="Month"
+                        >
+                          {[
+                            { label: "January", value: "01" },
+                            { label: "February", value: "02" },
+                            { label: "March", value: "03" },
+                            { label: "April", value: "04" },
+                            { label: "May", value: "05" },
+                            { label: "June", value: "06" },
+                            { label: "July", value: "07" },
+                            { label: "August", value: "08" },
+                            { label: "September", value: "09" },
+                            { label: "October", value: "10" },
+                            { label: "November", value: "11" },
+                            { label: "December", value: "12" },
+                          ].map((month) => (
+                            <MenuItem key={month.value} value={month.value}>
+                              {month.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </Grid>
                     <Grid item xs={ 2 }>
                       <TextField

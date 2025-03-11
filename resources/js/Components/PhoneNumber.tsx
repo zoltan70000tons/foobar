@@ -17,7 +17,7 @@ import {
 } from "react-international-phone";
 
 export interface MUIPhoneProps extends BaseTextFieldProps {
-  value: string;
+  value?: string | undefined;
   onChange: (phone: string) => void;
   forceDialCode?: boolean;
   disabled?: boolean;
@@ -29,14 +29,15 @@ export default function PhoneNumber({
   forceDialCode = true,
   ...restProps
 }: MUIPhoneProps) {
-  const { inputValue, handlePhoneValueChange, inputRef, country, setCountry } =
-    usePhoneInput({
-      defaultCountry: "us",
-      value,
-      forceDialCode,
-      countries: defaultCountries,
-      onChange: (data) => onChange(data.phone),
-    });
+  const phoneInputProps = {
+    defaultCountry: "us",
+    value: value || "",
+    forceDialCode,
+    countries: defaultCountries,
+    ...(value !== undefined && typeof onChange === "function" && { onChange: (data) => onChange(data.phone) }),
+  };
+
+  const { inputValue, handlePhoneValueChange, inputRef, country, setCountry } = usePhoneInput(phoneInputProps);
 
   // Styles for Select Component
   const selectStyles = {

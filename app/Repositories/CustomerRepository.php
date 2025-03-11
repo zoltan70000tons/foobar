@@ -163,7 +163,7 @@
         $userDetail->emergency_c_name = $request->input('emergency_c_name');
         $userDetail->emergency_c_phone = $request->input('emergency_c_phone');
         $userDetail->language = $request->input('language');
-        $userDetail->middle_name = $request->filled('middle_name') ?? null;
+        $userDetail->middle_name = $request->input('middle_name');
         $userDetail->dob = sprintf('%04d-%02d-%02d', $request->input('year'), $request->input('month'), $request->input('day'));
 
         $customerAddress = new CustomerAddress();
@@ -171,8 +171,8 @@
         $customerAddress->city = $request->input('city');
         $customerAddress->postal_code = $request->input('postal_code');
         $customerAddress->country = $request->input('country');
-        $customerAddress->address_second = $request->filled('address_second') ?? null;
-        $customerAddress->state = $request->filled('state') ?? null;
+        $customerAddress->address_second = $request->input('address_second');
+        $customerAddress->state = $request->input('state');
 
         $user->detail()->save($userDetail);
         $user->customerAddress()->save($customerAddress);
@@ -188,6 +188,7 @@
 
         DB::commit();
       } catch (Exception $e) {
+        dd($e->getMessage());
         DB::rollBack();
       }
     }
@@ -307,10 +308,10 @@
         ->map(function ($booking) {
           return [
             'booking_id' => $booking->id,
-            'cabin_type' => $booking->cabin->cabinType->cabin_type,
+            'cabin_type' => optional($booking->cabin?->cabinType)->cabin_type,
             'event_name' => $booking->event->name,
             'booking_code' => $booking->booking_code,
-            'category_full_title' => $booking->cabin->category->getTitleAttribute(),
+            'category_full_title' => optional($booking->cabin?->category)->getTitleAttribute(),
           ];
         });
     }
