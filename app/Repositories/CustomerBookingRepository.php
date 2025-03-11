@@ -31,7 +31,7 @@ class CustomerBookingRepository
    * @param string $bookingCode
    * @return Booking
    */
-  public function getBookingByCode($bookingCode, $user = null)
+  public function getBookingByCode(int $eventId, string $bookingCode, $user = null)
   {
     $user_survivor_number = $user->survivor_number ?? null;
 
@@ -46,6 +46,7 @@ class CustomerBookingRepository
       'event'
     )
       ->where('booking_code', $bookingCode)
+      ->where('event_id', $eventId)
       ->first();
 
     // if booking is_single_occupancy then do not return other passengers
@@ -111,13 +112,13 @@ class CustomerBookingRepository
   | This method will add a passenger to the booking without authentication ADD PAX
   |
   */
-  public function addPassengerNonAuth($bookingCode, $validated, $token)
+  public function addPassengerNonAuth(int $eventId, string $bookingCode, $validated, string $token)
   {
-    $booking = $this->getBookingByCode($bookingCode);
-
-    if (!$token || !$bookingCode) {
+    if (!$token || !$bookingCode || !$eventId) {
       return response()->json(['message' => 'Invalid token'], 400);
     }
+
+    $booking = $this->getBookingByCode($eventId, $bookingCode);
 
     // log params
     \Log::info('Add passenger non authenticated: ' . json_encode($validated));
@@ -181,9 +182,9 @@ class CustomerBookingRepository
   | This method will add a passenger to the booking manually
   |
   */
-  public function addPassengerManually($bookingCode, $passenger, $validated)
+  public function addPassengerManually(int $eventId, string $bookingCode, $passenger, $validated)
   {
-    $booking = $this->getBookingByCode($bookingCode);
+    $booking = $this->getBookingByCode($eventId, $bookingCode);
 
     // log params
     \Log::info('Add passenger manually: ' . json_encode($validated));
@@ -241,9 +242,9 @@ class CustomerBookingRepository
   | This method will add an empty seat to the booking
   |
   */
-  public function setEmptySeat($bookingCode, $passengerOrder)
+  public function setEmptySeat(int $eventId, string $bookingCode, $passengerOrder)
   {
-    $booking = $this->getBookingByCode($bookingCode);
+    $booking = $this->getBookingByCode($eventId, $bookingCode);
 
     //$cabinCapacity = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;

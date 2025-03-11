@@ -46,7 +46,7 @@ class InvitationController extends Controller
   |  Return booking related to passenger invitation token
   |
   */
-  public function index($bookingCode, $token)
+  public function index(int $eventId, string $bookingCode, string $token)
   {
     $user = Auth::user();
 
@@ -67,6 +67,16 @@ class InvitationController extends Controller
     )
       ->where('token', $token)
       ->first();
+
+    // check the eventId is the same as the booking event id
+    if ($passengerInvitation->booking->event_id !== $eventId) {
+      return response()->json(
+        [
+          'message' => 'Invalid token',
+        ],
+        400
+      );
+    }
 
     if (!$passengerInvitation || $passengerInvitation->email !== $user->email) {
       return response()->json(
@@ -94,11 +104,11 @@ class InvitationController extends Controller
   |  Add passenger via invitation token
   |
   */
-  public function addPax(StorePassengerRequest $request, $bookingCode, $token)
+  public function addPax(StorePassengerRequest $request, int $eventId, string $bookingCode, string $token)
   {
     $validated = $request->validated();
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerNonAuth($bookingCode, $validated, $token);
+    $result = $this->customerBookingRepository->addPassengerNonAuth($eventId, $bookingCode, $validated, $token);
 
     return $result;
     //
@@ -112,7 +122,7 @@ class InvitationController extends Controller
   |  Remove invitation via invitation token
   |
   */
-  public function removeInvitation(Request $request, $bookingCode, $token)
+  public function removeInvitation(Request $request, int $eventId, string $bookingCode, string $token)
   {
     $user = Auth::user();
     //

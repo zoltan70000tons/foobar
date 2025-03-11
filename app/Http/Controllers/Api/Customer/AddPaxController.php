@@ -8,96 +8,76 @@ use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Event;
 use Illuminate\Support\Str;
+use App\Models\PassengerInvitation;
+use App\Http\Requests\StorePassengerRequest;
+use App\Repositories\CustomerBookingRepository;
 
 class AddPaxController extends Controller
 {
-  /**
-   * 1. User sends email and booking code.
-   * 2. Check if booking code exists.
-   * 3. Check if the name & last name match any passenger in that booking.
-   * 4. Return the booking details.
-   */
-  public function show(Request $request)
-  {
-    $request->validate([
-      'name' => 'required|string',
-      'lastName' => 'required|string',
-      'bookingCode' => 'required|string',
-      'dateOfBirth' => 'required|string',
-    ]);
+  protected $customerBookingRepository;
 
-    // Find booking by booking code
-    $booking = Booking::with('cabin.category', 'cabin.cabinType', 'adjustments')
-      ->where('booking_code', $request->bookingCode)
+  public function __construct(CustomerBookingRepository $customerBookingRepository)
+  {
+    $this->customerBookingRepository = $customerBookingRepository;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Validate Add Passenger
+  |--------------------------------------------------------------------------
+  |
+  |  In this method we validate the request for adding a passenger
+  |
+  */
+  public function validate(Request $request)
+  {
+    // Validate the signed URL
+    if (!$request->hasValidSignature(false)) {
+      return response()->json(['message' => 'Invalid or expired URL'], 403);
+    }
+
+    $token = $request->input('token');
+    //$bookingCode = $request->input('bookingCode');
+
+    // check the invitation exist
+    $passengerInvitation = PassengerInvitation::where('token', $token)->first();
+
+    \Log::info('passengerInvitation', ['pass invi' => $passengerInvitation]);
+
+    if (!$passengerInvitation) {
+      return response()->json(['message' => 'Invitation not found'], 404);
+    }
+
+    // Fetch the booking and check if it exists
+    $booking = Booking::with('event', 'cabin.category', 'cabin.cabinType')
+      ->where('id', $passengerInvitation->booking_id)
       ->first();
 
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    // if booking status is not public or pre-sale, return error
-    if (!in_array($booking->event->status, ['PUBLIC', 'PRE-SALE'])) {
-      return response()->json(['message' => 'Booking not found'], 404);
-    }
-
-    $dateOfBirth = $request->dateOfBirth;
-    // Normalize input names
-    $formattedName = $this->normalizeString($request->name);
-    $formattedLastName = $this->normalizeString($request->lastName);
-
-    // Fetch all passengers for this booking
-    $passengers = Passenger::with('fees', 'installments')
-      ->where('booking_id', $booking->id)
-      ->where('dob', $dateOfBirth)
-      ->get();
-
-    // Try to find a passenger with a similar name
-    $matchedPassenger = $passengers->first(function ($passenger) use ($formattedName, $formattedLastName) {
-      return $this->isSimilar($this->normalizeString($passenger->first_name ?? ''), $formattedName) &&
-        $this->isSimilar($this->normalizeString($passenger->last_name ?? ''), $formattedLastName);
-    });
-
-    if (!$matchedPassenger) {
-      return response()->json(['message' => 'Passenger not found'], 404);
-    }
-
-    // Fetch event related to booking
-    $event = Event::find($booking->event_id);
-
-    // hide agent_id from booking
-    unset($booking->agent_id);
-
+    // You can add any additional logic here, such as checking if the passenger can be added
     return response()->json([
+      'message' => 'Valid URL',
       'booking' => $booking,
-      'event' => $event,
-      'passengers' => $matchedPassenger,
     ]);
   }
 
-  /**
-   * Normalize a string by removing special characters and converting to uppercase.
-   */
-  private function normalizeString(string $string): string
+  /*
+  |--------------------------------------------------------------------------
+  | Store Add Passenger
+  |--------------------------------------------------------------------------
+  |
+  |  In this method we store the passenger details
+  |
+  */
+  public function store(StorePassengerRequest $request, int $eventId, string $bookingCode, string $token)
   {
-    return strtoupper(trim(Str::ascii($string))); // Remove accents and normalize casing
-  }
+    $validated = $request->validated();
+    // create passenger with booking id
+    $result = $this->customerBookingRepository->addPassengerNonAuth($eventId, $bookingCode, $validated, $token);
 
-  /**
-   * Check if two strings are similar based on Levenshtein distance and Soundex.
-   */
-  private function isSimilar(string $input, string $stored): bool
-  {
-    // Direct match
-    if ($input === $stored) {
-      return true;
-    }
-
-    // Check Soundex (similar pronunciation)
-    if (soundex($input) === soundex($stored)) {
-      return true;
-    }
-
-    // Allow minor typos with Levenshtein distance (threshold: 2)
-    return levenshtein($input, $stored) <= 2;
+    return $result;
   }
 }
