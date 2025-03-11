@@ -21,9 +21,8 @@
 
       // Convert to a date object
       $inputDate = Carbon::create($year, $month, $day);
-      $today = now(); // Current date
 
-      return $inputDate->isPast(); // Ensures the date is in the past
+      return $inputDate->isPast();
     }
 
     public function message()

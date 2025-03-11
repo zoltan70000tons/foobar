@@ -19,7 +19,7 @@ class CustomerCreateRequest extends CustomerRequest
                 'email',
                 'max:255',
                 'unique:users,email',
-                'not_regex:/[<>]/',
+                'not_regex:/[<>{}]/',
             ],
             'username' => [
                 'required',
