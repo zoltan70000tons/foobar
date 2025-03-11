@@ -1,5 +1,6 @@
-<?php 
+<?php
 
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 if (! function_exists('generateSlug')) {
@@ -73,4 +74,28 @@ if (! function_exists('sanitizeInput')) {
             return $sanitized;
         }
     }
+
+    if (!function_exists('formatCurrency')) {
+        function formatCurrency(float $amount): string
+        {
+            return 'USD ' . number_format($amount, 2, '.', ',');
+        }
+    }
+
+    if (!function_exists('formatDate')) {
+        function formatDate($date, $fullMonth = false, $hideYear = false)
+        {
+            $format = ($fullMonth ? 'F' : 'M') . ' d' . ($hideYear ? '' : ', Y');
+            return Carbon::parse($date)->format($format);
+        }
+    }
+
+    if (!function_exists('formatFeeName')) {
+        function formatFeeName($string)
+        {
+            return ucwords(strtolower(str_replace('_', ' ', $string)));
+        }
+    }
+    
+    
 }

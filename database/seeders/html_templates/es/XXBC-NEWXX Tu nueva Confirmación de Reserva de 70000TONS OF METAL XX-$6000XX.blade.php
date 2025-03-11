@@ -100,7 +100,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Tu<span>&nbsp;</span><strong>NUEVO</strong><span>&nbsp;</span>Código
 
-                                            de Reserva es:<span>&nbsp;</span><strong>XXBOOKINGCODEXX</strong><br>
+                                            de Reserva es:<span>&nbsp;</span><strong>{BOOKING_CODE}</strong><br>
                                             <br>
                                             Puedes encontrar tu
                                             Confirmación de Reserva y el
@@ -179,7 +179,7 @@ style="display:
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
                                             total a pagar es: USD
-                                            XXGRANDTOTAL$XX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco

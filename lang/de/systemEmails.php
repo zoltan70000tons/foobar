@@ -34,4 +34,7 @@ return [
   'email_request_to_add_pax_body' =>
     'Sie haben 72 Stunden Zeit, Ihre Details zur Buchung hinzuzufügen. Wenn Sie die Details nicht innerhalb dieser Zeit hinzufügen, wird die Anfrage storniert.',
   'email_request_to_add_pax_cta' => 'Details hinzufügen',
+  'email_invitation_on_your_account' => 'Sie haben eine Einladung auf Ihrem Konto.',
+  'email_invitation_on_your_account_body' =>
+    'Sie haben 72 Stunden Zeit, die Einladung anzunehmen. Wenn Sie die Einladung nicht innerhalb dieser Zeit annehmen, wird die Einladung storniert. Sie können Ihre Einladungen auf Ihrer Buchungsseite in Ihrem Konto überprüfen. Wenn Sie Fragen haben, wenden Sie sich bitte an unser Support-Team.',
 ];

@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXBC-INVXX Deine 70000TONS OF METAL Rechnung und
-      Buchungsbestätigung XXBOOKINGCODEXX</title>
+      Buchungsbestätigung {BOOKING_CODE}</title>
   </head>
   <body>
     <table
@@ -187,7 +187,7 @@ style="display:
                                               ausschließlich US-Dollars
                                               senden!</strong><br>
                                             <br>
-                                            Dein Booking Code ist:<strong><span>&nbsp;</span>XXBOOKINGCODEXX</strong><br>
+                                            Dein Booking Code ist:<strong><span>&nbsp;</span>{BOOKING_CODE}</strong><br>
                                             <br>
                                             In der Rechnung sind alle
                                             für internationale

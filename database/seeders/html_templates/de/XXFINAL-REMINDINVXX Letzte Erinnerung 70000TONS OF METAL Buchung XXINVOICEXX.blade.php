@@ -148,7 +148,7 @@ style="text-decoration:
                                               senden!</strong><br>
                                             <br>
                                             Dein Booking Code ist:
-                                            XXBOOKINGCODEXX<br>
+                                            {BOOKING_CODE}<br>
                                             <br>
                                             In der Rechnung sind alle
                                             für internationale

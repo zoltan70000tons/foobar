@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXMISSING-PAXXX Bitte ergänze noch fehlende Angaben für Deine
-      Buchung 70000TONS OF METAL Buchung XXBOOKINGCODEXX</title>
+      Buchung 70000TONS OF METAL Buchung {BOOKING_CODE}</title>
   </head>
   <body>
     <table

@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>XXCREDIT$XX Crédito a bordo de 70000TONS OF METAL
-      Confirmación de Reserva XXBOOKINGCODEXX</title>
+      Confirmación de Reserva {BOOKING_CODE}</title>
   </head>
   <body>
     <table

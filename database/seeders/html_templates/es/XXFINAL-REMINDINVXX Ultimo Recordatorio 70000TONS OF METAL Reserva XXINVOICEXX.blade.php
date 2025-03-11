@@ -155,7 +155,7 @@ style="text-decoration:
                                               dólares estadounidenses
                                               (USD) únicamente.</strong><br>
                                             <br>
-                                            Tu Código de Reserva es:<span>&nbsp;</span><strong>XXBOOKINGCODEXX</strong><br>
+                                            Tu Código de Reserva es:<span>&nbsp;</span><strong>{BOOKING_CODE}</strong><br>
                                             <br>
                                             Toda la información de
                                             cuenta necesaria para

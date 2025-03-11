@@ -75,7 +75,7 @@ class Booking extends Model
 
   public function passengers()
   {
-    return $this->hasMany(Passenger::class, foreignKey: 'booking_id');
+    return $this->hasMany(Passenger::class, 'booking_id')->orderBy('passenger_order');
   }
 
   /**
@@ -134,12 +134,15 @@ class Booking extends Model
     return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
   }
 
-  public function changeCabin($booking, $number)
+  public function changeCabin($number)
   {
+
     try {
       // Find the cabin by its number
-      $cabin = Cabin::where('cabin_number', $number)->first();
-
+      //$cabin = Cabin::where('cabin_number', $number)->first();
+      $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($number) {
+        $query->where('cabin_number', $number);
+      })->first();
       // Validate that the cabin exists
       if (!$cabin) {
         throw new \Exception("Cabin with number {$number} does not exist.");
@@ -154,9 +157,9 @@ class Booking extends Model
         throw new \Exception('This cabin is already fully booked.');
       }
 
-      if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
-        throw new \Exception('This cabin is already partially booked.');
-      }
+      // if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
+      //   throw new \Exception('This cabin is already partially booked.');
+      // }
 
       $prevCabin = $booking->cabin;
 
@@ -178,7 +181,7 @@ class Booking extends Model
 
       return $this;
     } catch (\Exception $e) {
-      return false;
+      return array('error' => $e->getMessage());
     }
   }
 
@@ -280,7 +283,6 @@ class Booking extends Model
         }
       }
       $cabin->save();
-      
     });
 
 

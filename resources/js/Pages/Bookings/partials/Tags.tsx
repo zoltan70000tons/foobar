@@ -14,6 +14,8 @@ import { Autocomplete } from "@mui/lab";
 import AddIcon from "@mui/icons-material/Add";
 import { BookingTagEnum } from "@/enums/TagEnum";
 import { router } from "@inertiajs/react";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+
 
 
 const availableTags = Object.values(BookingTagEnum).map((tag) => ({
@@ -24,6 +26,7 @@ const availableTags = Object.values(BookingTagEnum).map((tag) => ({
 const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ editable, event, booking }) => {
     const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
 
     useEffect(() => {
@@ -44,13 +47,23 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
 
     const handleSaveTags = (newTags: string[]) => {
         setTags(newTags);
-        router.post(route("bookings.updateTags", { id: event.id }), {
-            tags: newTags,
-            booking_id: booking.id,
-        });
+        setLoading(true);
+        router.post(
+            route("bookings.updateTags", { id: event.id }),
+            {
+                tags: newTags,
+                booking_id: booking.id,
+            },
+            {
+                onSuccess: () => setLoading(false),  
+                onError: () => setLoading(false),   
+                onFinish: () => setLoading(false),
+            }
+        );
+    
         setDialogOpen(false);
     };
-
+    
 
     console.log(tags);
     return (
@@ -96,6 +109,8 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* <LoadingOverlay open={loading}/> */}
+
         </Box>
     );
 };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
   Avatar,
@@ -42,7 +42,7 @@ import LoadingOverlay from "@/Components/LoadingOverlay";
 
 
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
   const [locked, setLocked] = useState(booking.locked_by ? true : false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -54,7 +54,8 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
-  console.log(booking);
+
+  const { flash, error } = usePage().props;
   useEffect(() => {
     if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
       setEditMode(true);
@@ -85,6 +86,11 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
+  useEffect(()=>{
+    if(flash.error){
+      showSnackbar(flash.error, 'error');
+    }
+  },[flash]);
 
 
   const handleAddComment = (comment: string) => {
@@ -187,12 +193,10 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories }: Page
           </Alert>
         )}
 
-
-
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail event={event} booking={booking} editMode={editMode} cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
-        <Passengers booking={booking} editMode={editMode} />
-        <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} />
+        <Passengers booking={booking} editMode={editMode} setLoading={setLoading} />
+        <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} list={adjustments} />
         <Payment
           booking={booking}
           editMode={editMode}

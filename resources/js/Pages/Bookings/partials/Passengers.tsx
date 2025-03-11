@@ -25,6 +25,7 @@ import { router } from "@inertiajs/react";
 type PassengersProps = {
   booking: Booking;
   editMode: boolean;
+  setLoading: (loading: boolean) => void;
 };
 
 type Booking = {
@@ -32,7 +33,7 @@ type Booking = {
 };
 
 
-const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
+const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -44,6 +45,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
   const [errors, setErrors] = useState({});
   const colors = [blueGrey, deepPurple, red, yellow];
   const { showSnackbar } = useSnackbar();
+  const [savinLoading, setSavingLoading] = useState(false);
+  const [releaseLoading, setReleaseLoading] = useState(false);
 
 
 
@@ -57,6 +60,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
   // Update passenger details
   const handleSavePassenger = async () => {
     try {
+      setSavingLoading(true);
       const response = await axios.post(route('seat.update', { id: booking.event_id, booking_id: booking.id }), {
         ...editedPassengerData
       });
@@ -74,7 +78,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
     } catch (error) {
       setErrors(error);
       showSnackbar("Error updating passenger data!", "error");
-    }
+    } finally {
+      setSavingLoading(false);
+     }
   };
 
   const onDelete = () => {
@@ -83,28 +89,32 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
 
   const handleConfirm = async () => {
     setOpenConfirm(false);
+    setReleaseLoading(true);
 
     try {
-      const response = await axios.post(
-        route('seat.release', { id: booking.event_id, booking_id: booking.id }),
-        {
-          slotId: editedPassengerData.id,
-          bookingId: booking.id
-        }
-      );
+      const response = await releaseSeat(editedPassengerData.id, booking.id, booking.event_id);
 
-      if (response.status === 200) {
-        showSnackbar("Seat released succesfully!", "success");
-        setEditPassengerOpen(false);
-        setEditedPassengerData(response.data);
-        router.reload({ only: ['booking'], preserveScroll: true });
-      } else {
-        console.error("Failed to release seat", response.data);
-        showSnackbar("Failed to release seat", "error");
-      }
+      showSnackbar("Seat released successfully!", "success");
+      setEditPassengerOpen(false);
+      setEditingPassenger(null);
+      setErrors({});
+      router.reload({ only: ['booking'], preserveScroll: true });
+
     } catch (error) {
-      console.error("Error releasing seat:", error.response || error);
+      console.error("Error releasing seat:", error.response?.data || error);
+      showSnackbar("Failed to release seat", "error");
+
+    } finally {
+      setReleaseLoading(false);
     }
+  };
+
+
+  const releaseSeat = async (slotId: number, bookingId: number, eventId: number) => {
+    return axios.post(route('seat.release', { id: eventId, booking_id: bookingId }), {
+      slotId,
+      bookingId
+    });
   };
 
   const handleCancel = () => {
@@ -153,6 +163,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode }) => {
         editMode={editMode}
         onSave={handleSavePassenger}
         onDelete={onDelete}
+        savingLoading ={savinLoading}
+        releaseLoading={releaseLoading}
         onChange={(field, value) =>
           setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
         }

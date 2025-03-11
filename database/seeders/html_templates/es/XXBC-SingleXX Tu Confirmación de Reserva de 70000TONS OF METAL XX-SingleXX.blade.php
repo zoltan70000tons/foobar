@@ -151,7 +151,7 @@ style="display:
                                               de Pago:</strong><br>
                                             <br>
                                             XXNAMEXX, el total a pagar
-                                            es: USD XXGRANDTOTAL$XX<br>
+                                            es: USD {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco

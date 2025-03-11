@@ -136,7 +136,7 @@ style="color: rgb(102, 102,
                                             <strong>Gesamtpreis der
                                               Buchung:</strong><span>&nbsp;</span>USD
 
-                                            XXGRANDTOTAL$XX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             Bitte antworte innerhalb von
                                             24 Stunden auf diese eMail
