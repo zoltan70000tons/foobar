@@ -27,7 +27,7 @@
     <p>{{ __('confirmationBooking.cbe_following_booking') }}</p>
 
     <!---- BOOKING INFO ---->
-    <table>
+    <table style="color: white;">
         <tr>
             <td>{{ __('confirmationBooking.cbe_booking_type') }}:</td>
             <td>{{ $bookingResult->booking->booking_type }}</td>
@@ -91,7 +91,7 @@
     @endif
     @if($bookingResult->booking->payment_schedule_installments !== 'N/A')
     <h2>{{ __('confirmationBooking.cbe_payment_schedule') }}</h2>
-    <table class="table-bordered">
+    <table class="table-bordered" style="color: white;">
         <thead>
             <tr>
                 <th>Due Date</th>
@@ -110,7 +110,7 @@
     @endif
     <!---- Lead pass details ---->
     <p>{{ __('confirmationBooking.cbe_lead_passenger_details') }}</p>
-    <table>
+    <table style="color: white;">
       <tr>
           <td>{{ __('confirmationBooking.cbe_gender') }}:</td>
           <td>{{ $bookingResult->passenger->gender }}</td>
