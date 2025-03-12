@@ -450,6 +450,21 @@ class BookingController extends Controller
       return response()->json(['message' => 'Passenger order is already taken'], 400);
     }
 
+    // if this email is used in another booking around the same event return error
+    if (
+      Booking::where('event_id', $eventId)
+        ->where('status', '!=', 'CANCELLED')
+        ->whereHas('passengers', function ($query) use ($email) {
+          $query->where('email', $email);
+        })
+        ->exists()
+    ) {
+      return response()->json(
+        ['message' => 'This email is already used in another booking, use manual add instead'],
+        400
+      );
+    }
+
     // Check if an invitation already exists for this email and booking
     if (
       PassengerInvitation::where('booking_id', $booking->id)

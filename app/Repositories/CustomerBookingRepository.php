@@ -112,7 +112,7 @@ class CustomerBookingRepository
   | This method will add a passenger to the booking without authentication ADD PAX
   |
   */
-  public function addPassengerNonAuth(int $eventId, string $bookingCode, $validated, string $token)
+  public function addPassengerWithToken(int $eventId, string $bookingCode, $validated, string $token)
   {
     if (!$token || !$bookingCode || !$eventId) {
       return response()->json(['message' => 'Invalid token'], 400);
@@ -134,6 +134,17 @@ class CustomerBookingRepository
     // check the bookingCode === booking_code
     if ($booking->booking_code !== $bookingCode) {
       return response()->json(['message' => 'Invalid booking code'], 400);
+    }
+
+    $passEmail = $validated['email'] ?? null;
+
+    // if passenger for this booking with this email exist, return error
+    $passenger = Passenger::where('booking_id', $booking->id)
+      ->where('email', $passEmail)
+      ->first();
+
+    if ($passenger) {
+      return response()->json(['message' => 'Passenger with this email already exists'], 400);
     }
 
     $emptyPassenger = Passenger::where('id', $passengerSlotId->passenger_id)->first();
@@ -303,7 +314,6 @@ class CustomerBookingRepository
   | This method will create a passenger invitation
   |
   */
-
   public function createPassengerInvitation($passenger, $booking, $email)
   {
     $token = Str::random(32);
