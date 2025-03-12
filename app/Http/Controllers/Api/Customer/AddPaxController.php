@@ -57,6 +57,9 @@ class AddPaxController extends Controller
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
+    // unset agent_id
+    unset($booking->agent_id);
+
     // You can add any additional logic here, such as checking if the passenger can be added
     return response()->json([
       'message' => 'Valid URL',
@@ -76,7 +79,7 @@ class AddPaxController extends Controller
   {
     $validated = $request->validated();
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerNonAuth($eventId, $bookingCode, $validated, $token);
+    $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $validated, $token);
 
     return $result;
   }

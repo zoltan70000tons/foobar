@@ -141,7 +141,7 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
       'addPax',
     ]);
     // --- single invitation remove invitation
-    Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/remove-invitation', [
+    Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/cancel', [
       InvitationController::class,
       'removeInvitation',
     ]);

@@ -108,7 +108,7 @@ class InvitationController extends Controller
   {
     $validated = $request->validated();
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerNonAuth($eventId, $bookingCode, $validated, $token);
+    $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $validated, $token);
 
     return $result;
     //
@@ -122,9 +122,36 @@ class InvitationController extends Controller
   |  Remove invitation via invitation token
   |
   */
-  public function removeInvitation(Request $request, int $eventId, string $bookingCode, string $token)
+  public function removeInvitation(int $eventId, string $bookingCode, string $token)
   {
     $user = Auth::user();
-    //
+
+    if (!$bookingCode && !$token && !$eventId) {
+      return response()->json(
+        [
+          'message' => 'Booking code or token is required',
+        ],
+        400
+      );
+    }
+
+    $passengerInvitation = PassengerInvitation::where('token', $token)
+      ->where('email', $user->email)
+      ->first();
+
+    if (!$passengerInvitation) {
+      return response()->json(
+        [
+          'message' => 'Invalid token or user data',
+        ],
+        400
+      );
+    }
+
+    $passengerInvitation->delete();
+
+    return response()->json([
+      'message' => 'Invitation removed',
+    ]);
   }
 }
