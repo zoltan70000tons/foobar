@@ -223,7 +223,7 @@ class PaymentInfoService
                 // Add fees to the final total
                 $totalPassenger += $totalFees;
                 // Update the passenger's allocated cost in the database
-                $passenger->update(['passenger_allocated_cost' => $total]);
+                $passenger->update(['passenger_allocated_cost' => $totalPassenger]);
             }
         } catch (\Exception $e) {
             throw $e;
