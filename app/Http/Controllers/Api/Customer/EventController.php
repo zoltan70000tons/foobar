@@ -23,7 +23,9 @@ class EventController extends Controller
   public function show()
   {
     // check if event exist and get only if pre-sale or public
-    $events = Event::where('status', 'PRE-SALE')->orWhere('status', 'PUBLIC')->get();
+    $events = Event::with('adjustments')
+      ->whereIn('status', ['PRE-SALE', 'PUBLIC'])
+      ->get();
 
     if ($events->isEmpty()) {
       return response()->json(['message' => 'no events found']);
@@ -44,8 +46,8 @@ class EventController extends Controller
   {
     App::setLocale($language);
 
-    // Retrieve the event
-    $event = Event::find($id);
+    // Retrieve the event with adjustments
+    $event = Event::with('adjustments')->find($id);
 
     if (!$event) {
       return response()->json([

@@ -174,6 +174,11 @@ class CustomerRegisteredController extends Controller
 
     // Update user credentials
     $user = User::find($survivor->user_id);
+
+    if ($user->email !== null) {
+      return response()->json(['message' => 'Account already activated.'], 400);
+    }
+
     $user->update([
       'email' => $request->email,
       'password' => Hash::make($request->password),
