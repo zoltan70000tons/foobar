@@ -33,7 +33,7 @@ class CustomerBookingRepository
    */
   public function getBookingByCode(int $eventId, string $bookingCode, $user = null)
   {
-    $user_survivor_number = $user->survivor_number ?? null;
+    $user_survivor_number = $user->survivorNumber->survivor_number ?? null;
 
     $booking = Booking::with(
       'adjustments',
@@ -59,6 +59,22 @@ class CustomerBookingRepository
       $booking->setRelation('passengers', $filteredPassengers);
     }
 
+    if (!$booking->is_single_occupancy && $user_survivor_number) {
+      // Get the passenger record for the current user
+      $userPassenger = $booking->passengers->firstWhere('survivor_number', $user_survivor_number);
+
+      // If the record exists and is not marked as lead_passenger, filter out others
+      if ($userPassenger && !$userPassenger->lead_passenger) {
+        $filteredPassengers = $booking->passengers
+          ->filter(function ($passenger) use ($user_survivor_number) {
+            return $passenger->survivor_number === $user_survivor_number;
+          })
+          ->values(); // re-index the collection
+        // Set the filtered passengers relation to the booking
+        $booking->setRelation('passengers', $filteredPassengers);
+      }
+    }
+
     // if booking payment_plan is INSTALLMENTS get all installments where passenger is lead_passenger
     if ($booking->payment_plan === 'INSTALLMENTS') {
       $booking->passengers->each(function ($passenger) {
@@ -79,11 +95,19 @@ class CustomerBookingRepository
   public function getAllBookings($user)
   {
     $user_survivor_number = $user->survivor_number ?? null;
-    $customer_id = $user->id ?? null;
+    //$customer_id = $user->id ?? null;
 
-    $bookings = Booking::with('passengers', 'cabin.category', 'cabin.cabinType', 'event')
-      ->where('customer_id', $customer_id)
-      ->get();
+    // $bookings = Booking::with('passengers', 'cabin.category', 'cabin.cabinType', 'event')
+    //   ->where('customer_id', $customer_id)
+    //   ->get();
+
+    $bookings = Passenger::with('booking', 'booking.cabin.category', 'booking.cabin.cabinType', 'booking.event')
+      ->where('survivor_number', $user_survivor_number)
+      ->get()
+      ->map(function ($passenger) {
+        return $passenger->booking;
+      })
+      ->unique('id');
 
     // if booking is_single_occupancy then do not return other passengers
     $bookings->map(function ($booking) use ($user_survivor_number) {
@@ -94,6 +118,22 @@ class CustomerBookingRepository
         $booking->setRelation('passengers', $filteredPassengers);
       }
     });
+
+    // unset agent_id
+    $bookings->map(function ($booking) {
+      unset($booking->agent_id);
+      if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
+        unset($booking->booking_code);
+        unset($booking->cabin->cabin_number);
+        unset($booking->cabin->cabinSpec->cabin_number);
+        unset($booking->cabin->cabinSpec->id);
+        unset($booking->cabin->cabin_spec_id);
+        unset($booking->cabin->id);
+        unset($booking->cabin_id);
+      }
+    });
+
+    //$res = $bookings->toArray();
 
     return $bookings;
   }
@@ -106,22 +146,19 @@ class CustomerBookingRepository
 
   /*
   |--------------------------------------------------------------------------
-  | Add passenger non authenticated
+  | Add passenger with token
   |--------------------------------------------------------------------------
   | 
-  | This method will add a passenger to the booking without authentication ADD PAX
+  | This method will add a passenger with token, for non auth and auth users invitation
   |
   */
-  public function addPassengerWithToken(int $eventId, string $bookingCode, $validated, string $token)
+  public function addPassengerWithToken(int $eventId, string $bookingCode, string $token, array $dataToUpdate)
   {
     if (!$token || !$bookingCode || !$eventId) {
       return response()->json(['message' => 'Invalid token'], 400);
     }
 
     $booking = $this->getBookingByCode($eventId, $bookingCode);
-
-    // log params
-    \Log::info('Add passenger non authenticated: ' . json_encode($validated));
 
     $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
       ->where('token', $token)
@@ -136,7 +173,7 @@ class CustomerBookingRepository
       return response()->json(['message' => 'Invalid booking code'], 400);
     }
 
-    $passEmail = $validated['email'] ?? null;
+    $passEmail = $dataToUpdate['email'];
 
     // if passenger for this booking with this email exist, return error
     $passenger = Passenger::where('booking_id', $booking->id)
@@ -151,27 +188,10 @@ class CustomerBookingRepository
 
     // update passenger id and remove PassengerInvitation
     if ($emptyPassenger) {
+      $dataToUpdate['booking_id'] = $booking->id;
+
       try {
-        $emptyPassenger->update([
-          'booking_id' => $booking->id,
-          'first_name' => $validated['firstName'],
-          'middle_name' => $validated['middleName'] ?? null,
-          'last_name' => $validated['lastName'],
-          'dob' => $validated['dateOfBirth'],
-          'gender' => $validated['gender'],
-          'citizenship' => $validated['citizenship'],
-          'address_first' => $validated['addressLine1'],
-          'address_second' => $validated['addressLine2'],
-          'city' => $validated['city'],
-          'state' => $validated['state'],
-          'postal_code' => $validated['zipCode'],
-          'country' => $validated['country'],
-          'email' => $validated['email'],
-          'phone' => $validated['phoneNumber'],
-          'emergency_c_name' => $validated['emergencyContactName'],
-          'emergency_c_phone' => $validated['emergencyPhoneNumber'],
-          'special_request' => $validated['specialRequest'],
-        ]);
+        $emptyPassenger->update($dataToUpdate);
 
         $passengerSlotId->delete();
       } catch (\Exception $e) {
@@ -215,6 +235,7 @@ class CustomerBookingRepository
     if ($passenger) {
       try {
         $passenger->update([
+          'survivor_number' => $validated['survivorNumber'] ?? null,
           'booking_id' => $booking->id,
           'first_name' => $validated['firstName'],
           'middle_name' => $validated['middleName'] ?? null,
