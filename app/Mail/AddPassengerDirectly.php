@@ -34,8 +34,10 @@ class AddPassengerDirectly extends Mailable
    */
   public function envelope(): Envelope
   {
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
     return new Envelope(
-      from: 'smtp@bspmi.com',
+      from: $mailFromAddress,
       subject: '70000TONS OF METAL - SOMEBODY INVITE YOU TO 70000TONS OF METAL!'
     );
   }

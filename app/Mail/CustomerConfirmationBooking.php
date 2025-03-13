@@ -138,8 +138,10 @@ class CustomerConfirmationBooking extends Mailable
   {
     $data = $this->prepareDataForTemplate();
 
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
     return new Envelope(
-      from: env('SMTP_SYSTEM_EMAIL_ADDRESS', 'smtp@bspmi.com'),
+      from: $mailFromAddress,
       subject: "{$data->passenger->first_name} - your Booking Request for 70000TONS OF METAL 2026!"
     );
   }

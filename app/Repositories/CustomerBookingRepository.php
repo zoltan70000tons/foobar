@@ -94,7 +94,7 @@ class CustomerBookingRepository
    */
   public function getAllBookings($user)
   {
-    $user_survivor_number = $user->survivor_number ?? null;
+    $user_survivor_number = $user->survivorNumber->survivor_number ?? null;
     //$customer_id = $user->id ?? null;
 
     // $bookings = Booking::with('passengers', 'cabin.category', 'cabin.cabinType', 'event')
