@@ -18,6 +18,7 @@ use App\Models\CabinType;
 use App\Models\Event;
 use App\Models\PassengerInvitation;
 use App\Mail\CustomerConfirmationBooking;
+use App\Models\SurvivorNumber;
 use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
@@ -251,6 +252,13 @@ class BookingController extends Controller
   {
     $user = Auth::user();
 
+    // if event status is not public or pre-sale return error
+    $event = Event::find($eventId);
+
+    if (!$event || !in_array($event->status, ['PUBLIC', 'PRE-SALE'])) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
     $result = $this->customerBookingRepository->getBookingByCode($eventId, $bookingCode, $user);
 
     if (!$result) {
@@ -386,6 +394,12 @@ class BookingController extends Controller
     $survivorNumber = $request->input('survivor_number') ?? null;
 
     if ($survivorNumber) {
+      $survivorNumberExist = SurvivorNumber::where('survivor_number', $survivorNumber)->exists();
+
+      if (!$survivorNumberExist) {
+        return response()->json(['message' => 'Survivor number not found'], 404);
+      }
+
       // check this suvivor number is not used in passengers
       $passenger = $booking->passengers()->where('survivor_number', $survivorNumber)->first();
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Models\PassengerInvitation;
 use App\Http\Requests\StorePassengerRequest;
 use App\Repositories\CustomerBookingRepository;
+use Illuminate\Support\Facades\Auth;
 
 class AddPaxController extends Controller
 {
@@ -31,6 +32,12 @@ class AddPaxController extends Controller
   */
   public function validate(Request $request)
   {
+    // if user is auth response error
+    $user = Auth::check();
+    if ($user) {
+      return response()->json(['message' => 'User is authenticated'], 403);
+    }
+
     // Validate the signed URL
     if (!$request->hasValidSignature(false)) {
       return response()->json(['message' => 'Invalid or expired URL'], 403);
@@ -77,9 +84,43 @@ class AddPaxController extends Controller
   */
   public function store(StorePassengerRequest $request, int $eventId, string $bookingCode, string $token)
   {
+    // if user is auth response error
+    $user = Auth::check();
+
+    if ($user) {
+      return response()->json(['message' => 'User is authenticated'], 403);
+    }
+
     $validated = $request->validated();
+
+    // if in validated survivor number exist, return error
+    if (isset($validated['survivor_number'])) {
+      return response()->json(['message' => 'Survivor number is not allowed'], 400);
+    }
+
+    $dataToUpdate = [
+      'survivor_number' => null,
+      'first_name' => $validated['firstName'],
+      'middle_name' => $validated['middleName'] ?? null,
+      'last_name' => $validated['lastName'],
+      'dob' => $validated['dateOfBirth'],
+      'gender' => $validated['gender'],
+      'citizenship' => $validated['citizenship'],
+      'address_first' => $validated['addressLine1'],
+      'address_second' => $validated['addressLine2'],
+      'city' => $validated['city'],
+      'state' => $validated['state'],
+      'postal_code' => $validated['zipCode'],
+      'country' => $validated['country'],
+      'email' => $validated['email'],
+      'phone' => $validated['phoneNumber'],
+      'emergency_c_name' => $validated['emergencyContactName'],
+      'emergency_c_phone' => $validated['emergencyPhoneNumber'],
+      'special_request' => $validated['specialRequest'],
+    ];
+
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $validated, $token);
+    $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $token, $dataToUpdate);
 
     return $result;
   }

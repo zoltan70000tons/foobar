@@ -106,9 +106,33 @@ class InvitationController extends Controller
   */
   public function addPax(StorePassengerRequest $request, int $eventId, string $bookingCode, string $token)
   {
+    $user = Auth::user();
+
     $validated = $request->validated();
+
+    $dataToUpdate = [
+      'survivor_number' => $user->survivorNumber->survivor_number,
+      'first_name' => $user->detail->first_name,
+      'middle_name' => $user->detail->middle_name ?? null,
+      'last_name' => $user->detail->last_name,
+      'dob' => $user->detail->dob,
+      'gender' => $user->detail->gender,
+      'citizenship' => $user->detail->citizenship,
+      'address_first' => $validated['addressLine1'],
+      'address_second' => $validated['addressLine2'],
+      'city' => $validated['city'],
+      'state' => $validated['state'],
+      'postal_code' => $validated['zipCode'],
+      'country' => $validated['country'],
+      'email' => $validated['email'],
+      'phone' => $validated['phoneNumber'],
+      'emergency_c_name' => $validated['emergencyContactName'],
+      'emergency_c_phone' => $validated['emergencyPhoneNumber'],
+      'special_request' => $validated['specialRequest'],
+    ];
+
     // create passenger with booking id
-    $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $validated, $token);
+    $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $token, $dataToUpdate);
 
     return $result;
     //
