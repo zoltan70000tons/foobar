@@ -3,7 +3,6 @@
   namespace App\Repositories;
 
   use App\Helpers\CustomerHelper;
-  use App\Http\Requests\CustomerCreateRequest;
   use App\Http\Requests\CustomerRequest;
   use App\Interfaces\CustomerInterface;
   use App\Models\Booking;
@@ -44,8 +43,6 @@
      */
     function update(CustomerRequest $request, User $user)
     {
-      $currentDob = $user->detail->dob ? explode('-', $user->detail->dob) : [null, null, null];
-
       try {
         DB::beginTransaction();
 
@@ -89,62 +86,41 @@
           $user->detail->language = $request->input('language');
         }
 
-        $year = $currentDob[0];
-        $month = $currentDob[1];
-        $day = $currentDob[2];
-
-        if ($request->filled('year')) {
-          $year = $request->input('year');
-        }
-
-        if ($request->filled('month')) {
-          $month = $request->input('month');
-        }
-
-        if ($request->filled('day')) {
-          $day = $request->input('day');
-        }
-
-        if ($year !== $currentDob[0] || $month !== $currentDob[1] || $day !== $currentDob[2]) {
-          $user->detail->dob = sprintf('%04d-%02d-%02d', $year, $month, $day);
+        if ($request->filled('dob')) {
+          $timestampDOB = strtotime($request->input('dob'));
+          $user->detail->dob = date('Y-m-d', $timestampDOB);
         }
 
         $customerAddressData = [];
 
         if ($request->filled('address_first')) {
-          //$user->customerAddress->address_first = $request->input('address_first');
           $customerAddressData['address_first'] = $request->input('address_first');
         }
 
         if ($request->filled('address_second')) {
-          //$user->customerAddress->address_second = $request->input('address_second');
           $customerAddressData['address_second'] = $request->input('address_second');
         }
 
         if ($request->filled('city')) {
-          //$user->customerAddress->city = $request->input('city');
           $customerAddressData['city'] = $request->input('city');
         }
 
         if ($request->filled('state')) {
-          //$user->customerAddress->state = $request->input('state');
           $customerAddressData['state'] = $request->input('state');
         }
 
         if ($request->filled('postal_code')) {
-          //$user->customerAddress->postal_code = $request->input('postal_code');
           $customerAddressData['postal_code'] = $request->input('postal_code');
         }
 
         if ($request->filled('country')) {
-          //$user->customerAddress->country = $request->input('country');
           $customerAddressData['country'] = $request->input('country');
         }
 
         // Update or create the customer address for the user
         $user->customerAddress()->updateOrCreate(
           ['user_id' => $user->id], // Match by user_id
-          $customerAddressData // Data to insert or update
+          $customerAddressData,
         );
 
         $user->save();
@@ -159,11 +135,11 @@
     }
 
     /**
-     * @param CustomerCreateRequest $request
+     * @param CustomerRequest $request
      * @throws Throwable
      * @property UserDetail|null $detail
      */
-    function store(CustomerCreateRequest $request)
+    function store(CustomerRequest $request)
     {
       try {
         DB::beginTransaction();
@@ -184,7 +160,8 @@
         $userDetail->emergency_c_phone = $request->input('emergency_c_phone');
         $userDetail->language = $request->input('language');
         $userDetail->middle_name = $request->input('middle_name');
-        $userDetail->dob = sprintf('%04d-%02d-%02d', $request->input('year'), $request->input('month'), $request->input('day'));
+        $timestampDOB = strtotime($request->input('dob'));
+        $userDetail->dob = date('Y-m-d', $timestampDOB);
 
         $customerAddress = new CustomerAddress();
         $customerAddress->address_first = $request->input('address_first');

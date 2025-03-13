@@ -3,7 +3,6 @@
   namespace App\Http\Controllers;
 
   use App\Enums\Permissions;
-  use App\Http\Requests\CustomerCreateRequest;
   use App\Http\Requests\CustomerRequest;
   use App\Interfaces\CustomerInterface;
   use App\Models\User;
@@ -60,7 +59,7 @@
       return Inertia::render('Customer/Create');
     }
 
-    public function store(CustomerCreateRequest $request): RedirectResponse|Response|InertiaResponse
+    public function store(CustomerRequest $request): RedirectResponse|Response|InertiaResponse
     {
       try {
         return $this->withPermission([Permissions::CreateUsers], function ($request) {
@@ -69,7 +68,6 @@
           return redirect()->route('customers.index')->with('flash', 'Customer created successfully.');
         }, $request);
       } catch (\Exception $e) {
-        dd($e->getMessage());
         return redirect()->route('customers.index')->with('error', 'Problem creating customer.');
       }
     }
