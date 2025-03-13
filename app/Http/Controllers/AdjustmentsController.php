@@ -90,40 +90,52 @@ class AdjustmentsController extends Controller
         }
     }
 
+  public function deleteAdjustment(Request $request)
+  {
+      $booking_id = $request->route('booking_id');
+      $event_id = (int) $request->route('event_id');
 
-    public function deleteAdjustment(Request $request)
-    {
-        $booking_id = $request->route('booking_id');
-        $event_id = (int)$request->route('event_id');
-        $validated = $request->validate([
-            'id' => 'required|integer|exists:adjustments,id',
-        ]);
+      $validated = $request->validate([
+          'id' => 'required|integer|exists:adjustments,id',
+      ]);
 
-        try {
-            return $this->withPermission([Permissions::DeleteAdjustments], function ($validated, $event_id, $booking_id) {
-                $adjustment = Adjustment::findOrFail($validated['id']);
-                $booking = Booking::findOrFail($booking_id);
-                if ($adjustment->event_id !== $event_id) {
-                    return redirect()->back()->with('error', 'The adjustment does not match the specified event or booking.');
-                }
-                $this->paymentInfoService->syncAllocatedCost($booking);
-                $result = DB::table('booking_has_adjustments')
-                    ->where('booking_id', $booking->id)
-                    ->where('adjustment_id', $adjustment->id)
-                    ->delete();
+      return $this->withPermission([Permissions::DeleteAdjustments], function ($validated, $event_id, $booking_id) {
+          DB::beginTransaction();
 
-                $this->saveBookingLog($booking->id, 'Deleted Adjustment', 'Deleted ' . $adjustment->type . ' ' . $adjustment->operation . ' ' . ' with value ' . $adjustment->value);
-                return redirect()->back()->with('error', 'Deleted Adjustment.');
-            },  $validated, $event_id, $booking_id);
-        } catch (\Exception $e) {
-            $this->logException($e);
-            return redirect()->back()->with('error', 'Error deleting adjustment.');
-        }
-    }
+          try {
+              $adjustment = Adjustment::findOrFail($validated['id']);
+              $booking = Booking::findOrFail($booking_id);
 
+              if ($adjustment->event_id !== $event_id) {
+                  return redirect()->back()->with('error', 'The adjustment does not match the specified event or booking.');
+              }
 
+              DB::table('booking_has_adjustments')
+                  ->where('booking_id', $booking->id)
+                  ->where('adjustment_id', $adjustment->id)
+                  ->delete();
 
-    public function updateAdjustment(Request $request)
+              $this->paymentInfoService->syncAllocatedCost($booking);
+
+              $this->saveBookingLog(
+                  $booking->id,
+                  'Deleted Adjustment',
+                  'Deleted ' . $adjustment->type . ' ' . $adjustment->operation . ' with value ' . $adjustment->value
+              );
+
+              DB::commit();
+
+              return redirect()->back()->with('success', 'Deleted Adjustment.');
+          } catch (\Exception $e) {
+              DB::rollBack();
+              $this->logException($e);
+
+              return redirect()->back()->with('error', 'Error deleting adjustment.');
+          }
+      }, $validated, $event_id, $booking_id);
+  }
+
+  public function updateAdjustment(Request $request)
     {
         $booking_id = $request->route('booking_id');
         $event_id = $request->route('event_id');
