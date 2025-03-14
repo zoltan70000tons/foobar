@@ -24,6 +24,9 @@ import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
 import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 type Nullable<T> = T | null;
 
@@ -65,25 +68,23 @@ const Edit = ({ auth, errors }: PageProps) => {
   const [loading, setLoading] = useState(true);
   const { hasPermission } = usePermissions();
 
-  const [year, month, day] = customer?.detail?.dob.split("-");
   const { data, setData, head, processing } = useForm({
     survivor_number: customer.survivor_number.survivor_number || "",
     email: customer.email || "",
+    username: customer.username || "",
     first_name: customer.detail.first_name || "",
     last_name: customer.detail.last_name || "",
     middle_name: customer.detail.middle_name || "",
     gender: customer.detail.gender || "",
-    year: year || "",
-    month: month || "",
-    day: day || "",
+    dob: customer.detail.dob || "",
     citizenship: customer.detail.citizenship || "",
     phone: customer.detail.phone || "",
-    address_first: customer.customer_address.address_first || "",
-    address_second: customer.customer_address.address_second || "",
-    city: customer.customer_address.city || "",
-    state: customer.customer_address.state || "",
-    postal_code: customer.customer_address.postal_code || "",
-    country: customer.customer_address.country || "",
+    address_first: customer.customer_address?.address_first || "",
+    address_second: customer.customer_address?.address_second || "",
+    city: customer.customer_address?.city || "",
+    state: customer.customer_address?.state || "",
+    postal_code: customer.customer_address?.postal_code || "",
+    country: customer.customer_address?.country || "",
     emergency_c_name: customer.detail.emergency_c_name || "",
     emergency_c_phone: customer.detail.emergency_c_phone || "",
     language: customer.detail.language || "",
@@ -203,6 +204,16 @@ const Edit = ({ auth, errors }: PageProps) => {
                     <Grid item xs={ 6 }>
                       <TextField
                         fullWidth
+                        label="Username"
+                        variant="outlined"
+                        value={ data.username }
+                        name={ "username" }
+                        onChange={ handleChange }
+                      />
+                    </Grid>
+                    <Grid item xs={ 6 }>
+                      <TextField
+                        fullWidth
                         label="First Name"
                         variant="outlined"
                         value={ data.first_name }
@@ -243,44 +254,21 @@ const Edit = ({ auth, errors }: PageProps) => {
                         <MenuItem value={ "F" }>Female</MenuItem>
                       </Select>
                     </Grid>
-                  </Grid>
-                </Box>
-
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
-                  Date of Birth
-                </Typography>
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Year"
-                        variant="outlined"
-                        value={ data.year }
-                        name={ "year" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Month"
-                        variant="outlined"
-                        value={ data.month }
-                        name={ "month" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Day"
-                        variant="outlined"
-                        value={ data.day }
-                        name={ "day" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <Grid item xs={ 6 }>
+                        <DatePicker
+                          label="Date of Birth"
+                          sx={{ width: "100%" }}
+                          value={data.dob ? dayjs(data.dob) : null}
+                          maxDate={dayjs()} // Restricts future dates
+                          format="YYYY-MM-DD" // Ensures consistent formatting
+                          onChange={(e) => handleStringChange(e, "dob")}
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth />
+                          )}
+                        />
+                      </Grid>
+                    </LocalizationProvider>
                     <Grid item xs={ 6 }>
                       <Country
                         fullWidth

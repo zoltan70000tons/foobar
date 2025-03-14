@@ -140,7 +140,6 @@ class Booking extends Model
 
     try {
       // Find the cabin by its number
-      //$cabin = Cabin::where('cabin_number', $number)->first();
       $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($number) {
         $query->where('cabin_number', $number);
       })->first();
@@ -158,21 +157,26 @@ class Booking extends Model
         throw new \Exception('This cabin is already fully booked.');
       }
 
-      // if (strtoupper($cabin->status) === 'PARTIALLY_BOOKED') {
-      //   throw new \Exception('This cabin is already partially booked.');
-      // }
-
+      // Get the previous cabin
       $prevCabin = $this->cabin;
-      $prevCabin->inventory = $prevCabin->inventory + 1;
-      $prevCabin->save();
+
+      // Check if the cabin is of the same type as the current booking
+      if ($cabin->cabinType->id !== $prevCabin->cabinType->id) {
+        throw new \Exception('This cabin is not of the same type as the current booking.');
+      }
+
+      // Release the previous cabin
+      $prevCabin->releaseCabin();
+
       // Assign the new cabin to the booking
       $this->assignCabin($cabin);
-      //$this->saveBookingLog($this->id,'Cabin changed to {$number}.', '');
-      // $blog = new BookingLog();
-      // $blog->booking_id = $this->id;
-      // $blog->action = 'Changed Cabin';
-      // $blog->description = "Cabin changed to {$cabin->cabin_number}.";
-      //$blog->save();
+      
+      // Generate a new booking code
+      $preBookingCode = $this->booking_code;
+      $this->booking_code = $this->generateBookingCode($this->cabin);
+
+      // Save the booking log
+      $this->saveBookingLog($this->id, 'Changed Cabin', "Cabin changed from  {$prevCabin->cabin_number} to {$cabin->cabin_number}. /n Booking code changed from {$preBookingCode} to {$this->booking_code}");
 
       return $this;
     } catch (\Exception $e) {
@@ -253,7 +257,9 @@ class Booking extends Model
 
     static::created(function ($booking) {
       $booking->saveBookingLog($booking->id, 'Created', 'The booking was created');
-      $booking->cabin->updateInventoryOnBooking();
+      if ($booking->cabin && $booking->cabin->id) {
+        $booking->cabin->updateInventoryOnBooking();
+      }
     });
 
     // static::updated(function ($booking) {

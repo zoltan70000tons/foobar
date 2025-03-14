@@ -2,7 +2,6 @@
 
 namespace App\Interfaces;
 
-use App\Http\Requests\CustomerCreateRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Models\User;
 
@@ -16,11 +15,13 @@ interface CustomerInterface
 
     function update(CustomerRequest $request, User $user);
 
-    function store(CustomerCreateRequest $request);
+    function store(CustomerRequest $request);
 
     function delete(User $user);
 
-    function getAllCustomerData();
+    function getAllCustomerData(int $perPage);
+
+    function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters);
 
     function getBookingDataForCustomer(User $user);
 }

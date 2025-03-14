@@ -17,7 +17,7 @@ return new class extends Migration
       $table->string('address_first', 255);
       $table->string('address_second', 255)->nullable();
       $table->string('city', 255);
-      $table->string('state', 255);
+      $table->string('state', 255)->nullable();
       $table->string('postal_code', 10);
       $table->string('country', 3);
       $table->timestamps();

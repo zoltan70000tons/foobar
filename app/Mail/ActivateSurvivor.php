@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
+use Illuminate\Support\Facades\URL;
 
 class ActivateSurvivor extends Mailable
 {
@@ -17,6 +18,7 @@ class ActivateSurvivor extends Mailable
   public $customer;
   public $language;
   public $survivorNumber;
+  public $activationLink;
 
   /**
    * Create a new message instance.
@@ -26,6 +28,12 @@ class ActivateSurvivor extends Mailable
     $this->customer = $customer;
     $this->language = $language;
     $this->survivorNumber = $survivorNumber;
+
+    // Generate the activation (verification) link
+    $this->activationLink = URL::temporarySignedRoute('verificationApi.verify', now()->addMinutes(60), [
+      'id' => $customer->id,
+      'hash' => sha1($customer->email),
+    ]);
   }
 
   /**
@@ -33,7 +41,10 @@ class ActivateSurvivor extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(from: 'smtp@bspmi.com', subject: '70000TONS OF METAL - SURVIVOR YOUR ACCOUNT IS ACTIVE!');
+    // use MAIL_FROM_ADDRESS in .env
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: 'Please verify your eMail address');
   }
 
   /**
@@ -47,6 +58,7 @@ class ActivateSurvivor extends Mailable
         'customer' => $this->customer,
         'language' => $this->language,
         'survivorNumber' => $this->survivorNumber,
+        'activationLink' => $this->activationLink,
       ]
     );
   }

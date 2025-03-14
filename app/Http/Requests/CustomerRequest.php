@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidPastDate;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
@@ -57,6 +59,7 @@ class CustomerRequest extends FormRequest
                 'string',
                 'max:20',
                 'nullable',
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
             ],
             'address_first' => [
                 'string',
@@ -74,6 +77,7 @@ class CustomerRequest extends FormRequest
                 'string',
                 'max:30',
                 'required',
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
             ],
             'postal_code' => [
                 'string',
@@ -98,32 +102,25 @@ class CustomerRequest extends FormRequest
                 'string',
                 'min:2',
             ],
-            'year' => [
+            'dob' => [
                 'required',
                 'string',
-                'min:4',
-                'max:4',
-                'regex:/^[0-9]*$/',
-                'gt:1909',
-                'before_or_equal:' . date('Y'),
+                //'date_format:D, d M Y H:i:s T',
             ],
-            'month' => [
+            'email' => [
                 'required',
                 'string',
-                'min:2',
-                'max:2',
-                'regex:/^[0-9]*$/',
-                'gt:0',
-                'lt:13',
+                'lowercase',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($this->route('user')),
+                'not_regex:/[<>{}]/',
             ],
-            'day' => [
+            'username' => [
                 'required',
                 'string',
-                'min:2',
-                'max:2',
-                'regex:/^[0-9]*$/',
-                'gt:0',
-                'lt:32',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($this->route('user')),
             ],
         ];
     }

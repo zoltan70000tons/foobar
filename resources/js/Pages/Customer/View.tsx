@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, router, useForm } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import {
@@ -13,10 +13,9 @@ import {
   Tooltip,
   IconButton,
   MenuItem,
-  Select,
   Tab,
   Tabs,
-  InputLabel,
+  Button,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
@@ -24,20 +23,26 @@ import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
 import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
+import dayjs from "dayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 const View = ({ auth, customer, bookings }: PageProps) => {
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
 
   const [selectedTab, setSelectedTab] = useState(0);
-  const [year, month, day] = customer?.detail?.dob.split("-");
 
   const handleEdit = () => {
     get(route('customers.edit', { customer: customer.id }));
   }
 
   const handleBack = () => {
-    window.history.back();
+    //window.history.back(); //Keeps ordering and filtering, does not reload when data changed on EDIT
+    router.visit(route("customers.index"), {
+      only: ['users'],
+    })
   }
 
   const handleDelete = () => {
@@ -54,7 +59,11 @@ const View = ({ auth, customer, bookings }: PageProps) => {
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="View Customer"/>
-      <Toolbar/>
+      <Toolbar sx={ { mt: 8 } }>
+        <Button variant="outlined" color="secondary" onClick={ handleBack }>
+          Back
+        </Button>
+      </Toolbar>
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
@@ -85,6 +94,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Survivor Number"
                         variant="outlined"
                         value={ customer.survivor_number.survivor_number }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
@@ -93,6 +103,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="First Name"
                         variant="outlined"
                         value={ customer.detail.first_name }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
@@ -101,6 +112,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Middle Name"
                         variant="outlined"
                         value={ customer.detail.middle_name }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
@@ -109,6 +121,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Last Name"
                         variant="outlined"
                         value={ customer.detail.last_name }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
@@ -127,35 +140,23 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
-                  Date of Birth
-                </Typography>
-                <Box sx={ { width: "100%" } }>
+                <Box sx={ { width: "100%", mt: 2, mb: 2 } }>
                   <Grid container spacing={ 2 }>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Year"
-                        variant="outlined"
-                        value={ year }
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Month"
-                        variant="outlined"
-                        value={ month }
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Day"
-                        variant="outlined"
-                        value={ day }
-                      />
-                    </Grid>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <Grid item xs={ 6 }>
+                        <DatePicker
+                          label="Date of Birth"
+                          sx={{ width: "100%" }}
+                          value={customer.detail.dob ? dayjs(customer.detail.dob) : null}
+                          maxDate={dayjs()} // Restricts future dates
+                          format="YYYY-MM-DD" // Ensures consistent formatting
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth />
+                          )}
+                          disabled
+                        />
+                      </Grid>
+                    </LocalizationProvider>
                     <Grid item xs={ 6 }>
                       <Country
                         fullWidth
@@ -194,6 +195,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Address Line 1"
                         variant="outlined"
                         value={ customer?.customer_address?.address_first }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>
@@ -202,6 +204,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Address Line 2"
                         variant="outlined"
                         value={ customer?.customer_address?.address_second }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
 
@@ -211,6 +214,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="City"
                         variant="outlined"
                         value={ customer?.customer_address?.city }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 4 }>
@@ -219,6 +223,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="State"
                         variant="outlined"
                         value={ customer?.customer_address?.state }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 4 }>
@@ -227,6 +232,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Zip Code"
                         variant="outlined"
                         value={ customer?.customer_address?.postal_code }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
 
@@ -235,7 +241,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         fullWidth
                         label="Country"
                         variant="outlined"
-                        value={ customer.customer_address.country }
+                        value={ customer?.customer_address?.country }
                         disabled
                       />
                     </Grid>
@@ -253,6 +259,7 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                         label="Contact Full Name"
                         variant="outlined"
                         value={ customer?.detail?.emergency_c_name }
+                        InputProps={{ readOnly: true }}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>

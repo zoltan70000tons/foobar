@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+// controllers
 use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
 use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
@@ -15,17 +16,11 @@ use App\Http\Controllers\Api\Customer\EventController;
 use App\Http\Controllers\Api\Customer\CartController;
 use App\Http\Controllers\Api\Customer\AddPaxController;
 use App\Http\Controllers\Api\Customer\InvitationController;
+use App\Http\Controllers\Api\Customer\CheckBookingController;
 
 // middleware
 use App\Http\Middleware\ApiRedirectHttp;
 use App\Http\Middleware\EnsureUserIsNotCustomer;
-
-/**
- * Auth API Routes
- *
- * The following routes are used for customers authentication.
- *
- */
 
 // --- PASSWORD RESET ---
 Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware('throttle:6,1');
@@ -56,16 +51,28 @@ Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);
-// --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
-Route::middleware(['membership_sales'])->group(function () {
-  Route::get('/events/{id}', [EventController::class, 'showOne']);
-});
 
+// ---- ADJUSTMENTS ----
 Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
-//Route::get('/pricing-matrix', [PricingMatrixController::class, 'index']);
+
+// ---- PRICING MATRIX ----
 Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show']);
 
+// ---- CART PER EVENT ----
 Route::get('/cart/{eventId}', [CartController::class, 'index']);
+
+// --- ADD PAX validate page with form
+Route::get('/add-pax', [AddPaxController::class, 'validate'])
+  ->name('add.pax')
+  ->middleware('signed:relative');
+
+// --- ADD PAX - NON AUTH - store Booking
+Route::post('/add-pax/{eventId}/{bookingCode}/{token}', [AddPaxController::class, 'store'])->middleware([
+  'throttle:10,1',
+]);
+
+// --- CHECK BOOKING ---
+Route::post('/check-booking', [CheckBookingController::class, 'show'])->middleware(['throttle:15,1']);
 
 // --- CART ---
 Route::middleware(['throttle:40,1', 'one_booking_per_user'])->group(function () {
@@ -74,10 +81,16 @@ Route::middleware(['throttle:40,1', 'one_booking_per_user'])->group(function () 
   Route::delete('/cart', [CartController::class, 'destroy']);
 });
 
-// get cabins
+// --- GET CABINS ---
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
-// get single category
+
+// --- GET SINGLE CATEGORY ---
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
+
+// --- GROUP WITH MEMBERSHIP SALES MIDDLEWARE ---
+Route::middleware(['membership_sales'])->group(function () {
+  Route::get('/events/{id}', [EventController::class, 'showOne']);
+});
 
 Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status', 'clear_expired_reservation'])->group(
   function () {
@@ -99,16 +112,19 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::post('/delete-account', [CustomerAuthController::class, 'deleteAccount']);
 
     // set slot empty
-    Route::post('/my-bookings/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
+    Route::post('/my-bookings/{eventId}/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
     // add passenger manually
-    Route::post('/my-bookings/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
+    Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
     // add passenger via email
-    Route::post('/my-bookings/{bookingCode}/add-passenger-via-email', [
+    Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger-via-email', [
       BookingController::class,
       'addPassengerViaEmail',
     ]);
     // cancel invitation
-    Route::post('/my-bookings/{bookingCode}/cancel-invitation', [BookingController::class, 'cancelInvitation']);
+    Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation', [
+      BookingController::class,
+      'cancelInvitation',
+    ]);
 
     // Booking
     // --- booking init
@@ -116,32 +132,18 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     // --- all bookings
     Route::get('/my-bookings', [BookingController::class, 'allBookings']);
     // --- single booking
-    Route::get('/my-bookings/{bookingCode}', [BookingController::class, 'singleBooking']);
+    Route::get('/my-bookings/{eventId}/{bookingCode}', [BookingController::class, 'singleBooking']);
     // --- single invitation
-    Route::get('/my-bookings/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
+    Route::get('/my-bookings/{eventId}/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
     // --- single invitation add pax
-    Route::post('/my-bookings/{bookingCode}/invitation/{token}/add-pax', [InvitationController::class, 'addPax']);
+    Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/add-pax', [
+      InvitationController::class,
+      'addPax',
+    ]);
     // --- single invitation remove invitation
-    Route::post('/my-bookings/{bookingCode}/invitation/{token}/remove-invitation', [
+    Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/cancel', [
       InvitationController::class,
       'removeInvitation',
     ]);
   }
 );
-
-// Booking confirmation
-//Route::get('/booking-confirmation/{bookingCode}', [BookingController::class, 'bookingConfirmation']);
-
-// Add pax
-// --- add pax form
-Route::get('/add-pax', [BookingController::class, 'validateAddPassenger'])
-  ->name('add.pax')
-  ->middleware('signed:relative');
-
-// --- ADD PAX Booking
-Route::post('/add-pax/{bookingCode}/{token}', [BookingController::class, 'submitAddPassenger'])->middleware([
-  'throttle:10,1',
-]);
-
-// --- ADD PAX PROFILE
-Route::post('/check-booking', [AddPaxController::class, 'show'])->middleware(['throttle:15,1']);

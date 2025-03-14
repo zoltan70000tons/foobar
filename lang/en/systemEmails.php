@@ -26,11 +26,10 @@ return [
   'email_new_survivor_number' => 'Your Survivor Number is:',
   'email_cta_activate_account' => 'Activate Account',
   'email_cant_see_button' => 'If you can\'t see the button, please click the link below:',
-  'email_activate_account' =>
-    'Please activate your account by clicking the button below:',
+  'email_activate_account' => 'Please activate your account by clicking the button below:',
   'email_thank_you' => 'Thank you for choosing us.',
   'update_email' => [
-    'subject' => 'Your email address has been updated',
+    'subject' => 'Your account information has been updated',
     'title' => 'Email Address Updated',
     'greeting' => 'Hello :name,',
     'default_name' => 'Customer',
@@ -40,8 +39,11 @@ return [
     'thank_you' => '70000TONS OF METAL Team',
   ],
 
-  'email_request_to_add_pax' => 'You got a request to add a passenger to your booking.',
+  'email_request_to_add_pax' => 'invites you to join their cabin for.',
   'email_request_to_add_pax_body' =>
     'You have 72 hours to add your details to the booking. If you do not add the details within this time, the request will be canceled.',
   'email_request_to_add_pax_cta' => 'Add details',
+  'email_invitation_on_your_account' => 'You have an invitation on your account.',
+  'email_invitation_on_your_account_body' =>
+    'You have 72 hours to accept the invitation. If you do not accept the invitation within this time, the invitation will be canceled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our support team.',
 ];

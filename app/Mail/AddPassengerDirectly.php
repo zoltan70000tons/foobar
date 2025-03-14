@@ -9,21 +9,31 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\URL;
 
-class CustomerResetPassword extends Mailable
+class AddPassengerDirectly extends Mailable
 {
   use Queueable, SerializesModels;
 
-  public $customer;
-  public $resetUrl;
+  public $bookingCode;
+  public $url;
+  public $fromWho;
+  public $toWho;
+  public $event;
 
   /**
    * Create a new message instance.
    */
-  public function __construct(User $user, string $resetUrl)
+  public function __construct($bookingCode, $fromWho, $toWho, $event)
   {
-    $this->customer = $user;
-    $this->resetUrl = $resetUrl;
+    $this->url = config('app.frontend_url' . '/en/login');
+
+    $this->bookingCode = $bookingCode;
+
+    $this->fromWho = $fromWho;
+    $this->toWho = $toWho;
+    $this->event = $event;
   }
 
   /**
@@ -33,7 +43,7 @@ class CustomerResetPassword extends Mailable
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: 'You requested a password reset');
+    return new Envelope(from: $mailFromAddress, subject: "{$this->fromWho} - invites you to join their cabin!");
   }
 
   /**
@@ -42,10 +52,13 @@ class CustomerResetPassword extends Mailable
   public function content(): Content
   {
     return new Content(
-      view: 'emails.customer-reset-password',
+      view: 'emails.addpax-directly',
       with: [
-        'customer' => $this->customer,
-        'resetUrl' => $this->resetUrl,
+        'bookingCode' => $this->bookingCode,
+        'url' => $this->url,
+        'fromWho' => $this->fromWho,
+        'toWho' => $this->toWho,
+        'event_name' => $this->event->name,
       ]
     );
   }

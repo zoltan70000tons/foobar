@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { Head, useForm } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { router } from "@inertiajs/react";
@@ -15,11 +15,15 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
 import { usePermissions } from "@/Providers/PermissionContext";
+import dayjs from "dayjs";
 
 const Create = ({ auth, errors }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -31,9 +35,7 @@ const Create = ({ auth, errors }: PageProps) => {
     last_name: "",
     middle_name: "",
     gender: "M",
-    year: "",
-    month: "",
-    day: "",
+    dob: "",
     citizenship: "",
     phone: "",
     address_first: "",
@@ -46,6 +48,8 @@ const Create = ({ auth, errors }: PageProps) => {
     emergency_c_phone: "",
     language: "",
   });
+
+  console.log(data.dob)
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -100,10 +104,21 @@ const Create = ({ auth, errors }: PageProps) => {
     });
   };
 
+  const handleBack = () => {
+    //window.history.back(); //Keeps ordering and filtering, does not reload when data changed on EDIT
+    router.visit(route("customers.index"), {
+      only: ['users'],
+    })
+  }
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="Create Customer"/>
-      <Toolbar/>
+      <Toolbar sx={ { mt: 8 } }>
+        <Button variant="outlined" color="secondary" onClick={ handleBack }>
+          Back
+        </Button>
+      </Toolbar>
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
           { hasPermission(Permissions.CreateCustomers) && (<Paper
@@ -185,41 +200,23 @@ const Create = ({ auth, errors }: PageProps) => {
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
-                  Date of Birth
-                </Typography>
-                <Box sx={ { width: "100%" } }>
+                <Box sx={ { width: "100%", mt: 2, mb: 2 } }>
                   <Grid container spacing={ 2 }>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Year"
-                        variant="outlined"
-                        value={ data.year }
-                        name={ "year" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Month"
-                        variant="outlined"
-                        value={ data.month }
-                        name={ "month" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Day"
-                        variant="outlined"
-                        value={ data.day }
-                        name={ "day" }
-                        onChange={ handleChange }
-                      />
-                    </Grid>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <Grid item xs={ 6 }>
+                        <DatePicker
+                          label="Date of Birth"
+                          sx={{ width: "100%" }}
+                          value={data.dob ? dayjs(data.dob) : null}
+                          maxDate={dayjs()} // Restricts future dates
+                          format="YYYY-MM-DD" // Ensures consistent formatting
+                          onChange={(e) => handleStringChange(e, "dob")}
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth />
+                          )}
+                        />
+                      </Grid>
+                    </LocalizationProvider>
                     <Grid item xs={ 6 }>
                       <Country
                         fullWidth

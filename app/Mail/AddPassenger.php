@@ -18,18 +18,25 @@ class AddPassenger extends Mailable
 
   public $getSignedURL;
   public $bookingCode;
+  public $fromWho;
+  public $toWho;
+  public $event;
 
   /**
    * Create a new message instance.
    */
-  public function __construct($getSignedURL, $bookingCode)
+  public function __construct($getSignedURL, $bookingCode, $fromWho, $toWho, $event)
   {
-    $fontEndUrl = config("app.frontend_url");
+    $fontEndUrl = config('app.frontend_url');
     // trim api prefix
     $getSignedURL = substr($getSignedURL, 4);
 
-    $this->getSignedURL = $fontEndUrl . "/en" . $getSignedURL;
+    $this->getSignedURL = $fontEndUrl . '/en' . $getSignedURL;
     $this->bookingCode = $bookingCode;
+
+    $this->fromWho = $fromWho;
+    $this->toWho = $toWho;
+    $this->event = $event;
     // Generate the activation (verification) link
   }
 
@@ -38,10 +45,9 @@ class AddPassenger extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(
-      from: "smtp@bspmi.com",
-      subject: "70000TONS OF METAL - SOMEBODY INVITE YOU TO 70000TONS OF METAL!"
-    );
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: "{$this->fromWho} - invites you to join their cabin!");
   }
 
   /**
@@ -50,10 +56,13 @@ class AddPassenger extends Mailable
   public function content(): Content
   {
     return new Content(
-      view: "emails.addpax",
+      view: 'emails.addpax',
       with: [
-        "getSignedURL" => $this->getSignedURL,
-        "bookingCode" => $this->bookingCode,
+        'getSignedURL' => $this->getSignedURL,
+        'bookingCode' => $this->bookingCode,
+        'fromWho' => $this->fromWho,
+        'toWho' => $this->toWho,
+        'event_name' => $this->event->name,
       ]
     );
   }
