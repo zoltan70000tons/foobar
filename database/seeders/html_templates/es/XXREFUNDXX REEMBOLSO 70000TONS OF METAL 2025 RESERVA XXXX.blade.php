@@ -93,7 +93,7 @@ style="color: rgb(102, 102,
                                             line-height: 28px;
                                             text-align: left;
                                             padding-bottom: 15px;">Hola
-                                            XXNAMEXX,<br>
+                                            {PASSENGER_NAME},<br>
                                             <br>
                                             Lamentamos que no puedas
                                             asistir a 70000TONS OF METAL

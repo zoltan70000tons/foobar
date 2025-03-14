@@ -96,7 +96,7 @@ style="color: rgb(102, 102,
                                             padding-bottom: 15px;"><br>
                                             <br>
                                             Wir haben Deine vollständige
-                                            Zahlung erhalten, XXNAMEXX.
+                                            Zahlung erhalten, {PASSENGER_NAME}.
                                             Vielen Dank!<br>
                                             <br>
                                             Im Anhang findest Du Deine

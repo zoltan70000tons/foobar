@@ -95,7 +95,7 @@ style="color: rgb(102, 102,
                                             text-align: left;
                                             padding-bottom: 15px;">Wir
                                             haben Deine Zahlung
-                                            erhalten, XXNAMEXX. Vielen
+                                            erhalten, {PASSENGER_NAME}. Vielen
                                             Dank!<br>
                                             <br>
                                             Bitte beachte:<span>&nbsp;</span><strong>Deine

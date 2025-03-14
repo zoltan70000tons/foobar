@@ -56,7 +56,7 @@ class EmailController extends Controller
 
             return $this->withPermission(
                 [Permissions::ViewBookings],
-                function ($validated,$request) {
+                function ($validated, $request) {
                     $booking = Booking::find($validated['booking_id']);
                     $passengers = $booking->passengers;
 
@@ -80,13 +80,12 @@ class EmailController extends Controller
                         });
                     }
 
-                    $this->saveBookingLog($booking->id,'Email Sent to Costumer', $validated['subject']);
+                    $this->saveBookingLog($booking->id, 'Email Sent to Costumer', $validated['subject']);
                     return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
                 },
                 $validated,
                 $request
             );
-
         } catch (\Exception $ex) {
             Log::info('Error sending email', ['error' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
             return response()->json(['message' => 'Error sending email', 'success' => false], 400);
@@ -151,22 +150,32 @@ class EmailController extends Controller
                     'backgroundColor' => '#ffffff',
                 ],
             ],
-        'schemaVersion' => 12,
-      ];
-      return response()->json(['design' => $unlayerJson]);
+            'schemaVersion' => 12,
+        ];
+        return response()->json(['design' => $unlayerJson]);
     }
 
     public function showEmail(Request $request)
     {
         $booking_id = $request->input('id');
         $booking = Booking::find($booking_id);
-        $service = new PDFService();
-        // $paymentService = new PaymentInfoService();
-        // $paymentService->syncAllocatedCost($booking, Passenger::find(1));
+        $service = new EmailTemplateService();
+        $bookingConfirmationTemplate = $service->getBookingConfirmationTemplateId('es', 'single');
+        //dd($bookingConfirmationTemplate);
+        try {
+            $email = $service->sendEmail($bookingConfirmationTemplate,$booking, [], true, true);
+           dd($email);
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
+       
+        // $service = new PDFService();
+        // // $paymentService = new PaymentInfoService();
+        // // $paymentService->syncAllocatedCost($booking, Passenger::find(1));
 
-        $pdf = $service->generateBookingConfirmationPDF($booking);
-        $pdf->setPaper('letter', 'potrait');
-        return $pdf->stream();
+        // $pdf = $service->generateBookingConfirmationPDF($booking);
+        // $pdf->setPaper('letter', 'potrait');
+        // return $pdf->stream();
     }
 
     public function generateBookingPDF(Request $request)

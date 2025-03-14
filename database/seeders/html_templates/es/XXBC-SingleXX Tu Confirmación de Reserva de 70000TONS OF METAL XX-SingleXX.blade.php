@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXBC-SingleXX Tu Confirmación de Reserva de 70000TONS OF
-      METAL XX-SingleXX</title>
+    <title>{CABIN_TYPE} - {PAYMENT_PLAN} Tu Confirmación de Reserva de 70000TONS OF
+      METAL {BOOKING_CODE}</title>
   </head>
   <body>
     <table
@@ -150,8 +150,8 @@ style="display:
                                               underline;">Instrucciones
                                               de Pago:</strong><br>
                                             <br>
-                                            XXNAMEXX, el total a pagar
-                                            es: USD {GRAND_TOTAL}<br>
+                                            {PASSENGER_NAME}, el total a pagar
+                                            es: USD {INDIVIDUAL_TOTAL}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco

@@ -98,7 +98,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Please note that we have not
                                             received payment from the
-                                            XXXX Passenger, XXnameXX, in
+                                            XXXX Passenger, {PASSENGER_NAME}, in
                                             your booking for 70000TONS
                                             OF METAL 2025.<br>
                                             <br>

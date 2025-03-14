@@ -94,7 +94,7 @@ style="color: rgb(102, 102,
                                             line-height: 32px;
                                             text-align: left;
                                             padding-bottom: 15px;">Hola
-                                            XXNAMEXX,</td>
+                                            {PASSENGER_NAME},</td>
                                         </tr>
                                         <tr>
                                           <td class="text pb15"

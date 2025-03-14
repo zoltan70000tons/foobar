@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\BookingLog;
+use App\Services\EmailTemplateService;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -294,8 +295,6 @@ class Booking extends Model
   
       $previousStatus = $booking->getOriginal('status');
       $newStatus = $booking->status;
-  
-      Mail::to($booking->passenger->email)->send(new BookingStatusChanged($booking, $previousStatus, $newStatus));
       if ($newStatus === 'CANCELLED') {
           $cabin = $booking->cabin;
           $cabinTypeId = $cabin->cabinType->id;
@@ -307,6 +306,26 @@ class Booking extends Model
               $cabin->status = ($cabin->inventory == $capacity) ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
           }
           $cabin->save();
+      }
+
+      if($newStatus =="ON HOLD"){
+        $templateService = new EmailTemplateService();
+        $templateId =null;
+        if($booking->getGrandTotal() > 6000){
+          $templateId = $templateService->getTemplateId('en', '+6000');
+        }
+        if($booking->getGrandTotal() < 6000){
+          $templateId = $templateService->getTemplateId('en', '-6000');
+        }
+        if($booking->cabin->cabinType->id == 2 || $booking->cabin->cabinType->id == 3){
+          $templateId = $templateService->getTemplateId('en', 'single');
+        }
+        $templateService->sendEmail($templateId, $booking, [], true, true);
+      }
+
+      
+      if($newStatus =="UPLOADED"){
+
       }
   });
   

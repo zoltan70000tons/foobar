@@ -95,10 +95,10 @@ style="color: rgb(102, 102,
                                             text-align: left;
                                             padding-bottom: 15px;">Hemos
                                             recibido tu XXINSTALLXX pago
-                                            XXNAMEXX. ¡Gracias!<br>
+                                            {PASSENGER_NAME}. ¡Gracias!<br>
                                             <br>
                                             Por favor toma en cuenta,
-                                            XXNAMEXX:<strong> Tu próximo
+                                            {PASSENGER_NAME}:<strong> Tu próximo
                                               pago a plazos por la
                                               cantidad de USD
                                               XXNEXTINSTALL$XX se deberá
