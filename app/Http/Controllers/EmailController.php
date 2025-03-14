@@ -156,18 +156,18 @@ class EmailController extends Controller
       return response()->json(['design' => $unlayerJson]);
     }
 
-    // public function showEmail(Request $request)
-    // {
-    //     $booking_id = $request->input('id');
-    //     $booking = Booking::find($booking_id);
-    //     $service = new PDFService();
-    //     $paymentService = new PaymentInfoService();
-    //     $paymentService->syncAllocatedCost($booking, Passenger::find(1));
+    public function showEmail(Request $request)
+    {
+        $booking_id = $request->input('id');
+        $booking = Booking::find($booking_id);
+        $service = new PDFService();
+        // $paymentService = new PaymentInfoService();
+        // $paymentService->syncAllocatedCost($booking, Passenger::find(1));
 
-    //     $pdf = $service->generateBookingConfirmationPDF($booking);
-    //     $pdf->setPaper('letter', 'potrait');
-    //     return $pdf->stream();
-    // }
+        $pdf = $service->generateBookingConfirmationPDF($booking);
+        $pdf->setPaper('letter', 'potrait');
+        return $pdf->stream();
+    }
 
     public function generateBookingPDF(Request $request)
     {

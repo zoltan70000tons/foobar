@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+{{ $booking = $data['booking'] }}
+{{ $event =$booking->event }}
+{{ $cabin = $booking->cabin }}
+{{ $category = $cabin->category }}
+{{ $categorySpec = $cabin->cabinSpecs }}
+
+
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{$data['booking']->booking_code}}</title>
+    <title>{{$booking->booking_code}}</title>
     <style>
         @page {
             margin-top: 10px;
             margin-bottom: 80px;
+            /* margin-left: 0px;
+            margin-right: 10px; */
+
         }
 
         body {
             font-family: Verdana, Geneva, sans-serif;
             font-size: 0.5rem;
-            margin: 20px;
-            padding: 20px;
         }
 
         header {
@@ -30,7 +38,8 @@
         .post-header {
             text-align: center;
             font-weight: bold;
-            margin-bottom: 5px;
+            font-size: 0.6rem;
+
         }
 
         .table-container {
@@ -69,8 +78,7 @@
         }
 
         .passenger_title {
-            text-decoration: underline;
-            font-size: 1rem;
+            font-size: 0.7rem;
         }
 
         .subrow {
@@ -96,220 +104,219 @@
             font-size: 0.5rem !important;
             line-height: 0.8rem;
         }
+
+        .underline {
+            text-decoration: underline;
+        }
+
+        td,
+        th {
+            line-height: 0.7;
+            padding: 2px 5px;
+        }
     </style>
 </head>
 
 <body>
+
     <header class="header">
-        <img src="{{ $data['logo'] }}" width="450px" alt="UMCruises Logo" style="margin-bottom: 1rem;">
+        <img src="{{ $data['logo'] }}" width="400px" alt="UMCruises Logo" style="margin-bottom: 1rem;">
     </header>
     <section class="body">
         <section class="post-header">
-            <div>{{ formatDate($data['event']->start_date, true, true) }} – {{ formatDate($data['event']->end_date, true) }}</div>
+            <div>{{ formatDate($event->start_date, true, true) }} – {{ formatDate($event->end_date, true) }}</div>
             <div>{{ $data['event']->address }}</div>
-            <div>Independence of the Seas</div>
+            <div>Freedom Of The Seas</div>
         </section>
         <section class="body">
-            <h2 style="text-align: center;">BOOKING CONFIRMATION</h2>
-
-            <table class="table-container" width="100%">
+            <h2 style="text-align: center;margin-top:0px;">BOOKING CONFIRMATION</h2>
+           
+            <table class="table-container" width="100%" style="margin-top:0px;">
                 <tr>
                     <th width="50%">Date Issued:</th>
-                    <td width="50%" class="align-left"> {{formatDate($data['booking']->created_at)}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{formatDate($data['booking']->updated_at)}}</td>
+                    <td width="50%" class="align-left" style="padding-left: 5px;"> {{formatDate($event->created_at)}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{formatDate($event->updated_at)}}</td>
                 </tr>
-                <!-- <tr>
-                <th>Last Updated:</th>
-                <td class="align-left"> {{formatDate($data['booking']->updated_at)}}</td>
-            </tr> -->
                 <tr>
                     <th class="bold">Booking Code:</th>
-                    <td class="bold align-left">{{ $data['booking']->booking_code }}</td>
+                    <td class="bold align-left" style="padding-left: 5px;">{{ $booking->booking_code }}</td>
                 </tr>
                 <tr>
                     <th>Cabin Number:</th>
-                    <td class="align-left"> {{ $data['cabin_specs']->cabin_number }}</td>
+                    <td class="align-left" style="padding-left: 5px;"> {{ $cabin->cabin_number }}</td>
                 </tr>
                 <tr>
                     <th>Category:</th>
-                    <td class="align-left"> {{ $data['category_specs']->category_code }} – {{ $data['category_specs']->category_name }}</td>
+                    <td class="align-left" style="padding-left: 5px;"> {{ $category->title }}</td>
                 </tr>
                 <tr>
                     <th>Number of Passengers:</th>
-                    <td class="align-left"> {{ $data['category_specs']->capacity }}</td>
+                    <td class="align-left" style="padding-left: 5px;"> {{ $data['category_specs']->capacity }}</td>
                 </tr>
                 <tr>
                     <th>Notes:</th>
-                    <td class="align-left"></td>
+                    <td class="align-left" style="padding-left: 5px;"></td>
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
                 </tr>
 
                 <tr>
-                    <th class="bold">Grand Total Booking Price:</th>
-                    <td class="bold align-left"> {{$paymentInfo['grand_total']}}</td>
+                    <th class="underline bold">Grand Total Booking Price:</th>
+                    <td class="align-left underline bold" style="padding-left: 5px;"> {{ formatCurrency($booking->getGrandTotal()) }}</td>
                 </tr>
 
                 <tr>
                     <td>&nbsp;</td>
                 </tr>
-                <tr>
+                <!-- <tr>
                     <td>&nbsp;</td>
-                </tr>
+                </tr> -->
+
+                {{ $booking = $data['booking'] }}
 
                 @foreach ($paymentInfo['passengers'] as $passenger)
                 {{ $pass = $passenger['passenger'] }}
-                <tr>
-                    <td colspan="2"></td>
-                </tr>
+                {{ $installments = $pass->getPaymentInfoAttribute()['installments'] }}
 
                 <tr>
                     <td colspan="2">
                         <table width="100%">
                             <tr>
-                                <td width="12.5%" class="bold">{{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }}
-                                </td>
-                                <td width="12.5%">Official Ticket Price:</td>
-                                <td width="12.5%">{{ formatCurrency($data['booking']->cabin->category->price) }}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"><span class="bold underline">Installment Plan:</span></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"><span class="bold underline">Form Of Payment:</span></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%">Discounts:</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%">{{ $passenger['payment_method'] }}</td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            @foreach ($passenger['passenger_discounts'] as $adjustment )
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%" class="subrow">{{formatFeeName($adjustment['code'])}}:</td>
-                                <td width="12.5%">{{$adjustment['formated_amount']}}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            @endforeach
-
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%" class="subrow">Total Discount:</td>
-                                <td width="12.5%">{{$paymentInfo['total_discounts']}}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%">Net Ticket Price:</td>
-                                <td width="12.5%">{{formatCurrency($passenger['net_ticket_price'])}}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%">Taxes & Fees:</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            @foreach ($paymentInfo['addons_detail'] as $adjustment)
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%" class="subrow">{{formatFeeName($adjustment['code'])}}:</td>
-                                <td width="12.5%">{{$adjustment['formated_amount']}}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            @endforeach
-
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%" class="subrow">Total Taxes & Fees:</td>
-                                <td width="12.5%">{{$paymentInfo['total_addons']}}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%" class="bold">Total Ticket Price:</td>
-                                <td width="12.5%">{{ $passenger['total_ticket_price'] }}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%" colspan="4">
+                                <td width="50%">
                                     <table width="100%">
-                                        @foreach ($passenger['payments'] as $payment)
-                                        @if ($payment['overdue'])
                                         <tr>
-                                            <td width="25%" class="bold">Due immediately</td>
-                                            <td width="25%"> {{formatDate($payment['due_date'])}}</td>
-                                            <td width="25%"></td>
-                                            <td width="25%"></td>
+                                            <td width="40%" class="bold passenger_title">{{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }}
+                                            </td>
+                                            <td width="35%">Oficial Ticket Price</td>
+                                            <td width="30%">{{ formatCurrency($data['booking']->cabin->category->price) }}</td>
                                         </tr>
-                                        @elseif ($payment['paid'])
                                         <tr>
-                                            <td width="25%">Paid at {{ formatDate($payment['paid_at']) }}</td>
-                                            <td width="25%">{{ formatCurrency($payment['amount_paid']) }}</td>
-                                            <td width="25%">{{ $pass->payment_method == 'CREDIT_CARD' ? 'Credit Card*' : 'Pay In Full' }}</td>
                                             <td width="25%"></td>
+                                            <td width="25%">(% {{ $passenger['total_discounts_percentage'] }}) Discount</td>
+                                            <td width="25%">{{$paymentInfo['formatted_total_discounts']}}</td>
+
                                         </tr>
-                                        @endif
-                                        @endforeach
+                                        <tr>
+                                            <td width="25%"></td>
+                                            <td width="25%">Net Ticket Price</td>
+                                            <td width="25%">{{formatCurrency($passenger['net_ticket_price'])}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td width="25%"></td>
+                                            <td width="25%">Taxes & Fees</td>
+                                            <td width="25%">{{formatCurrency($pass->paymentInfo['total_fees'])}}</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="25%"></td>
+                                            <td width="25%">Total Ticket Price</td>
+                                            <td width="25%">{{ $passenger['total_ticket_price'] }}</td>
+
+                                        </tr>
+
                                     </table>
 
                                 </td>
-                            </tr>
-                            <tr>
-                                <td width="12.5%">&nbsp;</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
-                            <tr>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                                <td colspan="2" width="25%" style="text-align:right;"><span class="bold" style="text-align: right;">Total {{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid</span></td>
-                                <td width="12.5%">{{ formatCurrency($pass->passenger_balance) }}</td>
-                                <td width="12.5%"></td>
-                                <td width="12.5%"></td>
-                            </tr>
+                                <td colspan="4" style="padding: 0; margin: 0; vertical-align: top;" width="50%">
+                                    <table width="100%">
+                                        <tr>
+                                            <td width="30%"><span class="bold underline">Installment Plan:</span></td>
+                                            <td width="15%"></td>
+                                            <td width="20%"><span class="bold underline">Form Of Payment:</span></td>
+                                            <td width="15%"></td>
 
+                                        </tr>
+                                        <tr>
+                                            <td width="30%">&nbsp;</td>
+                                            <td width="15%">&nbsp;</td>
+                                            <td width="20%">&nbsp;</td>
+                                            <td width="15%">&nbsp;</td>
+                                        </tr>
+                                       
+                                        @foreach ($installments as $installment)
+                                        @php
+                                        $isFee = $installment['type'] == 'FEE';
+                                        $isPaid = $installment['status'] == 'PAID';
+                                        $isOverdue = $installment['status'] == 'OVERDUE';
+                                        $isPending = $installment['status'] == 'PENDING';
+                                        $isPartiallyPaid = $installment['status'] == 'PARTIALLY_PAID';
+                                        $showPaymentMethod = $isPaid || $isPartiallyPaid;
+                                        @endphp
+                                        <tr>
+                                            @if ($isFee && !$isPaid)
+                                            <td class="bold">Due immediately</td>
+                                            <td>{{ formatCurrency($installment['remaining_amount']) }}</td>
+                                            <td></td>
+                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
+                                            @elseif ($isOverdue)
+                                            <td class="bold">Due immediately</td>
+                                            <td>{{ formatCurrency($installment['remaining_amount']) }}</td>
+                                            <td></td>
+                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
+                                            @elseif ($isPaid || $isPartiallyPaid)
+                                            <td width="25%">Paid at {{ formatDate($installment['payment_date']) }}</td>
+                                            <td width="25%">{{ formatCurrency($installment['total_paid']) }}</td>
+                                            <td width="25%">
+                                                @if ($showPaymentMethod)
+                                                {{ $pass->payment_method == 'CREDIT_CARD' ? 'Credit Card*' : 'Pay In Full' }}
+                                                @endif
+                                            </td>
+                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
+                                            @elseif ($isPending)
+                                            <td width="25%">Due at {{ formatDate($installment['due_date']) }}</td>
+                                            <td width="25%">{{ formatCurrency($installment['amount']) }}</td>
+                                            <td width="25%">
+                                                @if ($showPaymentMethod)
+                                                {{ $pass->payment_method == 'CREDIT_CARD' ? 'Credit Card*' : 'Pay In Full' }}
+                                                @endif
+                                            </td>
+                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
+                                            @endif
+                                        </tr>
+                                        @endforeach
+                                       
+
+
+                                    </table>
+
+                                </td>
+
+                            </tr>
                         </table>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"></td>
+                    <td width="100%" colspan="2">
+                        <table width="100%">
+                            <tr>
+                                <td width="40%">
+                                </td>
+                                <td width="60%">
+                                    <table width="100%">
+                                        <tr>
+                                            <td width="40%" class="bold underline">Total {{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid:</td>
+
+                                            <td class="bold" width="70px">{{ $passenger['formatted_balance'] }}</td>
+                                            <td class="underline bold text-left"></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
                 </tr>
                 <tr>
-                    <td colspan="2"></td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
                 </tr>
                 @endforeach
             </table>
@@ -320,8 +327,8 @@
                     <td width="12.5%"></td>
                     <td width="12.5%"></td>
                     <td width="12.5%"></td>
-                    <td width="12.5%" class="bold">Grand Total Paid</td>
-                    <td width="12.5%" class="bold">{{$paymentInfo['paid_amount']}}</td>
+                    <td width="12.5%" class="bold underline">Grand Total Paid:</td>
+                    <td width="12.5%" class="bold underline">{{ formatCurrency($booking->getTotalPaid())}}</td>
                     <td width="12.5%"></td>
                     <td width="12.5%"></td>
                 </tr>
@@ -330,9 +337,9 @@
 
 
         @if ($paymentInfo['cabinType']->id == 2 || $paymentInfo['cabinType']->id == 3 )
-        <section class="single-text">
+        <section class="single-text" style="text-align: center;">
             Please note: Bed assignments in Single Ticket cabins are first come first serve on board! <br />
-            You will be sharing your cabin with 3 other passenger(s)
+            You will be sharing your cabin with {{ $data['category_specs']->capacity - 1 }} other passenger(s)
         </section>
         @endif
 
@@ -354,121 +361,172 @@
 
         <table class="table-container" width="100%">
             <tr>
+                <th width="50%">Date Issued:</th>
+                <td width="50%" class="align-left" style="padding-left: 5px;"> {{formatDate($data['booking']->created_at)}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{formatDate($data['booking']->updated_at)}}</td>
+            </tr>
+            <tr>
                 <th class="bold">Booking Code:</th>
-                <td class="bold align-left">{{ $data['booking']->booking_code }}</td>
+                <td class="bold align-left" style="padding-left: 5px;">{{ $data['booking']->booking_code }}</td>
             </tr>
             <tr>
                 <th>Cabin Number:</th>
-                <td class="align-left"> {{ $data['cabin_specs']->cabin_number }}</td>
+                <td class="align-left" style="padding-left: 5px;"> {{ $data['cabin_specs']->cabin_number }}</td>
             </tr>
             <tr>
                 <th>Category:</th>
-                <td class="align-left"> {{ $data['category_specs']->category_code }} – {{ $data['category_specs']->category_name }}</td>
+                <td class="align-left" style="padding-left: 5px;"> {{ $data['cabin_category']->title }}</td>
             </tr>
             <tr>
                 <th>Number of Passengers:</th>
-                <td class="align-left"> {{ $data['category_specs']->capacity }}</td>
+                <td class="align-left" style="padding-left: 5px;"> {{ $data['category_specs']->capacity }}</td>
+            </tr>
+            <tr>
+                <th>Notes:</th>
+                <td class="align-left" style="padding-left: 5px;"></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <th class="underline bold">Grand Total Booking Price:</th>
+                <td class="align-left underline bold" style="padding-left: 5px;"> {{ formatCurrency($booking->getGrandTotal()) }}</td>
+            </tr>
+
+            <tr>
+                <td>&nbsp;</td>
             </tr>
         </table>
-        <div class="add-pax"> To add or correct Passenger Information please visit: addpax.com</div>
+        <div class="add-pax center" style="text-align: center;"> To add or correct Passenger Information please visit: addpax.com
+            <br>
+            <br>
+        </div>
 
-        <table width="100%" border="0" cellspacing="0" cellpadding="5">
+        <table width="100%" cellspacing="0" cellpadding="5">
             @foreach ($data['passengers'] as $index => $passenger)
             @if ($index % 2 == 0)
             <tr>
                 @endif
 
                 <td width="50%" valign="top" style="padding: 10px;">
-                    <table width="100%" cellspacing="0" cellpadding="3">
+                    <table width="100%" cellspacing="0" cellpadding="3" style="table-layout: fixed;">
                         <tr>
-                            <td colspan="2" class="passenger_title">
+                            <td colspan="2" class="passenger_title underline">
                                 <strong>{{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }}</strong>
                             </td>
                         </tr>
                         <tr>
-                            <td><strong>First Name:</strong></td>
-                            <td>{{ $passenger['first_name'] }}</td>
+                            <td colspan="2">&nbsp;</td>
+                        </tr>
+
+                        <tr>
+                            <td width="50%"><strong>Gender:</strong></td>
+                            <td width="50%">{{ $passenger['gender'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Middle Name:</strong></td>
-                            <td>{{ $passenger['middle_name'] }}</td>
+                            <td width="50%"><strong>First Name:</strong></td>
+                            <td width="50%">{{ $passenger['first_name'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Last Name:</strong></td>
-                            <td>{{ $passenger['last_name'] }}</td>
+                            <td width="50%"><strong>Middle Name:</strong></td>
+                            <td width="50%">{{ $passenger['middle_name'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Survivor Number:</strong></td>
-                            <td>{{ $passenger['survivor_number'] }}</td>
+                            <td width="50%"><strong>Last Name:</strong></td>
+                            <td width="50%">{{ $passenger['last_name'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Survivor Status:</strong></td>
-                            <td>{{ $passenger['survivor_status'] ?? 'N/A' }}</td>
+                            <td width="50%"><strong>Survivor Number:</strong></td>
+                            <td width="50%">{{ $passenger['survivor_number'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Date of Birth:</strong></td>
-                            <td>{{ $passenger['dob'] }}</td>
+                            <td width="50%"><strong>Survivor Status:</strong></td>
+                            <td width="50%">{{ $passenger['survivor_status'] ?? 'N/A' }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Citizenship:</strong></td>
-                            <td>{{ $passenger['citizenship'] }}</td>
+                            <td width="50%"><strong>Date of Birth:</strong></td>
+                            <td width="50%">{{ formatDate($passenger['dob']) }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Address:</strong></td>
-                            <td>{{ $passenger['address_first'] }}</td>
+                            <td width="50%"><strong>Citizenship:</strong></td>
+                            <td width="50%">{{ $passenger['citizenship'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>City:</strong></td>
-                            <td>{{ $passenger['city'] }}</td>
+                            <td width="50%"><strong>Address:</strong></td>
+                            <td width="50%">{{ $passenger['address_first'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>State/Province/Region:</strong></td>
-                            <td>{{ $passenger['state'] }}</td>
+                            <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
-                            <td><strong>Postal Code:</strong></td>
-                            <td>{{ $passenger['postal_code'] }}</td>
+                            <td width="50%"><strong>City:</strong></td>
+                            <td width="50%">{{ $passenger['city'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Country:</strong></td>
-                            <td>{{ $passenger['country'] }}</td>
+                            <td width="50%"><strong>State/Province/Region:</strong></td>
+                            <td width="50%">{{ $passenger['state'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Email:</strong></td>
-                            <td>{{ $passenger['email'] }}</td>
+                            <td width="50%"><strong>Postal Code:</strong></td>
+                            <td width="50%">{{ $passenger['postal_code'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Phone:</strong></td>
-                            <td>{{ $passenger['phone'] }}</td>
+                            <td width="50%"><strong>Country:</strong></td>
+                            <td width="50%">{{ $passenger['country'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Emergency Name:</strong></td>
-                            <td>{{ $passenger['emergency_c_name'] }}</td>
+                            <td width="50%"><strong>Email:</strong></td>
+                            <td width="50%">{{ $passenger['email'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Emergency Phone:</strong></td>
-                            <td>{{ $passenger['emergency_c_phone'] }}</td>
+                            <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
-                            <td><strong>Special Requests:</strong></td>
-                            <td>{{ $passenger['special_request'] }}</td>
+                            <td width="50%"><strong>Phone:</strong></td>
+                            <td width="50%">{{ $passenger['phone'] }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Onboard Credit:</strong></td>
-                            <td>{{ $passenger['onboard_credit'] }}</td>
+                            <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
-                            <td><strong>Reason For Credit:</strong></td>
-                            <td>{{ $passenger['credit_reason'] }}</td>
+                            <td width="50%"><strong>Emergency Name:</strong></td>
+                            <td width="50%">{{ $passenger['emergency_c_name'] }}</td>
+                        </tr>
+                        <tr>
+                            <td width="50%"><strong>Emergency Phone:</strong></td>
+                            <td width="50%">{{ $passenger['emergency_c_phone'] }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="50%"><strong>Special Requests:</strong></td>
+                            <td width="50%">{{ $passenger['special_request'] }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td width="50%"><strong>Onboard Credit:</strong></td>
+                            <td width="50%">{{ $passenger['onboard_credit'] }}</td>
+                        </tr>
+                        <tr>
+                            <td width="50%"><strong>Reason For Credit:</strong></td>
+                            <td width="50%">{{ $passenger['credit_reason'] }}</td>
                         </tr>
                     </table>
                 </td>
 
                 @if ($index % 2 == 1 || $loop->last)
+                {{-- Si el total de pasajeros es impar, agregamos una celda vacía para completar la fila --}}
+                @if ($index % 2 == 0)
+                <td width="50%"></td>
+                @endif
             </tr>
             @endif
             @endforeach
         </table>
+
 
 </body>
 

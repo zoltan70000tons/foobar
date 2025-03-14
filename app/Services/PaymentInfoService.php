@@ -17,17 +17,14 @@ class PaymentInfoService
     public function getPaymentInfo(Booking $booking): array
     {
         $cabin = $booking->cabin;
-        $event = $booking->event;
         $category = $cabin->category;
         $cabinSpec = $cabin->cabinSpec;
         $cabinType = $cabin->cabinType;
-        $passengers = $booking->passengers
-            ->sort(function ($a, $b) {
-                return [$b->lead_passenger, $a->id] <=> [$a->lead_passenger, $b->id];
-            });
-
+        $passengers = $booking->passengers;
         $adjustments = $booking->adjustments;
+
         $grandTotal = $passengers->sum('passenger_allocated_cost');
+
         $paymentInfo = [
             'amount_to_pay' => 0,
             'grand_total' => $this->formatCurrency($grandTotal),
@@ -44,134 +41,150 @@ class PaymentInfoService
             'discounts_detail' => [],
             'net_ticket_price' => 0,
             'passengers' => [],
-            'addons_detail' => []
-
+            'addons_detail' => [],
+            'formatted_amount_to_pay' => null,
+            'formatted_paid_amount' => null,
+            'formatted_remaining_to_pay' => null,
+            'formatted_price_per_person' => null,
+            'formatted_total_fees' => null,
+            'formatted_total_addons' => null,
+            'formatted_total_discounts' => null,
+            'formatted_net_ticket_price' => null
         ];
 
         $typeMap = [
             'ADDON' => ['key' => 'total_addons', 'detail' => 'addons_detail', 'symbol' => '+'],
-            'DISCOUNT' => ['key' => 'total_discounts', 'detail' => 'discount_detail', 'symbol' => '-'],
+            'DISCOUNT' => ['key' => 'total_discounts', 'detail' => 'discounts_detail', 'symbol' => '-'],
         ];
 
-
         foreach ($adjustments as $adjustment) {
-            $amount = $adjustment->value;
-            if ($adjustment->operation === 'PERCENTAGE') {
-                $amount = ($amount / 100) * $category->price;
-            }
+            $amount = $this->calculateAdjustmentAmount($adjustment, $category->price);
 
             if (isset($typeMap[$adjustment->type])) {
                 $key = $typeMap[$adjustment->type]['key'];
                 $detail = $typeMap[$adjustment->type]['detail'];
                 $symbol = $typeMap[$adjustment->type]['symbol'];
+
                 $paymentInfo[$key] += $amount;
                 $paymentInfo[$detail][] = [
                     'type' => $symbol,
                     'amount' => $amount,
-                    'formated_amount' => formatCurrency($amount),
-                    'percentaje' => $adjustment->operation === 'PERCENTAGE',
+                    'formatted_amount' => $this->formatCurrency($amount),
+                    'percentage' => $adjustment->operation === 'PERCENTAGE',
                     'code' => $adjustment->code
                 ];
             }
         }
 
-        foreach ($passengers as $passenger) {
-            $bookingAddons = $paymentInfo['addons_detail'] ?? [];
-            $bookingDiscounts = $paymentInfo['discount_detail'] ?? [];
-            $passengerFees = $passenger->fees;
-            foreach ($passengerFees as $fee) {
-                $bookingAddons[] = [
-                    'type' => '+',
-                    'amount' => $fee->amount,
-                    'formated_amount' => formatCurrency($fee->amount),
-                    'percentaje' => false,
-                    'code' => $fee->type
-                ];
-            }
+        $paymentInfo['passengers'] = $passengers->map(
+            fn($passenger) =>
+            $this->mapPassengerInfo($passenger, $category->price, $paymentInfo)
+        )->all();
 
-            $totalAmount = array_reduce($bookingAddons, function ($carry, $item) {
-                return $carry + $item['amount'];
-            }, 0);
+        // Calculate final totals
+        $paymentInfo['net_ticket_price'] = $paymentInfo['price_per_person'] - $paymentInfo['total_discounts'];
+        $paymentInfo['remaining_to_pay'] = $paymentInfo['amount_to_pay'] - $paymentInfo['paid_amount'];
 
-            $totalDiscounts = array_reduce($bookingDiscounts, function ($carry, $item) {
-                return $carry + $item['amount'];
-            }, 0);
-            $passengerBalance = $passenger->passenger_balance;
-            $paymentMethod = $passenger->payment_method;
-            if ($paymentMethod == 'CREDIT_CARD') {
-                $paymentMethod = 'Credit Card*';
-            } else {
-                $paymentMethod = 'Pay In Full';
-            }
-            // Sum all amounts in the balance
-            $allocatedCost = $passenger->passenger_allocated_cost;
-            $fees = $passenger->fees->sum('amount');
-            $netTicketPrice = $category->price - $totalDiscounts;
-            $totalTicketPrice = $netTicketPrice + $totalAmount;
-            // Store passenger info
-            $paymentInfo['passengers'][] = [
-                'passenger' => $passenger,
-                'payments' => $this->getPassengerInstallmentsInfo($passenger->id),
-                'payment_method' => $paymentMethod,
-                'balance' => $passengerBalance,
-                'formated_balance' => formatCurrency($passengerBalance),
-                'allocated_cost' => $allocatedCost,
-                'formated_allocated_cost' => formatCurrency($allocatedCost),
-                'fees' => $fees,
-                'passenger_discounts' => $bookingDiscounts,
-                'passenger_addons' => $bookingAddons,
-                'total_addons' => $totalAmount,
-                'total_discounts' => $totalDiscounts,
-                'net_ticket_price' => $netTicketPrice,
-                'formated_total_addons' => formatCurrency($totalAmount),
-                'total_ticket_price' => formatCurrency($totalTicketPrice)
-
-            ];
-
-            $paymentInfo['net_ticket_price'] = $paymentInfo['price_per_person'] - $paymentInfo['total_discounts'];
-
-            // Add allocated cost to total amount_to_pay
-            $paymentInfo['amount_to_pay'] += $allocatedCost;
-            $paymentInfo['paid_amount'] += $passengerBalance;
-            $paymentInfo['total_fees'] += $fees;
-            $paymentInfo['remaining_to_pay'] = $paymentInfo['amount_to_pay'] - $paymentInfo['paid_amount'];
+        // Format money
+        foreach (['amount_to_pay', 'paid_amount', 'total_fees', 'remaining_to_pay', 'price_per_person', 'total_addons', 'total_discounts', 'net_ticket_price'] as $key) {
+            $paymentInfo['formatted_' . $key] = $this->formatCurrency((float) $paymentInfo[$key]);
         }
 
-        $paymentInfo['amount_to_pay'] = $this->formatCurrency($paymentInfo['amount_to_pay']);
-        $paymentInfo['paid_amount'] = $this->formatCurrency($paymentInfo['paid_amount']);
-        $paymentInfo['total_fees'] = $this->formatCurrency($paymentInfo['total_fees']);
-        $paymentInfo['total_addons'] = $this->formatCurrency((float) $paymentInfo['total_addons']);
-        $paymentInfo['total_discounts'] = $this->formatCurrency((float) $paymentInfo['total_discounts']);
-        //dd($paymentInfo);
         return $paymentInfo;
     }
 
-    public function getPassengerInstallmentsInfo($passengerId)
+    private function calculateAdjustmentAmount($adjustment, $price)
     {
-        $passenger = Passenger::with(['booking', 'installments', 'payments'])->findOrFail($passengerId);
+        return $adjustment->operation === 'PERCENTAGE'
+            ? ($adjustment->value / 100) * $price
+            : $adjustment->value;
+    }
 
-        if ($passenger->booking->payment_plan !== 'INSTALLMENTS') {
-            return [];
+    private function mapPassengerInfo($passenger, $basePrice, &$paymentInfo)
+    {
+        $bookingAddons = $paymentInfo['addons_detail'] ?? [];
+        $bookingDiscounts = $paymentInfo['discounts_detail'] ?? [];
+
+        foreach ($passenger->fees as $fee) {
+            $bookingAddons[] = [
+                'type' => '+',
+                'amount' => $fee->amount,
+                'formatted_amount' => $this->formatCurrency($fee->amount),
+                'percentage' => false,
+                'code' => $fee->type
+            ];
         }
 
-        $payments = $passenger->payments()->orderBy('transaction_date')->get()->values();
-        $usedPayments = collect();
+        $totalAddons = array_sum(array_column($bookingAddons, 'amount'));
+        $totalDiscounts = array_sum(array_column($bookingDiscounts, 'amount'));
+        $totalDiscountsPercentage = $basePrice > 0 ? round(($totalDiscounts / $basePrice) * 100, 2) : 0;
+        $allocatedCost = $passenger->passenger_allocated_cost;
+        $fees = $passenger->fees->sum('amount');
+        $netTicketPrice = $basePrice - $totalDiscounts;
+        $totalTicketPrice = $netTicketPrice + $totalAddons;
 
-        return $passenger->installments->map(function ($installment) use ($payments, &$usedPayments) {
-            $payment = $payments->first(function ($payment) use ($installment, $usedPayments) {
-                return !$usedPayments->contains($payment->id) && Carbon::parse($payment->transaction_date)->lte($installment->due_date);
-            });
-            if ($payment) {
-                $usedPayments->push($payment->id);
-            }
+        $paymentMethod = $passenger->payment_method === 'CREDIT_CARD' ? 'Credit Card*' : 'Pay In Full';
 
+        // update totals
+        $paymentInfo['amount_to_pay'] += $allocatedCost;
+        $paymentInfo['paid_amount'] += $passenger->passenger_balance;
+        $paymentInfo['total_fees'] += $fees;
+
+        return [
+            'passenger' => $passenger,
+            'payments' => $this->getPassengerInstallmentsInfo($passenger->id),
+            'payment_method' => $paymentMethod,
+            'total_ticket_price' => $this->formatCurrency($totalTicketPrice),
+            'balance' => $passenger->passenger_balance,
+            'allocated_cost' => $allocatedCost,
+            'fees' => $fees,
+            'passenger_discounts' => $bookingDiscounts,
+            'passenger_addons' => $bookingAddons,
+            'total_addons' => $totalAddons,
+            'total_discounts' => $totalDiscounts,
+            'net_ticket_price' => $netTicketPrice,
+            'total_discounts_percentage' => $totalDiscountsPercentage,
+
+            //format values
+            'formated_ticket_price' => $this->formatCurrency($netTicketPrice),
+            'formatted_balance' => $this->formatCurrency($passenger->passenger_balance),
+            'formatted_allocated_cost' => $this->formatCurrency($allocatedCost),
+            'formatted_total_discounts' => $this->formatCurrency($totalDiscounts),
+            'formatted_total_addons' => $this->formatCurrency($totalAddons),
+            'formatted_net_ticket_price' => $this->formatCurrency($netTicketPrice)
+
+        ];
+    }
+
+
+
+    public function getPassengerInstallmentsInfo($passengerId)
+    {
+        $passenger = Passenger::findOrFail($passengerId);
+        if ($passenger->booking->payment_plan !== 'INSTALLMENTS') {
             return [
-                'due_date' => $installment->due_date,
-                'paid' => !is_null($payment),
-                'overdue' => is_null($payment) && Carbon::parse($installment->due_date)->isPast(),
-                'amount_paid' => $payment ? $payment->amount : 0.00,
-                'paid_at' => $payment ? $payment->transaction_date : null,
-                'payment_type' => $payment ? $payment->type : null
+                'due_date' => 0,
+                'amount' => 0,
+                'paid' => 0,
+                'overdue' => false,
+                'amount_paid' => 0,
+                'paid_at' => 0,
+                'payment_type' =>  null,
+                'type' => 0
+            ];
+        }
+        $data = $passenger->getPaymentInfoAttribute();
+        $installments = $data['installments'];
+        return $installments->map(function ($installment) {
+            return [
+                'due_date' => $installment['due_date'],
+                'amount' => $installment['amount'],
+                'paid' => $installment['total_paid'],
+                'overdue' => $installment['status'] == 'OVERDUE' ? true : false,
+                'amount_paid' => $installment['total_paid'],
+                'paid_at' => null,
+                'payment_type' =>  null,
+                'type' => $installment['type']
             ];
         });
     }

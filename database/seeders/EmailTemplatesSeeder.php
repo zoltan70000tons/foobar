@@ -14,6 +14,7 @@ class EmailTemplatesSeeder extends Seeder
     public function run(): void
     {
 
+        DB::table('email_templates')->truncate();
         $languages = ['de', 'en', 'es'];
         $basePath = base_path('database' . DIRECTORY_SEPARATOR . 'seeders' . DIRECTORY_SEPARATOR . 'html_templates');
 

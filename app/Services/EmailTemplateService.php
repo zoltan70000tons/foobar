@@ -22,7 +22,7 @@ class EmailTemplateService
     public function getProcessedTemplate(int $bookingId, string $lang = 'en', int $id, array $extraData = []): string
     {
         $booking = Booking::with(['cabin.cabinSpec', 'passengers'])->find($bookingId);
-  
+
         if (!$booking) return '';
 
         switch ($lang) {
@@ -43,8 +43,8 @@ class EmailTemplateService
         $bodyContent = DB::table('email_templates')->where('id', $id)->value('body');
 
         $data = [
-            'header' => DB::table('email_templates')->where('name','=', $header_template)->value('body'),
-            'footer' => DB::table('email_templates')->where('name','=', $footer_template)->value('body'),
+            'header' => DB::table('email_templates')->where('name', '=', $header_template)->value('body'),
+            'footer' => DB::table('email_templates')->where('name', '=', $footer_template)->value('body'),
         ];
 
         $processedBody = Blade::render($bodyContent, $data);
@@ -83,7 +83,6 @@ class EmailTemplateService
         $cabin = $booking->cabin;
         $passengers = $booking->passengers;
         $leadPassenger = $passengers->firstWhere('lead_passenger', true);
-        $grandTotal = 'GRAND_TOTAL';
 
         $values = [];
 
@@ -95,11 +94,14 @@ class EmailTemplateService
                 case 'BOOKING_CODE':
                     $values[$placeholder] = $booking->booking_code ?? '';
                     break;
-                case 'LEAD_PASSENGER_NAME':
-                    $values[$placeholder] = $leadPassenger?->full_name ?? '';
+                case 'LEAD_PASSENGER':
+                    $values[$placeholder] = capitalizeWords($leadPassenger?->full_name) ?? '';
                     break;
                 case 'GRAND_TOTAL':
-                    $values[$placeholder] = $grandTotal ?? '';
+                    $values[$placeholder] = formatCurrency($booking->getGrandTotal(), true) ?? '';
+                    break;
+                case 'INDIVIDUAL_TOTAL':
+                    $values[$placeholder] = formatCurrency($booking->cabin->category->price, true) ?? '';
                     break;
                 default:
                     $values[$placeholder] = $extraData[$placeholder] ?? '';

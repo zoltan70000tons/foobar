@@ -217,4 +217,6 @@ Route::get("/test-broadcast", function () {
   return "Mensaje enviado";
 });
 
+Route::get('/payments', [PaymentController::class, 'createPayment']);
+
 require __DIR__ . "/auth.php";

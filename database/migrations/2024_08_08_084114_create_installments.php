@@ -15,6 +15,8 @@ return new class extends Migration
       $table->id();
       $table->date('due_date')->nullable();
       $table->foreignId('passenger_id')->constrained('passengers');
+      $table->enum('type', ['PAYMENT', 'FEE'])->default('PAYMENT');
+      $table->foreignId('fee_id')->nullable()->constrained('fees')->nullable();
       $table->timestamps();
     });
   }

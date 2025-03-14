@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
 use App\Models\Booking;
+use App\Repositories\PaymentRepository;
+use App\Services\PaymentService;
 use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Models\Payment;
@@ -11,6 +13,7 @@ use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
+use Laravel\SerializableClosure\SerializableClosure;
 
 
 
@@ -22,10 +25,13 @@ class PaymentController extends Controller
 
     protected PassengerRepository $passengerRepository;
     protected CalculationRepository $calculationRepository;
-    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository)
+
+    protected PaymentService $paymentService;
+    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository, PaymentService $paymentService)
     {
         $this->passengerRepository = $passengerRepository;
         $this->calculationRepository = $calculationRepository;
+        $this->paymentService = $paymentService;
     }
 
     public function store(Request $request)
@@ -43,7 +49,8 @@ class PaymentController extends Controller
                     'transaction_date' => 'required|date'
                 ]);
                 $validated['source'] = 'MANUAL';
-                Payment::create($validated);
+                $this->paymentService->processPayment($validated);
+                //Payment::create($validated);
                 $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
                 $this->saveBookingLog(
                     $booking_id,
@@ -95,5 +102,12 @@ class PaymentController extends Controller
             $this->logException($e);
             return redirect()->back()->with('error', 'Error deleting payment!');
         }
+    }
+
+    public function createPayment(Request $request)
+    {
+        dd($this->paymentService->getInstallmentsWithStatus(1));
+        //$response = $this->paymentService->processPayment($request->all());
+        //return response()->json($response, $response['success'] ? 201 : 400);
     }
 }
