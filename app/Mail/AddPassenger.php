@@ -18,11 +18,14 @@ class AddPassenger extends Mailable
 
   public $getSignedURL;
   public $bookingCode;
+  public $fromWho;
+  public $toWho;
+  public $event;
 
   /**
    * Create a new message instance.
    */
-  public function __construct($getSignedURL, $bookingCode)
+  public function __construct($getSignedURL, $bookingCode, $fromWho, $toWho, $event)
   {
     $fontEndUrl = config('app.frontend_url');
     // trim api prefix
@@ -30,6 +33,10 @@ class AddPassenger extends Mailable
 
     $this->getSignedURL = $fontEndUrl . '/en' . $getSignedURL;
     $this->bookingCode = $bookingCode;
+
+    $this->fromWho = $fromWho;
+    $this->toWho = $toWho;
+    $this->event = $event;
     // Generate the activation (verification) link
   }
 
@@ -40,10 +47,7 @@ class AddPassenger extends Mailable
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(
-      from: $mailFromAddress,
-      subject: '70000TONS OF METAL - SOMEBODY INVITE YOU TO 70000TONS OF METAL!'
-    );
+    return new Envelope(from: $mailFromAddress, subject: "{$this->fromWho} - invites you to join their cabin!");
   }
 
   /**
@@ -56,6 +60,9 @@ class AddPassenger extends Mailable
       with: [
         'getSignedURL' => $this->getSignedURL,
         'bookingCode' => $this->bookingCode,
+        'fromWho' => $this->fromWho,
+        'toWho' => $this->toWho,
+        'event_name' => $this->event->name,
       ]
     );
   }

@@ -19,13 +19,15 @@ class CustomerConfirmationBooking extends Mailable
   public $cart;
   public $installments;
   public $language;
+  public $event;
 
-  public function __construct(Booking $booking, array $cart, array $installments, string $language)
+  public function __construct(Booking $booking, array $cart, array $installments, string $language, $event)
   {
     $this->booking = $booking;
     $this->cart = $cart;
     $this->installments = $installments;
     $this->language = $language;
+    $this->event = $event;
   }
 
   // PREPARE DATA FOR TEMPLATE
@@ -142,7 +144,7 @@ class CustomerConfirmationBooking extends Mailable
 
     return new Envelope(
       from: $mailFromAddress,
-      subject: "{$data->passenger->first_name} - your Booking Request for 70000TONS OF METAL 2026!"
+      subject: "{$data->passenger->first_name} - your Booking Request for {$this->event->name}!"
     );
   }
 

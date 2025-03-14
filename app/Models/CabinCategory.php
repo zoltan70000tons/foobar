@@ -14,16 +14,12 @@ class CabinCategory extends Model
 
   protected $primaryKey = 'id';
 
-  protected $fillable = [
-    'price',
-    'cabin_category_spec_id',
-    'event_id',
-  ];
+  protected $fillable = ['price', 'cabin_category_spec_id', 'event_id'];
 
   protected $casts = [
     'price' => 'decimal:2',
   ];
-  
+
   // Append custom attributes to the serialized output
   protected $appends = [
     'category_type',
@@ -122,7 +118,9 @@ class CabinCategory extends Model
     if (strpos($this->spec->category_name, $this->spec->category_type) === false) {
       $title .= ' ' . $this->spec->category_type;
     }
-    $title .= ' ' . $this->spec->category_code . ' ' . $this->capacity_description;
+    //$title .= ' ' . $this->spec->category_code . ' ' . $this->capacity_description;
+    $title .= ' ' . $this->spec->category_code;
+
     return $title;
   }
 

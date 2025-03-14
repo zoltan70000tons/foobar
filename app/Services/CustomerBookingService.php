@@ -52,7 +52,7 @@ class CustomerBookingService
   | User will get a signed URL to add a passenger to the booking via form
   |
   */
-  public function addPassengerViaEmail($booking, $invitation, $email)
+  public function addPassengerViaEmail($booking, $invitation, $email, $fromWho, $toWho, $event)
   {
     // generate signed url
     $getSignedURL = URL::temporarySignedRoute(
@@ -64,7 +64,7 @@ class CustomerBookingService
 
     // send email to the user
     try {
-      Mail::to($email)->send(new AddPassenger($getSignedURL, $booking->booking_code));
+      Mail::to($email)->send(new AddPassenger($getSignedURL, $booking->booking_code, $fromWho, $toWho, $event));
     } catch (\Exception $e) {
       \Log::error('Failed to send email to user: ' . $e->getMessage());
       return response()->json(['message' => 'Failed to send email to user'], 500);
@@ -80,11 +80,11 @@ class CustomerBookingService
   | User will get information to login to his account and check invitations
   |
   */
-  public function addPassengerViaEmailDirectly($booking, $email)
+  public function addPassengerViaEmailDirectly($booking, $email, $fromWho, $toWho, $event)
   {
     // send email to the user
     try {
-      Mail::to($email)->send(new AddPassengerDirectly($booking->booking_code));
+      Mail::to($email)->send(new AddPassengerDirectly($booking->booking_code, $fromWho, $toWho, $event));
     } catch (\Exception $e) {
       \Log::error('Failed to send email to user: ' . $e->getMessage());
       return response()->json(['message' => 'Failed to send email to user'], 500);

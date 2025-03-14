@@ -18,7 +18,12 @@ This email is send when customer send a request to add a pax.
 @endsection
 
 @section('content')
+
+    <p>Hello, {{ $toWho }}</p>
     <p>{{ __('systemEmails.email_invitation_on_your_account')}}</p>
+
+    <p>{{ $fromWho }}  {{ __('systemEmails.email_request_to_add_pax')}} {{ $event_name }}</p>
+
     <p>Booking number: {{ $bookingCode }}</p>
     <p>{{ __('systemEmails.email_invitation_on_your_account_body')}}</p>
     @include('emails.components.button', [

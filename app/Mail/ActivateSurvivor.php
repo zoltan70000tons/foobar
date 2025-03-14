@@ -44,7 +44,7 @@ class ActivateSurvivor extends Mailable
     // use MAIL_FROM_ADDRESS in .env
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: '70000TONS OF METAL - SURVIVOR YOUR ACCOUNT IS ACTIVE!');
+    return new Envelope(from: $mailFromAddress, subject: 'Please verify your eMail address');
   }
 
   /**
