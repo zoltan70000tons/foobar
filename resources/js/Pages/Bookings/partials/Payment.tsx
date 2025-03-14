@@ -184,7 +184,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const handleConfirmPaymentDelete = () => {
     if (selectedPaymentId && currentPassenger) {
-      console.log('handling delete payment')
       handleDeletePayment(currentPassenger.id, selectedPaymentId);
     }
     handleCancelPaymentDelete();
@@ -192,7 +191,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const handleConfirm = () => {
     if (selectedPassengerId && selectedFeeId) {
-      console.log('handling delete fee')
       handleDeleteFee(selectedPassengerId, selectedFeeId);
     }
     handleCancel();
