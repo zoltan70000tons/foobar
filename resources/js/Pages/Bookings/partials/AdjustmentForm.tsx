@@ -25,7 +25,7 @@ import DiscountOutlined from "@mui/icons-material/DiscountOutlined";
 import AddOutlined from "@mui/icons-material/AddOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
@@ -58,6 +58,22 @@ const defaultFormData: AdjustmentData = {
 };
 
 const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list }) => {
+    const { props } = usePage();
+
+    const successMessage = props.flash.success;
+    const errorMessage = props.flash.error;
+
+    // Conditionally show the snackbar based on the flash message data
+    useEffect(() => {
+        if (successMessage) {
+            showSnackbar(successMessage, "success");
+        }
+
+        if (errorMessage) {
+            showSnackbar(errorMessage, "error");
+        }
+    }, [successMessage, errorMessage]);
+
     const [formData, setFormData] = useState<AdjustmentData>(defaultFormData);
     const [adjustments, setAdjustments] = useState<AdjustmentData[]>(booking.adjustments || []);
     const [open, setOpen] = useState(false);
@@ -127,13 +143,13 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     };
 
     const createAdjustment = () => {
-        try {
-            router.post(route("bookings.createAdjustment", { event_id: booking.event_id, booking_id: booking.id }), formData);
-            showSnackbar("Adjustment created successfully.", "success");
-        } catch (error) {
-            console.error("Failed to create adjustment:", error);
-            showSnackbar("An error occurred while creating the adjustment.", "error");
-        }
+        router.post(
+          route("bookings.createAdjustment", {
+              event_id: booking.event_id,
+              booking_id: booking.id
+          }),
+          formData
+        );
     };
 
     const updateAdjustment = async () => {
