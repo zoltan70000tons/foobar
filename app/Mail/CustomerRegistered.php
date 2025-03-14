@@ -24,18 +24,16 @@ class CustomerRegistered extends Mailable
   /**
    * Create a new message instance.
    */
-  public function __construct(User $customer, String $language, String $survivorNumber)
+  public function __construct(User $customer, string $language, string $survivorNumber)
   {
     $this->customer = $customer;
     $this->language = $language;
     $this->survivorNumber = $survivorNumber;
     // Generate the activation (verification) link
-    $this->activationLink = URL::temporarySignedRoute(
-        'verificationApi.verify', 
-        now()->addMinutes(60), 
-        ['id' => $customer->id, 'hash' => sha1($customer->email)]
-    );
-
+    $this->activationLink = URL::temporarySignedRoute('verificationApi.verify', now()->addMinutes(60), [
+      'id' => $customer->id,
+      'hash' => sha1($customer->email),
+    ]);
   }
 
   /**
@@ -43,10 +41,10 @@ class CustomerRegistered extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(
-      from: 'smtp@bspmi.com',
-      subject: 'Welcome On Board, Sailor!',
-    );
+    // use MAIL_FROM_ADDRESS in .env
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: 'Welcome On Board, Sailor!');
   }
 
   /**
@@ -61,7 +59,7 @@ class CustomerRegistered extends Mailable
         'language' => $this->language,
         'survivorNumber' => $this->survivorNumber,
         'activationLink' => $this->activationLink,
-      ],
+      ]
     );
   }
 

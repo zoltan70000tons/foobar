@@ -29,7 +29,7 @@ return [
   'email_activate_account' => 'Please activate your account by clicking the button below:',
   'email_thank_you' => 'Thank you for choosing us.',
   'update_email' => [
-    'subject' => 'Your email address has been updated',
+    'subject' => 'Your account information has been updated',
     'title' => 'Email Address Updated',
     'greeting' => 'Hello :name,',
     'default_name' => 'Customer',
@@ -39,7 +39,7 @@ return [
     'thank_you' => '70000TONS OF METAL Team',
   ],
 
-  'email_request_to_add_pax' => 'You got a request to add a passenger to your booking.',
+  'email_request_to_add_pax' => 'invites you to join their cabin for.',
   'email_request_to_add_pax_body' =>
     'You have 72 hours to add your details to the booking. If you do not add the details within this time, the request will be canceled.',
   'email_request_to_add_pax_cta' => 'Add details',

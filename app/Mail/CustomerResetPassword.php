@@ -31,7 +31,9 @@ class CustomerResetPassword extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(from: 'smtp@bspmi.com', subject: 'Customer Reset Password');
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: 'You requested a password reset');
   }
 
   /**

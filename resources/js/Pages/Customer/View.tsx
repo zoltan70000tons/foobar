@@ -15,6 +15,7 @@ import {
   MenuItem,
   Tab,
   Tabs,
+  Button,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
@@ -22,28 +23,16 @@ import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import Country from "@/Components/Country";
 import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
-
-const monthNames = {
-  "01": "January",
-  "02": "February",
-  "03": "March",
-  "04": "April",
-  "05": "May",
-  "06": "June",
-  "07": "July",
-  "08": "August",
-  "09": "September",
-  "10": "October",
-  "11": "November",
-  "12": "December",
-};
+import dayjs from "dayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 const View = ({ auth, customer, bookings }: PageProps) => {
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
 
   const [selectedTab, setSelectedTab] = useState(0);
-  const [year, month, day] = customer?.detail?.dob.split("-");
 
   const handleEdit = () => {
     get(route('customers.edit', { customer: customer.id }));
@@ -70,7 +59,11 @@ const View = ({ auth, customer, bookings }: PageProps) => {
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="View Customer"/>
-      <Toolbar/>
+      <Toolbar sx={ { mt: 8 } }>
+        <Button variant="outlined" color="secondary" onClick={ handleBack }>
+          Back
+        </Button>
+      </Toolbar>
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
@@ -147,38 +140,23 @@ const View = ({ auth, customer, bookings }: PageProps) => {
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
-                  Date of Birth
-                </Typography>
-                <Box sx={ { width: "100%" } }>
+                <Box sx={ { width: "100%", mt: 2, mb: 2 } }>
                   <Grid container spacing={ 2 }>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Year"
-                        variant="outlined"
-                        value={ year }
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Month"
-                        variant="outlined"
-                        value={ monthNames[month] || month }
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
-                    <Grid item xs={ 2 }>
-                      <TextField
-                        fullWidth
-                        label="Day"
-                        variant="outlined"
-                        value={ day }
-                        InputProps={{ readOnly: true }}
-                      />
-                    </Grid>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <Grid item xs={ 6 }>
+                        <DatePicker
+                          label="Date of Birth"
+                          sx={{ width: "100%" }}
+                          value={customer.detail.dob ? dayjs(customer.detail.dob) : null}
+                          maxDate={dayjs()} // Restricts future dates
+                          format="YYYY-MM-DD" // Ensures consistent formatting
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth />
+                          )}
+                          disabled
+                        />
+                      </Grid>
+                    </LocalizationProvider>
                     <Grid item xs={ 6 }>
                       <Country
                         fullWidth

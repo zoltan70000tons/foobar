@@ -29,10 +29,9 @@ class CustomerResetPasswordSuccess extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(
-      from: 'smtp@bspmi.com',
-      subject: 'Customer Reset Password Success',
-    );
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: 'Customer Reset Password Success');
   }
 
   /**
@@ -44,7 +43,7 @@ class CustomerResetPasswordSuccess extends Mailable
       view: 'emails.customer-reset-password-success',
       with: [
         'customer' => $this->customer,
-      ],
+      ]
     );
   }
 

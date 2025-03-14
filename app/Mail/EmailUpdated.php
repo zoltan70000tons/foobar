@@ -30,10 +30,9 @@ class EmailUpdated extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(
-      from: 'smtp@bspmi.com',
-      subject: __('systemEmails.update_email.subject', [], $this->language),
-    );
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.update_email.subject', [], $this->language));
   }
 
   /**
@@ -46,7 +45,7 @@ class EmailUpdated extends Mailable
       with: [
         'user' => $this->user,
         'language' => $this->language,
-      ],
+      ]
     );
   }
 

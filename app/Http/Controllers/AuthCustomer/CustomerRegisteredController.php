@@ -77,7 +77,7 @@ class CustomerRegisteredController extends Controller
       setPermissionsTeamId(1);
       $user->assignRole('Customer');
 
-      Log::info('User data', ['user' => $user->load('detail')]);
+      //Log::info('User data', ['user' => $user->load('detail')]);
 
       // Generate a unique numeric survivor number and store it
       $survivorNumber = CustomerHelper::generateSurvivorNumber();
@@ -174,6 +174,11 @@ class CustomerRegisteredController extends Controller
 
     // Update user credentials
     $user = User::find($survivor->user_id);
+
+    if ($user->email !== null) {
+      return response()->json(['message' => 'Account already activated.'], 400);
+    }
+
     $user->update([
       'email' => $request->email,
       'password' => Hash::make($request->password),
@@ -244,7 +249,7 @@ class CustomerRegisteredController extends Controller
   | Send welcome email ACTIVATE SURVIVOR USER
   |--------------------------------------------------------------------------
   |
-  |  This email is send, when user successfully activate survivor account.
+  |  This email is send, to confirm email address and activate the survivor.
   |
   */
   protected function sendActivateSurvivorEmail(User $user, string $language, string $survivorNumber): void

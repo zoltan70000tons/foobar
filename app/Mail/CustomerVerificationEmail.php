@@ -32,7 +32,9 @@ class CustomerVerificationEmail extends Mailable
    */
   public function envelope(): Envelope
   {
-    return new Envelope(from: 'smtp@bspmi.com', subject: 'Customer Verification Email');
+    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+
+    return new Envelope(from: $mailFromAddress, subject: 'Customer Verification Email');
   }
 
   /**
