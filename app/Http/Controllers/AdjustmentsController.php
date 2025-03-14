@@ -36,7 +36,6 @@ class AdjustmentsController extends Controller
     use ExceptionLogger;
     public function createAdjustment(Request $request)
     {
-
         $booking_id = $request->route('booking_id');
         $event_id = $request->route('event_id');
         $validated = $request->validate([
@@ -50,18 +49,18 @@ class AdjustmentsController extends Controller
         // Verify if the booking exists
         $booking = Booking::findOrFail($booking_id);
 
-        // Start a database transaction
-        DB::beginTransaction();
+        return $this->withPermission([Permissions::CreateAdjustments], function ($validated, $booking, $event_id) {
+            // Start a database transaction
+            DB::beginTransaction();
 
-        try {
-
-            return $this->withPermission([Permissions::CreateAdjustments], function ($validated, $booking, $event_id) {
+            try {
                 $existingAdjustment = Adjustment::where('code', $validated['code'])->first();
                 if ($existingAdjustment) {
                     DB::table('booking_has_adjustments')->insert([
                         'booking_id' => $booking->id,
                         'adjustment_id' => $existingAdjustment->id,
                     ]);
+                    $adjustment = $existingAdjustment;
                 } else {
                     $adjustment = Adjustment::create([
                         'code' => $validated['code'],
@@ -77,17 +76,23 @@ class AdjustmentsController extends Controller
                         'adjustment_id' => $adjustment->id,
                     ]);
                 }
-                // Commit the transaction
+
                 $this->paymentInfoService->syncAllocatedCost($booking);
-                DB::commit();
+
                 $this->saveBookingLog($booking->id, 'Added Adjustment', 'Added ' . $adjustment->type . ' ' . $adjustment->operation . ' ' . ' with value ' . $adjustment->value);
+
+                // Commit the transaction
+                DB::commit();
+
                 return redirect()->back()->with('success', 'Adjustment created and linked successfully.');
-            },  $validated, $booking, $event_id);
-        } catch (\Exception $e) {
-            // Rollback the transaction on error
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to create adjustment.');
-        }
+            } catch (\Exception $e) {
+                //Rollback the transaction on error
+                DB::rollBack();
+                $this->logException($e);
+
+                return redirect()->back()->with('error', 'Failed to create adjustment.');
+            }
+        },  $validated, $booking, $event_id);
     }
 
     public function deleteAdjustment(Request $request)
@@ -144,23 +149,23 @@ class AdjustmentsController extends Controller
         DB::beginTransaction();
 
         try {
-            // Verify if the booking exists
-            $booking = Booking::findOrFail($booking_id);
-
-            // Find the adjustment to update
-            $adjustment = Adjustment::findOrFail($request->input('id'));
-
             // Validate the incoming request
             $validated = $request->validate([
                 'code' => [
                     'required',
-                    Rule::unique('adjustments')->ignore($adjustment->id),
+                    Rule::unique('adjustments')->ignore($request->input('id')),
                 ],
                 'type' => 'required|string',
                 'operation' => 'required|string',
                 'value' => 'required|numeric',
                 'restrictions' => 'nullable|array',
             ]);
+
+            // Verify if the booking exists
+            $booking = Booking::findOrFail($booking_id);
+
+            // Find the adjustment to update
+            $adjustment = Adjustment::findOrFail($request->input('id'));
 
             // Verify permission before updating
             $this->withPermission([Permissions::EditAdjustments], function () use ($validated, $adjustment, $event_id) {
@@ -172,10 +177,10 @@ class AdjustmentsController extends Controller
                     'restrictions' => $validated['restrictions'] ?? null,
                     'event_id' => $event_id,
                 ]);
-            });
 
-            // Commit the transaction
-            DB::commit();
+                // Commit the transaction
+                DB::commit();
+            });
 
             // Save booking log
             $this->saveBookingLog(
@@ -184,20 +189,14 @@ class AdjustmentsController extends Controller
                 'Updated ' . $adjustment->type . ' ' . $adjustment->operation . ' with value ' . $adjustment->value
             );
 
-            return redirect()->route('bookings.show', [
-                'id' => $event_id,
-                'booking_code' => $booking->booking_code,
-            ])->with([
-                'message' => 'Adjustment updated and linked successfully.',
-            ]);
+            return redirect()->back()->with('success', 'Adjustment updated and linked successfully.');
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Failed to update adjustment.',
-                'error' => $e->getMessage(),
-            ], 500);
+            $this->logException($e);
+
+            return redirect()->back()->with('error', 'Failed to update adjustment.');
         }
     }
 }
