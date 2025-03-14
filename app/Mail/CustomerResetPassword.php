@@ -33,7 +33,7 @@ class CustomerResetPassword extends Mailable
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: 'Customer Reset Password');
+    return new Envelope(from: $mailFromAddress, subject: 'You requested a password reset');
   }
 
   /**

@@ -60,7 +60,7 @@ class BookingController extends Controller
       return response()->json(['message' => 'Cart is empty'], 400);
     }
 
-    \Log::info('cart', $cart);
+    // \Log::info('cart', $cart);
 
     try {
       $reservationId = $validated['cart']['reservation_id'];
@@ -81,14 +81,14 @@ class BookingController extends Controller
       // get price from session
       // $price = $validated["cart"]["price_total"];
       $adjustments = Adjustment::where('event_id', $eventId)->first();
-      $eventStatus = Event::find($eventId)->status;
+      $event = Event::find($eventId);
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
         'cabinPrice' => (float) $validated['cart']['cabin_price'],
         'cabinCapacity' => (int) $validated['cart']['cabin_capacity'],
         'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
         'selectedAdjustments' => $cart['addons'],
         'adjustments' => $adjustments,
-        'eventStatus' => $eventStatus,
+        'eventStatus' => $event->status,
       ]);
 
       $totalPassenger = $priceCalc['totalPassenger'];
@@ -156,7 +156,7 @@ class BookingController extends Controller
       }
 
       // Send confirmation email
-      $this->sendConfirmationEmail($bookingCode, $passengerData, $cart, $language);
+      $this->sendConfirmationEmail($bookingCode, $passengerData, $cart, $language, $event);
 
       return response()->json(
         [
@@ -187,7 +187,7 @@ class BookingController extends Controller
   |  This method trigger the email confirmation
   |
   */
-  private function sendConfirmationEmail($bookingCode, $passengerData, $cart, $language): void
+  private function sendConfirmationEmail($bookingCode, $passengerData, $cart, $language, $event): void
   {
     try {
       // Get booking data with relationships
@@ -233,7 +233,7 @@ class BookingController extends Controller
       }
 
       Mail::to($passengerData['email'])->send(
-        new CustomerConfirmationBooking($booking, $cart, $installments, $language)
+        new CustomerConfirmationBooking($booking, $cart, $installments, $language, $event)
       );
     } catch (\Exception $e) {
       \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
@@ -433,6 +433,7 @@ class BookingController extends Controller
     $user = Auth::user();
 
     $email = $request->input('email');
+
     if (!$email) {
       return response()->json(['message' => 'Email is required'], 400);
     }
@@ -501,10 +502,14 @@ class BookingController extends Controller
 
     $invitation = $this->customerBookingRepository->createPassengerInvitation($passenger, $booking, $email);
 
+    $fromWho = $user->detail->first_name . ' ' . $user->detail->last_name;
+    $toWho = $customer ? $customer->detail->first_name : $email;
+    $event = Event::find($eventId);
+
     if ($customer) {
-      $this->customerBookingService->addPassengerViaEmailDirectly($booking, $email);
+      $this->customerBookingService->addPassengerViaEmailDirectly($booking, $email, $fromWho, $toWho, $event);
     } else {
-      $this->customerBookingService->addPassengerViaEmail($booking, $invitation, $email);
+      $this->customerBookingService->addPassengerViaEmail($booking, $invitation, $email, $fromWho, $toWho, $event);
     }
 
     return response()->json(['message' => 'Invitation sent'], 200);
