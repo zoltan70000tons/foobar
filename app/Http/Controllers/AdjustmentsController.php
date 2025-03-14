@@ -149,23 +149,23 @@ class AdjustmentsController extends Controller
         DB::beginTransaction();
 
         try {
-            // Verify if the booking exists
-            $booking = Booking::findOrFail($booking_id);
-
-            // Find the adjustment to update
-            $adjustment = Adjustment::findOrFail($request->input('id'));
-
             // Validate the incoming request
             $validated = $request->validate([
                 'code' => [
                     'required',
-                    Rule::unique('adjustments')->ignore($adjustment->id),
+                    Rule::unique('adjustments')->ignore($request->input('id')),
                 ],
                 'type' => 'required|string',
                 'operation' => 'required|string',
                 'value' => 'required|numeric',
                 'restrictions' => 'nullable|array',
             ]);
+
+            // Verify if the booking exists
+            $booking = Booking::findOrFail($booking_id);
+
+            // Find the adjustment to update
+            $adjustment = Adjustment::findOrFail($request->input('id'));
 
             // Verify permission before updating
             $this->withPermission([Permissions::EditAdjustments], function () use ($validated, $adjustment, $event_id) {
@@ -177,10 +177,10 @@ class AdjustmentsController extends Controller
                     'restrictions' => $validated['restrictions'] ?? null,
                     'event_id' => $event_id,
                 ]);
-            });
 
-            // Commit the transaction
-            DB::commit();
+                // Commit the transaction
+                DB::commit();
+            });
 
             // Save booking log
             $this->saveBookingLog(
@@ -189,20 +189,14 @@ class AdjustmentsController extends Controller
                 'Updated ' . $adjustment->type . ' ' . $adjustment->operation . ' with value ' . $adjustment->value
             );
 
-            return redirect()->route('bookings.show', [
-                'id' => $event_id,
-                'booking_code' => $booking->booking_code,
-            ])->with([
-                'message' => 'Adjustment updated and linked successfully.',
-            ]);
+            return redirect()->back()->with('success', 'Adjustment updated and linked successfully.');
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Failed to update adjustment.',
-                'error' => $e->getMessage(),
-            ], 500);
+            $this->logException($e);
+
+            return redirect()->back()->with('error', 'Failed to update adjustment.');
         }
     }
 }

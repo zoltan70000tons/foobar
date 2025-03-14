@@ -29,6 +29,7 @@ import { router, usePage } from "@inertiajs/react";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 type AdjustmentFormProps = {
     booking: Booking;
@@ -79,6 +80,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     const [open, setOpen] = useState(false);
     const [currentEditingId, setCurrentEditingId] = useState<number | null>(null);
     const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<number | "new">("new");
+    const [loading, setLoading] = useState(false);
 
     const { showSnackbar } = useSnackbar();
     const { hasPermission } = usePermissions();
@@ -133,33 +135,54 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     };
 
     const handleDelete = (id: number) => {
-        try {
-            router.post(route("bookings.deleteAdjustment", { event_id: booking.event_id, booking_id: booking.id }), { id });
-            showSnackbar("Adjustment deleted successfully.", "success");
-        } catch (error) {
-            console.error("Failed to delete adjustment:", error);
-            showSnackbar("An error occurred while deleting the adjustment.", "error");
-        }
+        setLoading(true);
+
+        router.post(
+          route("bookings.deleteAdjustment", {
+              event_id: booking.event_id,
+              booking_id: booking.id
+          }),
+          { id },
+          {
+              onSuccess: () => setLoading(false),
+              onError: () => setLoading(false),
+              onFinish: () => setLoading(false),
+          }
+        );
     };
 
     const createAdjustment = () => {
+        setLoading(true);
+
         router.post(
           route("bookings.createAdjustment", {
               event_id: booking.event_id,
               booking_id: booking.id
           }),
-          formData
+          formData,
+          {
+              onSuccess: () => setLoading(false),
+              onError: () => setLoading(false),
+              onFinish: () => setLoading(false),
+          }
         );
     };
 
-    const updateAdjustment = async () => {
-        try {
-            await router.post(route("bookings.updateAdjustment", { event_id: booking.event_id, booking_id: booking.id }), { id: currentEditingId, ...formData });
-            showSnackbar("Adjustment updated successfully.", "success");
-        } catch (error) {
-            console.error("Failed to update adjustment:", error);
-            showSnackbar("An error occurred while updating the adjustment.", "error");
-        }
+    const updateAdjustment = () => {
+        setLoading(true);
+
+        router.post(
+          route("bookings.updateAdjustment", {
+              event_id: booking.event_id,
+              booking_id: booking.id }
+          ),
+          { id: currentEditingId, ...formData },
+          {
+              onSuccess: () => setLoading(false),
+              onError: () => setLoading(false),
+              onFinish: () => setLoading(false),
+          }
+        );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -287,6 +310,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                     </Button>
                 </DialogActions>
             </Dialog>
+            <LoadingOverlay open={loading} />
         </Box>
     );
 };
