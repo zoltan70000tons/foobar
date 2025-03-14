@@ -68,7 +68,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     };
 
     const handleSubmit = (e: React.FormEvent) => {
-        console.log('submitted')
         e.preventDefault();
     
         if (!formData.BIP_ID || formData.amount <= 0) {
