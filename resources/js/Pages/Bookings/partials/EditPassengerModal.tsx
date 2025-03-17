@@ -16,15 +16,13 @@ import {
     Autocomplete,
     CircularProgress,
     FormHelperText,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle
 } from "@mui/material";
 
 import axios from "axios";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import { LoadingButton } from "@mui/lab";
-
-
+import Country from "@/Components/Country";
 
 const EditPassengerModal = ({
     open,
@@ -50,8 +48,6 @@ const EditPassengerModal = ({
     const canReset = hasPermission(Permissions.ResetSeat);
 
     const editable = isLeadPassenger || !canEdit || !editMode;
-
-
 
     useEffect(() => {
         if (searchQuery.length < 3) {
@@ -83,8 +79,6 @@ const EditPassengerModal = ({
         }
     }
 
-   
-
     const handlePrefill = () => {
         if (!selectedUser) return;
         //inputs
@@ -113,7 +107,6 @@ const EditPassengerModal = ({
         //date
         onChange("dob", selectedUser.dob || "");
 
-
         //text area
         onChange("special_request", selectedUser.special_request || "");
 
@@ -126,9 +119,6 @@ const EditPassengerModal = ({
         onChange("single_t_agreement", selectedUser.single_t_agreement || false);
         onChange("was_on_board", selectedUser.was_on_board || false);
         onChange("newsletter", selectedUser.newsletter || false);
-
-
-
     };
 
     return (
@@ -254,16 +244,17 @@ const EditPassengerModal = ({
                             </FormControl>
                         </Grid>
                         <Grid item xs={12} md={3}>
-                            <TextField
-                                label="Citizenship"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={passenger?.citizenship || ""}
-                                onChange={(e) => onChange("citizenship", e.target.value)}
-                                disabled={editable}
-                                error={!!validation?.citizenship}
-                                helperText={validation?.citizenship?.[0]}
+                            <Country
+                              fullWidth
+                              label="Citizenship"
+                              variant="outlined"
+                              value={passenger?.citizenship || ""}
+                              size="small"
+                              name={ "citizenship" }
+                              onChange={ (e) => onChange('citizenship', e) }
+                              disabled={editable}
+                              error={!!validation?.citizenship}
+                              helperText={validation?.citizenship?.[0]}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -363,17 +354,17 @@ const EditPassengerModal = ({
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
-                            <TextField
-                                label="Country"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={passenger?.country || ""}
-                                onChange={(e) => onChange("country", e.target.value)}
-                                disabled={editable}
-                                error={!!validation?.country}
-                                helperText={validation?.country?.[0]}
-
+                            <Country
+                              fullWidth
+                              label="Country"
+                              variant="outlined"
+                              value={passenger?.country || ""}
+                              size="small"
+                              name={ "country" }
+                              onChange={ (e) => onChange('country', e) }
+                              disabled={editable}
+                              error={!!validation?.country}
+                              helperText={validation?.country?.[0]}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
