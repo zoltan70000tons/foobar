@@ -135,7 +135,7 @@ class BookingsController extends Controller
       'passenger.city' => ['required', 'string', 'max:255'],
       'passenger.state' => ['nullable', 'string', 'max:255'],
       'passenger.postal_code' => ['nullable', 'string', 'max:20'],
-      'passenger.country' => ['required', 'string', 'max:100'],
+      'passenger.country' => ['required', 'string', 'max:3'],
       'passenger.emergency_c_name' => ['nullable', 'string', 'max:255'],
       'passenger.emergency_c_phone' => ['nullable', 'string', 'max:20'],
       'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
