@@ -433,7 +433,7 @@ const EditPassengerModal = ({
                                 control={
                                     <Checkbox
                                         size="small"
-                                        checked={passenger?.terms_n_cons || false}
+                                        checked={passenger?.terms_n_cons || isLeadPassenger === false}
                                         onChange={(e) => onChange("terms_n_cons", e.target.checked)}
                                         disabled={editable}
                                     />
@@ -498,7 +498,7 @@ const EditPassengerModal = ({
                                 control={
                                     <Checkbox
                                         size="small"
-                                        checked={passenger?.cabin_conf_accp || false}
+                                        checked={passenger?.cabin_conf_accp || isLeadPassenger === false}
                                         onChange={(e) => onChange("cabin_conf_accp", e.target.checked)}
                                         disabled={editable}
                                     />
