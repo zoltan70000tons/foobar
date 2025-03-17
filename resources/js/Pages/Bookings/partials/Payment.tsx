@@ -31,6 +31,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { Delete } from "@mui/icons-material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { router } from "@inertiajs/react";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat("en-US", {
@@ -107,6 +108,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const canDeleteFee = hasPermission(Permissions.DeleteFees);
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
 
   // State for modal
   const [open, setModalOpen] = useState(false);
@@ -197,6 +199,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   };
 
   const handleDeleteFee = (passengerId: number, feeId: number) => {
+    setLoading(true);
+
     router.post(
       route("fees.delete", {
         event_id: booking.event_id,
@@ -220,11 +224,16 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           console.error("Failed to delete fee:", errors);
           showSnackbar("An error occurred while trying to delete the fee.", "error");
         },
+        onFinish: () => {
+          setLoading(false);
+        }
       },
     );
   };
 
   const handleDeletePayment = (passengerId: number, paymentId: number) => {
+    setLoading(true);
+
     router.post(
       route("payments.delete", {
         event_id: booking.event_id,
@@ -243,6 +252,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           console.error("Failed to delete payment:", errors);
           showSnackbar("An error occurred while trying to delete the payment.", "error");
         },
+        onFinish: () => {
+          setLoading(false);
+        }
       },
     );
   };
@@ -489,6 +501,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 </Grid>
               </Grid>
             </Paper>
+            <LoadingOverlay open={loading} />
           </Box>
         );
       })}
@@ -556,6 +569,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             </Box>
           </Box>
         </DialogContent>
+        <LoadingOverlay open={loading} />
       </Dialog>
 
       <Dialog open={openConfirm} onClose={handleCancel}>
