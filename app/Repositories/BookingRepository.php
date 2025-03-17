@@ -6,6 +6,7 @@ use App\Enums\StatusCabin;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
+use App\Services\PaymentInfoService;
 use App\Traits\CabinFilter;
 use DB;
 use Illuminate\Support\Facades\Log;
@@ -33,11 +34,13 @@ class BookingRepository implements BookingInterface
   public function __construct(
     PassengerRepository $passengerRepository,
     AdjustmentsRepository $adjustmentsRepository,
-    PaymentService $paymentService
+    PaymentService $paymentService,
+    PaymentInfoService $paymentInfoService,
   ) {
     $this->passengerRepository = $passengerRepository;
     $this->adjustmentsRepository = $adjustmentsRepository;
     $this->paymentService = $paymentService;
+    $this->paymentInfoService = $paymentInfoService;
   }
 
   function getAll()
@@ -462,6 +465,9 @@ class BookingRepository implements BookingInterface
         if ($temporaryBookingId) {
           TemporaryReservation::find($temporaryBookingId)?->delete();
         }
+
+        $this->paymentInfoService->syncAllocatedCost($booking);
+
         DB::commit();
         return [
           'message' => 'Booking created successfully.',
@@ -473,7 +479,6 @@ class BookingRepository implements BookingInterface
       Log::info($passenger);
       throw new \Exception('Error creating booking.');
     } catch (\Exception $e) {
-      dd($e->getMessage());
       Log::error($e->getMessage());
       FacadesDB::rollBack();
       return [
