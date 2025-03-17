@@ -17,6 +17,7 @@ import { sanitizeInput } from '@/Helpers/inputSanitizer';
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 type FeesFormProps = {
     passenger_id: number;
@@ -34,6 +35,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id,
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<Fee>({ type: "", amount: 0 });
     const {showSnackbar} = useSnackbar();
+    const [loading, setLoading] = useState(false);
 
 
     const handleChange = (
@@ -51,10 +53,12 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id,
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-            if (!formData.type || formData.amount <= 0) {
-                showSnackbar("Please fill in all fields correctly.", 'error');
+        if (!formData.type || formData.amount <= 0) {
+            showSnackbar("Please fill in all fields correctly.", 'error');
             return;
         }
+
+        setLoading(true);
 
         // Send form data to the server using the router
         router.post(
@@ -81,6 +85,9 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id,
                     console.error("Validation errors:", errors);
                     showSnackbar('Failed to save fee. Please check your inputs.', 'error');
                 },
+                onFinish: () => {
+                    setLoading(false);
+                }
             }
         );
     };
@@ -149,6 +156,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id,
                         </Grid>
                     </Grid>
                 </DialogActions>
+                <LoadingOverlay open={loading} />
             </Dialog>
         </Box>
     );
