@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Exceptions\InvalidBipIdException;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Repositories\CalculationRepository;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
@@ -37,14 +39,23 @@ class PaymentController extends Controller
             try {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
-                $validated = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'passenger_id' => 'required|exists:passengers,id',
-                    'BIP_ID' => 'nullable|string|max:50',
+                    'BIP_ID' => 'nullable|string|uuid|max:50',
                     'amount' => 'required|numeric|min:0.01',
                     'type' => 'required|in:PAYMENT,REFUND',
                     'notes' => 'nullable|string|max:255',
                     'transaction_date' => 'required|date'
                 ]);
+
+                if ($validator->fails()) {
+                    if ($validator->errors()->has('BIP_ID')) {
+                        throw new InvalidBipIdException();
+                    }
+                }
+
+                $validated = $validator->validated();
+
                 $validated['source'] = 'MANUAL';
 
                 Payment::create($validated);
@@ -59,6 +70,11 @@ class PaymentController extends Controller
                 );
 
                 return redirect()->back()->with('success', 'Payment added successfully!');
+            } catch (InvalidBipIdException $e) {
+                DB::rollBack();
+                $this->logException($e);
+
+                return $e->render($request);
             } catch (\Exception $e) {
                 DB::rollBack();
                 $this->logException($e);
