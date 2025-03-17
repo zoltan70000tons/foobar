@@ -64,12 +64,6 @@ const Index = ({
   const columns = useMemo(
     () => [
       {
-        header: "Order",
-        accessor: "display_order",
-        filterable: false,
-        sortable: true,
-      },
-      {
         header: "Category Code",
         accessor: "category_code",
         filterable: true,

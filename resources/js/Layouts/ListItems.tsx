@@ -93,6 +93,9 @@ const MenuItems: React.FC = () => {
         sx={{
           width: 60,
           flexShrink: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           [`& .MuiDrawer-paper`]: { width: 60, boxSizing: "border-box" },
         }}
       >
@@ -236,7 +239,7 @@ const MenuItems: React.FC = () => {
           )}
 
           {isBookingsOpen  && (
-            <List component="div" disablePadding>
+            <List disablePadding>
               {events.length > 0 ? (
                 events.map((event) => (
                   <ListItemButton
@@ -246,7 +249,7 @@ const MenuItems: React.FC = () => {
                     selected={parseInt(routeEventId) === event.id}
                   >
                     <Tooltip title={event.name}>
-                      <ListItemText primary={truncateText(event.name, 15)} />
+                      <ListItemText primary={truncateText(event.code, 15)} />
                     </Tooltip>
                   </ListItemButton>
                 ))
