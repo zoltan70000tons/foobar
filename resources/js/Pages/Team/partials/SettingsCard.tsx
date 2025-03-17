@@ -164,7 +164,10 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                   <Box>
                     <PhoneNumber value={data?.phone_number || ""}
                       onChange={(value) => handleChangePhone(value)}
-                      forceDialCode={true} />
+                      forceDialCode={true}
+                      error={errors.phone_number}
+                      helperText={errors.phone_number}
+                    />
                   </Box> 
                 </Grid>
 
@@ -192,7 +195,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
 
                     ]}
                     dis={!canEdit}
-                    error={errors.example}
+                    error={errors.gender}
                   />
                 </Grid>
 

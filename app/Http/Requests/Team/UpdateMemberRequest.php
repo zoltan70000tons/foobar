@@ -31,9 +31,9 @@ class UpdateMemberRequest extends FormRequest
         return [
             'firstname' => ['required', 'string', new NoForbiddenCharacters()],
             'lastname' => ['required', 'string', new NoForbiddenCharacters()],
-            'phone_number' => ['sometimes', 'phone:AUTO'], // Validate if present
+            'phone_number' => ['sometimes', 'regex:/^\+?[1-9]\d{6,14}$/'],
             'gender' => ['required', 'string', new NoForbiddenCharacters()],
-            'middlename' => ['sometimes', 'string', new NoForbiddenCharacters()], // Validate if present
+            'middlename' => ['nullable', 'string', new NoForbiddenCharacters()],
             'email' => 'required|email',
         ];
     }
