@@ -34,6 +34,7 @@ import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { router } from "@inertiajs/react";
 import {FilterList} from "@mui/icons-material";
+import Country from "@/Components/Country";
 
 const TabPanel = ({ children, value, index }) => {
     return (
@@ -690,15 +691,14 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
+                                <Country
+                                    fullWidth
                                     label="Country"
                                     variant="outlined"
-                                    fullWidth
+                                    value={ passenger?.country || "" }
                                     size="small"
-                                    value={passenger?.country || ""}
-                                    onChange={(e) => onChange("country", e.target.value)}
-
-
+                                    name={ "country" }
+                                    onChange={ (e) => onChange('country', e) }
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>

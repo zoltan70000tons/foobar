@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   FormControl,
@@ -39,7 +39,9 @@ const Country: React.FC<Props> = ({
   helperText,
   nameOfField,
   disabled = false,
+  size = '',
 }) => {
+  const [marginTop, setMarginTop] = useState("-7px");
   // Function to get country name based on language
   const getCountryName = (countryCode: string) => {
     return (
@@ -72,6 +74,7 @@ const Country: React.FC<Props> = ({
   const handleChangeCountry = (e: any) => {
     const selectedCountry = e.target.value as string;
     onChange(selectedCountry);
+    setMarginTop("0");
   };
 
   return (
@@ -81,7 +84,7 @@ const Country: React.FC<Props> = ({
       }}
     >
       <FormControl fullWidth error={error}>
-        <InputLabel id="country-label">{label ? label : "Country"}</InputLabel>
+        <InputLabel id="country-label" sx={size === 'small' ? {marginTop} : {}}>{label ? label : "Country"}</InputLabel>
         <Select
           name={nameOfField}
           labelId="country-label"
@@ -89,6 +92,7 @@ const Country: React.FC<Props> = ({
           value={value}
           sx={{
             backgroundColor: "rgba(255, 255, 255, 0.05)",
+            ...(size === 'small' && { maxHeight: "40px" }),
           }}
           onChange={handleChangeCountry}
           disabled={disabled}
