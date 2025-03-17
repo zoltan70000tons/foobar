@@ -121,6 +121,7 @@ class CartController extends Controller
       'price_save' => 'nullable|string|sometimes',
       'price_extras' => 'nullable|numeric|sometimes',
       'tax' => 'nullable|numeric|sometimes',
+      'lower_bed_type_2' => 'nullable|string',
     ]);
 
     if ($validated['force_clear'] === true) {
@@ -202,6 +203,7 @@ class CartController extends Controller
       'price_save' => 'nullable|string|sometimes',
       'price_extras' => 'nullable|numeric|sometimes',
       'tax' => 'nullable|numeric|sometimes',
+      'lower_bed_type_2' => 'nullable|string',
     ]);
 
     $request->session()->put('cart', $validated);

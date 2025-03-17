@@ -24,6 +24,7 @@ class Booking extends Model
     'payment_plan',
     'cabin_id',
     'is_single_occupancy',
+    'bed_config',
     'agent_id',
     'status',
     'tags',

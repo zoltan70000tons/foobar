@@ -122,7 +122,7 @@ class CustomerBookingRepository
     // unset agent_id
     $bookings->map(function ($booking) {
       unset($booking->agent_id);
-      if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
+      if ($booking->status === 'NEW') {
         unset($booking->booking_code);
         unset($booking->cabin->cabin_number);
         unset($booking->cabin->cabinSpec->cabin_number);

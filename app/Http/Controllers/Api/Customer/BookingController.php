@@ -67,6 +67,7 @@ class BookingController extends Controller
       $eventId = (int) $validated['cart']['event_id'];
       $paymentPlan = $validated['cart']['payment_plan'];
       $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ? $validated['cart']['number_of_installments'] : null;
+      $bedConfig = $cart['cabin_type'] === 'private-cabin' ? $validated['bedConfig'] : 'SEPARATED';
 
       // Process booking data
       $bookingData = [
@@ -75,7 +76,8 @@ class BookingController extends Controller
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'is_single_occupancy' => false,
-        'tags' => json_encode(['New']),
+        'tags' => json_encode(['NEW']),
+        'bed_config' => $bedConfig,
       ];
 
       // get price from session
