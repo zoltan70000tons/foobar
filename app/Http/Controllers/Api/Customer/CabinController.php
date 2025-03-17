@@ -246,6 +246,7 @@ class CabinController extends Controller
         'cabin_number' => $cabin['cabin_number'],
         'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
         'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
+        'lower_bed_type_2' => $cabin['lower_bed_type_2'],
       ]);
 
       DB::commit();
@@ -258,6 +259,7 @@ class CabinController extends Controller
           'time_to_cancel' => $reservationTime,
           'updated_reservation' => $keepOldTimeStamp ? true : false,
           'cabin_number' => $selectionType === 'clientSelect' ? $reserved->cabin_number : null,
+          'lower_bed_type_2' => $cabin['lower_bed_type_2'],
         ],
         200
       );

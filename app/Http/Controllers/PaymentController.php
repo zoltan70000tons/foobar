@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
 use App\Models\Booking;
-use App\Traits\BookingLogTrait;
-use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
+use App\Traits\BookingLogTrait;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
-
-
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -28,10 +29,12 @@ class PaymentController extends Controller
         $this->calculationRepository = $calculationRepository;
     }
 
-    public function store(Request $request)
+    public function store(Request $request): Response|RedirectResponse
     {
-        try {
-            return $this->withPermission([Permissions::CreateFees], function ($request) {
+        return $this->withPermission([Permissions::CreateFees], function ($request) {
+            DB::beginTransaction();
+
+            try {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
                 $validated = $request->validate([
@@ -43,25 +46,34 @@ class PaymentController extends Controller
                     'transaction_date' => 'required|date'
                 ]);
                 $validated['source'] = 'MANUAL';
+
                 Payment::create($validated);
                 $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+
+                DB::commit();
+
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Payment',
                     "Manual {$validated['type']} value: \${$validated['amount']} was added to booking"
                 );
+
                 return redirect()->back()->with('success', 'Payment added successfully!');
-            }, $request);
-        } catch (\Exception $e) {
-            $this->logException($e);
-            return redirect()->back()->with('error', 'Error creating payment!');
-        }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->logException($e);
+
+                return redirect()->back()->with('error', 'Error creating payment!');
+            }
+        }, $request);
     }
 
-    public function delete(Request $request)
+    public function delete(Request $request): Response|RedirectResponse
     {
-        try {
-            return $this->withPermission([Permissions::DeletePayments], function ($request) {
+        return $this->withPermission([Permissions::DeletePayments], function ($request) {
+            DB::beginTransaction();
+
+            try {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
                 $validated = $request->validate([
@@ -81,19 +93,26 @@ class PaymentController extends Controller
                     return redirect()->back()->with('error', 'Fee not found.');
                 }
                 $amount = $payment->amount;
-                $type =$payment->type;
+                $type = $payment->type;
+
                 $payment->delete();
-                $balance = $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+                $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+
+                DB::commit();
+
                 $this->saveBookingLog(
                     $booking_id,
                     'Deleted payment',
                     "Payment: {$type} value: \${$amount} was deleted"
                 );
-                return redirect()->back()->with('success', 'payment deleted successfully!');
-            }, $request);
-        } catch (\Exception $e) {
-            $this->logException($e);
-            return redirect()->back()->with('error', 'Error deleting payment!');
-        }
+
+                return redirect()->back()->with('success', 'Payment deleted successfully!');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->logException($e);
+
+                return redirect()->back()->with('error', 'Error deleting payment!');
+            }
+        }, $request);
     }
 }

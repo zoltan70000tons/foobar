@@ -72,9 +72,11 @@ class OrganizationController extends Controller
             if (!$request->hasValidSignature()) {
                 return "NOT VALID REQUEST";
             }
+
             $userId = $request->query('user');
             $user = User::findOrFail($userId);
             $email = $user->email;
+
             return Inertia::render('JoinOrganization', [
                 'email' => $email,
             ]);
@@ -102,7 +104,11 @@ class OrganizationController extends Controller
                     // Set user details
                     UserDetail::updateOrCreate(
                         ['user_id' => $user->id],
-                        ['first_name' => $validated['user_name'], 'last_name' => $validated['user_lastname']]
+                        [
+                            'first_name' => $validated['user_name'],
+                            'last_name' => $validated['user_lastname'],
+                            'language' => 'en', //FIXME
+                        ],
                     );
 
                     // Redirect to login page

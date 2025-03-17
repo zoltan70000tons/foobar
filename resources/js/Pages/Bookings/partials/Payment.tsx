@@ -198,11 +198,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const handleDeleteFee = (passengerId: number, feeId: number) => {
     router.post(
-      route("fees.delete", { event_id: booking.event_id, booking_id: booking.id }),
+      route("fees.delete", {
+        event_id: booking.event_id,
+        booking_id: booking.id,
+      }),
       { passenger_id: passengerId, fee_id: feeId },
       {
         onSuccess: () => {
-          const updatedPassengers = passengers.map((pax) => {
+          const updatedPassengers = passengers.map((pax) => { //FIXME
             if (pax.id === passengerId) {
               return {
                 ...pax,
@@ -223,7 +226,10 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const handleDeletePayment = (passengerId: number, paymentId: number) => {
     router.post(
-      route("payments.delete", { event_id: booking.event_id, booking_id: booking.id }),
+      route("payments.delete", {
+        event_id: booking.event_id,
+        booking_id: booking.id,
+      }),
       { passenger_id: passengerId, payment_id: paymentId },
       {
         onSuccess: () => {

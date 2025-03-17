@@ -1,7 +1,9 @@
 import { useForm, usePage } from "@inertiajs/react";
-import { FormEventHandler, useState } from "react";
+import React, { FormEventHandler, useEffect, useState } from "react";
 import { TextField, Button, Box, Stack, Alert, Divider } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 interface FormData {
   user_nickname: string;
@@ -12,7 +14,8 @@ interface FormData {
 }
 
 export default function JoinOrganization({ email }: { email: string }) {
-  const { flash } = usePage().props;
+  const { showSnackbar } = useSnackbar();
+
   const { data, setData, post, put, errors, processing, recentlySuccessful } = useForm<FormData>({
     user_nickname: "",
     user_name: "",
@@ -23,6 +26,7 @@ export default function JoinOrganization({ email }: { email: string }) {
 
   const [validationErrors, setValidationErrors] = useState<Partial<FormData>>({});
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const validateForm = (field?: keyof FormData) => {
     const newErrors: Partial<FormData> = {};
@@ -57,9 +61,26 @@ export default function JoinOrganization({ email }: { email: string }) {
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
+
+    setLoading(true);
+
     const errors = validateForm();
+
     if (Object.keys(errors).length === 0) {
-       put("/join-organization");
+      put("/join-organization", {
+        onSuccess: () => {
+          showSnackbar('Account has been created!', "success");
+        },
+        onError: (errors) => {
+          console.error("Request failed:", errors);
+          showSnackbar(errors?.error, "error");
+        },
+        onFinish: () => {
+          setLoading(false);
+        },
+      });
+    } else {
+      setLoading(false);
     }
   };
 
@@ -148,6 +169,7 @@ export default function JoinOrganization({ email }: { email: string }) {
           </Box>
         </form>
       </section>
+      <LoadingOverlay open={loading} />
     </Box>
   );
 }

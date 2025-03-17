@@ -18,11 +18,7 @@ import {
 } from "@mui/material";
 import { Person } from "@mui/icons-material";
 import MuiTable from "@/Components/tables/MuiTable";
-import {
-  CabinStatus,
-  CabinStatusColor,
-  CabinStatusReduced,
-} from "@/enums/CabinStatus";
+import { CabinStatus, CabinStatusColor, CabinStatusReduced } from "@/enums/CabinStatus";
 import { TagEnum } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
@@ -32,8 +28,6 @@ import UserSelectorModal from "@/Components/UserSelectorModal";
 import NewBookingModal from "./NewBookingModal";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import debounce from "lodash/debounce";
-
-
 
 const Index = ({
   auth,
@@ -46,9 +40,8 @@ const Index = ({
   cabinTypes,
   cabinCategories,
   errors,
-  tabIndex
+  tabIndex,
 }: PageProps & { tab: string; data: any }) => {
-
   const { hasPermission } = usePermissions();
   const [selectedTab, setSelectedTab] = useState(tabIndex);
 
@@ -58,7 +51,6 @@ const Index = ({
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     setLoading(true);
@@ -70,7 +62,7 @@ const Index = ({
         preserveState: true,
         replace: true,
         onFinish: () => setLoading(false),
-      }
+      },
     );
   }, [selectedTab]);
 
@@ -111,7 +103,7 @@ const Index = ({
           });
         },
         preserveScroll: true,
-      }
+      },
     );
   };
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
@@ -150,8 +142,7 @@ const Index = ({
 
   const handleClick = (agent_id: String, booking_id: String) => {
     handleOpenModal(agent_id, booking_id);
-
-  }
+  };
 
   const toCamelCase = (str) => {
     return str
@@ -164,8 +155,14 @@ const Index = ({
   const bookingColumns = useMemo(
     () => [
       {
-        header: "Id",
-        accessor: "id",
+        header: "Booking Date",
+        accessor: "created_at",
+        sortable: true,
+        draw: (row) => (
+          <>
+            {new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          </>
+        ),
       },
       {
         header: "Booking code",
@@ -174,36 +171,27 @@ const Index = ({
       {
         header: "Lead passenger",
         accessor: "fullName",
+        sortable: true,
       },
       {
         header: "Type",
         accessor: "cabinType",
+        sortable: true,
         draw: (row) => <>{row.cabin?.cabin_type?.cabin_type}</>,
       },
       {
         header: "Balance",
         accessor: "balance",
-        draw: (row) => (
-          <>
-            {row.balance != null && row.cost != null && (
-              <>{row.balance + " / " + row.cost}</>
-            )}
-          </>
-        ),
+        draw: (row) => <>{row.balance != null && row.cost != null && <>{row.balance + " / " + row.cost}</>}</>,
       },
       {
         header: "Tags",
         accessor: "Tags",
         draw: (row) => (
-          <Box sx={{ display: "inline-flex", gap: 0.5 }}>
+          <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
               row.tags.map((tag: string) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
-                />
+                <Chip key={tag} label={tag} size="small" sx={{ fontSize: "0.7rem", fontWeight: "400" }} />
               ))
             ) : (
               <em>No Tags</em>
@@ -215,6 +203,7 @@ const Index = ({
       {
         header: "Assigned to",
         accessor: "agent_id",
+        sortable: true,
         draw: (row) => {
           const agent = row?.agent;
           const label = agent?.username ? agent.username : <em>Not Assigned</em>;
@@ -233,10 +222,8 @@ const Index = ({
               />
             </Box>
           );
-        }
-      }
-      ,
-
+        },
+      },
       {
         header: "Actions",
         accessor: "",
@@ -244,25 +231,21 @@ const Index = ({
         draw: (row) => (
           <div style={{ display: "flex", gap: "10px" }}>
             {hasPermission(Permissions.ViewCabins) && (
-              <Visibility
-                onClick={() => handleViewClick(row)}
-                style={{ cursor: "pointer" }}
-              />
+              <Visibility onClick={() => handleViewClick(row)} style={{ cursor: "pointer" }} />
             )}
           </div>
         ),
       },
     ],
-    []
+    [],
   );
 
   const subColumns = useMemo(
     () => [
-
       {
         header: "Passenger",
         accessor: "lead_passenger",
-        width: '25%',
+        width: "25%",
         draw: (row) => (
           <Box display="flex" alignItems="center" gap={1} key={row.passenger_order}>
             <Person
@@ -271,9 +254,7 @@ const Index = ({
                 color: row.lead_passenger ? "#f39c12" : "gray",
               }}
             />
-            <Typography>
-            {toCamelCase(row.full_name)}
-            </Typography>
+            <Typography>{toCamelCase(row.full_name)}</Typography>
           </Box>
         ),
       },
@@ -304,7 +285,7 @@ const Index = ({
         accessor: "payment_method",
       },
     ],
-    []
+    [],
   );
 
   const handleFilter = useCallback(
@@ -322,16 +303,16 @@ const Index = ({
             }
           },
           onFinish: () => setLoading(false),
-        }
+        },
       );
     }, 300),
-    []
+    [],
   );
 
   const clearFilter = () => {
     setKeyword("");
     handleFilter("");
-  }
+  };
 
   const customFilter = (e) => {
     let currentKeyword = e.target.value;
@@ -365,47 +346,48 @@ const Index = ({
                 <Box sx={{ minHeight: "40px", display: "flex", alignItems: "center" }}>
                   <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
                 </Box>
-                <TextField size="small" name="filter" value={keyword} placeholder="Search" sx={{ minHeight: "40px" }} onChange={customFilter} InputProps={{
-                  endAdornment: keyword && ( // 🔥 Solo muestra la "X" si hay texto
-                    <InputAdornment position="end">
-                      <IconButton onClick={clearFilter} size="small">
-                        <Clear />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }} />
+                <TextField
+                  size="small"
+                  name="filter"
+                  value={keyword}
+                  placeholder="Search"
+                  sx={{ minHeight: "40px" }}
+                  onChange={customFilter}
+                  InputProps={{
+                    endAdornment: keyword && ( // 🔥 Solo muestra la "X" si hay texto
+                      <InputAdornment position="end">
+                        <IconButton onClick={clearFilter} size="small">
+                          <Clear />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
               </Box>
             </Grid>
             <Box>
               {/* Tabs for navigation */}
-              <Tabs
-                value={selectedTab}
-                onChange={handleTabChange}
-                aria-label="manage inventory and categories"
-              >
+              <Tabs value={selectedTab} onChange={handleTabChange} aria-label="manage inventory and categories">
                 <Tab label="NEW BOOKINGS" />
                 <Tab label="IN PROGRESS" />
                 <Tab label="UPLOADED TO MANIFEST" />
                 <Tab label="CANCELLED" />
               </Tabs>
 
-              <Box
-                sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}
-              >
+              <Box sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}>
                 <MuiTable
                   columns={bookingColumns}
                   data={newBookings}
                   subColumns={subColumns}
                   showCheckBox={false}
                   showSubCheckBox={false}
+                  showCustomFilter={true}
                   //showCustomFilter={true}
                   onCustomFilter={customFilter}
                 />
               </Box>
 
-              <Box
-                sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}
-              >
+              <Box sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}>
                 <MuiTable
                   columns={bookingColumns}
                   data={inProgressBookings}
@@ -417,9 +399,7 @@ const Index = ({
                 />
               </Box>
 
-              <Box
-                sx={{ display: selectedTab === 2 ? "block" : "none", mt: 2 }}
-              >
+              <Box sx={{ display: selectedTab === 2 ? "block" : "none", mt: 2 }}>
                 <MuiTable
                   columns={bookingColumns}
                   data={uploadedBookings}

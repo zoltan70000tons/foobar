@@ -125,6 +125,14 @@ class Cabin extends Model
   {
     return Attribute::get(fn() => $this->cabinSpec?->accessible ?? null);
   }
+  
+  /**
+   * Accessor: Get the lower bed type 2 from the related CabinSpec.
+   */
+  protected function lowerBedType2(): Attribute
+  {
+    return Attribute::get(fn() => $this->cabinSpec?->lower_bed_type_2 ?? null);
+  }
 
   // ==========================
   // Methods

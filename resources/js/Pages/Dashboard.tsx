@@ -1,108 +1,104 @@
-import React from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { Container, Toolbar, Grid, Box, Typography, Button, Paper } from '@mui/material';
-import RecentOrders from './Dashboard/RecentOrders';
-import DashboardCard from './Dashboard/DashboardCard';
-import GroupIcon from '@mui/icons-material/Group';
-import LocalActivityIcon from '@mui/icons-material/LocalActivity';
-import GroupWorkIcon from '@mui/icons-material/GroupWork';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import PersonIcon from '@mui/icons-material/Person';
+import React from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { Container, Toolbar, Grid, CircularProgress, Typography } from "@mui/material";
+import DashboardCard from "./Dashboard/DashboardCard";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
+// Icons
+import LocalActivityIcon from "@mui/icons-material/LocalActivity";
+import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
+import PersonIcon from "@mui/icons-material/Person";
+import GroupWorkIcon from "@mui/icons-material/GroupWork";
+import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
+import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission, loading, error } = usePermissions();
-  const { user } = auth;
-  if (error) return <p>Error: {error.message}</p>;
+
+  if (error) return <Typography color="error">Error: {error.message}</Typography>;
+
+  // Show loader while permissions are being fetched
+  if (loading) {
+    return (
+      <AuthenticatedLayout user={auth.user} header="Dashboard">
+        <Head title="Dashboard" />
+        <Toolbar />
+        <Container
+          maxWidth="lg"
+          sx={{ mt: 4, mb: 4, display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}
+        >
+          <CircularProgress />
+        </Container>
+      </AuthenticatedLayout>
+    );
+  }
+
+  // Dashboard Items Configuration
+  const dashboardItems = [
+    {
+      title: "Bookings",
+      description: "Manage Bookings",
+      icon: LocalActivityIcon,
+      link: "/events/1/bookings",
+      permission: Permissions.ViewBookings,
+    },
+    {
+      title: "Cabins",
+      description: "Manage Cabins",
+      icon: RoomPreferencesIcon,
+      link: "/events/1/cabins",
+      permission: Permissions.ViewCabins,
+    },
+    {
+      title: "Customers",
+      description: "Manage customers",
+      icon: PersonIcon,
+      link: "/customers",
+      permission: Permissions.ViewCustomers,
+    },
+    {
+      title: "Team",
+      description: "Manage your team",
+      icon: GroupWorkIcon,
+      link: "/team",
+      permission: Permissions.ViewUsers,
+    },
+    {
+      title: "Events",
+      description: "Manage your events",
+      icon: DirectionsBoatIcon,
+      link: "/events",
+      permission: Permissions.ViewEvents,
+    },
+    {
+      title: "Roles",
+      description: "Manage organization roles",
+      icon: LocalPoliceIcon,
+      link: "/team/roles",
+      permission: Permissions.ViewRoles,
+    },
+  ];
 
   return (
-    <AuthenticatedLayout
-      user={auth.user}
-      header={"Dashboard"}
-    >
+    <AuthenticatedLayout user={auth.user} header="Dashboard">
       <Head title="Dashboard" />
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={12} lg={12}>
+          <Grid item xs={12}>
             <Grid container spacing={3}>
-              {hasPermission(Permissions.ViewUsers) && (
-                <Grid item xs={12} sm={6} md={3}>
-                  <DashboardCard
-                    title="Team"
-                    description="Manage your team"
-                    Icon={GroupWorkIcon}
-                    link="/team"
-                   // badgeContent={4}
-                  />
-                </Grid>
-              )}
-              {/* {hasPermission('View Orders') && (
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title="Orders"
-                  description="Manage your orders"
-                  Icon={ShoppingCartIcon}
-                  link="/70k/"
-                  badgeContent={67}
-                />
-              </Grid>
-              )} */}
-              {hasPermission(Permissions.ViewEvents) && (
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title="Events"
-                  description="Manage your events"
-                  Icon={LocalActivityIcon}
-                  link="/events"
-                  //badgeContent={1}
-                />
-              </Grid>
-              )}
-              {/* {hasPermission('View Customers') && (
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title="Customers"
-                  description="Manage your customers"
-                  Icon={GroupIcon}
-                  link="/70k/customers"
-                  badgeContent={1}
-                />
-              </Grid>
-              )} */}
-              {hasPermission(Permissions.ViewRoles) && (
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  title="Roles"
-                  description="Manage organization roles"
-                  Icon={LocalPoliceIcon}
-                  link="/team/roles"
-                  //badgeContent={1}
-                />
-              </Grid>
-              )}
-              {hasPermission(Permissions.ViewCustomers) && (
-                <Grid item xs={12} sm={6} md={3}>
-                  <DashboardCard
-                      title="Customers"
-                      description="Manage customers"
-                      Icon={PersonIcon}
-                      link="/customers"
-                  />
-                </Grid>
-              )}
+              {dashboardItems
+                .filter((item) => hasPermission(item.permission))
+                .map(({ title, description, icon: Icon, link }, index) => (
+                  <Grid item xs={12} sm={6} md={3} key={index}>
+                    <DashboardCard title={title} description={description} Icon={Icon} link={link} />
+                  </Grid>
+                ))}
             </Grid>
           </Grid>
-          {/* <Grid item xs={12}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-              <RecentOrders />
-            </Paper>
-          </Grid> */}
         </Grid>
       </Container>
     </AuthenticatedLayout>
