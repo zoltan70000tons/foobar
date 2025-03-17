@@ -597,13 +597,14 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
+                                <Country
+                                    fullWidth
                                     label="Citizenship"
                                     variant="outlined"
-                                    fullWidth
+                                    value={ passenger?.citizenship || "" }
                                     size="small"
-                                    value={passenger?.citizenship || ""}
-                                    onChange={(e) => onChange("citizenship", e.target.value)}
+                                    name={ "citizenship" }
+                                    onChange={ (e) => onChange('citizenship', e) }
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>

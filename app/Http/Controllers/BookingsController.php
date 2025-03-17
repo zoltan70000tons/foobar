@@ -126,7 +126,7 @@ class BookingsController extends Controller
       'passenger.last_name' => ['required', 'string', 'max:255'],
       'passenger.dob' => ['required', 'date', 'before:today'],
       'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
-      'passenger.citizenship' => ['nullable', 'string', 'max:100'],
+      'passenger.citizenship' => ['nullable', 'string', 'max:3'],
       'passenger.survivor_number' => ['nullable', 'string', 'max:50'],
       'passenger.email' => ['required', 'email', 'email'],
       'passenger.phone' => ['nullable', 'string', 'max:20'],

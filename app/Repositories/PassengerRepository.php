@@ -50,7 +50,7 @@ class PassengerRepository implements PassengerInterface
         'middle_name' => $userDetails->middle_name ?? null,
         'last_name' => $userDetails->last_name ?? null,
         'dob' => $userDetails->dob ?? null,
-        'citizenship' => $userDetails->citizenship ?? null,
+        'citizenship' => $data['citizenship'] ?? $userDetails->citizenship ?? null,
         'payment_method' => $data['payment_method'] ?? 'CREDIT_CARD',
         'address_first' => $data['address_first'] ?? null,
         'address_second' => $data['address_second'] ?? null,
