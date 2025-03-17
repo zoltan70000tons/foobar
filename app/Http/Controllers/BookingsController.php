@@ -157,7 +157,7 @@ class BookingsController extends Controller
       $user = $request->user();
       $cabin_number = $validated['cabin_number'];
       $passenger_data = $validated['passenger'];
-      $number_of_installments = $validated['number_of_installments'];
+      $number_of_installments = $validated['number_of_installments'] ?? 1;
       $payment_plan = 'INSTALLMENTS';
 
       return $this->withPermission(
@@ -187,7 +187,7 @@ class BookingsController extends Controller
         $number_of_installments
       );
     } catch (\Exception $e) {
-      //dd($e->getMessage());
+      dd($e->getMessage());
       $this->logException($e);
     }
   }

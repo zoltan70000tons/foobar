@@ -66,6 +66,12 @@ trait CabinFilter
     $cabins = $cabinsQuery->get();
 
     if ($cabins->isEmpty()) {
+      if (!$cabinTypeId) {
+          return [
+              'cabins' => [],
+              'status' => 200,
+          ];
+      }
       return [
         'error' => 'No cabins found or already reserved',
         'status' => 404,

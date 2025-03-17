@@ -240,7 +240,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
         const payload = {
             cabin_number: cabinNumber,
             payment_plan: paymentPlan.value,
-            number_of_installments: numberOfInstallments.value,
+            number_of_installments: numberOfInstallments?.value,
             carbon_offset: carbonOffset,
             passenger: {
                 id: passenger.id,
@@ -768,7 +768,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                         <Checkbox
                                             size="small"
                                             checked={passenger?.newsletter || false}
-                                            onChange={(e) => onChange("Newsletter", e.target.checked)}
+                                            onChange={(e) => onChange("newsletter", e.target.checked)}
                                         />
                                     }
                                     label="Newsletter"
@@ -994,7 +994,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                             <TableCell>
                                                 <strong>Number of Installments:</strong>
                                             </TableCell>
-                                            <TableCell>{numberOfInstallments.value}</TableCell>
+                                            <TableCell>{numberOfInstallments?.value}</TableCell>
                                         </TableRow>
                                     </TableBody>
                                 </Table>
