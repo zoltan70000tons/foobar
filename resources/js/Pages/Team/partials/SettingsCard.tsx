@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { ChangeEvent, useState } from "react";
 import {Card,CardContent, Divider, Grid, Button, Tabs, Tab, Box} from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import CustomInput from "./CustomInput";
@@ -11,7 +11,16 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 
+interface UserDetail {
+  phone: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  gender: string;
+}
+
 interface User {
+  detail: UserDetail;
   id: number;
   email: string;
   status: string;
@@ -31,28 +40,37 @@ interface SettingsCardProps {
   user: User;
 }
 
+interface TForm {
+  id: number;
+  email: string;
+  phone_number?: string;
+  pass: string;
+  survivor_number: string;
+  lastname: string;
+  middlename: string;
+  username: string;
+  firstname: string;
+  gender: string;
+}
+
 const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
   const { hasPermission } = usePermissions();
-  const { rows, fetchData, loading } = useTeamData();
-  const { errors, flash } = usePage().props;
+  const { fetchData } = useTeamData();
+  const { errors } = usePage().props;
   const { showSnackbar } = useSnackbar();
 
-
-
-
-  const { data, setData, post, processing } = useForm({
+  const { data, setData, post, processing } = useForm<TForm>({
     id: user.id,
     email: user.email,
-    phone_number: user?.detail?.phone,
+    phone_number: user?.detail?.phone || '',
     pass: '',
     survivor_number: user.survivor_number || '',
     lastname: user?.detail?.last_name || '',
     middlename: user?.detail?.middle_name || '',
-    username: user.user_name || '',
+    username: user.username || '',
     firstname: user?.detail?.first_name || '',
     gender: user?.detail?.gender || ''
   });
-
 
   const canEdit = hasPermission(Permissions.EditUsers);
 
@@ -61,17 +79,11 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     setData(name, value);
   };
 
-  const handleChangePhone = (val) => {
-    setData('phone_number', val);
-  }
-
-  const [edit, setEdit] = useState({
-    disabled: !canEdit,
-  });
+  const handleChangePhone = (value: string) => {
+    setData('phone_number', value)
+  };
 
   const [tabValue, setTabValue] = useState("one");
-
-  
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setTabValue(newValue);
@@ -86,13 +98,13 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
           fetchData();
         },
         onError: () => {
-           showSnackbar('Error updating user',"success");
+           showSnackbar('Error updating user',"error");
         },
       });
     }
   };
 
-  const handleChangeSelect = (value: object) => {
+  const handleGenderChange = (value: object) => {
     setData('gender', value.target.value);
   }
   return (
@@ -121,7 +133,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     value={data?.firstname || ""}
                     title="First Name"
                     onChange={handleUserChange}
-                    dis={edit.disabled}
+                    dis={!canEdit}
                     error={errors.firstname}
                   />
                 </Grid>
@@ -132,7 +144,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     value={data?.lastname || ""}
                     onChange={handleUserChange}
                     title="Last Name"
-                    dis={edit.disabled}
+                    dis={!canEdit}
                     error={errors.lastname}
                   />
                 </Grid>
@@ -143,7 +155,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     value={data?.middlename || ""}
                     onChange={handleUserChange}
                     title="Middle Name"
-                    dis={edit.disabled}
+                    dis={!canEdit}
                     error={errors.middlename}
                   />
                 </Grid>
@@ -151,8 +163,11 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                 <Grid item xs={12} md={4}>
                   <Box>
                     <PhoneNumber value={data?.phone_number || ""}
-                      onChange={handleChangePhone}
-                      forceDialCode={true} />
+                      onChange={(value) => handleChangePhone(value)}
+                      forceDialCode={true}
+                      error={errors.phone_number}
+                      helperText={errors.phone_number}
+                    />
                   </Box> 
                 </Grid>
 
@@ -172,15 +187,15 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     name="gender"
                     value={data?.gender || ""}
                     title="Gender"
-                    onChange={handleChangeSelect}
+                    onChange={handleGenderChange}
                     options={[
                       { value: '', label: '-'},
                       { value: 'M', label: 'Male' },
                       { value: 'F', label: 'Female' },
 
                     ]}
-                    dis={edit.disabled}
-                    error={errors.example}
+                    dis={!canEdit}
+                    error={errors.gender}
                   />
                 </Grid>
 

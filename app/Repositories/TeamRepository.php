@@ -120,16 +120,17 @@ class TeamRepository implements TeamRepositoryInterface
 
             if ($user) {
                 $user_id = $user->id;
-                $detailsData = array_filter([
+                $detailsData = /*array_filter(*/[
                     'user_id' => $user_id,
                     'first_name' => $data['firstname'] ?? null,
                     'last_name' => $data['lastname'] ?? null,
                     'middle_name' => $data['middlename'] ?? null,
                     'gender' => $data['gender'] ?? null,
                     'phone' => $data['phone_number'] ?? null,
-                ], function ($value) {
+                ]/*, function ($value) {
                     return !is_null($value) && $value !== '';
-                });
+                })*/;
+
                 if (!empty($detailsData)) {
                     UserDetail::updateOrCreate(
                         ['user_id' => $user_id],
