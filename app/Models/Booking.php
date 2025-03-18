@@ -229,7 +229,7 @@ class Booking extends Model
   {
     $characters = config('whitelist.allowed_characters');
     $year = 'F';
-    $categoryLetter = strtoupper(chr(64 + $cabin->category->display_order));
+    $categoryLetter = $this->numberToLetters(64 + $cabin->category->display_order);
     // Generate a random 4-character code
     do {
       $identifier_code = substr(str_shuffle($characters), 0, 4);
@@ -338,7 +338,6 @@ class Booking extends Model
     });
   }
 
-
   public function getTotalpaid()
   {
     return $this->passengers->sum('passenger_balance');
@@ -346,7 +345,6 @@ class Booking extends Model
 
   public function getGrandTotal()
   {
-  
     return $this->passengers->sum('passenger_allocated_cost');
   }
 }

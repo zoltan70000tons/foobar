@@ -156,15 +156,15 @@ class BookingsController extends Controller
       $cabin_number = $validated['cabin_number'];
       $passenger_data = $validated['passenger'];
       $number_of_installments = $validated['number_of_installments'] ?? null;
-      $payment_plan = 'INSTALLMENTS';
+      $payment_plan = $validated['payment_plan'];
 
       return $this->withPermission(
         [Permissions::CreateBookings],
         function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments) {
-          $event = $this->eventRepository->find($event_id);
           $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
             $query->where('cabin_number', $cabin_number);
           })->first();
+
           if ($cabin) {
             $bookingData = [
               'event_id' => $event_id,
