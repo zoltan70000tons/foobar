@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXPAID-INSTALLXX ¡Gracias por tu pago! Reserva de 70000TONS
-      OF METAL XXINSTALLXX</title>
+    <title>¡Gracias por tu pago! Reserva de 70000TONS
+      OF METAL</title>
   </head>
   <body>
     <table
@@ -94,16 +94,15 @@ style="color: rgb(102, 102,
                                             line-height: 28px;
                                             text-align: left;
                                             padding-bottom: 15px;">Hemos
-                                            recibido tu XXINSTALLXX pago
-                                            XXNAMEXX. ¡Gracias!<br>
+                                            recibido tu {PAID_AMOUNT} pago
+                                            {PASSENGER_NAME}. ¡Gracias!<br>
                                             <br>
                                             Por favor toma en cuenta,
-                                            XXNAMEXX:<strong> Tu próximo
+                                            {PASSENGER_NAME}:<strong> Tu próximo
                                               pago a plazos por la
                                               cantidad de USD
-                                              XXNEXTINSTALL$XX se deberá
-                                              realizar el XXDAYXX de
-                                              XXMONTHXX de 2024</strong><br>
+                                              {NEXT_INSTALLMENT_AMOUNT} se deberá
+                                              realizar el {NEXT_INSTALLMENT_DATE}</strong><br>
                                             <br>
                                             Puedes encontrar tu
                                             Confirmación de Reserva y el

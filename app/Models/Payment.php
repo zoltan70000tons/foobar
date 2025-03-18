@@ -20,7 +20,13 @@ class Payment extends Model
     'amount',
     'notes',
     'source'
-];
+  ];
 
-
+  protected static function boot()
+  {
+    parent::boot();
+    static::created(function ($payment) {
+     
+    });
+  }
 }

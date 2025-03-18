@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\BookingLog;
+use App\Services\EmailTemplateService;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Hidehalo\Nanoid\Client;
+use Mail;
 
 class Booking extends Model
 {
@@ -266,32 +268,87 @@ class Booking extends Model
       }
     });
 
-    static::updated(function ($booking) {
-      $cabin = $booking->cabin;
-      // Process only if the booking is cancelled
-      if ($booking->status !== 'CANCELLED') {
-        return;
-      }
-      $cabinTypeId = $cabin->cabinType->id;
-      $cabin->inventory += 1; // Increase inventory on cancellation
-      // If cabin type is 1, always set to AVAILABLE
-      if ($cabinTypeId === 1) {
-        $cabin->status = 'AVAILABLE';
-      } else {
-        // Determine cabin status based on inventory levels
-        $capacity = $cabin->category->capacity;
+    // static::updated(function ($booking) {
+    //   $cabin = $booking->cabin;
+    //   // Process only if the booking is cancelled
+    //   if ($booking->status !== 'CANCELLED') {
+    //     return;
+    //   }
+    //   $cabinTypeId = $cabin->cabinType->id;
+    //   $cabin->inventory += 1; // Increase inventory on cancellation
+    //   // If cabin type is 1, always set to AVAILABLE
+    //   if ($cabinTypeId === 1) {
+    //     $cabin->status = 'AVAILABLE';
+    //   } else {
+    //     // Determine cabin status based on inventory levels
+    //     $capacity = $cabin->category->capacity;
 
-        if ($cabin->inventory > 0 && $cabin->inventory < $capacity) {
-          $cabin->status = 'PARTIALLY_BOOKED';
-        } elseif ($cabin->inventory == $capacity) {
-          $cabin->status = 'AVAILABLE';
-        }
+    //     if ($cabin->inventory > 0 && $cabin->inventory < $capacity) {
+    //       $cabin->status = 'PARTIALLY_BOOKED';
+    //     } elseif ($cabin->inventory == $capacity) {
+    //       $cabin->status = 'AVAILABLE';
+    //     }
+    //   }
+    //   $cabin->save();
+    // });
+
+
+    static::updated(function ($booking) {
+      if (!$booking->isDirty('status')) {
+          return;
       }
-      $cabin->save();
-    });
+  
+      $previousStatus = $booking->getOriginal('status');
+      $newStatus = $booking->status;
+      if ($newStatus === 'CANCELLED') {
+          $cabin = $booking->cabin;
+          $cabinTypeId = $cabin->cabinType->id;
+          $cabin->inventory += 1;
+          if ($cabinTypeId === 1) {
+              $cabin->status = 'AVAILABLE';
+          } else {
+              $capacity = $cabin->category->capacity;
+              $cabin->status = ($cabin->inventory == $capacity) ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
+          }
+          $cabin->save();
+      }
+
+      // if($newStatus =="ON HOLD"){
+      //   $templateService = new EmailTemplateService();
+      //   $templateId =null;
+      //   if($booking->getGrandTotal() > 6000){
+      //     $templateId = $templateService->getTemplateId('en', '+6000');
+      //   }
+      //   if($booking->getGrandTotal() < 6000){
+      //     $templateId = $templateService->getTemplateId('en', '-6000');
+      //   }
+      //   if($booking->cabin->cabinType->id == 2 || $booking->cabin->cabinType->id == 3){
+      //     $templateId = $templateService->getTemplateId('en', 'single');
+      //   }
+      //   $templateService->sendEmail($templateId, $booking, [], true, true);
+      // }
+
+      
+      if($newStatus =="UPLOADED"){
+
+      }
+  });
+  
 
     static::deleted(function ($booking) {
       $booking->saveBookingLog($booking->id, 'Deleted', 'The booking was deleted');
     });
+  }
+
+
+  public function getTotalpaid()
+  {
+    return $this->passengers->sum('passenger_balance');
+  }
+
+  public function getGrandTotal()
+  {
+  
+    return $this->passengers->sum('passenger_allocated_cost');
   }
 }

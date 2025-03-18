@@ -96,7 +96,7 @@ style="color: rgb(102, 102,
                                             padding-bottom: 15px;"><br>
                                             <br>
                                             We received your full
-                                            payment XXNAMEXX. Thank you!<br>
+                                            payment {PASSENGER_NAME}. Thank you!<br>
                                             <br>
                                             Please find your updated
                                             Booking Confirmation and

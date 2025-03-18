@@ -181,9 +181,9 @@ style="display:
                                               text-decoration:
                                               underline;">Zahlungsangaben:</strong><br>
                                             <br>
-                                            XXNAMEXX, Deine fällige
+                                            {PASSENGER_NAME}, Deine fällige
                                             Zahlung beträgt: USD
-                                            XXPAXTOTAL$XX<br>
+                                            {INDIVIDUAL_TOTAL}<br>
                                             Wenn Du für alle
                                             Mitreisenden zusammen
                                             bezahlst, ist der

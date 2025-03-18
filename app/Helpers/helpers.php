@@ -76,12 +76,11 @@ if (! function_exists('sanitizeInput')) {
     }
 
     if (!function_exists('formatCurrency')) {
-        function formatCurrency(float $amount): string
+        function formatCurrency(float $amount, $hideCurrency = false): string
         {
-            return 'USD ' . number_format($amount, 2, '.', ',');
+            return ($hideCurrency ? '' : 'USD ') . number_format($amount, 2, '.', ',');
         }
     }
-
     if (!function_exists('formatDate')) {
         function formatDate($date, $fullMonth = false, $hideYear = false)
         {
@@ -94,6 +93,13 @@ if (! function_exists('sanitizeInput')) {
         function formatFeeName($string)
         {
             return ucwords(strtolower(str_replace('_', ' ', $string)));
+        }
+    }
+
+    if (!function_exists('capitalizeWords')) {
+        function capitalizeWords(string $text): string
+        {
+            return ucwords(strtolower($text));
         }
     }
     

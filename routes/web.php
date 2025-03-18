@@ -27,6 +27,7 @@ use App\Http\Controllers\FeeController;
 use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\PaymentController;
 use \App\Http\Controllers\CustomerController;
+use App\Http\Controllers\NotificationController;
 
 Route::get("/", function () {
   return Inertia::render("Welcome", [
@@ -210,15 +211,9 @@ Route::middleware("auth")->group(function () {
 Route::get("/join-organization", [OrganizationController::class, "join"])->name("organization.join");
 Route::put("/join-organization", [OrganizationController::class, "join"])->name("organization.join");
 
-// Route::get('/register-organization', function () {
-//     return Inertia::render('RegisterOrganization');
-// })->name('organization.register');
 
-//Route::get('/send-test-email', [MailTestController::class, 'sendMail']);
 
-Route::get("/test-broadcast", function () {
-  broadcast(new TestMessageSent("Este es un mensaje de prueba."));
-  return "Mensaje enviado";
-});
+//Route::get('/payment-notification', [NotificationController::class, 'sendPaymentEmail'])->name('payment.notification');
+//Route::get('/confirmation-notification', [NotificationController::class, 'sendConfirmationEmail'])->name('confirmation.notification');
 
 require __DIR__ . "/auth.php";

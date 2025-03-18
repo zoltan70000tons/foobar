@@ -162,7 +162,7 @@
                                                 text-decoration: underline;
                                               ">Instrucciones de Pago:</strong><br />
                                           <br />
-                                          XXNAMEXX, tu pago individual es de: USD XXPAXTOTAL$XX<br />
+                                          {PASSENGER_NAME}, tu pago individual es de: USD {INDIVIDUAL_TOTAL}<br />
                                           <br />
                                           Si pagas por todos los pasajeros en la reserva, el total a pagar es: USD
                                           {GRAND_TOTAL}<br />

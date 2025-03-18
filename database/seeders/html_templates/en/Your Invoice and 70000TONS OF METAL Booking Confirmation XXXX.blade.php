@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>Your Invoice and 70000TONS OF METAL Booking Confirmation XXXX</title>
+    <title>Your Invoice and 70000TONS OF METAL Booking Confirmation {BOOKING_CODE}</title>
   </head>
   <body>
     <table

@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Enums\Permissions;
 use App\Exceptions\InvalidBipIdException;
 use App\Models\Booking;
+use App\Repositories\PaymentRepository;
+use App\Services\PaymentService;
+use App\Traits\BookingLogTrait;
+use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
-use App\Traits\BookingLogTrait;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
+use Laravel\SerializableClosure\SerializableClosure;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -25,10 +28,13 @@ class PaymentController extends Controller
 
     protected PassengerRepository $passengerRepository;
     protected CalculationRepository $calculationRepository;
-    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository)
+
+    protected PaymentService $paymentService;
+    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository, PaymentService $paymentService)
     {
         $this->passengerRepository = $passengerRepository;
         $this->calculationRepository = $calculationRepository;
+        $this->paymentService = $paymentService;
     }
 
     public function store(Request $request): Response|RedirectResponse
@@ -53,11 +59,8 @@ class PaymentController extends Controller
                         throw new InvalidBipIdException();
                     }
                 }
-
                 $validated = $validator->validated();
-
                 $validated['source'] = 'MANUAL';
-
                 Payment::create($validated);
                 $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
 
@@ -130,5 +133,12 @@ class PaymentController extends Controller
                 return redirect()->back()->with('error', 'Error deleting payment!');
             }
         }, $request);
+    }
+
+    public function createPayment(Request $request)
+    {
+        dd($this->paymentService->getInstallmentsWithStatus(1));
+        //$response = $this->paymentService->processPayment($request->all());
+        //return response()->json($response, $response['success'] ? 201 : 400);
     }
 }

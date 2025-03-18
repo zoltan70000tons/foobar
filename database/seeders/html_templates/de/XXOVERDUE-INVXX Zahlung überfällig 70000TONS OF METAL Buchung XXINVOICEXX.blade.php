@@ -99,7 +99,7 @@ style="color: rgb(102, 102,
                                             begrüßen zu können!<br>
                                             <br>
                                             Bitte beachte, dass wir für
-                                            XXNAMEXX, den XXPAX#XX
+                                            {PASSENGER_NAME}, den XXPAX#XX
                                             Passagier Deiner Buchung für
                                             70000TONS OF METAL 2025,
                                             noch keine Zahlung erhalten

@@ -102,7 +102,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Por favor, ten en cuenta que
                                             no hemos recibido el pago
-                                            del XXXX Pasajero, XXnameXX,
+                                            del XXXX Pasajero, {PASSENGER_NAME},
                                             de tu reserva para 70000TONS
                                             OF METAL 2025.<br>
                                             <br>
@@ -127,8 +127,8 @@ style="display:
                                               underline;">Instrucciones
                                               de Pago:</strong><br>
                                             <br>
-                                            XXNAMEXX, tu pago individual
-                                            es de: USD XXPAXTOTAL$XX<br>
+                                            {PASSENGER_NAME}, tu pago individual
+                                            es de: USD {INDIVIDUAL_TOTAL}<br>
                                             <br>
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
