@@ -47,6 +47,7 @@ return new class extends Migration {
       $table->decimal('passenger_allocated_cost', 10, 2);
       $table->decimal('passenger_balance', 10, 2);
       $table->boolean('was_on_board')->default(false);
+      $table->string('language', 2)->default('en')->nullable();
       $table->timestamps();
     });
   }

@@ -78,6 +78,7 @@ class CustomerConfirmationBooking extends Mailable
         'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
         'cabin_category' => $category->title ?? 'N/A',
         'form_of_payment' => $passenger->payment_method == 'CREDIT_CARD' ? 'Credit Card' : 'Bank Transfer',
+        'bed_config' => $booking->bed_config,
         'official_ticket_price_per_person' => number_format($this->cart['cabin_price'] ?? 0, 2),
         'pay_in_full_discount' => isset($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
           ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)

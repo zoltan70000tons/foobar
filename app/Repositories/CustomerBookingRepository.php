@@ -254,6 +254,7 @@ class CustomerBookingRepository
           'emergency_c_name' => $validated['emergencyContactName'],
           'emergency_c_phone' => $validated['emergencyPhoneNumber'],
           'special_request' => $validated['specialRequest'],
+          'language' => $validated['language'] ?? 'en',
         ]);
       } catch (\Exception $e) {
         \Log::error('Error while adding passenger: ' . $e->getMessage());
