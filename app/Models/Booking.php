@@ -229,7 +229,7 @@ class Booking extends Model
   {
     $characters = config('whitelist.allowed_characters');
     $year = 'F';
-    $categoryLetter = $this->numberToLetters(64 + $cabin->category->display_order);
+    $categoryLetter = strtoupper(chr(64 + $cabin->category->display_order));
     // Generate a random 4-character code
     do {
       $identifier_code = substr(str_shuffle($characters), 0, 4);
