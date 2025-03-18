@@ -7,6 +7,7 @@ use App\Mail\BookingEmail;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\User;
+use App\Models\UserDetail;
 use App\Repositories\PaymentRepository;
 use App\Services\EmailTemplateService;
 use App\Services\MailService;
@@ -161,6 +162,12 @@ class EmailController extends Controller
         $booking_id = $request->input('id');
         $booking = Booking::find($booking_id);
         $passenger = $booking->passengers->first();
+        $lead = $booking->passengers->where('lead_passenger' , true)->first();
+        $user = User::where('email', $lead->email)->first();
+        $detail = $user->detail;
+       // dd($detail);
+        $lang = $detail->language ?? 'en';
+        dd($lang);
         // dd($passenger->getNextInstallmentAttribute());
 
         // //$service = new EmailTemplateService();

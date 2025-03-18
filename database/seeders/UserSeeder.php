@@ -158,7 +158,7 @@ class UserSeeder extends Seeder
     foreach (range(1, 16) as $index) {
       $name = 'cus' . $this->faker->firstname;
       $user = User::create([
-        'email' => null,
+        'email' => 'customer_' . $index . '@customers.test',
         'password' => Hash::make('password'),
         'created_at' => $this->faker->dateTime($max = 'now'),
         'updated_at' => $this->faker->dateTime($max = 'now'),
