@@ -150,7 +150,7 @@ class PassengerController extends Controller
         ]);
 
         $query = $request->get('query');
-        $results = User::with(['detail', 'survivorNumber'])
+        $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
             ->where('email', 'LIKE', "%{$query}%")
             ->orWhereHas('detail', function ($q) use ($query) {
                 $q->where('first_name', 'LIKE', "%{$query}%")
@@ -169,12 +169,12 @@ class PassengerController extends Controller
                     'lead_passenger' => $user->detail->lead_passenger ?? null,
                     'payment_method' => $user->detail->payment_method ?? null,
                     'phone' => $user->detail->phone ?? null,
-                    'address_first' => $user->detail->address_first ?? null,
-                    'address_second' => $user->detail->address_second ?? null,
-                    'city' => $user->detail->city ?? null,
-                    'state' => $user->detail->state ?? null,
-                    'postal_code' => $user->detail->postal_code ?? null,
-                    'country' => $user->detail->country ?? null,
+                    'address_first' => $user->customerAddress->address_first ?? null,
+                    'address_second' => $user->customerAddress->address_second ?? null,
+                    'city' => $user->customerAddress->city ?? null,
+                    'state' => $user->customerAddress->state ?? null,
+                    'postal_code' => $user->customerAddress->postal_code ?? null,
+                    'country' => $user->customerAddress->country ?? null,
                     'citizenship' => $user->detail->citizenship ?? null,
                     'gender' => $user->detail->gender ?? null,
                     'dob' =>  $user->detail->dob ?? null,
