@@ -46,7 +46,7 @@ class PaymentService
     $validator = Validator::make($data, [
       'passenger_id' => 'required|exists:passengers,id',
       'bip_id' => 'nullable|string|max:50',
-      'type' => 'required|in:PAYMENT,REFOUND',
+      'type' => 'required|in:PAYMENT,REFUND',
       'amount' => 'required|numeric|min:0.01',
       'source' => 'required|in:MANUAL,SYSTEM',
       'notes' => 'nullable|string|max:255',
