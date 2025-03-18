@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Installment;
 use App\Models\Passenger;
 use App\Models\Payment;
+use App\Services\PaymentService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
@@ -21,13 +22,15 @@ class PaymentSeeder extends Seeder
      * @var \Faker\Generator
      */
     protected $faker;
+    protected $paymentService;
 
     /**
      * Create a new seeder instance.
      */
-    public function __construct()
+    public function __construct(PaymentService $paymentService)
     {
         $this->faker = $this->withFaker();
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -74,16 +77,21 @@ class PaymentSeeder extends Seeder
      */
     private function makePayment(int $passengerId, $amount): float
     {
-    
-        $payment = Payment::create([
+
+       $response = $this->paymentService->processPayment([
             'passenger_id' => $passengerId,
             'BIP_ID' => $this->faker->uuid(),
             'amount' => $amount,
             'type' =>'PAYMENT',
+            'source' => 'SYSTEM',
             'transaction_date' => Carbon::now(),
         ]);
     
-        return $payment->amount;
+        if ($response['success']) {
+            return $response['payment']['amount'];
+        } else {
+            throw new \Exception($response['message']);
+        }
     }
 
     /**
@@ -95,20 +103,29 @@ class PaymentSeeder extends Seeder
         $paymentAmount = rand(1, 100) <= 70 
         ? $booking->cabin->category->price 
         : 0; 
-        $payment = Payment::create([
+        $response = $this->paymentService->processPayment([
             'passenger_id' => $passenger->id,
             'BIP_ID' => $this->faker->uuid(),
-            'amount' => $booking->cabin->category->price, 
+            'amount' => $booking->cabin->category->price,
             'type' => $paymentType,
+            'source' => 'SYSTEM',
             'transaction_date' => Carbon::now(),
         ]);
 
-        
-        if($payment->type == 'REFUND'){
-            $passenger->passenger_balance = $paymentAmount - $payment->amount;
-        }else{
-            $passenger->passenger_balance = $paymentAmount;
+       // dd($response);
+
+        if ($response['success']) {
+            if($response['payment']->type == 'REFUND'){
+                $passenger->passenger_balance = $paymentAmount - $response['payment']->amount;
+            }else{
+                $passenger->passenger_balance = $paymentAmount;
+            }
+            $passenger->save();
+        } else {
+            throw new \Exception($response['message']);
         }
-        $passenger->save();
+
+        
+        
     }
 }

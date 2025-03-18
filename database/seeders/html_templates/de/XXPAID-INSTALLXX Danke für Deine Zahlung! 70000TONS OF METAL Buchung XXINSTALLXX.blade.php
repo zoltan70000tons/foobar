@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXPAID-INSTALLXX Danke für Deine Zahlung! 70000TONS OF METAL
-      Buchung XXINSTALLXX</title>
+    <title>Danke für Deine Zahlung! 70000TONS OF METAL
+      Buchung</title>
   </head>
   <body>
     <table
@@ -95,14 +95,14 @@ style="color: rgb(102, 102,
                                             text-align: left;
                                             padding-bottom: 15px;">Wir
                                             haben Deine Zahlung
-                                            erhalten, XXNAMEXX. Vielen
+                                            erhalten, {PASSENGER_NAME}. Vielen
                                             Dank!<br>
                                             <br>
                                             Bitte beachte:<span>&nbsp;</span><strong>Deine
 
                                               nächste Zahlung in Höhe
-                                              von USD XXNEXTINSTALL$XX
-                                              ist am DD.MM.YYYY fällig.</strong><br>
+                                              von USD {NEXT_INSTALLMENT_AMOUNT}
+                                              ist am {NEXT_INSTALLMENT_DATE} fällig.</strong><br>
                                             <br>
                                             Im Anhang findest Du Deine
                                             aktualisierte

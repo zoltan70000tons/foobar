@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXPAID-FULLXX ¡Gracias por tu pago! Reserva de 70000TONS OF
-      METAL XXPAID-FULLXX</title>
+    <title>¡Gracias por tu pago! Reserva de 70000TONS OF
+      METAL</title>
   </head>
   <body>
     <table
@@ -96,7 +96,7 @@ style="color: rgb(102, 102,
                                             padding-bottom: 15px;"><br>
                                             <br>
                                             Hemos recibido tu pago
-                                            completo XXNAMEXX. ¡Gracias!<br>
+                                            completo {PASSENGER_NAME}. ¡Gracias!<br>
                                             <br>
                                             Puedes encontrar tu
                                             Confirmación de Reserva y el

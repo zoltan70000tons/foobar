@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>Your 70000TONS OF METAL Booking Confirmation XX+$6000XX</title>
+    <title>Your 70000TONS OF METAL Booking Confirmation</title>
   </head>
   <body>
     <table
@@ -161,11 +161,11 @@ style="display:
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            USD {INDIVIDUAL_TOTAL}<br>
                                             If you pay for all
                                             passengers at once, your
                                             total amount due is: USD
-                                            XXXX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             For your own safety, each
                                             transaction may not exceed

@@ -139,8 +139,8 @@ style="display:
                                               text-decoration:
                                               underline;">Payment
                                               Instructions:</strong><br>
-                                            XXXX, your total amount due
-                                            is: USD XXXX<br>
+                                            {PASSENGER_NAME}, your total amount due
+                                            is: USD {INDIVIDUAL_TOTAL}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your
