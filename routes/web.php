@@ -213,7 +213,7 @@ Route::put("/join-organization", [OrganizationController::class, "join"])->name(
 
 
 
-Route::get('/payment-notification', [NotificationController::class, 'sendPaymentEmail'])->name('payment.notification');
-Route::get('/confirmation-notification', [NotificationController::class, 'sendConfirmationEmail'])->name('confirmation.notification');
+//Route::get('/payment-notification', [NotificationController::class, 'sendPaymentEmail'])->name('payment.notification');
+//Route::get('/confirmation-notification', [NotificationController::class, 'sendConfirmationEmail'])->name('confirmation.notification');
 
 require __DIR__ . "/auth.php";

@@ -22,7 +22,7 @@ class EmailTemplatesSeeder extends Seeder
             $dirPath = $basePath . DIRECTORY_SEPARATOR . $lang;
 
             if (!File::exists($dirPath) || !File::isDirectory($dirPath)) {
-                $this->command->warn("📁 Directory not found: $dirPath");
+                $this->command->warn("Directory not found: $dirPath");
                 continue;
             }
             $files = File::files($dirPath);
@@ -30,20 +30,27 @@ class EmailTemplatesSeeder extends Seeder
             foreach ($files as $file) {
                 $filename = pathinfo($file->getFilename(), PATHINFO_FILENAME);
                 $filename = str_replace('.blade', '', pathinfo($filename, PATHINFO_FILENAME));
+                $subject = $this->removeXXWords($filename);
                 $body = File::get($file->getPathname());
                 DB::table('email_templates')->insert([
-                    'event_id' => 1, 
+                    'event_id' => 1,
                     'name' => $filename,
-                    'subject' => $filename,
+                    'subject' => $subject,
                     'body' => $body,
-                    'placeholders' => null, 
+                    'placeholders' => null,
                     'lang' => $lang,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
 
-                $this->command->info("✅ Inserted: $filename ($lang)");
+                // $this->command->info("Inserted: $filename ($lang)");
+                $this->command->info("Inserted: $subject");
             }
         }
+    }
+
+    function removeXXWords($text)
+    {
+        return trim(preg_replace('/XX[^ ]+XX|\bX+\b/', '', $text));
     }
 }
