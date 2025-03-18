@@ -19,7 +19,7 @@ return [
 
   'email_hi' => 'Hi',
   'email_thanks' => 'Cheers,',
-  'email_regards' => 'your 70000TONS OF METAL Team',
+  'email_regards' => 'your 70000TONS OF METAL crew',
   'email_excited' => 'We are excited to have you on board!',
   'email_account_created' => 'Your account has been created successfully.',
   'email_activated_account' => 'Your account is now active.',
@@ -35,15 +35,17 @@ return [
     'default_name' => 'Customer',
     'body' => 'Your account\'s email address has been successfully updated.',
     'security_notice' =>
-      'If you did not make this change, please contact our support team immediately to secure your account.',
-    'thank_you' => '70000TONS OF METAL Team',
+    'If you did not make this change, please contact our support team immediately to secure your account.',
+    'thank_you' => '70000TONS OF METAL Crew',
   ],
 
-  'email_request_to_add_pax' => 'invites you to join their cabin for.',
+  'email_request_to_add_pax' => 'invites you to join their cabin for',
   'email_request_to_add_pax_body' =>
-    'You have 72 hours to add your details to the booking. If you do not add the details within this time, the request will be canceled.',
+  'You have 72 hours to enter your information into the booking. If you do not provide the details within this time, the request will be canceled.',
   'email_request_to_add_pax_cta' => 'Add details',
   'email_invitation_on_your_account' => 'You have an invitation on your account.',
   'email_invitation_on_your_account_body' =>
-    'You have 72 hours to accept the invitation. If you do not accept the invitation within this time, the invitation will be canceled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our support team.',
+  'You have 72 hours to accept this invitation. If you do not accept this invitation within this time, the invitation will be cancelled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our customer service team.',
+  
+  'booking_code' => 'Booking Code',
 ];

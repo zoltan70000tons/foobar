@@ -109,9 +109,7 @@ class BookingsController extends Controller
     }
   }
 
-  public function create()
-  {
-  }
+  public function create() {}
 
   public function store(Request $request)
   {
@@ -191,9 +189,7 @@ class BookingsController extends Controller
     }
   }
 
-  public function edit(Request $request)
-  {
-  }
+  public function edit(Request $request) {}
 
   public function assignAgent(Request $request)
   {
@@ -283,13 +279,9 @@ class BookingsController extends Controller
     }
   }
 
-  public function destroy(Cabin $cabin)
-  {
-  }
+  public function destroy(Cabin $cabin) {}
 
-  public function addTag(Request $request)
-  {
-  }
+  public function addTag(Request $request) {}
 
   public function editMode(Request $request)
   {
@@ -380,16 +372,10 @@ class BookingsController extends Controller
           $event = $this->eventRepository->find($event_id);
           $booking = Booking::find($booking_id);
           $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
-          if ($result instanceof Booking) {
-            return redirect()
-              ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
-              ->with('success', 'Cabin updated successfully.');
-          }else{
-           // dd($result['error']);
-            return redirect()
-              ->route('bookings.show', ['id' => $event_id, 'booking_code' => $booking->booking_code])
-              ->with('error', $result['error']);
-          }
+
+          return redirect()
+            ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+            ->with('success', 'Cabin updated successfully.');
         },
         $event_id,
         $booking_id,
@@ -486,40 +472,40 @@ class BookingsController extends Controller
   {
     try {
       $categoryId = $request->get('category_id');
-    $typeId = $request->get('type_id');
-    $deck = $request->get('deck');
-    $balcony = $request->boolean('balcony');
-    $location = $request->get('location');
-    $accessible = $request->boolean('accessible');
+      $typeId = $request->get('type_id');
+      $deck = $request->get('deck');
+      $balcony = $request->boolean('balcony');
+      $location = $request->get('location');
+      $accessible = $request->boolean('accessible');
 
-    $cabinsData = $this->filterCabins($typeId, $categoryId);
+      $cabinsData = $this->filterCabins($typeId, $categoryId);
 
-    if (isset($cabinsData['error'])) {
-      return response()->json(
-        [
-          'error' => $cabinsData['error'],
-        ],
-        $cabinsData['status'] ?? 404
-      );
-    }
+      if (isset($cabinsData['error'])) {
+        return response()->json(
+          [
+            'error' => $cabinsData['error'],
+          ],
+          $cabinsData['status'] ?? 404
+        );
+      }
 
-    $filteredCabins = collect($cabinsData['cabins'])
-      ->when($deck, function ($collection, $deck) {
-        return $collection->where('deck', $deck);
-      })
-      ->when($balcony, function ($collection) {
-        return $collection->where('balcony', true);
-      })
-      ->when($location, function ($collection, $location) {
-        return $collection->where('location', $location);
-      })
-      ->when($accessible, function ($collection) {
-        return $collection->where('accessible', true);
-      });
+      $filteredCabins = collect($cabinsData['cabins'])
+        ->when($deck, function ($collection, $deck) {
+          return $collection->where('deck', $deck);
+        })
+        ->when($balcony, function ($collection) {
+          return $collection->where('balcony', true);
+        })
+        ->when($location, function ($collection, $location) {
+          return $collection->where('location', $location);
+        })
+        ->when($accessible, function ($collection) {
+          return $collection->where('accessible', true);
+        });
 
-    return response()->json([
-      'cabins' => $filteredCabins->values()->all(),
-    ]);
+      return response()->json([
+        'cabins' => $filteredCabins->values()->all(),
+      ]);
     } catch (\Exception  $e) {
       //throw $th;
     }

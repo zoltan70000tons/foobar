@@ -111,8 +111,10 @@ class CabinController extends Controller
 
       // if user have a reservation throw error
       if ($tempReservationId->isNotEmpty()) {
-        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+        return response()->json(['message' => __('feedback.double_booking')], 403);
       }
+      
+      TemporaryReservation::where('user_id', $user->id)->delete();
     }
 
     // -------- Proceed with new reservation
@@ -149,7 +151,7 @@ class CabinController extends Controller
     // $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME', 6);
 
     if ($request->session()->has('reserved_cabin_id')) {
-      return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+      return response()->json(['message' => __('feedback.double_booking')], 403);
     }
 
     $cabinTypeId = $request->input('cabin_type_id');
@@ -164,7 +166,8 @@ class CabinController extends Controller
 
       // if user have a reservation throw error
       if ($tempReservationId->isNotEmpty()) {
-        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+        TemporaryReservation::where('user_id', $user->id)->delete();
+        return response()->json(['message' => __('feedback.double_booking')], 403);
       }
     }
 
