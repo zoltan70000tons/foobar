@@ -263,6 +263,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     fees = fees || [];
     payments = payments || [];
 
+    const formatDate = (timestamp) => {
+      if (!timestamp) return "N/A";
+      return timestamp.split("T")[0];
+    };
+
     const mergedFees = fees.map(fee => ({
       BIP_ID: "N/A",
       amount: fee.amount || "N/A",
@@ -271,7 +276,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
       notes: "N/A",
       passenger_id: fee.passenger_id || "N/A",
       source: "FEE",
-      transaction_date: "N/A",
+      transaction_date: formatDate(fee.created_at),
       type: fee.type || "N/A",
       updated_at: fee.updated_at || "N/A"
     }));
