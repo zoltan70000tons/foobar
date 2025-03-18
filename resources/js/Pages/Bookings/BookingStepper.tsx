@@ -25,7 +25,8 @@ import {
     Paper,
     Tab,
     Tabs,
-    ToggleButton, Tooltip
+    ToggleButton,
+    Tooltip,
 } from "@mui/material";
 
 import axios from "axios";
@@ -319,7 +320,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             setAvailableCabins([]);
         }
     };
-console.log({cabinNumber})
+
     return (
         <Box sx={{ width: "100%", margin: "0 auto", mt: 4 }}>
             <Stepper activeStep={activeStep}>
