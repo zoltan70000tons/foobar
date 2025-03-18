@@ -148,6 +148,7 @@ class BookingsController extends Controller
       'passenger.newsletter' => ['nullable', 'boolean'],
       'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
       'passenger.passenger_balance' => ['nullable', 'numeric', 'min:0'],
+      'passenger.language' => ['nullable', 'string', 'max:2'],
     ]);
 
     try {
