@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendEmailJob;
 use App\Models\Booking;
 use App\Models\EmailTemplate;
 use App\Models\User;
@@ -19,14 +20,16 @@ class EmailTemplateService
     /**
      * get processed template
      *
-     * @param int $eventId
-     * @param string $lang
+     * @param Booking id;
+     * @param int $templateId
+     * @param Passenger $passenger
      * @param array $extraData (optional)
      * @return string
      */
-    public function getProcessedTemplate(int $bookingId, string $lang = 'en', int $id, Passenger $passenger, array $extraData = []): string
+    public function getProcessedTemplate(int $bookingId, int $templateId, Passenger $passenger = null, array $extraData = []): string
     {
         $booking = Booking::with(['cabin.cabinSpec', 'passengers'])->find($bookingId);
+        $lang = DB::table('email_templates')->where('id', $templateId)->value('lang');
 
         if (!$booking) return '';
 
@@ -45,7 +48,7 @@ class EmailTemplateService
                 break;
         }
 
-        $bodyContent = DB::table('email_templates')->where('id', $id)->value('body');
+        $bodyContent = DB::table('email_templates')->where('id', $templateId)->value('body');
 
         $data = [
             'header' => DB::table('email_templates')->where('name', '=', $header_template)->value('body'),
@@ -78,15 +81,19 @@ class EmailTemplateService
      * search for values of placeholders in DB or extra data
      *
      * @param array $placeholders
-     * @param int $eventId
+     * @param Booking $booking
+     * @param Passenger $passenger
      * @param array $extraData
      * @return array
      */
-    private function fetchPlaceholderValues(array $placeholders, Booking $booking, $passenger, array $extraData = []): array
+    private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger = null, array $extraData = []): array
     {
         $event = $booking->event;
         $cabin = $booking->cabin;
-        $leadPassenger = $passenger->lead_passenger;
+        $nextInstallment = false;
+        if ($passenger) {
+            $nextInstallment = $passenger->getNextInstallmentAttribute();
+        }
 
         $values = [];
 
@@ -99,7 +106,7 @@ class EmailTemplateService
                     $values[$placeholder] = $booking->booking_code ?? '';
                     break;
                 case 'PASSENGER_NAME':
-                    $values[$placeholder] = capitalizeWords($passenger?->full_name) ?? '';
+                    $values[$placeholder] = capitalizeWords($passenger?->first_name) ?? '';
                     break;
                 case 'GRAND_TOTAL':
                     $values[$placeholder] = formatCurrency($booking->getGrandTotal(), true) ?? '';
@@ -112,6 +119,12 @@ class EmailTemplateService
                     break;
                 case 'PAYMENT_PLAN':
                     $values[$placeholder] = $booking->payment_plan ?? '';
+                    break;
+                case 'NEXT_INSTALLMENT_DATE':
+                    $values[$placeholder] = formatDate($nextInstallment['due_date']) ?? '';
+                    break;
+                case 'NEXT_INSTALLMENT_AMOUNT':
+                    $values[$placeholder] = formatCurrency($nextInstallment['amount']) ?? '';
                     break;
                 default:
                     $values[$placeholder] = $extraData[$placeholder] ?? '';
@@ -138,109 +151,120 @@ class EmailTemplateService
     }
 
 
-    /**
-     * Send an email with or without attachments.
-     * 
-     * @param int $templateId        Email template id
-     * @param Booking $booking       Booking instance
-     * @param array|null $attachments List of attachments (optional)
-     * @param bool $bookingPdf       If true, attach booking confirmation PDF
-     * @param bool $eventImage       If true, attach event image
-     * @return bool Returns true if all emails were sent successfully, false if any failed
-     */
-    public function sendEmail(int $templateId, Booking $booking, array $attachments = [], bool $bookingPdf = false, bool $eventImage = false): bool
+    public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac =false): bool
     {
-        $allEmailsSent = true; // Variable to track the success of all emails
-
-        foreach ($booking->passengers as $passenger) {
-            $to = $passenger->email;
-            $subject = 'Booking Confirmation';
-            $subject = DB::table('email_templates')->where('id', $templateId)->value('subject');
-            $content = $this->getProcessedTemplate($booking->id, 'en', $templateId, $passenger);
-
-            try {
-                // Attach the booking confirmation PDF if required
-                if ($bookingPdf) {
-                    $pdfService = new PDFService();
-                    $pdf = $pdfService->generateBookingConfirmationPDF($booking);
-
-                    if ($pdf instanceof \Barryvdh\DomPDF\PDF) {
-                        // Save temporary PDF file
-                        $pdfPath = storage_path('app/temp_booking_' . $booking->id . '.pdf');
-                        $pdf->save($pdfPath);
-
-                        if (file_exists($pdfPath)) {
-                            $attachments[] = [
-                                'path' => $pdfPath,
-                                'name' => $booking->booking_code . '.pdf',
-                                'mime' => 'application/pdf'
-                            ];
-                        }
-                    } else {
-                        \Log::warning("PDFService did not return a valid PDF object for Booking ID: " . $booking->id);
-                    }
-                }
-
-                // 📌 Attach the event image if required
-                if ($eventImage) {
-                    $eventImageUrl = $booking->event->image;
-
-                    if (filter_var($eventImageUrl, FILTER_VALIDATE_URL)) {
-                        $imageData = @file_get_contents($eventImageUrl);
-                        if ($imageData !== false) {
-                            $mimeType = get_headers($eventImageUrl, 1)["Content-Type"] ?? 'image/jpeg';
-                            $attachments[] = [
-                                'data' => $imageData,
-                                'name' => basename($eventImageUrl),
-                                'mime' => $mimeType,
-                            ];
-                        } else {
-                            \Log::warning("Failed to retrieve event image for Booking ID: " . $booking->id);
-                        }
-                    } else {
-                        \Log::warning("Invalid event image URL for Booking ID: " . $booking->id);
-                    }
-                }
-
-                // 📌 Send the email
-                Mail::send([], [], function ($message) use ($to, $subject, $content, $attachments) {
-                    $message->to($to)
-                        ->subject($subject)
-                        ->html($content);
-
-                    foreach ($attachments as $file) {
-                        if (isset($file['path'])) {
-                            // Attach PDF file from the file system
-                            $message->attach($file['path'], [
-                                'as' => $file['name'],
-                                'mime' => $file['mime']
-                            ]);
-                        } elseif (isset($file['data'])) {
-                            // Attach event image from raw data
-                            $message->attachData($file['data'], $file['name'], ['mime' => $file['mime']]);
-                        } elseif ($file instanceof UploadedFile) {
-                            // Attach file from request
-                            $message->attachData(
-                                file_get_contents($file->getRealPath()),
-                                $file->getClientOriginalName(),
-                                ['mime' => $file->getMimeType()]
-                            );
-                        }
-                    }
-                });
-
-                // 📌 Delete the temporary PDF file if it was created
-                if (isset($pdfPath) && file_exists($pdfPath)) {
-                    unlink($pdfPath);
-                }
-            } catch (Exception $e) {
-                \Log::error("Error sending email to {$to}: " . $e->getMessage());
-                $allEmailsSent = false; // Mark as false if any email fails
-            }
+        try {
+            SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac)
+                ->onQueue('emails');
+            return true;
+        } catch (Exception $e) {
+            \Log::error("Error sending email to job: " . $e->getMessage());
+            return false;
         }
-
-        return $allEmailsSent; // Return true if all emails were sent, false otherwise
     }
+
+
+    // /**
+    //  * Send an email with or without attachments.
+    //  * 
+    //  * @param int $templateId        Email template id
+    //  * @param Booking $booking       Booking instance
+    //  * @param Passenger $passenger   Passenger instance
+    //  * @param array|null $attachments List of attachments (optional)
+    //  * @param bool $bookingPdf       If true, attach booking confirmation PDF
+    //  * @param bool $eventImage       If true, attach event image
+    //  * @return bool Returns true if all emails were sent successfully, false if any failed
+    //  */
+    // public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], $extraData =[], bool $bookingPdf = false, bool $eventImage = false): bool
+    // {
+    //     $allEmailsSent = true; // Variable to track the success of all emails
+    //     $to = $passenger->email;
+    //     $subject = 'Booking Confirmation';
+    //     $subject = DB::table('email_templates')->where('id', $templateId)->value('subject');
+    //     $content = $this->getProcessedTemplate($booking->id, $templateId, $passenger, $extraData);
+
+    //     try {
+    //         // Attach the booking confirmation PDF if required
+    //         if ($bookingPdf) {
+    //             $pdfService = new PDFService();
+    //             $pdf = $pdfService->generateBookingConfirmationPDF($booking);
+
+    //             if ($pdf instanceof \Barryvdh\DomPDF\PDF) {
+    //                 // Save temporary PDF file
+    //                 $pdfPath = storage_path('app/temp_booking_' . $booking->id . '.pdf');
+    //                 $pdf->save($pdfPath);
+
+    //                 if (file_exists($pdfPath)) {
+    //                     $attachments[] = [
+    //                         'path' => $pdfPath,
+    //                         'name' => $booking->booking_code . '.pdf',
+    //                         'mime' => 'application/pdf'
+    //                     ];
+    //                 }
+    //             } else {
+    //                 \Log::warning("PDFService did not return a valid PDF object for Booking ID: " . $booking->id);
+    //             }
+    //         }
+
+    //         // 📌 Attach the event image if required
+    //         if ($eventImage) {
+    //             $eventImageUrl = $booking->event->image;
+
+    //             if (filter_var($eventImageUrl, FILTER_VALIDATE_URL)) {
+    //                 $imageData = @file_get_contents($eventImageUrl);
+    //                 if ($imageData !== false) {
+    //                     $mimeType = get_headers($eventImageUrl, 1)["Content-Type"] ?? 'image/jpeg';
+    //                     $attachments[] = [
+    //                         'data' => $imageData,
+    //                         'name' => basename($eventImageUrl),
+    //                         'mime' => $mimeType,
+    //                     ];
+    //                 } else {
+    //                     \Log::warning("Failed to retrieve event image for Booking ID: " . $booking->id);
+    //                 }
+    //             } else {
+    //                 \Log::warning("Invalid event image URL for Booking ID: " . $booking->id);
+    //             }
+    //         }
+
+    //         // 📌 Send the email
+    //         Mail::send([], [], function ($message) use ($to, $subject, $content, $attachments) {
+    //             $message->to($to)
+    //                 ->subject($subject)
+    //                 ->html($content);
+
+    //             foreach ($attachments as $file) {
+    //                 if (isset($file['path'])) {
+    //                     // Attach PDF file from the file system
+    //                     $message->attach($file['path'], [
+    //                         'as' => $file['name'],
+    //                         'mime' => $file['mime']
+    //                     ]);
+    //                 } elseif (isset($file['data'])) {
+    //                     // Attach event image from raw data
+    //                     $message->attachData($file['data'], $file['name'], ['mime' => $file['mime']]);
+    //                 } elseif ($file instanceof UploadedFile) {
+    //                     // Attach file from request
+    //                     $message->attachData(
+    //                         file_get_contents($file->getRealPath()),
+    //                         $file->getClientOriginalName(),
+    //                         ['mime' => $file->getMimeType()]
+    //                     );
+    //                 }
+    //             }
+    //         });
+
+    //         // 📌 Delete the temporary PDF file if it was created
+    //         if (isset($pdfPath) && file_exists($pdfPath)) {
+    //             unlink($pdfPath);
+    //         }
+    //     } catch (Exception $e) {
+    //         \Log::error("Error sending email to {$to}: " . $e->getMessage());
+    //         $allEmailsSent = false; // Mark as false if any email fails
+    //     }
+
+    //     return $allEmailsSent; // Return true if all emails were sent, false otherwise
+    // }
 
     public function getTemplateId($language, $template)
     {
@@ -265,7 +289,7 @@ class EmailTemplateService
                 'comp'   => 57,
                 'updated' => 58,
                 'thanks_payment_full'  => 51,
-                'thanks_payment_inst'  => 60,
+                'thanks_payment_inst'  => 50,
             ],
             'de' => [
                 '+6000'  => 3,

@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXPAID-FULLXX Danke für Deine Zahlung! 70000TONS OF METAL
-      Buchung XXPAID-FULLXX</title>
+  <title>Danke für Deine Zahlung! 70000TONS OF METAL
+      Buchung</title>
   </head>
   <body>
     <table

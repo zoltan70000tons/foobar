@@ -2,8 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>Thank you for your payment! 70000TONS OF METAL Booking
-      XXINSTALLXX</title>
+    <title>Thank you for your payment! 70000TONS OF METAL Booking</title>
   </head>
   <body>
     <table
@@ -94,14 +93,14 @@ style="color: rgb(102, 102,
                                             line-height: 28px;
                                             text-align: left;
                                             padding-bottom: 15px;">We
-                                            received your XXINSTALLXX
+                                            received your {PAID_AMOUNT}
                                             payment {PASSENGER_NAME}. Thank you!<br>
                                             <br>
                                             Please note:<span>&nbsp;</span><strong>Your
 
                                               next installment for the
-                                              amount of USD XXXX is due
-                                              by XXXX XX, 2024</strong><br>
+                                              amount of {NEXT_INSTALLMENT_AMOUNT} is due
+                                              by {NEXT_INSTALLMENT_DATE}</strong><br>
                                             <br>
                                             Please find your updated
                                             Booking Confirmation and

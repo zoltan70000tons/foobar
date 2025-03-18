@@ -6,6 +6,7 @@ use App\Enums\Permissions;
 use App\Mail\BookingEmail;
 use App\Models\Booking;
 use App\Models\Passenger;
+use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Services\EmailTemplateService;
 use App\Services\MailService;
@@ -159,19 +160,29 @@ class EmailController extends Controller
     {
         $booking_id = $request->input('id');
         $booking = Booking::find($booking_id);
-        $service = new EmailTemplateService();
-        $bookingConfirmationTemplate = $service->getBookingConfirmationTemplateId('es', 'single');
-        //dd($bookingConfirmationTemplate);
+        $passenger = $booking->passengers->first();
+        // dd($passenger->getNextInstallmentAttribute());
+
+        // //$service = new EmailTemplateService();
         try {
-            $email = $service->sendEmail($bookingConfirmationTemplate,$booking, [], true, true);
-           dd($email);
+
+
+            $user = User::find('32065109-3d42-3736-aab6-c23b1b407c81'); // Cambia el ID por un usuario válido
+            $token = $user->createToken('API Token')->plainTextToken;
+
+            echo $token;
+            $service = new EmailTemplateService();
+            $bookingConfirmationTemplate = $service->getProcessedTemplate($booking_id, 50, $passenger, ['PAID_AMOUNT' => 'USD 1000.00']);
+            echo $bookingConfirmationTemplate;
+            //$email = $service->sendEmail($bookingConfirmationTemplate,$booking, [], true, true);
+            // dd($email);
         } catch (\Exception $e) {
             dd($e->getMessage());
         }
-       
-        // $service = new PDFService();
-        // // $paymentService = new PaymentInfoService();
-        // // $paymentService->syncAllocatedCost($booking, Passenger::find(1));
+
+        $service = new PDFService();
+        // paymentService = new PaymentInfoService();
+        //$paymentService->syncAllocatedCost($booking, Passenger::find(1));
 
         // $pdf = $service->generateBookingConfirmationPDF($booking);
         // $pdf->setPaper('letter', 'potrait');

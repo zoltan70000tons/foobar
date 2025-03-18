@@ -137,7 +137,7 @@ class Passenger extends Model
           'status' => $totalPaid >= $totalCost - $totalFeeAmount ? 'PAID' : 'PENDING',
           'due_date' => null,
           'type' => 'PAYMENT',
-          'payment_date' => null, 
+          'payment_date' => null,
           'code' => 'PAY_IN_FULL',
         ];
 
@@ -192,9 +192,9 @@ class Passenger extends Model
           ? optional($installment->fee)->amount ?? 0
           : $paymentAmount;
         $lastPaymentDate = optional($installment->payments->sortByDesc('transaction_date')->first())->transaction_date;
-        $code = $isFee && isset($installment->fee->type) 
-    ? Str::title($installment->fee->type) 
-    : null;
+        $code = $isFee && isset($installment->fee->type)
+          ? Str::title($installment->fee->type)
+          : null;
         return [
           'id' => $installment->id,
           'passenger_id' => $installment->passenger_id,
@@ -308,4 +308,24 @@ class Passenger extends Model
   {
     return $this->fees()->sum('amount');
   }
+
+  public function getNextInstallmentAttribute()
+{
+    $info = $this->getPaymentInfoAttribute();
+    if (!isset($info['installments']) || empty($info['installments'])) {
+        return null;
+    }
+    $nextInstallment = collect($info['installments'])
+        ->where('status', 'PENDING') 
+        ->sortBy('due_date')
+        ->first();
+    if (!$nextInstallment) {
+        return null;
+    }
+    return [
+        'due_date' => $nextInstallment['due_date'],
+        'amount' => round($nextInstallment['remaining_amount'], 2),
+    ];
+}
+
 }

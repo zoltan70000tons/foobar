@@ -12,11 +12,11 @@ class Installment extends Model
 
 
   public function payments()
-    {
-        return $this->belongsToMany(Payment::class, 'installment_payment')
-            ->withPivot('amount_paid', 'status')
-            ->withTimestamps();
-    }
+  {
+      return $this->belongsToMany(Payment::class, 'installment_payment', 'installment_id', 'payment_id')
+                  ->withPivot('amount_paid', 'status')
+                  ->withTimestamps();
+  }
 
     public function scopeUnpaid($query)
     {

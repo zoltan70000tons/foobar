@@ -28,6 +28,8 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements CanResetPassword
 {
   use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
+  protected $keyType = 'string';
+  public $incrementing = false;
 
   protected $guard_name = 'web';
 
