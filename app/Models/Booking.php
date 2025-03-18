@@ -338,7 +338,6 @@ class Booking extends Model
     });
   }
 
-
   public function getTotalpaid()
   {
     return $this->passengers->sum('passenger_balance');
@@ -346,7 +345,6 @@ class Booking extends Model
 
   public function getGrandTotal()
   {
-  
     return $this->passengers->sum('passenger_allocated_cost');
   }
 }
