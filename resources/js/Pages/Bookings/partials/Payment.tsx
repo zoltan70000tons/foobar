@@ -293,6 +293,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
         const totalCostAfterAdjustments = pricePerPerson - totalDiscounts + totalAddons + totalFees;
+        const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
+        const filteredInstallments = pax.installments.filter(inst => inst.type !== "FEE");
+
 
         return (
           <Box key={index}>
@@ -336,11 +339,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
               {/* SectionPercentage Integration */}
               <SectionPercentage
                 passenger={{
-                  passenger_allocated_cost: totalCostAfterAdjustments,
+                  passenger_allocated_cost: totalCostWihoutFees,
                   passenger_balance: pax.passenger_balance,
                 }}
                 booking={booking}
-                installments={pax.installments}
+                installments={filteredInstallments}
                 setIsBookingError={(error) => console.error("Booking Error:", error)}
               />
 

@@ -78,11 +78,9 @@ const MenuItems: React.FC = () => {
     router.visit(route("bookings.index", eventId)); 
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length > maxLength) {
-      return text.substring(0, maxLength) + "...";
-    }
-    return text;
+  const truncateText = (text: string | null | undefined, maxLength: number) => {
+    if (!text) return ""; 
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   };
 
   return (
