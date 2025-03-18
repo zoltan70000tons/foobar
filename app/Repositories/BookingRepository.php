@@ -36,7 +36,7 @@ class BookingRepository implements BookingInterface
     PassengerRepository $passengerRepository,
     AdjustmentsRepository $adjustmentsRepository,
     PaymentService $paymentService,
-    PaymentInfoService $paymentInfoService,
+    PaymentInfoService $paymentInfoService
   ) {
     $this->passengerRepository = $passengerRepository;
     $this->adjustmentsRepository = $adjustmentsRepository;
@@ -51,13 +51,7 @@ class BookingRepository implements BookingInterface
 
   function getByTag($tags, $keyword = null)
   {
-    $query = Booking::with([
-      'cabin',
-      'cabin.cabinType',
-      'customer',
-      'customer.detail',
-      'passengers'
-    ])
+    $query = Booking::with(['cabin', 'cabin.cabinType', 'customer', 'customer.detail', 'passengers'])
       ->withSum('passengers as balance', 'passenger_balance')
       ->withSum('passengers as cost', 'passenger_allocated_cost');
 
@@ -179,7 +173,6 @@ class BookingRepository implements BookingInterface
     return $results;
   }
 
-
   function find($id)
   {
     return Booking::find($id);
@@ -195,9 +188,9 @@ class BookingRepository implements BookingInterface
       'passengers' => function ($query) {
         $query->orderBy('passenger_order', 'asc');
       },
-      "passengers.installments",
-      "passengers.payments",
-      "passengers.fees",
+      'passengers.installments',
+      'passengers.payments',
+      'passengers.fees',
       'logs',
       'logs.user',
       'lockedBy',
@@ -222,7 +215,9 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id) {}
+  function delete($id)
+  {
+  }
 
   function assignAgent($code, $user)
   {
@@ -268,7 +263,7 @@ class BookingRepository implements BookingInterface
     $result = $booking->changeCabin($cabin_number);
     if (is_array($result) && array_key_exists('error', $result)) {
       return $booking;
-    } else  {
+    } else {
       return $result;
     }
   }

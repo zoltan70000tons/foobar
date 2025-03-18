@@ -4,29 +4,42 @@ namespace App\Services;
 
 use App\Models\TemporaryReservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Cart;
 
 class ReservationService
 {
   public function releaseCabin(Request $request)
   {
-    if (!$request->session()->has('reserved_cabin_id')) {
-      return ['status' => 404, 'message' => 'No cabin reserved'];
+    $user = Auth::user();
+
+    if ($user) {
+      // Authenticated user: Remove temporary reservation & clear cart
+      $reservation = TemporaryReservation::where('user_id', $user->id)->first();
+
+      if (!$reservation) {
+        return ['status' => 404, 'message' => 'No reservation found for user'];
+      }
+
+      $reservation->delete();
+      Cart::where('user_id', $user->id)->delete(); // Clear cart from DB
+    } else {
+      // Guest user: Remove session-based reservation
+      if (!$request->session()->has('reserved_cabin_id')) {
+        return ['status' => 404, 'message' => 'No cabin reserved'];
+      }
+
+      $reservationId = $request->session()->get('reserved_cabin_id');
+      $reservation = TemporaryReservation::find($reservationId);
+
+      if (!$reservation) {
+        return ['status' => 404, 'message' => 'No reservation found'];
+      }
+
+      $reservation->delete();
+      $request->session()->forget(['reserved_cabin_id', 'cart']); // Clear session cart
     }
 
-    $reservationId = $request->session()->get('reserved_cabin_id');
-    $reservation = TemporaryReservation::find($reservationId);
-
-    if (!$reservation) {
-      return ['status' => 404, 'message' => 'No reservation found'];
-    }
-
-    if ($request->user() && $reservation->user_id !== $request->user()->id) {
-      return ['status' => 403, 'message' => 'Unauthorized'];
-    }
-
-    $reservation->delete();
-    $request->session()->forget(['reserved_cabin_id', 'cart']);
-
-    return ['status' => 200, 'message' => 'Cabin released'];
+    return ['status' => 200, 'message' => 'Cabin released and cart cleared'];
   }
 }
