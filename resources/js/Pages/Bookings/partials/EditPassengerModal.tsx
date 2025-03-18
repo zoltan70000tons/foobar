@@ -15,7 +15,7 @@ import {
     Typography,
     Autocomplete,
     CircularProgress,
-    FormHelperText,
+    FormHelperText, Tooltip,
 } from "@mui/material";
 
 import axios from "axios";
@@ -30,6 +30,7 @@ const EditPassengerModal = ({
     passenger,
     onSave,
     onDelete,
+    isSingleRoom,
     onChange,
     errors,
     editMode,
@@ -471,19 +472,23 @@ const EditPassengerModal = ({
                                 label="Travel Info"
                             />
                         </Grid>
-                        <Grid item xs={12} md={2}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        size="small"
-                                        checked={passenger?.single_t_agreement || false}
-                                        onChange={(e) => onChange("single_t_agreement", e.target.checked)}
-                                        disabled={editable}
-                                    />
-                                }
-                                label="STA"
-                            />
-                        </Grid>
+                        {isSingleRoom && (<Grid item xs={12} md={2}>
+                            <Tooltip title="Single Ticket Agreement">
+                                <FormControlLabel
+                                    control={
+
+                                            <Checkbox
+                                                size="small"
+                                                checked={passenger?.single_t_agreement || false}
+                                                onChange={(e) => onChange("single_t_agreement", e.target.checked)}
+                                                disabled={editable}
+                                            />
+
+                                    }
+                                    label="STA"
+                                />
+                            </Tooltip>
+                        </Grid>)}
                         <Grid item xs={12} md={2}>
                             <FormControlLabel
                                 control={

@@ -24,8 +24,8 @@ import {
     TableBody,
     Paper,
     Tab,
-    Tabs, 
-    ToggleButton
+    Tabs,
+    ToggleButton, Tooltip
 } from "@mui/material";
 
 import axios from "axios";
@@ -96,6 +96,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     const [numberOfInstallments, setNumberOfInstallments] = useState(null);
     const [isNextDisabled, setIsNextDisabled] = useState(true);
     const [carbonOffset, setCarbonOffset] = useState(false);
+    const [isSingleRoom, setIsSingleRoom] = useState(false);
     const paymentPlanOptions = [{
         id: 'INSTALLMENTS', value: 'INSTALLMENTS'
     }, {
@@ -318,7 +319,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             setAvailableCabins([]);
         }
     };
-
+console.log({cabinNumber})
     return (
         <Box sx={{ width: "100%", margin: "0 auto", mt: 4 }}>
             <Stepper activeStep={activeStep}>
@@ -449,7 +450,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                         options={availableCabins}
                                         getOptionLabel={(option) => option.cabin_number}
                                         value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-                                        onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
+                                        onChange={(event, newValue) => {
+                                            setIsSingleRoom(newValue?.cabin_type_id !== 1)
+                                            setCabinNumber(newValue?.cabin_number || null)
+                                        }}
                                         renderInput={(params) => <TextField {...params} label="Available Cabins" />}
                                     />
                                 </FormControl>
@@ -787,18 +791,20 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                     label="Travel Info"
                                 />
                             </Grid>
-                            <Grid item xs={12} md={2}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            size="small"
-                                            checked={passenger?.single_t_agreement || false}
-                                            onChange={(e) => onChange("single_t_agreement", e.target.checked)}
-                                        />
-                                    }
-                                    label="STA"
-                                />
-                            </Grid>
+                            {isSingleRoom && (<Grid item xs={12} md={2}>
+                                <Tooltip title="Single Ticket Agreement">
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                size="small"
+                                                checked={passenger?.single_t_agreement || false}
+                                                onChange={(e) => onChange("single_t_agreement", e.target.checked)}
+                                            />
+                                        }
+                                        label="STA"
+                                    />
+                                </Tooltip>
+                            </Grid>)}
                             <Grid item xs={12} md={2}>
                                 <FormControlLabel
                                     control={
