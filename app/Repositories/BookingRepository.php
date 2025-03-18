@@ -266,17 +266,9 @@ class BookingRepository implements BookingInterface
   {
     $result = $booking->changeCabin($cabin_number);
     if (is_array($result) && array_key_exists('error', $result)) {
-      return $result;
-    } elseif ($result instanceof App\Models\Booking) {
-      if ($result) {
-        $cabin = $booking->cabin;
-        $this->saveBookingLog(
-          $booking->id,
-          'Changed cabin number',
-          "Cabin number changed from {$cabin->cabin_number} to {$cabin_number}."
-        );
-      }
       return $booking;
+    } else  {
+      return $result;
     }
   }
 
