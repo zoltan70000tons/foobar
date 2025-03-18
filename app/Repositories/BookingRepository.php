@@ -30,6 +30,7 @@ class BookingRepository implements BookingInterface
   protected PassengerInterface $passengerRepository;
   protected AdjustmentsRepository $adjustmentsRepository;
   protected PaymentService $paymentService;
+  protected PaymentInfoService $paymentInfoService;
 
   public function __construct(
     PassengerRepository $passengerRepository,

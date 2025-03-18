@@ -451,7 +451,7 @@ const EditPassengerModal = ({
                                     <Checkbox
                                         size="small"
                                         checked={passenger?.newsletter || false}
-                                        onChange={(e) => onChange("Newsletter", e.target.checked)}
+                                        onChange={(e) => onChange("newsletter", e.target.checked)}
                                         disabled={editable}
                                     />
                                 }
