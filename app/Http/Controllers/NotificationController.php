@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\User;
 use App\Services\EmailTemplateService;
 use App\Services\PaymentService;
 use Illuminate\Support\Facades\Log;
@@ -61,7 +62,10 @@ class NotificationController extends Controller
             $template = 'thanks_payment_inst';
         }
 
-        $language = $passenger->language ?? 'en';
+        $lead = $booking->passengers->where('lead_passenger', true)->first();
+        $user = User::where('email', $lead->email)->first();
+        $detail = $user->detail;
+        $language = $detail->language ?? 'en';
         $templateId = $this->emailService->getTemplateId($language, $template);
 
         if (!$templateId) {
@@ -94,8 +98,13 @@ class NotificationController extends Controller
                 \Log::warning("Booking not found", ['booking_id' => $validated['booking_id']]);
                 return response()->json(['error' => 'Booking not found'], 404);
             }
+            $passenger = $booking->passengers->first();
+            $lead = $booking->passengers->where('lead_passenger', true)->first();
+            $user = User::where('email', $lead->email)->first();
+            $detail = $user->detail;
+            $language = $detail->language ?? 'en';
+
             foreach ($booking->passengers as $passenger) {
-                $language = $passenger->language ?? 'en';
                 $templateId = $this->emailService->getTemplateId($language, $validated['template']);
     
                 if (!$templateId) {
