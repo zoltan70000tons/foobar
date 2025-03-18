@@ -79,17 +79,18 @@ class CabinController extends Controller
   */
   public function reserveCabinInType(Request $request, ReservationService $reservationService)
   {
+    $user = Auth::user();
+
     // REQUEST INPUT DATA
     $cabinNumber = $request->input('cabin_number');
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCapacity = $request->input('cabin_capacity');
     $cabinCategoryCode = $request->input('category_code');
 
-    $cart = $request->session()->get('cart', []) ?? null;
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+
     $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
-
-    $user = Auth::user();
 
     // ------- If user have a reservation, and he want to create new.
     if ($cart && $reservationId) {
