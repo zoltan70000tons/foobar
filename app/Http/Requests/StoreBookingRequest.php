@@ -44,7 +44,8 @@ class StoreBookingRequest extends FormRequest
       'emergencyPhoneNumber' => 'required|string',
       'emergencyContactName' => 'required|string',
 
-      // Cart data
+      // Cart data and booking
+      'bedConfig' => 'required|string',
       'cart.event_id' => 'required|string',
       'cart.cabin_type' => 'nullable|string',
       'cart.payment_plan' => 'required|string',

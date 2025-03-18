@@ -34,6 +34,7 @@ import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { router } from "@inertiajs/react";
 import {FilterList} from "@mui/icons-material";
+import Country from "@/Components/Country";
 
 const TabPanel = ({ children, value, index }) => {
     return (
@@ -240,7 +241,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
         const payload = {
             cabin_number: cabinNumber,
             payment_plan: paymentPlan.value,
-            number_of_installments: numberOfInstallments.value,
+            number_of_installments: numberOfInstallments?.value,
             carbon_offset: carbonOffset,
             passenger: {
                 id: passenger.id,
@@ -596,13 +597,14 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
+                                <Country
+                                    fullWidth
                                     label="Citizenship"
                                     variant="outlined"
-                                    fullWidth
+                                    value={ passenger?.citizenship || "" }
                                     size="small"
-                                    value={passenger?.citizenship || ""}
-                                    onChange={(e) => onChange("citizenship", e.target.value)}
+                                    name={ "citizenship" }
+                                    onChange={ (e) => onChange('citizenship', e) }
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
@@ -690,15 +692,14 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
+                                <Country
+                                    fullWidth
                                     label="Country"
                                     variant="outlined"
-                                    fullWidth
+                                    value={ passenger?.country || "" }
                                     size="small"
-                                    value={passenger?.country || ""}
-                                    onChange={(e) => onChange("country", e.target.value)}
-
-
+                                    name={ "country" }
+                                    onChange={ (e) => onChange('country', e) }
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
@@ -768,7 +769,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                         <Checkbox
                                             size="small"
                                             checked={passenger?.newsletter || false}
-                                            onChange={(e) => onChange("Newsletter", e.target.checked)}
+                                            onChange={(e) => onChange("newsletter", e.target.checked)}
                                         />
                                     }
                                     label="Newsletter"
@@ -994,7 +995,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                             <TableCell>
                                                 <strong>Number of Installments:</strong>
                                             </TableCell>
-                                            <TableCell>{numberOfInstallments.value}</TableCell>
+                                            <TableCell>{numberOfInstallments?.value}</TableCell>
                                         </TableRow>
                                     </TableBody>
                                 </Table>

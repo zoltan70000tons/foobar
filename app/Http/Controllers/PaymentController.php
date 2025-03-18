@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Exceptions\InvalidBipIdException;
 use App\Models\Booking;
 use App\Repositories\PaymentRepository;
 use App\Services\PaymentService;
@@ -14,8 +15,10 @@ use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Laravel\SerializableClosure\SerializableClosure;
-
-
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
@@ -34,41 +37,62 @@ class PaymentController extends Controller
         $this->paymentService = $paymentService;
     }
 
-    public function store(Request $request)
+    public function store(Request $request): Response|RedirectResponse
     {
-        try {
-            return $this->withPermission([Permissions::CreateFees], function ($request) {
+        return $this->withPermission([Permissions::CreateFees], function ($request) {
+            DB::beginTransaction();
+
+            try {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
-                $validated = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'passenger_id' => 'required|exists:passengers,id',
-                    'BIP_ID' => 'nullable|string|max:50',
+                    'BIP_ID' => 'nullable|string|uuid|max:50',
                     'amount' => 'required|numeric|min:0.01',
                     'type' => 'required|in:PAYMENT,REFUND',
                     'notes' => 'nullable|string|max:255',
                     'transaction_date' => 'required|date'
                 ]);
+
+                if ($validator->fails()) {
+                    if ($validator->errors()->has('BIP_ID')) {
+                        throw new InvalidBipIdException();
+                    }
+                }
+                $validated = $validator->validated();
                 $validated['source'] = 'MANUAL';
-                $this->paymentService->processPayment($validated);
-                //Payment::create($validated);
+                Payment::create($validated);
                 $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+
+                DB::commit();
+
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Payment',
                     "Manual {$validated['type']} value: \${$validated['amount']} was added to booking"
                 );
+
                 return redirect()->back()->with('success', 'Payment added successfully!');
-            }, $request);
-        } catch (\Exception $e) {
-            $this->logException($e);
-            return redirect()->back()->with('error', 'Error creating payment!');
-        }
+            } catch (InvalidBipIdException $e) {
+                DB::rollBack();
+                $this->logException($e);
+
+                return $e->render($request);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->logException($e);
+
+                return redirect()->back()->with('error', 'Error creating payment!');
+            }
+        }, $request);
     }
 
-    public function delete(Request $request)
+    public function delete(Request $request): Response|RedirectResponse
     {
-        try {
-            return $this->withPermission([Permissions::DeletePayments], function ($request) {
+        return $this->withPermission([Permissions::DeletePayments], function ($request) {
+            DB::beginTransaction();
+
+            try {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
                 $validated = $request->validate([
@@ -88,20 +112,27 @@ class PaymentController extends Controller
                     return redirect()->back()->with('error', 'Fee not found.');
                 }
                 $amount = $payment->amount;
-                $type =$payment->type;
+                $type = $payment->type;
+
                 $payment->delete();
-                $balance = $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+                $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+
+                DB::commit();
+
                 $this->saveBookingLog(
                     $booking_id,
                     'Deleted payment',
                     "Payment: {$type} value: \${$amount} was deleted"
                 );
-                return redirect()->back()->with('success', 'payment deleted successfully!');
-            }, $request);
-        } catch (\Exception $e) {
-            $this->logException($e);
-            return redirect()->back()->with('error', 'Error deleting payment!');
-        }
+
+                return redirect()->back()->with('success', 'Payment deleted successfully!');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->logException($e);
+
+                return redirect()->back()->with('error', 'Error deleting payment!');
+            }
+        }, $request);
     }
 
     public function createPayment(Request $request)

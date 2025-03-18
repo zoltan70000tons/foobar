@@ -137,7 +137,6 @@ class PassengerController extends Controller
         }
     }
 
-
     /**
      * Search users by first_name, last_name, or email.
      *
@@ -151,7 +150,7 @@ class PassengerController extends Controller
         ]);
 
         $query = $request->get('query');
-        $results = User::with('detail')
+        $results = User::with(['detail', 'survivorNumber'])
             ->where('email', 'LIKE', "%{$query}%")
             ->orWhereHas('detail', function ($q) use ($query) {
                 $q->where('first_name', 'LIKE', "%{$query}%")
@@ -165,7 +164,7 @@ class PassengerController extends Controller
                     'first_name' => $user->detail->first_name ?? null,
                     'last_name' => $user->detail->last_name ?? null,
                     'middle_name' => $user->detail->middle_name ?? null,
-                    'survivor_number' => $user->detail->survivor_number ?? null,
+                    'survivor_number' => $user->survivorNumber->survivor_number ?? null,
                     'confirmed_booking_email' => $user->detail->confirmed_booking_email ?? null,
                     'lead_passenger' => $user->detail->lead_passenger ?? null,
                     'payment_method' => $user->detail->payment_method ?? null,

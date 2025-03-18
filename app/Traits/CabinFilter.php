@@ -66,6 +66,12 @@ trait CabinFilter
     $cabins = $cabinsQuery->get();
 
     if ($cabins->isEmpty()) {
+      if (!$cabinTypeId) {
+          return [
+              'cabins' => [],
+              'status' => 200,
+          ];
+      }
       return [
         'error' => 'No cabins found or already reserved',
         'status' => 404,
@@ -89,6 +95,7 @@ trait CabinFilter
           'location' => $cabin->location, // Access location from spec
           'accessible' => $cabin->accessible, // Access accessible from spec
           'balcony' => $cabin->balcony, // Access balcony from spec
+          'lower_bed_type_2' => $cabin->lowerBedType2, // Access lower bed type 2 from spec
           'cabin_type_id' => $cabin->cabin_type_id,
           'cabin_category_id' => $cabin->cabin_category_id,
           'cabin_inventory' => $cabin->inventory,

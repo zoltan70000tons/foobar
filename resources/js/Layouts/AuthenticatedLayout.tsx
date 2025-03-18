@@ -86,7 +86,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = theme;
 
 export default function AuthenticatedLayout({ user, header, children}: PropsWithChildren<{ user: User, header?: ReactNode, children?: ReactNode }>) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const { auth } = usePage().props;
 
 

@@ -26,6 +26,7 @@ class Booking extends Model
     'payment_plan',
     'cabin_id',
     'is_single_occupancy',
+    'bed_config',
     'agent_id',
     'status',
     'tags',
@@ -174,7 +175,8 @@ class Booking extends Model
       
       // Generate a new booking code
       $preBookingCode = $this->booking_code;
-      $this->booking_code = $this->generateBookingCode($this->cabin);
+      $this->booking_code = $this->generateBookingCode($cabin);
+      $this->save();
 
       // Save the booking log
       $this->saveBookingLog($this->id, 'Changed Cabin', "Cabin changed from  {$prevCabin->cabin_number} to {$cabin->cabin_number}. /n Booking code changed from {$preBookingCode} to {$this->booking_code}");
@@ -226,14 +228,14 @@ class Booking extends Model
   private function generateBookingCode(Cabin $cabin): string
   {
     $characters = config('whitelist.allowed_characters');
-    $year = 'E';
-
+    $year = 'F';
+    $categoryLetter = strtoupper(chr(64 + $cabin->category->display_order));
     // Generate a random 4-character code
     do {
       $identifier_code = substr(str_shuffle($characters), 0, 4);
     } while ($this->containsBlockedWords($identifier_code));
 
-    return "{$cabin->cabin_number}-{$identifier_code}-{$year}{$cabin->category->category_code}{$cabin->category->category_number}{$cabin->category->capacity}";
+    return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$cabin->category->category_number}{$categoryLetter}";
   }
 
   protected static function boot()

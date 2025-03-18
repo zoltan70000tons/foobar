@@ -109,9 +109,7 @@ class BookingsController extends Controller
     }
   }
 
-  public function create()
-  {
-  }
+  public function create() {}
 
   public function store(Request $request)
   {
@@ -126,7 +124,7 @@ class BookingsController extends Controller
       'passenger.last_name' => ['required', 'string', 'max:255'],
       'passenger.dob' => ['required', 'date', 'before:today'],
       'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
-      'passenger.citizenship' => ['nullable', 'string', 'max:100'],
+      'passenger.citizenship' => ['nullable', 'string', 'max:3'],
       'passenger.survivor_number' => ['nullable', 'string', 'max:50'],
       'passenger.email' => ['required', 'email', 'email'],
       'passenger.phone' => ['nullable', 'string', 'max:20'],
@@ -135,7 +133,7 @@ class BookingsController extends Controller
       'passenger.city' => ['required', 'string', 'max:255'],
       'passenger.state' => ['nullable', 'string', 'max:255'],
       'passenger.postal_code' => ['nullable', 'string', 'max:20'],
-      'passenger.country' => ['required', 'string', 'max:100'],
+      'passenger.country' => ['required', 'string', 'max:3'],
       'passenger.emergency_c_name' => ['nullable', 'string', 'max:255'],
       'passenger.emergency_c_phone' => ['nullable', 'string', 'max:20'],
       'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
@@ -157,7 +155,7 @@ class BookingsController extends Controller
       $user = $request->user();
       $cabin_number = $validated['cabin_number'];
       $passenger_data = $validated['passenger'];
-      $number_of_installments = $validated['number_of_installments'];
+      $number_of_installments = $validated['number_of_installments'] ?? null;
       $payment_plan = 'INSTALLMENTS';
 
       return $this->withPermission(
@@ -187,14 +185,11 @@ class BookingsController extends Controller
         $number_of_installments
       );
     } catch (\Exception $e) {
-      //dd($e->getMessage());
       $this->logException($e);
     }
   }
 
-  public function edit(Request $request)
-  {
-  }
+  public function edit(Request $request) {}
 
   public function assignAgent(Request $request)
   {
@@ -284,13 +279,9 @@ class BookingsController extends Controller
     }
   }
 
-  public function destroy(Cabin $cabin)
-  {
-  }
+  public function destroy(Cabin $cabin) {}
 
-  public function addTag(Request $request)
-  {
-  }
+  public function addTag(Request $request) {}
 
   public function editMode(Request $request)
   {
@@ -381,16 +372,10 @@ class BookingsController extends Controller
           $event = $this->eventRepository->find($event_id);
           $booking = Booking::find($booking_id);
           $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
-          if ($result instanceof Booking) {
-            return redirect()
-              ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
-              ->with('success', 'Cabin updated successfully.');
-          }else{
-           // dd($result['error']);
-            return redirect()
-              ->route('bookings.show', ['id' => $event_id, 'booking_code' => $booking->booking_code])
-              ->with('error', $result['error']);
-          }
+
+          return redirect()
+            ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+            ->with('success', 'Cabin updated successfully.');
         },
         $event_id,
         $booking_id,
@@ -487,40 +472,40 @@ class BookingsController extends Controller
   {
     try {
       $categoryId = $request->get('category_id');
-    $typeId = $request->get('type_id');
-    $deck = $request->get('deck');
-    $balcony = $request->boolean('balcony');
-    $location = $request->get('location');
-    $accessible = $request->boolean('accessible');
+      $typeId = $request->get('type_id');
+      $deck = $request->get('deck');
+      $balcony = $request->boolean('balcony');
+      $location = $request->get('location');
+      $accessible = $request->boolean('accessible');
 
-    $cabinsData = $this->filterCabins($typeId, $categoryId);
+      $cabinsData = $this->filterCabins($typeId, $categoryId);
 
-    if (isset($cabinsData['error'])) {
-      return response()->json(
-        [
-          'error' => $cabinsData['error'],
-        ],
-        $cabinsData['status'] ?? 404
-      );
-    }
+      if (isset($cabinsData['error'])) {
+        return response()->json(
+          [
+            'error' => $cabinsData['error'],
+          ],
+          $cabinsData['status'] ?? 404
+        );
+      }
 
-    $filteredCabins = collect($cabinsData['cabins'])
-      ->when($deck, function ($collection, $deck) {
-        return $collection->where('deck', $deck);
-      })
-      ->when($balcony, function ($collection) {
-        return $collection->where('balcony', true);
-      })
-      ->when($location, function ($collection, $location) {
-        return $collection->where('location', $location);
-      })
-      ->when($accessible, function ($collection) {
-        return $collection->where('accessible', true);
-      });
+      $filteredCabins = collect($cabinsData['cabins'])
+        ->when($deck, function ($collection, $deck) {
+          return $collection->where('deck', $deck);
+        })
+        ->when($balcony, function ($collection) {
+          return $collection->where('balcony', true);
+        })
+        ->when($location, function ($collection, $location) {
+          return $collection->where('location', $location);
+        })
+        ->when($accessible, function ($collection) {
+          return $collection->where('accessible', true);
+        });
 
-    return response()->json([
-      'cabins' => $filteredCabins->values()->all(),
-    ]);
+      return response()->json([
+        'cabins' => $filteredCabins->values()->all(),
+      ]);
     } catch (\Exception  $e) {
       //throw $th;
     }

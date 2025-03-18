@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Enums\StatusCabin;
+use App\Models\CabinCategory;
 
 class MatrixHelper
 {
@@ -91,6 +92,7 @@ class MatrixHelper
         'decks' => null,
         'is_available' => false,
         'cabin_category_id' => null,
+        'full_title' => null,
       ];
     }
 
@@ -103,6 +105,8 @@ class MatrixHelper
     // Get first instance just to get category attributes
     // All cabins in the filteredCabins have the same price
     $cabin = $filteredCabins->first();
+    $category_data = CabinCategory::find($cabin->id);
+    $category_full_title = $cabin->getTitleAttribute() . ' ' . $category_data->capacityDescription;
 
     return [
       'price' => $cabin->price,
@@ -110,6 +114,7 @@ class MatrixHelper
       'decks' => self::getUniqueDecks($cabin->cabins),
       'is_available' => $isAvailable,
       'cabin_category_id' => $cabin->id,
+      'full_title' => $category_full_title,
     ];
   }
 }

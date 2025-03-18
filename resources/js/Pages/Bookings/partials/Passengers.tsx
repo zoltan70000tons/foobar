@@ -6,9 +6,6 @@ import {
   Grid,
   Paper,
   Typography,
-  TextField,
-  Modal,
-  Autocomplete,
   Chip,
   Dialog,
   DialogTitle,
@@ -30,8 +27,8 @@ type PassengersProps = {
 
 type Booking = {
   id: number;
+  event_id: number;
 };
-
 
 const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
@@ -47,8 +44,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const { showSnackbar } = useSnackbar();
   const [savinLoading, setSavingLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
-
-
 
   // Open edit modal and set passenger data
   const handleEditPassenger = (passenger) => {
@@ -94,21 +89,29 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     try {
       const response = await releaseSeat(editedPassengerData.id, booking.id, booking.event_id);
 
+      let updatedPassengers = passengers.filter(
+        (passenger) => passenger.id !== editedPassengerData.id
+      );
+
+      if (response.data && Object.keys(response.data).length > 0) {
+        updatedPassengers.push(response.data);
+      }
+
+      updatedPassengers = updatedPassengers.sort((a, b) => a.passenger_order - b.passenger_order);
+
+      setPassengers(updatedPassengers);
+
       showSnackbar("Seat released successfully!", "success");
       setEditPassengerOpen(false);
       setEditingPassenger(null);
       setErrors({});
-      router.reload({ only: ['booking'], preserveScroll: true });
-
     } catch (error) {
       console.error("Error releasing seat:", error.response?.data || error);
       showSnackbar("Failed to release seat", "error");
-
     } finally {
       setReleaseLoading(false);
     }
   };
-
 
   const releaseSeat = async (slotId: number, bookingId: number, eventId: number) => {
     return axios.post(route('seat.release', { id: eventId, booking_id: bookingId }), {

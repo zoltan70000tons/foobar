@@ -111,8 +111,10 @@ class CabinController extends Controller
 
       // if user have a reservation throw error
       if ($tempReservationId->isNotEmpty()) {
-        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+        return response()->json(['message' => __('feedback.double_booking')], 403);
       }
+      
+      TemporaryReservation::where('user_id', $user->id)->delete();
     }
 
     // -------- Proceed with new reservation
@@ -149,7 +151,7 @@ class CabinController extends Controller
     // $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME', 6);
 
     if ($request->session()->has('reserved_cabin_id')) {
-      return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+      return response()->json(['message' => __('feedback.double_booking')], 403);
     }
 
     $cabinTypeId = $request->input('cabin_type_id');
@@ -164,7 +166,8 @@ class CabinController extends Controller
 
       // if user have a reservation throw error
       if ($tempReservationId->isNotEmpty()) {
-        return response()->json(['message' => 'You have already reserved a cabin.'], 403);
+        TemporaryReservation::where('user_id', $user->id)->delete();
+        return response()->json(['message' => __('feedback.double_booking')], 403);
       }
     }
 
@@ -246,6 +249,7 @@ class CabinController extends Controller
         'cabin_number' => $cabin['cabin_number'],
         'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
         'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
+        'lower_bed_type_2' => $cabin['lower_bed_type_2'],
       ]);
 
       DB::commit();
@@ -258,6 +262,7 @@ class CabinController extends Controller
           'time_to_cancel' => $reservationTime,
           'updated_reservation' => $keepOldTimeStamp ? true : false,
           'cabin_number' => $selectionType === 'clientSelect' ? $reserved->cabin_number : null,
+          'lower_bed_type_2' => $cabin['lower_bed_type_2'],
         ],
         200
       );

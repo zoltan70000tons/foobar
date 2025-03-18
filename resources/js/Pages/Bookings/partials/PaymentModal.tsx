@@ -16,6 +16,7 @@ import { router } from "@inertiajs/react";
 import dayjs, { Dayjs } from "dayjs";
 import { sanitizeInput } from '@/Helpers/inputSanitizer';
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 type PaymentModalProps = {
     passenger_id: number;
@@ -46,6 +47,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         notes: "",
         transaction_date: dayjs(), // Default to today
     });
+    const [loading, setLoading] = useState(false);
 
     const {showSnackbar} = useSnackbar();
 
@@ -74,6 +76,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             showSnackbar("Please fill in all fields correctly.",'error');
             return;
         }
+
+        setLoading(true);
     
         // Send form data to the server using the router
         router.post(
@@ -108,6 +112,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     console.error("Validation errors:", errors);
                     showSnackbar('Failed to save the payment. Please check your inputs.', 'error');
                 },
+                onFinish: () => {
+                    setLoading(false);
+                }
             }
         );
     };
@@ -219,6 +226,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                         Save
                     </Button>
                 </DialogActions>
+                <LoadingOverlay open={loading} />
             </Dialog>
         </Box>
     );
