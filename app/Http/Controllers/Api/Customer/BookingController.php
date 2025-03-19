@@ -23,6 +23,7 @@ use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use Illuminate\Validation\Rules\Numeric;
+use App\Models\Cart;
 
 class BookingController extends Controller
 {
@@ -54,7 +55,7 @@ class BookingController extends Controller
 
     // Get authenticated user
     $user = Auth::user();
-    $cart = $request->session()->get('cart', []);
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
 
     if (!$cart) {
       return response()->json(['message' => 'Cart is empty'], 400);
@@ -76,7 +77,7 @@ class BookingController extends Controller
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'is_single_occupancy' => false,
-        'tags' => json_encode(['NEW']),
+        'tags' => ["NEW"],
         'bed_config' => $bedConfig,
       ];
 
@@ -126,6 +127,7 @@ class BookingController extends Controller
         'addons' => $validated['cart']['addons'],
         'passenger_balance' => 0,
         'was_on_board' => false,
+        'language' => $validated['language'] ?? 'en',
       ];
 
       // Call to booking repository method
@@ -137,6 +139,11 @@ class BookingController extends Controller
       // Delete current sesion
       $request->session()->forget('cart');
       $request->session()->forget('reservation_id');
+
+      // delete cart from db
+      if ($user) {
+        Cart::where('user_id', $user->id)->delete();
+      }
 
       // \Log::info('Result ----> data: ', ['result' => $result]);
       // \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);

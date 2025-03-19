@@ -30,6 +30,12 @@ type Booking = {
   event_id: number;
 };
 
+const CabinType = Object.freeze({
+  SINGLE_MALE: 2,
+  SINGLE_FEMALE: 3,
+  PRIVATE_CABIN: 1,
+});
+
 const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -44,6 +50,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const { showSnackbar } = useSnackbar();
   const [savinLoading, setSavingLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
+  const isSingleRoom = [CabinType.SINGLE_MALE, CabinType.SINGLE_FEMALE].includes(
+    booking?.cabin?.cabin_type_id
+  );
 
   // Open edit modal and set passenger data
   const handleEditPassenger = (passenger) => {
@@ -168,6 +177,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         onDelete={onDelete}
         savingLoading ={savinLoading}
         releaseLoading={releaseLoading}
+        isSingleRoom={isSingleRoom}
         onChange={(field, value) =>
           setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
         }

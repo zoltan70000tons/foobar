@@ -168,7 +168,8 @@ class AdjustmentsController extends Controller
             $adjustment = Adjustment::findOrFail($request->input('id'));
 
             // Verify permission before updating
-            $this->withPermission([Permissions::EditAdjustments], function () use ($validated, $adjustment, $event_id) {
+            $this->withPermission([Permissions::EditAdjustments], function () use ($validated, $adjustment,
+                $event_id, $booking) {
                 $adjustment->update([
                     'code' => $validated['code'],
                     'type' => $validated['type'],
@@ -177,6 +178,8 @@ class AdjustmentsController extends Controller
                     'restrictions' => $validated['restrictions'] ?? null,
                     'event_id' => $event_id,
                 ]);
+
+                $this->paymentInfoService->syncAllocatedCost($booking);
 
                 // Commit the transaction
                 DB::commit();

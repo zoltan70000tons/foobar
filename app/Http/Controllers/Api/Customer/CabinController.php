@@ -11,6 +11,7 @@ use App\Traits\CabinFilter;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReservationService;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Cart;
 use Log;
 
 class CabinController extends Controller
@@ -78,17 +79,18 @@ class CabinController extends Controller
   */
   public function reserveCabinInType(Request $request, ReservationService $reservationService)
   {
+    $user = Auth::user();
+
     // REQUEST INPUT DATA
     $cabinNumber = $request->input('cabin_number');
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCapacity = $request->input('cabin_capacity');
     $cabinCategoryCode = $request->input('category_code');
 
-    $cart = $request->session()->get('cart', []) ?? null;
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+
     $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
-
-    $user = Auth::user();
 
     // ------- If user have a reservation, and he want to create new.
     if ($cart && $reservationId) {
@@ -100,9 +102,16 @@ class CabinController extends Controller
 
       // remove cabin_number from session, because if something went wrong.
       // we don't want to keep the old cabin_number in session to prevent booking.
-      $request->session()->put('cart.cabin_number', null);
-      $request->session()->put('cart.reservation_id', null);
-      $request->session()->put('cart.reservation_timestamp', null);
+      if (!$user) {
+        $request->session()->put('cart.cabin_number', null);
+        $request->session()->put('cart.reservation_id', null);
+        $request->session()->put('cart.reservation_timestamp', null);
+      } else {
+        $cart['cabin_number'] = null;
+        $cart['reservation_id'] = null;
+        $cart['reservationTimestamp'] = null;
+        Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
+      }
     }
 
     // ------- If user id is in tepmorary reservation table, thriow error
@@ -113,8 +122,8 @@ class CabinController extends Controller
       if ($tempReservationId->isNotEmpty()) {
         return response()->json(['message' => __('feedback.double_booking')], 403);
       }
-      
-      TemporaryReservation::where('user_id', $user->id)->delete();
+
+      // TemporaryReservation::where('user_id', $user->id)->delete();
     }
 
     // -------- Proceed with new reservation
@@ -211,6 +220,7 @@ class CabinController extends Controller
   protected function createTemporaryReservation($cabin, Request $request, $selectionType, $keepOldTimeStamp = null)
   {
     $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME');
+    $user = Auth::user();
 
     Log::info('Creating temporary reservation', [
       'cabin' => $cabin,
@@ -243,14 +253,27 @@ class CabinController extends Controller
 
       $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
 
-      $request->session()->put('cart', [
-        'cabinSelection' => $selectionType,
-        'reservationId' => $reserved->id,
-        'cabin_number' => $cabin['cabin_number'],
-        'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
-        'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
-        'lower_bed_type_2' => $cabin['lower_bed_type_2'],
-      ]);
+      if (!$user) {
+        $request->session()->put('cart', [
+          'cabinSelection' => $selectionType,
+          'reservationId' => $reserved->id,
+          'cabin_number' => $cabin['cabin_number'],
+          'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
+          'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
+          'lower_bed_type_2' => $cabin['lower_bed_type_2'],
+        ]);
+      } else {
+        $cart = $user->cart_data;
+
+        $cart['cabinSelection'] = $selectionType;
+        $cart['reservationId'] = $reserved->id;
+        $cart['cabin_number'] = $cabin['cabin_number'];
+        $cart['cabin_category_type'] = $cabin['cabin_category_type'] ?? null;
+        $cart['reservationTimestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
+        $cart['lower_bed_type_2'] = $cabin['lower_bed_type_2'];
+
+        Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
+      }
 
       DB::commit();
 
