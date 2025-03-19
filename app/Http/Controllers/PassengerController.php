@@ -128,6 +128,7 @@ class PassengerController extends Controller
                 $slot->passenger_allocated_cost = 0;
                 $slot->passenger_balance = 0;
                 $slot->was_on_board = 0;
+                $slot->empty_seat = 1;
                 $slot->language = 'en';
                 $slot->save();
             }
