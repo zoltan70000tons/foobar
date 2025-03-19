@@ -81,8 +81,6 @@ class BookingController extends Controller
         'bed_config' => $bedConfig,
       ];
 
-      // get price from session
-      // $price = $validated["cart"]["price_total"];
       $adjustments = Adjustment::where('event_id', $eventId)->first();
       $event = Event::find($eventId);
       $priceCalc = PriceCalculation::calculatePricePerPassenger([
@@ -106,6 +104,7 @@ class BookingController extends Controller
         'address_first' => $validated['addressLine1'],
         'address_second' => $validated['addressLine2'],
         'city' => $validated['city'],
+        'lang' => $language,
         'state' => $validated['state'],
         'postal_code' => $validated['zipCode'],
         'country' => $validated['country'],

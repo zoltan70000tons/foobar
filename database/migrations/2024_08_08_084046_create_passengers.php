@@ -17,6 +17,7 @@ return new class extends Migration {
       $table->boolean('lead_passenger')->default(false);
       $table->integer('passenger_order')->default(1);
       $table->string('survivor_number', 9)->nullable();
+      $table->string('language')->nullable();
       $table->enum('payment_method', ['CREDIT_CARD', 'BANK_TRANSFER'])->default('CREDIT_CARD');
       $table->string('gender', 50)->nullable();
       $table->string('first_name', 255)->nullable();
