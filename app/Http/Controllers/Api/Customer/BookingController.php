@@ -25,10 +25,12 @@ use App\Models\User;
 use Illuminate\Validation\Rules\Numeric;
 use App\Models\Cart;
 use App\Traits\BookingLogTrait;
+use App\Traits\StringNormalization;
 
 class BookingController extends Controller
 {
   use BookingLogTrait;
+  use StringNormalization;
 
   protected $bookingRepository;
   protected $customerBookingService;
@@ -447,13 +449,39 @@ class BookingController extends Controller
     $validated = $request->validated();
 
     $passengerOrder = $request->input('passenger_order');
-    $survivorNumber = $request->input('survivor_number') ?? null;
+    $survivorNumber = $request->input('survivorNumber') ?? null;
 
     if ($survivorNumber) {
       $survivorNumberExist = SurvivorNumber::where('survivor_number', $survivorNumber)->exists();
 
       if (!$survivorNumberExist) {
         return response()->json(['message' => 'Survivor number not found'], 404);
+      }
+
+      $userWithSurvivor = User::with(['survivorNumber', 'detail'])
+        ->whereHas('survivorNumber', function ($query) use ($survivorNumber) {
+          $query->where('survivor_number', $survivorNumber);
+        })
+        ->first();
+
+      //$dateOfBirth = $request->dateOfBirth;
+      // Normalize input names
+      $formattedName = $this->normalizeString($request->firstName);
+      $formattedLastName = $this->normalizeString($request->lastName);
+
+      // check the user details matched userWithSuvivor
+      if (
+        !$userWithSurvivor ||
+        !$this->isSimilar($this->normalizeString($userWithSurvivor->detail->first_name ?? ''), $formattedName) ||
+        !$this->isSimilar($this->normalizeString($userWithSurvivor->detail->last_name ?? ''), $formattedLastName)
+        // $userWithSurvivor->detail->dob !== $dateOfBirth
+      ) {
+        return response()->json(
+          [
+            'message' => __('feedback.survivor_number_not_match'),
+          ],
+          404
+        );
       }
 
       // check this suvivor number is not used in passengers

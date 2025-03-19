@@ -3,7 +3,7 @@
 return [
   /*
     |--------------------------------------------------------------------------
-    | Feedback Language Lines EN
+    | Feedback Language Lines DE
     |--------------------------------------------------------------------------
     |
     | The following language lines are used during feedback for various

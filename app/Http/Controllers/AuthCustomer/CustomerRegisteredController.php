@@ -21,9 +21,11 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerRegistered;
 use App\Mail\ActivateSurvivor;
 use App\Helpers\CustomerHelper;
+use App\Traits\StringNormalization;
 
 class CustomerRegisteredController extends Controller
 {
+  use StringNormalization;
   /*
   |--------------------------------------------------------------------------
   |  Store new customer
@@ -188,41 +190,6 @@ class CustomerRegisteredController extends Controller
     $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);
 
     return response()->json(['message' => 'Account updated successfully.'], 200);
-  }
-
-  /**
-   * Normalize a string by removing special characters and converting to uppercase.
-   */
-  private function normalizeString(string $string): string
-  {
-    // Remove accents
-    $string = Str::ascii($string);
-
-    // Convert to uppercase and remove spaces
-    return strtoupper(trim($string));
-  }
-
-  /**
-   * Check if two strings are similar based on Levenshtein distance or soundex.
-  |-------------------------------------------------------------------|
-  | Input Name   | Stored Name | Match? | Why?                        |
-  |--------------|------------|--------|------------------------------|
-  | José         | JOSE       | ✅     | Special character removed    |
-  | O’Connor     | OCONNOR    | ✅     | Apostrophe removed           |
-  | MacDonald    | MCDONALD   | ✅     | Similar pronunciation        |
-  | John         | Jon        | ✅     | Levenshtein distance = 1     |
-  | Marry        | Mary       | ❌     | Too different (distance = 3) |
-  */
-  private function isSimilar(string $input, string $stored): bool
-  {
-    // Check if Soundex (similar sounding) matches
-    if (soundex($input) === soundex($stored)) {
-      return true;
-    }
-
-    // Use Levenshtein distance for typo tolerance
-    $distance = levenshtein($input, $stored);
-    return $distance <= 2; // Allow minor typos (adjust threshold if needed)
   }
 
   /*

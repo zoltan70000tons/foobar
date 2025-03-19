@@ -8,9 +8,12 @@ use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Event;
 use Illuminate\Support\Str;
+use App\Traits\StringNormalization;
 
 class CheckBookingController extends Controller
 {
+  use StringNormalization;
+
   /*
   |--------------------------------------------------------------------------
   | Check Booking
@@ -77,32 +80,5 @@ class CheckBookingController extends Controller
       'event' => $event,
       'passengers' => $matchedPassenger,
     ]);
-  }
-
-  /**
-   * Normalize a string by removing special characters and converting to uppercase.
-   */
-  private function normalizeString(string $string): string
-  {
-    return strtoupper(trim(Str::ascii($string))); // Remove accents and normalize casing
-  }
-
-  /**
-   * Check if two strings are similar based on Levenshtein distance and Soundex.
-   */
-  private function isSimilar(string $input, string $stored): bool
-  {
-    // Direct match
-    if ($input === $stored) {
-      return true;
-    }
-
-    // Check Soundex (similar pronunciation)
-    if (soundex($input) === soundex($stored)) {
-      return true;
-    }
-
-    // Allow minor typos with Levenshtein distance (threshold: 2)
-    return levenshtein($input, $stored) <= 2;
   }
 }
