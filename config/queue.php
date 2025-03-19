@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'database'),
+    'default' => env('QUEUE_CONNECTION', 'predis'),
 
     /*
     |--------------------------------------------------------------------------
@@ -63,7 +63,7 @@ return [
             'after_commit' => false,
         ],
 
-        'redis' => [
+        'predis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
