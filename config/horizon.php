@@ -181,8 +181,8 @@ return [
 
     'defaults' => [
         'supervisor-1' => [
-            'connection' => 'database',
-            'queue' => ['emails', 'default'],
+            'connection' => 'redis',
+            'queue' => ['emails'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
