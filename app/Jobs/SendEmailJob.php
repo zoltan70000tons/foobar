@@ -107,7 +107,6 @@ class SendEmailJob implements ShouldQueue
                 }
             }
 
-            $contractPath = storage_path('app/contracts/70000TONS_OF_METAL_2025_TICKET_CONTRACT.pdf');
             if ($this->ticketContract) {
             $contractPath = storage_path('app/contracts/70000TONS_OF_METAL_2025_TICKET_CONTRACT.pdf');
             if (file_exists($contractPath)) {
@@ -147,7 +146,7 @@ class SendEmailJob implements ShouldQueue
 
             Log::info("Email sent successly: " . $this->passenger->email);
         } catch (\Exception $e) {
-            Log::error("Error sending email {$this->passenger->email}: " . $e->getMessage());
+            Log::error("Error sending email {$this->passenger->email}: " . $e->getMessage() . " - " . $e->getLine(). " - " . $e->getFile());
         }
     }
 }
