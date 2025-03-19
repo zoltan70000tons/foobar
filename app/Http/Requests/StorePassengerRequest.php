@@ -43,6 +43,7 @@ class StorePassengerRequest extends FormRequest
       'passengerOrder' => 'nullable|integer',
       'language' => 'nullable|string',
       'token' => 'sometimes|string',
+      'language' => 'required|string',
 
       // Phone numbers
       'phoneNumber' => 'required|string',

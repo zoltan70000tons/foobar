@@ -128,21 +128,14 @@ class CartController extends Controller
     ]);
 
     if ($validated['force_clear'] === true) {
-      \Log::info('Force clearing cart session');
-
       // Attempt to release the cabin
       $reservationService->releaseCabin($request);
-
-      // if ($releaseResponse['status'] === 404) {
-      //   \Log::warning('No cabin reserved to release. Proceeding with clearing the cart.');
-      // } elseif ($releaseResponse['status'] === 200) {
-      //   \Log::info('Cabin successfully released during force clear.');
-      // }
 
       // Always clear the cart regardless of the reservation status
       $request->session()->forget('cart');
       // Clear the cart from the database
       $user = Auth::user();
+
       if ($user) {
         Cart::where('user_id', $user->id)->delete();
       }
@@ -162,12 +155,8 @@ class CartController extends Controller
 
     $mergedCart = array_merge($defaultCart, $validated);
 
-    // \Log::info('Saving to session', ['cart' => $mergedCart]);
-    // session(['cart' => $mergedCart]);
-
-    //$cart = $this->getCartData($request, $validated['event_id']) ?? null;
-
     $user = Auth::user();
+
     if ($user) {
       Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
     } else {
@@ -222,6 +211,7 @@ class CartController extends Controller
     ]);
 
     $user = Auth::user();
+
     if ($user) {
       Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
     } else {

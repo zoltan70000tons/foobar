@@ -289,15 +289,6 @@ class CustomerBookingRepository
       })
       ->first();
 
-    // $emptyPassenger = $passengers
-    //   ->filter(function ($passenger) {
-    //     return $passenger->first_name === null &&
-    //       $passenger->gender === null &&
-    //       $passenger->dob === null &&
-    //       $passenger->empty_seat === false;
-    //   })
-    //   ->first();
-
     $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
       ->where('passenger_id', $emptyPassenger->id)
       ->first();
@@ -315,7 +306,7 @@ class CustomerBookingRepository
       // add one null passenger to the same booking
       try {
         $emptyPassenger->update([
-          'booking_id' => $booking->id,
+          //'booking_id' => $booking->id,
           'empty_seat' => true,
         ]);
       } catch (\Exception $e) {
@@ -323,6 +314,44 @@ class CustomerBookingRepository
       }
 
       return response()->json(['message' => 'Empty seat added'], 200);
+    }
+
+    return response()->json(['message' => 'No empty seats available'], 404);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Remove empty seat
+  |--------------------------------------------------------------------------
+  |
+  | This method will remove an empty seat from the booking
+  |
+  */
+  public function removeEmptySeat(int $eventId, string $bookingCode, $passengerOrder)
+  {
+    $booking = $this->getBookingByCode($eventId, $bookingCode);
+
+    $passengers = $booking->passengers;
+
+    // get passenger based on passenger order
+    $emptyPassenger = $passengers
+      ->filter(function ($passenger) use ($passengerOrder) {
+        return $passenger->passenger_order === $passengerOrder;
+      })
+      ->first();
+
+    if ($emptyPassenger && $emptyPassenger->empty_seat === true) {
+      // remove one null passenger from the same booking
+      try {
+        $emptyPassenger->update([
+          //'booking_id' => null,
+          'empty_seat' => false,
+        ]);
+      } catch (\Exception $e) {
+        return response()->json(['message' => 'Error while removing empty seat'], 500);
+      }
+
+      return response()->json(['message' => 'Empty seat removed'], 200);
     }
 
     return response()->json(['message' => 'No empty seats available'], 404);
