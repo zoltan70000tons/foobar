@@ -1,7 +1,6 @@
 <?php
 
 return [
-
   /*
     |--------------------------------------------------------------------------
     | Validation Language Lines
@@ -12,7 +11,6 @@ return [
     | as the size rules. Feel free to tweak each of these messages here.
     |
     */
-
   'accepted' => 'The :attribute field must be accepted.',
   'accepted_if' => 'The :attribute field must be accepted when :other is :value.',
   'active_url' => 'The :attribute field must be a valid URL.',
@@ -160,23 +158,23 @@ return [
   'url' => 'The :attribute field must be a valid URL.',
   'ulid' => 'The :attribute field must be a valid ULID.',
   'uuid' => 'The :attribute field must be a valid UUID.',
-  /*
-    |--------------------------------------------------------------------------
-    | Custom Validation Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify custom validation messages for attributes using the
-    | convention "attribute.rule" to name the lines. This makes it quick to
-    | specify a specific custom language line for a given attribute rule.
-    |
-    */
 
+  /*
+  |--------------------------------------------------------------------------
+  | Custom Validation Language Lines
+  |--------------------------------------------------------------------------
+  |
+  | Here you may specify custom validation messages for attributes using the
+  | convention "attribute.rule" to name the lines. This makes it quick to
+  | specify a specific custom language line for a given attribute rule.
+  |
+  */
   'custom' => [
     'attribute-name' => [
       'rule-name' => 'custom-message',
     ],
   ],
-  
+
   'unique_activated_email' => 'The email has already been taken.',
 
   /*
@@ -191,5 +189,4 @@ return [
     */
 
   'attributes' => [],
-
 ];
