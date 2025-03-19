@@ -310,7 +310,10 @@ class Passenger extends Model
       ->sortBy('due_date')
       ->first();
     if (!$nextInstallment) {
-      return null;
+      return [
+        'due_date' => now()->toDateString(),
+        'amount' => round(0, 2),
+      ];
     }
     return [
       'due_date' => $nextInstallment['due_date'],

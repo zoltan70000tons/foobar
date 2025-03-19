@@ -4,16 +4,11 @@ namespace App\Services;
 
 use App\Jobs\SendEmailJob;
 use App\Models\Booking;
-use App\Models\EmailTemplate;
-use App\Models\User;
-use App\Models\Event;
 use App\Models\Passenger;
 use Blade;
 use DB;
 use Exception;
-use Illuminate\Http\UploadedFile;
-use Mail;
-use Barryvdh\DomPDF\Facade as PDF;
+use Log;
 
 class EmailTemplateService
 {
@@ -164,107 +159,6 @@ class EmailTemplateService
     }
 
 
-    // /**
-    //  * Send an email with or without attachments.
-    //  * 
-    //  * @param int $templateId        Email template id
-    //  * @param Booking $booking       Booking instance
-    //  * @param Passenger $passenger   Passenger instance
-    //  * @param array|null $attachments List of attachments (optional)
-    //  * @param bool $bookingPdf       If true, attach booking confirmation PDF
-    //  * @param bool $eventImage       If true, attach event image
-    //  * @return bool Returns true if all emails were sent successfully, false if any failed
-    //  */
-    // public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], $extraData =[], bool $bookingPdf = false, bool $eventImage = false): bool
-    // {
-    //     $allEmailsSent = true; // Variable to track the success of all emails
-    //     $to = $passenger->email;
-    //     $subject = 'Booking Confirmation';
-    //     $subject = DB::table('email_templates')->where('id', $templateId)->value('subject');
-    //     $content = $this->getProcessedTemplate($booking->id, $templateId, $passenger, $extraData);
-
-    //     try {
-    //         // Attach the booking confirmation PDF if required
-    //         if ($bookingPdf) {
-    //             $pdfService = new PDFService();
-    //             $pdf = $pdfService->generateBookingConfirmationPDF($booking);
-
-    //             if ($pdf instanceof \Barryvdh\DomPDF\PDF) {
-    //                 // Save temporary PDF file
-    //                 $pdfPath = storage_path('app/temp_booking_' . $booking->id . '.pdf');
-    //                 $pdf->save($pdfPath);
-
-    //                 if (file_exists($pdfPath)) {
-    //                     $attachments[] = [
-    //                         'path' => $pdfPath,
-    //                         'name' => $booking->booking_code . '.pdf',
-    //                         'mime' => 'application/pdf'
-    //                     ];
-    //                 }
-    //             } else {
-    //                 \Log::warning("PDFService did not return a valid PDF object for Booking ID: " . $booking->id);
-    //             }
-    //         }
-
-    //         // 📌 Attach the event image if required
-    //         if ($eventImage) {
-    //             $eventImageUrl = $booking->event->image;
-
-    //             if (filter_var($eventImageUrl, FILTER_VALIDATE_URL)) {
-    //                 $imageData = @file_get_contents($eventImageUrl);
-    //                 if ($imageData !== false) {
-    //                     $mimeType = get_headers($eventImageUrl, 1)["Content-Type"] ?? 'image/jpeg';
-    //                     $attachments[] = [
-    //                         'data' => $imageData,
-    //                         'name' => basename($eventImageUrl),
-    //                         'mime' => $mimeType,
-    //                     ];
-    //                 } else {
-    //                     \Log::warning("Failed to retrieve event image for Booking ID: " . $booking->id);
-    //                 }
-    //             } else {
-    //                 \Log::warning("Invalid event image URL for Booking ID: " . $booking->id);
-    //             }
-    //         }
-
-    //         // 📌 Send the email
-    //         Mail::send([], [], function ($message) use ($to, $subject, $content, $attachments) {
-    //             $message->to($to)
-    //                 ->subject($subject)
-    //                 ->html($content);
-
-    //             foreach ($attachments as $file) {
-    //                 if (isset($file['path'])) {
-    //                     // Attach PDF file from the file system
-    //                     $message->attach($file['path'], [
-    //                         'as' => $file['name'],
-    //                         'mime' => $file['mime']
-    //                     ]);
-    //                 } elseif (isset($file['data'])) {
-    //                     // Attach event image from raw data
-    //                     $message->attachData($file['data'], $file['name'], ['mime' => $file['mime']]);
-    //                 } elseif ($file instanceof UploadedFile) {
-    //                     // Attach file from request
-    //                     $message->attachData(
-    //                         file_get_contents($file->getRealPath()),
-    //                         $file->getClientOriginalName(),
-    //                         ['mime' => $file->getMimeType()]
-    //                     );
-    //                 }
-    //             }
-    //         });
-
-    //         // 📌 Delete the temporary PDF file if it was created
-    //         if (isset($pdfPath) && file_exists($pdfPath)) {
-    //             unlink($pdfPath);
-    //         }
-    //     } catch (Exception $e) {
-    //         \Log::error("Error sending email to {$to}: " . $e->getMessage());
-    //         $allEmailsSent = false; // Mark as false if any email fails
-    //     }
-
-    //     return $allEmailsSent; // Return true if all emails were sent, false otherwise
-    // }
 
     public function getTemplateId($language, $template)
     {
