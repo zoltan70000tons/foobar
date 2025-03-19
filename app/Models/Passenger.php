@@ -87,10 +87,7 @@ class Passenger extends Model
 
   public function getEmptyAttribute()
   {
-    if ($this->first_name == null && $this->last_name == null && $this->email === null) {
-      return true;
-    }
-    return false;
+   return $this->empty_seat;
   }
 
   // passenger may have installments
