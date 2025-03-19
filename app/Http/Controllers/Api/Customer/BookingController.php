@@ -24,9 +24,12 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use Illuminate\Validation\Rules\Numeric;
 use App\Models\Cart;
+use App\Traits\BookingLogTrait;
 
 class BookingController extends Controller
 {
+  use BookingLogTrait;
+
   protected $bookingRepository;
   protected $customerBookingService;
   protected $customerBookingRepository;
@@ -77,7 +80,7 @@ class BookingController extends Controller
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'is_single_occupancy' => false,
-        'tags' => ["NEW"],
+        'tags' => ['NEW'],
         'bed_config' => $bedConfig,
       ];
 
@@ -372,6 +375,51 @@ class BookingController extends Controller
     $passengerOrder = $request->input('passenger_order');
 
     $result = $this->customerBookingRepository->setEmptySeat($eventId, $bookingCode, $passengerOrder);
+    $this->saveBookingLog(
+      $booking->id,
+      'BY USER: Set empty seat',
+      'Lead passenger set empty seat for slot ' . $passengerOrder
+    );
+
+    return $result;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Remove empty seat
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to unset an empty seat in the booking to aviailable
+  |
+  */
+  public function removeEmptySeat(Request $request, int $eventId, string $bookingCode)
+  {
+    $user = Auth::user();
+
+    $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
+
+    // no booking
+    if (!$booking) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    if ($booking->is_single_occupancy) {
+      return response()->json(['message' => 'This booking is single occupancy'], 400);
+    }
+
+    // not the owner
+    if ($booking->customer_id !== $user->id) {
+      return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $passengerOrder = $request->input('passenger_order');
+
+    $result = $this->customerBookingRepository->removeEmptySeat($eventId, $bookingCode, $passengerOrder);
+    $this->saveBookingLog(
+      $booking->id,
+      'BY USER: Removed empty seat',
+      'Lead passenger removed empty seat for slot ' . $passengerOrder
+    );
 
     return $result;
   }
@@ -424,6 +472,12 @@ class BookingController extends Controller
 
     // create passenger with booking id
     $result = $this->customerBookingRepository->addPassengerManually($eventId, $bookingCode, $passenger, $validated);
+
+    $this->saveBookingLog(
+      $booking->id,
+      'BY USER: Add passenger manually',
+      'Lead passenger added passenger manually with email address ' . $validated['email']
+    );
 
     return $result;
   }
@@ -520,6 +574,16 @@ class BookingController extends Controller
       $this->customerBookingService->addPassengerViaEmail($booking, $invitation, $email, $fromWho, $toWho, $event);
     }
 
+    $this->saveBookingLog(
+      $booking->id,
+      'BY USER: Add passenger via email',
+      'Lead passenger invite by email user with email address ' .
+        $toWho .
+        ' ' .
+        'Invited user is our customer: ' .
+        ($customer ? 'Yes' : 'No')
+    );
+
     return response()->json(['message' => 'Invitation sent'], 200);
   }
 
@@ -561,6 +625,12 @@ class BookingController extends Controller
     }
 
     $passengerInvitation->delete();
+
+    $this->saveBookingLog(
+      $booking->id,
+      'BY USER: Cancelled invitation',
+      'Lead passenger cancelled invitation via email '
+    );
 
     return response()->json(['message' => 'Invitation cancelled'], 200);
   }
