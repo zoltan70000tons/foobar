@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Customer\CartController;
 use App\Http\Controllers\Api\Customer\AddPaxController;
 use App\Http\Controllers\Api\Customer\InvitationController;
 use App\Http\Controllers\Api\Customer\CheckBookingController;
+use App\Http\Controllers\NotificationController;
 
 // middleware
 use App\Http\Middleware\ApiRedirectHttp;
@@ -113,6 +114,8 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
 
     // set slot empty
     Route::post('/my-bookings/{eventId}/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
+    Route::put('/my-bookings/{eventId}/{bookingCode}/remove-empty-seat', [BookingController::class, 'removeEmptySeat']);
+
     // add passenger manually
     Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
     // add passenger via email
@@ -147,3 +150,9 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     ]);
   }
 );
+
+// --- NOTIFICATION ---
+// Route::middleware(['allowed_domains'])->group(function () {
+//   Route::get('/payment', [NotificationController::class, 'sendPaymentEmail']);
+//   Route::get('/confirmation', [NotificationController::class, 'sendConfirmationEmail']);
+// });

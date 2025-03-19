@@ -67,7 +67,6 @@ class Passenger extends Model
     'special_options' => 'array',
   ];
 
-
   /**
    * Relationship: A passenger belongs to a booking.
    */
@@ -159,7 +158,7 @@ class Passenger extends Model
           'allocated_cost' => round($totalCost, 2),
           'installments_number' => count($installmentsList),
           'total_fees' => round($feePayments->sum(fn($fee) => optional($fee->fee)->amount ?? 0), 2),
-          'is_fully_paid' => ($totalPaid >= $totalCost),
+          'is_fully_paid' => $totalPaid >= $totalCost,
           'total_paid' => round($totalPaid, 2),
           'outstanding_balance' => round($totalCost - $totalPaid, 2),
         ];
@@ -186,13 +185,9 @@ class Passenger extends Model
 
       $mergedDetails = $installments->map(function ($installment) use ($paymentAmount) {
         $isFee = $installment->type === 'FEE';
-        $installmentAmount = $isFee
-          ? optional($installment->fee)->amount ?? 0
-          : $paymentAmount;
+        $installmentAmount = $isFee ? optional($installment->fee)->amount ?? 0 : $paymentAmount;
         $lastPaymentDate = optional($installment->payments->sortByDesc('transaction_date')->first())->transaction_date;
-        $code = $isFee && isset($installment->fee->type)
-          ? Str::title($installment->fee->type)
-          : null;
+        $code = $isFee && isset($installment->fee->type) ? Str::title($installment->fee->type) : null;
         return [
           'id' => $installment->id,
           'passenger_id' => $installment->passenger_id,
@@ -238,16 +233,15 @@ class Passenger extends Model
         'allocated_cost' => round($totalCost, 2),
         'installments_number' => $totalInstallments,
         'total_fees' => round($totalFee, 2),
-        'is_fully_paid' => ($totalPaid >= $totalCost),
+        'is_fully_paid' => $totalPaid >= $totalCost,
         'total_paid' => round($totalPaid, 2),
         'outstanding_balance' => round($totalCost - $totalPaid, 2),
       ];
     } catch (Exception $e) {
-      Log::error("Error fetching installments: " . $e->getMessage());
+      Log::error('Error fetching installments: ' . $e->getMessage());
       return ['success' => false, 'message' => 'Failed to fetch installments'];
     }
   }
-
 
   /**
    * Format Installments
@@ -276,7 +270,7 @@ class Passenger extends Model
       'remaining_amount' => round(max(0, $installmentAmount - $totalPaid), 2),
       'status' => $status,
       'due_date' => $installment->due_date,
-      'type' => optional($installment)->type
+      'type' => optional($installment)->type,
     ];
   }
 
@@ -295,9 +289,7 @@ class Passenger extends Model
     return DB::table('payments as p')
       ->where('p.passenger_id', $this->id)
       ->whereExists(function ($query) {
-        $query->select(DB::raw(1))
-          ->from('installment_payment as ip')
-          ->whereColumn('ip.payment_id', 'p.id');
+        $query->select(DB::raw(1))->from('installment_payment as ip')->whereColumn('ip.payment_id', 'p.id');
       })
       ->sum('p.amount');
   }
@@ -308,22 +300,21 @@ class Passenger extends Model
   }
 
   public function getNextInstallmentAttribute()
-{
+  {
     $info = $this->getPaymentInfoAttribute();
     if (!isset($info['installments']) || empty($info['installments'])) {
-        return null;
+      return null;
     }
     $nextInstallment = collect($info['installments'])
-        ->where('status', 'PENDING') 
-        ->sortBy('due_date')
-        ->first();
+      ->where('status', 'PENDING')
+      ->sortBy('due_date')
+      ->first();
     if (!$nextInstallment) {
-        return null;
+      return null;
     }
     return [
-        'due_date' => $nextInstallment['due_date'],
-        'amount' => round($nextInstallment['remaining_amount'], 2),
+      'due_date' => $nextInstallment['due_date'],
+      'amount' => round($nextInstallment['remaining_amount'], 2),
     ];
-}
-
+  }
 }

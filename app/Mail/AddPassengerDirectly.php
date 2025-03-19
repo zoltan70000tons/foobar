@@ -27,7 +27,7 @@ class AddPassengerDirectly extends Mailable
    */
   public function __construct($bookingCode, $fromWho, $toWho, $event)
   {
-    $this->url = config('app.frontend_url' . '/en/login');
+    $this->url = config('app.frontend_url') . '/en/login';
 
     $this->bookingCode = $bookingCode;
 
