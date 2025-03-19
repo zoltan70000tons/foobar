@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Permissions;
 use App\Models\Booking;
 use App\Models\Fee;
+use App\Models\Installment;
 use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Repositories\CalculationRepository;
@@ -58,7 +59,6 @@ class FeeController extends Controller
     {
         return $this->withPermission([Permissions::DeleteFees], function ($request) {
             DB::beginTransaction();
-
             try {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
@@ -80,7 +80,8 @@ class FeeController extends Controller
                 }
                 $amount = $fee->amount;
                 $type = $fee->type;
-
+                $installment = Installment::where('fee_id', $fee->id)->first();
+                $installment->delete();
                 $fee->delete();
                 $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
 

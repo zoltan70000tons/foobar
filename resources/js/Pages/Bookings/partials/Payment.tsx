@@ -259,6 +259,33 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     );
   };
 
+  const mergeFeesWithPayments = (fees = [], payments = []) => {
+    fees = fees || [];
+    payments = payments || [];
+
+    const formatDate = (timestamp) => {
+      if (!timestamp) return "N/A";
+      return timestamp.split("T")[0];
+    };
+
+    const mergedFees = fees.map(fee => ({
+      BIP_ID: "N/A",
+      amount: fee.amount || "N/A",
+      created_at: fee.created_at || "N/A",
+      id: fee.id || "N/A",
+      notes: "N/A",
+      passenger_id: fee.passenger_id || "N/A",
+      source: "FEE",
+      transaction_date: formatDate(fee.created_at),
+      type: fee.type || "N/A",
+      updated_at: fee.updated_at || "N/A"
+    }));
+
+    return [...payments, ...mergedFees];
+  };
+
+  const paymentHistory = mergeFeesWithPayments(currentPassenger?.fees, currentPassenger?.payments);
+
   return (
     <Grid>
       <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
@@ -517,7 +544,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
               Payment History for {currentPassenger?.full_name || "Unknown Passenger"}
             </Typography>
 
-            {currentPassenger?.payments?.length ? (
+            {paymentHistory.length ? (
               <TableContainer component={Paper}>
                 <Table size="small">
                   <TableHead>
@@ -531,7 +558,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentPassenger.payments.map((payment) => (
+                    {paymentHistory.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell>{payment.type}</TableCell>
                         <TableCell>

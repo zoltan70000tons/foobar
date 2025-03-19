@@ -117,6 +117,7 @@ class AddPaxController extends Controller
       'emergency_c_name' => $validated['emergencyContactName'],
       'emergency_c_phone' => $validated['emergencyPhoneNumber'],
       'special_request' => $validated['specialRequest'],
+      'language' => $validated['language'] ?? 'en',
     ];
 
     // create passenger with booking id

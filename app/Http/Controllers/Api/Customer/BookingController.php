@@ -77,7 +77,7 @@ class BookingController extends Controller
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'is_single_occupancy' => false,
-        'tags' => json_encode(['NEW']),
+        'tags' => ["NEW"],
         'bed_config' => $bedConfig,
       ];
 
@@ -126,6 +126,7 @@ class BookingController extends Controller
         'addons' => $validated['cart']['addons'],
         'passenger_balance' => 0,
         'was_on_board' => false,
+        'language' => $validated['language'] ?? 'en',
       ];
 
       // Call to booking repository method
