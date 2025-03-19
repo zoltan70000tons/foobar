@@ -29,7 +29,7 @@ class PassengerController extends Controller
             'id' => 'required|int',
             'booking_id' => 'required|int',
             'confirmed_booking_email' => 'required|boolean',
-            'survivor_number' => ['required', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number',new UniqueSurvivorInEvent($event_id, $request->booking_id),],
+            'survivor_number' => ['nullable', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number',new UniqueSurvivorInEvent($event_id, $request->booking_id),],
             'payment_method' => 'required|string|in:CREDIT_CARD,BANK_TRANSFER',
             'gender' => 'nullable|string|in:M,F,O',
             'first_name' => 'required|string',
