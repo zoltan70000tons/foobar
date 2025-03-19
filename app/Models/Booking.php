@@ -139,7 +139,6 @@ class Booking extends Model
 
   public function changeCabin($number)
   {
-
     try {
       // Find the cabin by its number
       $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($number) {
@@ -172,18 +171,22 @@ class Booking extends Model
 
       // Assign the new cabin to the booking
       $this->assignCabin($cabin);
-      
+
       // Generate a new booking code
       $preBookingCode = $this->booking_code;
       $this->booking_code = $this->generateBookingCode($cabin);
       $this->save();
 
       // Save the booking log
-      $this->saveBookingLog($this->id, 'Changed Cabin', "Cabin changed from  {$prevCabin->cabin_number} to {$cabin->cabin_number}. /n Booking code changed from {$preBookingCode} to {$this->booking_code}");
+      $this->saveBookingLog(
+        $this->id,
+        'Changed Cabin',
+        "Cabin changed from  {$prevCabin->cabin_number} to {$cabin->cabin_number}. /n Booking code changed from {$preBookingCode} to {$this->booking_code}"
+      );
 
       return $this;
     } catch (\Exception $e) {
-      return array('error' => $e->getMessage());
+      return ['error' => $e->getMessage()];
     }
   }
 
@@ -229,13 +232,13 @@ class Booking extends Model
   {
     $characters = config('whitelist.allowed_characters');
     $year = 'F';
-    $categoryLetter = strtoupper(chr(64 + $cabin->category->display_order));
+    //$categoryLetter = strtoupper(chr(64 + $cabin->category->display_order));
     // Generate a random 4-character code
     do {
       $identifier_code = substr(str_shuffle($characters), 0, 4);
     } while ($this->containsBlockedWords($identifier_code));
 
-    return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$cabin->category->category_number}{$categoryLetter}";
+    return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$cabin->category->category_number}{$cabin->category->category_code}";
   }
 
   protected static function boot()
@@ -332,12 +335,10 @@ class Booking extends Model
   });
   
 
-
     static::deleted(function ($booking) {
       $booking->saveBookingLog($booking->id, 'Deleted', 'The booking was deleted');
     });
   }
-
 
   public function getTotalpaid()
   {
@@ -346,7 +347,6 @@ class Booking extends Model
 
   public function getGrandTotal()
   {
-  
     return $this->passengers->sum('passenger_allocated_cost');
   }
 }

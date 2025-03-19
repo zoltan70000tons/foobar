@@ -44,12 +44,12 @@ class PassengerRepository implements PassengerInterface
         'booking_id' => $booking->id,
         'confirmed_booking_email' => false,
         'lead_passenger' => $data['lead_passenger'] ?? false,
-        'survivor_number' => $user->survivorNumber->survivor_number ?? null,
-        'gender' => $userDetails->gender ?? null,
-        'first_name' => $userDetails->first_name ?? null,
-        'middle_name' => $userDetails->middle_name ?? null,
-        'last_name' => $userDetails->last_name ?? null,
-        'dob' => $userDetails->dob ?? null,
+        'survivor_number' => $data['survivor_number'] ?? $user->survivorNumber->survivor_number ?? null,
+        'gender' => $data['gender'] ?? $userDetails->gender ?? null,
+        'first_name' => $data['first_name'] ?? $userDetails->first_name ?? null,
+        'middle_name' => $data['middle_name'] ?? $userDetails->middle_name ?? null,
+        'last_name' => $data['last_name'] ?? $userDetails->last_name ?? null,
+        'dob' => $data['dob'] ?? $userDetails->dob ?? null,
         'citizenship' => $data['citizenship'] ?? $userDetails->citizenship ?? null,
         'payment_method' => $data['payment_method'] ?? 'CREDIT_CARD',
         'address_first' => $data['address_first'] ?? null,
@@ -75,6 +75,7 @@ class PassengerRepository implements PassengerInterface
         'passenger_order' => 1,
         'passenger_balance' => 0,
         'was_on_board' => false,
+        'language' => $data['language'] ?? 'en',
       ];
 
       $leadPassenger = Passenger::create($passengerData);
@@ -160,6 +161,7 @@ class PassengerRepository implements PassengerInterface
           'passenger_order' => $currentMaxOrder + $i + 1,
           'passenger_balance' => 0,
           'was_on_board' => false,
+          'language' => 'en',
         ];
         Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
         $seat = Passenger::create($additionalPassengerData);

@@ -41,6 +41,7 @@ class StorePassengerRequest extends FormRequest
       'newsletter' => 'nullable|boolean',
       'specialRequest' => 'nullable|string',
       'passengerOrder' => 'nullable|integer',
+      'language' => 'nullable|string',
       'token' => 'sometimes|string',
 
       // Phone numbers

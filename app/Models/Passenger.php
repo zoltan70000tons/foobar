@@ -58,6 +58,7 @@ class Passenger extends Model
     'passenger_order',
     'passenger_balance',
     'was_on_board',
+    'language',
   ];
 
   protected $appends = ['full_name', 'empty', 'paymentInfo'];

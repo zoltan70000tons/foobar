@@ -12,6 +12,7 @@ use App\Models\CabinCategory;
 use App\Models\CabinCategorySpec;
 use App\Services\ReservationService;
 use App\Models\Event;
+use App\Models\Cart;
 
 class CartController extends Controller
 {
@@ -26,24 +27,26 @@ class CartController extends Controller
   private function getCartData(Request $request, $eventId)
   {
     // Fetch cart from session
-    $cart = $request->session()->get('cart', []);
-    $eventId = $cart['event_id'] ?? $eventId;
+    $user = Auth::user();
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
 
     if (empty($cart)) {
       return [];
     }
 
+    $eventId = $cart['event_id'] ?? $eventId;
     // Fetch adjustments and tax
     $adjustments = Adjustment::where('event_id', $eventId)->get();
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
+
     $cabinTitle = CabinCategorySpec::where('category_code', $cart['cabin_code'])
       ->where('capacity', $cart['cabin_capacity'])
       ->first()
       ->cabinCategories()
       ->first()
       ->getTitleAttribute();
-    $eventStatus = Event::find($eventId)->status;
 
+    $eventStatus = Event::find($eventId)->status;
     $errorCode = null;
 
     if (isset($cart['cabin_price'])) {
@@ -128,16 +131,21 @@ class CartController extends Controller
       \Log::info('Force clearing cart session');
 
       // Attempt to release the cabin
-      $releaseResponse = $reservationService->releaseCabin($request);
+      $reservationService->releaseCabin($request);
 
-      if ($releaseResponse['status'] === 404) {
-        \Log::warning('No cabin reserved to release. Proceeding with clearing the cart.');
-      } elseif ($releaseResponse['status'] === 200) {
-        \Log::info('Cabin successfully released during force clear.');
-      }
+      // if ($releaseResponse['status'] === 404) {
+      //   \Log::warning('No cabin reserved to release. Proceeding with clearing the cart.');
+      // } elseif ($releaseResponse['status'] === 200) {
+      //   \Log::info('Cabin successfully released during force clear.');
+      // }
 
       // Always clear the cart regardless of the reservation status
       $request->session()->forget('cart');
+      // Clear the cart from the database
+      $user = Auth::user();
+      if ($user) {
+        Cart::where('user_id', $user->id)->delete();
+      }
     }
 
     $defaultCart = [
@@ -154,15 +162,22 @@ class CartController extends Controller
 
     $mergedCart = array_merge($defaultCart, $validated);
 
-    \Log::info('Saving to session', ['cart' => $mergedCart]);
-    session(['cart' => $mergedCart]);
+    // \Log::info('Saving to session', ['cart' => $mergedCart]);
+    // session(['cart' => $mergedCart]);
 
-    $cart = $this->getCartData($request, $validated['event_id']) ?? null;
+    //$cart = $this->getCartData($request, $validated['event_id']) ?? null;
+
+    $user = Auth::user();
+    if ($user) {
+      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
+    } else {
+      session(['cart' => $mergedCart]);
+    }
 
     return response()->json(
       [
         'message' => 'Cart updated successfully',
-        'cart' => $cart,
+        'cart' => $this->getCartData($request, $validated['event_id']),
       ],
       200
     );
@@ -206,14 +221,17 @@ class CartController extends Controller
       'lower_bed_type_2' => 'nullable|string',
     ]);
 
-    $request->session()->put('cart', $validated);
-
-    $cart = $this->getCartData($request, $validated['event_id']) ?? null;
+    $user = Auth::user();
+    if ($user) {
+      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
+    } else {
+      session(['cart' => $validated]);
+    }
 
     return response()->json(
       [
         'message' => 'Cart updated successfully',
-        'cart' => $cart,
+        'cart' => $this->getCartData($request, $validated['event_id']),
       ],
       200
     );
@@ -229,16 +247,15 @@ class CartController extends Controller
   */
   public function destroy(Request $request, ReservationService $reservationService)
   {
-    $request->session()->forget('cart');
+    $user = Auth::user();
 
-    // Attempt to release the cabin
-    $releaseResponse = $reservationService->releaseCabin($request);
-
-    if ($releaseResponse['status'] === 404) {
-      \Log::warning('No cabin reserved to release. Proceeding with clearing the cart.');
-    } elseif ($releaseResponse['status'] === 200) {
-      \Log::info('Cabin successfully released during cart clear.');
+    if ($user) {
+      Cart::where('user_id', $user->id)->delete();
+    } else {
+      $request->session()->forget('cart');
     }
+
+    $reservationService->releaseCabin($request);
 
     return response()->json(['message' => 'Cart cleared successfully'], 200);
   }
