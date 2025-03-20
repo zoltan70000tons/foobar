@@ -155,7 +155,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                   }}
                   onClick={() => handleEditPassenger(passenger)}
                 >
-                  {passenger.full_name[0]}
+                  {passenger?.full_name?.[0]}
                 </Avatar>
                 <Box>
                   <Typography>{passenger.full_name}</Typography>
