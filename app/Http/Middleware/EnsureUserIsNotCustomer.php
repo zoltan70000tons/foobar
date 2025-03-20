@@ -16,6 +16,11 @@ class EnsureUserIsNotCustomer
    */
   public function handle(Request $request, Closure $next): Response
   {
+    // Allow API authentication routes and CSRF cookie requests
+    if ($request->is('sanctum/csrf-cookie') || $request->is('api/*')) {
+      return $next($request);
+    }
+
     $user = Auth::user();
 
     if ($user) {
