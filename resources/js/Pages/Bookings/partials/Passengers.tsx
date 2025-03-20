@@ -18,6 +18,10 @@ import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, b
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import EditPassengerModal from "./EditPassengerModal";
 import { router } from "@inertiajs/react";
+import { PersonAdd } from "@mui/icons-material";
+import PersonIcon from '@mui/icons-material/Person';
+import Person2Icon from '@mui/icons-material/Person2';
+
 
 type PassengersProps = {
   booking: Booking;
@@ -120,7 +124,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       showSnackbar("Error updating passenger data!", "error");
     } finally {
       setSavingLoading(false);
-     }
+    }
   };
 
   const onDelete = () => {
@@ -174,6 +178,55 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
 
   const handleCancel = () => {
     setOpenConfirm(false);
+  };
+
+  const getAvatar = (passenger) => {
+    console.log(passenger);
+    const iconProps = {
+      sx: {
+        width: 50,
+        height: 50,
+        mr: 2,
+        cursor: "pointer",
+        color: passenger.lead_passenger ? '#ffa726' : getAvatarColor(passenger),
+      },
+      
+    };
+
+    const IconComponent = getAvatarIcon(passenger);
+
+    return <IconComponent {...iconProps} />;
+  };
+
+  const getAvatarColor = (passenger) => {
+    switch (passenger.gender?.toLowerCase()) {
+      case "m":
+        return "#2196F3";
+      case "f":
+        return "#E91E63";
+      default:
+        return "gray";
+    }
+  };
+
+  const getAvatarIcon = (passenger) => {
+
+    if (passenger.empty) return PersonAdd;
+    switch (passenger.gender?.toLowerCase()) {
+      case "m":
+        return PersonIcon;
+      case "f":
+        return Person2Icon;
+      default:
+        return PersonIcon;
+    }
+  };
+
+
+  const getPassengerBgColor = (passenger) => {
+    if (passenger.lead_passenger) return "#B0BEC5";
+    if (passenger.empty) return "#90CAF9";
+    return "#FFF59D";
   };
 
   return (
@@ -238,7 +291,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         editMode={editMode}
         onSave={handleSavePassenger}
         onDelete={onDelete}
-        savingLoading ={savinLoading}
+        savingLoading={savinLoading}
         releaseLoading={releaseLoading}
         isSingleRoom={isSingleRoom}
         onChange={(field, value) =>
