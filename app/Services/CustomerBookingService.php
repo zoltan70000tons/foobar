@@ -64,7 +64,7 @@ class CustomerBookingService
 
     // send email to the user
     try {
-      Mail::to($email)->send(new AddPassenger($getSignedURL, $booking->booking_code, $fromWho, $toWho, $event));
+      Mail::to($email)->queue(new AddPassenger($getSignedURL, $booking->booking_code, $fromWho, $toWho, $event));
     } catch (\Exception $e) {
       \Log::error('Failed to send email to user: ' . $e->getMessage());
       return response()->json(['message' => 'Failed to send email to user'], 500);
@@ -84,7 +84,7 @@ class CustomerBookingService
   {
     // send email to the user
     try {
-      Mail::to($email)->send(new AddPassengerDirectly($booking->booking_code, $fromWho, $toWho, $event));
+      Mail::to($email)->queue(new AddPassengerDirectly($booking->booking_code, $fromWho, $toWho, $event));
     } catch (\Exception $e) {
       \Log::error('Failed to send email to user: ' . $e->getMessage());
       return response()->json(['message' => 'Failed to send email to user'], 500);

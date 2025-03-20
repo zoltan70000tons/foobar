@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 use Illuminate\Support\Facades\URL;
 
-class ActivateSurvivor extends Mailable
+class ActivateSurvivor extends Mailable implements ShouldQueue
 {
   use Queueable, SerializesModels;
 

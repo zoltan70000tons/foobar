@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
 
-class CustomerRegistered extends Mailable
+class CustomerRegistered extends Mailable implements ShouldQueue
 {
   use Queueable, SerializesModels;
 
