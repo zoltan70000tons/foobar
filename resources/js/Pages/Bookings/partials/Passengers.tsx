@@ -42,6 +42,7 @@ const CabinType = Object.freeze({
 
 const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
+  const [openConfirmCancelInvitation, setOpenConfirmCancelInvitation] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [passengers, setPassengers] = useState(
@@ -54,6 +55,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const { showSnackbar } = useSnackbar();
   const [savinLoading, setSavingLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
+  const [passengerToCancelInvitationFor, setPassengerToCancelInvitationFor] = useState(null);
   const isSingleRoom = [CabinType.SINGLE_MALE, CabinType.SINGLE_FEMALE].includes(
     booking?.cabin?.cabin_type_id
   );
@@ -64,6 +66,40 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     setEditedPassengerData(passenger);
     setEditPassengerOpen(true);
   };
+
+  const handleCancelPassengerInvitation = (passenger) => {
+    setPassengerToCancelInvitationFor(passenger);
+    setOpenConfirmCancelInvitation(true);
+
+  }
+
+  const handleCloseCancelInvitationModal = () => {
+    setOpenConfirmCancelInvitation(false);
+  }
+
+  const handleConfirmCancelInvitation = async () => {
+    setOpenConfirmCancelInvitation(false);
+    setReleaseLoading(true);
+
+    try {
+      if (!passengerToCancelInvitationFor) {
+        throw new Error("Passenger not found");
+      }
+      const response = await cancelInvitation(passengerToCancelInvitationFor.id, booking.id, booking.event_id);
+
+      setPassengers(response.data.passengers);
+
+      showSnackbar('Invitation successfully cancelled!', 'success');
+
+      setErrors({});
+    } catch (error) {
+      console.error("Error cancelling invitation:", error.response?.data || error);
+      showSnackbar("Failed to cancel invitation", "error");
+    } finally {
+      setPassengerToCancelInvitationFor(null);
+      setReleaseLoading(false);
+    }
+  }
 
   // Update passenger details
   const handleSavePassenger = async () => {
@@ -133,6 +169,13 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     });
   };
 
+  const cancelInvitation = async (passengerId: number, bookingId: number, eventId: number) => {
+    return axios.post(route('passenger_invitation.cancel', { id: eventId, booking_id: bookingId}), {
+      passengerId,
+      bookingId,
+    })
+  }
+
   const handleCancel = () => {
     setOpenConfirm(false);
   };
@@ -194,20 +237,44 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
           {passengers.map((passenger, index) => (
-            <Grid item xs={12} sm={6} md={3} key={passenger.id + passenger.email}>
-              <Box display="flex" alignItems="center" sx={{padding:'10px', borderRadius:'5px', border: '1px solid grey', cursor:'pointer'}} onClick={() => handleEditPassenger(passenger)}>
-                {getAvatar(passenger)} 
+            <Grid item xs={12} sm={3} key={passenger.id + passenger.email}>
+              <Box display="flex" alignItems="center">
+                <Avatar
+                  sx={{
+                    width: 50, height: 50, mr: 2, cursor: "pointer", bgcolor: passenger.lead_passenger
+                      ? green[800]
+                      : passenger.empty
+                        ? grey[500]
+                        : colors[index]
+                          ? colors[index][500]
+                          : grey[300]
+                  }}
+                  onClick={ () =>
+                    passenger?.passenger_invitation.length
+                      ? handleCancelPassengerInvitation(passenger)
+                      : handleEditPassenger(passenger)
+                  }
+                >
+                  {passenger.full_name?.[0]}
+                </Avatar>
                 <Box>
-                  <Typography variant="h6" style={{ fontSize: '0.8rem', fontWeight: '400' }}>{passenger.full_name}</Typography>
-                  {!passenger.empty && (<Chip
-                    label={passenger.lead_passenger ? "Lead Passenger" : `Passenger ${[passenger.passenger_order]}`}
-                    size="small"
-                    color={passenger.lead_passenger ? "warning" : "default"}
-                    sx={{ color: "white" }}
-                  />)}
-                  {passenger.empty == true && (
+                  <Typography>{passenger?.passenger_invitation.length ? `Passenger ${index + 1}` : passenger.full_name}</Typography>
+                  {passenger.passenger_invitation.length > 0 ? (
+                    <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
+                  ) : (
                     <>
-                      <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
+                      {passenger.lead_passenger ? (
+                        <Chip label="Lead Passenger" size="small" color="warning" />
+                      ) : (
+                        `Passenger ${index + 1}`
+                      )}
+
+                      {passenger.empty && (
+                        <>
+                          <br />
+                          <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
+                        </>
+                      )}
                     </>
                   )}
                 </Box>
@@ -245,6 +312,23 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
             Cancel
           </Button>
           <Button onClick={handleConfirm} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openConfirmCancelInvitation} onClose={handleCancel}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to cancel the invitation? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCancelInvitationModal} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmCancelInvitation} color="error" variant="contained">
             Confirm
           </Button>
         </DialogActions>

@@ -75,7 +75,7 @@ class PassengerRepository implements PassengerInterface
         'passenger_order' => 1,
         'passenger_balance' => 0,
         'was_on_board' => false,
-        'language' => $data['language'] ?? 'en',
+        //'language' => $data['language'] ?? 'en',
       ];
 
       $leadPassenger = Passenger::create($passengerData);
@@ -161,7 +161,7 @@ class PassengerRepository implements PassengerInterface
           'passenger_order' => $currentMaxOrder + $i + 1,
           'passenger_balance' => 0,
           'was_on_board' => false,
-          'language' => 'en',
+          //'language' => 'en',
         ];
         Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
         $seat = Passenger::create($additionalPassengerData);

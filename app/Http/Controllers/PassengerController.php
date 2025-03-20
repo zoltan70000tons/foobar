@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PassengerInvitation;
 use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
@@ -130,7 +131,8 @@ class PassengerController extends Controller
                // $slot->passenger_balance = 0;
                 $slot->was_on_board = 0;
                 $slot->empty_seat = 1;
-                $slot->language = 'en';
+                //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
+                // on passengers table
                 $slot->save();
             }
             return response()->json($slot);
@@ -198,5 +200,31 @@ class PassengerController extends Controller
             });
 
         return response()->json($results);
+    }
+
+    public function cancelPassengerInvitation(Request $request)
+    {
+        $validated = $request->validate([
+            'passengerId' => 'required|int',
+            'bookingId' => 'required|int'
+        ]);
+
+        try {
+            PassengerInvitation::query()
+                ->where('passenger_id', $validated['passengerId'])
+                ->where('booking_id', $validated['bookingId'])
+                ->delete();
+
+            $passengers = Passenger::query()
+                ->with(['installments', 'payments', 'fees', 'passengerInvitation'])
+                ->where('booking_id', $validated['bookingId'])
+                ->get();
+
+            return response()->json(['passengers' => $passengers]);
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            Log::error($e->getMessage());
+            return response()->json('error');
+        }
     }
 }
