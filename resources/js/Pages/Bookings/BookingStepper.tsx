@@ -292,7 +292,15 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             },
             onError: (errors) => {
                 console.error('Error creating booking:', errors);
-                showSnackbar('Failed to create booking. Please try again.', 'error');
+
+                // Extract meaningful error messages
+                const errorMessages = Object.values(errors).flat().filter(msg => msg?.trim()); // Remove empty values
+                const errorMessage = errorMessages.length ? errorMessages[0] : '';
+
+                // Conditionally add line breaks only if there's a meaningful error
+                const message = errorMessage ? `Failed to create booking. Please try again.\n\n${errorMessage}` : 'Failed to create booking. Please try again.';
+
+                showSnackbar(message, 'error');
             },
         });
     };
