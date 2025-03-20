@@ -205,7 +205,7 @@ class CustomerRegisteredController extends Controller
     try {
       $user->load('detail');
       $email = $user->email;
-      Mail::to($email)->send(new CustomerRegistered($user, $language, $survivorNumber));
+      Mail::to($email)->queue(new CustomerRegistered($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
@@ -225,7 +225,7 @@ class CustomerRegisteredController extends Controller
       $email = $user->email;
       $user->load('detail');
 
-      Mail::to($email)->send(new ActivateSurvivor($user, $language, $survivorNumber));
+      Mail::to($email)->queue(new ActivateSurvivor($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());
     }

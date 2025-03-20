@@ -245,7 +245,7 @@ class BookingController extends Controller
         \Log::info('EMAIL installments data', ['installments 3' => (array) $installments]);
       }
 
-      Mail::to($passengerData['email'])->send(
+      Mail::to($passengerData['email'])->queue(
         new CustomerConfirmationBooking($booking, $cart, $installments, $language, $event)
       );
     } catch (\Exception $e) {

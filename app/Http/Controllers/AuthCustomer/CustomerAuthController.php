@@ -173,7 +173,7 @@ class CustomerAuthController extends Controller
   protected function sendEmailUpdateNotification(User $user, string $oldEmail, string $language): void
   {
     try {
-      Mail::to($oldEmail)->send(new EmailUpdated($user, $language));
+      Mail::to($oldEmail)->queue(new EmailUpdated($user, $language));
     } catch (\Exception $e) {
       Log::error('Failed to send email update notification to user ID ' . $user->id . ': ' . $e->getMessage());
     }

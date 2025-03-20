@@ -118,6 +118,6 @@ class User extends Authenticatable implements CanResetPassword
 
     $tokenToSend = $url . '/en/password-reset?token=' . $token . '&email=' . $email;
 
-    return Mail::to($this->email)->send(new CustomerResetPassword($this, $tokenToSend));
+    return Mail::to($this->email)->queue(new CustomerResetPassword($this, $tokenToSend));
   }
 }
