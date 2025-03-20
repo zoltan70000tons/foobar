@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Repositories\PassengerRepository;
+use App\Rules\UniqueEmailInEvent;
 use App\Rules\UniqueSurvivorInEvent;
 use Log;
 
@@ -43,7 +44,7 @@ class PassengerController extends Controller
             'state' => 'nullable|string',
             'postal_code' => 'nullable|string',
             'country' => 'nullable|string',
-            'email' => 'required|email',
+            'email' => ['required','email','exists:passengers,email',new UniqueEmailInEvent($event_id, $request->booking_id)],
             'phone' => 'nullable|string',
             'emergency_c_name' => 'required|string',
             'emergency_c_phone' => 'nullable|string',
@@ -125,8 +126,8 @@ class PassengerController extends Controller
                 $slot->terms_n_cons = false;
                 $slot->cabin_conf_accp = false;
                 $slot->single_t_agreement = false;
-                $slot->passenger_allocated_cost = 0;
-                $slot->passenger_balance = 0;
+               // $slot->passenger_allocated_cost = 0;
+               // $slot->passenger_balance = 0;
                 $slot->was_on_board = 0;
                 $slot->empty_seat = 1;
                 $slot->language = 'en';
