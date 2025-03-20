@@ -18,6 +18,10 @@ import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, b
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import EditPassengerModal from "./EditPassengerModal";
 import { router } from "@inertiajs/react";
+import { PersonAdd } from "@mui/icons-material";
+import PersonIcon from '@mui/icons-material/Person';
+import Person2Icon from '@mui/icons-material/Person2';
+
 
 type PassengersProps = {
   booking: Booking;
@@ -38,6 +42,7 @@ const CabinType = Object.freeze({
 
 const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
+  const [openConfirmCancelInvitation, setOpenConfirmCancelInvitation] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [passengers, setPassengers] = useState(
@@ -50,6 +55,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const { showSnackbar } = useSnackbar();
   const [savinLoading, setSavingLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
+  const [passengerToCancelInvitationFor, setPassengerToCancelInvitationFor] = useState(null);
   const isSingleRoom = [CabinType.SINGLE_MALE, CabinType.SINGLE_FEMALE].includes(
     booking?.cabin?.cabin_type_id
   );
@@ -60,6 +66,40 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     setEditedPassengerData(passenger);
     setEditPassengerOpen(true);
   };
+
+  const handleCancelPassengerInvitation = (passenger) => {
+    setPassengerToCancelInvitationFor(passenger);
+    setOpenConfirmCancelInvitation(true);
+
+  }
+
+  const handleCloseCancelInvitationModal = () => {
+    setOpenConfirmCancelInvitation(false);
+  }
+
+  const handleConfirmCancelInvitation = async () => {
+    setOpenConfirmCancelInvitation(false);
+    setReleaseLoading(true);
+
+    try {
+      if (!passengerToCancelInvitationFor) {
+        throw new Error("Passenger not found");
+      }
+      const response = await cancelInvitation(passengerToCancelInvitationFor.id, booking.id, booking.event_id);
+
+      setPassengers(response.data.passengers);
+
+      showSnackbar('Invitation successfully cancelled!', 'success');
+
+      setErrors({});
+    } catch (error) {
+      console.error("Error cancelling invitation:", error.response?.data || error);
+      showSnackbar("Failed to cancel invitation", "error");
+    } finally {
+      setPassengerToCancelInvitationFor(null);
+      setReleaseLoading(false);
+    }
+  }
 
   // Update passenger details
   const handleSavePassenger = async () => {
@@ -84,7 +124,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       showSnackbar("Error updating passenger data!", "error");
     } finally {
       setSavingLoading(false);
-     }
+    }
   };
 
   const onDelete = () => {
@@ -129,8 +169,64 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     });
   };
 
+  const cancelInvitation = async (passengerId: number, bookingId: number, eventId: number) => {
+    return axios.post(route('passenger_invitation.cancel', { id: eventId, booking_id: bookingId}), {
+      passengerId,
+      bookingId,
+    })
+  }
+
   const handleCancel = () => {
     setOpenConfirm(false);
+  };
+
+  const getAvatar = (passenger) => {
+    console.log(passenger);
+    const iconProps = {
+      sx: {
+        width: 50,
+        height: 50,
+        mr: 2,
+        cursor: "pointer",
+        color: passenger.lead_passenger ? '#ffa726' : getAvatarColor(passenger),
+      },
+      
+    };
+
+    const IconComponent = getAvatarIcon(passenger);
+
+    return <IconComponent {...iconProps} />;
+  };
+
+  const getAvatarColor = (passenger) => {
+    switch (passenger.gender?.toLowerCase()) {
+      case "m":
+        return "#2196F3";
+      case "f":
+        return "#E91E63";
+      default:
+        return "gray";
+    }
+  };
+
+  const getAvatarIcon = (passenger) => {
+
+    if (passenger.empty) return PersonAdd;
+    switch (passenger.gender?.toLowerCase()) {
+      case "m":
+        return PersonIcon;
+      case "f":
+        return Person2Icon;
+      default:
+        return PersonIcon;
+    }
+  };
+
+
+  const getPassengerBgColor = (passenger) => {
+    if (passenger.lead_passenger) return "#B0BEC5";
+    if (passenger.empty) return "#90CAF9";
+    return "#FFF59D";
   };
 
   return (
@@ -153,14 +249,34 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                           ? colors[index][500]
                           : grey[300]
                   }}
-                  onClick={() => handleEditPassenger(passenger)}
+                  onClick={ () =>
+                    passenger?.passenger_invitation.length
+                      ? handleCancelPassengerInvitation(passenger)
+                      : handleEditPassenger(passenger)
+                  }
                 >
                   {passenger?.full_name?.[0]}
                 </Avatar>
                 <Box>
-                  <Typography>{passenger.full_name}</Typography>
-                  {passenger.lead_passenger ? <Chip label="Lead Passenger" size="small" color="warning" /> : `Passenger ${index + 1}`}
-                  {passenger.empty ? <><br /><Chip label="available" size="small" color="info" sx={{ color: "white" }} /></> : <></>}
+                  <Typography>{passenger?.passenger_invitation.length ? `Passenger ${index + 1}` : passenger.full_name}</Typography>
+                  {passenger.passenger_invitation.length > 0 ? (
+                    <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
+                  ) : (
+                    <>
+                      {passenger.lead_passenger ? (
+                        <Chip label="Lead Passenger" size="small" color="warning" />
+                      ) : (
+                        `Passenger ${index + 1}`
+                      )}
+
+                      {passenger.empty && (
+                        <>
+                          <br />
+                          <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
+                        </>
+                      )}
+                    </>
+                  )}
                 </Box>
               </Box>
             </Grid>
@@ -175,7 +291,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         editMode={editMode}
         onSave={handleSavePassenger}
         onDelete={onDelete}
-        savingLoading ={savinLoading}
+        savingLoading={savinLoading}
         releaseLoading={releaseLoading}
         isSingleRoom={isSingleRoom}
         onChange={(field, value) =>
@@ -196,6 +312,23 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
             Cancel
           </Button>
           <Button onClick={handleConfirm} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openConfirmCancelInvitation} onClose={handleCancel}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to cancel the invitation? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCancelInvitationModal} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmCancelInvitation} color="error" variant="contained">
             Confirm
           </Button>
         </DialogActions>
