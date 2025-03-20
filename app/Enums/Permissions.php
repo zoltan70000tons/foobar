@@ -92,5 +92,8 @@ enum Permissions: string
 
     case SendEmail = 'Send Emails';
 
+    case CreatePassengerDiscounts = 'Create Passenger Discounts';
+    case DeletePassengerDiscounts = 'Delete Passenger Discounts';
+
 
 }

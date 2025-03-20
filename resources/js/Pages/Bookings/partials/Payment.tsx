@@ -32,6 +32,7 @@ import { Delete } from "@mui/icons-material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import DiscountForm from "./DiscountForm";
 
 const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat("en-US", {
@@ -106,6 +107,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const canCreateFee = hasPermission(Permissions.CreateFees);
   const canCreatePayment = hasPermission(Permissions.CreatePayments);
   const canDeleteFee = hasPermission(Permissions.DeleteFees);
+  const canCreateDiscount = hasPermission(Permissions.CreatePassengerDiscounts);
+  const canDeleteDiscount = hasPermission(Permissions.DeletePassengerDiscounts);
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
@@ -113,11 +116,13 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   // State for modal
   const [open, setModalOpen] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
+  const [openConfirmDeleteDiscount, setOpenConfirmDeleteDiscount] = useState(false);
   const [openConfirmPayment, setOpenConfirmPayment] = useState(false);
   const [currentPassenger, setCurrentPassenger] = useState<Passenger | null>(null);
   const [selectedFeeId, setSelectedFeeId] = useState<number | null>(null);
   const [selectedPassengerId, setSelectedPassengerId] = useState<number | null>(null);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(null);
 
   const calculateAdjustments = (pricePerPerson: number) => {
     const grouped = booking.adjustments.reduce(
@@ -148,6 +153,34 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     return grouped;
   };
 
+  const calculateDiscounts = (passenger, pricePerPerson) => {
+    if (!passenger || !Array.isArray(passenger.discounts)) {
+      return { passengerDiscounts: [], totalPassengerDiscounts: 0 };
+    }
+
+
+    const grouped = passenger.discounts.reduce(
+      (acc, dis) => {
+        let discountValue = parseFloat(dis.amount);
+        if (dis.operation === "PERCENTAGE") {
+          discountValue = (discountValue / 100) * pricePerPerson;
+        }
+
+        acc.passengerDiscounts.push({ code: dis.type, value: discountValue, id: dis.id });
+        acc.totalPassengerDiscounts += discountValue;
+
+        return acc;
+      },
+      {
+        passengerDiscounts: [],
+        totalPassengerDiscounts: 0,
+      }
+    );
+
+    return grouped;
+  };
+
+
   const getSummaryAllocatedCost = (booking: Booking): number => {
     return booking.passengers.reduce((sum, passenger) => sum + Number(passenger.passenger_allocated_cost || 0), 0);
   };
@@ -168,10 +201,19 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     setSelectedFeeId(feeId);
     setOpenConfirm(true);
   };
+
+  const handleOpenConfirmDeleteDiscount = (passengerId: number, discountId: number) => {
+    setSelectedPassengerId(passengerId);
+    setSelectedDiscountId(discountId);
+    setOpenConfirmDeleteDiscount(true);
+  };
+
   const handleCancel = () => {
     setOpenConfirm(false);
+    setOpenConfirmDeleteDiscount(false);
     setSelectedPassengerId(null);
     setSelectedFeeId(null);
+    setSelectedDiscountId(null);
   };
 
   const handleOpenConfirmPayment = (paymentId: number) => {
@@ -197,6 +239,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     }
     handleCancel();
   };
+
+  const handleConfirmDeleteDiscount = () => {
+    if (selectedPassengerId && selectedDiscountId) {
+      handleDeleteDiscount(selectedPassengerId, selectedDiscountId);
+    }
+    handleCancel();
+  };
+
 
   const handleDeleteFee = (passengerId: number, feeId: number) => {
     setLoading(true);
@@ -231,6 +281,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     );
   };
 
+
   const handleDeletePayment = (passengerId: number, paymentId: number) => {
     setLoading(true);
 
@@ -251,6 +302,39 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         onError: (errors) => {
           console.error("Failed to delete payment:", errors);
           showSnackbar("An error occurred while trying to delete the payment.", "error");
+        },
+        onFinish: () => {
+          setLoading(false);
+        }
+      },
+    );
+  };
+
+
+  const handleDeleteDiscount = (passengerId: number, discountId: number) => {
+    setLoading(true);
+    router.post(
+      route("delete.discount", {
+        event_id: booking.event_id,
+        booking_id: booking.id,
+      }),
+      { passenger_id: passengerId, discount_id: discountId },
+      {
+        onSuccess: () => {
+          const updatedPassengers = passengers.map((pax) => { //FIXME
+            if (pax.id === passengerId) {
+              return {
+                ...pax,
+                fees: pax.discounts.filter((dis) => dis.id !== discountId),
+              };
+            }
+            return pax;
+          });
+          showSnackbar("Discount deleted successfully.", "success");
+        },
+        onError: (errors) => {
+          console.error("Failed to delete fee:", errors);
+          showSnackbar("An error occurred while trying to delete the discount.", "error");
         },
         onFinish: () => {
           setLoading(false);
@@ -317,9 +401,10 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           : `${index + 1}${getOrdinalSuffix(index + 1)} Passenger`;
 
         const { discounts, addons, totalDiscounts, totalAddons } = calculateAdjustments(pricePerPerson);
-
+        const { passengerDiscounts, totalPassengerDiscounts } = calculateDiscounts(pax, pricePerPerson);
+        const totalPassengerDiscount = totalDiscounts + totalPassengerDiscounts;
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
-        const totalCostAfterAdjustments = pricePerPerson - totalDiscounts + totalAddons + totalFees;
+        const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees;
         const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
         const filteredInstallments = pax.installments.filter(inst => inst.type !== "FEE");
 
@@ -391,7 +476,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     </TableCell>
                     <TableCell align="right">
                       <Box component="span" sx={{ color: "#4CAF50" }}>
-                        {totalDiscounts > 0 ? `-${formatCurrency(totalDiscounts)}` : `${formatCurrency(totalDiscounts)}`}
+                        {totalDiscounts > 0 ? `-${formatCurrency(totalPassengerDiscount)}` : `${formatCurrency(totalPassengerDiscount)}`}
                       </Box>
                     </TableCell>
                     <TableCell></TableCell>
@@ -403,6 +488,25 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                         {discount.value > 0 ? `-${formatCurrency(discount.value)}` : `${formatCurrency(discount.value)}`}
                       </TableCell>
                       <TableCell></TableCell>
+                    </TableRow>
+                  ))}
+                  {passengerDiscounts.map((discount, i) => (
+                    <TableRow key={`discount-${i}`}>
+                      <TableCell sx={{ pl: "3rem" }}>Discount ({discount.code}):</TableCell>
+                      <TableCell align="right">
+                        {discount.value > 0 ? `-${formatCurrency(discount.value)}` : `${formatCurrency(discount.value)}`}
+                      </TableCell>
+                      <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
+                        <IconButton
+                          aria-label="delete"
+                          color="error"
+                          size="small"
+                          disabled={!editMode || !canDeleteDiscount}
+                          onClick={() => handleOpenConfirmDeleteDiscount(pax.id, discount.id)}
+                        >
+                          <Delete style={{ fontSize: "1rem" }} />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   ))}
 
@@ -432,6 +536,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                       <TableCell></TableCell>
                     </TableRow>
                   ))}
+
+
 
                   {/*** Fees ***/}
                   <TableRow>
@@ -496,9 +602,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
               <Divider sx={{ my: 2, borderColor: "gray" }} />
 
-              <Grid container spacing={2}>
+              <Grid container spacing={3}>
                 {canCreatePayment && (
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <PaymentModal
                         passenger_id={pax.id}
@@ -510,7 +616,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   </Grid>
                 )}
                 {canCreateFee && (
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <FeesForm
                       passenger_id={pax.id}
                       booking_id={booking.id}
@@ -519,7 +625,18 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     />
                   </Grid>
                 )}
-                <Grid item xs={12} sm={4}>
+                {canCreateDiscount && (
+                  <Grid item xs={12} sm={3}>
+                    <DiscountForm
+                      passenger_id={pax.id}
+                      booking_id={booking.id}
+                      event_id={booking.event_id}
+                      editMode={editMode}
+                    />
+                  </Grid>
+                )}
+
+                <Grid item xs={12} sm={3}>
                   <Button
                     fullWidth
                     variant="outlined"
@@ -612,6 +729,21 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             Cancel
           </Button>
           <Button onClick={handleConfirm} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openConfirmDeleteDiscount} onClose={handleCancel}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to remove this discount? This action cannot be undone.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDeleteDiscount} color="error" variant="contained">
             Confirm
           </Button>
         </DialogActions>
