@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Adjustment;
 use App\Models\Booking;
 use App\Models\Fee;
+use App\Models\PassengerDiscount;
 use App\Models\Payment;
 use Log;
 
@@ -24,6 +25,7 @@ class CalculationRepository
       $booking = Booking::find($bookingId);
       $cabinPrice = $booking->cabin->category->price ?? 0;
       $passengerFees = Fee::where('passenger_id', $passengerId)->sum('amount');
+      $passengerDiscounts = PassengerDiscount::where('passenger_id', $passengerId)->sum('amount');
 
       // Fetch all adjustments
       $adjustments = Adjustment::join('booking_has_adjustments', 'adjustments.id', '=', 'booking_has_adjustments.adjustment_id')
@@ -47,6 +49,22 @@ class CalculationRepository
         }
       }
 
+      $sumOfFixedPassengerDiscount = 0;
+      $sumOfPercentagesPassengerDiscount = 0;
+
+      foreach ($passengerDiscounts as $discount) {
+        if ($discount->operation === 'FIXED') {
+          $sumOfFixedPassengerDiscount += $discount->amount;
+        } elseif ($discount->operation === 'PERCENTAGE') {
+          $sumOfPercentagesPassengerDiscount += $discount->amount;
+        }
+      }
+
+      //adding manual discount for passenger
+      $sumOfPercentagesDiscounts += $sumOfPercentagesPassengerDiscount;
+      $sumOfFixedDiscounts += $sumOfFixedPassengerDiscount;
+
+      
       // Cap discount percentage at 100%
       $validatedDiscountPercentage = min($sumOfPercentagesDiscounts, 100) / 100;
 

@@ -105,6 +105,11 @@ class Passenger extends Model
   {
     return $this->hasMany(Fee::class);
   }
+
+  public function discounts(){
+    return $this->hasMany(PassengerDiscount::class);
+  }
+  
   public function getPaymentInfoAttribute()
   {
     try {
