@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Booking;
 use Illuminate\Support\Str;
 
-class CustomerConfirmationBooking extends Mailable
+class CustomerConfirmationBooking extends Mailable implements ShouldQueue
 {
   use Queueable, SerializesModels;
 

@@ -140,7 +140,7 @@ class CustomerPasswordResetController extends Controller
   {
     try {
       $email = $user->email;
-      Mail::to($email)->send(new CustomerResetPasswordSuccess($user));
+      Mail::to($email)->queue(new CustomerResetPasswordSuccess($user));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
     }

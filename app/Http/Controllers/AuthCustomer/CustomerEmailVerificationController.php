@@ -51,7 +51,7 @@ class CustomerEmailVerificationController extends Controller
       'hash' => sha1($user->getEmailForVerification()),
     ]);
 
-    Mail::to($user->email)->send(new CustomerVerificationEmail($user, $verificationUrl, $language));
+    Mail::to($user->email)->queue(new CustomerVerificationEmail($user, $verificationUrl, $language));
     // $request->user()->notify(new CustomerVerification());
 
     return response()->json([
