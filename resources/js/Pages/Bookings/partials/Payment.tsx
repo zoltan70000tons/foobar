@@ -32,6 +32,7 @@ import { Delete } from "@mui/icons-material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import DiscountForm from "./DiscountForm";
 
 const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat("en-US", {
@@ -106,6 +107,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const canCreateFee = hasPermission(Permissions.CreateFees);
   const canCreatePayment = hasPermission(Permissions.CreatePayments);
   const canDeleteFee = hasPermission(Permissions.DeleteFees);
+  const canCreateDiscount = hasPermission(Permissions.CreatePassengerDiscounts);
+  const canDeleteDiscount = hasPermission(Permissions.DeletePassengerDiscounts);
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
@@ -496,9 +499,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
               <Divider sx={{ my: 2, borderColor: "gray" }} />
 
-              <Grid container spacing={2}>
+              <Grid container spacing={3}>
                 {canCreatePayment && (
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <PaymentModal
                         passenger_id={pax.id}
@@ -510,7 +513,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   </Grid>
                 )}
                 {canCreateFee && (
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <FeesForm
                       passenger_id={pax.id}
                       booking_id={booking.id}
@@ -519,7 +522,18 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     />
                   </Grid>
                 )}
-                <Grid item xs={12} sm={4}>
+                {canCreateDiscount && (
+                  <Grid item xs={12} sm={3}>
+                  <DiscountForm
+                    passenger_id={pax.id}
+                    booking_id={booking.id}
+                    event_id={booking.event_id}
+                    editMode={editMode}
+                  />
+                </Grid>
+                )}
+                
+                <Grid item xs={12} sm={3}>
                   <Button
                     fullWidth
                     variant="outlined"
