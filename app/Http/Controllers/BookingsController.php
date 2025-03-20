@@ -19,6 +19,7 @@ use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\LogRepository;
 use App\Repositories\TeamRepository;
+use App\Rules\UniqueSurvivorInEvent;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -113,6 +114,8 @@ class BookingsController extends Controller
 
   public function store(Request $request)
   {
+    $event_id = request()->route('id');
+
     $validated = $request->validate([
       'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
       'payment_plan' => ['required', Rule::in(['INSTALLMENTS', 'PAY_IN_FULL'])],
@@ -125,7 +128,7 @@ class BookingsController extends Controller
       'passenger.dob' => ['required', 'date', 'before:today'],
       'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
       'passenger.citizenship' => ['nullable', 'string', 'max:3'],
-      'passenger.survivor_number' => ['nullable', 'string', 'max:50'],
+      'passenger.survivor_number' => ['required', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number',new UniqueSurvivorInEvent($event_id),],
       'passenger.email' => ['required', 'email', 'email'],
       'passenger.phone' => ['nullable', 'string', 'max:20'],
       'passenger.address_first' => ['required', 'string', 'max:255'],
@@ -152,7 +155,6 @@ class BookingsController extends Controller
     ]);
 
     try {
-      $event_id = request()->route('id');
       $user = $request->user();
       $cabin_number = $validated['cabin_number'];
       $passenger_data = $validated['passenger'];

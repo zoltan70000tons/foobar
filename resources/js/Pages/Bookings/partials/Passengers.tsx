@@ -255,7 +255,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                       : handleEditPassenger(passenger)
                   }
                 >
-                  {passenger.full_name?.[0]}
+                  {passenger?.full_name?.[0]}
                 </Avatar>
                 <Box>
                   <Typography>{passenger?.passenger_invitation.length ? `Passenger ${index + 1}` : passenger.full_name}</Typography>
