@@ -20,7 +20,6 @@ import {
   Switch,
   AlertTitle,
   Drawer,
-  IconButton,
 } from "@mui/material";
 import CommentIcon from "@mui/icons-material/Comment";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -39,8 +38,6 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
 import FeesForm from "./FeesForm";
 import LoadingOverlay from "@/Components/LoadingOverlay";
-
-
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
@@ -92,7 +89,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
     }
   },[flash]);
 
-
   const handleAddComment = (comment: string) => {
     router.post(
       route("bookings.addComment", {
@@ -118,7 +114,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
     );
   };
 
-
   const handleAddAdjustment = (data) => {
     router.post(
       route("bookings.addAdjustment", {
@@ -136,8 +131,15 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
     );
   };
 
+  const handleBack = () => {
+    setLoading(true);
 
-
+    router.visit(route("bookings.index", { id: event.id }), {
+      replace: true,
+      preserveScroll: true,
+      preserveState: false,
+    });
+  }
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Booking Detail"}>
@@ -171,6 +173,14 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
             <Button
               variant="outlined"
               color="secondary"
+              onClick={ handleBack }
+              sx={{ mb: 2, mr: 2 }}
+            >
+              Back
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
               startIcon={<CommentIcon />}
               onClick={toggleSidebar}
               sx={{ mb: 2 }}
@@ -179,10 +189,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
             </Button>
           </Grid>
         </Box>
-
-
-
-
 
         {booking.locked_by && booking.status !== "CANCELLED" && (
           <Alert severity="warning" sx={{ mb: 2 }}>
