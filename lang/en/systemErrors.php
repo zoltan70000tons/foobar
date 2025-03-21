@@ -15,5 +15,10 @@ return [
   'no_category_found'             => 'No categories found',
   'details_not_found'             => 'User details not found',
   'provided_info_not_on_records'  => 'The information provided does not match our records, please make sure you are entering the correct information',
-  'account_already_active'        => 'Account already activated' 
+  'account_already_active'        => 'Account already activated',
+  'error_adding_pax'              => 'Error while adding passenger',
+  'no_empty_seats'                => 'No empty seats available',
+  'error_adding_empty_seat'       => 'Error while adding empty seat',
+  'error_removing_empty_seat'     => 'Error while removing empty seat',
+  'email_sent_failed'             => 'Failed to send email to user' 
 ];
