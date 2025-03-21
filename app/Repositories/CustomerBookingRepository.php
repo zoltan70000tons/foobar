@@ -7,11 +7,14 @@ use App\Models\Passenger;
 use App\Models\Cabin;
 use App\Models\PassengerInvitation;
 use Illuminate\Support\Str;
+use App\Traits\StringNormalization;
 use App\Models\User;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
 class CustomerBookingRepository
 {
+  use StringNormalization;
+  
   protected $booking;
   protected $passenger;
   protected $cabin;
@@ -174,15 +177,15 @@ class CustomerBookingRepository
     }
 
     $passEmail = $dataToUpdate['email'];
+    
+    // Carlos: This is not needed, as the passenger eMails can repeat in the passengers table
+    // $passenger = Passenger::where('booking_id', $booking->id)
+    //   ->where('email', $passEmail)
+    //   ->first();
 
-    // if passenger for this booking with this email exist, return error
-    $passenger = Passenger::where('booking_id', $booking->id)
-      ->where('email', $passEmail)
-      ->first();
-
-    if ($passenger) {
-      return response()->json(['message' => 'Passenger with this email already exists'], 400);
-    }
+    // if ($passenger) {
+    //   return response()->json(['message' => 'Passenger with this Survivor Number already exists'], 400);
+    // }
 
     $emptyPassenger = Passenger::where('id', $passengerSlotId->passenger_id)->first();
 
@@ -237,9 +240,9 @@ class CustomerBookingRepository
         $passenger->update([
           'survivor_number' => $validated['survivorNumber'] ?? null,
           'booking_id' => $booking->id,
-          'first_name' => $validated['firstName'],
-          'middle_name' => $validated['middleName'] ?? null,
-          'last_name' => $validated['lastName'],
+          'first_name' => $this->normalizeString($validated['firstName']),
+          'middle_name' => $this->normalizeString($validated['middleName']) ?? null,
+          'last_name' => $this->normalizeString($validated['lastName']),
           'dob' => $validated['dateOfBirth'],
           'gender' => $validated['gender'],
           'citizenship' => $validated['citizenship'],
@@ -251,7 +254,7 @@ class CustomerBookingRepository
           'country' => $validated['country'],
           'email' => $validated['email'],
           'phone' => $validated['phoneNumber'],
-          'emergency_c_name' => $validated['emergencyContactName'],
+          'emergency_c_name' => $this->normalizeString($validated['emergencyContactName']),
           'emergency_c_phone' => $validated['emergencyPhoneNumber'],
           'special_request' => $validated['specialRequest'],
           'language' => $validated['language'] ?? 'en',
