@@ -18,6 +18,7 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
 
 type FeesFormProps = {
     passenger_id: number;
@@ -100,6 +101,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger_id, event_id, booking_id,
                 sx={{ color: "white", borderColor: "gray" }}
                 onClick={handleOpen}
                 disabled={!editMode}
+                startIcon={<PriceChangeIcon />}
             >
                 Add Fee
             </Button>
