@@ -116,6 +116,12 @@ Route::middleware(['auth:sanctum', 'auth.customer', 'verified', 'booking_status'
     Route::post('/my-bookings/{eventId}/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
     Route::put('/my-bookings/{eventId}/{bookingCode}/remove-empty-seat', [BookingController::class, 'removeEmptySeat']);
 
+    // reset passenger seat
+    Route::put('/my-bookings/{eventId}/{bookingCode}/reset-passenger-seat', [
+      BookingController::class,
+      'resetPassengerSeat',
+    ]);
+
     // add passenger manually
     Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
     // add passenger via email
