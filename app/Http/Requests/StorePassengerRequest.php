@@ -23,7 +23,7 @@ class StorePassengerRequest extends FormRequest
   {
     return [
       // Passenger-related validation rules
-      'survivorNumber' => 'sometimes|string',
+      'survivorNumber' => 'sometimes|string|nullable',
       'firstName' => 'required|string',
       'middleName' => 'nullable|string',
       'lastName' => 'required|string',
@@ -39,6 +39,7 @@ class StorePassengerRequest extends FormRequest
       'email' => 'required|email',
       'confirmEmail' => 'required|same:email',
       'newsletter' => 'nullable|boolean',
+      'specialOptions' => 'nullable|array',
       'specialRequest' => 'nullable|string',
       'passengerOrder' => 'nullable|integer',
       'language' => 'nullable|string',
