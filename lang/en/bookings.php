@@ -16,5 +16,11 @@ return [
   'slot_taken'                => 'Passenger slot is already taken',
   'invite_sent'               => 'Invitation sent',
   'missing_pax_invite_token'  => 'Passenger ID, Invitation ID, and Token are required',
-  'invite_cancellled'         => 'Invitation cancelled'
+  'invite_cancellled'         => 'Invitation cancelled',
+  'status_on_hold'            => 'Booking status is not "ON HOLD".',
+  'invalid_booking_code'      => 'Invalid booking code',
+  'email_already_exists'      => 'Passenger with this email already exists',
+  'pax_added'                 => 'Passenger added',
+  'empty_seat_added'          => 'Empty seat added',
+  'empty_seat_removed'        => 'Empty seat removed'
 ];
