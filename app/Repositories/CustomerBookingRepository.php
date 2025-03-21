@@ -382,4 +382,66 @@ class CustomerBookingRepository
 
     return $invitation;
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  |  Reset passenger seat
+  |--------------------------------------------------------------------------
+  | 
+  | Set default value for passenger seat
+  |
+  */
+  public function resetPassengerSeat(int $eventId, string $bookingCode, $passengerOrder)
+  {
+    $booking = $this->getBookingByCode($eventId, $bookingCode);
+
+    $passengers = $booking->passengers;
+
+    // get passenger based on passenger order
+    $passenger = $passengers
+      ->filter(function ($passenger) use ($passengerOrder) {
+        return $passenger->passenger_order === $passengerOrder;
+      })
+      ->first();
+
+    if ($passenger) {
+      try {
+        $passenger->update([
+          'empty_seat' => false,
+          'survivor_number' => null,
+          'gender' => null,
+          'first_name' => '',
+          'middle_name' => '',
+          'last_name' => '',
+          'dob' => null,
+          'citizenship' => null,
+          'address_first' => null,
+          'address_second' => null,
+          'city' => null,
+          'state' => null,
+          'postal_code' => null,
+          'country' => null,
+          'email' => null,
+          'emergency_c_name' => null,
+          'emergency_c_phone' => null,
+          'special_request' => null,
+          'special_options' => null,
+          'hear_about' => null,
+          'referal_details' => null,
+          'newsletter' => false,
+          'travel_info' => false,
+          'terms_n_cons' => false,
+          'empty_seat' => false,
+          'cabin_conf_accp' => false,
+          'single_t_agreement' => false,
+          'language' => 'en',
+        ]);
+      } catch (\Exception $e) {
+        return response()->json(['message' => 'Error while resetting passenger seat'], 500);
+      }
+      return response()->json(['message' => 'Passenger seat reset'], 200);
+    }
+
+    return response()->json(['message' => 'Passenger not found'], 404);
+  }
 }

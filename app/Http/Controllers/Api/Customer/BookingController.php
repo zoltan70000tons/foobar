@@ -662,4 +662,57 @@ class BookingController extends Controller
 
     return response()->json(['message' => 'Invitation cancelled'], 200);
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Reset passenger seat
+  |--------------------------------------------------------------------------
+  |
+  |  This method call the service to reset passenger seat
+  |
+  */
+  public function resetPassengerSeat(Request $request, int $eventId, string $bookingCode)
+  {
+    $user = Auth::user();
+
+    $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
+
+    if (!$booking) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    if ($booking->is_single_occupancy) {
+      return response()->json(['message' => 'This booking is single occupancy'], 400);
+    }
+
+    // not the owner
+    if ($booking->customer_id !== $user->id) {
+      return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    // if user is the lead passenger and request passenger id is assigned to his survivor number, throw error
+
+    $passengerOrder = $request->input('passenger_order');
+    $passModel = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
+
+    if (!$passModel) {
+      return response()->json(['message' => 'Passenger not found'], 404);
+    }
+
+    $passSurvivorNumber = $passModel->survivor_number;
+    $userSurvivorNumber = $user->survivorNumber->survivor_number;
+
+    if ($passSurvivorNumber === $userSurvivorNumber) {
+      return response()->json(['message' => 'You cannot reset your own seat'], 400);
+    }
+
+    $result = $this->customerBookingRepository->resetPassengerSeat($eventId, $bookingCode, $passengerOrder);
+    $this->saveBookingLog(
+      $booking->id,
+      'BY USER: Reset passenger seat',
+      'Lead passenger reset passenger seat for slot ' . $passengerOrder
+    );
+
+    return $result;
+  }
 }
