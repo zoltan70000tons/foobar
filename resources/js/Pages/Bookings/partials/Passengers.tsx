@@ -170,7 +170,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   };
 
   const cancelInvitation = async (passengerId: number, bookingId: number, eventId: number) => {
-    return axios.post(route('passenger_invitation.cancel', { id: eventId, booking_id: bookingId}), {
+    return axios.post(route('passenger_invitation.cancel', { id: eventId, booking_id: bookingId }), {
       passengerId,
       bookingId,
     })
@@ -190,8 +190,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         cursor: "pointer",
         color: passenger.lead_passenger ? '#ffa726' : getAvatarColor(passenger),
       },
-      
-      
+
+
     };
 
     const IconComponent = getAvatarIcon(passenger);
@@ -239,58 +239,59 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         <Grid container spacing={2} alignItems="center">
           {passengers.map((passenger, index) => (
             <Grid item xs={12} sm={6} md={3} key={passenger.id + passenger.email}>
-            <Box
-              display="flex"
-              alignItems="center"
-              sx={{
-                position: 'relative', 
-                padding: '10px',
-                borderRadius: '5px',
-                border: '1px solid grey',
-                cursor: 'pointer',
-                minHeight: '120px',
-              }}
-              onClick={() =>
-                passenger?.passenger_invitation?.length
-                  ? handleCancelPassengerInvitation(passenger)
-                  : handleEditPassenger(passenger)
-              }
-            >
-              {getAvatar(passenger)}
-              <Box>
-                <Typography>
-                  {passenger?.passenger_invitation?.length
-                    ? `Passenger ${index + 1}`
-                    : passenger.full_name}
-                </Typography>
-              </Box>
               <Box
+                display="flex"
+                alignItems="center"
                 sx={{
-                  position: 'absolute',
-                  bottom: 8,
-                  right: 8,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px',
-                  alignItems: 'flex-end',
+                  position: 'relative',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  border: '1px solid grey',
+                  cursor: 'pointer',
+                  minHeight: '120px',
                 }}
+                onClick={() =>
+                  passenger?.passenger_invitation?.length
+                    ? handleCancelPassengerInvitation(passenger)
+                    : handleEditPassenger(passenger)
+                }
               >
-                {passenger.passenger_invitation?.length > 0 ? (
-                  <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
-                ) : (
-                  <>
-                    {passenger.lead_passenger && (
-                      <Chip label="Lead Passenger" size="small" color="warning" />
-                    )}
-                    {passenger.empty && (
-                      <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
-                    )}
-                  </>
-                )}
+                {getAvatar(passenger)}
+                <Box>
+                  <Typography>
+                    {passenger?.passenger_invitation?.length
+                      ? `Passenger ${index + 1}`
+                      : passenger.full_name}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 8,
+                    right: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    alignItems: 'flex-end',
+                  }}
+                >
+                  {passenger.passenger_invitation?.length > 0 ? (
+                    <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
+                  ) : (
+                    <>
+                      {passenger.lead_passenger ? (
+                        <Chip label="Lead Passenger" size="small" color="warning" />
+                      ) : passenger.empty ? (
+                        <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
+                      ) : (
+                        <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />
+                      )}
+                    </>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          </Grid>
-          
+            </Grid>
+
           ))}
         </Grid>
       </Paper>
