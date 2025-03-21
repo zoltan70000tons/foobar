@@ -33,6 +33,7 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import DiscountForm from "./DiscountForm";
+import HistoryIcon from '@mui/icons-material/History';
 
 const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat("en-US", {
@@ -642,6 +643,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     variant="outlined"
                     sx={{ color: "white", borderColor: "gray" }}
                     onClick={() => handleOpenModal(pax)}
+                    startIcon={<HistoryIcon />}
                   >
                     Payment history
                   </Button>

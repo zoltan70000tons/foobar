@@ -18,6 +18,7 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 type DiscountFormProps = {
     passenger_id: number;
@@ -104,6 +105,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger_id, event_id, boo
                 sx={{ color: "white", borderColor: "gray" }}
                 onClick={handleOpen}
                 disabled={!editMode}
+                startIcon={<LocalOfferIcon />}
             >
                 Add Discount
             </Button>

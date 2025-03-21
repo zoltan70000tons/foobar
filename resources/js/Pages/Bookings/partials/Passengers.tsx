@@ -191,6 +191,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         color: passenger.lead_passenger ? '#ffa726' : getAvatarColor(passenger),
       },
       
+      
     };
 
     const IconComponent = getAvatarIcon(passenger);
@@ -237,49 +238,59 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
           {passengers.map((passenger, index) => (
-            <Grid item xs={12} sm={3} key={passenger.id + passenger.email}>
-              <Box display="flex" alignItems="center">
-                <Avatar
-                  sx={{
-                    width: 50, height: 50, mr: 2, cursor: "pointer", bgcolor: passenger.lead_passenger
-                      ? green[800]
-                      : passenger.empty
-                        ? grey[500]
-                        : colors[index]
-                          ? colors[index][500]
-                          : grey[300]
-                  }}
-                  onClick={ () =>
-                    passenger?.passenger_invitation.length
-                      ? handleCancelPassengerInvitation(passenger)
-                      : handleEditPassenger(passenger)
-                  }
-                >
-                  {passenger?.full_name?.[0]}
-                </Avatar>
-                <Box>
-                  <Typography>{passenger?.passenger_invitation.length ? `Passenger ${index + 1}` : passenger.full_name}</Typography>
-                  {passenger.passenger_invitation.length > 0 ? (
-                    <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
-                  ) : (
-                    <>
-                      {passenger.lead_passenger ? (
-                        <Chip label="Lead Passenger" size="small" color="warning" />
-                      ) : (
-                        `Passenger ${index + 1}`
-                      )}
-
-                      {passenger.empty && (
-                        <>
-                          <br />
-                          <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
-                        </>
-                      )}
-                    </>
-                  )}
-                </Box>
+            <Grid item xs={12} sm={6} md={3} key={passenger.id + passenger.email}>
+            <Box
+              display="flex"
+              alignItems="center"
+              sx={{
+                position: 'relative', 
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid grey',
+                cursor: 'pointer',
+                minHeight: '120px',
+              }}
+              onClick={() =>
+                passenger?.passenger_invitation?.length
+                  ? handleCancelPassengerInvitation(passenger)
+                  : handleEditPassenger(passenger)
+              }
+            >
+              {getAvatar(passenger)}
+              <Box>
+                <Typography>
+                  {passenger?.passenger_invitation?.length
+                    ? `Passenger ${index + 1}`
+                    : passenger.full_name}
+                </Typography>
               </Box>
-            </Grid>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 8,
+                  right: 8,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  alignItems: 'flex-end',
+                }}
+              >
+                {passenger.passenger_invitation?.length > 0 ? (
+                  <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
+                ) : (
+                  <>
+                    {passenger.lead_passenger && (
+                      <Chip label="Lead Passenger" size="small" color="warning" />
+                    )}
+                    {passenger.empty && (
+                      <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
+                    )}
+                  </>
+                )}
+              </Box>
+            </Box>
+          </Grid>
+          
           ))}
         </Grid>
       </Paper>
