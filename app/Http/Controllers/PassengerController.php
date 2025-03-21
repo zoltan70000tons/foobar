@@ -45,7 +45,7 @@ class PassengerController extends Controller
             'state' => 'nullable|string',
             'postal_code' => 'nullable|string',
             'country' => 'nullable|string',
-            'email' => ['required','email','exists:passengers,email',new UniqueEmailInEvent($event_id, $request->booking_id)],
+            'email' => 'required','email',
             'phone' => 'nullable|string',
             'emergency_c_name' => 'required|string',
             'emergency_c_phone' => 'nullable|string',
@@ -60,6 +60,7 @@ class PassengerController extends Controller
             //'passenger_balance' => 'required|numeric',
             // 'was_on_board' => 'required|boolean',
         ]);
+        $validated['empty_seat'] = false;
 
 
         $slot = Passenger::where('id', '=', $validated['id'])->first();

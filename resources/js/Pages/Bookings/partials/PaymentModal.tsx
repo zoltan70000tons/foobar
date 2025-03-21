@@ -17,6 +17,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { sanitizeInput } from '@/Helpers/inputSanitizer';
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import PaymentIcon from "@mui/icons-material/Payment";
 
 type PaymentModalProps = {
     passenger_id: number;
@@ -130,8 +131,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 sx={{ color: "white", borderColor: "gray" }}
                 onClick={handleOpen}
                 disabled={!editMode}
+                startIcon={<PaymentIcon />}
             >
-                Add Payment
+                Add Payment/Refund
             </Button>
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
                 <DialogTitle>Add Payment</DialogTitle>
