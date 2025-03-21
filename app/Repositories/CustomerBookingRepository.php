@@ -14,7 +14,7 @@ use Mockery\Generator\StringManipulation\Pass\Pass;
 class CustomerBookingRepository
 {
   use StringNormalization;
-  
+
   protected $booking;
   protected $passenger;
   protected $cabin;
@@ -177,7 +177,7 @@ class CustomerBookingRepository
     }
 
     $passEmail = $dataToUpdate['email'];
-    
+
     // Carlos: This is not needed, as the passenger eMails can repeat in the passengers table
     // $passenger = Passenger::where('booking_id', $booking->id)
     //   ->where('email', $passEmail)
@@ -292,6 +292,8 @@ class CustomerBookingRepository
       })
       ->first();
 
+    \Log::info('Empty passenger: ' . json_encode($emptyPassenger));
+
     $passengerSlotId = PassengerInvitation::where('booking_id', $booking->id)
       ->where('passenger_id', $emptyPassenger->id)
       ->first();
@@ -302,14 +304,13 @@ class CustomerBookingRepository
 
     if (
       $emptyPassenger &&
-      $emptyPassenger->first_name === null &&
-      $emptyPassenger->dob === null &&
+      !$emptyPassenger->first_name &&
+      !$emptyPassenger->dob &&
       $emptyPassenger->empty_seat === false
     ) {
       // add one null passenger to the same booking
       try {
         $emptyPassenger->update([
-          //'booking_id' => $booking->id,
           'empty_seat' => true,
         ]);
       } catch (\Exception $e) {
@@ -347,7 +348,6 @@ class CustomerBookingRepository
       // remove one null passenger from the same booking
       try {
         $emptyPassenger->update([
-          //'booking_id' => null,
           'empty_seat' => false,
         ]);
       } catch (\Exception $e) {

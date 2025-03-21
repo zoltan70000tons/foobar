@@ -31,7 +31,7 @@ class BookingStatusMiddleware
     }
 
     // Allow viewing if status is ON-HOLD or COMPLETED
-    if (!in_array($booking->status, ['ON HOLD', 'COMPLETED'])) {
+    if (!in_array($booking->status, ['ON HOLD', 'UPLOADED'])) {
       return response()->json(['message' => 'Access denied.'], 403);
     }
 
