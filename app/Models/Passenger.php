@@ -68,6 +68,24 @@ class Passenger extends Model
   ];
 
   /**
+   * Mutator: Set Personal Details to Uppercase.
+   */
+  public function setFirstNameAttribute($value)
+  {
+    $this->attributes['first_name'] = strtoupper($value);
+  }
+
+  public function setLastNameAttribute($value)
+  {
+    $this->attributes['last_name'] = strtoupper($value);
+  }
+
+  public function setMiddleNameAttribute($value)
+  {
+    $this->attributes['middle_name'] = strtoupper($value);
+  }
+
+  /**
    * Relationship: A passenger belongs to a booking.
    */
   public function booking()
@@ -105,6 +123,11 @@ class Passenger extends Model
   {
     return $this->hasMany(Fee::class);
   }
+
+  public function discounts(){
+    return $this->hasMany(PassengerDiscount::class);
+  }
+  
   public function getPaymentInfoAttribute()
   {
     try {

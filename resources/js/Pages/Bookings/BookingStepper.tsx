@@ -111,8 +111,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
 
     useEffect(() => {
         setIsNextDisabled(!validateStep());
-        console.log(isNextDisabled);
-        console.log('Category', cabinCategory, 'CabinNumber', cabinNumber, 'PASSENGER', passenger, 'PAYMENT PLAN', paymentPlan);
+        //console.log(isNextDisabled);
+        //console.log('Category', cabinCategory, 'CabinNumber', cabinNumber, 'PASSENGER', passenger, 'PAYMENT PLAN',
+        // paymentPlan);
     }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
 
 
@@ -125,7 +126,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     }
 
     const validateStep = () => {
-        console.log(activeStep);
+        //console.log(activeStep);
         switch (activeStep) {
             case 0:
                 let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber;
@@ -182,7 +183,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             emergency_c_phone: selectedUser.emergency_c_phone || "",
             payment_method: selectedUser.payment_method || "",
             special_request: selectedUser.special_request || "",
-            lead_passenger: selectedUser.lead_passenger || false,
+            lead_passenger: selectedUser.lead_passenger || true,
             confirmed_booking_email: selectedUser.confirmed_booking_email || false,
             travel_info: selectedUser.travel_info || false,
             terms_n_cons: selectedUser.terms_n_cons || false,
@@ -199,18 +200,18 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
     const handleNext = () => setActiveStep((prev) => prev + 1);
     const handleBack = () => setActiveStep((prev) => prev - 1);
 
-    console.log(cabinCategories);
+    //console.log(cabinCategories);
 
     useEffect(() => {
         fetchAvailableCabins();
     }, [cabinType, cabinCategory, selectedDeck, onlyBalcony, selectedLocation, onlyAccessible]);
 
     useEffect(() => {
-        console.log(cabinNumber);
+        //console.log(cabinNumber);
     }, [cabinNumber]);
 
     useEffect(() => {
-        console.log(cabinCategory);
+        //console.log(cabinCategory);
     }, [cabinCategory]);
 
 
@@ -291,7 +292,15 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             },
             onError: (errors) => {
                 console.error('Error creating booking:', errors);
-                showSnackbar('Failed to create booking. Please try again.', 'error');
+
+                // Extract meaningful error messages
+                const errorMessages = Object.values(errors).flat().filter(msg => msg?.trim()); // Remove empty values
+                const errorMessage = errorMessages.length ? errorMessages[0] : '';
+
+                // Conditionally add line breaks only if there's a meaningful error
+                const message = errorMessage ? `Failed to create booking. Please try again.\n\n${errorMessage}` : 'Failed to create booking. Please try again.';
+
+                showSnackbar(message, 'error');
             },
         });
     };

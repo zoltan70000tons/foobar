@@ -27,6 +27,7 @@ use App\Http\Controllers\FeeController;
 use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\PaymentController;
 use \App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DiscountsController;
 use App\Http\Controllers\NotificationController;
 
 Route::get("/", function () {
@@ -168,6 +169,7 @@ Route::middleware("auth")->group(function () {
     Route::prefix('/events/{id}/booking/{booking_id}/passengers')->group(function () {
         Route::post('/update/seat', [PassengerController::class, 'updateSeat'])->name('seat.update');
         Route::post('/release/seat', [PassengerController::class, 'releaseSeat'])->name('seat.release');
+        Route::post('/cancel/invitation', [PassengerController::class, 'cancelPassengerInvitation'])->name('passenger_invitation.cancel');
     });
 
   Route::get("/not-allowed", [NotAllowedController::class, "index"])->name("access.denied");
@@ -211,9 +213,10 @@ Route::middleware("auth")->group(function () {
 Route::get("/join-organization", [OrganizationController::class, "join"])->name("organization.join");
 Route::put("/join-organization", [OrganizationController::class, "join"])->name("organization.join");
 
+Route::prefix("discounts")->group(function () {
+  Route::post("{event_id}/{booking_id}/store", [DiscountsController::class, "store"])->name("manual.discount");
+  Route::post("{event_id}/{booking_id}/delete", [DiscountsController::class, "delete"])->name("delete.discount");
+});
 
-
-//Route::get('/payment-notification', [NotificationController::class, 'sendPaymentEmail'])->name('payment.notification');
-//Route::get('/confirmation-notification', [NotificationController::class, 'sendConfirmationEmail'])->name('confirmation.notification');
 
 require __DIR__ . "/auth.php";

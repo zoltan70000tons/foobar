@@ -82,6 +82,10 @@ export enum Permissions {
     EditPayments = 'Edit Payments',
     DeletePayments = 'Delete Payments',
 
+    
+    CreatePassengerDiscounts = 'Create Passenger Discounts',
+    DeletePassengerDiscounts = 'Delete Passenger Discounts',
+
     // Emails
 
     SendEmails = 'Send Emails'
