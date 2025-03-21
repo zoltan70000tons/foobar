@@ -110,7 +110,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger_id, event_id, boo
                 Add Discount
             </Button>
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-                <DialogTitle>Add Fee</DialogTitle>
+                <DialogTitle>Add Discount</DialogTitle>
                 <DialogContent>
                     <Box component="form" onSubmit={handleSubmit}>
                         <TextField
