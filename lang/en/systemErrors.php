@@ -20,5 +20,6 @@ return [
   'no_empty_seats'                => 'No empty seats available',
   'error_adding_empty_seat'       => 'Error while adding empty seat',
   'error_removing_empty_seat'     => 'Error while removing empty seat',
-  'email_sent_failed'             => 'Failed to send email to user' 
+  'email_sent_failed'             => 'Failed to send email to user',
+  'error_reseting_seat'           => 'Error while resetting passenger seat' 
 ];

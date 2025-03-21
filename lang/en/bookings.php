@@ -22,5 +22,6 @@ return [
   'email_already_exists'      => 'Passenger with this email already exists',
   'pax_added'                 => 'Passenger added',
   'empty_seat_added'          => 'Empty seat added',
-  'empty_seat_removed'        => 'Empty seat removed'
+  'empty_seat_removed'        => 'Empty seat removed',
+  'seat_reset'                => 'Passenger seat reset'
 ];
