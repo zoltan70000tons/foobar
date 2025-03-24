@@ -101,7 +101,7 @@ class EmailTemplateService
                     $values[$placeholder] = $booking->booking_code ?? '';
                     break;
                 case 'PASSENGER_NAME':
-                    $values[$placeholder] = capitalizeWords($passenger?->first_name) ?? '';
+                    $values[$placeholder] = capitalizeWords($passenger?->first_name ?? '');
                     break;
                 case 'GRAND_TOTAL':
                     $values[$placeholder] = formatCurrency($booking->getGrandTotal(), true) ?? '';

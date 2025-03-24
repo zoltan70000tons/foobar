@@ -122,7 +122,7 @@ class EmailController extends Controller
             'template_id' => 'required|integer',
             'booking_id' => 'required|integer'
         ])->validate();
-        $htmlContent = $this->emailTemplateService->getProcessedTemplate($validated['booking_id'], $validated['lang'], $validated['template_id'], []);
+        $htmlContent = $this->emailTemplateService->getProcessedTemplate($validated['booking_id'], $validated['template_id'],null, []);
         if (!$htmlContent) {
             return response()->json(['error' => 'Template not found'], 404);
         }
