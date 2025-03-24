@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Paper, Typography, Box, IconButton, Badge, Grid } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../Theme/theme';
+import { router } from "@inertiajs/react";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeClick }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = () => {
+    setLoading(true);
+    router.get(link);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Paper 
@@ -15,7 +24,7 @@ const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeCl
           position: 'relative', // Necessary for positioning badge
           cursor: 'pointer' // Change cursor to pointer for click indication
         }}
-        onClick={() => window.location.href = link} // Redirect on click
+        onClick={() => handleClick()} // Redirect on click
       >
         <Box sx={{ marginRight: '15px' }}>
           {Icon && <Icon fontSize="large" />}
@@ -40,6 +49,8 @@ const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeCl
           </Badge>
         )}
       </Paper>
+
+      <LoadingOverlay  open={loading}/>
     </ThemeProvider>
   );
 };
