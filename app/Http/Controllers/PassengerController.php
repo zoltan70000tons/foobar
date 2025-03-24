@@ -131,7 +131,7 @@ class PassengerController extends Controller
                // $slot->passenger_allocated_cost = 0;
                // $slot->passenger_balance = 0;
                 $slot->was_on_board = 0;
-                $slot->empty_seat = 1;
+                $slot->empty_seat = 0;
                 //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
                 // on passengers table
                 $slot->save();
