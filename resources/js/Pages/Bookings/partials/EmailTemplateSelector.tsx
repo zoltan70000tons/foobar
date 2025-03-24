@@ -95,7 +95,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
         `/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}&single_email=${isCheckboxEnabled ? 1 : 0}` +
         `${selectedPassenger?.id ? `&passenger_id=${selectedPassenger.id}` : ''}`
       );
-      
+
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -190,7 +190,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
       formData.append("template_id", selectedTemplate.id);
       formData.append("subject", subject)
       formData.append("single_email", isCheckboxEnabled ? 1 : 0);
-      if(isCheckboxEnabled){
+      if (isCheckboxEnabled) {
         formData.append("passenger_id", selectedPassenger.id);
       }
       attachments.forEach((file) => formData.append("attachments[]", file));
@@ -274,12 +274,13 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
         </Grid>
         <Grid item xs={2}>
           <FormControlLabel
+            disabled={canSendEmail}
             control={
               <Checkbox
                 checked={isCheckboxEnabled}
                 onChange={(e) => {
                   setIsCheckboxEnabled(e.target.checked);
-                  if(!e.target.checked){
+                  if (!e.target.checked) {
                     setSelectedPassenger("");
                   }
                 }}
@@ -299,7 +300,6 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
                 value={selectedPassenger ? JSON.stringify(selectedPassenger) : ""}
                 onChange={(e) => {
                   const selectedObject = JSON.parse(e.target.value);
-                  console.log(selectedObject);
                   setSelectedPassenger(selectedObject);
                 }}
                 displayEmpty
