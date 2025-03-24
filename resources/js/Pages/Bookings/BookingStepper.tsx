@@ -145,7 +145,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                     passenger.email &&
                     passenger.dob &&
                     passenger.gender &&
-                    passenger.payment_method
+                    passenger.payment_method &&
+                    passenger.confirmed_booking_email &&
+                    passenger.terms_n_cons
                 );
             case 2:
                 return true;
