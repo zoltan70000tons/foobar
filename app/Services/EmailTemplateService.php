@@ -89,9 +89,7 @@ class EmailTemplateService
         if ($passenger) {
             $nextInstallment = $passenger->getNextInstallmentAttribute();
         }
-
         $values = [];
-
         foreach ($placeholders as $placeholder) {
             switch ($placeholder) {
                 case 'EVENT_LOCATION':
