@@ -36,6 +36,7 @@ import { DeckEnum } from "@/enums/DeckEnum";
 import { router } from "@inertiajs/react";
 import {FilterList} from "@mui/icons-material";
 import Country from "@/Components/Country";
+import PhoneNumber from "@/Components/PhoneNumber";
 
 const TabPanel = ({ children, value, index }) => {
     return (
@@ -644,13 +645,11 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
-                                    label="Phone"
-                                    variant="outlined"
-                                    fullWidth
-                                    size="small"
-                                    value={passenger?.phone || ""}
-                                    onChange={(e) => onChange("phone", e.target.value)}
+                                <PhoneNumber
+                                  value={ passenger?.phone || "" }
+                                  forceDialCode={ true }
+                                  name={ "phone" }
+                                  onChange={(e) => onChange("phone", e)}
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
@@ -727,14 +726,12 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
-                                    label="Emergency Contact Phone"
-                                    variant="outlined"
-                                    fullWidth
-                                    size="small"
-                                    value={passenger?.emergency_c_phone || ""}
-                                    onChange={(e) => onChange("emergency_c_phone", e.target.value)}
-
+                                <PhoneNumber
+                                  label="Emergency Contact Phone"
+                                  value={ passenger?.emergency_c_phone || "" }
+                                  forceDialCode={ true }
+                                  name={ "emergency_c_phone" }
+                                  onChange={(e) => onChange("emergency_c_phone", e)}
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
