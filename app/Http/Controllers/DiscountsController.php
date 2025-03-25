@@ -12,6 +12,7 @@ use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\DB;
+use App\Services\PaymentInfoService;
 
 class DiscountsController extends Controller
 {
@@ -20,11 +21,12 @@ class DiscountsController extends Controller
     use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
-    protected CalculationRepository $calculationRepository;
-    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository)
+    protected PaymentInfoService $paymentInfoService;
+
+    public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService)
     {
         $this->passengerRepository = $passengerRepository;
-        $this->calculationRepository =$calculationRepository;
+        $this->paymentInfoService =$paymentInfoService;
     }
 
     public function store(Request $request)
@@ -41,7 +43,7 @@ class DiscountsController extends Controller
 
                 ]);
                 PassengerDiscount::create($validated);
-                $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
+                $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Discount',
@@ -81,7 +83,7 @@ class DiscountsController extends Controller
                 $amount = $discount->amount;
                 $type = $discount->type;
                 $discount->delete();
-                $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
+                $this->paymentInfoService->syncAllocatedCost($booking);
 
                 DB::commit();
 
