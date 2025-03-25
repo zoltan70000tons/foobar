@@ -6,11 +6,13 @@ use App\Enums\MemberShip;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Adjustment;
+use App\Models\SurvivorNumber;
+use App\Models\User;
 
 class AdjustmentsRepository
 {
-  protected $booking;
-  protected $passenger;
+  protected Booking $booking;
+  protected Passenger $passenger;
 
   public function __construct(Passenger $passenger, Booking $booking)
   {
@@ -45,6 +47,34 @@ class AdjustmentsRepository
         }
         
       }
+  }
+
+  public function getAdjustmentsBySurvivorNumber($survivorNumber): int|null
+  {
+      if (!$survivorNumber) {
+          return null;
+      }
+
+      $userUuid = SurvivorNumber::query()
+          ->where('survivor_number', $survivorNumber)
+          ->value('user_id');
+
+      $user = User::query()->where('id', $userUuid)->first();
+
+      $memberType = strtoupper($user->membership->memberType->name);
+      $result = null;
+
+      foreach (MemberShip::cases() as $membership) {
+          if($memberType == $membership->value){
+              $result = Adjustment::where('code', '=', $membership->name)->first();
+          }
+      }
+
+      if ($result) {
+          $result = $result->id;
+      }
+
+      return $result;
   }
 
   public function listAdjustments() {
