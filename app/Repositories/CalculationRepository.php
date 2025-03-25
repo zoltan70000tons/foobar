@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Fee;
 use App\Models\PassengerDiscount;
 use App\Models\Payment;
+use App\Models\Passenger;
 use Log;
 
 class CalculationRepository
@@ -21,67 +22,54 @@ class CalculationRepository
   public function recalculateAllocatedCost($passengerId, $bookingId, $eventId)
   {
     try {
-      $passenger = $this->passengerRepository->find($eventId, $passengerId, $bookingId);
-      $booking = Booking::find($bookingId);
+      // Load all required models and relations
+      $booking = Booking::with(['cabin.category', 'adjustments'])->findOrFail($bookingId);
+      $passenger = Passenger::with(['fees', 'discounts'])->findOrFail($passengerId);
+
       $cabinPrice = $booking->cabin->category->price ?? 0;
-      $passengerFees = Fee::where('passenger_id', $passengerId)->sum('amount');
-      $passengerDiscounts = PassengerDiscount::where('passenger_id', $passengerId)->sum('amount');
 
-      // Fetch all adjustments
-      $adjustments = Adjustment::join('booking_has_adjustments', 'adjustments.id', '=', 'booking_has_adjustments.adjustment_id')
-        ->where('booking_has_adjustments.booking_id', $booking->id)
-        ->get();
+      $totalDiscount = 0;
+      $totalAddon = 0;
+      $totalFees = $passenger->fees->sum('amount');
 
-      $sumOfFixedDiscounts = 0;
-      $sumOfPercentagesDiscounts = 0;
-      $sumOfFixedAddons = 0;
-      $sumOfPercentageAddons = 0;
+      // Process booking-level adjustments (global discounts or addons)
+      foreach ($booking->adjustments as $adjustment) {
+        $adjustmentValue = $adjustment->value;
 
-      foreach ($adjustments as $adjustment) {
-        if ($adjustment->operation === 'FIXED' && $adjustment->type === 'DISCOUNT') {
-          $sumOfFixedDiscounts += $adjustment->value;
-        } elseif ($adjustment->operation === 'PERCENTAGE' && $adjustment->type === 'DISCOUNT') {
-          $sumOfPercentagesDiscounts += $adjustment->value;
-        } elseif ($adjustment->operation === 'FIXED' && $adjustment->type === 'ADDON') {
-          $sumOfFixedAddons += $adjustment->value;
-        } elseif ($adjustment->operation === 'PERCENTAGE' && $adjustment->type === 'ADDON') {
-          $sumOfPercentageAddons += $adjustment->value;
+        // Convert percentage adjustments into actual amounts
+        if ($adjustment->operation === 'PERCENTAGE') {
+          $adjustmentValue = ($cabinPrice * $adjustmentValue) / 100;
+        }
+
+        // Accumulate discounts and addons separately
+        if ($adjustment->type === 'DISCOUNT') {
+          $totalDiscount += $adjustmentValue;
+        } elseif ($adjustment->type === 'ADDON') {
+          $totalAddon += $adjustmentValue;
         }
       }
 
-      $sumOfFixedPassengerDiscount = 0;
-      $sumOfPercentagesPassengerDiscount = 0;
+      // Process passenger-specific discounts
+      foreach ($passenger->discounts as $discount) {
+        $discountValue = $discount->amount;
 
-      foreach ($passengerDiscounts as $discount) {
-        if ($discount->operation === 'FIXED') {
-          $sumOfFixedPassengerDiscount += $discount->amount;
-        } elseif ($discount->operation === 'PERCENTAGE') {
-          $sumOfPercentagesPassengerDiscount += $discount->amount;
+        // Convert percentage-based discounts to actual amounts
+        if ($discount->operation === 'PERCENTAGE') {
+          $discountValue = ($cabinPrice * $discount->amount) / 100;
         }
+
+        $totalDiscount += $discountValue;
       }
 
-      //adding manual discount for passenger
-      $sumOfPercentagesDiscounts += $sumOfPercentagesPassengerDiscount;
-      $sumOfFixedDiscounts += $sumOfFixedPassengerDiscount;
+      // Final calculation:
+      // Start with base price, subtract total discounts, add addons and fees
+      $allocatedCost = max(0, $cabinPrice - $totalDiscount + $totalAddon + $totalFees);
 
-      
-      // Cap discount percentage at 100%
-      $validatedDiscountPercentage = min($sumOfPercentagesDiscounts, 100) / 100;
-
-      // Apply discount first, then fixed discount
-      $discountedPrice = max(0, ($cabinPrice * (1 - $validatedDiscountPercentage)) - $sumOfFixedDiscounts);
-
-      // Apply percentage-based addons
-      $addonsPercentageValue = ($cabinPrice * ($sumOfPercentageAddons / 100));
-      $totalAddons = $addonsPercentageValue + $sumOfFixedAddons;
-
-      // Final total allocated cost
-      $allocatedCost = max(0, $discountedPrice + $passengerFees + $totalAddons);
-
-      // Update the passenger's allocated cost
+      // Update the passenger with the recalculated allocated cost
       $passenger->update(['passenger_allocated_cost' => $allocatedCost]);
 
       return $allocatedCost;
+      
     } catch (\Exception $e) {
       Log::error("Error recalculating allocated cost for passenger {$passengerId}: {$e->getMessage()}");
       return false;

@@ -190,56 +190,73 @@ class PaymentInfoService
     }
 
 
-    public function syncAllocatedCost(Booking $booking)
-    {
-        try {
-            $cabin = $booking->cabin;
-            $category = $cabin->category;
+  public function syncAllocatedCost(Booking $booking)
+  {
+    try {
 
-            // Initialize total cost with the base price of the cabin category
-            $total = $category->price;
+      $cabin = $booking->cabin;
+      $category = $cabin->category;
 
-            // Variables to accumulate different types of adjustments
-            $totalDiscount = 0;
-            $totalAddon = 0;
-            $totalFees = 0;
+      // Start with base cabin category price
+      $basePrice = $category->price;
 
-            // Process adjustments (DISCOUNT and ADDON)
-            foreach ($booking->adjustments as $adjustment) {
-                $adjustmentValue = $adjustment->value;
+      // Track total booking-level adjustments
+      $totalBookingDiscount = 0;
+      $totalBookingAddon = 0;
 
-                // Convert percentage-based adjustments to absolute values
-                if ($adjustment->operation === 'PERCENTAGE') {
-                    $adjustmentValue = ($total * $adjustmentValue) / 100;
-                }
+      // Process booking-level adjustments
+      foreach ($booking->adjustments as $adjustment) {
+        $adjustmentValue = $adjustment->value;
 
-                // Accumulate DISCOUNT and ADDON separately
-                if ($adjustment->type === 'DISCOUNT') {
-                    $totalDiscount += $adjustmentValue; // Discounts are subtracted later
-                } elseif ($adjustment->type === 'ADDON') {
-                    $totalAddon += $adjustmentValue; // Addons are added after discounts
-                }
-            }
-
-            // Apply all discounts first (subtract from total)
-            $total -= $totalDiscount;
-
-            // Then, apply all addons (add to total)
-            $total += $totalAddon;
-
-            foreach ($booking->passengers as $passenger) {
-                $totalPassenger = $total;
-                // Process passenger fees (these are always added to the total)
-                foreach ($passenger->fees as $fee) {
-                    $totalFees += $fee->amount;
-                }
-                // Add fees to the final total
-                $totalPassenger += $totalFees;
-                // Update the passenger's allocated cost in the database
-                $passenger->update(['passenger_allocated_cost' => $totalPassenger]);
-            }
-        } catch (\Exception $e) {
-            throw $e;
+        // Convert percentage to actual amount
+        if ($adjustment->operation === 'PERCENTAGE') {
+          $adjustmentValue = ($basePrice * $adjustmentValue) / 100;
         }
+
+        // Separate discounts and addons
+        if ($adjustment->type === 'DISCOUNT') {
+          $totalBookingDiscount += $adjustmentValue;
+        } elseif ($adjustment->type === 'ADDON') {
+          $totalBookingAddon += $adjustmentValue;
+        }
+      }
+
+      // Subtract booking-level discounts, add booking-level addons
+      $adjustedBasePrice = max(0, $basePrice - $totalBookingDiscount + $totalBookingAddon);
+
+      // Loop through each passenger to calculate their individual allocated cost
+      foreach ($booking->passengers as $passenger) {
+        $passengerTotal = $adjustedBasePrice;
+        $totalPassengerDiscount = 0;
+        $totalPassengerFees = 0;
+
+        // Process passenger-specific discounts
+        foreach ($passenger->discounts as $discount) {
+          $discountValue = $discount->amount;
+
+          if ($discount->operation === 'PERCENTAGE') {
+            $discountValue = ($basePrice * $discount->amount) / 100;
+          }
+
+          $totalPassengerDiscount += $discountValue;
+        }
+
+        // Apply passenger-level discounts
+        $passengerTotal = max(0, $passengerTotal - $totalPassengerDiscount);
+
+        // Process passenger fees (always added)
+        foreach ($passenger->fees as $fee) {
+          $totalPassengerFees += $fee->amount;
+        }
+
+        // Final total = base price with global adjustments - personal discounts + personal fees
+        $passengerTotal += $totalPassengerFees;
+
+        // Update the passenger record
+        $passenger->update(['passenger_allocated_cost' => $passengerTotal]);
+      }
+    } catch (\Exception $e) {
+      throw $e;
     }
+  }
 }
