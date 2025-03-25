@@ -73,7 +73,12 @@ Route::post('/add-pax/{eventId}/{bookingCode}/{token}', [AddPaxController::class
 ]);
 
 // --- CHECK BOOKING ---
-Route::post('/check-booking', [CheckBookingController::class, 'show'])->middleware(['throttle:15,1']);
+Route::post('/check-booking-login', [CheckBookingController::class, 'login'])->middleware(['throttle:15,1']);
+
+Route::middleware(['throttle:25,1', 'check_booking_session'])->group(function () {
+  Route::get('/check-booking', [CheckBookingController::class, 'getBooking']);
+  Route::post('/check-booking-logout', [CheckBookingController::class, 'logout']);
+});
 
 // --- CART ---
 Route::middleware(['throttle:40,1', 'one_booking_per_user'])->group(function () {
