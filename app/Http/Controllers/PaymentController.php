@@ -10,7 +10,6 @@ use App\Services\PaymentService;
 use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Models\Payment;
-use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
@@ -19,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\PaymentInfoService;
 
 class PaymentController extends Controller
 {
@@ -27,14 +27,14 @@ class PaymentController extends Controller
     use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
-    protected CalculationRepository $calculationRepository;
+    protected PaymentInfoService $paymentInfoService;
 
     protected PaymentService $paymentService;
-    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository, PaymentService $paymentService)
+    public function __construct(PassengerRepository $passengerRepository, PaymentService $paymentService, PaymentInfoService $paymentInfoService)
     {
         $this->passengerRepository = $passengerRepository;
-        $this->calculationRepository = $calculationRepository;
         $this->paymentService = $paymentService;
+        $this->paymentInfoService =$paymentInfoService;
     }
 
     public function store(Request $request): Response|RedirectResponse
@@ -62,7 +62,7 @@ class PaymentController extends Controller
                 $validated = $validator->validated();
                 $validated['source'] = 'MANUAL';
                 Payment::create($validated);
-                $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+                $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
 
                 DB::commit();
 
@@ -115,7 +115,7 @@ class PaymentController extends Controller
                 $type = $payment->type;
 
                 $payment->delete();
-                $this->calculationRepository->recalculateBalance($validated['passenger_id'], $booking_id, $event_id);
+                $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
 
                 DB::commit();
 
