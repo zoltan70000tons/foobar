@@ -46,7 +46,7 @@ const TabPanel = ({ children, value, index }) => {
     );
 };
 
-const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
+const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [cabin, setCabin] = useState("");
     const [passenger, setPassenger] = useState({
@@ -292,6 +292,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             onSuccess: () => {
                 showSnackbar('Booking created successfully!', 'success');
                 setActiveStep(0);
+                //TODO close modal
+                close();
             },
             onError: (errors) => {
                 console.error('Error creating booking:', errors);
