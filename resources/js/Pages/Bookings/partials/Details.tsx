@@ -86,6 +86,12 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     console.log('Available cabins updated:', availableCabins);
   }, [availableCabins]);
 
+  const statusPriority = {
+    PARTIALLY_BOOKED: 1,
+    AVAILABLE: 2,
+
+  };
+
   const fetchAvailableCabins = async () => {
     try {
       setLoading(true);
@@ -406,13 +412,34 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             </Typography>
             <Autocomplete
               fullWidth
-              options={availableCabins}
-              getOptionLabel={(option) => option.cabin_number}
+              options={[...availableCabins].sort(
+                (a, b) => statusPriority[a.status] - statusPriority[b.status]
+              )}
+              getOptionLabel={(option) => option.cabin_number + ' ' + option.status}
               value={availableCabins?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
               onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
+              renderOption={(props, option) => (
+                <li {...props} key={option.cabin_number}>
+                  {option.cabin_number} 
+                  <Chip
+                    label={option.status}
+                    size="small"
+                    sx={{ ml: 1 ,color:'white'}}
+                    color={
+                      option.status === 'AVAILABLE'
+                        ? 'success'
+                        : option.status === 'PARTIALLY_BOOKED'
+                          ? 'warning'
+                          : 'default'
+                    }
+                  />
+                </li>
+              )}
               renderInput={(params) => <TextField {...params} label="Available Cabins" />}
               disabled={loading}
             />
+
+
           </Box>
 
         </DialogContent>
