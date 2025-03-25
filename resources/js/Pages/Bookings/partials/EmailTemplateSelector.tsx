@@ -256,7 +256,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
               onChange={(e) => {
                 const selectedObject = JSON.parse(e.target.value);
                 setSelectedTemplate(selectedObject);
-                setSubject(selectedObject.subject);
+                setSubject(selectedObject.subject + ' ' + booking.booking_code);
               }}
               displayEmpty
               fullWidth
