@@ -465,14 +465,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 <TableBody>
                   {/*** Official Ticket Price ***/}
                   <TableRow>
-                    <TableCell>Official Ticket Price:</TableCell>
+                    <TableCell >Official Ticket Price:</TableCell>
                     <TableCell align="right">{formatCurrency(Number(pricePerPerson || 0))}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Discounts ***/}
                   <TableRow>
-                    <TableCell style={{ color: "#4CAF50" }} sx={{ pl: "2rem" }}>
+                    <TableCell sx={{ pl: "2rem", color: "#4CAF50" }}>
                       Total Discounts:
                     </TableCell>
                     <TableCell align="right">
@@ -514,7 +514,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   {/*** Official Ticket Price ***/}
                   <TableRow>
                     <TableCell>Net Ticket Price:</TableCell>
-                    <TableCell align="right">{formatCurrency(Number(pricePerPerson - totalDiscounts || 0))}</TableCell>
+                    <TableCell align="right">{formatCurrency(Number(pricePerPerson - totalDiscounts - totalPassengerDiscounts || 0))}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
@@ -578,7 +578,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   <TableRow>
                     <TableCell>Total Ticket Price:</TableCell>
                     <TableCell align="right">
-                      {formatCurrency(Number(pricePerPerson - totalDiscounts + totalAddons + totalFees || 0))}
+                      {formatCurrency(Number(totalCostAfterAdjustments || 0))}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>

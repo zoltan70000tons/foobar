@@ -46,6 +46,7 @@ class CustomerBookingRepository
       'cabin.category',
       'cabin.cabinType',
       'passengers.payments',
+      'passengers.discounts',
       'event'
     )
       ->where('booking_code', $bookingCode)

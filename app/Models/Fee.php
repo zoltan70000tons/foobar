@@ -18,8 +18,6 @@ class Fee extends Model
     'amount'
   ];
 
-
-
   protected static function boot()
   {
     parent::boot();
@@ -27,7 +25,7 @@ class Fee extends Model
     static::creating(function ($fee) {});
 
     static::created(function ($fee) {
-      $installment = Installment::create(array('due_date' => now(), 'passenger_id' =>  $fee->passenger_id, 'type' => 'FEE',  'fee_id'=> $fee->id));
+      $installment = Installment::create(array('due_date' => now(), 'passenger_id' =>  $fee->passenger_id, 'type' => 'FEE',  'fee_id' => $fee->id));
     });
 
     static::updated(function ($fee) {});
@@ -35,4 +33,8 @@ class Fee extends Model
     static::deleted(function ($fee) {});
   }
 
+  public function passenger()
+  {
+    return $this->belongsTo(Passenger::class, 'passenger_id');
+  }
 }
