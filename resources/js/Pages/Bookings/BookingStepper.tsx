@@ -37,6 +37,7 @@ import { router } from "@inertiajs/react";
 import {FilterList} from "@mui/icons-material";
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 const TabPanel = ({ children, value, index }) => {
     return (
@@ -105,6 +106,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
         id: 'PAY_IN_FULL', value: 'PAY_IN_FULL'
     }];
     const [tabValue, setTabValue] = useState(0);
+    const [createLoader, setCreateLoader] = useState(false)
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -288,11 +290,13 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
             return;
         }
 
+        setCreateLoader(true);
+
         router.post(route('bookings.createManual', { id: 1 }), payload, {
             onSuccess: () => {
                 showSnackbar('Booking created successfully!', 'success');
                 setActiveStep(0);
-                //TODO close modal
+
                 close();
             },
             onError: (errors) => {
@@ -307,6 +311,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
 
                 showSnackbar(message, 'error');
             },
+            onFinish: () => {
+                setCreateLoader(false);
+            }
         });
     };
 
@@ -1044,6 +1051,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                     )}
                 </Box>
             </Box>
+            <LoadingOverlay open={createLoader}/>
         </Box >
     );
 };
