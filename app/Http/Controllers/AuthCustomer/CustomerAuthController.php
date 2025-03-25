@@ -15,6 +15,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\App;
 use App\Models\User;
 use Illuminate\Support\Str;
+use App\Services\UserInfoService;
 
 class CustomerAuthController extends Controller
 {
@@ -91,7 +92,7 @@ class CustomerAuthController extends Controller
    * @return \Illuminate\Http\JsonResponse
    *
    */
-  public function updateProfile(Request $request)
+  public function updateProfile(Request $request, UserInfoService $userInfoService)
   {
     $user = Auth::user();
 
@@ -104,41 +105,23 @@ class CustomerAuthController extends Controller
       'language' => ['required', 'string', 'max:5', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'country' => ['required', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'state' => ['nullable', 'string', 'max:20', 'regex:/^[^<>!@#$%^&*+=]*$/'],
-      'addressLine1' => ['required', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
-      'addressLine2' => ['nullable', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
-      'city' => ['required', 'string', 'max:30', 'regex:/^[^<>!@#$%^&*+=]*$/'],
-      'zipCode' => ['required', 'string', 'max:10', 'regex:/^[^<>!@#$%^&*+=]*$/'],
+      'addressLine1' => ['required', 'string', 'max:50', 'regex:/^[^<>!@$%^*+=]*$/'],
+      'addressLine2' => ['nullable', 'string', 'max:50', 'regex:/^[^<>!@$%^*+=]*$/'],
+      'city' => ['required', 'string', 'max:30', 'regex:/^[^<>!@$%^*+=]*$/'],
+      'zipCode' => ['required', 'string', 'max:10', 'regex:/^[^<>!@$%^*+=]*$/'],
       'emergencyContactName' => ['required', 'string', 'max:75'],
       'emergencyPhoneNumber' => ['required', 'string'],
+      'specialOptions' => ['nullable', 'array'],
+      'specialRequest' => ['nullable', 'string'],
     ]);
 
-    // Update user details
-    $user->detail()->updateOrCreate(
-      ['user_id' => $user->id],
-      [
-        'language' => $validated['language'],
-        'phone' => $validated['phoneNumber'],
-        'emergency_c_name' => $validated['emergencyContactName'],
-        'emergency_c_phone' => $validated['emergencyPhoneNumber'],
-      ]
-    );
+    $result = $userInfoService->updateUserProfile($user, $validated);
 
-    // Update or create customer address
-    $user->customerAddress()->updateOrCreate(
-      ['user_id' => $user->id],
-      [
-        'country' => $validated['country'],
-        'state' => $validated['state'],
-        'address_first' => $validated['addressLine1'],
-        'address_second' => $validated['addressLine2'],
-        'city' => $validated['city'],
-        'postal_code' => $validated['zipCode'],
-      ]
-    );
+    if ($result['success']) {
+      return $this->successResponse(['message' => $result['message']]);
+    }
 
-    return $this->successResponse([
-      'message' => 'Profile updated successfully.',
-    ]);
+    return $this->errorResponse($result['message'], 500);
   }
 
   /**
