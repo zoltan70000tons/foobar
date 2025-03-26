@@ -33,9 +33,9 @@ class CabinCategorySeeder extends Seeder
         $categoryMapping = [
             1 => ['4VL', '4VH', '3V', '2V', '1V', '2T', '1R', '1Q'],
             2 => ['4N', '3N', '2N', '1N', '4M', '3M', '1K', '1L'],
-            3 => ['5D', '4D', '2D', '1D', '4B', '3B', '2B', '1B'],
+            3 => ['5D', '4D', '2D', '1D', '4B', '3B', '2B', '1B', 'SG'],
             4 => ['VP'],
-            5 => ['J4', 'J3', 'GS', 'G3', 'OS', 'GT'],
+            5 => ['J4', 'J3', 'JT','GS', 'G3', 'OS', 'GT'],
         ];
 
         // Iterate through each record in the CSV
