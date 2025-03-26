@@ -156,9 +156,9 @@ class BookingsController extends Controller
       'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
       'passenger.special_request' => ['nullable', 'string', 'max:1000'],
       'passenger.lead_passenger' => ['required', 'boolean'],
-      'passenger.confirmed_booking_email' => ['required', 'boolean'],
+      'passenger.confirmed_booking_email' => ['required', 'accepted'],
       'passenger.travel_info' => ['required', 'boolean'],
-      'passenger.terms_n_cons' => ['required', 'boolean'],
+      'passenger.terms_n_cons' => ['required', 'accepted'],
       'passenger.cabin_conf_accp' => ['required', 'boolean'],
       'passenger.single_t_agreement' => ['required', 'boolean'],
       'passenger.was_on_board' => ['nullable', 'boolean'],
@@ -174,10 +174,11 @@ class BookingsController extends Controller
       $passenger_data = $validated['passenger'];
       $number_of_installments = $validated['number_of_installments'] ?? null;
       $payment_plan = $validated['payment_plan'];
+      $carbonOffset = $validated['carbon_offset'];
 
       return $this->withPermission(
         [Permissions::CreateBookings],
-        function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments) {
+        function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments, $carbonOffset) {
           $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
             $query->where('cabin_number', $cabin_number);
           })->first();
@@ -192,6 +193,60 @@ class BookingsController extends Controller
             $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
             $booking = $bookingData['booking'];
             $this->logRepository->writeOnBooking($booking->id, 'Booking created manually', $user);
+
+            $adjustmentIds = [];
+
+            if ($carbonOffset === true) {
+              $code = 'CARBON_OFFSET';
+              if ($cabin->category?->spec?->getFirstLetterOfCategoryType()) {
+                $code .= '_' . $cabin->category?->spec?->getFirstLetterOfCategoryType();
+              }
+
+              $carbonOffsetFeeId = $this->adjustmentsRepository->getIdByCode($code);
+              if ($carbonOffsetFeeId !== null) {
+                $adjustmentIds[] = $carbonOffsetFeeId;
+              }
+            }
+
+            //Since we are in the BookingsController, it is always a manual booking
+            //Also, since we are in the if($cabin), we don't have to check if cabin was selected
+            //Cabin selection is required in manual booking
+            //Therefore we just add the cabin select fee every time
+            $chooseYourCabinFeeId = $this->adjustmentsRepository->getIdByCode('CHOOSE_YOUR_CABIN');
+            if ($chooseYourCabinFeeId !== null) {
+              $adjustmentIds[] = $chooseYourCabinFeeId;
+            }
+
+            if ($payment_plan === 'PAY_IN_FULL') {
+              $paidInFullDiscountId = $this->adjustmentsRepository->getIdByCode('PAID_IN_FULL');
+              if ($paidInFullDiscountId !== null) {
+                $adjustmentIds[] = $paidInFullDiscountId;
+              }
+            }
+
+            //Since we are in the BookingsController, it is always a manual booking
+            //Every manual booking has to have the TAX adjustment added
+            $taxAddonId = $this->adjustmentsRepository->getIdByCode('TAX');
+            if ($taxAddonId !== null) {
+              $adjustmentIds[] = $taxAddonId;
+            }
+
+            if ($cabin->cabinType?->id === 2 || $cabin->cabinType?->id === 3) {
+              $singleTicketFeeId = $this->adjustmentsRepository->getIdByCode('SINGLE_TICKET_FEE');
+              if ($singleTicketFeeId !== null) {
+                $adjustmentIds[] = $singleTicketFeeId;
+              }
+            }
+
+            if (isset($passenger_data['survivor_number']) && isset($passenger_data['lead_passenger']) && $passenger_data['lead_passenger'] === true) {
+              $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber($passenger_data['survivor_number']);
+
+              if ($membershipLevelAdjustmentId) {
+                $adjustmentIds[] = $membershipLevelAdjustmentId;
+              }
+            }
+
+            $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
           }
         },
         $event_id,
@@ -199,9 +254,11 @@ class BookingsController extends Controller
         $user,
         $passenger_data,
         $payment_plan,
-        $number_of_installments
+        $number_of_installments,
+          $carbonOffset
       );
     } catch (\Exception $e) {
+        dd($e->getMessage());
       $this->logException($e);
     }
   }

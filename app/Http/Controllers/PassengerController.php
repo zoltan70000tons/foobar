@@ -131,7 +131,7 @@ class PassengerController extends Controller
                // $slot->passenger_allocated_cost = 0;
                // $slot->passenger_balance = 0;
                 $slot->was_on_board = 0;
-                $slot->empty_seat = 1;
+                $slot->empty_seat = 0;
                 //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
                 // on passengers table
                 $slot->save();
@@ -216,6 +216,12 @@ class PassengerController extends Controller
                 ->where('booking_id', $validated['bookingId'])
                 ->delete();
 
+            $passenger = Passenger::query()
+                ->where('id', $validated['passengerId'])
+                ->first();
+            $passenger->empty_seat = false;
+            $passenger->save();
+
             $passengers = Passenger::query()
                 ->with(['installments', 'payments', 'fees', 'passengerInvitation'])
                 ->where('booking_id', $validated['bookingId'])
@@ -223,7 +229,6 @@ class PassengerController extends Controller
 
             return response()->json(['passengers' => $passengers]);
         } catch (\Exception $e) {
-            dd($e->getMessage());
             Log::error($e->getMessage());
             return response()->json('error');
         }

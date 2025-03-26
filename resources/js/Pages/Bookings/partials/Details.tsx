@@ -49,7 +49,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import PinIcon from '@mui/icons-material/Pin';
 import PaymentIcon from '@mui/icons-material/Payment';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { formatDeckNumber } from "@/Helpers/format";
+import ClearIcon from '@mui/icons-material/Clear'
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
@@ -65,6 +65,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
+  const [availableDecks, setAvailableDecks] = useState([]);
 
 
   useEffect(() => {
@@ -79,7 +80,17 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
 
   useEffect(() => {
     if (open) fetchAvailableCabins();
-  }, [cabinCategory, selectedDeck, onlyBalcony, selectedLocation, onlyAccessible]);
+  }, [cabinCategory, selectedDeck, onlyBalcony, selectedLocation, onlyAccessible, advancedFilters]);
+
+  useEffect(() => {
+    console.log('Available cabins updated:', availableCabins);
+  }, [availableCabins]);
+
+  const statusPriority = {
+    PARTIALLY_BOOKED: 1,
+    AVAILABLE: 2,
+
+  };
 
   const fetchAvailableCabins = async () => {
     try {
@@ -94,18 +105,24 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           accessible: onlyAccessible,
         },
       });
-      setAvailableCabins(response.data.cabins || []);
       setCabinNumber(null);
-      if(response?.data?.error){
+      if (response?.data?.error) {
         showSnackbar(response.data.error, 'error');
       }
+      const decks = Array.isArray(response?.data?.cabins)
+        ? [...new Set(response.data.cabins.map(cabin => cabin.deck))]
+        : [];
+      setAvailableCabins(response?.data?.cabins);
+      setAvailableDecks(decks);
+
     } catch (error) {
-      if(error.response?.data?.error){
+      if (error.response?.data?.error) {
         showSnackbar(error.response.data.error, 'error');
       }
       //showSnackbar("Error fetching available cabins!", "error");
       console.error("Error fetching available cabins:", error);
       setAvailableCabins([]);
+      setAvailableDecks([]);
     } finally {
       setLoading(false);
     }
@@ -269,46 +286,6 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                  {/* <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center">
-                        <PinIcon sx={{ mr: 1 }} /> Deck:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                    {booking?.cabin?.cabin_number}
-                    </TableCell>
-                  </TableRow> */}
-
-                  {/* <TableRow>
-                    <TableCell>Cabin Type</TableCell>
-                    <TableCell>{booking?.cabin?.cabin_type?.cabin_type}</TableCell>
-                    <TableCell align="right">
-                      <IconButton color="secondary" disabled={!editMode} onClick={handleEditClick}>
-                        <EditIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow> */}
-                  {/* <TableRow>
-                    <TableCell>Category</TableCell>
-                    <TableCell>{booking?.cabin?.category?.title}</TableCell>
-                  </TableRow> */}
-                  {/* <TableRow>
-                    <TableCell>Number</TableCell>
-                    <TableCell>{booking?.cabin?.cabin_number}</TableCell>
-                  </TableRow>*/}
-                  {/* <TableRow> 
-                    <TableCell>Deck</TableCell>
-                    <TableCell>{booking?.cabin?.deck}</TableCell>
-                  </TableRow>*/}
-                  {/* <TableRow> 
-                    <TableCell>Location</TableCell>
-                    <TableCell>{booking?.cabin?.location}</TableCell>
-                  </TableRow> */}
-                  {/* <TableRow>
-                    <TableCell>Capacity</TableCell>
-                    <TableCell>{booking?.cabin?.category?.capacity}</TableCell>
-                  </TableRow> */}
                 </TableBody>
               </Table>
             </Grid>
@@ -362,22 +339,33 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             <ToggleButton
               value="advancedFilters"
               selected={advancedFilters}
-              onChange={() => setAdvancedFilters(!advancedFilters)}
+              onChange={() => {
+                const next = !advancedFilters;
+                setAdvancedFilters(next);
+                if (next) {
+                } else {
+                  setSelectedDeck(null);
+                  setAvailableCabins(null);
+                  setOnlyAccessible(false);
+                  setOnlyBalcony(false);
+                }
+              }}
               disabled={loading}
+              sx={{
+                color: advancedFilters ? 'error.main' : 'inherit',
+                borderColor: advancedFilters ? 'error.main' : 'default',
+              }}
             >
-              <FilterListIcon />
-              Advanced Filters
+              {advancedFilters ? <ClearIcon /> : <FilterListIcon />}
+              {advancedFilters ? 'Clear Filters' : 'Advanced Filters'}
             </ToggleButton>
           </Box>
           {advancedFilters && (
             <>
               <Autocomplete
                 fullWidth
-                options={Object.values(DeckEnum)
-                  .filter((value) =>
-                    typeof value === "number" && formatDeckNumber(cabinCategory.decks).includes(value)
-                  )}
-                getOptionLabel={(option) => `Deck ${option}`}
+                options={availableDecks}
+                getOptionLabel={(option) => option ? `Deck ${option}` : ''}
                 value={selectedDeck}
                 onChange={(event, newValue) => setSelectedDeck(newValue)}
                 renderInput={(params) => <TextField {...params} label="Cabin Deck" />}
@@ -394,21 +382,18 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                 }
                 label="Only Balcony"
               />
-              <FormControl fullWidth sx={{ mt: 2 }}>
-                <InputLabel id="location-label">Location</InputLabel>
-                <Select
-                  labelId="location-label"
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  disabled={loading}
-                >
-                  {Object.values(LocationEnum).map((location) => (
-                    <MenuItem key={location} value={location}>
-                      {location}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                fullWidth
+                options={Object.values(LocationEnum)}
+                getOptionLabel={(option) => option || ''}
+                value={selectedLocation}
+                onChange={(event, newValue) => setSelectedLocation(newValue)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Location" />
+                )}
+                sx={{ mt: 2 }}
+                disabled={loading}
+              />
               <FormControlLabel
                 control={
                   <Switch
@@ -427,13 +412,34 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             </Typography>
             <Autocomplete
               fullWidth
-              options={availableCabins}
-              getOptionLabel={(option) => option.cabin_number}
-              value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
+              options={[...availableCabins].sort(
+                (a, b) => statusPriority[a.status] - statusPriority[b.status]
+              )}
+              getOptionLabel={(option) => option.cabin_number + ' ' + option.status}
+              value={availableCabins?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
               onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
+              renderOption={(props, option) => (
+                <li {...props} key={option.cabin_number}>
+                  {option.cabin_number} 
+                  <Chip
+                    label={option.status}
+                    size="small"
+                    sx={{ ml: 1 ,color:'white'}}
+                    color={
+                      option.status === 'AVAILABLE'
+                        ? 'success'
+                        : option.status === 'PARTIALLY_BOOKED'
+                          ? 'warning'
+                          : 'default'
+                    }
+                  />
+                </li>
+              )}
               renderInput={(params) => <TextField {...params} label="Available Cabins" />}
               disabled={loading}
             />
+
+
           </Box>
 
         </DialogContent>

@@ -13,6 +13,7 @@ use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\DB;
+use App\Services\PaymentInfoService;
 
 class FeeController extends Controller
 {
@@ -21,11 +22,12 @@ class FeeController extends Controller
     use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
-    protected CalculationRepository $calculationRepository;
-    public function __construct(PassengerRepository $passengerRepository, CalculationRepository $calculationRepository)
+    protected PaymentInfoService $paymentInfoService;
+
+    public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService)
     {
         $this->passengerRepository = $passengerRepository;
-        $this->calculationRepository =$calculationRepository;
+        $this->paymentInfoService =$paymentInfoService;
     }
 
     public function store(Request $request)
@@ -41,7 +43,7 @@ class FeeController extends Controller
 
                 ]);
                 Fee::create($validated);
-                $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
+                $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Fee',
@@ -83,7 +85,7 @@ class FeeController extends Controller
                 $installment = Installment::where('fee_id', $fee->id)->first();
                 $installment->delete();
                 $fee->delete();
-                $this->calculationRepository->recalculateAllocatedCost($validated['passenger_id'], $booking_id, $event_id);
+                $this->paymentInfoService->syncAllocatedCost($booking);
 
                 DB::commit();
 

@@ -230,6 +230,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     return "#FFF59D";
   };
 
+  console.log(passengers)
+
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
@@ -282,9 +284,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                       {passenger.lead_passenger ? (
                         <Chip label="Lead Passenger" size="small" color="warning" />
                       ) : passenger.empty ? (
-                        <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
-                      ) : (
                         <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />
+                      ) : (
+                        <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
                       )}
                     </>
                   )}

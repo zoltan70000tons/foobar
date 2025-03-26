@@ -68,6 +68,7 @@ class SendEmailJob implements ShouldQueue
 
             // Get email subject
             $subject = \DB::table('email_templates')->where('id', $this->templateId)->value('subject');
+            $subject = $subject . ' '. $this->booking->booking_code;
 
             // Attach booking PDF if necessary
             if ($this->bookingPdf) {

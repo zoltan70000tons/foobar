@@ -50,9 +50,9 @@ class EventSeeder extends Seeder
         'description' =>
           '60 Bands, 4 Days, 1 Cruise Ship, and only 3000 Tickets. This is 70000TONS OF METAL®, The Original, The World’s Biggest Heavy Metal Cruise!',
         'image' => env('AWS_URL') . '/events/70000TONS_OF_METAL_2026.jpg',
-        'address' => 'Miami, Florida - Labadee, Haiti',
-        'start_date' => '2026-01-30',
-        'end_date' => '2026-02-04',
+        'address' => 'Miami, Florida - Labadee',
+        'start_date' => '2026-01-29',
+        'end_date' => '2026-02-02',
         'status' => 'PRE-SALE',
         'created_at' => Carbon::now(),
         'organization_id' => env('ORGANIZATION_ID', 1),

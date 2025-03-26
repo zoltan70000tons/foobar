@@ -30,6 +30,7 @@ import Tags from "./Tags";
 import EmailTemplateSelector from "./EmailTemplateSelector";
 import { LoadingButton } from "@mui/lab";
 import SaveIcon from '@mui/icons-material/Save';
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 
 
@@ -49,10 +50,12 @@ const Status = ({ event, booking, editMode, users }) => {
   const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>N</Avatar>;
   const { showSnackbar } = useSnackbar();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const handleCancelDialogOpen = () => setIsCancelDialogOpen(true);
-  const handleCancelDialogClose = () => setIsCancelDialogOpen(false);
   const [activeTab, setActiveTab] = useState(0);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleCancelDialogOpen = () => setIsCancelDialogOpen(true);
+  const handleCancelDialogClose = () => setIsCancelDialogOpen(false);
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedStatus(event.target.value as StatusEnum[]);
@@ -102,6 +105,9 @@ const Status = ({ event, booking, editMode, users }) => {
 
 
   const handleCancelBooking = () => {
+    setLoading(true);
+    setIsCancelDialogOpen(false);
+
     router.post(
       route("bookings.cancel", { id: event.id }),
       { booking_id: booking.id },
@@ -112,6 +118,9 @@ const Status = ({ event, booking, editMode, users }) => {
         onError: (errors) => {
           setIsCancelDialogOpen(false);
         },
+        onFinish: () => {
+          setLoading(false);
+        }
       }
     );
   };
@@ -265,6 +274,7 @@ const Status = ({ event, booking, editMode, users }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <LoadingOverlay open={loading}/>
     </>
   );
 };

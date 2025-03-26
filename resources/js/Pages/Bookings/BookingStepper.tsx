@@ -36,6 +36,8 @@ import { DeckEnum } from "@/enums/DeckEnum";
 import { router } from "@inertiajs/react";
 import {FilterList} from "@mui/icons-material";
 import Country from "@/Components/Country";
+import PhoneNumber from "@/Components/PhoneNumber";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 const TabPanel = ({ children, value, index }) => {
     return (
@@ -45,7 +47,7 @@ const TabPanel = ({ children, value, index }) => {
     );
 };
 
-const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
+const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [cabin, setCabin] = useState("");
     const [passenger, setPassenger] = useState({
@@ -104,6 +106,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
         id: 'PAY_IN_FULL', value: 'PAY_IN_FULL'
     }];
     const [tabValue, setTabValue] = useState(0);
+    const [createLoader, setCreateLoader] = useState(false)
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -144,7 +147,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                     passenger.email &&
                     passenger.dob &&
                     passenger.gender &&
-                    passenger.payment_method
+                    passenger.payment_method &&
+                    passenger.confirmed_booking_email &&
+                    passenger.terms_n_cons
                 );
             case 2:
                 return true;
@@ -285,10 +290,14 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
             return;
         }
 
+        setCreateLoader(true);
+
         router.post(route('bookings.createManual', { id: 1 }), payload, {
             onSuccess: () => {
                 showSnackbar('Booking created successfully!', 'success');
                 setActiveStep(0);
+
+                close();
             },
             onError: (errors) => {
                 console.error('Error creating booking:', errors);
@@ -302,6 +311,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
 
                 showSnackbar(message, 'error');
             },
+            onFinish: () => {
+                setCreateLoader(false);
+            }
         });
     };
 
@@ -644,13 +656,11 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
-                                    label="Phone"
-                                    variant="outlined"
-                                    fullWidth
-                                    size="small"
-                                    value={passenger?.phone || ""}
-                                    onChange={(e) => onChange("phone", e.target.value)}
+                                <PhoneNumber
+                                  value={ passenger?.phone || "" }
+                                  forceDialCode={ true }
+                                  name={ "phone" }
+                                  onChange={(e) => onChange("phone", e)}
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
@@ -727,14 +737,12 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <TextField
-                                    label="Emergency Contact Phone"
-                                    variant="outlined"
-                                    fullWidth
-                                    size="small"
-                                    value={passenger?.emergency_c_phone || ""}
-                                    onChange={(e) => onChange("emergency_c_phone", e.target.value)}
-
+                                <PhoneNumber
+                                  label="Emergency Contact Phone"
+                                  value={ passenger?.emergency_c_phone || "" }
+                                  forceDialCode={ true }
+                                  name={ "emergency_c_phone" }
+                                  onChange={(e) => onChange("emergency_c_phone", e)}
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
@@ -973,7 +981,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                                             <TableCell>
                                                 <strong>First Address:</strong>
                                             </TableCell>
-                                            <TableCell>{passenger.first_address}</TableCell>
+                                            <TableCell>{passenger.address_first}</TableCell>
                                         </TableRow>
                                         <TableRow>
                                             <TableCell>
@@ -1043,6 +1051,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories }) => {
                     )}
                 </Box>
             </Box>
+            <LoadingOverlay open={createLoader}/>
         </Box >
     );
 };

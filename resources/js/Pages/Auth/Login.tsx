@@ -1,8 +1,9 @@
-import { useEffect, FormEventHandler } from 'react';
+import React, { useEffect, FormEventHandler, useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { TextField, Button, Box, Checkbox, Stack, Alert, Container } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import GuestLayout from '@/Layouts/GuestLayout';
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 export default function Login({ status, canResetPassword }: { status?: string, canResetPassword: boolean }) {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -10,15 +11,23 @@ export default function Login({ status, canResetPassword }: { status?: string, c
     password: '',
     remember: false,
   });
+  const [loading, setLoading] = useState(false);
 
   const submit: FormEventHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
     try {
-      const response = await post(route('login'), {
+      await post(route('login'), {
         onSuccess: () => {
            window.location.href = route('dashboard');
         },
+        onError: (err) => {
+          console.error('Login error:', err);
+        },
+        onFinish: () => {
+          setLoading(false);
+        }
       });
     } catch (err) {
       console.error('Login error:', err);
@@ -98,6 +107,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
           </form>
         </Box>
       </Container>
+      <LoadingOverlay open={loading}/>
     </GuestLayout>
   );
 }

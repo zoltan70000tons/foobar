@@ -15,7 +15,9 @@ import {
   DialogContentText,
   TextField,
   FormControl,
-  Grid
+  Grid,
+  Checkbox,
+  FormControlLabel
 } from "@mui/material";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
@@ -28,6 +30,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import UnlayerEditor from "@/Components/UnlayerEditor";
+import { Label } from "@mui/icons-material";
 
 const LANGUAGES = ["en", "es", "de"];
 
@@ -37,12 +40,15 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
-  const [isLoading,setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [subject, setSubject] = useState<string>("");
+  const [selectedPassenger, setSelectedPassenger] = useState<string>("");
+  const [isCheckboxEnabled, setIsCheckboxEnabled] = useState(false);
+
 
   const { hasPermission } = usePermissions();
 
@@ -86,8 +92,10 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
 
     try {
       const response = await fetch(
-        `/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}`
+        `/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}&single_email=${isCheckboxEnabled ? 1 : 0}` +
+        `${selectedPassenger?.id ? `&passenger_id=${selectedPassenger.id}` : ''}`
       );
+
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -181,6 +189,10 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
       formData.append("booking_id", booking.id);
       formData.append("template_id", selectedTemplate.id);
       formData.append("subject", subject)
+      formData.append("single_email", isCheckboxEnabled ? 1 : 0);
+      if (isCheckboxEnabled) {
+        formData.append("passenger_id", selectedPassenger.id);
+      }
       attachments.forEach((file) => formData.append("attachments[]", file));
 
       try {
@@ -191,15 +203,15 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
         });
         const data = await response.json();
         if (data.success) {
-          showSnackbar("✅ Email sent successfully!", "success");
+          showSnackbar("Email sent successfully!", "success");
           setAttachments([]);
         } else {
-          showSnackbar("❌ Failed to send email.", "error");
-          throw new Error("❌ Failed to send email.");
+          showSnackbar("Failed to send email.", "error");
+          throw new Error("Failed to send email.");
         }
       } catch (error) {
-        showSnackbar("⚠️ Error sending email, please try again.", "error");
-        //alert("⚠️ Error sending email, please try again.");
+        showSnackbar("Error sending email, please try again.", "error");
+        //alert("Error sending email, please try again.");
         console.error("Error sending email:", error);
       } finally {
         setIsSending(false);
@@ -216,7 +228,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <Grid container spacing={2}>
         {/* Language Selector */}
-        <Grid item xs={4}>
+        <Grid item xs={12} md={1}>
           <Select
             size="small"
             value={lang}
@@ -233,7 +245,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
         </Grid>
 
         {/* Template Selector */}
-        <Grid item xs={4}>
+        <Grid item xs={12} md={5}>
           {isSending ? (
             <CircularProgress />
           ) : (
@@ -244,7 +256,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
               onChange={(e) => {
                 const selectedObject = JSON.parse(e.target.value);
                 setSelectedTemplate(selectedObject);
-                setSubject(selectedObject.subject);
+                setSubject(selectedObject.subject + ' ' + booking.booking_code);
               }}
               displayEmpty
               fullWidth
@@ -260,6 +272,51 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
             </Select>
           )}
         </Grid>
+        <Grid item xs={2}>
+          <FormControlLabel
+            disabled={canSendEmail}
+            control={
+              <Checkbox
+                checked={isCheckboxEnabled}
+                onChange={(e) => {
+                  setIsCheckboxEnabled(e.target.checked);
+                  if (!e.target.checked) {
+                    setSelectedPassenger("");
+                  }
+                }}
+              />
+            }
+            label="Passenger Selector"
+          />
+        </Grid>
+        {isCheckboxEnabled && (
+          <Grid item xs={4}>
+            {isSending ? (
+              <CircularProgress />
+            ) : (
+              <Select
+                size="small"
+                disabled={canSendEmail}
+                value={selectedPassenger ? JSON.stringify(selectedPassenger) : ""}
+                onChange={(e) => {
+                  const selectedObject = JSON.parse(e.target.value);
+                  setSelectedPassenger(selectedObject);
+                }}
+                displayEmpty
+                fullWidth
+              >
+                <MenuItem value="" disabled>
+                  Select Passenger
+                </MenuItem>
+                {booking.passengers.map((passenger) => (
+                  <MenuItem key={passenger.id} value={JSON.stringify(passenger)}>
+                    {passenger.email}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          </Grid>
+        )}
 
         {/* Button */}
         <Grid item xs={4}>

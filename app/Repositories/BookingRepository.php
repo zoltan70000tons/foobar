@@ -375,8 +375,6 @@ class BookingRepository implements BookingInterface
 
     FacadesDB::beginTransaction();
     try {
-      $selectedCabin = null;
-
       if ($temporaryBookingId) {
         $tempReservation = TemporaryReservation::find($temporaryBookingId);
         if (!$tempReservation) {
@@ -399,25 +397,6 @@ class BookingRepository implements BookingInterface
 
       if (!$selectedCabin) {
         throw new \Exception('Cabin not found.');
-        $availableCabins = $this->filterCabins(
-          $selectedCabin->cabin_type_id,
-          $selectedCabin->cabin_category_id,
-          null,
-          true
-        );
-
-        Log::info('3. availableCabins', ['availableCabins' => $availableCabins]);
-
-        if (is_array($availableCabins) && array_key_exists('error', $availableCabins)) {
-          throw new \Exception($availableCabins['error']);
-        }
-        $availableCabins = $availableCabins['cabins']->toArray();
-        $cabinNumberToSearch = $selectedCabin->cabin_number;
-        $cabinNumbers = array_column($availableCabins, 'cabin_number');
-        $available = array_search($cabinNumberToSearch, $cabinNumbers) !== false;
-        if (!$available) {
-          throw new \Exception('Cabin not available.');
-        }
       }
 
       $booking = new Booking();
@@ -442,7 +421,7 @@ class BookingRepository implements BookingInterface
       }
       // JG  ---- end Installments
 
-      if ($passenger && $booking) {
+      if ($passenger) {
         // JG  ---- start Create adjustments
         $adjustmentIds = collect($passengerData['addons'] ?? [])
           ->filter(fn($addon) => isset($addon['id']))
@@ -459,6 +438,7 @@ class BookingRepository implements BookingInterface
         $this->paymentInfoService->syncAllocatedCost($booking);
 
         DB::commit();
+
         return [
           'message' => 'Booking created successfully.',
           'booking' => $booking,

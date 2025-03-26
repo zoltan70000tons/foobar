@@ -23,7 +23,7 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         <DialogTitle>New Booking</DialogTitle>
         <DialogContent>
-          <BookingStepper cabinTypes={cabinTypes} cabinCategories={cabinCategories}/>
+          <BookingStepper cabinTypes={cabinTypes} cabinCategories={cabinCategories} close={handleClose} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} variant="outlined" color="secondary">

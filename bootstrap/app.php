@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
       'one_booking_per_user' => \App\Http\Middleware\OneBookingPerUser::class,
       'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
       'allowed_domains' => \App\Http\Middleware\CheckAllowedDomains::class,
+      'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
     ]);
 
     $middleware->web(

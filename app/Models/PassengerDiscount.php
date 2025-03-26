@@ -19,5 +19,8 @@ class PassengerDiscount extends Model
     'operation'
   ];
 
-
+  public function passenger()
+  {
+    return $this->belongsTo(Passenger::class, 'passenger_id');
+  }
 }
