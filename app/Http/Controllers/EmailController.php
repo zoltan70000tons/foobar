@@ -3,30 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
-use App\Mail\BookingEmail;
+
 use App\Models\Booking;
 use App\Models\Passenger;
-use App\Models\User;
-use App\Models\UserDetail;
-use App\Repositories\PaymentRepository;
 use App\Services\EmailTemplateService;
-use App\Services\MailService;
-use App\Services\PaymentInfoService;
-use App\Services\PaymentService;
 use App\Services\PDFService;
 use App\Traits\BookingLogTrait;
 use App\Traits\HandlePermissions;
-use Blade;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Inertia\Inertia;
-use Inertia\Response;
 use Illuminate\Support\Facades\Validator;
 use Log;
-use View;
-use App\Mail\SendPassengerMail;
-use App\Repositories\PassengerRepository;
 
 class EmailController extends Controller
 {
@@ -66,6 +53,7 @@ class EmailController extends Controller
           $passengers = $booking->passengers;
           $content = $validated['email_content'];
           $subject = $validated['subject'];
+          $templateId = $validated['template_id'];
           $preparedAttachments = [];
           foreach ($request->file('attachments', []) as $file) {
             $path = $file->store('temp_attachments');
@@ -77,14 +65,31 @@ class EmailController extends Controller
           }
           if ($validated['single_email'] == true) {
             $passenger = Passenger::find($validated['passenger_id']);
-            Mail::to($passenger->email)->queue(
-                new SendPassengerMail($subject, $content, $preparedAttachments)
+            $this->emailTemplateService->sendEmail(
+              $templateId,
+              $booking,
+              $passenger,
+              $preparedAttachments,
+              [],
+              false,
+              false,
+              $content,
+              $subject
             );
           } else {
             foreach ($passengers as $passenger) {
-                Mail::to($passenger->email)->queue(
-                    new SendPassengerMail($subject, $content, $preparedAttachments)
-                );
+              $this->emailTemplateService->sendEmail(
+                $templateId,
+                $booking,
+                $passenger,
+                $preparedAttachments,
+                [],
+                false,
+                false,
+                false,
+                $content,
+                $subject
+              );
             }
           }
           $this->saveBookingLog($booking->id, 'Email Sent to Costumer', $validated['subject']);
