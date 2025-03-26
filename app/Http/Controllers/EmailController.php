@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Validator;
 use Log;
 use View;
 use App\Mail\SendPassengerMail;
+use App\Repositories\PassengerRepository;
 
 class EmailController extends Controller
 {
@@ -178,44 +179,17 @@ class EmailController extends Controller
     return response()->json(['design' => $unlayerJson]);
   }
 
-  public function showEmail(Request $request)
-  {
-    $booking_id = $request->input('id');
-    $booking = Booking::find($booking_id);
-    $passenger = $booking->passengers->first();
-    $lead = $booking->passengers->where('lead_passenger', true)->first();
-    $user = User::where('email', $lead->email)->first();
-    $detail = $user->detail;
-    // dd($detail);
-    $lang = $detail->language ?? 'en';
-    dd($lang);
-    // dd($passenger->getNextInstallmentAttribute());
+  //for testing
 
-    // //$service = new EmailTemplateService();
-    try {
-      $user = User::find('32065109-3d42-3736-aab6-c23b1b407c81'); // Cambia el ID por un usuario válido
-      $token = $user->createToken('API Token')->plainTextToken;
-
-      echo $token;
-      $service = new EmailTemplateService();
-      $bookingConfirmationTemplate = $service->getProcessedTemplate($booking_id, 50, $passenger, [
-        'PAID_AMOUNT' => 'USD 1000.00',
-      ]);
-      echo $bookingConfirmationTemplate;
-      //$email = $service->sendEmail($bookingConfirmationTemplate,$booking, [], true, true);
-      // dd($email);
-    } catch (\Exception $e) {
-      dd($e->getMessage());
-    }
-
-    $service = new PDFService();
-    // paymentService = new PaymentInfoService();
-    //$paymentService->syncAllocatedCost($booking, Passenger::find(1));
-
-    // $pdf = $service->generateBookingConfirmationPDF($booking);
-    // $pdf->setPaper('letter', 'potrait');
-    // return $pdf->stream();
-  }
+  // public function showEmail(Request $request)
+  // {
+  //   $booking_id = $request->input('id');
+  //   $booking = Booking::find($booking_id);
+  //   $service = new PDFService();
+  //    $pdf = $service->generateBookingConfirmationPDF($booking);
+  //    $pdf->setPaper('letter', 'potrait');
+  //    return $pdf->stream();
+  // }
 
   public function generateBookingPDF(Request $request)
   {
