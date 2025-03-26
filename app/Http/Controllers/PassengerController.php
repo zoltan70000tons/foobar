@@ -73,12 +73,17 @@ class PassengerController extends Controller
             ], 422);
         }
 
-        $existingBooking = Booking::whereHas('passengers', function ($query) use ($validated) {
-            $query->where('survivor_number', '=', $validated['survivor_number']);
-        })
-            ->where('id', '!=', $booking->id)
-            ->where('event_id', '=', $booking->event_id)
-            ->first();
+        if (!empty($validated['survivor_number'])) {
+            $existingBooking = Booking::whereHas('passengers', function ($query) use ($validated) {
+                $query->where('survivor_number', '=', $validated['survivor_number']);
+            })
+                ->where('id', '!=', $booking->id)
+                ->where('event_id', '=', $booking->event_id)
+                ->first();
+        } else {
+            $existingBooking = null;
+        }
+
 
         if ($existingBooking) {
             return response()->json([
