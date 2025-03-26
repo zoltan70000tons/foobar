@@ -30,7 +30,7 @@ trait CabinFilter
 
     $cabinsQuery = Cabin::with(['category.spec']) // Eager load spec for deck filtering: https://laravel.com/docs/11.x/pennant#eager-loading
       ->where('cabin_type_id', $cabinTypeId)
-      ->when($onlyAvailable, function ($query, $cabinTypeId) {
+      ->when($onlyAvailable, function ($query) use($cabinTypeId){
         // Only return cabins that are available or PARTIALLY_BOOKED
         if ($cabinTypeId == 1) {
           $query->where('status', StatusCabin::AVAILABLE->value);
