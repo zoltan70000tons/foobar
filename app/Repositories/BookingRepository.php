@@ -428,10 +428,12 @@ class BookingRepository implements BookingInterface
           ->map(fn($addon) => $addon['id'])
           ->all();
 
-        $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber($passengerData['survivor_number']);
+        $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber(
+          $passengerData['survivor_number']
+        );
 
         if ($membershipLevelAdjustmentId) {
-            $adjustmentIds[] = $membershipLevelAdjustmentId;
+          $adjustmentIds[] = $membershipLevelAdjustmentId;
         }
 
         $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);

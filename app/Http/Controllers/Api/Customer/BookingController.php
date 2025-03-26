@@ -73,7 +73,7 @@ class BookingController extends Controller
       $eventId = (int) $validated['cart']['event_id'];
       $paymentPlan = $validated['cart']['payment_plan'];
       $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ? $validated['cart']['number_of_installments'] : null;
-      $bedConfig = $cart['cabin_type'] === 'private-cabin' ? $validated['bedConfig'] : 'SEPARATED';
+      $bedConfig = $cart['cabin_type'] === 'private-cabin' ? $validated['bed_config'] : 'SEPARATED';
 
       // Process booking data
       $bookingData = [
@@ -105,24 +105,24 @@ class BookingController extends Controller
       $passengerData = [
         'confirmed_booking_email' => false,
         'lead_passenger' => true,
-        'payment_method' => $validated['paymentMethod'],
-        'address_first' => $validated['addressLine1'],
-        'address_second' => $validated['addressLine2'],
+        'payment_method' => $validated['payment_method'],
+        'address_first' => $validated['address_line_1'],
+        'address_second' => $validated['address_line_2'],
         'city' => $validated['city'],
         'lang' => $language,
         'state' => $validated['state'],
-        'postal_code' => $validated['zipCode'],
+        'postal_code' => $validated['zip_code'],
         'country' => $validated['country'],
         'email' => $validated['email'],
-        'phone' => $validated['phoneNumber'],
-        'emergency_c_name' => $validated['emergencyContactName'],
-        'emergency_c_phone' => $validated['emergencyPhoneNumber'],
-        'special_options' => $validated['specialOptions'],
-        'special_request' => $validated['specialRequest'] ?? null,
+        'phone' => $validated['phone_number'],
+        'emergency_c_name' => $validated['emergency_contact_name'],
+        'emergency_c_phone' => $validated['emergency_phone_number'],
+        'special_options' => $validated['special_options'],
+        'special_request' => $validated['specia_request'] ?? null,
         'newsletter' => $validated['newsletter'],
-        'travel_info' => $validated['travelInfo'],
+        'travel_info' => $validated['travel_info'],
         'hear_about' => $validated['info'],
-        'referral_details' => $validated['referralDetails'],
+        'referral_details' => $validated['referral_details'],
         'terms_n_cons' => $validated['terms'],
         'cabin_conf_accp' => $validated['cart']['cabin_conf_accp'],
         'single_t_agreement' => $validated['cart']['single_t_agreement'],
@@ -449,7 +449,7 @@ class BookingController extends Controller
     $validated = $request->validated();
 
     $passengerOrder = $request->input('passenger_order');
-    $survivorNumber = $request->input('survivorNumber') ?? null;
+    $survivorNumber = $request->input('survivor_number') ?? null;
 
     if ($survivorNumber) {
       $survivorNumberExist = SurvivorNumber::where('survivor_number', $survivorNumber)->exists();
