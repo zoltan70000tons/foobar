@@ -3,23 +3,12 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Booking;
-use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\StorePassengerRequest;
 
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
-use App\Helpers\PriceCalculation;
-use App\Interfaces\PassengerInterface;
-use App\Models\Adjustment;
-use App\Models\CabinType;
-use App\Models\Event;
 use App\Models\PassengerInvitation;
-use App\Mail\CustomerConfirmationBooking;
-use App\Models\Passenger;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 
 class InvitationController extends Controller
@@ -118,17 +107,17 @@ class InvitationController extends Controller
       'dob' => $user->detail->dob,
       'gender' => $user->detail->gender,
       'citizenship' => $user->detail->citizenship,
-      'address_first' => $validated['addressLine1'],
-      'address_second' => $validated['addressLine2'],
+      'address_first' => $validated['address_line_1'],
+      'address_second' => $validated['address_line_2'],
       'city' => $validated['city'],
       'state' => $validated['state'],
-      'postal_code' => $validated['zipCode'],
+      'postal_code' => $validated['zip_code'],
       'country' => $validated['country'],
       'email' => $validated['email'],
-      'phone' => $validated['phoneNumber'],
-      'emergency_c_name' => $validated['emergencyContactName'],
-      'emergency_c_phone' => $validated['emergencyPhoneNumber'],
-      'special_request' => $validated['specialRequest'],
+      'phone' => $validated['phone_number'],
+      'emergency_c_name' => $validated['emergency_contact_name'],
+      'emergency_c_phone' => $validated['emergency_phone_number'],
+      'special_request' => $validated['special_request'],
     ];
 
     // create passenger with booking id

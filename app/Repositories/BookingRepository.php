@@ -217,9 +217,7 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id)
-  {
-  }
+  function delete($id) {}
 
   function assignAgent($code, $user)
   {
@@ -448,12 +446,14 @@ class BookingRepository implements BookingInterface
           ->map(fn($addon) => $addon['id'])
           ->all();
 
-        $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber($passengerData['survivor_number']);
+        $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber(
+          $passengerData['survivor_number']
+        );
 
         // Check if the adjustment is already in the list
         if ($membershipLevelAdjustmentId && !in_array($membershipLevelAdjustmentId, $adjustmentIds)) {
           $adjustmentIds[] = $membershipLevelAdjustmentId;
-      }
+        }
 
         $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
         // JG  ---- end Create adjustments
