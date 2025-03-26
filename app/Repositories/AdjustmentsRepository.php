@@ -80,4 +80,51 @@ class AdjustmentsRepository
   public function listAdjustments() {
     return Adjustment::all();
   }
+
+  public function getSingleTicketFeeId(): int
+  {
+      return Adjustment::query()
+          ->where('code', 'SINGLE_TICKET_FEE')
+          ->value('id');
+  }
+
+  public function getPaidInFullId(): int
+  {
+      return Adjustment::query()
+          ->where('code', 'PAID_IN_FULL')
+          ->value('id');
+  }
+
+    public function getTaxAdjustmentId(): int
+    {
+        return Adjustment::query()
+            ->where('code', 'TAX')
+            ->value('id');
+    }
+
+    public function getChooseYourCabinFeeId(): int
+    {
+        return Adjustment::query()
+            ->where('code', 'CHOOSE_YOUR_CABIN')
+            ->value('id');
+    }
+
+    public function getCarbonOffsetFeeId($code): int
+    {
+        return Adjustment::query()
+            ->where('code', $code)
+            ->value('id');
+    }
+
+  public function getIdByCode(string $code): int|null
+  {
+      return match ($code) {
+          'SINGLE_TICKET_FEE' => $this->getSingleTicketFeeId(),
+          'PAID_IN_FULL' => $this->getPaidInFullId(),
+          'TAX' => $this->getTaxAdjustmentId(),
+          'CHOOSE_YOUR_CABIN' => $this->getChooseYourCabinFeeId(),
+          'CARBON_OFFSET_I', 'CARBON_OFFSET_B', 'CARBON_OFFSET_S', 'CARBON_OFFSET_O' => $this->getCarbonOffsetFeeId($code),
+          default => null,
+      };
+  }
 }
