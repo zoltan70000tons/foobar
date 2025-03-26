@@ -30,13 +30,9 @@ import Status from "./Status";
 import Detail from "./Details";
 import Passengers from "./Passengers";
 import Payment from "./Payment";
-import ActionList from "./ActionList";
-import Log from "./Log";
 import BookingSidebar from "./BookingSidebar";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
-import FeesForm from "./FeesForm";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments }: PageProps) => {
@@ -52,7 +48,8 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   const { showSnackbar } = useSnackbar();
   const capacity = booking.cabin.category.capacity;
 
-  const { flash, error } = usePage().props;
+  const { flash } = usePage().props;
+
   useEffect(() => {
     if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
       setEditMode(true);
@@ -83,11 +80,14 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-  useEffect(()=>{
-    if(flash.error){
+  useEffect(() => {
+    if (flash.error) {
       showSnackbar(flash.error, 'error');
     }
-  },[flash]);
+    if (flash.success) {
+      showSnackbar(flash.success, 'success');
+    }
+  }, [flash]);
 
   const handleAddComment = (comment: string) => {
     router.post(
@@ -173,7 +173,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
             <Button
               variant="outlined"
               color="secondary"
-              onClick={ handleBack }
+              onClick={handleBack}
               sx={{ mb: 2, mr: 2 }}
             >
               Back

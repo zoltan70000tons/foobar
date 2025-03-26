@@ -107,11 +107,9 @@ const Status = ({ event, booking, editMode, users }) => {
       { booking_id: booking.id },
       {
         onSuccess: () => {
-          showSnackbar("Booking canceled successfully!", "success");
           setIsCancelDialogOpen(false);
         },
         onError: (errors) => {
-          showSnackbar("Error canceling booking!", "error");
           setIsCancelDialogOpen(false);
         },
       }
