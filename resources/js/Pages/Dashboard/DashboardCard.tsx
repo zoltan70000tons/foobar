@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Paper, Typography, Box, IconButton, Badge, Grid } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../Theme/theme';
+import React, { useState } from "react";
+import { Paper, Typography, Box, IconButton, Badge, Grid } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "../../Theme/theme";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 
@@ -15,21 +15,19 @@ const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeCl
 
   return (
     <ThemeProvider theme={theme}>
-      <Paper 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          padding: '10px', 
-          marginBottom: '10px',
-          position: 'relative', // Necessary for positioning badge
-          cursor: 'pointer' // Change cursor to pointer for click indication
+      <Paper
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          padding: "10px",
+          marginBottom: "10px",
+          position: "relative", // Necessary for positioning badge
+          cursor: "pointer", // Change cursor to pointer for click indication
         }}
         onClick={() => handleClick()} // Redirect on click
       >
-        <Box sx={{ marginRight: '15px' }}>
-          {Icon && <Icon fontSize="large" />}
-        </Box>
-        <Box sx={{ flex: '1 0 auto' }}>
+        <Box sx={{ marginRight: "15px" }}>{Icon && <Icon fontSize="large" />}</Box>
+        <Box sx={{ flex: "1 0 auto" }}>
           <Typography variant="h5" component="div">
             {title}
           </Typography>
@@ -38,11 +36,7 @@ const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeCl
           </Typography>
         </Box>
         {badgeContent && (
-          <Badge
-            badgeContent={badgeContent}
-            color="primary"
-            sx={{ position: 'absolute', top: 10, right: 10 }}
-          >
+          <Badge badgeContent={badgeContent} color="primary" sx={{ position: "absolute", top: 10, right: 10 }}>
             <IconButton onClick={onBadgeClick} aria-label="notifications">
               {/* Optionally include a badge icon */}
             </IconButton>
@@ -50,7 +44,7 @@ const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeCl
         )}
       </Paper>
 
-      <LoadingOverlay  open={loading}/>
+      {/* <LoadingOverlay  open={loading}/> */}
     </ThemeProvider>
   );
 };
