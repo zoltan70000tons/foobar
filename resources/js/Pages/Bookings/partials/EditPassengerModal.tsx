@@ -24,6 +24,7 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import { LoadingButton } from "@mui/lab";
 import Country from "@/Components/Country";
+import PhoneNumber from "@/Components/PhoneNumber";
 
 const EditPassengerModal = ({
     open,
@@ -286,14 +287,16 @@ const EditPassengerModal = ({
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
-                            <TextField
-                                label="Phone"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={passenger?.phone || ""}
-                                onChange={(e) => onChange("phone", e.target.value)}
-                                disabled={editable}
+                            <PhoneNumber
+                              label="Phone"
+                              variant="outlined"
+                              fullWidth
+                              size="small"
+                              value={passenger?.phone || ""}
+                              forceDialCode={ true }
+                              name={ "phone" }
+                              onChange={(e) => onChange("phone", e)}
+                              disabled={editable}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -381,14 +384,16 @@ const EditPassengerModal = ({
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
-                            <TextField
-                                label="Emergency Contact Phone"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={passenger?.emergency_c_phone || ""}
-                                onChange={(e) => onChange("emergency_c_phone", e.target.value)}
-                                disabled={editable}
+                            <PhoneNumber
+                              label="Emergency Contact Phone"
+                              variant="outlined"
+                              fullWidth
+                              size="small"
+                              value={passenger?.emergency_c_phone || ""}
+                              forceDialCode={ true }
+                              name={ "emergency_c_phone" }
+                              onChange={(e) => onChange("emergency_c_phone", e)}
+                              disabled={editable}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
