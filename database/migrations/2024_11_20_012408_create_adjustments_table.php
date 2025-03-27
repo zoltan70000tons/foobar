@@ -20,7 +20,7 @@ return new class extends Migration
       $table->json('restrictions')->nullable(); // Restrictions as JSON
       $table->foreignId('event_id')->constrained('events')->onDelete('cascade'); // References events table
       $table->timestamps(); // Created and updated timestamps
-
+      $table->boolean('system')->default(false);
       $table->unique(['event_id', 'code']); // Unique constraint for event_id and code
     });
   }
