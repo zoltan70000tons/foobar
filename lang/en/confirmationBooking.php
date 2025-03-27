@@ -12,6 +12,10 @@ return [
     |
     */
 
+  // Subject
+  'cbe_subject' => 'your Booking Request for ',
+  
+  // Body
   'cbe_hello' => 'Hello',
   'cbe_thank_you' => 'We have received your booking request. Thank you!',
   'cbe_please_note' =>
@@ -23,6 +27,9 @@ return [
   'cbe_booking_type' => 'Booking Type',
   'cbe_cabin_category' => 'Cabin Category',
   'cbe_form_of_payment' => 'Form of Payment',
+  'cbe_bed_configuration' => 'Bed Configuration',
+  'cbe_bed_joined' => 'Joined Beds',
+  'cbe_bed_separated' => 'Separated Beds',
   'cbe_official_ticket_price_per_person' => 'Official Ticket Price per Person',
   'cbe_pay_in_full_discount' => 'Pay in Full Discount',
   'cbe_net_ticket_price_per_person' => 'Net Ticket Price per Person',
@@ -34,6 +41,9 @@ return [
   'cbe_number_of_passengers' => 'Number of Passengers',
   'cbe_grand_total_booking_price' => 'Grand Total Booking Price',
   'cbe_payment_schedule' => 'Payment Schedule',
+  'cbe_pay_in_full' => 'Pay in Full',
+  'cbe_due_date' => 'Due Date',
+  'cbe_amount' => 'Amount',
   // lead passenger details
   'cbe_lead_passenger_details' => 'Lead Passenger Details',
   'cbe_gender' => 'Gender',

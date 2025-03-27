@@ -62,7 +62,7 @@
       color: #777;
       border-top: 1px solid #444;
       padding-top: 10px;
-      paddding-bottom: 15px;
+      padding-bottom: 15px;
       text-align: center;
     }
 
@@ -72,8 +72,8 @@
     }
 
     .social-icons img {
-      height: 38px;
-      width: 38px;
+      height: 20px;
+      width: 20px;
       margin: 0 5px;
     }
 
@@ -92,6 +92,10 @@
       border: 1px solid #333333;
       padding: 8px;
     }
+    
+    .booking-table__title {
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -108,35 +112,40 @@
       @yield('regards')
     </div>
     <div class="footer">
-      <p>70000TONS, 70000TONS OF METAL and the 70000TONS OF METAL logo are registered trademarks <br> 
-        of Properties of Metal Ltd. and are used under license. <br>
-        © 2009-2025 UMCruises International Ltd. All Rights Reserved.</p>
       <div class="social-icons">
-        <a href="http://www.facebook.com/70000TONS" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/facebook_icon.png" alt="Facebook">
+        <a href="https://70000tons.com/forum/" target="_blank">
+          <img src="https://70000tons.com/images/icons/forum_white.png" alt="Forum" width="20" height="20">
         </a>
-        <a href="http://www.instagram.com/70000TONS" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/instagram_icon.png" alt="Instagram">
+        <a href="https://www.facebook.com/70000tons" target="_blank">
+          <img src="https://70000tons.com/images/icons/facebook_white.png" alt="Facebook" width="20" height="20">
+        </a>
+        <a href="https://instagram.com/70000tons" target="_blank">
+          <img src="https://70000tons.com/images/icons/instagram_white.png" alt="Instagram" width="20" height="20">
         </a>
         <a href="https://www.threads.net/@70000tons" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/threads_icon.png" alt="Threads">
+          <img src="https://70000tons.com/images/icons/threads_white.png" alt="Threads" width="20" height="20">
         </a>
-        <a href="http://www.70000TONS.tv" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/youtube_icon.png" alt="YouTube">
+        <a href="http://www.youtube.com/70000tons" target="_blank">
+          <img src="https://70000tons.com/images/icons/youtube_white.png" alt="YouTube" width="20" height="20">
         </a>
         <a href="https://www.tiktok.com/@70000tons?lang=en" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/tiktok_icon.png" alt="TikTok">
+          <img src="https://70000tons.com/images/icons/tiktok_white.png" alt="TikTok" width="20" height="20">
+        </a>
+        <a href="https://bsky.app/profile/70000tons.bsky.social" target="_blank">
+          <img src="https://70000tons.com/images/icons/bluesky_white.png" alt="Bluesky" width="20" height="20">
         </a>
         <a href="http://www.twitter.com/70000tons" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/x_icon.png" alt="Twitter">
+          <img src="https://70000tons.com/images/icons/xtwitter_white.png" alt="X" width="20" height="20">
         </a>
-        <a href="http://www.70000tons.com/forum" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/forum_icon.png" alt="Forum">
+        <a href="https://t.me/original70000tons" target="_blank">
+          <img src="https://70000tons.com/images/icons/telegram_white.png" alt="Telegram" width="20" height="20">
         </a>
         <a href="https://open.spotify.com/user/31wphhaqhspcwfbk7kn2vcicr3wy?si=7b2cd2cac632470d" target="_blank">
-          <img src="https://70000tons.com/_mailinglist/media/icon/spotify_icon.png" alt="Spotify">
+          <img src="https://70000tons.com/images/icons/spotify_white.png" alt="Spotify" width="20" height="20">
         </a>
       </div>
+      <p>The information in this internet eMail is confidential, may be legally privileged and is intended solely for the Addressee(s) named above. If you are not the intended recipient, or the employee or agent responsible for delivering it to the intended recipient, then any dissemination or copying of this eMail is prohibited and may be unlawful. If you receive this eMail in error, please immediately notify us by return eMail or by telephone. Thank you.</p>
+
     </div>
   </div>
 </body>
