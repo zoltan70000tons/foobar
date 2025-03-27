@@ -10,9 +10,12 @@ use View;
 
 class PDFService
 {
+  
+
     public function generateBookingConfirmationPDF(Booking $booking)
     {
-        $paymentService = new PaymentInfoService();
+        $passengerRepository = app(\App\Repositories\PassengerRepository::class);
+        $paymentService = new PaymentInfoService($passengerRepository);
         $paymentInfo = $paymentService->getPaymentInfo($booking);
         $logoUrl = 'https://70000tons.com/wp-content/uploads/2019/04/70K_Logo_Claim_BW_HiRes.jpg';
         $logoData = base64_encode(file_get_contents($logoUrl));

@@ -42,4 +42,9 @@ class CabinCategorySpec extends Model
   {
     return $this->belongsTo(Cruise::class, 'cruise_id');
   }
+
+  public function getFirstLetterOfCategoryType(): string
+  {
+      return substr($this->category_type, 0, 1);
+  }
 }

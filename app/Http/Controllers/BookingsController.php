@@ -25,6 +25,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -81,11 +82,16 @@ class BookingsController extends Controller
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
-          $tabIndex = 0; 
-          if (count($newBookings) > 0) $tabIndex = 0;
-          elseif (count($inProgressBookings) > 0) $tabIndex = 1;
-          elseif (count($uploadedBookings) > 0) $tabIndex = 2;
-          elseif (count($cancelledBookings) > 0) $tabIndex = 3;
+          $tabIndex = 0;
+          if (count($newBookings) > 0) {
+            $tabIndex = 0;
+          } elseif (count($inProgressBookings) > 0) {
+            $tabIndex = 1;
+          } elseif (count($uploadedBookings) > 0) {
+            $tabIndex = 2;
+          } elseif (count($cancelledBookings) > 0) {
+            $tabIndex = 3;
+          }
 
           //$cancelledBookings = [];
           $event = $this->eventRepository->find($event_id);
@@ -110,7 +116,9 @@ class BookingsController extends Controller
     }
   }
 
-  public function create() {}
+  public function create()
+  {
+  }
 
   public function store(Request $request)
   {
@@ -128,7 +136,13 @@ class BookingsController extends Controller
       'passenger.dob' => ['required', 'date', 'before:today'],
       'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
       'passenger.citizenship' => ['nullable', 'string', 'max:3'],
-      'passenger.survivor_number' => ['required', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number',new UniqueSurvivorInEvent($event_id),],
+      'passenger.survivor_number' => [
+        'required',
+        'string',
+        'regex:/^\d+$/',
+        'exists:survivor_numbers,survivor_number',
+        new UniqueSurvivorInEvent($event_id),
+      ],
       'passenger.email' => ['required', 'email', 'email'],
       'passenger.phone' => ['nullable', 'string', 'max:20'],
       'passenger.address_first' => ['required', 'string', 'max:255'],
@@ -160,10 +174,11 @@ class BookingsController extends Controller
       $passenger_data = $validated['passenger'];
       $number_of_installments = $validated['number_of_installments'] ?? null;
       $payment_plan = $validated['payment_plan'];
+      $carbonOffset = $validated['carbon_offset'];
 
       return $this->withPermission(
         [Permissions::CreateBookings],
-        function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments) {
+        function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments, $carbonOffset) {
           $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
             $query->where('cabin_number', $cabin_number);
           })->first();
@@ -178,6 +193,60 @@ class BookingsController extends Controller
             $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
             $booking = $bookingData['booking'];
             $this->logRepository->writeOnBooking($booking->id, 'Booking created manually', $user);
+
+            $adjustmentIds = [];
+
+            if ($carbonOffset === true) {
+              $code = 'CARBON_OFFSET';
+              if ($cabin->category?->spec?->getFirstLetterOfCategoryType()) {
+                $code .= '_' . $cabin->category?->spec?->getFirstLetterOfCategoryType();
+              }
+
+              $carbonOffsetFeeId = $this->adjustmentsRepository->getIdByCode($code);
+              if ($carbonOffsetFeeId !== null) {
+                $adjustmentIds[] = $carbonOffsetFeeId;
+              }
+            }
+
+            //Since we are in the BookingsController, it is always a manual booking
+            //Also, since we are in the if($cabin), we don't have to check if cabin was selected
+            //Cabin selection is required in manual booking
+            //Therefore we just add the cabin select fee every time
+            $chooseYourCabinFeeId = $this->adjustmentsRepository->getIdByCode('CHOOSE_YOUR_CABIN');
+            if ($chooseYourCabinFeeId !== null) {
+              $adjustmentIds[] = $chooseYourCabinFeeId;
+            }
+
+            if ($payment_plan === 'PAY_IN_FULL') {
+              $paidInFullDiscountId = $this->adjustmentsRepository->getIdByCode('PAID_IN_FULL');
+              if ($paidInFullDiscountId !== null) {
+                $adjustmentIds[] = $paidInFullDiscountId;
+              }
+            }
+
+            //Since we are in the BookingsController, it is always a manual booking
+            //Every manual booking has to have the TAX adjustment added
+            $taxAddonId = $this->adjustmentsRepository->getIdByCode('TAX');
+            if ($taxAddonId !== null) {
+              $adjustmentIds[] = $taxAddonId;
+            }
+
+            if ($cabin->cabinType?->id === 2 || $cabin->cabinType?->id === 3) {
+              $singleTicketFeeId = $this->adjustmentsRepository->getIdByCode('SINGLE_TICKET_FEE');
+              if ($singleTicketFeeId !== null) {
+                $adjustmentIds[] = $singleTicketFeeId;
+              }
+            }
+
+            if (isset($passenger_data['survivor_number']) && isset($passenger_data['lead_passenger']) && $passenger_data['lead_passenger'] === true) {
+              $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber($passenger_data['survivor_number']);
+
+              if ($membershipLevelAdjustmentId) {
+                $adjustmentIds[] = $membershipLevelAdjustmentId;
+              }
+            }
+
+            $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
           }
         },
         $event_id,
@@ -185,14 +254,18 @@ class BookingsController extends Controller
         $user,
         $passenger_data,
         $payment_plan,
-        $number_of_installments
+        $number_of_installments,
+          $carbonOffset
       );
     } catch (\Exception $e) {
+        dd($e->getMessage());
       $this->logException($e);
     }
   }
 
-  public function edit(Request $request) {}
+  public function edit(Request $request)
+  {
+  }
 
   public function assignAgent(Request $request)
   {
@@ -271,7 +344,7 @@ class BookingsController extends Controller
             'isEditable' => $isEditable,
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
-            'adjustments' => $adjustments
+            'adjustments' => $adjustments,
           ]);
         },
         $event_id,
@@ -282,9 +355,13 @@ class BookingsController extends Controller
     }
   }
 
-  public function destroy(Cabin $cabin) {}
+  public function destroy(Cabin $cabin)
+  {
+  }
 
-  public function addTag(Request $request) {}
+  public function addTag(Request $request)
+  {
+  }
 
   public function editMode(Request $request)
   {
@@ -509,7 +586,7 @@ class BookingsController extends Controller
       return response()->json([
         'cabins' => $filteredCabins->values()->all(),
       ]);
-    } catch (\Exception  $e) {
+    } catch (\Exception $e) {
       //throw $th;
     }
   }
@@ -521,35 +598,32 @@ class BookingsController extends Controller
     ]);
 
     $event_id = request()->route('id');
+    $result = null; // <-- aquí
 
     try {
       $booking = Booking::findOrFail($request->booking_id);
       if ($booking->status === 'CANCELLED') {
-        return response()->json(
-          [
-            'message' => 'This booking is already cancelled.',
-          ],
-          400
-        );
+        throw new Exception('This booking is already cancelled.');
       }
+
       $result = $this->bookingRepository->cancel($booking);
+
       if ($result) {
-        return redirect()
-          ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
-          ->with('success', 'Tags updated successfully.');
+        session()->flash('success', 'Booking was cancelled successfully.');
+      } else {
+        session()->flash('error', 'Error cancelling booking.');
       }
     } catch (\Exception $e) {
-      return response()->json(
-        [
-          'message' => 'An error occurred while cancelling the booking.',
-          'error' => $e->getMessage(),
-        ],
-        500
+      session()->flash('error', $e->getMessage());
+    } finally {
+      return Inertia::location(
+        route('bookings.show', [
+          'id' => $event_id,
+          'booking_code' => $result?->booking_code ?? ($booking->booking_code ?? ''),
+        ])
       );
     }
   }
-
-
 
   public function filter(Request $request)
   {

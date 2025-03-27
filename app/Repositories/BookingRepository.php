@@ -397,6 +397,26 @@ class BookingRepository implements BookingInterface
 
       if (!$selectedCabin) {
         throw new \Exception('Cabin not found.');
+        // CC: JG Do we need the logic below?
+        $availableCabins = $this->filterCabins(
+          $selectedCabin->cabin_type_id,
+          $selectedCabin->cabin_category_id,
+          null,
+          true
+        );
+
+        Log::info('3. availableCabins', ['availableCabins' => $availableCabins]);
+
+        if (is_array($availableCabins) && array_key_exists('error', $availableCabins)) {
+          throw new \Exception($availableCabins['error']);
+        }
+        $availableCabins = $availableCabins['cabins']->toArray();
+        $cabinNumberToSearch = $selectedCabin->cabin_number;
+        $cabinNumbers = array_column($availableCabins, 'cabin_number');
+        $available = array_search($cabinNumberToSearch, $cabinNumbers) !== false;
+        if (!$available) {
+          throw new \Exception('Cabin not available.');
+        }
       }
 
       $booking = new Booking();
@@ -421,7 +441,7 @@ class BookingRepository implements BookingInterface
       }
       // JG  ---- end Installments
 
-      if ($passenger) {
+      if ($passenger && $booking) {
         // JG  ---- start Create adjustments
         $adjustmentIds = collect($passengerData['addons'] ?? [])
           ->filter(fn($addon) => isset($addon['id']))
@@ -432,7 +452,8 @@ class BookingRepository implements BookingInterface
           $passengerData['survivor_number']
         );
 
-        if ($membershipLevelAdjustmentId) {
+        // Check if the adjustment is already in the list
+        if ($membershipLevelAdjustmentId && !in_array($membershipLevelAdjustmentId, $adjustmentIds)) {
           $adjustmentIds[] = $membershipLevelAdjustmentId;
         }
 

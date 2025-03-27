@@ -103,6 +103,7 @@ class BookingController extends Controller
 
       // Process passenger data
       $passengerData = [
+        'survivor_number' => $user->survivorNumber->survivor_number,
         'confirmed_booking_email' => false,
         'lead_passenger' => true,
         'payment_method' => $validated['payment_method'],
