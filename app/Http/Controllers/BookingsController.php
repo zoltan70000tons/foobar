@@ -12,6 +12,7 @@ use App\Interfaces\TeamRepositoryInterface;
 use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
+use App\Models\CabinSpec;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
@@ -160,7 +161,25 @@ class BookingsController extends Controller
       'passenger.travel_info' => ['required', 'boolean'],
       'passenger.terms_n_cons' => ['required', 'accepted'],
       'passenger.cabin_conf_accp' => ['required', 'boolean'],
-      'passenger.single_t_agreement' => ['required', 'boolean'],
+      'passenger.single_t_agreement' => [
+        'required',
+        'boolean',
+        function ($attribute, $value, $fail) use ($request) {
+          $cabinSpec = CabinSpec::query()
+              ->where('cabin_number', $request->input('cabin_number'))
+              ->first();
+
+          if ($cabinSpec) {
+            $cabin = Cabin::query()->find($cabinSpec->id);
+
+            if ($cabin && in_array($cabin->cabin_type_id, [2, 3])) {
+              if (!$value) {
+                $fail('The STA must be checked when the cabin type Single');
+              }
+            }
+          }
+        }
+      ],
       'passenger.was_on_board' => ['nullable', 'boolean'],
       'passenger.newsletter' => ['nullable', 'boolean'],
       'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
