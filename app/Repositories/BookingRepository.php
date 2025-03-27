@@ -217,7 +217,9 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id) {}
+  function delete($id)
+  {
+  }
 
   function assignAgent($code, $user)
   {

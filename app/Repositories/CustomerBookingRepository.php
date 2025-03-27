@@ -193,6 +193,8 @@ class CustomerBookingRepository
     // update passenger id and remove PassengerInvitation
     if ($emptyPassenger) {
       $dataToUpdate['booking_id'] = $booking->id;
+      $dataToUpdate['cabin_conf_accp'] = true;
+      $dataToUpdate['terms_n_cons'] = true;
 
       try {
         $emptyPassenger->update($dataToUpdate);
@@ -259,6 +261,8 @@ class CustomerBookingRepository
           'emergency_c_phone' => $validated['emergency_phone_number'],
           'special_request' => $validated['special_request'],
           'language' => $validated['language'] ?? 'en',
+          'terms_n_cons' => true,
+          'cabin_conf_accp' => true,
         ]);
       } catch (\Exception $e) {
         \Log::error('Error while adding passenger: ' . $e->getMessage());
