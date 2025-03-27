@@ -129,7 +129,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
     }
 
     const validateStep = () => {
-        //console.log(activeStep);
         switch (activeStep) {
             case 0:
                 let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber;
@@ -149,7 +148,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                     passenger.gender &&
                     passenger.payment_method &&
                     passenger.confirmed_booking_email &&
-                    passenger.terms_n_cons
+                    passenger.terms_n_cons &&
+                    (isSingleRoom ? passenger.single_t_agreement : true)
                 );
             case 2:
                 return true;
