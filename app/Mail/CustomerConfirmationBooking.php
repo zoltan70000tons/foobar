@@ -11,6 +11,8 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Booking;
 use Illuminate\Support\Str;
+use DateTime;
+use IntlDateFormatter;
 
 class CustomerConfirmationBooking extends Mailable implements ShouldQueue
 {
@@ -86,7 +88,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
           : 0,
         'choose_your_cabin' => $adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0,
         'carbon_offset' =>
-          $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
+        $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
           $this->cart['cabin_price'],
           $this->cart['price_save']
@@ -99,15 +101,15 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
         'payment_schedule_installments' => !empty($this->installments)
           ? collect($this->installments)
-            ->map(
-              fn($installment) => [
-                'due_date' => $installment['due_date'],
-                'amount' => number_format($installment['amount'], 2),
-              ]
-            )
-            ->toArray()
+          ->map(
+            fn($installment) => [
+              'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
+              'amount' => number_format($installment['amount'], 2),
+            ]
+          )
+          ->toArray()
           : 'N/A',
-        'todays_date' => now()->format('Y-m-d'),
+        'todays_date' => $this->getLocalizedDate(now(), $this->language),
         'booking_request_id' => $booking->booking_request_id ?? 'N/A',
       ],
     ];
@@ -137,6 +139,34 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
     return number_format($netPrice, 2, '.', '');
   }
 
+  // GET LOCALIZED DATE
+  private function getLocalizedDate($dateInput, $locale = 'en')
+  {
+    // Map short locales to full ICU locales
+    $localeMap = [
+      'en' => 'en_US',
+      'de' => 'de_DE',
+      'es' => 'es_ES',
+    ];
+
+    $icuLocale = $localeMap[$locale] ?? 'en_US';
+
+    // Convert string to DateTime if needed
+    if (!($dateInput instanceof DateTime)) {
+      $dateInput = new DateTime($dateInput);
+    }
+
+    // Create a formatter
+    $formatter = new IntlDateFormatter(
+      $icuLocale,
+      IntlDateFormatter::LONG,
+      IntlDateFormatter::NONE,
+      $dateInput->getTimezone()
+    );
+
+    return $formatter->format($dateInput);
+  }
+
   // envelope
   public function envelope(): Envelope
   {
@@ -146,7 +176,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
 
     return new Envelope(
       from: $mailFromAddress,
-      subject: "{$data->passenger->first_name} - your Booking Request for {$this->event->name}!"
+      subject: "{$data->passenger->first_name}, " . __('confirmationBooking.cbe_subject') . " {$this->event->name}!"
     );
   }
 
