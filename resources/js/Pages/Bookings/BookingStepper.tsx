@@ -75,7 +75,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
         confirmed_booking_email: false,
         travel_info: false,
         terms_n_cons: false,
-        cabin_conf_accp: false,
         single_t_agreement: false,
         was_on_board: false,
         newsletter: false,
@@ -192,7 +191,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
             confirmed_booking_email: selectedUser.confirmed_booking_email || false,
             travel_info: selectedUser.travel_info || false,
             terms_n_cons: selectedUser.terms_n_cons || false,
-            cabin_conf_accp: selectedUser.cabin_conf_accp || false,
             single_t_agreement: selectedUser.single_t_agreement || false,
             was_on_board: selectedUser.was_on_board || false,
             newsletter: selectedUser.newsletter || false,
@@ -276,7 +274,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                 confirmed_booking_email: passenger.confirmed_booking_email,
                 travel_info: passenger.travel_info,
                 terms_n_cons: passenger.terms_n_cons,
-                cabin_conf_accp: passenger.cabin_conf_accp,
                 single_t_agreement: passenger.single_t_agreement,
                 was_on_board: passenger.was_on_board,
                 newsletter: passenger.newsletter,
@@ -823,18 +820,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                                     />
                                 </Tooltip>
                             </Grid>)}
-                            <Grid item xs={12} md={2}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            size="small"
-                                            checked={passenger?.cabin_conf_accp || false}
-                                            onChange={(e) => onChange("cabin_conf_accp", e.target.checked)}
-                                        />
-                                    }
-                                    label="CCA"
-                                />
-                            </Grid>
                             <Grid item xs={12} md={2}>
                                 <FormControlLabel
                                     control={

@@ -159,7 +159,6 @@ class BookingsController extends Controller
       'passenger.confirmed_booking_email' => ['required', 'accepted'],
       'passenger.travel_info' => ['required', 'boolean'],
       'passenger.terms_n_cons' => ['required', 'accepted'],
-      'passenger.cabin_conf_accp' => ['required', 'boolean'],
       'passenger.single_t_agreement' => ['required', 'boolean'],
       'passenger.was_on_board' => ['nullable', 'boolean'],
       'passenger.newsletter' => ['nullable', 'boolean'],
@@ -258,7 +257,6 @@ class BookingsController extends Controller
           $carbonOffset
       );
     } catch (\Exception $e) {
-        dd($e->getMessage());
       $this->logException($e);
     }
   }
