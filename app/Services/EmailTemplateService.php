@@ -144,10 +144,13 @@ class EmailTemplateService
     }
 
 
-    public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac =false): bool
+    public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac =false, $emailContent = '', $subject = ''): bool
     {
         try {
-            SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac)
+            Log::info('Booking pdf sendMail: ' . json_encode($bookingPdf));
+            Log::info('Event Image sendmail: ' . json_encode($eventImage));
+            Log::info('TicketContract sendMail: ' . json_encode($ticketContrac));
+            SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac,$emailContent,$subject)
                 ->onQueue('emails');
             return true;
         } catch (Exception $e) {

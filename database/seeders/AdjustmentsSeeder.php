@@ -20,6 +20,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'PAID_IN_FULL',
@@ -30,6 +31,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       // Membership discounts
       [
@@ -41,6 +43,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'MEMBERSHIP_SILVER_PLUS',
@@ -51,6 +54,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'MEMBERSHIP_GOLD',
@@ -61,6 +65,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'MEMBERSHIP_GOLD_PLUS',
@@ -71,6 +76,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'MEMBERSHIP_BLACK',
@@ -81,6 +87,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       // Addons
       [
@@ -92,6 +99,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'CARBON_OFFSET_I',
@@ -102,6 +110,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'CARBON_OFFSET_O',
@@ -112,6 +121,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'CARBON_OFFSET_B',
@@ -122,6 +132,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'CARBON_OFFSET_S',
@@ -132,6 +143,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
       [
         'code' => 'TAX',
@@ -142,6 +154,7 @@ class AdjustmentsSeeder extends Seeder
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),
+        'system' => true,
       ],
     ]);
   }

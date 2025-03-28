@@ -51,7 +51,7 @@ export default function JoinOrganization({ email }: { email: string }) {
 
     setValidationErrors(newErrors);
     setIsButtonDisabled(Object.keys(newErrors).length > 0);
-    return newErrors; 
+    return newErrors;
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -69,7 +69,7 @@ export default function JoinOrganization({ email }: { email: string }) {
     if (Object.keys(errors).length === 0) {
       put("/join-organization", {
         onSuccess: () => {
-          showSnackbar('Account has been created!', "success");
+          showSnackbar("Account has been created!", "success");
         },
         onError: (errors) => {
           console.error("Request failed:", errors);
@@ -136,14 +136,7 @@ export default function JoinOrganization({ email }: { email: string }) {
               helperText={validationErrors.user_lastname}
             />
 
-            <TextField
-              fullWidth
-              label="Your Email"
-              type="email"
-              name="email"
-              value={data.email}
-              disabled={true}
-            />
+            <TextField fullWidth label="Your Email" type="email" name="email" value={data.email} disabled={true} />
 
             <TextField
               fullWidth
@@ -169,7 +162,7 @@ export default function JoinOrganization({ email }: { email: string }) {
           </Box>
         </form>
       </section>
-      <LoadingOverlay open={loading} />
+      {/* <LoadingOverlay open={loading} /> */}
     </Box>
   );
 }

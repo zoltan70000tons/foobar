@@ -181,7 +181,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   };
 
   const getAvatar = (passenger) => {
-    console.log(passenger);
     const iconProps = {
       sx: {
         width: 50,
@@ -190,8 +189,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         cursor: "pointer",
         color: passenger.lead_passenger ? '#ffa726' : getAvatarColor(passenger),
       },
-
-
     };
 
     const IconComponent = getAvatarIcon(passenger);
@@ -230,7 +227,32 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     return "#FFF59D";
   };
 
-  console.log(passengers)
+  const renderChip = (passenger) => {
+    if (passenger.empty_seat) {
+      return <Chip label="Empty Bed" size="small" color="info" sx={{ color: "white" }} />
+    }
+
+    if (editMode &&
+      !passenger.dob &&
+      !passenger.empty_seat &&
+      !(passenger.passenger_invitation.length > 0)) {
+      return <Chip label="Add Passenger" size="small" color="primary" sx={{ color: "white" }} />
+    }
+
+    if (passenger?.passenger_invitation && passenger?.passenger_invitation.length > 0) {
+      return <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
+    }
+
+    if (isSingleRoom) {
+      return <Chip label={"Passenger"} size="small" color="default" sx={{ color: "white" }} />
+    }
+
+    if (passenger.lead_passenger) {
+      return <Chip label="Lead Passenger" size="small" color="warning" />
+    }
+
+    return <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />;
+  }
 
   return (
     <Box>
@@ -277,19 +299,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     alignItems: 'flex-end',
                   }}
                 >
-                  {passenger.passenger_invitation?.length > 0 ? (
-                    <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
-                  ) : (
-                    <>
-                      {passenger.lead_passenger ? (
-                        <Chip label="Lead Passenger" size="small" color="warning" />
-                      ) : passenger.empty ? (
-                        <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />
-                      ) : (
-                        <Chip label="Available" size="small" color="info" sx={{ color: "white" }} />
-                      )}
-                    </>
-                  )}
+                  {renderChip(passenger)}
                 </Box>
               </Box>
             </Grid>

@@ -10,6 +10,8 @@ use App\Traits\BookingLogTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Support\Facades\DB;
+use Log;
+use Storage;
 
 class Booking extends Model
 {
@@ -188,13 +190,45 @@ class Booking extends Model
     }
   }
 
+
+  /**
+   * Check if a given 4-character code is in the blocked words list.
+   *
+   * This function loads the blocked words from a JSON file located in 
+   * resources/data/not_allowed_words.json. If the file doesn't exist 
+   * or is malformed, it logs an error and throws an exception.
+   *
+   * @param  string  $code  The 4-character code to validate.
+   * @return bool  True if the code is blocked, false otherwise.
+   *
+   * @throws \Exception If the blocked words file is missing or invalid.
+   */
   protected function containsBlockedWords($code)
   {
-    $blocked_words = config('whitelist.blocked_words');
+    static $blocked_words = null;
 
-    // Check against blocked words
+    if (is_null($blocked_words)) {
+      $path = resource_path('data/not_allowed_words.json');
+
+      if (!file_exists($path)) {
+        Log::error("Blocked words file not found: $path");
+        throw new \Exception("Blocked words file is missing.");
+      }
+
+      $json = file_get_contents($path);
+      $decoded = json_decode($json, true);
+
+      if (empty($decoded) || !is_array($decoded)) {
+        Log::error("Blocked words file is empty or invalid: $path");
+        throw new \Exception("Blocked words file is empty or malformed.");
+      }
+
+      $blocked_words = array_map('strtoupper', $decoded);
+    }
+
     return in_array(strtoupper($code), $blocked_words);
   }
+
 
   public function cancel()
   {

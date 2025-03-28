@@ -76,7 +76,7 @@ class NotificationController extends Controller
         $data['source'] = 'SYSTEM';
         $result = $this->paymentService->processPayment($data);
         $extraData = ['PAID_AMOUNT' => formatCurrency($request->amount)];
-        $emailSent = $this->emailService->sendEmail($templateId, $booking, $passenger,[],$extraData, false, false);
+        $emailSent = $this->emailService->sendEmail($templateId, $booking, $passenger,[],$extraData, true, true);
         if ($emailSent) {
             return response()->json(['message' => 'Payment confirmation email sent successfully']);
         } else {
@@ -114,7 +114,7 @@ class NotificationController extends Controller
                     ]);
                     return response()->json(['error' => 'Email template not found'], 500);
                 }
-                $this->emailService->sendEmail($templateId, $booking, $passenger, [], [], true, true, true);
+                $this->emailService->sendEmail($templateId, $booking, $passenger, [], [], true, true);
             }
     
             return response()->json(['message' => 'Confirmation email sent successfully']);

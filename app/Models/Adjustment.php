@@ -10,7 +10,7 @@ class Adjustment extends Model
 {
   use HasFactory;
 
-  protected $fillable = ["code", "type", "operation", "value", "restrictions", "event_id"];
+  protected $fillable = ["code", "type", "operation", "value", "restrictions", "event_id", "system"];
 
   // Event have many adjustments
   public function event()

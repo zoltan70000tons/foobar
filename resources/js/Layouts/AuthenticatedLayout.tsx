@@ -16,7 +16,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import theme from '@/Theme/theme';
 import ListItems from '@/Layouts/ListItems';
-import LoadingOverlay from '@/Components/LoadingOverlay';
+// import LoadingOverlay from "@/Components/LoadingOverlay";
 import { usePage } from '@inertiajs/react';
 import { User } from '@/types';
 
@@ -57,38 +57,39 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open }) => ({
-    '& .MuiDrawer-paper': {
-      position: 'relative',
-      whiteSpace: 'nowrap',
-      width: drawerWidth,
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+  '& .MuiDrawer-paper': {
+    position: 'relative',
+    whiteSpace: 'nowrap',
+    width: drawerWidth,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    boxSizing: 'border-box',
+    ...(!open && {
+      overflowX: 'hidden',
       transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
+        duration: theme.transitions.duration.leavingScreen,
       }),
-      boxSizing: 'border-box',
-      ...(!open && {
-        overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
-        }),
-        width: theme.spacing(7),
-        [theme.breakpoints.up('sm')]: {
-          width: theme.spacing(9),
-        },
-      }),
-    },
-  }),
-);
+      width: theme.spacing(7),
+      [theme.breakpoints.up('sm')]: {
+        width: theme.spacing(9),
+      },
+    }),
+  },
+}));
 
 const defaultTheme = theme;
 
-export default function AuthenticatedLayout({ user, header, children}: PropsWithChildren<{ user: User, header?: ReactNode, children?: ReactNode }>) {
+export default function AuthenticatedLayout({
+  user,
+  header,
+  children,
+}: PropsWithChildren<{ user: User; header?: ReactNode; children?: ReactNode }>) {
   const [open, setOpen] = useState(false);
   const { auth } = usePage().props;
-
 
   const [loading, setLoading] = useState(false);
   const toggleDrawer = () => {
@@ -116,13 +117,7 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
             >
               <MenuIcon />
             </IconButton>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              sx={{ flexGrow: 1 }}
-            >
+            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
               {header}
             </Typography>
             {/* <IconButton color="inherit">
@@ -146,8 +141,8 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav" sx={{mt:0,pt:0}}>
-            <ListItems mainDrawerToggle={setOpen}  sx={{mt:0,pt:0}}/>
+          <List component="nav" sx={{ mt: 0, pt: 0 }}>
+            <ListItems mainDrawerToggle={setOpen} sx={{ mt: 0, pt: 0 }} />
             {/* <Divider sx={{ my: 1 }} /> */}
             {/* {accountListItems} */}
           </List>
@@ -156,14 +151,13 @@ export default function AuthenticatedLayout({ user, header, children}: PropsWith
           component="main"
           sx={{
             backgroundColor: (theme) =>
-              theme.palette.mode === 'light'
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
+              theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
             flexGrow: 1,
             height: '100vh',
             overflow: 'auto',
           }}
-        >{children}
+        >
+          {children}
         </Box>
       </Box>
     </ThemeProvider>
