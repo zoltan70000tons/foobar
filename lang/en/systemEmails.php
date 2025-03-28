@@ -48,4 +48,7 @@ return [
   'You have 72 hours to accept this invitation. If you do not accept this invitation within this time, the invitation will be cancelled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our customer service team.',
   
   'booking_code' => 'Booking Code',
+  'email_not_found' => 'Email not Found',
+  'seat_reset_notification' => 'We wanted to let you know that your assigned seat in the cabin has been reset.',
+  'seat_reset_questions' => 'If you have any questions, please reach out to the Lead Passenger of your cabin for more information.'
 ];
