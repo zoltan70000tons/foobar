@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -20,32 +20,32 @@ import {
   DialogTitle,
   DialogContentText,
   DialogActions,
-} from "@mui/material";
-import SectionPercentage from "@/Components/SectionPercentage";
-import PaymentModal from "./PaymentModal";
-import FeesForm from "./FeesForm";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { usePermissions } from "@/Providers/PermissionContext";
-import { Permissions } from "@/enums/PermissionEnum";
-import { Delete } from "@mui/icons-material";
-import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { router } from "@inertiajs/react";
-import LoadingOverlay from "@/Components/LoadingOverlay";
-import DiscountForm from "./DiscountForm";
+} from '@mui/material';
+import SectionPercentage from '@/Components/SectionPercentage';
+import PaymentModal from './PaymentModal';
+import FeesForm from './FeesForm';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { usePermissions } from '@/Providers/PermissionContext';
+import { Permissions } from '@/enums/PermissionEnum';
+import { Delete } from '@mui/icons-material';
+import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
+import { router } from '@inertiajs/react';
+import LoadingOverlay from '@/Components/LoadingOverlay';
+import DiscountForm from './DiscountForm';
 import HistoryIcon from '@mui/icons-material/History';
 
 const formatCurrency = (value: number) =>
-  `${new Intl.NumberFormat("en-US", {
+  `${new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value)} USD`;
 
 const getOrdinalSuffix = (n: number): string => {
-  if (n === 1) return "st";
-  if (n === 2) return "nd";
-  if (n === 3) return "rd";
-  return "th";
+  if (n === 1) return 'st';
+  if (n === 2) return 'nd';
+  if (n === 3) return 'rd';
+  return 'th';
 };
 
 type Payment = {
@@ -81,8 +81,8 @@ type Passenger = {
 type Adjustment = {
   id: number;
   code: string;
-  type: "DISCOUNT" | "ADDON";
-  operation: "FIXED" | "PERCENTAGE";
+  type: 'DISCOUNT' | 'ADDON';
+  operation: 'FIXED' | 'PERCENTAGE';
   value: string;
 };
 
@@ -130,14 +130,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
       (acc, adj) => {
         let adjustmentValue = parseFloat(adj.value);
 
-        if (adj.operation === "PERCENTAGE") {
+        if (adj.operation === 'PERCENTAGE') {
           adjustmentValue = (adjustmentValue / 100) * pricePerPerson;
         }
 
-        if (adj.type === "DISCOUNT") {
+        if (adj.type === 'DISCOUNT') {
           acc.discounts.push({ code: adj.code, value: adjustmentValue });
           acc.totalDiscounts += adjustmentValue;
-        } else if (adj.type === "ADDON") {
+        } else if (adj.type === 'ADDON') {
           acc.addons.push({ code: adj.code, value: adjustmentValue });
           acc.totalAddons += adjustmentValue;
         }
@@ -159,11 +159,10 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
       return { passengerDiscounts: [], totalPassengerDiscounts: 0 };
     }
 
-
     const grouped = passenger.discounts.reduce(
       (acc, dis) => {
         let discountValue = parseFloat(dis.amount);
-        if (dis.operation === "PERCENTAGE") {
+        if (dis.operation === 'PERCENTAGE') {
           discountValue = (discountValue / 100) * pricePerPerson;
         }
 
@@ -175,12 +174,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
       {
         passengerDiscounts: [],
         totalPassengerDiscounts: 0,
-      }
+      },
     );
 
     return grouped;
   };
-
 
   const getSummaryAllocatedCost = (booking: Booking): number => {
     return booking.passengers.reduce((sum, passenger) => sum + Number(passenger.passenger_allocated_cost || 0), 0);
@@ -248,19 +246,19 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     handleCancel();
   };
 
-
   const handleDeleteFee = (passengerId: number, feeId: number) => {
     setLoading(true);
 
     router.post(
-      route("fees.delete", {
+      route('fees.delete', {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
       { passenger_id: passengerId, fee_id: feeId },
       {
         onSuccess: () => {
-          const updatedPassengers = passengers.map((pax) => { //FIXME
+          const updatedPassengers = passengers.map((pax) => {
+            //FIXME
             if (pax.id === passengerId) {
               return {
                 ...pax,
@@ -269,60 +267,59 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             }
             return pax;
           });
-          showSnackbar("Fee deleted successfully.", "success");
+          showSnackbar('Fee deleted successfully.', 'success');
         },
         onError: (errors) => {
-          console.error("Failed to delete fee:", errors);
-          showSnackbar("An error occurred while trying to delete the fee.", "error");
+          console.error('Failed to delete fee:', errors);
+          showSnackbar('An error occurred while trying to delete the fee.', 'error');
         },
         onFinish: () => {
           setLoading(false);
-        }
+        },
       },
     );
   };
-
 
   const handleDeletePayment = (passengerId: number, paymentId: number) => {
     setLoading(true);
 
     router.post(
-      route("payments.delete", {
+      route('payments.delete', {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
       { passenger_id: passengerId, payment_id: paymentId },
       {
         onSuccess: () => {
-          showSnackbar("Payment deleted successfully.", "success");
+          showSnackbar('Payment deleted successfully.', 'success');
           setCurrentPassenger((prev) => ({
             ...prev!,
             payments: prev!.payments.filter((payment) => payment.id !== paymentId),
           }));
         },
         onError: (errors) => {
-          console.error("Failed to delete payment:", errors);
-          showSnackbar("An error occurred while trying to delete the payment.", "error");
+          console.error('Failed to delete payment:', errors);
+          showSnackbar('An error occurred while trying to delete the payment.', 'error');
         },
         onFinish: () => {
           setLoading(false);
-        }
+        },
       },
     );
   };
 
-
   const handleDeleteDiscount = (passengerId: number, discountId: number) => {
     setLoading(true);
     router.post(
-      route("delete.discount", {
+      route('delete.discount', {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
       { passenger_id: passengerId, discount_id: discountId },
       {
         onSuccess: () => {
-          const updatedPassengers = passengers.map((pax) => { //FIXME
+          const updatedPassengers = passengers.map((pax) => {
+            //FIXME
             if (pax.id === passengerId) {
               return {
                 ...pax,
@@ -331,15 +328,15 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             }
             return pax;
           });
-          showSnackbar("Discount deleted successfully.", "success");
+          showSnackbar('Discount deleted successfully.', 'success');
         },
         onError: (errors) => {
-          console.error("Failed to delete fee:", errors);
-          showSnackbar("An error occurred while trying to delete the discount.", "error");
+          console.error('Failed to delete fee:', errors);
+          showSnackbar('An error occurred while trying to delete the discount.', 'error');
         },
         onFinish: () => {
           setLoading(false);
-        }
+        },
       },
     );
   };
@@ -349,21 +346,21 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     payments = payments || [];
 
     const formatDate = (timestamp) => {
-      if (!timestamp) return "N/A";
-      return timestamp.split("T")[0];
+      if (!timestamp) return 'N/A';
+      return timestamp.split('T')[0];
     };
 
-    const mergedFees = fees.map(fee => ({
-      BIP_ID: "N/A",
-      amount: fee.amount || "N/A",
-      created_at: fee.created_at || "N/A",
-      id: fee.id || "N/A",
-      notes: "N/A",
-      passenger_id: fee.passenger_id || "N/A",
-      source: "FEE",
+    const mergedFees = fees.map((fee) => ({
+      BIP_ID: 'N/A',
+      amount: fee.amount || 'N/A',
+      created_at: fee.created_at || 'N/A',
+      id: fee.id || 'N/A',
+      notes: 'N/A',
+      passenger_id: fee.passenger_id || 'N/A',
+      source: 'FEE',
       transaction_date: formatDate(fee.created_at),
-      type: fee.type || "N/A",
-      updated_at: fee.updated_at || "N/A"
+      type: fee.type || 'N/A',
+      updated_at: fee.updated_at || 'N/A',
     }));
 
     return [...payments, ...mergedFees];
@@ -373,12 +370,12 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   return (
     <Grid>
-      <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
+      <Typography variant="h5" mb={2} sx={{ textAlign: 'center' }}>
         Payment Summary
       </Typography>
-      <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c", mb: 4 }}>
+      <Paper variant="outlined" sx={{ p: 3, backgroundColor: '#1c1c1c', mb: 4 }}>
         <Box>
-          <Table size="small" sx={{ mt: 2, color: "white" }}>
+          <Table size="small" sx={{ mt: 2, color: 'white' }}>
             <TableBody>
               <TableRow>
                 <TableCell>Grand Total Booking Price:</TableCell>
@@ -398,7 +395,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
       </Paper>
       {passengers.map((pax, index) => {
         const displayText = pax.lead_passenger
-          ? "Lead Passenger"
+          ? 'Lead Passenger'
           : `${index + 1}${getOrdinalSuffix(index + 1)} Passenger`;
 
         const { discounts, addons, totalDiscounts, totalAddons } = calculateAdjustments(pricePerPerson);
@@ -407,17 +404,16 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
         const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees;
         const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
-        const filteredInstallments = pax.installments.filter(inst => inst.type !== "FEE");
-
+        const filteredInstallments = pax.installments.filter((inst) => inst.type !== 'FEE');
 
         return (
           <Box key={index}>
             <Box
               display="flex"
               sx={{
-                textAlign: "center",
-                width: "100%",
-                justifyContent: "center",
+                textAlign: 'center',
+                width: '100%',
+                justifyContent: 'center',
               }}
             >
               <Divider
@@ -425,18 +421,18 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 variant="middle"
                 flexItem
                 sx={{
-                  height: "100px",
-                  "&::before, &::after": {
-                    borderColor: "secondary.light",
-                    border: "1px dashed",
+                  height: '100px',
+                  '&::before, &::after': {
+                    borderColor: 'secondary.light',
+                    border: '1px dashed',
                   },
                 }}
               >
                 <Avatar
                   sx={{
-                    background: "#20a22d",
-                    color: "#fff",
-                    fontSize: "0.9rem",
+                    background: '#20a22d',
+                    color: '#fff',
+                    fontSize: '0.9rem',
                   }}
                 >
                   {index + 1}/{totalPassengers}
@@ -444,11 +440,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
               </Divider>
             </Box>
 
-            <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
+            <Typography variant="h5" mb={2} sx={{ textAlign: 'center' }}>
               {displayText}
             </Typography>
 
-            <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c", mb: 4 }}>
+            <Paper variant="outlined" sx={{ p: 3, backgroundColor: '#1c1c1c', mb: 4 }}>
               {/* SectionPercentage Integration */}
               <SectionPercentage
                 passenger={{
@@ -457,47 +453,51 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 }}
                 booking={booking}
                 installments={filteredInstallments}
-                setIsBookingError={(error) => console.error("Booking Error:", error)}
+                setIsBookingError={(error) => console.error('Booking Error:', error)}
               />
 
               {/* Payment Details */}
-              <Table size="small" sx={{ mt: 2, color: "white" }}>
+              <Table size="small" sx={{ mt: 2, color: 'white' }}>
                 <TableBody>
                   {/*** Official Ticket Price ***/}
                   <TableRow>
-                    <TableCell >Official Ticket Price:</TableCell>
+                    <TableCell>Official Ticket Price:</TableCell>
                     <TableCell align="right">{formatCurrency(Number(pricePerPerson || 0))}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Discounts ***/}
                   <TableRow>
-                    <TableCell sx={{ pl: "2rem", color: "#4CAF50" }}>
-                      Total Discounts:
-                    </TableCell>
+                    <TableCell sx={{ pl: '2rem', color: '#4CAF50' }}>Total Discounts:</TableCell>
                     <TableCell align="right">
-                      <Box component="span" sx={{ color: "#4CAF50" }}>
-                        {totalDiscounts > 0 ? `-${formatCurrency(totalPassengerDiscount)}` : `${formatCurrency(totalPassengerDiscount)}`}
+                      <Box component="span" sx={{ color: '#4CAF50' }}>
+                        {totalDiscounts > 0
+                          ? `-${formatCurrency(totalPassengerDiscount)}`
+                          : `${formatCurrency(totalPassengerDiscount)}`}
                       </Box>
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                   {discounts.map((discount, i) => (
                     <TableRow key={`discount-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Discount ({discount.code}):</TableCell>
+                      <TableCell sx={{ pl: '3rem' }}>Discount ({discount.code}):</TableCell>
                       <TableCell align="right">
-                        {discount.value > 0 ? `-${formatCurrency(discount.value)}` : `${formatCurrency(discount.value)}`}
+                        {discount.value > 0
+                          ? `-${formatCurrency(discount.value)}`
+                          : `${formatCurrency(discount.value)}`}
                       </TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   ))}
                   {passengerDiscounts.map((discount, i) => (
                     <TableRow key={`discount-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Discount ({discount.code}):</TableCell>
+                      <TableCell sx={{ pl: '3rem' }}>Discount ({discount.code}):</TableCell>
                       <TableCell align="right">
-                        {discount.value > 0 ? `-${formatCurrency(discount.value)}` : `${formatCurrency(discount.value)}`}
+                        {discount.value > 0
+                          ? `-${formatCurrency(discount.value)}`
+                          : `${formatCurrency(discount.value)}`}
                       </TableCell>
-                      <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
+                      <TableCell align="center" style={{ margin: 0, padding: 0, width: '3%' }}>
                         <IconButton
                           aria-label="delete"
                           color="error"
@@ -505,7 +505,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                           disabled={!editMode || !canDeleteDiscount}
                           onClick={() => handleOpenConfirmDeleteDiscount(pax.id, discount.id)}
                         >
-                          <Delete style={{ fontSize: "1rem" }} />
+                          <Delete style={{ fontSize: '1rem' }} />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -514,17 +514,19 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   {/*** Official Ticket Price ***/}
                   <TableRow>
                     <TableCell>Net Ticket Price:</TableCell>
-                    <TableCell align="right">{formatCurrency(Number(pricePerPerson - totalDiscounts - totalPassengerDiscounts || 0))}</TableCell>
+                    <TableCell align="right">
+                      {formatCurrency(Number(pricePerPerson - totalDiscounts - totalPassengerDiscounts || 0))}
+                    </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Addons ***/}
                   <TableRow>
-                    <TableCell style={{ color: "#FF9800" }} sx={{ pl: "2rem" }}>
+                    <TableCell style={{ color: '#FF9800' }} sx={{ pl: '2rem' }}>
                       Total Addons:
                     </TableCell>
                     <TableCell align="right">
-                      <Box component="span" sx={{ color: "#FF9800" }}>
+                      <Box component="span" sx={{ color: '#FF9800' }}>
                         {totalAddons > 0 ? `+${formatCurrency(totalAddons)}` : `${formatCurrency(totalAddons)}`}
                       </Box>
                     </TableCell>
@@ -532,27 +534,25 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   </TableRow>
                   {addons.map((addon, i) => (
                     <TableRow key={`addon-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Addon ({addon.code}):</TableCell>
+                      <TableCell sx={{ pl: '3rem' }}>Addon ({addon.code}):</TableCell>
                       <TableCell align="right">+{formatCurrency(addon.value)}</TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   ))}
 
-
-
                   {/*** Fees ***/}
                   <TableRow>
-                    <TableCell style={{ fontWeight: "400", color: "#FFC107" }} sx={{ pl: "2rem" }}>
+                    <TableCell style={{ fontWeight: '400', color: '#FFC107' }} sx={{ pl: '2rem' }}>
                       Total Fees:
                     </TableCell>
-                    <TableCell align="right" style={{ fontWeight: "400", color: "#FFC107" }}>
+                    <TableCell align="right" style={{ fontWeight: '400', color: '#FFC107' }}>
                       {totalFees > 0 ? `+${formatCurrency(totalFees)}` : `${formatCurrency(totalFees)}`}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                   {pax.fees.map((fee, i) => (
                     <TableRow key={`fee-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Fee ({fee.type}):</TableCell>
+                      <TableCell sx={{ pl: '3rem' }}>Fee ({fee.type}):</TableCell>
                       <TableCell align="right">
                         <Box component="span">
                           {Number(fee.amount) > 0
@@ -560,7 +560,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                             : `${formatCurrency(Number(fee.amount))}`}
                         </Box>
                       </TableCell>
-                      <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
+                      <TableCell align="center" style={{ margin: 0, padding: 0, width: '3%' }}>
                         <IconButton
                           aria-label="delete"
                           color="error"
@@ -568,7 +568,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                           disabled={!editMode || !canDeleteFee}
                           onClick={() => handleOpenConfirm(pax.id, fee.id)}
                         >
-                          <Delete style={{ fontSize: "1rem" }} />
+                          <Delete style={{ fontSize: '1rem' }} />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -577,23 +577,21 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   {/*** Total Ticket Price ***/}
                   <TableRow>
                     <TableCell>Total Ticket Price:</TableCell>
-                    <TableCell align="right">
-                      {formatCurrency(Number(totalCostAfterAdjustments || 0))}
-                    </TableCell>
+                    <TableCell align="right">{formatCurrency(Number(totalCostAfterAdjustments || 0))}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Total Paid ***/}
                   <TableRow>
-                    <TableCell sx={{ pl: "2rem", color: "#4CAF50" }}>Paid</TableCell>
+                    <TableCell sx={{ pl: '2rem', color: '#4CAF50' }}>Paid</TableCell>
                     <TableCell align="right">{formatCurrency(Number(pax.passenger_balance || 0))}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>Outstanding Balance:</TableCell>
                     <TableCell align="right">
-                      <Box component="span" sx={{ color: "#2196F3", fontWeight: "600", fontSize: "1.2rem" }}>
-                        {formatCurrency((totalCostAfterAdjustments - pax.passenger_balance))}
+                      <Box component="span" sx={{ color: '#2196F3', fontWeight: '600', fontSize: '1.2rem' }}>
+                        {formatCurrency(totalCostAfterAdjustments - pax.passenger_balance)}
                       </Box>
                     </TableCell>
                     <TableCell></TableCell>
@@ -601,7 +599,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 </TableBody>
               </Table>
 
-              <Divider sx={{ my: 2, borderColor: "gray" }} />
+              <Divider sx={{ my: 2, borderColor: 'gray' }} />
 
               <Grid container spacing={3}>
                 {canCreatePayment && (
@@ -641,7 +639,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   <Button
                     fullWidth
                     variant="outlined"
-                    sx={{ color: "white", borderColor: "gray" }}
+                    sx={{ color: 'white', borderColor: 'gray' }}
                     onClick={() => handleOpenModal(pax)}
                     startIcon={<HistoryIcon />}
                   >
@@ -650,7 +648,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 </Grid>
               </Grid>
             </Paper>
-            <LoadingOverlay open={loading} />
+            {/* <LoadingOverlay open={loading} /> */}
           </Box>
         );
       })}
@@ -660,7 +658,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         <DialogContent>
           <Box>
             <Typography variant="h6" gutterBottom>
-              Payment History for {currentPassenger?.full_name || "Unknown Passenger"}
+              Payment History for {currentPassenger?.full_name || 'Unknown Passenger'}
             </Typography>
 
             {paymentHistory.length ? (
@@ -681,14 +679,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                       <TableRow key={payment.id}>
                         <TableCell>{payment.type}</TableCell>
                         <TableCell>
-                          {payment.type === "PAYMENT" ? "+" : payment.type === "REFUND" ? "-" : ""}
+                          {payment.type === 'PAYMENT' ? '+' : payment.type === 'REFUND' ? '-' : ''}
                           {formatCurrency(payment.amount)}
                         </TableCell>
                         <TableCell>{new Date(payment.transaction_date).toLocaleDateString()}</TableCell>
-                        <TableCell>{payment.BIP_ID || "N/A"}</TableCell>
-                        <TableCell>{payment.source || "N/A"}</TableCell>
+                        <TableCell>{payment.BIP_ID || 'N/A'}</TableCell>
+                        <TableCell>{payment.source || 'N/A'}</TableCell>
                         <TableCell align="center">
-                          {payment.source === "MANUAL" ? (
+                          {payment.source === 'MANUAL' ? (
                             <IconButton
                               aria-label="delete"
                               color="error"
@@ -696,10 +694,10 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                               disabled={!editMode || !canDeleteFee}
                               onClick={() => handleOpenConfirmPayment(payment.id)}
                             >
-                              <Delete style={{ fontSize: "1rem" }} />
+                              <Delete style={{ fontSize: '1rem' }} />
                             </IconButton>
                           ) : (
-                            ""
+                            ''
                           )}
                         </TableCell>
                       </TableRow>
@@ -718,7 +716,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             </Box>
           </Box>
         </DialogContent>
-        <LoadingOverlay open={loading} />
+        {/* <LoadingOverlay open={loading} /> */}
       </Dialog>
 
       <Dialog open={openConfirm} onClose={handleCancel}>
@@ -739,7 +737,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
       <Dialog open={openConfirmDeleteDiscount} onClose={handleCancel}>
         <DialogTitle>Confirm Action</DialogTitle>
         <DialogContent>
-          <DialogContentText>Are you sure you want to remove this discount? This action cannot be undone.</DialogContentText>
+          <DialogContentText>
+            Are you sure you want to remove this discount? This action cannot be undone.
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancel} color="secondary">
