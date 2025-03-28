@@ -13,25 +13,35 @@ export default function Login({ status, canResetPassword }: { status?: string; c
   });
   const [loading, setLoading] = useState(false);
 
-  const submit: FormEventHandler = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  // const submit: FormEventHandler = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
 
-    try {
-      await post(route('login'), {
-        onSuccess: () => {
-          window.location.href = route('dashboard');
-        },
-        onError: (err) => {
-          console.error('Login error:', err);
-        },
-        onFinish: () => {
-          setLoading(false);
-        },
-      });
-    } catch (err) {
-      console.error('Login error:', err);
-    }
+  //   try {
+  //     await post(route('login'), {
+  //       onSuccess: () => {
+  //         window.location.href = route('dashboard');
+  //       },
+  //       onError: (err) => {
+  //         console.error('Login error:', err);
+  //       },
+  //       onFinish: () => {
+  //         setLoading(false);
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.error('Login error:', err);
+  //   }
+  // };
+
+  const submit: FormEventHandler = (e) => {
+    e.preventDefault();
+
+    post(route('login'), {
+      onError: (err) => {
+        console.error('Login error:', err);
+      },
+    });
   };
 
   return (
