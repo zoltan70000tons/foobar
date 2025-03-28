@@ -18,8 +18,8 @@ This template is used to send information about the reset seat to the customer.
 
 @section('content')
     <p>Hi {{ $passengerEmail }},</p>
-    <p>We wanted to let you know that your assigned seat in the cabin has been reset.</p>
-    <p>If you have any questions, please reach out to the Lead Passenger of your cabin for more information.</p>
+    <p>{{ __('systemEmails.seat_reset_notification')}}</p>
+    <p>{{ __('systemEmails.seat_reset_questions')}}</p>
 @endsection
 @section('regards')
     <p>{{ __('systemEmails.email_thanks') }}</p>
