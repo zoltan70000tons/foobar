@@ -63,6 +63,17 @@ class BookingsController extends Controller
   }
   public function index(Request $request)
   {
+    // set default to ON HOLD
+    $tab = $request->get('tab', 1);
+
+    $status = match ((int) $tab) {
+      0 => 'NEW',
+      1 => 'ON HOLD',
+      2 => 'UPLOADED',
+      3 => 'CANCELLED',
+      default => 'ON HOLD',
+    };
+
     try {
       $event_id = request()->route('id');
       $keyword = $request->input('keyword');
@@ -75,37 +86,56 @@ class BookingsController extends Controller
       }
       return $this->withPermission(
         [Permissions::ViewBookings],
-        function ($event_id, $keyword, $tag) {
-          $newBookings = $this->bookingRepository->getByStatus('NEW', $keyword);
-          $inProgressBookings = $this->bookingRepository->getByStatus('ON HOLD', $keyword);
-          $uploadedBookings = $this->bookingRepository->getByStatus('UPLOADED', $keyword);
-          $cancelledBookings = $this->bookingRepository->getByStatus('CANCELLED', $keyword);
+        // function ($event_id, $keyword, $tag) {
+        //   $newBookings = $this->bookingRepository->getByStatus('NEW', $keyword);
+        //   $inProgressBookings = $this->bookingRepository->getByStatus('ON HOLD', $keyword);
+        //   $uploadedBookings = $this->bookingRepository->getByStatus('UPLOADED', $keyword);
+        //   $cancelledBookings = $this->bookingRepository->getByStatus('CANCELLED', $keyword);
+        //   $users = $this->teamRepository->getAllMembers(1);
+        //   $cabinTypes = $this->cabinRepository->getTypes();
+        //   $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+        //   $tabIndex = 0;
+        //   if (count($newBookings) > 0) {
+        //     $tabIndex = 0;
+        //   } elseif (count($inProgressBookings) > 0) {
+        //     $tabIndex = 1;
+        //   } elseif (count($uploadedBookings) > 0) {
+        //     $tabIndex = 2;
+        //   } elseif (count($cancelledBookings) > 0) {
+        //     $tabIndex = 3;
+        //   }
+
+        //   //$cancelledBookings = [];
+        //   $event = $this->eventRepository->find($event_id);
+        //   return Inertia::render('Bookings/Index', [
+        //     'event' => $event,
+        //     'newBookings' => $newBookings,
+        //     'inProgressBookings' => $inProgressBookings,
+        //     'uploadedBookings' => $uploadedBookings,
+        //     'cancelledBookings' => $cancelledBookings,
+        //     'users' => $users,
+        //     'cabinTypes' => $cabinTypes,
+        //     'cabinCategories' => $cabinCategories,
+        //     'tabIndex' => $tabIndex,
+        //   ]);
+        // },
+
+        function ($event_id, $keyword, $tag) use ($status, $tab) {
+          $bookings = $this->bookingRepository->getByStatus($status, $keyword); // Only fetch one set
+
+          $event = $this->eventRepository->find($event_id);
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
-          $tabIndex = 0;
-          if (count($newBookings) > 0) {
-            $tabIndex = 0;
-          } elseif (count($inProgressBookings) > 0) {
-            $tabIndex = 1;
-          } elseif (count($uploadedBookings) > 0) {
-            $tabIndex = 2;
-          } elseif (count($cancelledBookings) > 0) {
-            $tabIndex = 3;
-          }
 
-          //$cancelledBookings = [];
-          $event = $this->eventRepository->find($event_id);
           return Inertia::render('Bookings/Index', [
             'event' => $event,
-            'newBookings' => $newBookings,
-            'inProgressBookings' => $inProgressBookings,
-            'uploadedBookings' => $uploadedBookings,
-            'cancelledBookings' => $cancelledBookings,
+            'bookings' => $bookings,
             'users' => $users,
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
-            'tabIndex' => $tabIndex,
+            'tabIndex' => (int) $tab,
+            'keyword' => $keyword,
           ]);
         },
         $event_id,
@@ -165,9 +195,7 @@ class BookingsController extends Controller
         'required',
         'boolean',
         function ($attribute, $value, $fail) use ($request) {
-          $cabinSpec = CabinSpec::query()
-              ->where('cabin_number', $request->input('cabin_number'))
-              ->first();
+          $cabinSpec = CabinSpec::query()->where('cabin_number', $request->input('cabin_number'))->first();
 
           if ($cabinSpec) {
             $cabin = Cabin::query()->find($cabinSpec->id);
@@ -178,7 +206,7 @@ class BookingsController extends Controller
               }
             }
           }
-        }
+        },
       ],
       'passenger.was_on_board' => ['nullable', 'boolean'],
       'passenger.newsletter' => ['nullable', 'boolean'],
@@ -197,7 +225,15 @@ class BookingsController extends Controller
 
       return $this->withPermission(
         [Permissions::CreateBookings],
-        function ($event_id, $cabin_number, $user, $passenger_data, $payment_plan, $number_of_installments, $carbonOffset) {
+        function (
+          $event_id,
+          $cabin_number,
+          $user,
+          $passenger_data,
+          $payment_plan,
+          $number_of_installments,
+          $carbonOffset
+        ) {
           $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
             $query->where('cabin_number', $cabin_number);
           })->first();
@@ -257,8 +293,14 @@ class BookingsController extends Controller
               }
             }
 
-            if (isset($passenger_data['survivor_number']) && isset($passenger_data['lead_passenger']) && $passenger_data['lead_passenger'] === true) {
-              $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber($passenger_data['survivor_number']);
+            if (
+              isset($passenger_data['survivor_number']) &&
+              isset($passenger_data['lead_passenger']) &&
+              $passenger_data['lead_passenger'] === true
+            ) {
+              $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber(
+                $passenger_data['survivor_number']
+              );
 
               if ($membershipLevelAdjustmentId) {
                 $adjustmentIds[] = $membershipLevelAdjustmentId;
@@ -274,7 +316,7 @@ class BookingsController extends Controller
         $passenger_data,
         $payment_plan,
         $number_of_installments,
-          $carbonOffset
+        $carbonOffset
       );
     } catch (\Exception $e) {
       $this->logException($e);

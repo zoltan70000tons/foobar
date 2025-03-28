@@ -9,12 +9,6 @@
       "options": {
         "singleQuote": true
       }
-    },
-    {
-      "files": ["*.js", "*.jsx", "*.ts", "*.tsx"],
-      "options": {
-        "singleQuote": true
-      }
     }
   ]
 }
