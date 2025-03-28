@@ -33,6 +33,7 @@ import debounce from 'lodash/debounce';
 const Index = ({
   auth,
   event,
+  bookings,
   newBookings,
   inProgressBookings,
   uploadedBookings,
@@ -42,9 +43,9 @@ const Index = ({
   cabinCategories,
   errors,
   tabIndex,
-}: PageProps & { tab: string; data: any }) => {
+}: PageProps & { tab: string; data: any; event: any; tabIndex: number }) => {
   const { hasPermission } = usePermissions();
-  const [selectedTab, setSelectedTab] = useState(tabIndex);
+  // const [selectedTab, setSelectedTab] = useState<number>(1);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [keyword, setKeyword] = useState('');
@@ -53,24 +54,12 @@ const Index = ({
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
+  const eventId = event.id;
 
-    router.post(
-      `/events/${event.id}/bookings`,
-      { status: getStatusFromTab(selectedTab), keyword },
-      {
-        preserveState: true,
-        replace: true,
-        onFinish: () => setLoading(false),
-      },
-    );
-  }, [selectedTab]);
-
-  const getStatusFromTab = (tabIndex) => {
-    const statuses = ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'];
-    return statuses[tabIndex] || 'NEW';
-  };
+  // const getStatusFromTab = (tabIndex: number) => {
+  //   const statuses = ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'];
+  //   return statuses[tabIndex] || 'NEW';
+  // };
 
   const handleOpenModal = (userId: string | null, booking_id: string | null) => {
     setSelectedBookingId(booking_id);
@@ -107,8 +96,22 @@ const Index = ({
       },
     );
   };
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setSelectedTab(newValue);
+
+  // const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+  //   setSelectedTab(newValue);
+  // };
+
+  const handleTabChange = (e: React.SyntheticEvent, newValue: number) => {
+    e.preventDefault();
+
+    router.get(
+      route('bookings.index', { id: eventId }),
+      { tab: newValue },
+      {
+        preserveScroll: true,
+        preserveState: true,
+      },
+    );
   };
 
   const [snackbar, setSnackbar] = useState({
@@ -125,8 +128,8 @@ const Index = ({
     setOpenDialog(false);
   };
 
-  const handleViewClick = (row) => {
-    if (!event?.id || !row?.booking_code) {
+  const handleViewClick = (row: any) => {
+    if (!eventId || !row?.booking_code) {
       console.error('Missing parameters: eventId or bookingCode is undefined.');
       return;
     }
@@ -137,20 +140,14 @@ const Index = ({
     // https://inertiajs.com/manual-visits
 
     // window.location.href = url; // Redirige al usuario
-    router.visit(url, { replace: true });
+    router.visit(url);
   };
 
-  // const handleViewClick = (row) => {
-  //   router.get(
-  //     route("bookings.show", { id: event.id, booking_code: row.booking_code })
-  //   );
-  // };
-
-  const handleClick = (agent_id: String, booking_id: String) => {
+  const handleClick = (agent_id: string, booking_id: string) => {
     handleOpenModal(agent_id, booking_id);
   };
 
-  const toCamelCase = (str) => {
+  const toCamelCase = (str: string) => {
     return str
       .toLowerCase()
       .split(' ')
@@ -164,7 +161,7 @@ const Index = ({
         header: 'Booking Date',
         accessor: 'created_at',
         sortable: true,
-        draw: (row) => (
+        draw: (row: any) => (
           <>
             {new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </>
@@ -183,21 +180,21 @@ const Index = ({
         header: 'Type',
         accessor: 'cabinType',
         sortable: true,
-        draw: (row) => <>{row.cabin?.cabin_type?.cabin_type}</>,
+        draw: (row: any) => <>{row.cabin?.cabin_type?.cabin_type}</>,
       },
       {
         header: 'Balance',
         accessor: 'balance',
-        draw: (row) => <>{row.balance != null && row.cost != null && <>{row.balance + ' / ' + row.cost}</>}</>,
+        draw: (row: any) => <>{row.balance != null && row.cost != null && <>{row.balance + ' / ' + row.cost}</>}</>,
       },
       {
         header: 'Tags',
         accessor: 'Tags',
-        draw: (row) => (
+        draw: (row: any) => (
           <Box sx={{ display: 'flex', flexFlow: 'column wrap', alignItems: 'flex-start', gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
-              row.tags.map((tag: string) => (
-                <Chip key={tag} label={tag} size="small" sx={{ fontSize: '0.7rem', fontWeight: '400' }} />
+              row.tags.map((tag: string, index: number) => (
+                <Chip key={index} label={tag} size="small" sx={{ fontSize: '0.7rem', fontWeight: '400' }} />
               ))
             ) : (
               <em>No Tags</em>
@@ -210,7 +207,7 @@ const Index = ({
         header: 'Assigned to',
         accessor: 'agent_id',
         sortable: true,
-        draw: (row) => {
+        draw: (row: any) => {
           const agent = row?.agent;
           const label = agent?.username ? agent.username : <em>Not Assigned</em>;
           const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>N</Avatar>;
@@ -234,7 +231,7 @@ const Index = ({
         header: 'Actions',
         accessor: '',
         disableFilter: true,
-        draw: (row) => (
+        draw: (row: any) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {hasPermission(Permissions.ViewCabins) && (
               <Visibility onClick={() => handleViewClick(row)} style={{ cursor: 'pointer' }} />
@@ -252,7 +249,7 @@ const Index = ({
         header: 'Passenger',
         accessor: 'lead_passenger',
         width: '25%',
-        draw: (row) => (
+        draw: (row: any) => (
           <Box display="flex" alignItems="center" gap={1} key={row.passenger_order}>
             <Person
               titleAccess={row.lead_passenger ? 'Lead Passenger' : 'Passenger'}
@@ -280,7 +277,7 @@ const Index = ({
       {
         header: 'Balance',
         accesor: 'passenger_allocated_cost',
-        draw: (row) => (
+        draw: (row: any) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {row.passenger_balance + ' / ' + row.passenger_allocated_cost}
           </div>
@@ -294,25 +291,42 @@ const Index = ({
     [],
   );
 
+  // const handleFilter = useCallback(
+  //   debounce((searchTerm) => {
+  //     setLoading(true);
+  //     router.post(
+  //       `/events/${event.id}/bookings`,
+  //       { keyword: searchTerm },
+  //       {
+  //         preserveState: true,
+  //         replace: true,
+  //         onSuccess: (data) => {
+  //           if (data.props.tabIndex !== undefined) {
+  //             setSelectedTab(data.props.tabIndex);
+  //           }
+  //         },
+  //         onFinish: () => setLoading(false),
+  //       },
+  //     );
+  //   }, 300),
+  //   [],
+  // );
+
   const handleFilter = useCallback(
-    debounce((searchTerm) => {
+    debounce((searchTerm: string) => {
       setLoading(true);
-      router.post(
-        `/events/${event.id}/bookings`,
-        { keyword: searchTerm },
+      router.get(
+        route('bookings.index', { id: event.id }),
+        { keyword: searchTerm, tab: tabIndex },
         {
           preserveState: true,
+          preserveScroll: true,
           replace: true,
-          onSuccess: (data) => {
-            if (data.props.tabIndex !== undefined) {
-              setSelectedTab(data.props.tabIndex);
-            }
-          },
           onFinish: () => setLoading(false),
         },
       );
     }, 300),
-    [],
+    [tabIndex],
   );
 
   const clearFilter = () => {
@@ -320,8 +334,8 @@ const Index = ({
     handleFilter('');
   };
 
-  const customFilter = (e) => {
-    let currentKeyword = e.target.value;
+  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let currentKeyword = e.target?.value as string;
     setKeyword(currentKeyword);
     handleFilter(currentKeyword);
   };
@@ -373,59 +387,21 @@ const Index = ({
             </Grid>
             <Box>
               {/* Tabs for navigation */}
-              <Tabs value={selectedTab} onChange={handleTabChange} aria-label="manage inventory and categories">
+              <Tabs value={tabIndex} onChange={handleTabChange} aria-label="manage inventory and categories">
                 <Tab label="NEW BOOKINGS" />
                 <Tab label="IN PROGRESS" />
                 <Tab label="UPLOADED TO MANIFEST" />
                 <Tab label="CANCELLED" />
               </Tabs>
 
-              <Box sx={{ display: selectedTab === 0 ? 'block' : 'none', mt: 2 }}>
-                <MuiTable
-                  columns={bookingColumns}
-                  data={newBookings}
-                  subColumns={subColumns}
-                  showCheckBox={false}
-                  showSubCheckBox={false}
-                  showCustomFilter={true}
-                  //showCustomFilter={true}
-                  onCustomFilter={customFilter}
-                />
-              </Box>
-
-              <Box sx={{ display: selectedTab === 1 ? 'block' : 'none', mt: 2 }}>
-                <MuiTable
-                  columns={bookingColumns}
-                  data={inProgressBookings}
-                  subColumns={subColumns}
-                  showCheckBox={false}
-                  showSubCheckBox={false}
-                  //showCustomFilter={true}
-                  onCustomFilter={customFilter}
-                />
-              </Box>
-
-              <Box sx={{ display: selectedTab === 2 ? 'block' : 'none', mt: 2 }}>
-                <MuiTable
-                  columns={bookingColumns}
-                  data={uploadedBookings}
-                  subColumns={subColumns}
-                  showCheckBox={false}
-                  showSubCheckBox={false}
-                  // showCustomFilter={true}
-                  onCustomFilter={customFilter}
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ display: selectedTab === 3 ? 'block' : 'none', mt: 2 }}>
+              {/* Display the bookings */}
               <MuiTable
                 columns={bookingColumns}
-                data={cancelledBookings}
+                data={bookings}
                 subColumns={subColumns}
                 showCheckBox={false}
                 showSubCheckBox={false}
-                //showCustomFilter={true}
+                // showCustomFilter={true}
                 onCustomFilter={customFilter}
               />
             </Box>
