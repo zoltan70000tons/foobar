@@ -8,6 +8,8 @@ use App\Models\Cabin;
 use App\Models\PassengerInvitation;
 use Illuminate\Support\Str;
 use App\Traits\StringNormalization;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerResetSeat;
 use App\Models\User;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
@@ -321,7 +323,7 @@ class CustomerBookingRepository
       } catch (\Exception $e) {
         return response()->json(['message' => 'Error while adding empty seat'], 500);
       }
-
+      ////// SEND EMAUI TO PASSENGER
       return response()->json(['message' => 'Empty seat added'], 200);
     }
 
@@ -409,6 +411,8 @@ class CustomerBookingRepository
       })
       ->first();
 
+    $passengerEmail = $passenger->email ?? null;
+
     if ($passenger) {
       try {
         $passenger->update([
@@ -444,9 +448,25 @@ class CustomerBookingRepository
       } catch (\Exception $e) {
         return response()->json(['message' => 'Error while resetting passenger seat'], 500);
       }
+
+      // send email to passenger, the invitation has been reset
+
+      $this->sendEmailToPassenger($passengerEmail);
+
       return response()->json(['message' => 'Passenger seat reset'], 200);
     }
 
     return response()->json(['message' => 'Passenger not found'], 404);
+  }
+
+  // Send email to passenger, the invitation has been reset
+  public function sendEmailToPassenger($passengerEmail)
+  {
+    $email = $passengerEmail ?? null;
+    if (!$email) {
+      return response()->json(['message' => 'Email not found'], 404);
+    }
+
+    Mail::to($email)->queue(new CustomerResetSeat($email));
   }
 }
