@@ -233,9 +233,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     }
 
     if (editMode &&
-      !passenger.dob &&
-      !passenger.empty_seat &&
-      !(passenger.passenger_invitation.length > 0)) {
+      !passenger?.dob &&
+      !passenger?.empty_seat &&
+      !(passenger?.passenger_invitation && passenger.passenger_invitation.length > 0)) {
       return <Chip label="Add Passenger" size="small" color="primary" sx={{ color: "white" }} />
     }
 
