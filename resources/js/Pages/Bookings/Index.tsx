@@ -53,19 +53,19 @@ const Index = ({
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // useEffect(() => {
-  //   setLoading(true);
+  useEffect(() => {
+    setLoading(true);
 
-  //   router.post(
-  //     `/events/${event.id}/bookings`,
-  //     { status: getStatusFromTab(selectedTab), keyword },
-  //     {
-  //       preserveState: true,
-  //       replace: true,
-  //       onFinish: () => setLoading(false),
-  //     },
-  //   );
-  // }, [selectedTab]);
+    router.post(
+      `/events/${event.id}/bookings`,
+      { status: getStatusFromTab(selectedTab), keyword },
+      {
+        preserveState: true,
+        replace: true,
+        onFinish: () => setLoading(false),
+      },
+    );
+  }, [selectedTab]);
 
   const getStatusFromTab = (tabIndex) => {
     const statuses = ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'];
