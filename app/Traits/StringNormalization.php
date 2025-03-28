@@ -20,8 +20,12 @@ trait StringNormalization
   /**
    * Normalize a string by removing special characters and converting to uppercase.
    */
-  public function normalizeString(string $string): string
+  public function normalizeString(string|null $string): string
   {
+    if (!$string) {
+      return ''; // Return empty string if input is null or empty
+    }
+
     return strtoupper(trim(Str::ascii($string))); // Remove accents and normalize casing
   }
 
