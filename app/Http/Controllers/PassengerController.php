@@ -158,9 +158,14 @@ class PassengerController extends Controller
     {
         $request->validate([
             'query' => 'required|string|min:3',
+            'eventId' => 'nullable|integer|min:1',
+            'bookingId' => 'nullable|integer|min:1',
         ]);
 
         $query = $request->get('query');
+
+        $eventId = $request->get('eventId');
+
         $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
             ->where('email', 'LIKE', "%{$query}%")
             ->orWhereHas('detail', function ($q) use ($query) {
@@ -168,7 +173,36 @@ class PassengerController extends Controller
                     ->orWhere('last_name', 'LIKE', "%{$query}%");
             })
             ->get()
-            ->map(function ($user) {
+            ->map(function ($user) use ($eventId, $request) {
+                if ($eventId) {
+                    $bookingId = $request->get('bookingId');
+
+                    // If there is a bookingId, it means it's an EditPassenger call
+                    if ($bookingId) {
+                        // Ensure the current booking is excluded in the double-booking check
+                        $exists = Booking::whereHas('passengers', function ($query) use ($user) {
+                            $query->where('survivor_number', $user->survivorNumber->survivor_number);
+                        })
+                            ->where('event_id', $eventId)
+                            ->where('id', '!=', $bookingId)  // Exclude current booking
+                            ->exists();
+                    } else {
+                        // If there is no bookingId, we're creating a new booking, so check for any existing booking
+                        $exists = Booking::whereHas('passengers', function ($query) use ($user) {
+                            $query->where('survivor_number', $user->survivorNumber->survivor_number);
+                        })
+                            ->where('event_id', $eventId)
+                            ->exists();
+                    }
+
+                    // Set the has_booking flag
+                    $has_booking = $exists;
+                } else {
+                    // If eventId is not provided, skip double booking check
+                    $has_booking = false;
+                }
+
+
                 return [
                     'id' => $user->id,
                     'email' => $user->email,
@@ -201,7 +235,8 @@ class PassengerController extends Controller
                     'single_t_agreement' => $user->detail->single_t_agreement ?? null,
                     'passenger_allocated_cost' => $user->detail->passenger_allocated_cost ?? null,
                     'passenger_balance' => $user->detail->passenger_balance ?? null,
-                    'was_on_board' => $user->detail->was_on_board ?? null
+                    'was_on_board' => $user->detail->was_on_board ?? null,
+                    'has_booking' => $has_booking,
                 ];
             });
 

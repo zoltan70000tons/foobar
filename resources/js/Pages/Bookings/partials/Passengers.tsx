@@ -322,6 +322,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
           setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
         }
         errors={errors}
+        bookingdId={booking.id}
+        eventId={booking.event_id}
       />
 
       <Dialog open={openConfirm} onClose={handleCancel}>

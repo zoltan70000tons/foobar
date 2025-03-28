@@ -37,7 +37,9 @@ const EditPassengerModal = ({
     errors,
     editMode,
     savingLoading,
-    releaseLoading
+    releaseLoading,
+    bookingId,
+    eventId,
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
@@ -60,7 +62,7 @@ const EditPassengerModal = ({
         const fetchSuggestions = async () => {
             setLoading(true);
             try {
-                const response = await axios.get("/passengers/search", { params: { query: searchQuery } });
+                const response = await axios.get("/passengers/search", { params: { query: searchQuery, bookingId, eventId } });
                 setSuggestions(response.data);
             } catch (error) {
                 console.error("Error fetching suggestions:", error);
