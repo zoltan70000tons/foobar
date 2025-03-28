@@ -78,7 +78,7 @@ class AdjustmentsRepository
   }
 
   public function listAdjustments() {
-    return Adjustment::all();
+    return Adjustment::where('system', true)->get();
   }
 
   public function getSingleTicketFeeId(): int

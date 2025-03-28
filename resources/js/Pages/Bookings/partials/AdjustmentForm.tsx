@@ -34,7 +34,7 @@ import LoadingOverlay from "@/Components/LoadingOverlay";
 type AdjustmentFormProps = {
     booking: Booking;
     editMode: boolean;
-    list: AdjustmentData[]; // Asegurar que `list` tenga ajustes disponibles
+    list: AdjustmentData[]; // Ensure available adjustments
 };
 
 type Booking = {
@@ -49,6 +49,7 @@ type AdjustmentData = {
     operation: "FIXED" | "PERCENTAGE";
     value: number;
     code: string;
+    system: boolean;
 };
 
 const defaultFormData: AdjustmentData = {
@@ -80,6 +81,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     const [open, setOpen] = useState(false);
     const [currentEditingId, setCurrentEditingId] = useState<number | null>(null);
     const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<number | "new">("new");
+    const [notAllowedEdition, setNotAllowedEdition] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const { showSnackbar } = useSnackbar();
@@ -106,10 +108,14 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
 
         if (selectedId === "new") {
             setFormData(defaultFormData);
+            setNotAllowedEdition(false)
         } else {
             const selectedAdjustment = list.find((adj) => adj.id === selectedId);
             if (selectedAdjustment) {
                 setFormData(selectedAdjustment);
+                if(selectedAdjustment.system){
+                    setNotAllowedEdition(true);
+                }
             }
         }
     };
@@ -122,6 +128,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
 
     const handleOpen = () => {
         resetForm();
+        setNotAllowedEdition(false);
         setOpen(true);
     };
 
@@ -260,6 +267,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                                 value={formData.code}
                                 onChange={handleChange}
                                 fullWidth
+                                disabled={notAllowedEdition}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -270,6 +278,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                                 value={formData.type}
                                 onChange={handleChange}
                                 fullWidth
+                                disabled={notAllowedEdition}
                             >
                                 <MenuItem value="DISCOUNT">Discount</MenuItem>
                                 <MenuItem value="ADDON">Addon</MenuItem>
@@ -283,6 +292,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                                 value={formData.operation}
                                 onChange={handleChange}
                                 fullWidth
+                                disabled={notAllowedEdition}
                             >
                                 <MenuItem value="FIXED">Fixed</MenuItem>
                                 <MenuItem value="PERCENTAGE">Percentage</MenuItem>
@@ -296,6 +306,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                                 value={formData.value}
                                 onChange={handleChange}
                                 fullWidth
+                                disabled={notAllowedEdition}
                                 inputProps={{ step: 0.01, min: 0 }}
                             />
                         </Grid>
