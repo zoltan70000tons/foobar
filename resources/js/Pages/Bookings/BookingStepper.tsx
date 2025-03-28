@@ -221,7 +221,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
     const fetchSuggestions = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/passengers/search', { params: { query: searchQuery } });
+        const response = await axios.get('/passengers/search', { params: { query: searchQuery, eventId } });
         setSuggestions(response.data);
       } catch (error) {
         console.error('Error fetching suggestions:', error);
