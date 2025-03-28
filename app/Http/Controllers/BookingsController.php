@@ -319,6 +319,7 @@ class BookingsController extends Controller
         $carbonOffset
       );
     } catch (\Exception $e) {
+      dd($e->getMessage());
       $this->logException($e);
     }
   }
