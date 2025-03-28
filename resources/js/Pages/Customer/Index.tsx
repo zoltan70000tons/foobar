@@ -1,20 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router, useForm } from "@inertiajs/react";
-import { PageProps } from "@/types";
-import {
-  Container,
-  Grid,
-  Toolbar,
-  Box, Button,
-} from "@mui/material";
-import { usePermissions } from "@/Providers/PermissionContext";
-import "dayjs/locale/en";
-import { Permissions } from "@/enums/PermissionEnum";
-import MuiTable from "@/Components/tables/MuiTable";
-import LoadingOverlay from "@/Components/LoadingOverlay";
-import { Visibility } from "@mui/icons-material";
-import axios from "axios";
+import React, { useEffect, useMemo, useState } from 'react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, router, useForm } from '@inertiajs/react';
+import { PageProps } from '@/types';
+import { Container, Grid, Toolbar, Box, Button } from '@mui/material';
+import { usePermissions } from '@/Providers/PermissionContext';
+import 'dayjs/locale/en';
+import { Permissions } from '@/enums/PermissionEnum';
+import MuiTable from '@/Components/tables/MuiTable';
+// import LoadingOverlay from '@/Components/LoadingOverlay';
+import { Visibility } from '@mui/icons-material';
+import axios from 'axios';
 
 const Index = ({ auth, customers }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -31,83 +26,81 @@ const Index = ({ auth, customers }: PageProps) => {
   const columns = useMemo(
     () => [
       {
-        header: "eMail",
-        accessor: "email",
+        header: 'eMail',
+        accessor: 'email',
         filterable: true,
         sortable: true,
-        width: "26%",
+        width: '26%',
       },
       {
-        accessor: "first_name",
-        header: "First Name",
+        accessor: 'first_name',
+        header: 'First Name',
         filterable: true,
         sortable: true,
-        width: "17%",
+        width: '17%',
       },
       {
-        accessor: "last_name",
-        header: "Last Name",
+        accessor: 'last_name',
+        header: 'Last Name',
         filterable: true,
         sortable: true,
-        width: "17%",
+        width: '17%',
       },
       {
-        accessor: "dob",
-        header: "Date of Birth",
+        accessor: 'dob',
+        header: 'Date of Birth',
         filterable: true,
         sortable: true,
-        width: "17%",
+        width: '17%',
       },
       {
-        accessor: "survivor_number",
-        header: "Survivor Number",
+        accessor: 'survivor_number',
+        header: 'Survivor Number',
         filterable: true,
         sortable: true,
-        width: "17%",
+        width: '17%',
       },
       {
-        accessor: "membership_type",
-        header: "Membership",
+        accessor: 'membership_type',
+        header: 'Membership',
         filterable: true,
         sortable: true,
-        width: "13%",
+        width: '13%',
       },
       {
-        header: "Actions",
-        accessor: "id",
+        header: 'Actions',
+        accessor: 'id',
         disableFilter: true,
-        width: "13%",
+        width: '13%',
         draw: (row) => (
-          <div style={ { display: "flex", gap: "10px" } }>
-            { hasPermission(Permissions.ViewCustomers) && (
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {hasPermission(Permissions.ViewCustomers) && (
               <Visibility
-                onClick={ () => {
-                  router.get(
-                    route("customers.show", { customer: row.id })
-                  );
-                } }
-                style={ { cursor: "pointer" } }
+                onClick={() => {
+                  router.get(route('customers.show', { customer: row.id }));
+                }}
+                style={{ cursor: 'pointer' }}
               />
-            ) }
+            )}
           </div>
         ),
       },
     ],
-    []
+    [],
   );
 
   const handleCreate = () => {
     get(route('customers.create', {}));
-  }
+  };
 
   const fetchCustomers = async (
     page: number,
     rowsPerPage: number,
     filters: { [key: string]: string },
-    sort: { key: string; direction: "asc" | "desc" }
+    sort: { key: string; direction: 'asc' | 'desc' },
   ): Promise<{ data: any[]; total: number }> => {
     try {
-      const response = await axios.get("/customers/paginated", {
+      const response = await axios.get('/customers/paginated', {
         params: {
           page,
           per_page: rowsPerPage,
@@ -122,37 +115,41 @@ const Index = ({ auth, customers }: PageProps) => {
 
       return {
         data: response.data?.data ?? [],
-        total: response.data?.total ?? 0
+        total: response.data?.total ?? 0,
       };
     } catch (error) {
-      console.error("Error fetching customers:", error);
+      console.error('Error fetching customers:', error);
       return { data: [], total: 0 };
     }
   };
 
   return (
-    <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
-      <Head title="Customers"/>
-      <Toolbar sx={ { mt: 8 } }>
-        <Button variant="outlined" color="secondary" onClick={ handleCreate }>
+    <AuthenticatedLayout user={auth.user} header={'Customers'}>
+      <Head title="Customers" />
+      <Toolbar sx={{ mt: 8 }}>
+        <Button variant="outlined" color="secondary" onClick={handleCreate}>
           New Customer
         </Button>
       </Toolbar>
-      <Container maxWidth="lg" sx={ { mb: 4 } }>
-        <Grid container spacing={ 3 }>
-          <Grid item xs={ 12 }>
+      <Container maxWidth="lg" sx={{ mb: 4 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
             <Box>
               <Box>
-                { customers ? (<MuiTable
-                  columns={ columns }
-                  data={ customers }
-                  showCheckBox={false}
-                  serverSidePagination={true}
-                  fetchData={fetchCustomers}
-                />) : <></> }
+                {customers ? (
+                  <MuiTable
+                    columns={columns}
+                    data={customers}
+                    showCheckBox={false}
+                    serverSidePagination={true}
+                    fetchData={fetchCustomers}
+                  />
+                ) : (
+                  <></>
+                )}
               </Box>
             </Box>
-            <LoadingOverlay open={ loading }/>
+            {/* <LoadingOverlay open={ loading }/> */}
           </Grid>
         </Grid>
       </Container>

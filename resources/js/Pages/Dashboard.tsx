@@ -16,25 +16,25 @@ import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
 
 export default function Dashboard({ auth }: PageProps) {
-  const { hasPermission, loading, error } = usePermissions();
+  const { hasPermission } = usePermissions();
 
-  if (error) return <Typography color="error">Error: {error.message}</Typography>;
+  //if (error) return <Typography color="error">Error: {error.message}</Typography>;
 
   // Show loader while permissions are being fetched
-  if (loading) {
-    return (
-      <AuthenticatedLayout user={auth.user} header="Dashboard">
-        <Head title="Dashboard" />
-        <Toolbar />
-        <Container
-          maxWidth="lg"
-          sx={{ mt: 4, mb: 4, display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}
-        >
-          <CircularProgress />
-        </Container>
-      </AuthenticatedLayout>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <AuthenticatedLayout user={auth.user} header="Dashboard">
+  //       <Head title="Dashboard" />
+  //       <Toolbar />
+  //       <Container
+  //         maxWidth="lg"
+  //         sx={{ mt: 4, mb: 4, display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}
+  //       >
+  //         <CircularProgress />
+  //       </Container>
+  //     </AuthenticatedLayout>
+  //   );
+  // }
 
   // Dashboard Items Configuration
   const dashboardItems = [

@@ -1,15 +1,23 @@
-import React, { useState } from "react";
 import { Paper, Typography, Box, IconButton, Badge, Grid } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../Theme/theme";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 
-const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeClick }) => {
-  const [loading, setLoading] = useState(false);
+type DashboardCardProps = {
+  title: string;
+  description: string;
+  Icon: any;
+  link: string;
+  badgeContent?: number;
+  onBadgeClick?: () => void;
+};
+
+const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeClick }: DashboardCardProps) => {
+  // const [loading, setLoading] = useState(false);
 
   const handleClick = () => {
-    setLoading(true);
+    // setLoading(true);
     router.get(link);
   };
 
