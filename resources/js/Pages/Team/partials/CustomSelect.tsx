@@ -14,7 +14,7 @@ interface CustomSelectProps {
 const CustomSelect: React.FC<CustomSelectProps> = ({ name, value, title, onChange, dis, error, options }) => {
   return (
     <Box>
-      <FormControl fullWidth variant="outlined" size="small" error={!!error} disabled={dis}>
+      <FormControl fullWidth variant="outlined"  error={!!error} disabled={dis}>
         <InputLabel>{title}</InputLabel>
         <Select
           name={name}

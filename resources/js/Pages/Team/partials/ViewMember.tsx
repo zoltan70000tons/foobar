@@ -1,12 +1,9 @@
 import React from "react";
 import {
-  DialogContent,
-  DialogTitle,
   Grid,
 } from "@mui/material";
 import ProfileCard from "./ProfileCard";
 import SettingsCard from "./SettingsCard";
-import CssBaseline from "@mui/material/CssBaseline";
 interface User {
   id: number;
   name: string;

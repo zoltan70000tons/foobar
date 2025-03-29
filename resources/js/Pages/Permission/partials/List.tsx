@@ -143,7 +143,7 @@ const List = () => {
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'role', headerName: 'Permission', width: 800 },
+    { field: 'role', headerName: 'Permission', width: 800, flex: 1  },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -151,6 +151,7 @@ const List = () => {
       headerAlign: 'right',
       align: 'right',
       renderCell: (params) => (
+        <Box display="flex" justifyContent="flex-end" width="100%">
         <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
           {hasPermission(updatePermission) && (
             <IconButton color="primary" onClick={() => handleEdit(params.row)} disabled={params.row.system}>
@@ -163,6 +164,7 @@ const List = () => {
             </IconButton>
           )}
         </div>
+        </Box>
       ),
       sortable: false,
     },
@@ -189,7 +191,7 @@ const List = () => {
           },
         }}
         pageSizeOptions={[5, 10]}
-        checkboxSelection
+        //checkboxSelection
       />
 
       <Modal open={open} onClose={handleClose} aria-labelledby="add-permission-modal-title">

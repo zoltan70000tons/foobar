@@ -38,7 +38,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
         error={!!error}
         helperText={error}
         variant="outlined"
-        size="small"
+       // size="small"
       />
     </Box>
   );

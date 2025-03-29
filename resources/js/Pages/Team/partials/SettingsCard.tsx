@@ -108,7 +108,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     setData('gender', value.target.value);
   }
   return (
-    <Card variant="outlined" sx={{ height: "100%", width: "100%" }}>
+    <Card variant="outlined" sx={{ height: "100%", width: "100%",background:"#383838", border:"2px solid grey" }}>
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
@@ -162,7 +162,8 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
 
                 <Grid item xs={12} md={4}>
                   <Box>
-                    <PhoneNumber value={data?.phone_number || ""}
+                    <PhoneNumber value={data?.phone_number || "" }
+                      sx={{width:'100%', maxHeight:'20px'}}
                       onChange={(value) => handleChangePhone(value)}
                       forceDialCode={true}
                       error={errors.phone_number}

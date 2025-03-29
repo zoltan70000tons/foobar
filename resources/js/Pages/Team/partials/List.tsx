@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Stack, Chip } from "@mui/material";
+import { Container, Stack, Chip, Box } from "@mui/material";
 import { DataGrid, GridColDef, GridFilterModel, GridFilterItem, GridRowModel, GridFilterInputMultipleValue, GridFilterInputValue } from "@mui/x-data-grid";
 import { useTeamData } from "@/Hooks/useTeamData";
 import ActionMenu from "./ActionMenu";
@@ -138,6 +138,7 @@ const List: React.FC = () => {
       field: "roles",
       headerName: "Role",
       width: 300,
+      flex: 1,
       filterOperators: customFilters(),
       renderCell: (params) => (
         <Stack direction="row" alignItems="center" height="100%">
@@ -151,7 +152,7 @@ const List: React.FC = () => {
       field: "actions",
       headerName: "Actions",
       width: 150,
-      renderCell: (params) => <ActionMenu params={params} />,
+      renderCell: (params) => <Box display="flex" justifyContent="flex-end" width="100%"><ActionMenu params={params} /></Box>,
     },
   ];
 
@@ -186,7 +187,6 @@ const List: React.FC = () => {
               },
             }}
             pageSizeOptions={[5, 10]}
-            checkboxSelection
             filterModel={filterModel} // Bind the filter model to the DataGrid
             onFilterModelChange={handleFilterChange} // Update the filter model on changes
           />

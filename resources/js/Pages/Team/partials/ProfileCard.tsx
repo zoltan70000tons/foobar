@@ -5,7 +5,6 @@ import { Chip, Grid } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import Badge from "@mui/material/Badge";
-import Button from "@mui/material/Button";
 
 const styles = {
   details: {
@@ -54,6 +53,7 @@ export default function ProfileCard({ user }: ProfileCardProps) {
         direction="column"
         justifyContent="center"
         alignItems="center"
+        sx={{background:"#383838", border:"2px solid grey"}}
       >
 
         <Grid item sx={{ p: "1.5rem 0rem", textAlign: "center" }}>
