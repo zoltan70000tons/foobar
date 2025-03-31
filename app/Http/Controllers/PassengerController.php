@@ -187,7 +187,6 @@ class PassengerController extends Controller
                         $has_booking = false;
                     }
 
-
                     return [
                         'id' => $user->id,
                         'email' => $user->email,
