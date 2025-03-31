@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Drawer,
-  IconButton,
-  Tooltip,
-  ListSubheader,
-  ListItemButton,
-  ListItemText,
-  List,
-} from "@mui/material";
+import { Box, Drawer, IconButton, Tooltip, ListSubheader, ListItemButton, ListItemText, List } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
   Workspaces as WorkspacesIcon,
@@ -18,16 +9,21 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 
-
-import { Link, router } from "@inertiajs/react";
-import axios from "axios"; 
+import { Link, router, usePage } from "@inertiajs/react";
+import axios from "axios";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 
 const MenuItems: React.FC = () => {
   const { hasPermission } = usePermissions();
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null); 
-  const [events, setEvents] = useState<any[]>([]);
+
+  const { props } = usePage<{ menu?: { events: any[] } }>();
+  const events: any[] = props.menu?.events || [];
+
+  console.log("events", events);
+
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  //const [events, setEvents] = useState<any[]>([]);
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const currentPath = window.location.pathname;
   const pathParts = window.location.pathname.split("/");
@@ -38,48 +34,48 @@ const MenuItems: React.FC = () => {
   const isCabinsRoute = currentPath.includes("cabins");
   const isCustomersRoute = currentPath.includes("customer");
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (isBookingsOpen) {
-        try {
-          const response = await axios.get("/menu/bookings");
-          setEvents(response.data);
-        } catch (error) {
-          console.error("Error fetching events:", error);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchEvents = async () => {
+  //     if (isBookingsOpen) {
+  //       try {
+  //         const response = await axios.get("/menu/bookings");
+  //         setEvents(response.data);
+  //       } catch (error) {
+  //         console.error("Error fetching events:", error);
+  //       }
+  //     }
+  //   };
 
-    fetchEvents(); 
-  }, [isBookingsOpen]);
+  //   fetchEvents();
+  // }, [isBookingsOpen]);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (isBookingsRoute || isCabinsRoute) {
-        try {
-          const response = await axios.get("/menu/bookings");
-          setEvents(response.data);
-          setIsBookingsOpen(true);
-        } catch (error) {
-          console.error("Error fetching events:", error);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchEvents = async () => {
+  //     if (isBookingsRoute || isCabinsRoute) {
+  //       try {
+  //         const response = await axios.get("/menu/bookings");
+  //         setEvents(response.data);
+  //         setIsBookingsOpen(true);
+  //       } catch (error) {
+  //         console.error("Error fetching events:", error);
+  //       }
+  //     }
+  //   };
 
-    fetchEvents();
-  }, [isBookingsRoute, isCabinsRoute]);
+  //   fetchEvents();
+  // }, [isBookingsRoute, isCabinsRoute]);
+
   const handleBookingsClick = async () => {
-    setIsBookingsOpen(true); 
+    setIsBookingsOpen(true);
   };
-
 
   const handleEventClick = (eventId: number): void => {
     setSelectedEventId(eventId);
-    router.visit(route("bookings.index", eventId)); 
+    router.visit(route("bookings.index", eventId));
   };
 
   const truncateText = (text: string | null | undefined, maxLength: number) => {
-    if (!text) return ""; 
+    if (!text) return "";
     return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   };
 
@@ -159,17 +155,17 @@ const MenuItems: React.FC = () => {
             </Tooltip>
           )}
           {hasPermission(Permissions.ViewCustomers) && (
-              <Tooltip title="Customers" placement="right">
-                <IconButton
-                    component={Link}
-                    href={route("customers.index")}
-                    style={{
-                      backgroundColor: isCustomersRoute ? "#2f4f4f" : "transparent",
-                    }}
-                >
-                  <PersonIcon />
-                </IconButton>
-              </Tooltip>
+            <Tooltip title="Customers" placement="right">
+              <IconButton
+                component={Link}
+                href={route("customers.index")}
+                style={{
+                  backgroundColor: isCustomersRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
+                <PersonIcon />
+              </IconButton>
+            </Tooltip>
           )}
           <Tooltip title="Logout" placement="right">
             <IconButton onClick={() => router.post(route("logout"))}>
@@ -181,40 +177,24 @@ const MenuItems: React.FC = () => {
       <Drawer
         variant="permanent"
         sx={{
-          width: 240, 
+          width: 240,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: { width: 240, boxSizing: "border-box" },
         }}
       >
         <List
           sx={{ width: "100%", bgcolor: "background.paper", mt: 0, pt: 0 }}
-          subheader={
-            currentPath === null && (
-              <ListSubheader component="div">
-                Select a Menu option
-              </ListSubheader>
-            )
-          }
+          subheader={currentPath === null && <ListSubheader component="div">Select a Menu option</ListSubheader>}
         >
           {isDashboardRoute && !isBookingsOpen && (
-            <ListItemButton
-              component={Link}
-              href={route("dashboard")}
-              method="get"
-              selected={isDashboardRoute}
-            >
+            <ListItemButton component={Link} href={route("dashboard")} method="get" selected={isDashboardRoute}>
               <ListItemText primary="Dashboard" />
             </ListItemButton>
           )}
 
           {isTeamRoute && !isBookingsOpen && (
             <>
-              <ListItemButton
-                key="team"
-                component={Link}
-                href={route("teams")}
-                selected={currentPath === "/team"}
-              >
+              <ListItemButton key="team" component={Link} href={route("teams")} selected={currentPath === "/team"}>
                 <ListItemText primary="Team Members" />
               </ListItemButton>
               <ListItemButton
@@ -236,14 +216,14 @@ const MenuItems: React.FC = () => {
             </>
           )}
 
-          {isBookingsOpen  && (
+          {(isBookingsOpen || isBookingsRoute) && (
             <List disablePadding>
               {events.length > 0 ? (
                 events.map((event) => (
                   <ListItemButton
                     key={event.id}
                     component={Link}
-                    href={route(  isBookingsRoute ? "bookings.index" : "cabins.index", event.id)}
+                    href={route(isBookingsRoute ? "bookings.index" : "cabins.index", event.id)}
                     selected={parseInt(routeEventId) === event.id}
                   >
                     <Tooltip title={event.name}>

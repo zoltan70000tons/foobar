@@ -38,18 +38,12 @@ interface DataGridProps<T> {
     page: number,
     rowsPerPage: number,
     filters: { [key: string]: string },
-    sort: { key: keyof T | string; direction: "asc" | "desc" }
+    sort: { key: keyof T | string; direction: "asc" | "desc" },
   ) => Promise<{ data: T[]; total: number }>;
   showCheckBox?: boolean;
   showSubCheckBox?: boolean;
-  onApplyTags?: (
-    subRowIds: (string | number)[],
-    selectedTags: string[]
-  ) => void;
-  onApplyState?: (
-    subRowIds: (string | number | object)[],
-    selectedStatus: string
-  ) => void;
+  onApplyTags?: (subRowIds: (string | number)[], selectedTags: string[]) => void;
+  onApplyState?: (subRowIds: (string | number | object)[], selectedStatus: string) => void;
   onCustomFilter?: (value: string) => void;
   showSubTableFilters?: boolean;
   tagOptions?: string[];
@@ -75,15 +69,11 @@ const MuiTable: FC<DataGridProps<any>> = ({
 }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(
-    null
-  );
+  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-  const [selectedSubRows, setSelectedSubRows] = useState<
-    { id: string | number; status: string }[]
-  >([]);
+  const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
   const [sort, setSort] = useState<{
     key: keyof any | string;
     direction: "asc" | "desc";
@@ -128,8 +118,8 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const sortedData = [...filteredData].sort((a, b) => {
     const key = sort.key as keyof typeof a;
 
-    const aValue = (a && a[key]) ? a[key] : null; // Handle null/undefined
-    const bValue = (b && b[key]) ? b[key] : null;
+    const aValue = a && a[key] ? a[key] : null; // Handle null/undefined
+    const bValue = b && b[key] ? b[key] : null;
 
     // Handle null/undefined values:
     if (aValue === null && bValue !== null) return sort.direction === "asc" ? 1 : -1;
@@ -151,9 +141,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
 
   const handleSelectRow = (id: string | number) => {
     setSelectedRows((prevSelectedRows) =>
-      prevSelectedRows.includes(id)
-        ? prevSelectedRows.filter((i) => i !== id)
-        : [...prevSelectedRows, id]
+      prevSelectedRows.includes(id) ? prevSelectedRows.filter((i) => i !== id) : [...prevSelectedRows, id],
     );
   };
 
@@ -202,11 +190,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
     }));
   };
 
-
-  const handlePageChange = (
-    event: MouseEvent<HTMLButtonElement> | null,
-    newPage: number
-  ) => {
+  const handlePageChange = (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
 
@@ -238,17 +222,14 @@ const MuiTable: FC<DataGridProps<any>> = ({
         </Box>
       )}
       <TableContainer>
-        <Table  sx={{ tableLayout: "fixed", width: "100%" }}>
+        <Table sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
             {/* first row for headers */}
             <TableRow>
               {showCheckBox && (
                 <TableCell padding="checkbox">
                   <Checkbox
-                    indeterminate={
-                      selectedRows.length > 0 &&
-                      selectedRows.length < data.length
-                    }
+                    indeterminate={selectedRows.length > 0 && selectedRows.length < data.length}
                     checked={selectedRows.length === data.length}
                     onChange={handleSelectAllRows}
                   />
@@ -283,12 +264,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
                       (column.filterType === "select" ? (
                         <Select
                           value={filters[column.accessor as string] || ""}
-                          onChange={(event) =>
-                            handleFilterChange(
-                              column.accessor as string,
-                              event.target.value
-                            )
-                          }
+                          onChange={(event) => handleFilterChange(column.accessor as string, event.target.value)}
                           displayEmpty
                           fullWidth
                           size="small"
@@ -307,12 +283,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
                           variant="outlined"
                           size="small"
                           value={filters[column.accessor as string] || ""}
-                          onChange={(event) =>
-                            handleFilterChange(
-                              column.accessor as string,
-                              event.target.value
-                            )
-                          }
+                          onChange={(event) => handleFilterChange(column.accessor as string, event.target.value)}
                           placeholder={`Filter ${column.header}`}
                         />
                       ))}
@@ -324,10 +295,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length + (showCheckBox ? 2 : 1)}
-                  style={{ textAlign: "center" }}
-                >
+                <TableCell colSpan={columns.length + (showCheckBox ? 2 : 1)} style={{ textAlign: "center" }}>
                   <CircularProgress />
                 </TableCell>
               </TableRow>
@@ -341,9 +309,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
                   subColumns={subColumns}
                   subFilters={subFilters}
                   isOpen={expandedRowId === row.id}
-                  onToggle={() =>
-                    setExpandedRowId(expandedRowId === row.id ? null : row.id)
-                  }
+                  onToggle={() => setExpandedRowId(expandedRowId === row.id ? null : row.id)}
                   isSelected={selectedRows.includes(row.id)}
                   onSelectRow={() => handleSelectRow(row.id)}
                   showCheckBox={showCheckBox}
@@ -359,10 +325,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length + (showCheckBox ? 2 : 1)}
-                  style={{ textAlign: "center" }}
-                >
+                <TableCell colSpan={columns.length + (showCheckBox ? 2 : 1)} style={{ textAlign: "center" }}>
                   No data found.
                 </TableCell>
               </TableRow>
@@ -373,13 +336,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={
-          serverSidePagination
-            ? totalCount
-            : Array.isArray(data)
-            ? data.length
-            : Object.keys(data).length
-        }
+        count={serverSidePagination ? totalCount : Array.isArray(data) ? data.length : Object.keys(data).length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handlePageChange}

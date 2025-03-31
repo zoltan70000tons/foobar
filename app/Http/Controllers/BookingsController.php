@@ -121,12 +121,22 @@ class BookingsController extends Controller
         // },
 
         function ($event_id, $keyword, $tag) use ($status, $tab) {
+          // THIS IS SLOW
           $bookings = $this->bookingRepository->getByStatus($status, $keyword); // Only fetch one set
 
           $event = $this->eventRepository->find($event_id);
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
+
+          // THIS IS SLOW - FIXED
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+
+          // Log everything
+          // \Log::info('Event arr', ['event' => $event]);
+          // \Log::info('Bookings arr', ['bookings' => $bookings]);
+          // \Log::info('Users arr', ['users' => $users]);
+          // \Log::info('CabinTypes arr', ['cabinTypes' => $cabinTypes]);
+          // \Log::info('CabinCategories arr', ['cabinCategories' => $cabinCategories]);
 
           return Inertia::render('Bookings/Index', [
             'event' => $event,
