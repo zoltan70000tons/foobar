@@ -121,7 +121,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       showSnackbar("Passenger data updated succesfully!", "success");
     } catch (error) {
       setErrors(error);
-      showSnackbar("Error updating passenger data!", "error");
+      console.error(error);
+      showSnackbar("Error updating passenger data!" + (error.response?.data?.error || error), "error");
     } finally {
       setSavingLoading(false);
     }
