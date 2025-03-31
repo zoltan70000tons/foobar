@@ -467,8 +467,8 @@ class BookingController extends Controller
 
       //$dateOfBirth = $request->dateOfBirth;
       // Normalize input names
-      $formattedName = $this->normalizeString($request->firstName);
-      $formattedLastName = $this->normalizeString($request->lastName);
+      $formattedName = $this->normalizeString($request->first_name);
+      $formattedLastName = $this->normalizeString($request->last_name);
 
       // check the user details matched userWithSuvivor
       if (
