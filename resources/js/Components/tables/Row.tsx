@@ -44,7 +44,7 @@ interface RowProps<T> {
   isSelected: boolean;
   onSelectRow: () => void;
   showCheckBox?: boolean;
-  showSubCheckBox?: boolean,
+  showSubCheckBox?: boolean;
   onSelectSubRow?: (id: string | number, status: string) => void;
   selectedSubRows?: { id: string | number; status: string }[];
   showSubTableFilters?: boolean;
@@ -87,10 +87,7 @@ const Row: FC<RowProps<any>> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
 
-  const handleSubPageChange = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number
-  ) => {
+  const handleSubPageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setSubPage(newPage);
   };
 
@@ -99,9 +96,7 @@ const Row: FC<RowProps<any>> = ({
     setSubPage(0);
   };
 
-  const handleSubFilterChange = (
-    event: ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
-  ) => {
+  const handleSubFilterChange = (event: ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = event.target;
     setSubFilters({
       ...subFilters,
@@ -113,8 +108,7 @@ const Row: FC<RowProps<any>> = ({
   const handleSubSort = (key: keyof any | string) => {
     setSubSort((prevSort) => ({
       key,
-      direction:
-        prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
+      direction: prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
     }));
   };
 
@@ -143,9 +137,7 @@ const Row: FC<RowProps<any>> = ({
     const bValue = b[subSort.key];
 
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return subSort.direction === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+      return subSort.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     }
 
     if (typeof aValue === "number" && typeof bValue === "number") {
@@ -155,10 +147,7 @@ const Row: FC<RowProps<any>> = ({
     return 0;
   });
 
-  const paginatedSubRows = sortedSubRows.slice(
-    subPage * subRowsPerPage,
-    subPage * subRowsPerPage + subRowsPerPage
-  );
+  const paginatedSubRows = sortedSubRows.slice(subPage * subRowsPerPage, subPage * subRowsPerPage + subRowsPerPage);
 
   const handleSelectAllSubRows = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -166,11 +155,11 @@ const Row: FC<RowProps<any>> = ({
         id: subRow.id,
         status: subRow.cabin_status,
       }));
-  
+
       if (onSelectSubRow) {
         allSubRowIdsAndStatuses.forEach(({ id, status }) => {
           const isAlreadySelected = selectedSubRows.some((selectedRow) => selectedRow.id === id);
-  
+
           if (!isAlreadySelected) {
             onSelectSubRow(id, status);
           }
@@ -184,8 +173,6 @@ const Row: FC<RowProps<any>> = ({
       }
     }
   };
-  
-  
 
   const handleSelectSubRow = (id: string | number, status: string) => {
     if (onSelectSubRow) {
@@ -228,32 +215,26 @@ const Row: FC<RowProps<any>> = ({
         )}
         <TableCell>
           {subRows ? (
-            <IconButton onClick={onToggle}>
-              {isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-            </IconButton>
+            <IconButton onClick={onToggle}>{isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}</IconButton>
           ) : null}
         </TableCell>
         {columns.map((column) => (
-          <TableCell key={column.accessor as string} sx={column.width ? { width: column.width, wordWrap: "break-word" } : {}}>
+          <TableCell
+            key={column.accessor as string}
+            sx={column.width ? { width: column.width, wordWrap: "break-word" } : {}}
+          >
             {column.draw ? column.draw(row) : row[column.accessor]}
           </TableCell>
         ))}
       </TableRow>
       {subRows && (
-        <TableRow sx={{ background:'#272931'}}>
-          <TableCell
-            style={{ paddingBottom: 0, paddingTop: 0 }}
-            colSpan={columns.length + (showCheckBox ? 2 : 1)}
-          >
+        <TableRow sx={{ background: "#272931" }}>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={columns.length + (showCheckBox ? 2 : 1)}>
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <Box margin={1}>
                 {selectedSubRows.length > 0 && (
                   <Box mb={2} mt={2}>
-                    <FormControl
-                      variant="outlined"
-                      size="small"
-                      style={{ minWidth: 200, marginRight: 8 }}
-                    >
+                    <FormControl variant="outlined" size="small" style={{ minWidth: 200, marginRight: 8 }}>
                       <InputLabel>Tags</InputLabel>
                       <Select
                         multiple
@@ -290,17 +271,9 @@ const Row: FC<RowProps<any>> = ({
                     >
                       Edit Tags ({selectedSubRows.length})
                     </Button>
-                    <FormControl
-                      variant="outlined"
-                      size="small"
-                      style={{ minWidth: 200, marginRight: 8 }}
-                    >
+                    <FormControl variant="outlined" size="small" style={{ minWidth: 200, marginRight: 8 }}>
                       <InputLabel>Status</InputLabel>
-                      <Select
-                        value={selectedStatus}
-                        onChange={handleStatusChange}
-                        label="Status"
-                      >
+                      <Select value={selectedStatus} onChange={handleStatusChange} label="Status">
                         {statusOptions.map((status) => (
                           <MenuItem key={status} value={status}>
                             {status}
@@ -321,19 +294,15 @@ const Row: FC<RowProps<any>> = ({
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                    {showSubCheckBox && (<TableCell padding="checkbox">
-                        <Checkbox
-                          indeterminate={
-                            selectedSubRows.length > 0 &&
-                            selectedSubRows.length < sortedSubRows.length
-                          }
-                          checked={
-                            sortedSubRows.length > 0 &&
-                            selectedSubRows.length === sortedSubRows.length
-                          }
-                          onChange={handleSelectAllSubRows}
-                        />
-                      </TableCell>)}
+                      {showSubCheckBox && (
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            indeterminate={selectedSubRows.length > 0 && selectedSubRows.length < sortedSubRows.length}
+                            checked={sortedSubRows.length > 0 && selectedSubRows.length === sortedSubRows.length}
+                            onChange={handleSelectAllSubRows}
+                          />
+                        </TableCell>
+                      )}
                       {subColumns?.map((column) => (
                         <TableCell key={`filter-${column.accessor as string}`}>
                           {column.sortable ? (
@@ -357,17 +326,11 @@ const Row: FC<RowProps<any>> = ({
                           <TableCell key={`filter-${column.accessor as string}`}>
                             {column.filterable ? (
                               column.filterType === "select" ? (
-                                <FormControl
-                                  variant="outlined"
-                                  size="small"
-                                  fullWidth
-                                >
+                                <FormControl variant="outlined" size="small" fullWidth>
                                   <InputLabel>{column.header}</InputLabel>
                                   <Select
                                     name={column.accessor as string}
-                                    value={
-                                      subFilters[column.accessor as string] || ""
-                                    }
+                                    value={subFilters[column.accessor as string] || ""}
                                     onChange={handleSubFilterChange}
                                     label={column.header}
                                   >
@@ -398,34 +361,32 @@ const Row: FC<RowProps<any>> = ({
                     )}
                   </TableHead>
                   <TableBody>
-                    {paginatedSubRows.map((subRow) => (
-                      <TableRow key={subRow.id}>
-                         {showSubCheckBox && (<TableCell padding="checkbox">
-                          <Checkbox
-                            checked={selectedSubRows.some(
-                              (selected) => selected.id === subRow.id
-                            )}
-                            onChange={() =>
-                              handleSelectSubRow(subRow.id, subRow.cabin_status)
-                            }
-                          />
-                        </TableCell>)}
-                        {subColumns?.map((column) => (
-                          <TableCell key={column.accessor as string} sx={{ width: column?.width || '100px' }}>
-                            {column.draw
-                              ? column.draw(subRow)
-                              : subRow[column.accessor]}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
+                    {paginatedSubRows.map((subRow, index) => {
+                      console.log(subRow, index);
+
+                      const uniqueIndex = `${index}-${subRow.id}`; // Create a unique key for each subRow
+
+                      return (
+                        <TableRow key={subRow.id}>
+                          {showSubCheckBox && (
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedSubRows.some((selected) => selected.id === subRow.id)}
+                                onChange={() => handleSelectSubRow(subRow.id, subRow.cabin_status)}
+                              />
+                            </TableCell>
+                          )}
+                          {subColumns?.map((column) => (
+                            <TableCell key={uniqueIndex} sx={{ width: column?.width || "100px" }}>
+                              {column.draw ? column.draw(subRow) : subRow[column.accessor]}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      );
+                    })}
                     {paginatedSubRows.length === 0 && (
                       <TableRow>
-                        <TableCell
-                          colSpan={subColumns?.length! + 1}
-                        >
-                          No data found.
-                        </TableCell>
+                        <TableCell colSpan={subColumns?.length! + 1}>No data found.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>

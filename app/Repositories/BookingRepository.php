@@ -116,9 +116,9 @@ class BookingRepository implements BookingInterface
       'cabin.cabinType',
       'customer',
       'customer.detail',
-      'passengers' => function ($query) {
-        $query->orderBy('passenger_order', 'asc');
-      },
+      'passengers' => fn($q) => $q->orderBy('passenger_order'),
+      'passengers.installments',
+      'passengers.payments',
       'agent',
       'agent.detail',
     ])

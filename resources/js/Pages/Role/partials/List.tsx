@@ -183,23 +183,28 @@ const List = () => {
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'role', headerName: 'Role', width: 800 },
+    { field: 'role', headerName: 'Role', width: 800, flex: 1 },
     {
       field: 'actions',
       headerName: 'Actions',
       width: 150,
+      sortable: false,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => (
-        <Box display="flex" justifyContent="flex-end">
-          {hasPermission(editRolePermission) && (
-            <IconButton color="primary" onClick={() => handleEdit(params.row)}>
-              <SettingsIcon />
-            </IconButton>
-          )}
-          {hasPermission(deleteRolePermission) && (
-            <IconButton color="secondary" onClick={() => handleDelete(params.row.id)} disabled={params.row.system}>
-              <DeleteIcon />
-            </IconButton>
-          )}
+        <Box display="flex" justifyContent="flex-end" width="100%">
+          <Box display="flex" justifyContent="flex-end">
+            {hasPermission(editRolePermission) && (
+              <IconButton color="primary" onClick={() => handleEdit(params.row)}>
+                <SettingsIcon />
+              </IconButton>
+            )}
+            {hasPermission(deleteRolePermission) && (
+              <IconButton color="secondary" onClick={() => handleDelete(params.row.id)} disabled={params.row.system}>
+                <DeleteIcon />
+              </IconButton>
+            )}
+          </Box>
         </Box>
       ),
     },
@@ -223,7 +228,7 @@ const List = () => {
           getRowId={(row) => row.id}
           initialState={{ pagination: { paginationModel: { page: 0, pageSize: 5 } } }}
           pageSizeOptions={[5, 10]}
-          checkboxSelection
+        //checkboxSelection
         />
       </div>
       <Modal open={open} onClose={handleClose}>

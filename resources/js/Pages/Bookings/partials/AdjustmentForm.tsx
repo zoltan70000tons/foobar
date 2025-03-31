@@ -220,14 +220,14 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                 key={adjustment.id}
                 secondaryAction={
                   <>
-                    <IconButton
+                    {(!adjustment?.system) && (<IconButton
                       edge="end"
                       aria-label="edit"
                       onClick={() => handleEdit(adjustment.id!)}
                       disabled={!canEditAdjustment || !editMode}
                     >
                       <EditIcon />
-                    </IconButton>
+                    </IconButton>)}
                     <IconButton
                       edge="end"
                       aria-label="delete"
