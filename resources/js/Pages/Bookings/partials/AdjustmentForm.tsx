@@ -165,6 +165,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
       route('bookings.createAdjustment', {
         event_id: booking.event_id,
         booking_id: booking.id,
+        selected_adjustment_id: selectedAdjustmentId,
       }),
       formData,
       {
@@ -183,7 +184,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
-      { id: currentEditingId, ...formData },
+      { id: currentEditingId, ...formData, selected_adjustment_id: selectedAdjustmentId },
       {
         onSuccess: () => setLoading(false),
         onError: () => setLoading(false),
