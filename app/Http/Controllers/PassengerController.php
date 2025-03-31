@@ -73,22 +73,10 @@ class PassengerController extends Controller
             ], 422);
         }
 
-        if (!empty($validated['survivor_number'])) {
-            $existingBooking = Booking::whereHas('passengers', function ($query) use ($validated) {
-                $query->where('survivor_number', '=', $validated['survivor_number']);
-            })
-                ->where('id', '!=', $booking->id)
-                ->where('event_id', '=', $booking->event_id)
-                ->first();
-        } else {
-            $existingBooking = null;
-        }
-
-
-        if ($existingBooking) {
-            return response()->json([
-                'error' => 'Passenger already found on other booking for the event.',
-            ], 422);
+        // Perform survivor number validation using the helper
+        if (!empty($validated['survivor_number']) && 
+            Passenger::checkSurvivorInActiveBookings($validated['survivor_number'], $booking->event_id)) {
+            return response()->json(['error' => 'Passenger with this Survivor Number already exists in an active booking for the event.'], 422);
         }
 
         $this->passengerRepository->updateSeat($slot, $booking, $validated);

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerResetSeat;
 use App\Models\User;
 use Mockery\Generator\StringManipulation\Pass\Pass;
+use App\Services\EmailTemplateService;
 
 class CustomerBookingRepository
 {
@@ -20,12 +21,14 @@ class CustomerBookingRepository
   protected $booking;
   protected $passenger;
   protected $cabin;
+  protected $emailService;
 
-  public function __construct(Booking $booking, Passenger $passenger, Cabin $cabin)
+  public function __construct(Booking $booking, Passenger $passenger, Cabin $cabin, EmailTemplateService $emailService)
   {
     $this->booking = $booking;
     $this->passenger = $passenger;
     $this->cabin = $cabin;
+    $this->emailService = $emailService;
   }
 
   /**
@@ -179,16 +182,13 @@ class CustomerBookingRepository
       return response()->json(['message' => 'Invalid booking code'], 400);
     }
 
-    $passEmail = $dataToUpdate['email'];
-
-    // Carlos: This is not needed, as the passenger eMails can repeat in the passengers table
-    // $passenger = Passenger::where('booking_id', $booking->id)
-    //   ->where('email', $passEmail)
-    //   ->first();
-
-    // if ($passenger) {
-    //   return response()->json(['message' => 'Passenger with this Survivor Number already exists'], 400);
-    // }
+    // Validate survivor number for active bookings within the same event
+    if (
+      !empty($dataToUpdate['survivor_number']) &&
+      Passenger::checkSurvivorInActiveBookings($dataToUpdate['survivor_number'], $eventId)
+    ) {
+      return response()->json(['message' => 'A passenger with this Survivor Number already exists in an active booking for this event.'], 409);
+    }
 
     $emptyPassenger = Passenger::where('id', $passengerSlotId->passenger_id)->first();
 
@@ -203,9 +203,16 @@ class CustomerBookingRepository
 
         $passengerSlotId->delete();
       } catch (\Exception $e) {
-        \Log::error('Error while adding passenger: ' . $e->getMessage());
+        \Log::error('Error while adding passenger', [
+          'error' => $e->getMessage(),
+          'event_id' => $eventId,
+          'booking_code' => $bookingCode
+        ]);
         return response()->json(['message' => 'Error while adding passenger'], 500);
       }
+
+      // Send confirmation email
+      $this->sendPassengerConfirmationEmail($booking, $emptyPassenger);
 
       return response()->json(['message' => 'Passenger added'], 200);
     }
@@ -228,17 +235,13 @@ class CustomerBookingRepository
     // log params
     \Log::info('Add passenger manually: ' . json_encode($validated));
 
-    //$cabinCapacity = $booking->cabin->category->capacity;
-    // $passengers = $booking->passengers;
-
-    // $emptyPassenger = $passengers
-    //   ->filter(function ($passenger) {
-    //     return $passenger->first_name === null &&
-    //       $passenger->gender === null &&
-    //       $passenger->dob === null &&
-    //       $passenger->empty_seat === false;
-    //   })
-    //   ->first();
+    // Perform survivor number validation only if it exists
+    if (
+      !empty($validated['survivor_number']) &&
+      Passenger::checkSurvivorInActiveBookings($validated['survivor_number'], $eventId)
+    ) {
+      return response()->json(['message' => 'A passenger with this Survivor Number already exists in an active booking for this event.'], 409);
+    }
 
     if ($passenger) {
       try {
@@ -267,9 +270,17 @@ class CustomerBookingRepository
           'cabin_conf_accp' => true,
         ]);
       } catch (\Exception $e) {
-        \Log::error('Error while adding passenger: ' . $e->getMessage());
+        \Log::error('Error while adding passenger', [
+          'error' => $e->getMessage(),
+          'event_id' => $eventId,
+          'booking_code' => $bookingCode,
+          'passenger_data' => $validated,
+        ]);
         return response()->json(['message' => 'Error while adding passenger'], 500);
       }
+
+      // Send confirmation email
+      $this->sendPassengerConfirmationEmail($booking, $passenger);
 
       return response()->json(['message' => 'Passenger added'], 200);
     }
@@ -468,5 +479,36 @@ class CustomerBookingRepository
     }
 
     Mail::to($email)->queue(new CustomerResetSeat($email));
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Send updated confirmation email to passengers
+  |--------------------------------------------------------------------------
+  |
+  | This method will send an updated confirmation email to the passengers when a passenger is added
+  |
+  | @param Booking $booking
+  | @param Passenger $passenger
+  | @param string $templateCode
+  | @return void
+  */
+  private function sendPassengerConfirmationEmail($booking, $passenger, $templateCode = 'updated')
+  {
+    $leadPassenger = $booking->passengers->where('lead_passenger', true)->first();
+    $leadPassengerLanguage = $leadPassenger?->language ?? 'en';
+    $templateId = $this->emailService->getTemplateId($leadPassengerLanguage, $templateCode);
+
+    if (!$templateId) {
+      \Log::warning('Email template not found', [
+        'template' => $templateCode,
+        'language' => $leadPassengerLanguage,
+        'booking_id' => $booking->id,
+      ]);
+      return;
+    }
+
+    $this->emailService->sendEmail($templateId, $booking, $passenger, [], [], true, true);
   }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Services\PaymentService;
 use DB;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -342,5 +341,18 @@ class Passenger extends Model
       'due_date' => $nextInstallment['due_date'],
       'amount' => round($nextInstallment['remaining_amount'], 2),
     ];
+  }
+
+  /**
+   * This method checks if a survivor number is already associated with an active booking in the same event.
+   */
+  public static function checkSurvivorInActiveBookings(string $survivorNumber, int $eventId): bool
+  {
+    return self::where('survivor_number', $survivorNumber)
+      ->whereHas('booking', function ($query) use ($eventId) {
+        $query->where('status', '!=', 'CANCELLED')
+          ->where('event_id', $eventId);
+      })
+      ->exists();
   }
 }
