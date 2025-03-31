@@ -1,14 +1,14 @@
-import React, { useEffect, FormEventHandler, useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { TextField, Button, Box, Checkbox, Stack, Alert, Container } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import GuestLayout from '@/Layouts/GuestLayout';
+import React, { useEffect, FormEventHandler, useState } from "react";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { TextField, Button, Box, Checkbox, Stack, Alert, Container } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import GuestLayout from "@/Layouts/GuestLayout";
 // import LoadingOverlay from "@/Components/LoadingOverlay";
 
 export default function Login({ status, canResetPassword }: { status?: string; canResetPassword: boolean }) {
   const { data, setData, post, processing, errors, reset } = useForm({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     remember: false,
   });
   const [loading, setLoading] = useState(false);
@@ -37,9 +37,12 @@ export default function Login({ status, canResetPassword }: { status?: string; c
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    post(route('login'), {
+    post(route("login"), {
       onError: (err) => {
-        console.error('Login error:', err);
+        console.error("Login error:", err);
+      },
+      onSuccess: () => {
+        window.location.reload();
       },
     });
   };
@@ -50,13 +53,13 @@ export default function Login({ status, canResetPassword }: { status?: string; c
         component="main"
         maxWidth="xs"
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
           {status && (
             <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
               {status}
@@ -72,13 +75,13 @@ export default function Login({ status, canResetPassword }: { status?: string; c
               {errors.password}
             </Alert>
           )}
-          <form autoComplete="true" onSubmit={submit} style={{ width: '100%', maxWidth: '400px' }}>
+          <form autoComplete="true" onSubmit={submit} style={{ width: "100%", maxWidth: "400px" }}>
             <Box
               sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '20px',
-                width: '100%',
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px",
+                width: "100%",
               }}
             >
               <TextField
@@ -89,7 +92,7 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                 label="Email"
                 type="email"
                 value={data.email}
-                onChange={(e) => setData('email', e.target.value)}
+                onChange={(e) => setData("email", e.target.value)}
               />
               <TextField
                 required
@@ -100,20 +103,20 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                 type="password"
                 value={data.password}
                 autoComplete="current-password"
-                onChange={(e) => setData('password', e.target.value)}
+                onChange={(e) => setData("password", e.target.value)}
               />
 
-              <Box sx={{ width: '100%' }}>
+              <Box sx={{ width: "100%" }}>
                 <Checkbox
                   name="remember"
                   checked={data.remember}
-                  onChange={(e) => setData('remember', e.target.checked)}
+                  onChange={(e) => setData("remember", e.target.checked)}
                 />
                 <span>Remember me</span>
               </Box>
-              <Stack spacing={2} sx={{ width: '100%' }}>
+              <Stack spacing={2} sx={{ width: "100%" }}>
                 {canResetPassword && (
-                  <Link href={route('password.request')} className="">
+                  <Link href={route("password.request")} className="">
                     Forgot your password?
                   </Link>
                 )}
