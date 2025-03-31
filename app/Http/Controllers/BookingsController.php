@@ -190,7 +190,6 @@ class BookingsController extends Controller
       'passenger.confirmed_booking_email' => ['required', 'accepted'],
       'passenger.travel_info' => ['required', 'boolean'],
       'passenger.terms_n_cons' => ['required', 'accepted'],
-      'passenger.cabin_conf_accp' => ['required', 'boolean'],
       'passenger.single_t_agreement' => [
         'required',
         'boolean',
@@ -219,6 +218,7 @@ class BookingsController extends Controller
       $user = $request->user();
       $cabin_number = $validated['cabin_number'];
       $passenger_data = $validated['passenger'];
+      $passenger_data['cabin_conf_accp'] = true; //CCA is a required field, thus should go set as true by default - Nic
       $number_of_installments = $validated['number_of_installments'] ?? null;
       $payment_plan = $validated['payment_plan'];
       $carbonOffset = $validated['carbon_offset'];

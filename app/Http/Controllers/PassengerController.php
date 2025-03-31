@@ -154,81 +154,85 @@ class PassengerController extends Controller
 
         $eventId = $request->get('eventId');
 
-        $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
-            ->where('email', 'LIKE', "%{$query}%")
-            ->orWhereHas('detail', function ($q) use ($query) {
-                $q->where('first_name', 'LIKE', "%{$query}%")
-                    ->orWhere('last_name', 'LIKE', "%{$query}%");
-            })
-            ->get()
-            ->map(function ($user) use ($eventId, $request) {
-                if ($eventId) {
-                    $bookingId = $request->get('bookingId');
+        try {
+            $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
+                ->where('email', 'LIKE', "%{$query}%")
+                ->orWhereHas('detail', function ($q) use ($query) {
+                    $q->where('first_name', 'LIKE', "%{$query}%")
+                        ->orWhere('last_name', 'LIKE', "%{$query}%");
+                })
+                ->get()
+                ->map(function ($user) use ($eventId, $request) {
+                    if ($eventId) {
+                        $bookingId = $request->get('bookingId');
 
-                    // If there is a bookingId, it means it's an EditPassenger call
-                    if ($bookingId) {
-                        // Ensure the current booking is excluded in the double-booking check
-                        $exists = Booking::whereHas('passengers', function ($query) use ($user) {
-                            $query->where('survivor_number', $user->survivorNumber->survivor_number);
-                        })
-                            ->where('event_id', $eventId)
-                            ->where('id', '!=', $bookingId)  // Exclude current booking
-                            ->exists();
+                        // If there is a bookingId, it means it's an EditPassenger call
+                        if ($bookingId) {
+                            // Ensure the current booking is excluded in the double-booking check
+                            $exists = Booking::whereHas('passengers', function ($query) use ($user) {
+                                $query->where('survivor_number', $user->survivorNumber?->survivor_number);
+                            })
+                                ->where('event_id', $eventId)
+                                ->where('id', '!=', $bookingId)  // Exclude current booking
+                                ->exists();
+                        } else {
+                            // If there is no bookingId, we're creating a new booking, so check for any existing booking
+                            $exists = Booking::whereHas('passengers', function ($query) use ($user) {
+                                $query->where('survivor_number', $user->survivorNumber?->survivor_number);
+                            })
+                                ->where('event_id', $eventId)
+                                ->exists();
+                        }
+
+                        // Set the has_booking flag
+                        $has_booking = $exists;
                     } else {
-                        // If there is no bookingId, we're creating a new booking, so check for any existing booking
-                        $exists = Booking::whereHas('passengers', function ($query) use ($user) {
-                            $query->where('survivor_number', $user->survivorNumber->survivor_number);
-                        })
-                            ->where('event_id', $eventId)
-                            ->exists();
+                        // If eventId is not provided, skip double booking check
+                        $has_booking = false;
                     }
 
-                    // Set the has_booking flag
-                    $has_booking = $exists;
-                } else {
-                    // If eventId is not provided, skip double booking check
-                    $has_booking = false;
-                }
 
+                    return [
+                        'id' => $user->id,
+                        'email' => $user->email,
+                        'first_name' => $user->detail->first_name ?? null,
+                        'last_name' => $user->detail->last_name ?? null,
+                        'middle_name' => $user->detail->middle_name ?? null,
+                        'survivor_number' => $user->survivorNumber->survivor_number ?? null,
+                        'confirmed_booking_email' => $user->detail->confirmed_booking_email ?? null,
+                        'lead_passenger' => $user->detail->lead_passenger ?? null,
+                        'payment_method' => $user->detail->payment_method ?? null,
+                        'phone' => $user->detail->phone ?? null,
+                        'address_first' => $user->customerAddress->address_first ?? null,
+                        'address_second' => $user->customerAddress->address_second ?? null,
+                        'city' => $user->customerAddress->city ?? null,
+                        'state' => $user->customerAddress->state ?? null,
+                        'postal_code' => $user->customerAddress->postal_code ?? null,
+                        'country' => $user->customerAddress->country ?? null,
+                        'citizenship' => $user->detail->citizenship ?? null,
+                        'gender' => $user->detail->gender ?? null,
+                        'dob' =>  $user->detail->dob ?? null,
+                        'full_name' => ($user->detail->first_name ?? '') . ' ' . ($user->detail->last_name ?? ''),
+                        'emergency_c_name' => $user->detail->emergency_c_name ?? null,
+                        'emergency_c_phone' => $user->detail->emergency_c_phone ?? null,
+                        'special_request' => $user->detail->special_request ?? null,
+                        'hear_about' => $user->detail->hear_about ?? null,
+                        'newsletter' => $user->detail->newsletter ?? null,
+                        'travel_info' => $user->detail->travel_info ?? null,
+                        'term_n_cons' => $user->detail->term_n_cons ?? null,
+                        'cabin_conf_accp' => $user->detail->cabin_conf_accp ?? null,
+                        'single_t_agreement' => $user->detail->single_t_agreement ?? null,
+                        'passenger_allocated_cost' => $user->detail->passenger_allocated_cost ?? null,
+                        'passenger_balance' => $user->detail->passenger_balance ?? null,
+                        'was_on_board' => $user->detail->was_on_board ?? null,
+                        'has_booking' => $has_booking,
+                    ];
+                });
 
-                return [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'first_name' => $user->detail->first_name ?? null,
-                    'last_name' => $user->detail->last_name ?? null,
-                    'middle_name' => $user->detail->middle_name ?? null,
-                    'survivor_number' => $user->survivorNumber->survivor_number ?? null,
-                    'confirmed_booking_email' => $user->detail->confirmed_booking_email ?? null,
-                    'lead_passenger' => $user->detail->lead_passenger ?? null,
-                    'payment_method' => $user->detail->payment_method ?? null,
-                    'phone' => $user->detail->phone ?? null,
-                    'address_first' => $user->customerAddress->address_first ?? null,
-                    'address_second' => $user->customerAddress->address_second ?? null,
-                    'city' => $user->customerAddress->city ?? null,
-                    'state' => $user->customerAddress->state ?? null,
-                    'postal_code' => $user->customerAddress->postal_code ?? null,
-                    'country' => $user->customerAddress->country ?? null,
-                    'citizenship' => $user->detail->citizenship ?? null,
-                    'gender' => $user->detail->gender ?? null,
-                    'dob' =>  $user->detail->dob ?? null,
-                    'full_name' => ($user->detail->first_name ?? '') . ' ' . ($user->detail->last_name ?? ''),
-                    'emergency_c_name' => $user->detail->emergency_c_name ?? null,
-                    'emergency_c_phone' => $user->detail->emergency_c_phone ?? null,
-                    'special_request' => $user->detail->special_request ?? null,
-                    'hear_about' => $user->detail->hear_about ?? null,
-                    'newsletter' => $user->detail->newsletter ?? null,
-                    'travel_info' => $user->detail->travel_info ?? null,
-                    'term_n_cons' => $user->detail->term_n_cons ?? null,
-                    'cabin_conf_accp' => $user->detail->cabin_conf_accp ?? null,
-                    'single_t_agreement' => $user->detail->single_t_agreement ?? null,
-                    'passenger_allocated_cost' => $user->detail->passenger_allocated_cost ?? null,
-                    'passenger_balance' => $user->detail->passenger_balance ?? null,
-                    'was_on_board' => $user->detail->was_on_board ?? null,
-                    'has_booking' => $has_booking,
-                ];
-            });
-
-        return response()->json($results);
+            return response()->json($results);
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
     }
 
     public function cancelPassengerInvitation(Request $request)
