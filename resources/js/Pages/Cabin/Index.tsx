@@ -114,17 +114,32 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
         filterType: 'select',
         filterOptions: Object.values(CabinStatus),
         draw: (row) => (
-          <Chip
-            size="small"
-            label={row.cabin_status}
-            color={CabinStatusColor[row.cabin_status]}
-            sx={{
-              margin: 'auto',
-              fontSize: '0.7rem',
-              fontWeight: '400',
-              color: 'white',
-            }}
-          />
+          <>
+            <Chip
+              size="small"
+              label={row.cabin_status}
+              color={CabinStatusColor[row.cabin_status]}
+              sx={{
+                margin: 'auto',
+                fontSize: '0.7rem',
+                fontWeight: '400',
+                color: 'white',
+              }}
+            />
+            {row.is_reserved && (
+              <Typography
+                variant="body2"
+                color="warning.main"
+                sx={{
+                  mt: 0.5,
+                  fontSize: '0.7rem',
+                  fontWeight: '500',
+                }}
+              >
+                Booking in Progress
+              </Typography>
+            )}
+          </>
         ),
       },
       {
