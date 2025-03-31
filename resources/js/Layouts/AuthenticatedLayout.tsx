@@ -9,6 +9,7 @@ import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
+import PersonIcon from "@mui/icons-material/Person";
 import Badge from "@mui/material/Badge";
 import Link from "@mui/material/Link";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -19,6 +20,7 @@ import ListItems from "@/Layouts/ListItems";
 // import LoadingOverlay from "@/Components/LoadingOverlay";
 import { usePage } from "@inertiajs/react";
 import { User } from "@/types";
+import { Avatar } from "@mui/material";
 
 function Copyright(props: any) {
   return (
@@ -105,21 +107,39 @@ export default function AuthenticatedLayout({
               pr: "24px", // keep right padding when drawer closed
             }}
           >
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{
-                marginRight: "36px",
-                ...(open && { display: "none" }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-              {header}
-            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="open drawer"
+                onClick={toggleDrawer}
+                sx={{
+                  marginRight: "36px",
+                  ...(open && { display: "none" }),
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+                {header}
+              </Typography>
+
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+                <Box
+                  size="small"
+                  sx={{
+                    ml: 2,
+                  }}
+                >
+                  <Avatar sx={{ width: 32, height: 32 }}>
+                    <PersonIcon />
+                  </Avatar>
+                </Box>
+                <Typography variant="body2" color="inherit" sx={{ ml: 2 }}>
+                  {user?.username}
+                </Typography>
+              </Box>
+            </Box>
             {/* <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
                 <NotificationsIcon />
