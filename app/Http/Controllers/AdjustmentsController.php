@@ -120,6 +120,15 @@ class AdjustmentsController extends Controller
                     ->where('adjustment_id', $adjustment->id)
                     ->delete();
 
+                if (!$adjustment->system) {
+                    $count = DB::table('booking_has_adjustments')
+                        ->where('adjustment_id', $adjustment->id)
+                        ->count();
+                    if (!$count) {
+                        $adjustment->delete();
+                    }
+                }
+
                 $this->paymentInfoService->syncAllocatedCost($booking);
 
                 $this->saveBookingLog(
