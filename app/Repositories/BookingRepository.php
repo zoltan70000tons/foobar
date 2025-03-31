@@ -157,18 +157,18 @@ class BookingRepository implements BookingInterface
 
     $results = $query->get();
 
-    $results->each(function ($booking, $index) {
-      $booking->fullName = $booking->customer->detail->full_name ?? null;
-      $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
-      /*       // Sort passengers to place lead passenger first
-      if ($booking->passengers && $index == 1) {
-        $booking->passengers = $booking->passengers
-        ->sortBy('passenger_order') 
-        ->values(); 
-      } */
+    // $results->each(function ($booking, $index) {
+    //   $booking->fullName = $booking->customer->detail->full_name ?? null;
+    //   $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
+    //   /*       // Sort passengers to place lead passenger first
+    //   if ($booking->passengers && $index == 1) {
+    //     $booking->passengers = $booking->passengers
+    //     ->sortBy('passenger_order')
+    //     ->values();
+    //   } */
 
-      $booking->subRows = $booking->passengers ?? [];
-    });
+    //   $booking->subRows = $booking->passengers ?? [];
+    // });
 
     return $results;
   }
