@@ -165,23 +165,19 @@ class PassengerController extends Controller
                 if ($eventId) {
                     $bookingId = $request->get('bookingId');
 
+                    $baseQuery = Booking::whereHas('passengers', function ($query) use ($user) {
+                        $query->where('survivor_number', $user->survivorNumber?->survivor_number);
+                    })
+                        ->where('event_id', $eventId);
+
                     // If there is a bookingId, it means it's an EditPassenger call
                     if ($bookingId) {
                         // Ensure the current booking is excluded in the double-booking check
-                        $exists = Booking::whereHas('passengers', function ($query) use ($user) {
-                            $query->where('survivor_number', $user->survivorNumber->survivor_number);
-                        })
-                            ->where('event_id', $eventId)
-                            ->where('id', '!=', $bookingId)  // Exclude current booking
-                            ->exists();
-                    } else {
-                        // If there is no bookingId, we're creating a new booking, so check for any existing booking
-                        $exists = Booking::whereHas('passengers', function ($query) use ($user) {
-                            $query->where('survivor_number', $user->survivorNumber->survivor_number);
-                        })
-                            ->where('event_id', $eventId)
-                            ->exists();
+                        $baseQuery->where('id', '!=', $bookingId);  // Exclude current booking
                     }
+
+                    $exists = $baseQuery->where('status', '!=', 'CANCELLED')
+                        ->exists();
 
                     // Set the has_booking flag
                     $has_booking = $exists;
