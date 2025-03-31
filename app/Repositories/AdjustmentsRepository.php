@@ -78,7 +78,9 @@ class AdjustmentsRepository
   }
 
   public function listAdjustments() {
-    return Adjustment::where('system', true)->get();
+    //return Adjustment::where('system', true)->get();
+    return Adjustment::query()->orderBy('system', 'DESC')->get(); //According to the Manual Adjustments - Adjustments
+      // Delete Functionality, custom adjustments should be up for reuse
   }
 
   public function getSingleTicketFeeId(): int
