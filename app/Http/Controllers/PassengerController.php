@@ -226,7 +226,8 @@ class PassengerController extends Controller
 
             return response()->json($results);
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            Log::error($e->getMessage());
+            return response()->json('error');
         }
     }
 
