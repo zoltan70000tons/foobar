@@ -43,7 +43,8 @@ class AdjustmentsController extends Controller
             'type' => 'required|string|in:DISCOUNT,ADDON',
             'operation' => 'required|string|in:FIXED,PERCENTAGE',
             'value' => 'required|numeric|min:0',
-            'restrictions' => 'nullable|json'
+            'restrictions' => 'nullable|json',
+            'selected_adjustment_id' => 'required',
         ]);
 
         // Verify if the booking exists
@@ -55,6 +56,11 @@ class AdjustmentsController extends Controller
 
             try {
                 $existingAdjustment = Adjustment::where('code', $validated['code'])->first();
+
+                if ($validated['selected_adjustment_id'] === 'new' && $existingAdjustment) {
+                    throw new \Exception("Failed to create adjustment.");
+                }
+
                 if ($existingAdjustment) {
                     DB::table('booking_has_adjustments')->insert([
                         'booking_id' => $booking->id,
