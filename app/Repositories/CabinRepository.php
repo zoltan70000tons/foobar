@@ -7,6 +7,7 @@ use App\Interfaces\CabinInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Models\CabinType;
+use App\Models\TemporaryReservation;
 use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -69,61 +70,69 @@ class CabinRepository implements CabinInterface
   }
   function delete($id) {}
   function getCategoriesAndCabins($event_id)
-{
+  {
+    // Fetch all categories and cabins with necessary relationships
     $categoriesWithCabins = CabinCategory::where('event_id', $event_id)
-        ->with([
-            'cabins' => function ($query) {
-                $query->with([
-                    'cabinType:id,cabin_type',
-                    'cabinSpec:id,cabin_number,deck,balcony,obstructed_view,location,accessible'
-                ])
-                ->select([
-                    'id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'status', 'cabin_type_id'
-                ]);
-            }
-        ])
-        ->withCount([
-            'cabins as total_cabins',
-            'cabins as available_cabins' => function ($query) {
-                $query->where('status', StatusCabin::AVAILABLE->value);
-            }
-        ])
-        ->orderBy('id')
-        ->get()
-        ->map(function ($category) {
+      ->with([
+        'cabins' => function ($query) {
+          $query->with([
+            'cabinType:id,cabin_type',
+            'cabinSpec:id,cabin_number,deck,balcony,obstructed_view,location,accessible'
+          ])
+            ->leftJoin('temporary_reservations as tr', 'tr.cabin_id', '=', 'cabins.id')
+            ->select([
+              'cabins.id',
+              'cabins.cabin_category_id',
+              'cabins.cabin_spec_id',
+              'cabins.inventory',
+              'cabins.status',
+              'cabins.cabin_type_id',
+              DB::raw('CASE WHEN tr.id IS NOT NULL THEN true ELSE false END as is_reserved')
+            ]);
+        }
+      ])
+      ->withCount([
+        'cabins as total_cabins',
+        'cabins as available_cabins' => function ($query) {
+          $query->where('status', StatusCabin::AVAILABLE->value);
+        }
+      ])
+      ->orderBy('id')
+      ->get()
+      ->map(function ($category) {
+        return [
+          'id'             => $category->id,
+          'category_type'  => $category->category_type,
+          'category_code'  => "{$category->category_code}_{$category->capacity}",
+          'category_name'  => $category->category_name,
+          'price'          => $category->price,
+          'availability'   => "{$category->available_cabins}/{$category->total_cabins}",
+          'capacity'       => $category->capacity,
+          'title'          => $category->title,
+          'display_order'  => $category->display_order,
+          'subRows'        => $category->cabins->map(function ($cabin) use ($category) {
             return [
-                'id'             => $category->id,
-                'category_type'  => $category->category_type,
-                'category_code'  => "{$category->category_code}_{$category->capacity}",
-                'category_name'  => $category->category_name,
-                'price'          => $category->price,
-                'availability'   => "{$category->available_cabins}/{$category->total_cabins}",
-                'capacity'       => $category->capacity,
-                'title'          => $category->title,
-                'display_order'  => $category->display_order,
-                'subRows'        => $category->cabins->map(function ($cabin) use ($category) {
-                    return [
-                        'id'               => $cabin->id,
-                        'deck'             => $cabin->cabinSpec?->deck,
-                        'cabin_number'     => $cabin->cabinSpec?->cabin_number,
-                        'balcony'          => $cabin->cabinSpec?->balcony ?? false,
-                        'obstructed_view'  => $cabin->cabinSpec?->obstructed_view ?? false,
-                        'location'         => $cabin->cabinSpec?->location,
-                        'accessible'       => $cabin->cabinSpec?->accessible,
-                        'cabin_status'     => $cabin->status,
-                        'ticket_inventory' => $cabin->cabinType->id !== 1 
-                            ? "{$cabin->inventory} / {$category->capacity}" 
-                            : $cabin->inventory,
-                        'cabin_type'       => $cabin->cabinType->cabin_type,
-                        'cabin_tags'       => $cabin->tags,
-                    ];
-                })
+              'id'               => $cabin->id,
+              'deck'             => $cabin->cabinSpec?->deck,
+              'cabin_number'     => $cabin->cabinSpec?->cabin_number,
+              'balcony'          => $cabin->cabinSpec?->balcony ?? false,
+              'obstructed_view'  => $cabin->cabinSpec?->obstructed_view ?? false,
+              'location'         => $cabin->cabinSpec?->location,
+              'accessible'       => $cabin->cabinSpec?->accessible,
+              'cabin_status'     => $cabin->status,
+              'is_reserved'      => (bool) $cabin->is_reserved,
+              'ticket_inventory' => $cabin->cabinType->id !== 1
+                ? "{$cabin->inventory} / {$category->capacity}"
+                : $cabin->inventory,
+              'cabin_type'       => $cabin->cabinType->cabin_type,
+              'cabin_tags'       => $cabin->tags,
             ];
-        });
-       // dd($categoriesWithCabins);
+          })
+        ];
+      });
 
     return $categoriesWithCabins;
-}
+  }
 
 
   function addTags(array $tags, array $cabins) {}
