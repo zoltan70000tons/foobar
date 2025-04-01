@@ -12,11 +12,10 @@ return [
     |
     */
 
-  'email_send' => 'Email sent successfully.',
-  'email_not_send' => 'Email not sent.',
-  'email_verified_already' => 'Email already verified.',
+  'email_send' => 'eMail sent successfully.',
+  'email_not_send' => 'eMail not sent.',
+  'email_verified_already' => 'eMail already verified.',
   'email_verification_link_sent' => 'Verification link sent.',
-
   'email_hi' => 'Hi',
   'email_thanks' => 'Cheers,',
   'email_regards' => 'your 70000TONS OF METAL crew',
@@ -30,25 +29,19 @@ return [
   'email_thank_you' => 'Thank you for choosing us.',
   'update_email' => [
     'subject' => 'Your account information has been updated',
-    'title' => 'Email Address Updated',
+    'title' => 'eMail Address Updated',
     'greeting' => 'Hello :name,',
     'default_name' => 'Customer',
-    'body' => 'Your account\'s email address has been successfully updated.',
-    'security_notice' =>
-    'If you did not make this change, please contact our support team immediately to secure your account.',
+    'body' => 'Your account\'s eMail address has been successfully updated.',
+    'security_notice' => 'If you did not make this change, please contact our support team immediately to secure your account.',
     'thank_you' => '70000TONS OF METAL Crew',
   ],
-
   'email_request_to_add_pax' => 'invites you to join their cabin for',
-  'email_request_to_add_pax_body' =>
-  'You have 72 hours to enter your information into the booking. If you do not provide the details within this time, the request will be canceled.',
+  'email_request_to_add_pax_body' => 'You have 72 hours to enter your information into the booking. If you do not provide the details within this time, the request will be canceled.',
   'email_request_to_add_pax_cta' => 'Add details',
   'email_invitation_on_your_account' => 'You have an invitation on your account.',
-  'email_invitation_on_your_account_body' =>
-  'You have 72 hours to accept this invitation. If you do not accept this invitation within this time, the invitation will be cancelled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our customer service team.',
-  
-  'booking_code' => 'Booking Code',
-  'email_not_found' => 'Email not Found',
-  'seat_reset_notification' => 'We wanted to let you know that your assigned seat in the cabin has been reset.',
-  'seat_reset_questions' => 'If you have any questions, please reach out to the Lead Passenger of your cabin for more information.'
+  'email_invitation_on_your_account_body' => 'You have 72 hours to accept this invitation. If you do not accept this invitation within this time, the invitation will be cancelled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our Customer Service Crew.',
+  'email_not_found' => 'Email not found',
+  'seat_reset_notification' => 'We wanted to let you know that you have been removed from your booking.',
+  'seat_reset_questions' => 'If you have any questions, please reach out to the Lead Passenger of your cabin for more information.',
 ];
