@@ -11,4 +11,5 @@ enum Roles: string
     case Editor = 'Editor';
     case Agent = 'Agent';
     case Customer = 'Customer';
+    case Trainee = 'Trainee';
 }
