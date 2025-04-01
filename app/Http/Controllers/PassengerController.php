@@ -7,9 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
 use App\Models\User;
-use App\Models\UserDetail;
 use App\Repositories\PassengerRepository;
-use App\Rules\UniqueEmailInEvent;
 use App\Rules\UniqueSurvivorInEvent;
 use Log;
 
@@ -74,9 +72,12 @@ class PassengerController extends Controller
         }
 
         // Perform survivor number validation using the helper
-        if (!empty($validated['survivor_number']) && 
-            Passenger::checkSurvivorInActiveBookings($validated['survivor_number'], $booking->event_id)) {
-            return response()->json(['error' => 'Passenger with this Survivor Number already exists in an active booking for the event.'], 422);
+        if (!empty($validated['survivor_number']) && $validated['survivor_number'] !== $slot->survivor_number) {
+            if (Passenger::checkSurvivorInActiveBookings($validated['survivor_number'], $booking->event_id)) {
+                return response()->json([
+                    'error' => 'Passenger with this Survivor Number already exists in an active booking for the event.'
+                ], 422);
+            }
         }
 
         $this->passengerRepository->updateSeat($slot, $booking, $validated);
