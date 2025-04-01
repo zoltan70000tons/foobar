@@ -11,30 +11,38 @@ return [
     | these language lines according to your application's requirements.
     |
     */
-
-  'email_send' => 'E-Mail erfolgreich gesendet.',
-  'email_not_send' => 'E-Mail nicht gesendet.',
-  'email_verified_already' => 'E-Mail bereits verifiziert.',
-  'email_verification_link_sent' => 'Verifizierungslink gesendet.',
-
-  'email_hi' => 'Hallo',
-  'email_thanks' => 'Danke',
-  'email_regards' => 'Grüße',
-  'email_excited' => 'Wir freuen uns, dass Sie an Bord sind!',
-  'email_account_created' => 'Ihr Konto wurde erfolgreich erstellt.',
-  'email_cta_activate_account' => 'Konto aktivieren',
-  'email_cant_see_button' => 'Wenn Sie die Schaltfläche nicht sehen können, klicken Sie bitte auf den folgenden Link:',
-  'email_activated_account' => 'Ihr Konto ist jetzt aktiv.',
-  'email_new_survivor_number' => 'Ihre neue Überlebensnummer lautet:',
-  'email_activate_account' =>
-    'Bitte aktivieren Sie Ihr Konto, indem Sie auf den folgenden Link klicken oder ihn in Ihren Browser kopieren und einfügen:',
-  'email_thank_you' => 'Vielen Dank, dass Sie uns gewählt haben.',
-
-  'email_request_to_add_pax' => 'Sie haben eine Anfrage erhalten, einen Passagier zu Ihrer Buchung hinzuzufügen.',
-  'email_request_to_add_pax_body' =>
-    'Sie haben 72 Stunden Zeit, Ihre Details zur Buchung hinzuzufügen. Wenn Sie die Details nicht innerhalb dieser Zeit hinzufügen, wird die Anfrage storniert.',
-  'email_request_to_add_pax_cta' => 'Details hinzufügen',
-  'email_invitation_on_your_account' => 'Sie haben eine Einladung auf Ihrem Konto.',
-  'email_invitation_on_your_account_body' =>
-    'Sie haben 72 Stunden Zeit, die Einladung anzunehmen. Wenn Sie die Einladung nicht innerhalb dieser Zeit annehmen, wird die Einladung storniert. Sie können Ihre Einladungen auf Ihrer Buchungsseite in Ihrem Konto überprüfen. Wenn Sie Fragen haben, wenden Sie sich bitte an unser Support-Team.',
+    
+    
+  'email_send' => 'eMail wurde erfolgreich versendet.',
+  'email_not_send' => 'eMail konnte nicht gesendet werden.',
+  'email_verified_already' => 'eMailadresse wurde bereits bestätigt.',
+  'email_verification_link_sent' => 'Bestätigungslink wurde versendet.',
+  'email_hi' => 'Hi',
+  'email_thanks' => 'Cheers,',
+  'email_regards' => 'Deine 70000TONS OF METAL Crew',
+  'email_excited' => 'Wir freuen uns darauf, Dich an Bord zu haben!',
+  'email_account_created' => 'Dein Account wurde erfolgreich erstellt.',
+  'email_activated_account' => 'Dein Account ist jetzt aktiv.',
+  'email_new_survivor_number' => 'Deine Survivornummer ist:',
+  'email_cta_activate_account' => 'Account aktivieren',
+  'email_cant_see_button' => 'Falls Du den Button nicht siehst, klicke den Link unten:',
+  'email_activate_account' => 'Bitte aktiviere Deinen Account, indem Du den untenstehenden Button drückst:',
+  'email_thank_you' => 'Danke, dass Du Dich für uns entschieden hast.',
+  'update_email' => [
+    'subject' => 'Deine Accountinformationen wurden aktualisiert.',
+    'title' => 'eMailadresse wurde aktualisiert.',
+    'greeting' => 'Hallo :name,',
+    'default_name' => 'Kunde',
+    'body' => 'Die eMailadresse zu Deinem Account wurde erfolgreich aktualisiert.',
+    'security_notice' => 'Falls Du diese Änderung nicht getätigt hast, melde Dich bitte sofort bei unserem Support Team.',
+    'thank_you' => '70000TONS OF METAL Crew',
+  ],
+  'email_request_to_add_pax' => 'lädt Dich in seine/ihre (depends on gender) Kabine ein',
+  'email_request_to_add_pax_body' => 'Du hast 72 Stunden Zeit, Deine Informationen in die Buchung einzufügen. Wenn Du die Informationen in dieser Zeit nicht eingibst, wird die Anfrage storniert.',
+  'email_request_to_add_pax_cta' => 'Informationen hinzufügen',
+  'email_invitation_on_your_account' => 'Du hast eine Einladung in Deinem Account.',
+  'email_invitation_on_your_account_body' => 'Du hast 72 Stunden, die Einladung anzunehmen. Wenn Du die Einladung nicht in dieser Zeit annimmst, wird die Einladung storniert. Du kannst Deine Einladungen bei Deinen Buchungen in Deinem Account sehen. Wenn Du Fragen hast, kontaktiere bitte unsere Customer Service Crew.',
+  'email_not_found' => 'eMailadresse wurde nicht gefunden.',
+  'seat_reset_notification' => 'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
+  'seat_reset_questions' => 'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
 ];

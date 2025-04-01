@@ -11,5 +11,5 @@ return [
     | these language lines according to your application's requirements.
     |
     */
-  'no_event_found' => 'Keine Veranstaltungen gefunden',
+  'no_event_found' => 'Keine Events gefunden',
 ];
