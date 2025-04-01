@@ -8,9 +8,9 @@ class TeamContext
 {
   public function handle($request, Closure $next)
   {
-    $teamId = Auth::user()->currentTeam->id ?? 1;
+    //$teamId = Auth::user()->currentTeam->id ?? 1;
 
-    setPermissionsTeamId($teamId);
+    setPermissionsTeamId(1);
 
     return $next($request);
   }
