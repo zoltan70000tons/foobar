@@ -105,8 +105,9 @@ class MatrixHelper
     // Get first instance just to get category attributes
     // All cabins in the filteredCabins have the same price
     $cabin = $filteredCabins->first();
-    $category_data = CabinCategory::find($cabin->id);
-    $category_full_title = $cabin->getTitleAttribute() . ' ' . $category_data->capacityDescription;
+    //$category_data = CabinCategory::find($cabin->id);
+    //$category_full_title = $cabin->getTitleAttribute() . ' ' . $category_data->capacityDescription;
+    $category_full_title = $cabin->getTitleAttribute() . ' ' . $cabin->capacityDescription;
 
     return [
       'price' => $cabin->price,
