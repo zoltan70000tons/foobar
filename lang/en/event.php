@@ -15,5 +15,4 @@ return [
     */
 
   'no_event_found' => 'No events found',
-
 ];

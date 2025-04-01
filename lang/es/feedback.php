@@ -10,7 +10,8 @@ return [
     |
     */
 
-  'double_booking' => 'Looks like you had another booking in progress. Please refresh the page and try.',
-  'survivor_number_not_match' =>
-    'The Survivor Number does not match the passenger info. Please verify the information with the passenger and try again.',
+    'double_booking' => 'Parece que tienes otra reserva en proceso. Por favor actualiza la página e inicia.',
+    'survivor_number_not_match' => 'El Número de Survivor no coincide con la información del Pasajero. Por favor verifica la información con el pasajero e inténtalo de nuevo.',
+    'slot_already_taken' => 'El Pasajero para este espacio ya ha sido asignado.',
+    'cannot_reset_own_seat' => 'No puedes actualizar tu propio puesto.',
 ];

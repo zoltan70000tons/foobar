@@ -13,9 +13,9 @@ return [
     |
     */
 
-  'reset' => 'Ihr Passwort wurde zurückgesetzt.',
-  'sent' => 'Wir haben Ihnen Ihren Passwort-Reset-Link per E-Mail zugesandt.',
-  'throttled' => 'Bitte warten Sie, bevor Sie es erneut versuchen.',
-  'token' => 'Dieser Passwort-Reset-Token ist ungültig.',
-  'user' => 'Wir können keinen Benutzer mit dieser E-Mail-Adresse finden.',
+  'reset' => 'Dein Passwort wurde zurückgesetzt.',
+  'sent' => 'Wir haben Dir eine eMail mit einem Link zum Zurücksetzen Deines Passworts geschickt.',
+  'throttled' => 'Bitte warte, bevor Du es nochmal versuchst.',
+  'token' => 'Dieser Token um das Passwort zurückzusetzen ist ungültig.',
+  'user' => 'Wir können keinen Benutzer mit dieser eMailadresse finden.',
 ];

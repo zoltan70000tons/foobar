@@ -1,6 +1,6 @@
 <?php
 
 return [
-  'cart_updated'  => '',
-  'cart_cleared'  => '',
+  'cart_updated' => 'Warenkorb wurde erfolgreich aktualisiert.',
+  'cart_cleared' => 'Warenkorb wurde erfolgreich geleert.',
 ];
