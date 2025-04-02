@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Models\PassengerInvitation;
 use App\Mail\AddPassenger;
 use App\Mail\AddPassengerDirectly;
+use App\Enums\EventStatus;
 
 class CustomerBookingService
 {
@@ -37,6 +38,21 @@ class CustomerBookingService
       if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
         $booking->cabin->makeHidden(['cabin_number']);
         $booking->cabin->cabinSpec->makeHidden(['cabin_number']);
+      }
+
+      // if event of booking is past return only event information
+      if ($booking->event->status === EventStatus::CLOSED->value) {
+        $booking->makeHidden([
+          'bed_config',
+          'booking_code',
+          'booking_request_id',
+          'updated_at',
+          'created_at',
+          'customer_id',
+          'payment_plan',
+          'is_single_occupancy',
+          'cabin',
+        ]);
       }
     });
 
