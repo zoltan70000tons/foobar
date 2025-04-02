@@ -17,7 +17,7 @@ class EventController extends Controller
     public function index(Request $request)
     {
         try {
-            return $this->withPermission([Permissions::ViewPermissions], function ($request) {
+            return $this->withPermission([Permissions::ViewEvents], function ($request) {
                 $events = Event::all();
                 return Inertia::render('Event/Index', [
                     'events' => $events

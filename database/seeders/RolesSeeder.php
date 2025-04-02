@@ -1,16 +1,17 @@
-<?php 
+<?php
 
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Enums\Permissions; 
-use App\Enums\Roles; 
+use App\Enums\Permissions;
+use App\Enums\Roles;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Faker\Generator;
+use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Models\Role;
 
 class RolesSeeder extends Seeder
@@ -107,5 +108,269 @@ class RolesSeeder extends Seeder
             'model_id' => $adminId,
             'team_id' => env('ORGANIZATION_ID', 1)
         ]);
+
+        //specific permissions for other roles
+
+        $this->assignToRole(Roles::Manager, [
+            Permissions::ViewDashboard,
+            // Permissions::ViewUsers,
+            // Permissions::CreateUsers,
+            // Permissions::EditUsers,
+            // Permissions::DeleteUsers,
+            Permissions::ViewCustomers,
+            Permissions::CreateCustomers,
+            Permissions::EditCustomers,
+            Permissions::DeleteCustomers,
+            Permissions::ViewEvents,
+            // Permissions::CreateEvents, 
+            // Permissions::EditEvents, 
+            // Permissions::DeleteEvents,
+            Permissions::ViewCabins,
+            Permissions::CreateCabins,
+            Permissions::EditCabins,
+            Permissions::DeleteCabins,
+            Permissions::ViewCabinCategories,
+            Permissions::CreateCabinCategories,
+            Permissions::EditCabinCategories,
+            Permissions::DeleteCabinCategories,
+            Permissions::ViewTaxes,
+            Permissions::CreateTaxes,
+            Permissions::EditTaxes,
+            Permissions::DeleteTaxes,
+            // Permissions::ViewRoles,
+            // Permissions::CreateRoles, 
+            // Permissions::EditRoles, 
+            // Permissions::DeleteRoles,
+            // Permissions::ViewPermissions,
+            // Permissions::CreatePermissions, 
+            // Permissions::EditPermissions, 
+            // Permissions::DeletePermissions,
+            // Permissions::AssignPermissions,
+            // Permissions::RevokePermissions,
+            Permissions::ViewBookings,
+            Permissions::CreateBookings,
+            Permissions::EditBookings,
+            Permissions::DeleteBookings,
+            Permissions::EditCabinInventory,
+            Permissions::EditPassengers,
+            Permissions::ResetSeat,
+            Permissions::ViewFees,
+            Permissions::CreateFees,
+            Permissions::EditFees,
+            Permissions::DeleteFees,
+            Permissions::ViewAdjustments,
+            Permissions::CreateAdjustments,
+            Permissions::EditAdjustments,
+            Permissions::DeleteAdjustments,
+            Permissions::ViewPayments,
+            Permissions::CreatePayments,
+            Permissions::EditPayments,
+            Permissions::DeletePayments,
+            Permissions::SendEmail,
+            Permissions::CreatePassengerDiscounts,
+            Permissions::DeletePassengerDiscounts
+        ]);
+        $this->assignToRole(Roles::Agent, [
+            Permissions::ViewDashboard,
+            // Permissions::ViewUsers,
+            // Permissions::CreateUsers,
+            // Permissions::EditUsers,
+            // Permissions::DeleteUsers,
+            Permissions::ViewCustomers,
+            Permissions::CreateCustomers,
+            Permissions::EditCustomers,
+            Permissions::DeleteCustomers,
+            Permissions::ViewEvents,
+            // Permissions::CreateEvents, 
+            // Permissions::EditEvents, 
+            // Permissions::DeleteEvents,
+            Permissions::ViewCabins,
+            // Permissions::CreateCabins, 
+            // Permissions::EditCabins, 
+            // Permissions::DeleteCabins,
+            Permissions::ViewCabinCategories,
+            // Permissions::CreateCabinCategories, 
+            // Permissions::EditCabinCategories, 
+            // Permissions::DeleteCabinCategories,
+            Permissions::ViewTaxes,
+            Permissions::CreateTaxes,
+            Permissions::EditTaxes,
+            Permissions::DeleteTaxes,
+            // Permissions::ViewRoles,
+            // Permissions::CreateRoles, 
+            // Permissions::EditRoles, 
+            // Permissions::DeleteRoles,
+            // Permissions::ViewPermissions,
+            // Permissions::CreatePermissions, 
+            // Permissions::EditPermissions, 
+            // Permissions::DeletePermissions,
+            // Permissions::AssignPermissions,
+            // Permissions::RevokePermissions,
+            Permissions::ViewBookings,
+            Permissions::CreateBookings,
+            Permissions::EditBookings,
+            Permissions::DeleteBookings,
+            //Permissions::EditCabinInventory,
+            Permissions::EditPassengers,
+            Permissions::ResetSeat,
+            Permissions::ViewFees,
+            Permissions::CreateFees,
+            Permissions::EditFees,
+            Permissions::DeleteFees,
+            Permissions::ViewAdjustments,
+            Permissions::CreateAdjustments,
+            Permissions::EditAdjustments,
+            Permissions::DeleteAdjustments,
+            Permissions::ViewPayments,
+            Permissions::CreatePayments,
+            Permissions::EditPayments,
+            Permissions::DeletePayments,
+            Permissions::SendEmail,
+            Permissions::CreatePassengerDiscounts,
+            Permissions::DeletePassengerDiscounts
+        ]);
+
+        $this->assignToRole(Roles::Admin, [
+            Permissions::ViewDashboard,
+            Permissions::ViewUsers,
+            // Permissions::CreateUsers,
+            // Permissions::EditUsers,
+            // Permissions::DeleteUsers,
+            Permissions::ViewCustomers,
+            Permissions::CreateCustomers,
+            Permissions::EditCustomers,
+            Permissions::DeleteCustomers,
+            Permissions::ViewEvents,
+            Permissions::CreateEvents,
+            Permissions::EditEvents,
+            Permissions::DeleteEvents,
+            Permissions::ViewCabins,
+            Permissions::CreateCabins,
+            Permissions::EditCabins,
+            Permissions::DeleteCabins,
+            Permissions::ViewCabinCategories,
+            Permissions::CreateCabinCategories,
+            Permissions::EditCabinCategories,
+            Permissions::DeleteCabinCategories,
+            Permissions::ViewTaxes,
+            Permissions::CreateTaxes,
+            Permissions::EditTaxes,
+            Permissions::DeleteTaxes,
+            Permissions::ViewRoles,
+            // Permissions::CreateRoles, 
+            // Permissions::EditRoles, 
+            // Permissions::DeleteRoles,
+            Permissions::ViewPermissions,
+            // Permissions::CreatePermissions, 
+            // Permissions::EditPermissions, 
+            // Permissions::DeletePermissions,
+            // Permissions::AssignPermissions,
+            // Permissions::RevokePermissions,
+            Permissions::ViewBookings,
+            Permissions::CreateBookings,
+            Permissions::EditBookings,
+            Permissions::DeleteBookings,
+            Permissions::EditCabinInventory,
+            Permissions::EditPassengers,
+            Permissions::ResetSeat,
+            Permissions::ViewFees,
+            Permissions::CreateFees,
+            Permissions::EditFees,
+            Permissions::DeleteFees,
+            Permissions::ViewAdjustments,
+            Permissions::CreateAdjustments,
+            Permissions::EditAdjustments,
+            Permissions::DeleteAdjustments,
+            Permissions::ViewPayments,
+            Permissions::CreatePayments,
+            Permissions::EditPayments,
+            Permissions::DeletePayments,
+            Permissions::SendEmail,
+            Permissions::CreatePassengerDiscounts,
+            Permissions::DeletePassengerDiscounts
+        ]);
+
+        $this->assignToRole(Roles::Trainee, [
+            Permissions::ViewDashboard,
+            Permissions::ViewUsers,
+            // Permissions::CreateUsers,
+            // Permissions::EditUsers,
+            // Permissions::DeleteUsers,
+            Permissions::ViewCustomers,
+            // Permissions::CreateCustomers,
+            // Permissions::EditCustomers,
+            // Permissions::DeleteCustomers,
+            Permissions::ViewEvents,
+            // Permissions::CreateEvents,
+            // Permissions::EditEvents,
+            // Permissions::DeleteEvents,
+            Permissions::ViewCabins,
+            // Permissions::CreateCabins,
+            // Permissions::EditCabins,
+            // Permissions::DeleteCabins,
+            Permissions::ViewCabinCategories,
+            // Permissions::CreateCabinCategories,
+            // Permissions::EditCabinCategories,
+            // Permissions::DeleteCabinCategories,
+            Permissions::ViewTaxes,
+            // Permissions::CreateTaxes,
+            // Permissions::EditTaxes,
+            // Permissions::DeleteTaxes,
+            Permissions::ViewRoles,
+            // Permissions::CreateRoles, 
+            // Permissions::EditRoles, 
+            // Permissions::DeleteRoles,
+            Permissions::ViewPermissions,
+            // Permissions::CreatePermissions, 
+            // Permissions::EditPermissions, 
+            // Permissions::DeletePermissions,
+            // Permissions::AssignPermissions,
+            // Permissions::RevokePermissions,
+            Permissions::ViewBookings,
+            // Permissions::CreateBookings,
+            // Permissions::EditBookings,
+            // Permissions::DeleteBookings,
+            // Permissions::EditCabinInventory,
+            // Permissions::EditPassengers,
+            // Permissions::ResetSeat,
+            // Permissions::ViewFees,
+            // Permissions::CreateFees,
+            // Permissions::EditFees,
+            // Permissions::DeleteFees,
+            Permissions::ViewAdjustments,
+            // Permissions::CreateAdjustments,
+            // Permissions::EditAdjustments,
+            // Permissions::DeleteAdjustments,
+            Permissions::ViewPayments,
+            // Permissions::CreatePayments,
+            // Permissions::EditPayments,
+            // Permissions::DeletePayments,
+            // Permissions::SendEmail,
+            // Permissions::CreatePassengerDiscounts,
+            // Permissions::DeletePassengerDiscounts
+        ]);
+    }
+
+
+    private function assignToRole($role, $permissions)
+    {
+        $roleId = Role::where('name', $role->value)->value('id');
+
+        $permissionNames = array_map(fn($permission) => $permission->value, $permissions);
+
+        $permissionIds = DB::table('permissions')
+            ->whereIn('name', $permissionNames)
+            ->pluck('id')
+            ->toArray();
+
+        $rolePermissions = [];
+        foreach ($permissionIds as $permissionId) {
+            $rolePermissions[] = [
+                'role_id' => $roleId,
+                'permission_id' => $permissionId
+            ];
+        }
+
+        DB::table('role_has_permissions')->insert($rolePermissions);
     }
 }

@@ -31,7 +31,7 @@
     public function index(Request $request)
     {
       try {
-        return $this->withPermission([Permissions::ViewUsers], function () {
+        return $this->withPermission([Permissions::ViewCustomers], function () {
           return Inertia::render('Customer/Index', [
             'customers' => $this->customerRepository->getAllCustomerData(),
           ]);
@@ -98,7 +98,7 @@
     public function show(User $user): RedirectResponse|Response|InertiaResponse
     {
       try {
-        return $this->withPermission([Permissions::ViewUsers], function ($user) {
+        return $this->withPermission([Permissions::ViewCustomers], function ($user) {
           $user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings']);
           $bookings = $this->customerRepository->getBookingDataForCustomer($user);
 
