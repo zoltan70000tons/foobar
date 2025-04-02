@@ -3,9 +3,10 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 
 class EnsureEmailIsVerified
 {
@@ -16,35 +17,15 @@ class EnsureEmailIsVerified
    */
   public function handle(Request $request, Closure $next): Response
   {
-    $user = $request->user();
-
-    if (!$user) {
-      return response()->json(
-        [
-          'message' => __('auth.user_not_found'),
-        ],
-        404
-      );
+    if (!Auth::check()) {
+      Cookie::queue(Cookie::forget('email_verified'));
+    } elseif (Auth::user()->hasRole('Customer') && is_null(Auth::user()->email_verified_at)) {
+      Cookie::queue(cookie('email_verified', 'false', 60));
+    } else {
+      Cookie::queue(cookie('email_verified', 'true', 60));
     }
 
-    if ($user->hasRole('Customer') && is_null($user->email_verified_at)) {
-      // Store verification status in the session
-      session(['email_verified' => false]);
-
-      return response()->json([
-        'message' => __('auth.email_not_verified'),
-        'status' => 'email_not_verified',
-        'user' => [
-          'name' => $user->detail->first_name ?? null,
-          'email_verified_at' => $user->email_verified_at ?? null,
-          'membership_type' => $user->membershipTypes->first()->name ?? null,
-          'membership_discount' => $user->membershipTypes->first()->discount_value ?? null,
-        ],
-      ]);
-    }
-
-    // Set the session when the email is verified
-    session(['email_verified' => true]);
+    return $next($request);
 
     return $next($request);
   }
