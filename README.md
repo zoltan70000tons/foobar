@@ -1,6 +1,7 @@
 # 70000OTONS OF METAL Booking Engine - Backend
 
 This is Booking Engine Admin. 
+[![Laravel Forge Site Deployment Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fforge.laravel.com%2Fsite-badges%2F4746fb0e-08cb-47d3-adba-23bcff554e8e%3Fdate%3D1%26label%3D1%26commit%3D1&style=plastic)](https://forge.laravel.com/servers/893391/sites/2641209)
 
 [![Laravel Forge Site Deployment Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fforge.laravel.com%2Fsite-badges%2F3b71f0e7-8dc3-488a-9b48-017be65c6a0b%3Fdate%3D1%26commit%3D1&style=plastic)](https://forge.laravel.com/servers/826351/sites/2475243)
 
