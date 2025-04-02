@@ -1,19 +1,19 @@
-import React from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { Container, Toolbar, Grid, CircularProgress, Typography } from '@mui/material';
-import DashboardCard from './Dashboard/DashboardCard';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
+import React from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { Container, Toolbar, Grid, CircularProgress, Typography } from "@mui/material";
+import DashboardCard from "./Dashboard/DashboardCard";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 
 // Icons
-import LocalActivityIcon from '@mui/icons-material/LocalActivity';
-import RoomPreferencesIcon from '@mui/icons-material/RoomPreferences';
-import PersonIcon from '@mui/icons-material/Person';
-import GroupWorkIcon from '@mui/icons-material/GroupWork';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
-import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
+import LocalActivityIcon from "@mui/icons-material/LocalActivity";
+import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
+import PersonIcon from "@mui/icons-material/Person";
+import GroupWorkIcon from "@mui/icons-material/GroupWork";
+import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
+import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission } = usePermissions();
@@ -39,45 +39,45 @@ export default function Dashboard({ auth }: PageProps) {
   // Dashboard Items Configuration
   const dashboardItems = [
     {
-      title: 'Bookings',
-      description: 'Manage Bookings',
+      title: "Bookings",
+      description: "Manage Bookings",
       icon: LocalActivityIcon,
-      link: '/events/1/bookings?tab=1',
+      link: "/events/1/bookings?tab=1",
       permission: Permissions.ViewBookings,
     },
     {
-      title: 'Cabins',
-      description: 'Manage Cabins',
+      title: "Cabins",
+      description: "Manage Cabins",
       icon: RoomPreferencesIcon,
-      link: '/events/1/cabins',
+      link: "/events/1/cabins",
       permission: Permissions.ViewCabins,
     },
     {
-      title: 'Customers',
-      description: 'Manage customers',
+      title: "Customers",
+      description: "Manage customers",
       icon: PersonIcon,
-      link: '/customers',
+      link: "/customers",
       permission: Permissions.ViewCustomers,
     },
     {
-      title: 'Team',
-      description: 'Manage your team',
+      title: "Team",
+      description: "Manage your team",
       icon: GroupWorkIcon,
-      link: '/team',
+      link: "/team",
       permission: Permissions.ViewUsers,
     },
     {
-      title: 'Events',
-      description: 'Manage your events',
+      title: "Events",
+      description: "Manage your events",
       icon: DirectionsBoatIcon,
-      link: '/events',
+      link: "/events",
       permission: Permissions.ViewEvents,
     },
     {
-      title: 'Roles',
-      description: 'Manage organization roles',
+      title: "Roles",
+      description: "Manage organization roles",
       icon: LocalPoliceIcon,
-      link: '/team/roles',
+      link: "/team/roles",
       permission: Permissions.ViewRoles,
     },
   ];

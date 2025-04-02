@@ -1,5 +1,5 @@
 import { useState, PropsWithChildren, ReactNode } from "react";
-import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
+import { styled, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiDrawer from "@mui/material/Drawer";
 import Box from "@mui/material/Box";
@@ -10,15 +10,12 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import PersonIcon from "@mui/icons-material/Person";
-import Badge from "@mui/material/Badge";
 import Link from "@mui/material/Link";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import theme from "@/Theme/theme";
 import ListItems from "@/Layouts/ListItems";
 // import LoadingOverlay from "@/Components/LoadingOverlay";
-import { usePage } from "@inertiajs/react";
 import { User } from "@/types";
 import { Avatar } from "@mui/material";
 
@@ -91,12 +88,11 @@ export default function AuthenticatedLayout({
   children,
 }: PropsWithChildren<{ user: User; header?: ReactNode; children?: ReactNode }>) {
   const [open, setOpen] = useState(false);
-  const { auth } = usePage().props;
 
-  const [loading, setLoading] = useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: "flex" }}>
@@ -126,7 +122,6 @@ export default function AuthenticatedLayout({
 
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
                 <Box
-                  size="small"
                   sx={{
                     ml: 2,
                   }}
@@ -136,7 +131,7 @@ export default function AuthenticatedLayout({
                   </Avatar>
                 </Box>
                 <Typography variant="body2" color="inherit" sx={{ ml: 2 }}>
-                  {user?.username}
+                  {user.username}
                 </Typography>
               </Box>
             </Box>
@@ -161,8 +156,9 @@ export default function AuthenticatedLayout({
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav" sx={{ mt: 0, pt: 0 }}>
-            <ListItems mainDrawerToggle={setOpen} sx={{ mt: 0, pt: 0 }} />
+          <List component="nav" sx={{ mt: 0, pt: 0, height: "100%" }}>
+            <ListItems />
+            {/* <ListItems mainDrawerToggle={setOpen} sx={{ mt: 0, pt: 0 }} /> */}
             {/* <Divider sx={{ my: 1 }} /> */}
             {/* {accountListItems} */}
           </List>
