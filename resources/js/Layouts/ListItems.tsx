@@ -20,8 +20,6 @@ const MenuItems: React.FC = () => {
   const { props } = usePage<{ menu?: { events: any[] } }>();
   const events: any[] = props.menu?.events || [];
 
-  console.log("events", events);
-
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   //const [events, setEvents] = useState<any[]>([]);
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
@@ -80,7 +78,12 @@ const MenuItems: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box
+      sx={{
+        display: "flex",
+        height: "100%",
+      }}
+    >
       {/* Main Side bar - Icons Only */}
       <Drawer
         variant="permanent"
