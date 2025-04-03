@@ -104,7 +104,7 @@ class CabinsController extends Controller
                 'cabin_number'      => [
                     'required',
                     'numeric',
-                    'unique:cabins,cabin_number,' . $cabin_id . ',id'
+                    'unique:cabin_specs,cabin_number,' . $cabin_id . ',id'
                 ],
                 'cabin_category'    => 'required|numeric',
                 'cabin_type'        => 'required|numeric',

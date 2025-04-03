@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
-import { Head, router, useForm } from "@inertiajs/react";
+import { Head, router, useForm, usePage } from "@inertiajs/react";
 import {
   Accordion,
-  AccordionActions,
   AccordionDetails,
   AccordionSummary,
   Box,
@@ -20,13 +19,12 @@ import {
 import FormatInput from "@/Components/FormatInput";
 import CategoryTypeSelect from "@/Components/CategoryTypeSelect";
 import { CategoryTypes } from "@/enums/CategoryTypeEnum";
-import { GridMenuIcon } from "@mui/x-data-grid";
 import DropZoneField from "@/Components/DropZoneField";
-import CustomNumericFormat from "@/Components/CustomNumericFormat";
-import { NumericFormat } from "react-number-format";
 import UMSelect from "@/Components/UMSelect";
 import ImageGallery from "@/Components/ImageGallery";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+
 
 const Edit = ({
   auth,
@@ -35,16 +33,19 @@ const Edit = ({
   cabin_category,
   errors,
 }: PageProps & { tab: string; data: any }) => {
+  
+  const { flash } = usePage().props;
+
   const { data, setData, post, processing } = useForm({
     category_name: cabin_category.category_name,
     category_code: cabin_category.category_code,
     price: cabin_category.price,
-    capacity: cabin_category.capacity,
-    description: cabin_category.description,
+    capacity: cabin_category.spec.capacity,
+    description: cabin_category.spec.description,
     category_type: cabin_category.category_type,
-    display_order: cabin_category.display_order,
+    display_order: cabin_category.spec.display_order,
     event_id: event.id,
-    cruise: cabin_category.cruise_id,
+    cruise: cabin_category.spec.cruise_id,
   });
 
   interface Image {
@@ -53,9 +54,20 @@ const Edit = ({
     path: string;
     date: string;
   }
-
+  
+  const { showSnackbar } = useSnackbar();
   const [images, setImages] = useState<Image[]>(cabin_category.images || []);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (flash.message) {
+      if (flash.success) {
+        showSnackbar(flash.message, 'success');
+      } else if (flash.error) {
+        showSnackbar(flash.message, 'error');
+      }
+    }
+  }, [flash])
 
   const handleFilesChange = (files: string[]) => {
     setUploadedFiles(files);
@@ -176,6 +188,7 @@ const Edit = ({
                       placeholder="Enter price"
                       format="#,##0.00"
                       prefix="$"
+                      val={data.price}
                       decimalScale={2}
                       onChange={handleInputChange}
                       error={errors}

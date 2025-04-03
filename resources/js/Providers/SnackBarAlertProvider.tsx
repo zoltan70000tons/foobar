@@ -31,7 +31,7 @@ export const SnackbarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         open={snackbar.open}
         onClose={closeSnackbar}
         vertical="top"
-        horizontal="center"
+        horizontal="right"
       />
     </SnackbarContext.Provider>
   );

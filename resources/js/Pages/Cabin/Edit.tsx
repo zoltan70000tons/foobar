@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { TagEnum } from "@/enums/TagEnum";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/enums/CabinStatus";
 import { CabinType } from "@/enums/CabinType";
 import { PageProps } from "@/types";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { LocationEnum } from "@/enums/LocationEnum";
 import {
   Box,
@@ -43,7 +43,7 @@ import {
 import NoAccessAlert from "@/Components/NoAccessAlert";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
-import SnackbarAlert from "@/Components/SnackbarAlert";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const Edit = ({
   auth,
@@ -61,34 +61,40 @@ const Edit = ({
   const [cabinType, setCabinType] = useState<number | string>(
     cabin.cabin_type_id
   );
-  const [deck, setDeck] = useState<string>(cabin.deck);
-  const [location, setLocation] = useState<string>(cabin.location);
-  const [connectWith, setConnectWith] = useState<string>(cabin.connects_with);
+  const [deck, setDeck] = useState<string>(cabin.cabin_spec.deck);
+  const [location, setLocation] = useState<string>(cabin.cabin_spec.location);
+  const [connectWith, setConnectWith] = useState<string>(cabin.cabin_spec.connects_with);
   const [ticketInventory, setTicketInventory] = useState<string>(
     cabin.inventory
   );
-  const [totalBerths, setTotalBerths] = useState<string>(cabin.total_berths);
+  const [totalBerths, setTotalBerths] = useState<string>(cabin.cabin_spec.total_berths);
   const [lowerBedType1, setLowerBedType1] = useState<string>(
-    cabin.lower_bed_type_1
+    cabin.cabin_spec.lower_bed_type_1
   );
   const [lowerBedType2, setLowerBedType2] = useState<string>(
-    cabin.lower_bed_type_2
+    cabin.cabin_spec.lower_bed_type_2
   );
   const [upperBerths, setUpperBerths] = useState<string>(cabin.upper_berths);
   const [notes, setNotes] = useState<string>(cabin.notes);
   const [features, setFeatures] = useState({
-    accessible: cabin.accessible,
-    balcony: cabin.balcony,
-    obstructedView: cabin.obstructed_view,
+    accessible: cabin.cabin_spec.accessible,
+    balcony: cabin.cabin_spec.balcony,
+    obstructedView: cabin.cabin_spec.obstructed_view,
   });
 
   const { hasPermission } = usePermissions();
+  const { showSnackbar } = useSnackbar();
+  const { flash } = usePage().props;
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
+  useEffect(() => {
+    if (flash.message) {
+      if (flash.success) {
+        showSnackbar(flash.message, 'success');
+      } else if (flash.error) {
+        showSnackbar(flash.message, 'error');
+      }
+    }
+  }, [flash])
 
   const handleBack = () => {
     window.history.back();
@@ -99,7 +105,7 @@ const Edit = ({
     { value: 2, label: CabinType.SINGLE_TICKET_MALE },
     { value: 3, label: CabinType.SINGLE_TICKET_FEMALE },
   ];
-  
+
   const disableFields = cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED;
   const statusSource = disableFields ? CabinStatus : CabinStatusReduced;
 
@@ -175,27 +181,17 @@ const Edit = ({
       {
         forceFormData: true,
         onSuccess: (response) => {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Cabin edited successfully",
-          });
-          router.visit(route('cabins.edit', { id: event.id, cabin_id: cabin.id}), { only: ['cabins'] });
+          showSnackbar('Cabin edited successfully', 'success');
+          router.visit(route('cabins.edit', { id: event.id, cabin_id: cabin.id }), { only: ['cabins'] });
         },
         onError: (errors) => {
-          setSnackbar({
-            open: true,
-            severity: "error",
-            message: "Error editing cabin",
-          });
+          showSnackbar('Error editing cabin', 'error');
         },
       }
     );
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+
   const hasAnyPermission =
     hasPermission(Permissions.ViewCabins) ||
     hasPermission(Permissions.EditCabins);
@@ -242,13 +238,13 @@ const Edit = ({
                   <Grid container spacing={2}>
                     {(cabinStatus === CabinStatus.BOOKED ||
                       cabinStatus === CabinStatus.PARTIALLY_BOOKED) && (
-                      <Grid item xs={12}>
-                        <Alert severity="warning">
-                          The current status of this cabin only allows editing
-                          certain fields.
-                        </Alert>
-                      </Grid>
-                    )}
+                        <Grid item xs={12}>
+                          <Alert severity="warning">
+                            The current status of this cabin only allows editing
+                            certain fields.
+                          </Alert>
+                        </Grid>
+                      )}
                     {/* Status Select */}
                     <Grid item xs={12} md={6}>
                       <Box sx={{ mb: 2 }}>
@@ -279,13 +275,13 @@ const Edit = ({
                                 >
                                   {
                                     statusIcons[
-                                      selected as keyof typeof statusSource
+                                    selected as keyof typeof statusSource
                                     ]
                                   }{" "}
                                 </ListItemIcon>
                                 {
                                   statusSource[
-                                    selected as keyof typeof statusSource
+                                  selected as keyof typeof statusSource
                                   ]
                                 }{" "}
                               </Box>
@@ -311,13 +307,13 @@ const Edit = ({
                                 >
                                   {
                                     statusIcons[
-                                      status as keyof typeof CabinStatus
+                                    status as keyof typeof CabinStatus
                                     ]
                                   }{" "}
                                 </ListItemIcon>
                                 {
                                   CabinStatus[
-                                    status as keyof typeof CabinStatus
+                                  status as keyof typeof CabinStatus
                                   ]
                                 }{" "}
                               </MenuItem>
@@ -644,12 +640,12 @@ const Edit = ({
               <NoAccessAlert message="You do not have permission to access this section." /> // Mostrar NotAllowed si no tiene permisos
             )}
           </Grid>
-          <SnackbarAlert
+          {/* <SnackbarAlert
             open={snackbar.open}
             severity={snackbar.severity}
             message={snackbar.message}
             onClose={handleCloseSnackbar}
-          />
+          /> */}
         </Grid>
       </Container>
     </AuthenticatedLayout>

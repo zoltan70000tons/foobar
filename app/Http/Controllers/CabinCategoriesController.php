@@ -131,13 +131,16 @@ class CabinCategoriesController extends Controller
             $category = $this->cabinCategoryRepository->find($cabCatId);
             $this->withPermission([Permissions::EditCabinCategories], function ($request, $event, $category) {
                 $this->cabinCategoryRepository->update($request->all(), $category->id);
-                return Inertia::render('CabinCategory/Edit', [
-                    'cabin_category' => $category,
-                    'event' => $event,
-                    'cruisers' => $this->cruisers
+                return redirect()->back()->with([
+                    'message' => 'Cabin category updated successfully!',
+                    'success' => true,
                 ]);
             }, $request, $event, $category);
         } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'message' => 'Error updating cabin category',
+                'success' => false,
+            ]);
             $this->logException($e);
         }
     }
@@ -165,10 +168,23 @@ class CabinCategoriesController extends Controller
         try {
             $category = $this->cabinCategoryRepository->find($catId);
             $this->withPermission([Permissions::DeleteCabinCategories], function ($category, $id) {
+                if ($category->cabins()->exists()) {
+                    return redirect()->back()->with([
+                        'message' => 'Cannot delete, there are cabins associated.',
+                        'success' => false,
+                    ]);
+                }
                 $category->delete();
-                return redirect()->route('cabins.categories', ['id' => $id])->with('success', 'Cabin Category deleted successfully.');
+                return redirect()->back()->with([
+                    'message' => 'Cannot delete, there are cabins associatedCabin Category deleted successfully.',
+                    'success' => true,
+                ]);
             },  $category, $id);
         } catch (\Exception $e) {
+            return redirect()->back()->with([
+                'message' => 'Error deleting category.',
+                'success' => false,
+            ]);
             $this->logException($e);
         }
     }

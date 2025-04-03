@@ -6,17 +6,18 @@ use App\Enums\StatusCabin;
 use App\Interfaces\CabinInterface;
 use App\Models\Cabin;
 use App\Models\CabinCategory;
+use App\Models\CabinSpec;
 use App\Models\CabinType;
-use App\Models\TemporaryReservation;
-use App\Models\Event;
+use App\Traits\ExceptionLogger;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\Access\AuthorizationException;
+
+
 
 class CabinRepository implements CabinInterface
 {
+
+  use ExceptionLogger;
+
   function getAll()
   {
     // return CabinCategory::all();
@@ -31,43 +32,63 @@ class CabinRepository implements CabinInterface
   {
     return new Cabin();
   }
+  
   function update(array $data, $id)
   {
-    $cabin = $this->find($id);
-    $cabin->notes = $data['notes'] ?? null;
-    $cabin->tags = isset($data['tags']) && is_array($data['tags']) && count($data['tags']) > 0
-    ? array_values($data['tags'])
-    : [];
-
-    if ($cabin->status !== StatusCabin::BOOKED && $cabin->status !== StatusCabin::PARTIALLY_BOOKED) {
-
-      if (isset($data['cabin_type']) && $data['cabin_type'] !== $cabin->cabin_type_id) {
-        if ($cabin->cabin_type_id === 1 && ($data['cabin_type'] === "2" || $data['cabin_type'] === "3")) {
-          $cabin->inventory = $cabin->category->capacity;
-        } elseif (($cabin->cabin_type_id === 3 || $cabin->cabin_type_id === 2) && $data['cabin_type'] === "1") {
-          $cabin->inventory = 1;
-        }
-        $cabin->cabin_type_id = $data['cabin_type'];
+      DB::beginTransaction();
+  
+      try {
+          $cabin = $this->find($id);
+          if (!$cabin) {
+              throw new \Exception("Cabin not found");
+          }
+  
+          $cabinSpec = CabinSpec::find($cabin->cabin_spec_id);
+          if (!$cabinSpec) {
+              throw new \Exception("CabinSpec not found");
+          }
+  
+          $cabin->notes = $data['notes'] ?? null;
+          $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
+  
+          if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
+  
+              if (isset($data['cabin_type']) && $data['cabin_type'] != $cabin->cabin_type_id) {
+                  if ($cabin->cabin_type_id === 1 && in_array($data['cabin_type'], ["2", "3"])) {
+                      $cabin->inventory = $cabin->category->capacity;
+                  } elseif (in_array($cabin->cabin_type_id, [2, 3]) && $data['cabin_type'] === "1") {
+                      $cabin->inventory = 1;
+                  }
+                  $cabin->cabin_type_id = $data['cabin_type'];
+              }
+  
+              $cabin->status = $data['cabin_status'];
+              $cabin->cabin_category_id = $data['cabin_category'];
+              $cabinSpec->cabin_number = $data['cabin_number'];
+              $cabinSpec->deck = $data['deck'];
+              $cabinSpec->location = $data['location'];
+              $cabinSpec->connects_with = $data['connects_with'] ?? null;
+              $cabinSpec->total_berths = $data['total_berths'] ?? 0;
+              $cabinSpec->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
+              $cabinSpec->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
+              $cabinSpec->upper_berths = $data['upper_berths'] ?? null;
+  
+              // Updating features
+              $cabinSpec->accessible = $data['features']['accessible'] ?? false;
+              $cabinSpec->balcony = $data['features']['balcony'] ?? false;
+              $cabinSpec->obstructed_view = $data['features']['obstructed_view'] ?? false;
+          }
+  
+          $cabin->save();
+          $cabinSpec->save();
+  
+          DB::commit();
+      } catch (\Exception $e) {
+          DB::rollBack();
+          $this->logException($e);
       }
-      $cabin->status = $data['cabin_status'];
-      $cabin->cabin_number = $data['cabin_number'];
-      $cabin->cabin_category_id = $data['cabin_category'];
-      $cabin->cabin_type_id = $data['cabin_type'];
-      $cabin->deck = $data['deck'];
-      $cabin->location = $data['location'];
-      $cabin->connects_with = $data['connects_with'] ?? null;
-      $cabin->total_berths = $data['total_berths'] ?? null;
-      $cabin->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
-      $cabin->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
-      $cabin->upper_berths = $data['upper_berths'] ?? null;
-
-      // updating features
-      $cabin->accessible = $data['features']['accessible'];
-      $cabin->balcony = $data['features']['balcony'];
-      $cabin->obstructed_view = $data['features']['obstructed_view'];
-    }
-    $cabin->save();
   }
+  
   function delete($id) {}
   function getCategoriesAndCabins($event_id)
   {
