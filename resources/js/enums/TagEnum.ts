@@ -6,7 +6,8 @@ export enum TagEnum {
   NON_REV = "NON-REV", 
   POTENTIAL_NOSE = "POTENTIAL NOISE",
   NOT_ASSIGNED = "NOT ASSIGNED",
-  ASSIGNED = "ASSIGNED"
+  ASSIGNED = "ASSIGNED",
+  RCCL ='RCCL'
 }
 
 export enum BookingTagEnum {

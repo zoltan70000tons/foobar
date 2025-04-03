@@ -12,7 +12,8 @@ type FormatInputProps = {
   onChange: (name: string, value: string) => void;
   decimalScale?: number;
   error: Object | null
-  disabled: boolean
+  disabled: boolean,
+  val?: string
 };
 
 const FormatInput: React.FC<FormatInputProps> = ({
@@ -24,10 +25,11 @@ const FormatInput: React.FC<FormatInputProps> = ({
   onChange,
   decimalScale = 2,
   error,
-  disabled= false
+  disabled= false,
+  val='0'
 }) => {
-  const [value, setValue] = useState<string>('');
-
+  const [value, setValue] = useState<string>(val);
+  console.log(value);
   const handleChange = (values: { formattedValue: string; value: string }) => {
     setValue(values.formattedValue);
     onChange(name, values.value);

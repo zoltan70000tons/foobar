@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
   Box,
   Container,
@@ -10,7 +10,6 @@ import {
   Typography,
   Tabs,
   Tab,
-  CircularProgress,
   Chip,
   Dialog,
   DialogTitle,
@@ -30,6 +29,7 @@ import apiRoutes from '@/Helpers/ApiRoutes';
 import axios from 'axios';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import SnackbarAlert from '@/Components/SnackbarAlert';
+import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 
 const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: string; data: any }) => {
   const { hasPermission } = usePermissions();
@@ -39,11 +39,19 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
 
   const [loading, setLoading] = useState(true);
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: 'success',
-    message: '',
-  });
+  const { showSnackbar } = useSnackbar();
+
+  const { flash } = usePage().props
+
+  useEffect(() => {
+    if (flash.message) {
+      if (flash.success) {
+        showSnackbar(flash.message, 'success');
+      } else{
+        showSnackbar(flash.message, 'error');
+      }
+    }
+  }, [flash])
 
   useEffect(() => {
     if (cabins) {
@@ -143,7 +151,7 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
         ),
       },
       {
-        accessor: 'cabin_tags',
+        accessor: 'tags',
         header: 'Tags',
         filterable: true,
         filterType: 'select',
@@ -156,8 +164,8 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
         },
         draw: (subRow) => (
           <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
-            {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
-              subRow.cabin_tags.map((tag: string) => (
+            {Array.isArray(subRow.tags) && subRow.tags.length > 0 ? (
+              subRow.tags.map((tag: string) => (
                 <Chip
                   key={tag}
                   label={tag}
@@ -203,13 +211,6 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
     router.delete(route('cabinCategory.destroy', { id: row.event_id, catId: row.id }));
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const onAddClick = () => {
-    //router.get(route("cabinCategory.create", { id: 1 }));
-  };
 
   const categoriesColumns = useMemo(
     () => [
@@ -280,19 +281,11 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
       .then((response) => {
         router.reload({ only: ['cabins'], preserveScroll: true });
         setLoading(false);
-        setSnackbar({
-          open: true,
-          severity: 'success',
-          message: 'Tags edited successfully',
-        });
+        showSnackbar('Tags edited successfully', 'success');
       })
       .catch((error) => {
         console.error('Error adding tags:', error);
-        setSnackbar({
-          open: true,
-          severity: 'error',
-          message: 'Error updating tags',
-        });
+        showSnackbar('Error updating tags', 'error');
       });
   };
 
@@ -312,19 +305,10 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
       .then((response) => {
         setLoading(false);
         router.reload({ only: ['cabins'], preserveScroll: true });
-        setSnackbar({
-          open: true,
-          severity: 'success',
-          message: 'Status edited successfully',
-        });
+        showSnackbar('Status edited successfully', 'success');
       })
       .catch((error) => {
-        //console.error("Error updating status", error);
-        setSnackbar({
-          open: true,
-          severity: 'error',
-          message: 'Error updating status',
-        });
+        showSnackbar('Error updating status', 'error');
       });
   };
 
@@ -396,12 +380,6 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
               </Box>
             </Box>
             {/* <LoadingOverlay open={loading} /> */}
-            <SnackbarAlert
-              open={snackbar.open}
-              severity={snackbar.severity}
-              message={snackbar.message}
-              onClose={handleCloseSnackbar}
-            />
           </Grid>
         </Grid>
       </Container>
