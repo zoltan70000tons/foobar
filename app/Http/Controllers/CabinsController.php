@@ -7,19 +7,14 @@ use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
-use App\Models\Event;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
-use App\Rules\ValidDateFormat;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
-use Hamcrest\Type\IsNumeric;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
 
 class CabinsController extends Controller
 {
@@ -187,6 +182,7 @@ class CabinsController extends Controller
                 // $updatedTags = array_values($updatedTags); 
                 // $cabin->tags = $updatedTags;
                 // $cabin->save();
+                
                 $cabin->tags = array_values($tags);
                 $cabin->save();
             }
