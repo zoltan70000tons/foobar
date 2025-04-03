@@ -193,7 +193,7 @@ const SectionPercentage: React.FC<Props> = ({
   const passengerAllocatedCost = Number(passenger?.passenger_allocated_cost);
   const passengerBalance = Number(passenger?.passenger_balance) || 0;
 
-  const passengerPercentage = (passengerBalance / passengerAllocatedCost) * 100;
+  const passengerPercentage = Math.min((passengerBalance / passengerAllocatedCost) * 100, 100);
   const passengerPercentageRounded = Math.round(passengerPercentage);
 
   return (
