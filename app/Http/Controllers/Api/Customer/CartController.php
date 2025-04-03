@@ -13,6 +13,7 @@ use App\Models\CabinCategorySpec;
 use App\Services\ReservationService;
 use App\Models\Event;
 use App\Models\Cart;
+use App\Helpers\AgeRestriction;
 
 class CartController extends Controller
 {
@@ -157,6 +158,18 @@ class CartController extends Controller
 
     $user = Auth::user();
 
+    // Age verification
+    $dateOfBirth = $user->detail->dob ?? null;
+    if ($dateOfBirth) {
+      // If age restricion is false return error
+      $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
+      if (!$isAgeValid) {
+        return response()->json(['message' => 'Age restriction not met. Minimum age is 21 years old to proceed.'], 400);
+      }
+    } else {
+      return response()->json(['message' => 'Date of birth is required'], 400);
+    }
+
     if ($user) {
       Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
     } else {
@@ -211,6 +224,18 @@ class CartController extends Controller
     ]);
 
     $user = Auth::user();
+
+    // Age verification
+    $dateOfBirth = $user->detail->dob ?? null;
+    if ($dateOfBirth) {
+      // If age restricion is false return error
+      $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
+      if (!$isAgeValid) {
+        return response()->json(['message' => 'Age restriction not met. Minimum age is 21 years old to proceed.'], 400);
+      }
+    } else {
+      return response()->json(['message' => 'Date of birth is required'], 400);
+    }
 
     if ($user) {
       Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);

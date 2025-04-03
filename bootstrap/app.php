@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->alias([
       'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
       'membership_sales' => \App\Http\Middleware\MembershipSales::class,
-      'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
+      // 'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
       //'ensure_not_customer' => \App\Http\Middleware\EnsureUserIsNotCustomer::class,
       'clear_expired_reservation' => \App\Http\Middleware\ClearExpiredReservation::class,
       'one_booking_per_user' => \App\Http\Middleware\OneBookingPerUser::class,

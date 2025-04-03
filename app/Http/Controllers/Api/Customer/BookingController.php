@@ -26,6 +26,7 @@ use Illuminate\Validation\Rules\Numeric;
 use App\Models\Cart;
 use App\Traits\BookingLogTrait;
 use App\Traits\StringNormalization;
+use App\Helpers\AgeRestriction;
 
 class BookingController extends Controller
 {
@@ -66,7 +67,17 @@ class BookingController extends Controller
       return response()->json(['message' => 'Cart is empty'], 400);
     }
 
-    // \Log::info('cart', $cart);
+    // Age verification
+    $dateOfBirth = $user->detail->dob ?? null;
+    if ($dateOfBirth) {
+      // If age restricion is false return error
+      $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
+      if (!$isAgeValid) {
+        return response()->json(['message' => 'Age restriction not met. Minimum age is 21 years old to proceed.'], 400);
+      }
+    } else {
+      return response()->json(['message' => 'Date of birth is required'], 400);
+    }
 
     try {
       $reservationId = $validated['cart']['reservation_id'];

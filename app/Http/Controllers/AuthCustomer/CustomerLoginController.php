@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SurvivorNumber;
+use Illuminate\Support\Facades\Cookie;
 
 class CustomerLoginController extends Controller
 {
@@ -65,6 +66,8 @@ class CustomerLoginController extends Controller
   public function destroy(Request $request): JsonResponse
   {
     Auth::guard('web')->logout();
+
+    Cookie::queue(Cookie::forget('email_verified'));
 
     $request->session()->invalidate();
 
