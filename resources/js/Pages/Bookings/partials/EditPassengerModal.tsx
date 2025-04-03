@@ -195,6 +195,7 @@ const EditPassengerModal = ({
                                 disabled={editable}
                                 error={!!validation?.first_name}
                                 helperText={validation?.first_name?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -206,6 +207,8 @@ const EditPassengerModal = ({
                                 value={passenger?.middle_name || ""}
                                 onChange={(e) => onChange("middle_name", e.target.value)}
                                 disabled={editable}
+                                error={!!validation?.middle_name}
+                                helperText={validation?.middle_name?.[0]}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -219,6 +222,7 @@ const EditPassengerModal = ({
                                 disabled={editable}
                                 error={!!validation?.last_name}
                                 helperText={validation?.last_name?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -232,6 +236,9 @@ const EditPassengerModal = ({
                                 onChange={(e) => onChange("dob", e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                                 disabled={editable}
+                                error={!!validation?.dob}
+                                helperText={validation?.dob?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -241,6 +248,9 @@ const EditPassengerModal = ({
                                     value={passenger?.gender || ""}
                                     onChange={(e) => onChange("gender", e.target.value)}
                                     disabled={editable}
+                                    error={!!validation?.gender}
+                                    helperText={validation?.gender?.[0]}
+                                    required
                                 >
                                     <MenuItem value="M">Male</MenuItem>
                                     <MenuItem value="F">Female</MenuItem>
@@ -260,6 +270,7 @@ const EditPassengerModal = ({
                               disabled={editable}
                               error={!!validation?.citizenship}
                               helperText={validation?.citizenship?.[0]}
+                              required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -286,6 +297,7 @@ const EditPassengerModal = ({
                                 disabled={editable}
                                 error={!!validation?.email}
                                 helperText={validation?.email?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -299,6 +311,9 @@ const EditPassengerModal = ({
                               name={ "phone" }
                               onChange={(e) => onChange("phone", e)}
                               disabled={editable}
+                              error={!!validation?.phone}
+                              helperText={validation?.phone?.[0]}
+                              required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -312,6 +327,7 @@ const EditPassengerModal = ({
                                 disabled={editable}
                                 error={!!validation?.address_first}
                                 helperText={validation?.address_first?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -323,6 +339,8 @@ const EditPassengerModal = ({
                                 value={passenger?.address_second || ""}
                                 onChange={(e) => onChange("address_second", e.target.value)}
                                 disabled={editable}
+                                error={!!validation?.address_second}
+                                helperText={validation?.citizenship?.[0]}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -336,6 +354,7 @@ const EditPassengerModal = ({
                                 disabled={editable}
                                 error={!!validation?.city}
                                 helperText={validation?.city?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -347,6 +366,8 @@ const EditPassengerModal = ({
                                 value={passenger?.state || ""}
                                 onChange={(e) => onChange("state", e.target.value)}
                                 disabled={editable}
+                                error={!!validation?.state}
+                                helperText={validation?.state?.[0]}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -358,6 +379,9 @@ const EditPassengerModal = ({
                                 value={passenger?.postal_code || ""}
                                 onChange={(e) => onChange("postal_code", e.target.value)}
                                 disabled={editable}
+                                error={!!validation?.postal_code}
+                                helperText={validation?.postal_code?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -372,6 +396,7 @@ const EditPassengerModal = ({
                               disabled={editable}
                               error={!!validation?.country}
                               helperText={validation?.country?.[0]}
+                              required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -383,6 +408,9 @@ const EditPassengerModal = ({
                                 value={passenger?.emergency_c_name || ""}
                                 onChange={(e) => onChange("emergency_c_name", e.target.value)}
                                 disabled={editable}
+                                error={!!validation?.emergency_c_name}
+                                helperText={validation?.emergency_c_name?.[0]}
+                                required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -396,6 +424,9 @@ const EditPassengerModal = ({
                               name={ "emergency_c_phone" }
                               onChange={(e) => onChange("emergency_c_phone", e)}
                               disabled={editable}
+                              error={!!validation?.emergency_c_phone}
+                              helperText={validation?.emergency_c_phone?.[0]}
+                              required
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -405,6 +436,9 @@ const EditPassengerModal = ({
                                     value={passenger?.payment_method || ""}
                                     onChange={(e) => onChange("payment_method", e.target.value)}
                                     disabled={editable}
+                                    required
+                                    error={!!validation?.payment_method}
+                                    helperText={validation?.payment_method?.[0]}
                                 >
                                     <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
                                     <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>

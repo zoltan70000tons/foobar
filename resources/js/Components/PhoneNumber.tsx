@@ -86,6 +86,8 @@ export default function PhoneNumber({
             <Select
               disabled={restProps.disabled ?? false}
               value={country.iso2}
+              error={restProps?.error}
+              helperText={restProps?.helperText}
               onChange={(e) => setCountry(e.target.value as CountryIso2)}
               MenuProps={{
                 PaperProps: {
