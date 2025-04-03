@@ -163,9 +163,26 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                       checked={editMode || (booking.locked_by && booking.locked_by.agent_id === auth.user.id)}
                       onChange={handleEditChange}
                       disabled={booking.locked_by && booking.locked_by.agent_id !== auth.user.id}
+                      sx={{
+                        width: 68,
+                        height: 38,
+                        '& .MuiSwitch-thumb': {
+                          width: 24,
+                          height: 24,
+                          marginTop: '-2px',
+                          marginLeft: '2px',
+                        },
+                        '& .MuiSwitch-track': {
+                          borderRadius: 8,
+                        },
+                      }}
                     />
                   }
-                  label="Edit Mode"
+                  label={
+                    <Typography sx={{ fontSize: '1.1rem' }}>
+                      Edit Mode
+                    </Typography>
+                  }
                 />
               )}
             </FormGroup>
