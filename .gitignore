@@ -20,3 +20,4 @@ herd.yml
 /.idea
 /.vscode
 /app/Console/Commands/Testing/*
+/database/seeders/data/users_seed_data.json

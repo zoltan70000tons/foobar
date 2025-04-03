@@ -9,80 +9,133 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\EmailTemplateService;
 use App\Services\PaymentService;
+use App\Services\PaymentInfoService;
+use App\Traits\ExceptionLogger;
+use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Log;
-
+use App\Http\Controllers\Controller;
+use App\Traits\HandlePermissions;
 
 class NotificationController extends Controller
 {
-    protected $emailService;
-    protected $paymentService;
+  use HandlePermissions;
+  use ExceptionLogger;
+  use BookingLogTrait;
 
-    public function __construct(EmailTemplateService $emailService, PaymentService $paymentService)
-    {
-        $this->emailService = $emailService;
-        $this->paymentService = $paymentService;
+  protected EmailTemplateService $emailService;
+  protected PaymentService $paymentService;
+  protected PaymentInfoService $paymentInfoService;
+
+  public function __construct(
+    EmailTemplateService $emailService,
+    PaymentService $paymentService,
+    PaymentInfoService $paymentInfoService
+  ) {
+    $this->emailService = $emailService;
+    $this->paymentService = $paymentService;
+    $this->paymentInfoService = $paymentInfoService;
+  }
+
+  /**
+   * Handle payment, send payment confirmation email, and log the transaction.
+   *
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
+   */
+  public function sendPaymentEmail(Request $request)
+  {
+    try {
+      $validated = $request->validate([
+        'amount' => 'required|numeric|min:0',
+        'passenger_id' => 'required|exists:passengers,id',
+        'bip_id' => 'required|string|max:50',
+        'type' => 'required|string|in:PAYMENT,REFUND',
+        'notes' => 'nullable|string|max:255',
+        'transaction_date' => 'required|date',
+      ]);
+
+      // Prevent duplicate BIP_ID processing
+      if (Payment::where('BIP_ID', $validated['bip_id'])->exists()) {
+        return response()->json(['error' => 'Duplicate transaction'], 409);
+      }
+
+      $validated['source'] = 'SYSTEM';
+
+      $passenger = Passenger::find($validated['passenger_id']);
+      $booking = $passenger->booking;
+
+      if (!$booking) {
+        return response()->json(['error' => 'No booking found for this passenger'], 404);
+      }
+
+      // Process payment
+      $result = $this->paymentService->processPayment($validated);
+
+      if (!$result['success']) {
+        return response()->json(['error' => $result['message']], 422);
+      }
+
+      // Get the payment details
+      $payment = $result['payment'];
+
+      // Sync passeger balance
+      $this->paymentInfoService->syncBalance(
+        $validated['passenger_id'],
+        $booking->id,
+        $booking->event_id
+      );
+
+      $this->saveBookingLog(
+        $booking->id,
+        'System Transaction Received',
+        "System {$payment->type} of \${$payment->amount} was added to booking"
+      );
+
+      // Email template handling
+      $template = match ($booking->payment_plan) {
+        'PAY_IN_FULL' => 'thanks_payment_full',
+        'INSTALLMENTS' => 'thanks_payment_inst',
+        default => null,
+      };
+
+      if (!$template) {
+        return response()->json(['error' => 'No template found for this payment plan'], 500);
+      }
+
+      $lead = $booking->passengers->where('lead_passenger', true)->first();
+      $user = User::where('email', $lead->email)->first();
+      $detail = $user->detail;
+      $language = $detail->language ?? 'en';
+
+      $templateId = $this->emailService->getTemplateId($language, $template);
+
+      if (!$templateId) {
+        Log::error("No email template found for language: {$language}");
+        return response()->json(['error' => 'Email template not found'], 500);
+      }
+
+      $extraData = ['PAID_AMOUNT' => formatCurrency($payment->amount)];
+
+      $emailSent = $this->emailService->sendEmail(
+        $templateId,
+        $booking,
+        $passenger,
+        [],
+        $extraData,
+        true,
+        true
+      );
+
+      if ($emailSent) {
+        return response()->json(['message' => 'Payment processed and email sent'], 200);
+      } else {
+        return response()->json(['error' => 'Payment processed but failed to send email'], 500);
+      }
+    } catch (\Throwable $e) {
+      $this->logException($e);
+      return response()->json(['error' => 'Unexpected error occurred'], 500);
     }
-
-    /**
-     * Handle payment notification and send confirmation email.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function sendPaymentEmail(Request $request)
-    {
-
-        $valid = $request->validate([
-            'amount' => 'required|numeric|min:0',
-            'passenger_id' => 'required|exists:passengers,id',
-            'bip_id' => 'required|string|max:50',
-            'type' => 'required|string|in:PAYMENT,REFUND',
-            'notes' => 'nullable|string|max:255',
-        ]);
-
-        $template = null;
-
-        $passenger = Passenger::find($request->passenger_id);
-
-        if (!$passenger) {
-            return response()->json(['error' => 'Passenger not found'], 404);
-        }
-
-        $booking = $passenger->booking;
-
-        if (!$booking) {
-            return response()->json(['error' => 'No booking associated with this passenger'], 404);
-        }
-
-        if ($booking->payment_plan === 'PAY_IN_FULL') {
-            $template = 'thanks_payment_full';
-        }
-
-        if ($booking->payment_plan === 'INSTALLMENTS') {
-            $template = 'thanks_payment_inst';
-        }
-
-        $lead = $booking->passengers->where('lead_passenger', true)->first();
-        $user = User::where('email', $lead->email)->first();
-        $detail = $user->detail;
-        $language = $detail->language ?? 'en';
-        $templateId = $this->emailService->getTemplateId($language, $template);
-
-        if (!$templateId) {
-            Log::error("No email template found for language: {$language}");
-            return response()->json(['error' => 'Email template not found'], 500);
-        }
-        $data = $request->all();
-        $data['source'] = 'SYSTEM';
-        $result = $this->paymentService->processPayment($data);
-        $extraData = ['PAID_AMOUNT' => formatCurrency($request->amount)];
-        $emailSent = $this->emailService->sendEmail($templateId, $booking, $passenger,[],$extraData, true, true);
-        if ($emailSent) {
-            return response()->json(['message' => 'Payment confirmation email sent successfully']);
-        } else {
-            return response()->json(['error' => 'Failed to send email'], 500);
-        }
-    }
+  }
 
 
     public function sendConfirmationEmail(Request $request)
@@ -126,7 +179,4 @@ class NotificationController extends Controller
             return response()->json(['error' => 'Internal server error'], 500);
         }
     }
-    
-
-
 }
