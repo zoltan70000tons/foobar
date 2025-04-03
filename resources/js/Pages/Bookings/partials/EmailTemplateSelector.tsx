@@ -30,11 +30,16 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import UnlayerEditor from "@/Components/UnlayerEditor";
-import { Label } from "@mui/icons-material";
+import type { Booking } from "@/types/booking";
 
 const LANGUAGES = ["en", "es", "de"];
 
-const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
+interface EmailTemplateEditorProps {
+  booking: Booking;
+  editMode: boolean;
+}
+
+const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, editMode }) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<{ id: number; name: string; subject: string, lang: string } | null>(null);
@@ -48,6 +53,8 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
   const [subject, setSubject] = useState<string>("");
   const [selectedPassenger, setSelectedPassenger] = useState<string>("");
   const [isCheckboxEnabled, setIsCheckboxEnabled] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [imgFile, setImgFile] = useState<File | null>(null);
 
 
   const { hasPermission } = usePermissions();
@@ -55,16 +62,6 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
   const canSendEmail = !hasPermission(Permissions.SendEmails) || !editMode;
 
   const { showSnackbar } = useSnackbar();
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setAttachments([...attachments, ...Array.from(event.target.files)]);
-    }
-  };
-
-  const handleRemoveAttachment = (fileToRemove: File) => {
-    setAttachments(attachments.filter((file) => file !== fileToRemove));
-  };
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -82,6 +79,30 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     };
     fetchTemplates();
   }, [lang]);
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      attachDefaultFiles();
+    }
+  }, [isDialogOpen]);
+
+
+  const attachDefaultFiles = async () => {
+    await handleInsertPDF();
+    await handleInsertImg();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setAttachments([...attachments, ...Array.from(event.target.files)]);
+    }
+  };
+
+  const handleRemoveAttachment = (fileToRemove: File) => {
+    setAttachments(attachments.filter((file) => file !== fileToRemove));
+  };
+
+
 
 
   const onEditorReady = async (unlayer) => {
@@ -131,16 +152,14 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     setIsLoading(true);
     try {
       const response = await fetch(`/generate-booking-pdf?booking_id=${booking.id}`);
-
       if (!response.ok) throw new Error("Failed to generate PDF");
 
       const blob = await response.blob();
       const file = new File([blob], `${booking.booking_code}.pdf`, { type: "application/pdf" });
-      setAttachments((prev) => [...prev, file]);
-      showSnackbar("📄 Booking confirmation PDF attached!", "success");
+      setPdfFile(file);
+      //showSnackbar("Booking confirmation PDF previewed!", "success");
     } catch (error) {
-      console.error("Error inserting PDF:", error);
-      showSnackbar("⚠️ Failed to attach PDF.", "error");
+      showSnackbar("Failed to generate PDF.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -150,16 +169,14 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     setIsLoading(true);
     try {
       const response = await fetch(`/generate-img?booking_id=${booking.id}`);
-
       if (!response.ok) throw new Error("Failed to generate Img");
+
       const blob = await response.blob();
       const file = new File([blob], `IMG_${booking.id}.jpg`, { type: blob.type });
-      setAttachments((prev) => [...prev, file]);
-      showSnackbar("📄 Image attached!", "success");
-
+      setImgFile(file);
+      //showSnackbar("Image previewed!", "success");
     } catch (error) {
-      console.error("Error inserting Image:", error);
-      showSnackbar("⚠️ Failed to attach Image.", "error");
+      showSnackbar("Failed to generate image.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -194,8 +211,13 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
         formData.append("passenger_id", selectedPassenger.id);
       }
       attachments.forEach((file) => formData.append("attachments[]", file));
+      formData.append("booking_pdf", pdfFile ? 1 : 0);
+      formData.append("booking_image", imgFile ? 1 : 0);
 
       try {
+        // for (let pair of formData.entries()) {
+        //   console.log(`${pair[0]}:`, pair[1]);
+        // }
         const response = await fetch("/send-email", {
           method: "POST",
           headers: { "X-CSRF-TOKEN": getCsrfToken() },
@@ -223,6 +245,9 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
     setIsDialogOpen(false);
     setAttachments([]);
   }
+
+  const hasPDF = attachments.some(file => file.name.endsWith(".pdf"));
+  const hasImage = attachments.some(file => file.type.startsWith("image/"));
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -356,7 +381,7 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
               alignItems: 'center',
               zIndex: 1000,
             }}>
-              <CircularProgress />
+              {/* <CircularProgress /> */}
             </div>
           )}
           <FormControl fullWidth style={{ paddingRight: '1rem' }}>
@@ -382,6 +407,25 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
 
           <Paper elevation={3} style={{ width: "100%", padding: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#131313", zIndex: 10 }}>
             <div>
+              {pdfFile && (
+                <Chip
+                  label={pdfFile.name}
+                  onClick={() => handlePreview(pdfFile)}
+                  onDelete={() => setPdfFile(null)}
+                  style={{ marginRight: "5px" }}
+                  icon={<PictureAsPdfIcon />}
+                />
+              )}
+              {imgFile && (
+                <Chip
+                  label={imgFile.name}
+                  onClick={() => handlePreview(imgFile)}
+                  onDelete={() => setImgFile(null)}
+                  style={{ marginRight: "5px" }}
+                  icon={<InsertPhotoIcon />}
+                />
+              )}
+
               {attachments.map((file, index) => (
                 <Chip
                   key={index}
@@ -404,18 +448,20 @@ const EmailTemplateEditor: React.FC = ({ booking, editMode }) => {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Insert Booking Confirmation PDF">
-                <IconButton onClick={handleInsertPDF}>
-                  <PictureAsPdfIcon />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Insert Event Image">
-                <IconButton onClick={handleInsertImg}>
-                  <InsertPhotoIcon />
-                </IconButton>
-              </Tooltip>
-
+              {!pdfFile && (
+                <Tooltip title="Insert Booking Confirmation PDF">
+                  <IconButton onClick={handleInsertPDF}>
+                    <PictureAsPdfIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {!imgFile && (
+                <Tooltip title="Insert Event Image">
+                  <IconButton onClick={handleInsertImg}>
+                    <InsertPhotoIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
               <input
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
