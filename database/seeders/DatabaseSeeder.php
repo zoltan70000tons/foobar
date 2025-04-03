@@ -27,10 +27,10 @@ class DatabaseSeeder extends Seeder
             CabinCategorySeeder::class,
             CabinTypeSeeder::class,
             CabinSeeder::class,
-            BookingSeeder::class,
-            PassengersSeeder::class,
+            //BookingSeeder::class,
+            //PassengersSeeder::class,
             AdjustmentsSeeder::class,
-            PaymentSeeder::class,
+            //PaymentSeeder::class,
             EmailTemplatesSeeder::class,       
         ]);
     }

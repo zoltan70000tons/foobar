@@ -104,7 +104,7 @@ class SendEmailJob implements ShouldQueue
 
       // Attach event image if necessary
       if ($this->eventImage) {
-        $eventImageUrl = $this->booking->event->image;
+        $eventImageUrl = $this->booking->event->booked_stamp ?? $this->booking->event->image;
         if (filter_var($eventImageUrl, FILTER_VALIDATE_URL)) {
           $imageData = @file_get_contents($eventImageUrl);
           if ($imageData !== false) {

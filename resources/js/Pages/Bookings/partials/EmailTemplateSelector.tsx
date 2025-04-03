@@ -172,7 +172,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       if (!response.ok) throw new Error("Failed to generate Img");
 
       const blob = await response.blob();
-      const file = new File([blob], `IMG_${booking.id}.jpg`, { type: blob.type });
+      const file = new File([blob], `BOOKED_${booking.id}.jpg`, { type: blob.type });
       setImgFile(file);
       //showSnackbar("Image previewed!", "success");
     } catch (error) {
