@@ -44,4 +44,5 @@ return [
   'email_not_found' => 'Email not found',
   'seat_reset_notification' => 'We wanted to let you know that you have been removed from your booking.',
   'seat_reset_questions' => 'If you have any questions, please reach out to the Lead Passenger of your cabin for more information.',
+  'booking_code' => 'Booking Code'
 ];

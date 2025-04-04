@@ -45,4 +45,5 @@ return [
   'email_not_found' => 'eMailadresse wurde nicht gefunden.',
   'seat_reset_notification' => 'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
   'seat_reset_questions' => 'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
+  'booking_code' => 'Buchungscode'
 ];
