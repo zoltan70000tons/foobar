@@ -44,4 +44,5 @@ return [
   'email_not_found' => 'No se encontró el correo electrónico.',
   'seat_reset_notification' => 'Queremos avisarte que tu asiento asignado en la cabina ha sido restablecido.',
   'seat_reset_questions' => 'Si tienes alguna pregunta, por favor dirígete al Pasajero Líder de tu cabina para más información.',
+  'booking_code' => 'Código de Reserva'
 ];
