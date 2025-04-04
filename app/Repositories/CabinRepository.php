@@ -108,6 +108,7 @@ class CabinRepository implements CabinInterface
               'cabins.inventory',
               'cabins.status',
               'cabins.cabin_type_id',
+              'cabins.tags',
               DB::raw('CASE WHEN tr.id IS NOT NULL THEN true ELSE false END as is_reserved')
             ]);
         }

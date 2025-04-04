@@ -27,8 +27,7 @@ import { Permissions } from '@/enums/PermissionEnum';
 import { usePermissions } from '@/Providers/PermissionContext';
 import apiRoutes from '@/Helpers/ApiRoutes';
 import axios from 'axios';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import SnackbarAlert from '@/Components/SnackbarAlert';
+
 import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 
 const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: string; data: any }) => {
@@ -162,22 +161,24 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
           }
           return cellValue.some((tag) => tag.toLowerCase().includes(filterValue.toLowerCase()));
         },
-        draw: (subRow) => (
-          <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
-            {Array.isArray(subRow.tags) && subRow.tags.length > 0 ? (
-              subRow.tags.map((tag: string) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
-                />
-              ))
-            ) : (
-              <em>No Tags</em>
-            )}
-          </Box>
-        ),
+        draw: (subRow) => {
+          return (
+            <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
+              {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
+                subRow.cabin_tags.map((tag: string) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    size="small"
+                    sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
+                  />
+                ))
+              ) : (
+                <em>No Tags</em>
+              )}
+            </Box>
+          );
+        }
       },
       {
         header: 'Actions',
@@ -273,21 +274,21 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
     [],
   );
 
-  const manageTags = (rows, tags) => {
+  const manageTags = async (rows: any[], tags: string[]) => {
     const url = apiRoutes.addCabinTags(event.id);
     setLoading(true);
-    axios
-      .post(url, { tags: tags, rows: rows })
-      .then((response) => {
-        router.reload({ only: ['cabins'], preserveScroll: true });
-        setLoading(false);
-        showSnackbar('Tags edited successfully', 'success');
-      })
-      .catch((error) => {
-        console.error('Error adding tags:', error);
-        showSnackbar('Error updating tags', 'error');
-      });
+    try {
+      router.post(route('cabins.addTag', { id: event.id }), { tags, rows });
+      //router.reload({ only: ['cabins'], preserveScroll: true });
+      showSnackbar('Tags edited successfully', 'success');
+    } catch (error) {
+      console.error('Error adding tags:', error);
+      showSnackbar('Error updating tags', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
+  
 
   const manageStatus = (rows, status) => {
     const hasInvalidStatus = rows.some(
@@ -300,16 +301,17 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
     const url = apiRoutes.updateCabinStatus(event.id);
     const rowIds = rows.map((row) => row.id);
     setLoading(true);
-    axios
-      .post(url, { status: status, rows: rowIds })
-      .then((response) => {
-        setLoading(false);
-        router.reload({ only: ['cabins'], preserveScroll: true });
-        showSnackbar('Status edited successfully', 'success');
-      })
-      .catch((error) => {
-        showSnackbar('Error updating status', 'error');
-      });
+    router.post(route('cabins.updateStatus', { id: event.id }), { status, rows: rowIds });
+    // axios
+    //   .post(url, { status: status, rows: rowIds })
+    //   .then((response) => {
+    //     setLoading(false);
+    //     router.reload({ only: ['cabins'], preserveScroll: true });
+    //     showSnackbar('Status edited successfully', 'success');
+    //   })
+    //   .catch((error) => {
+    //     showSnackbar('Error updating status', 'error');
+    //   });
   };
 
   const handleCloseDialog = () => {
