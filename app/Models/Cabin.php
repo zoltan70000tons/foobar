@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusCabin;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -187,4 +188,14 @@ class Cabin extends Model
 
     $this->save();
   }
+
+  protected static function booted()
+{
+    static::saving(function (Cabin $cabin) {
+        if (is_array($cabin->tags) && in_array('RCCL', $cabin->tags) && $cabin->status !== StatusCabin::CLOSED->value) {
+            // Force status to "RESERVED" if 'RCCL' tag is present
+            $cabin->status = StatusCabin::RESERVED->value;
+        }
+    });
+}
 }

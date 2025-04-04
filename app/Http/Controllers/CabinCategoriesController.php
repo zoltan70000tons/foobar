@@ -137,11 +137,12 @@ class CabinCategoriesController extends Controller
                 ]);
             }, $request, $event, $category);
         } catch (\Exception $e) {
+            $this->logException($e);
             return redirect()->back()->with([
                 'message' => 'Error updating cabin category',
                 'success' => false,
             ]);
-            $this->logException($e);
+            
         }
     }
 

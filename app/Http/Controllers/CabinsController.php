@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
+use App\Enums\StatusCabin;
 use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
@@ -119,6 +120,7 @@ class CabinsController extends Controller
                 'notes'             => 'nullable|string'
             ];
             $validated = $request->validate($rules);
+
             return $this->withPermission([Permissions::EditCabins], function ($event_id, $cabin_id, $validated) {
                 Arr::forget($validated, 'inventory');
                 $sanitized = Arr::map($validated, function ($value, $key) {
@@ -182,16 +184,21 @@ class CabinsController extends Controller
                 // $updatedTags = array_values($updatedTags); 
                 // $cabin->tags = $updatedTags;
                 // $cabin->save();
-                
+
                 $cabin->tags = array_values($tags);
                 $cabin->save();
             }
 
-            return response()->json([
-                'message' => 'Tags added succefully.',
-            ], 200);
+            return redirect()->back()->with([
+                'message' => 'Tags updated successfully!',
+                'success' => true,
+            ]);
         } catch (\Exception $e) {
             $this->logException($e);
+            return redirect()->back()->with([
+                'message' => 'Error updating tags',
+                'success' => false,
+            ]);
         }
     }
 
@@ -211,12 +218,17 @@ class CabinsController extends Controller
                     $cabin->save();
                 }
 
-                return response()->json([
-                    'message' => 'Status updated successfully',
-                ], 200);
+                return redirect()->back()->with([
+                    'message' => 'Status updated successfully!',
+                    'success' => true,
+                ]);
             }, $request);
         } catch (\Exception $e) {
             $this->logException($e);
+            return redirect()->back()->with([
+                'message' => 'Error updating status',
+                'success' => false,
+            ]);
         }
     }
 }
