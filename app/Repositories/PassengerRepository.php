@@ -39,6 +39,7 @@ class PassengerRepository implements PassengerInterface
       Log::info('cabin type = ' . $cabinType);
 
       $allocatedCost = $data['passenger_allocated_cost'] ?? 0;
+      $paymentMethod = $data['payment_method'] ?? 'CREDIT_CARD';
 
       $passengerData = [
         'booking_id' => $booking->id,
@@ -51,7 +52,7 @@ class PassengerRepository implements PassengerInterface
         'last_name' => $data['last_name'] ?? ($userDetails->last_name ?? null),
         'dob' => $data['dob'] ?? ($userDetails->dob ?? null),
         'citizenship' => $data['citizenship'] ?? ($userDetails->citizenship ?? null),
-        'payment_method' => $data['payment_method'] ?? 'CREDIT_CARD',
+        'payment_method' => $paymentMethod,
         'address_first' => $data['address_first'] ?? null,
         'address_second' => $data['address_second'] ?? null,
         'city' => $data['city'] ?? null,
@@ -91,7 +92,13 @@ class PassengerRepository implements PassengerInterface
           $installments = $data['number_of_installments'];
           // $this->paymentService->createInstallments($passId, $installments);
         }
-        $result = $this->fillAditionalSeats($availableSeats, $booking->id, $allocatedCost, $installments);
+        $result = $this->fillAditionalSeats(
+          $availableSeats,
+          $booking->id,
+          $allocatedCost,
+          $installments,
+          $paymentMethod
+        );
         if (!$result) {
           throw new \Exception('Error creating seats.');
         }
@@ -123,7 +130,7 @@ class PassengerRepository implements PassengerInterface
     }
   }
 
-  private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false): bool
+  private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false, $paymentMethod): bool
   {
     try {
       $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 1;
@@ -140,7 +147,7 @@ class PassengerRepository implements PassengerInterface
           'last_name' => null,
           'dob' => null,
           'citizenship' => null,
-          'payment_method' => 'CREDIT_CARD',
+          'payment_method' => $paymentMethod,
           'address_first' => null,
           'address_second' => null,
           'city' => null,

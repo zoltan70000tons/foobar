@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Api\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CabinCategory;
-use App\Models\CabinType;
 use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReservationService;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
+use Illuminate\Support\Facades\Cache;
 use Log;
 
 class CabinController extends Controller
@@ -52,12 +52,21 @@ class CabinController extends Controller
     return response()->json($category);
   }
 
-  /**
-   * Show all cabin types.
-   */
+  /*
+  |--------------------------------------------------------------------------
+  | Show cabin types
+  |--------------------------------------------------------------------------
+  |
+  |  We have in db only 3 types of cabins.
+  |  So we dont need to use eloquent model for this. and we can cache it.
+  |
+  */
   public function showTypes()
   {
-    $cabinTypes = CabinType::select('id', 'cabin_type')->get();
+    // $cabinTypes = CabinType::select('id', 'cabin_type')->get();
+    $cabinTypes = Cache::remember('cabin_types', now()->addHours(12), function () {
+      return DB::table('cabin_types')->select('id', 'cabin_type')->get();
+    });
 
     if ($cabinTypes->isEmpty()) {
       return response()->json(['message' => 'No cabin types found'], 404);
