@@ -295,6 +295,7 @@ class BookingController extends Controller
     // hide cabin number if status is new or cancelled
     if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
       $result->cabin->makeHidden(['cabin_number']);
+      $result->cabin->makeHidden(['internal_notes']);
       $result->cabin->cabinSpec->makeHidden(['cabin_number']);
     }
 
