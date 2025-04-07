@@ -29,19 +29,26 @@ import NewBookingModal from "./NewBookingModal";
 import { PageProps } from "@/types";
 // import LoadingOverlay from "@/Components/LoadingOverlay";
 import debounce from "lodash/debounce";
+import axios from "axios";
+import NewReleasesIcon from "@mui/icons-material/NewReleases";
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { green, lightGreen } from '@mui/material/colors';
+import { BookingStatusColor, BookingStatusEnum } from "@/enums/StatusEnum";
 
 const Index = ({
   auth,
   event,
-  bookings,
-  newBookings,
-  inProgressBookings,
-  uploadedBookings,
-  cancelledBookings,
+  // bookings,
+  // newBookings,
+  // inProgressBookings,
+  // uploadedBookings,
+  // cancelledBookings,
   users,
   cabinTypes,
   cabinCategories,
-  errors,
+  //errors,
   tabIndex,
 }: PageProps & { tab: string; data: any; event: any; tabIndex: number }) => {
   const { hasPermission } = usePermissions();
@@ -53,6 +60,7 @@ const Index = ({
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
 
   const eventId = event.id;
 
@@ -139,7 +147,7 @@ const Index = ({
     // TODO: JG - Leo can we use visit instead of location.href?
     // https://inertiajs.com/manual-visits
 
-    // window.location.href = url; // Redirige al usuario
+    // window.location.href = url; we can delete it 
     router.visit(url);
   };
 
@@ -340,6 +348,65 @@ const Index = ({
     handleFilter(currentKeyword);
   };
 
+
+  const fetchData = (page, rowsPerPage, filters, sort) => {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(route("bookings.index", { id: event.id }), {
+          params: {
+            page: page + 1,
+            per_page: rowsPerPage,
+            sort_key: sort.key,
+            keyword: keyword,
+            sort_direction: sort.direction,
+            tab: tabIndex,
+            ...filters,
+          },
+          headers: {
+            "X-Inertia": true,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+        .then((res) => {
+          const bookings = res.data.props.bookings;
+          resolve({
+            data: bookings.data,
+            total: bookings.total,
+          });
+        })
+        .catch(reject);
+    });
+  };
+
+
+  const bookingTabs = [
+    {
+      status: BookingStatusEnum.NEW,
+      label: "NEW BOOKINGS",
+      icon: <NewReleasesIcon />,
+    },
+    {
+      status: BookingStatusEnum.ON_HOLD,
+      label: "IN PROGRESS",
+      icon: <HourglassBottomIcon />,
+    },
+    {
+      status: BookingStatusEnum.UPLOADED,
+      label: "UPLOADED TO MANIFEST",
+      icon: <CloudUploadIcon />,
+    },
+    {
+      status: BookingStatusEnum.CANCELLED,
+      label: "CANCELLED",
+      icon: <CancelIcon />,
+    },
+  ];
+
+
+
+
+
+
   return (
     <AuthenticatedLayout user={auth.user} header={"Bookings"}>
       <Head title="Bookings" />
@@ -374,7 +441,7 @@ const Index = ({
                   sx={{ minHeight: "40px" }}
                   onChange={customFilter}
                   InputProps={{
-                    endAdornment: keyword && ( // 🔥 Solo muestra la "X" si hay texto
+                    endAdornment: keyword && (
                       <InputAdornment position="end">
                         <IconButton onClick={clearFilter} size="small">
                           <Clear />
@@ -385,24 +452,63 @@ const Index = ({
                 />
               </Box>
             </Grid>
-            <Box>
+            <Box sx={{ mt: '1rem;' }}>
               {/* Tabs for navigation */}
-              <Tabs value={tabIndex} onChange={handleTabChange} aria-label="manage inventory and categories">
-                <Tab label="NEW BOOKINGS" />
-                <Tab label="IN PROGRESS" />
-                <Tab label="UPLOADED TO MANIFEST" />
-                <Tab label="CANCELLED" />
+              <Tabs
+                value={tabIndex}
+                onChange={handleTabChange}
+                aria-label="Manage Bookings"
+                sx={{
+                  backgroundColor: "#121212",
+                  "& .MuiTab-root": {
+                    color: "#757575",
+                    fontWeight: "bold",
+                    fontSize: "0.9rem",
+                    textTransform: "none",
+                    minHeight: "48px",
+                  },
+                  "& .Mui-selected": {
+                    color: BookingStatusColor[bookingTabs[tabIndex]?.status],
+                  },
+                  "& .MuiTabs-indicator": {
+                    backgroundColor: BookingStatusColor[bookingTabs[tabIndex]?.status],
+                  },
+                  "& .MuiTab-root:nth-of-type(1):hover": {
+                    color: BookingStatusColor[bookingTabs[0].status],
+                  },
+                  "& .MuiTab-root:nth-of-type(2):hover": {
+                    color: BookingStatusColor[bookingTabs[1].status],
+                  },
+                  "& .MuiTab-root:nth-of-type(3):hover": {
+                    color: BookingStatusColor[bookingTabs[2].status],
+                  },
+                  "& .MuiTab-root:nth-of-type(4):hover": {
+                    color: BookingStatusColor[bookingTabs[3].status],
+                  },
+                }}
+              >
+                {bookingTabs.map((tab, index) => (
+                  <Tab
+                    key={tab.status}
+                    icon={tab.icon}
+                    iconPosition="start"
+                    label={tab.label}
+                    value={index}
+                  />
+                ))}
               </Tabs>
 
               {/* Display the bookings */}
               <MuiTable
                 columns={bookingColumns}
-                data={bookings}
+                data={[]}
                 subColumns={subColumns}
                 showCheckBox={false}
                 showSubCheckBox={false}
                 // showCustomFilter={true}
                 onCustomFilter={customFilter}
+                serverSidePagination={true}
+                fetchData={fetchData}
               />
             </Box>
 
