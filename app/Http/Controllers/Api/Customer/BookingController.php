@@ -83,7 +83,9 @@ class BookingController extends Controller
       $reservationId = $validated['cart']['reservation_id'];
       $eventId = (int) $validated['cart']['event_id'];
       $paymentPlan = $validated['cart']['payment_plan'];
-      $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ? $validated['cart']['number_of_installments'] : null;
+      
+      //Determine the number of payment installments based on the selected payment plan.
+      $numberOfInstallments = $paymentPlan === 'INSTALLMENTS' ? $validated['cart']['number_of_installments'] : 1;
       $bedConfig = $cart['cabin_type'] === 'private-cabin' ? $validated['bed_config'] : 'SEPARATED';
 
       // Process booking data
