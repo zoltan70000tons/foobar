@@ -109,9 +109,8 @@ class BookingRepository implements BookingInterface
     return $results;
   }
 
-  function getByStatus($status, $keyword = null, ?int $perPage = 10, ?string $sortKey = 'created_at', ?string $sortDirection = 'desc')
+  function getByStatus($status, $keyword = null)
   {
-
     $query = Booking::with([
       'cabin',
       'cabin.cabinType',
@@ -156,11 +155,7 @@ class BookingRepository implements BookingInterface
       });
     }
 
-    if (!empty($sortKey)) {
-      $query->orderBy($sortKey, $sortDirection ?? 'desc');
-    }
-
-    $results = $query->paginate($perPage);
+    $results = $query->get();
 
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
@@ -222,7 +217,9 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id) {}
+  function delete($id)
+  {
+  }
 
   function assignAgent($code, $user)
   {
