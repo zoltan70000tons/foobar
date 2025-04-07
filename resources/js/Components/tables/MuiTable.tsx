@@ -17,6 +17,7 @@ import {
   Box,
 } from "@mui/material";
 import Row from "./Row";
+import { useServerPagination } from "./hooks/useServerPagination";
 
 interface ColumnProps<T> {
   header: string;
@@ -67,43 +68,59 @@ const MuiTable: FC<DataGridProps<any>> = ({
   statusOptions = [],
   showCustomFilter = false,
 }) => {
-  const [page, setPage] = useState(0);
+  //const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
-  const [filters, setFilters] = useState<{ [key: string]: string }>({});
+  //const [filters, setFilters] = useState<{ [key: string]: string }>({});
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
   const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
-  const [sort, setSort] = useState<{
-    key: keyof any | string;
-    direction: "asc" | "desc";
-  }>({
-    key: columns[0]?.accessor,
-    direction: "asc",
+  //const [sort, setSort] = useState<{
+  //  key: keyof any | string;
+  //  direction: "asc" | "desc";
+  //}>({
+  //  key: columns[0]?.accessor,
+  //  direction: "asc",
+  // });
+  // const [loading, setLoading] = useState(false);
+  //const [paginatedData, setPaginatedData] = useState<any[]>([]);
+  //const [totalCount, setTotalCount] = useState(0);
+  const {
+    page,
+    setPage,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    loading,
+    data: paginatedData,
+    total: totalCount,
+  } = useServerPagination<any>({
+    fetchData,
+    columns,
+    rowsPerPage,
+    serverSidePagination,
   });
-  const [loading, setLoading] = useState(false);
-  const [paginatedData, setPaginatedData] = useState<any[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [customFilter, setCustomFilter] = useState("");
 
-  useEffect(() => {
-    if (serverSidePagination && fetchData) {
-      const fetchTableData = async () => {
-        setLoading(true);
-        try {
-          const response = await fetchData(page, rowsPerPage, filters, sort);
-          setPaginatedData(response.data);
-          setTotalCount(response.total);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
+  // useEffect(() => {
+  //   if (serverSidePagination && fetchData) {
+  //     const fetchTableData = async () => {
+  //       setLoading(true);
+  //       try {
+  //         const response = await fetchData(page, rowsPerPage, filters, sort);
+  //         setPaginatedData(response.data);
+  //         setTotalCount(response.total);
+  //       } catch (error) {
+  //         console.error("Error fetching data:", error);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
 
-      fetchTableData();
-    }
-  }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
+  //     fetchTableData();
+  //   }
+  // }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
 
   const dataArray = Array.isArray(data) ? data : Object.values(data);
 
