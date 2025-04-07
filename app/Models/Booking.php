@@ -259,18 +259,61 @@ class Booking extends Model
 
   /**
    * Generate a unique booking code for this booking.
+   *
+   * Format: [Cabin Number][Random Code]-[Year][Product][Category Number][Category Letter]
+   * Example: 2314TZHF-F11A
+   *
+   * Where:
+   * - Cabin Number: 4-digit cabin number (e.g., "2314").
+   * - Random Code: 4-character random code (e.g., "TZHF").
+   * - Year: Fixed character representing the year (e.g., "F").
+   * - Product: Fixed character representing the product (e.g., "1").
+   * - Category Number: Fixed character representing the category number (e.g., "1").
+   * - Category Letter: Letter based on the cabin's category and display order (e.g., "A").
+   *
+   * @param  \App\Models\Cabin  $cabin
+   * @return string  The generated booking code.
    */
   private function generateBookingCode(Cabin $cabin): string
   {
     $characters = config('whitelist.allowed_characters');
     $year = 'F';
-    //$categoryLetter = strtoupper(chr(64 + $cabin->category->display_order));
-    // Generate a random 4-character code
+
+    // Define the alphabet, excluding letters I, S, and O because they can be confused with numbers
+    $alphabet = array_values(array_diff(range('A', 'Z'), ['I', 'S', 'O']));
+
+    // Get the category number of the cabin
+    $categoryNumber = $cabin->category->category_number;
+
+    // Retrieve all categories with the same category number, ordered by display order
+    $categoriesInSameGroup = CabinCategory::whereHas('spec', function ($query) use ($categoryNumber) {
+      $query->where('category_number', $categoryNumber);
+    })
+      ->with('spec')
+      ->get()
+      ->sortBy(fn($cat) => $cat->spec->display_order)
+      ->values();
+
+    // Find the index of the current category in that group
+    $index = $categoriesInSameGroup->search(function ($cat) use ($cabin) {
+      return $cat->id === $cabin->category->id;
+    });
+
+    // Find the relative position of the cabin's category in the group
+    $index = $categoriesInSameGroup
+      ->pluck('id')
+      ->search($cabin->category->id);
+
+    // Determine the category letter based on the index
+    $categoryLetter = $alphabet[$index % count($alphabet)] ?? '?';
+
+    // Generate a random 4-character code, ensuring it does not contain blocked words
     do {
       $identifier_code = substr(str_shuffle($characters), 0, 4);
     } while ($this->containsBlockedWords($identifier_code));
 
-    return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$cabin->category->category_number}{$cabin->category->category_code}";
+    // Construct and return the booking code
+    return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$categoryNumber}{$categoryLetter}";
   }
 
   protected static function boot()
