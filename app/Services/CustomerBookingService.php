@@ -37,6 +37,7 @@ class CustomerBookingService
     $bookings->map(function ($booking) {
       if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
         $booking->cabin->makeHidden(['cabin_number']);
+        $booking->cabin->makeHidden(['internal_notes']);
         $booking->cabin->cabinSpec->makeHidden(['cabin_number']);
       }
 
