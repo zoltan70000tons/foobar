@@ -38,8 +38,8 @@ class EmailController extends Controller
             'event_id' => 'required|integer',
             'subject' => 'required|string',
             'booking_id' => 'required|integer|exists:bookings,id',
-            'single_email' => 'required|boolean',
-            'passenger_id' => 'required_if:single_email,true|integer',
+            // 'single_email' => 'required|boolean',
+            // 'passenger_id' => 'required_if:single_email,true|integer',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
             'booking_pdf' => 'required|boolean',
             'booking_image' => 'required|boolean'
@@ -65,21 +65,21 @@ class EmailController extends Controller
                             'mime' => $file->getMimeType(),
                         ];
                     }
-                    if ($validated['single_email'] == true) {
-                        $passenger = Passenger::find($validated['passenger_id']);
-                        $this->emailTemplateService->sendEmail(
-                            $templateId,
-                            $booking,
-                            $passenger,
-                            $preparedAttachments,
-                            [],
-                            $pdf,
-                            $image,
-                            false,
-                            $content,
-                            $subject
-                        );
-                    } else {
+                    // if ($validated['single_email'] == true) {
+                    //     $passenger = Passenger::find($validated['passenger_id']);
+                    //     $this->emailTemplateService->sendEmail(
+                    //         $templateId,
+                    //         $booking,
+                    //         $passenger,
+                    //         $preparedAttachments,
+                    //         [],
+                    //         $pdf,
+                    //         $image,
+                    //         false,
+                    //         $content,
+                    //         $subject
+                    //     );
+                    // } else {
                         foreach ($passengers as $passenger) {
                             $this->emailTemplateService->sendEmail(
                                 $templateId,
@@ -94,8 +94,8 @@ class EmailController extends Controller
                                 $subject
                             );
                         }
-                    }
-                    $this->saveBookingLog($booking->id, 'Email Sent to Costumer', $validated['subject']);
+                    // }
+                    $this->saveBookingLog($booking->id, 'Email Sent to Costumers', $validated['subject']);
                     return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
                 },
                 $validated,
