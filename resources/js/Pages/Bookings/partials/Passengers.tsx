@@ -118,6 +118,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       setEditPassengerOpen(false);
       setEditingPassenger(null);
       setErrors({});
+      router.reload({ only: ['booking'] });
       showSnackbar("Passenger data updated succesfully!", "success");
     } catch (error) {
       setErrors(error);
