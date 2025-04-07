@@ -206,10 +206,10 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       formData.append("booking_id", booking.id);
       formData.append("template_id", selectedTemplate.id);
       formData.append("subject", subject)
-      formData.append("single_email", isCheckboxEnabled ? 1 : 0);
-      if (isCheckboxEnabled) {
-        formData.append("passenger_id", selectedPassenger.id);
-      }
+      // formData.append("single_email", isCheckboxEnabled ? 1 : 0);
+      // if (isCheckboxEnabled) {
+      //   formData.append("passenger_id", selectedPassenger.id);
+      // }
       attachments.forEach((file) => formData.append("attachments[]", file));
       formData.append("booking_pdf", pdfFile ? 1 : 0);
       formData.append("booking_image", imgFile ? 1 : 0);
@@ -297,7 +297,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             </Select>
           )}
         </Grid>
-        <Grid item xs={2}>
+        {/* <Grid item xs={2}>
           <FormControlLabel
             disabled={canSendEmail}
             control={
@@ -313,8 +313,8 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             }
             label="Passenger Selector"
           />
-        </Grid>
-        {isCheckboxEnabled && (
+        </Grid> */}
+        {/* {isCheckboxEnabled && (
           <Grid item xs={4}>
             {isSending ? (
               <CircularProgress />
@@ -341,7 +341,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
               </Select>
             )}
           </Grid>
-        )}
+        )} */}
 
         {/* Button */}
         <Grid item xs={4}>
