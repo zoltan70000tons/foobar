@@ -73,6 +73,7 @@ class CabinSeeder extends Seeder
         'cabin_spec_id' => $cabinSpec->id,
         'inventory' => $record['Inventory'],
         'notes' => $record['Notes'],
+        'internal_notes' => $record['Internal Notes'] ?? "",
         'tags' => $record['Tags'],
         'status' => $record['Status'],
       ];
