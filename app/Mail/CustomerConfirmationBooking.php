@@ -58,7 +58,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'last_name' => $passenger->last_name ?? 'N/A',
         'email' => $passenger->email ?? 'N/A',
         'gender' => $passenger->gender ?? 'N/A',
-        'date_of_birth' => $passenger->dob ?? 'N/A',
+        'date_of_birth' => $this->getLocalizedDate($passenger->dob, $this->language) ?? 'N/A',
         'citizenship' => $passenger->citizenship ?? 'N/A',
         'address_line_1' => $passenger->address_first ?? 'N/A',
         'address_line_2' => $passenger->address_second ?? 'N/A',

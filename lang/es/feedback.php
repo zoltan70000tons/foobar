@@ -14,4 +14,5 @@ return [
     'survivor_number_not_match' => 'El Número de Survivor no coincide con la información del Pasajero. Por favor verifica la información con el pasajero e inténtalo de nuevo.',
     'slot_already_taken' => 'El Pasajero para este espacio ya ha sido asignado.',
     'cannot_reset_own_seat' => 'No puedes actualizar tu propio puesto.',
+    'age_restriction' => 'Debes tener al menos veintiún (21) años al momento de embarcar para poder reservar.',
 ];

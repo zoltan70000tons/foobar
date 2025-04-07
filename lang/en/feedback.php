@@ -14,4 +14,5 @@ return [
   'survivor_number_not_match' => 'The Survivor Number does not match the Passenger info. Please verify the information with the passenger and try again.',
   'slot_already_taken' => 'Passenger with this slot has already been taken',
   'cannot_reset_own_seat' => 'You cannot reset your own seat',
+  'age_restriction' => 'You must be at least twenty-one (21) years old at the time of boarding to be able to book.',
 ];

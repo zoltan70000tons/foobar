@@ -73,7 +73,7 @@ class BookingController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json(['message' => 'Age restriction not met. Minimum age is 21 years old to proceed.'], 400);
+        return response()->json(['message' => __('feedback.age_restriction')], 400);
       }
     } else {
       return response()->json(['message' => 'Date of birth is required'], 400);
