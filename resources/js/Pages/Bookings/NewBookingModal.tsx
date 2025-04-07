@@ -3,7 +3,6 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
-import AddIcon from '@mui/icons-material/Add';
 
 
 const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
@@ -16,8 +15,8 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
 
   return (
     <>
-      <Button variant="outlined" color="secondary" onClick={handleOpen} disabled={!canCreateBooking} style={{height:'40px'}} startIcon={<AddIcon />}>
-        Create Booking
+      <Button variant="outlined" color="secondary" onClick={handleOpen} disabled={!canCreateBooking} style={{height:'40px'}}>
+        New Booking
       </Button>
 
       {/* Modal */}
