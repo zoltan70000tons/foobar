@@ -16,7 +16,7 @@ class Cabin extends Model
 
   protected $primaryKey = 'id';
 
-  protected $fillable = ['cabin_type_id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'notes', 'tags', 'status'];
+  protected $fillable = ['cabin_type_id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'notes', 'internal_notes', 'tags', 'status'];
 
   // Cast attributes to specific types
   protected $casts = [

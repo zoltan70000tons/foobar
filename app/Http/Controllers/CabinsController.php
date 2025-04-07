@@ -117,7 +117,8 @@ class CabinsController extends Controller
                 'tags' => 'nullable|array',
                 'tags.*' => 'nullable|string',
                 'upper_berths'      => 'nullable|string',
-                'notes'             => 'nullable|string'
+                'notes'             => 'nullable|string',
+                'internal_notes' => 'nullable|string',
             ];
             $validated = $request->validate($rules);
 
@@ -134,7 +135,7 @@ class CabinsController extends Controller
                     return $value;
                 });
                 $this->cabinRepository->update($sanitized, $cabin_id);
-                return redirect()->route('cabins.edit', ['event_id' => $event_id, 'cabin_id' => $cabin_id])
+                return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin_id])
                     ->with('success', 'Cabin updated successfully.');
             }, $event_id, $cabin_id, $validated);
         } catch (\Exception $e) {

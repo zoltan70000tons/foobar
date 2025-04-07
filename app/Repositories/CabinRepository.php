@@ -49,6 +49,7 @@ class CabinRepository implements CabinInterface
           }
   
           $cabin->notes = $data['notes'] ?? null;
+          $cabin->internal_notes = $data['internal_notes'] ?? null;
           $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
   
           if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {

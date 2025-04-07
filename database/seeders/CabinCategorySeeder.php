@@ -29,28 +29,32 @@ class CabinCategorySeeder extends Seeder
         $csv = Reader::createFromPath($csvFilePath, 'r');
         $csv->setHeaderOffset(0); // Assumes the first row contains the header
 
-        // Map for category_code
-        $categoryMapping = [
-            1 => ['4VL', '4VH', '3V', '2V', '1V', '2T', '1R', '1Q'],
-            2 => ['4N', '3N', '2N', '1N', '4M', '3M', '1K', '1L'],
-            3 => ['5D', '4D', '2D', '1D', '4B', '3B', '2B', '1B', 'SG'],
-            4 => ['VP'],
-            5 => ['J4', 'J3', 'JT','GS', 'G3', 'OS', 'GT'],
-        ];
-
         // Iterate through each record in the CSV
         foreach ($csv as $record) {
             // Convert the gallery column to a JSON array
             $images = !empty($record['gallery']) ? explode(',', $record['gallery']) : null;
 
-            // Determine the category number based on category_code
+            // Determine the category number based on category_type
             $categoryNumber = null;
-            foreach ($categoryMapping as $number => $codes) {
-                if (in_array($record['category_code'], $codes)) {
-                    $categoryNumber = $number;
-                    break;
-                }
+            // Determine the category number based on category_type
+            switch ($record['category_type']) {
+              case 'Interior':
+                $categoryNumber = '1';
+                break;
+              case 'Ocean View':
+                $categoryNumber = '2';
+                break;
+              case 'Balcony':
+                $categoryNumber = '3';
+                break;
+              case 'Suite':
+                $categoryNumber = '4';
+                break;
+              default:
+                $categoryNumber = null; // Handle unexpected category types
+                break;
             }
+            
 
             // Prepare the category description array for each language
             $categoryDescription = [

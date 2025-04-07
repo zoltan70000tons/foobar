@@ -76,6 +76,7 @@ const Edit = ({
   );
   const [upperBerths, setUpperBerths] = useState<string>(cabin.upper_berths);
   const [notes, setNotes] = useState<string>(cabin.notes);
+  const [internalNotes, setInternalNotes] = useState<string>(cabin.internal_notes);
   const [features, setFeatures] = useState({
     accessible: cabin.cabin_spec.accessible,
     balcony: cabin.cabin_spec.balcony,
@@ -154,6 +155,7 @@ const Edit = ({
     e.preventDefault();
 
     const formData = {
+      id: cabin.id,
       cabin_status: cabinStatus,
       cabin_number: cabinNumber,
       cabin_category: cabinCategory,
@@ -166,6 +168,7 @@ const Edit = ({
       lower_bed_type_2: lowerBedType2,
       upper_berths: upperBerths,
       notes: notes,
+      internal_notes: internalNotes,
       tags: selectedTags,
       features: {
         accessible: features.accessible,
@@ -614,6 +617,25 @@ const Edit = ({
                           onChange={(e) => setNotes(e.target.value)}
                           error={Boolean(errors.notes)}
                           helperText={errors.notes}
+                        />
+                      </Box>
+                    </Grid>
+                    
+                    {/* Internal Notes */}
+                    <Grid item xs={12}>
+                      <Box sx={{ mb: 2 }}>
+                        <TextField
+                          disabled={canEdit}
+                          name="internal_notes"
+                          label="Internal Notes"
+                          variant="outlined"
+                          fullWidth
+                          multiline
+                          rows={4}
+                          value={internalNotes}
+                          onChange={(e) => setInternalNotes(e.target.value)}
+                          error={Boolean(errors.internal_notes)}
+                          helperText={errors.internal_notes}
                         />
                       </Box>
                     </Grid>
