@@ -58,6 +58,23 @@ class CustomerBookingRepository
       ->where('event_id', $eventId)
       ->first();
 
+    // check if user is on the passenger list
+    if ($user) {
+      $firstName = $user->detail->first_name;
+      $lastName = $user->detail->last_name;
+      $dob = $user->detail->dob;
+
+      $passenger = $booking->passengers
+        ->where('first_name', $firstName)
+        ->where('last_name', $lastName)
+        ->where('dob', $dob)
+        ->first();
+
+      if (!$passenger) {
+        return response()->json(['message' => 'Passenger not found'], 404);
+      }
+    }
+
     // if booking is_single_occupancy then do not return other passengers
     if ($booking->is_single_occupancy) {
       $filteredPassengers = $booking->passengers->filter(function ($passenger) use ($user_survivor_number) {
@@ -187,7 +204,10 @@ class CustomerBookingRepository
       !empty($dataToUpdate['survivor_number']) &&
       Passenger::checkSurvivorInActiveBookings($dataToUpdate['survivor_number'], $eventId)
     ) {
-      return response()->json(['message' => 'A passenger with this Survivor Number already exists in an active booking for this event.'], 409);
+      return response()->json(
+        ['message' => 'A passenger with this Survivor Number already exists in an active booking for this event.'],
+        409
+      );
     }
 
     $emptyPassenger = Passenger::where('id', $passengerSlotId->passenger_id)->first();
@@ -206,7 +226,7 @@ class CustomerBookingRepository
         \Log::error('Error while adding passenger', [
           'error' => $e->getMessage(),
           'event_id' => $eventId,
-          'booking_code' => $bookingCode
+          'booking_code' => $bookingCode,
         ]);
         return response()->json(['message' => 'Error while adding passenger'], 500);
       }
@@ -240,7 +260,10 @@ class CustomerBookingRepository
       !empty($validated['survivor_number']) &&
       Passenger::checkSurvivorInActiveBookings($validated['survivor_number'], $eventId)
     ) {
-      return response()->json(['message' => 'A passenger with this Survivor Number already exists in an active booking for this event.'], 409);
+      return response()->json(
+        ['message' => 'A passenger with this Survivor Number already exists in an active booking for this event.'],
+        409
+      );
     }
 
     if ($passenger) {
@@ -441,6 +464,7 @@ class CustomerBookingRepository
           'state' => null,
           'postal_code' => null,
           'country' => null,
+          'phone' => null,
           'email' => null,
           'emergency_c_name' => null,
           'emergency_c_phone' => null,
@@ -480,7 +504,6 @@ class CustomerBookingRepository
 
     Mail::to($email)->queue(new CustomerResetSeat($email));
   }
-
 
   /*
   |--------------------------------------------------------------------------
