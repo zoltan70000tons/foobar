@@ -13,6 +13,8 @@ use App\Services\PaymentInfoService;
 use App\Traits\ExceptionLogger;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Traits\HandlePermissions;
 
@@ -44,18 +46,20 @@ class NotificationController extends Controller
    */
   public function sendPaymentEmail(Request $request)
   {
+    DB::beginTransaction();
+
     try {
       $validated = $request->validate([
         'amount' => 'required|numeric|min:0',
         'passenger_id' => 'required|exists:passengers,id',
-        'bip_id' => 'required|string|max:50',
+        'BIP_ID' => 'required|string|max:50',
         'type' => 'required|string|in:PAYMENT,REFUND',
         'notes' => 'nullable|string|max:255',
         'transaction_date' => 'required|date',
       ]);
 
       // Prevent duplicate BIP_ID processing
-      if (Payment::where('BIP_ID', $validated['bip_id'])->exists()) {
+      if (Payment::where('BIP_ID', $validated['BIP_ID'])->exists()) {
         return response()->json(['error' => 'Duplicate transaction'], 409);
       }
 
@@ -69,14 +73,7 @@ class NotificationController extends Controller
       }
 
       // Process payment
-      $result = $this->paymentService->processPayment($validated);
-
-      if (!$result['success']) {
-        return response()->json(['error' => $result['message']], 422);
-      }
-
-      // Get the payment details
-      $payment = $result['payment'];
+      Payment::create($validated);
 
       // Sync passeger balance
       $this->paymentInfoService->syncBalance(
@@ -85,10 +82,12 @@ class NotificationController extends Controller
         $booking->event_id
       );
 
+      DB::commit();
+
       $this->saveBookingLog(
         $booking->id,
         'System Transaction Received',
-        "System {$payment->type} of \${$payment->amount} was added to booking"
+        "System {$validated['type']} of \${$validated['amount']} was added to booking"
       );
 
       // Email template handling
@@ -114,7 +113,7 @@ class NotificationController extends Controller
         return response()->json(['error' => 'Email template not found'], 500);
       }
 
-      $extraData = ['PAID_AMOUNT' => formatCurrency($payment->amount)];
+      $extraData = ['PAID_AMOUNT' => formatCurrency($validated['amount'])];
 
       $emailSent = $this->emailService->sendEmail(
         $templateId,
