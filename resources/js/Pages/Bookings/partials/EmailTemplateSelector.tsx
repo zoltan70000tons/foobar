@@ -349,7 +349,6 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             variant="outlined"
             color="primary"
             onClick={() => setIsDialogOpen(true)}
-            disabled={!selectedTemplate}
             fullWidth
             style={{ height: '40px' }}
             startIcon={<EditIcon />}
