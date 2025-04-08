@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -111,10 +111,17 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
   const [tabValue, setTabValue] = useState(0);
   const [createLoader, setCreateLoader] = useState(false);
   const eventId = cabinCategory?.event_id;
+  const cabinTypeRef = useRef(null);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  useEffect(() => {
+    if (cabinTypeRef.current) {
+      cabinTypeRef.current.focus();
+    }
+  }, []);
 
   useEffect(() => {
     setIsNextDisabled(!validateStep());
@@ -312,6 +319,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
   };
 
   const fetchAvailableCabins = async () => {
+    if (!cabinType || !cabinCategory) {
+      return;
+    }
     try {
       setIsFetching(true);
       const response = await axios.get(route('cabins.available'), {
@@ -371,7 +381,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                     getOptionLabel={(option) => option.cabin_type}
                     value={cabinType}
                     onChange={(event, newValue) => setCabinType(newValue)}
-                    renderInput={(params) => <TextField {...params} label="Cabin Type" />}
+                    renderInput={(params) => <TextField {...params} label="Cabin Type" inputRef={cabinTypeRef} />}
                     sx={{ mb: 2 }}
                   />
                 </FormControl>
@@ -382,16 +392,17 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                   <Autocomplete
                     fullWidth
                     options={cabinCategories}
-                    getOptionLabel={(option) => option.title}
+                    getOptionLabel={(option) => `${option.title} - ${option.capacity_description}`}
                     value={cabinCategory}
                     onChange={(event, newValue) => {
                       setCabinCategory(newValue);
                       setAvailableCabins([]);
                     }}
-                    renderInput={(params) => <TextField {...params} label="Cabin Category" />}
+                    renderInput={(params) => <TextField {...params} label="Cabin Category" disabled={!cabinType} />}
                     sx={{ mb: 2 }}
                     loading={fetching}
                     loadingText="Loading categories..."
+                    disabled={!cabinType}
                   />
                 </FormControl>
               </Grid>
@@ -435,9 +446,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                         getOptionLabel={(option) => option ? `Deck ${option}` : ''}
                         value={selectedDeck}
                         onChange={(event, newValue) => setSelectedDeck(newValue)}
-                        renderInput={(params) => <TextField {...params} label="Cabin Deck" />}
+                        renderInput={(params) => <TextField {...params} label="Cabin Deck" disabled={!cabinType || !cabinCategory} />}
                         sx={{ mb: 2 }}
-                        disabled={loading}
+                        disabled={!cabinType || !cabinCategory}
                       />
                     </FormControl>
                   </Grid>
@@ -449,6 +460,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                         value={selectedLocation}
                         onChange={(e) => setSelectedLocation(e.target.value)}
                         label="Location"
+                        disabled={!cabinType || !cabinCategory}
                       >
                         <MenuItem value="">
                           <em>None</em>
@@ -463,14 +475,14 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                   </Grid>
                   <Grid item xs={12} md={3}>
                     <FormControlLabel
-                      control={<Switch checked={onlyBalcony} onChange={(e) => setOnlyBalcony(e.target.checked)} />}
+                      control={<Switch checked={onlyBalcony} onChange={(e) => setOnlyBalcony(e.target.checked)} disabled={!cabinType || !cabinCategory} />}
                       label="Only Balcony"
                     />
                   </Grid>
                   <Grid item xs={12} md={3}>
                     <FormControlLabel
                       control={
-                        <Switch checked={onlyAccessible} onChange={(e) => setOnlyAccessible(e.target.checked)} />
+                        <Switch checked={onlyAccessible} onChange={(e) => setOnlyAccessible(e.target.checked)} disabled={!cabinType || !cabinCategory} />
                       }
                       label="Only Accessible"
                     />
@@ -489,9 +501,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                       setIsSingleRoom(newValue?.cabin_type_id !== 1);
                       setCabinNumber(newValue?.cabin_number || null);
                     }}
-                    renderInput={(params) => <TextField {...params} label="Available Cabins" />}
+                    renderInput={(params) => <TextField {...params} label="Available Cabins" disabled={!cabinType || !cabinCategory} />}
                     loading={fetching}
                     loadingText="Loading cabins..."
+                    disabled={!cabinType || !cabinCategory}
                   />
                 </FormControl>
               </Grid>
