@@ -458,6 +458,7 @@ class CustomerBookingRepository
           'last_name' => '',
           'dob' => null,
           'citizenship' => null,
+          'confirmed_booking_email' => false,
           'address_first' => null,
           'address_second' => null,
           'city' => null,
