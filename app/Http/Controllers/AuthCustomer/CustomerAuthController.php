@@ -13,6 +13,7 @@ use App\Mail\EmailUpdated;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Str;
 use App\Services\UserInfoService;
@@ -133,24 +134,46 @@ class CustomerAuthController extends Controller
    */
   public function updateEmail(Request $request)
   {
-    $validated = $request->validate([
-      'new_email' => ['required', 'email', 'unique:users,email'],
-    ]);
+    try {
+      DB::beginTransaction();
+      // Get the authenticated user
+      $user = Auth::user();
 
-    $user = $request->user();
+      if (!$user->hasRole('Customer')) {
+        return $this->errorResponse('Unauthorized', 401);
+      }
 
-    // Update the email address
-    $oldEmail = $user->email;
-    $user->email = $validated['new_email'];
-    $user->save();
+      $validated = $request->validate([
+        'new_email' => ['required', 'email', 'unique:users,email'],
+      ]);
 
-    $language = $user->detail->language ?? 'en';
+      // Update the email address
+      $oldEmail = $user->email;
+      $user->email = $validated['new_email'];
+      $user->save();
 
-    // Send notification to the old email
-    // Send notification email
-    $this->sendEmailUpdateNotification($user, $oldEmail, $language);
+      // Update passenger data for existing bookings ( NEW or ON HOLD)
+      $bookings = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->get();
 
-    return response()->json(['message' => __('systemEmails.update_email.updated_successfully')]);
+      foreach ($bookings as $booking) {
+        foreach ($booking->passengers->where('survivor_number', $user->survivorNumber->survivor_number) as $passenger) {
+          $passenger->update([
+            'email' => $validated['new_email'],
+          ]);
+        }
+      }
+      DB::commit();
+
+      $language = $user->detail->language ?? 'en';
+      App::setLocale($language);
+
+      // Send notification to the old email address
+      $this->sendEmailUpdateNotification($user, $oldEmail, $language);
+
+      return response()->json(['message' => __('systemEmails.update_email.subject')]);
+    } catch (\Exception $e) {
+      return $this->errorResponse('Unauthorized', 401);
+    }
   }
 
   protected function sendEmailUpdateNotification(User $user, string $oldEmail, string $language): void
