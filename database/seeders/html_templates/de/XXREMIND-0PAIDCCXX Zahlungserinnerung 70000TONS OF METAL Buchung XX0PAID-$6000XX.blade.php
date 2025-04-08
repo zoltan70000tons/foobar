@@ -103,7 +103,7 @@ style="color: rgb(102, 102,
                                             Bitte beachte, dass wir noch
                                             keine Zahlung für Deine
                                             Buchung für 70000TONS OF
-                                            METAL 2025 erhalten haben.<br>
+                                            METAL 2026 erhalten haben.<br>
                                             <br>
                                             <strong>Bitte begleiche den
                                               ausstehenden Betrag

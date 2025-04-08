@@ -199,7 +199,7 @@ style="color: rgb(0, 0,
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team<br>
+                                            your 70000TONS OF METAL crew<br>
                                             <br>
                                           </td>
                                         </tr>

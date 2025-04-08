@@ -99,7 +99,7 @@ style="color: rgb(102, 102,
                                             Our records show that you
                                             have an unnamed passenger(s)
                                             in your Booking for
-                                            70000TONS OF METAL 2025.<br>
+                                            70000TONS OF METAL 2026.<br>
                                             <br>
                                             For your reference we have
                                             attached your Booking
@@ -165,7 +165,7 @@ style="color: rgb(0, 0,
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team<br>
+                                            your 70000TONS OF METAL crew<br>
                                             <br>
                                           </td>
                                         </tr>

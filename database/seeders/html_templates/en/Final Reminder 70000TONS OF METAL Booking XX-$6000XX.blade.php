@@ -151,7 +151,7 @@
                                             We are looking forward to having you on board!<br />
                                             <br />
                                             Please note that we have not received payment for your booking for 70000TONS
-                                            OF METAL 2025.<br />
+                                            OF METAL 2026.<br />
                                             <br />
                                             <strong>Please bring your account into good standing immediately. </strong
                                             ><i
@@ -161,7 +161,7 @@
                                               ><br />
                                               <br />
                                               If we do not hear from you by 12:00PM EST on XXXX XXXX XX, 2024 your
-                                              booking for 70000TONS OF METAL 2025<span> </span
+                                              booking for 70000TONS OF METAL 2026<span> </span
                                               ><span style="text-decoration: underline">will be cancelled.</span><br />
                                               <br /> </strong
                                             ><strong
@@ -217,7 +217,7 @@
                                             <br />
                                             Cheers,<br />
                                             <br />
-                                            your 70000TONS OF METAL team
+                                            your 70000TONS OF METAL crew
                                           </td>
                                         </tr>
                                       </tbody>

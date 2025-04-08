@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>70000TONS OF METAL 2025 - Waiting List Offer</title>
+    <title>70000TONS OF METAL 2026 - Waiting List Offer</title>
   </head>
   <body>
     <table
@@ -150,7 +150,7 @@
                                             "
                                           >
                                             Thank you for submitting your Waiting List Request for 70000TONS OF METAL
-                                            2025!<br />
+                                            2026!<br />
                                             <br />
                                             We would like to offer you a chance to book your Private Cabin/Single Ticket
                                             for 70000TONS OF METAL, The Original, The World's Biggest Heavy Metal
@@ -176,7 +176,7 @@
                                             <br />
                                             Cheers,<br />
                                             <br />
-                                            your 70000TONS OF METAL team
+                                            your 70000TONS OF METAL crew
                                           </td>
                                         </tr>
                                       </tbody>

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>REFUND 70000TONS OF METAL 2025 BOOKING XXXX</title>
+    <title>REFUND 70000TONS OF METAL 2026 BOOKING XXXX</title>
   </head>
   <body>
     <table
@@ -97,7 +97,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             We are sorry that you cannot
                                             join us on board 70000TONS
-                                            OF METAL 2025.<br>
+                                            OF METAL 2026.<br>
                                             <br>
                                             <strong>You have been
                                               credited the amount of USD
@@ -136,7 +136,7 @@ class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team<br>
+                                            your 70000TONS OF METAL crew<br>
                                             <br>
                                           </td>
                                         </tr>

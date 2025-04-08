@@ -74,7 +74,7 @@
     .social-icons img {
       height: 20px;
       width: 20px;
-      margin: 0 5px;
+      margin: 0 5px 5px;
     }
 
     .regards p {
@@ -92,7 +92,7 @@
       border: 1px solid #333333;
       padding: 8px;
     }
-    
+
     .booking-table__title {
       font-weight: bold;
     }
@@ -144,8 +144,10 @@
           <img src="https://70000tons.com/images/icons/spotify_white.png" alt="Spotify" width="20" height="20">
         </a>
       </div>
-      <p>The information in this internet eMail is confidential, may be legally privileged and is intended solely for the Addressee(s) named above. If you are not the intended recipient, or the employee or agent responsible for delivering it to the intended recipient, then any dissemination or copying of this eMail is prohibited and may be unlawful. If you receive this eMail in error, please immediately notify us by return eMail or by telephone. Thank you.</p>
 
+      <a href="https://70000tons.com/" style="color: red; text-decoration: underline; text-align: center">www.70000tons.com</a>
+
+      <p>The information in this internet eMail is confidential, may be legally privileged and is intended solely for the Addressee(s) named above. If you are not the intended recipient, or the employee or agent responsible for delivering it to the intended recipient, then any dissemination or copying of this eMail is prohibited and may be unlawful. If you receive this eMail in error, please immediately notify us by return eMail or by telephone. Thank you.</p>
     </div>
   </div>
 </body>

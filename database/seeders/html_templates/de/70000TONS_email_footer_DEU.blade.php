@@ -13,206 +13,66 @@
                   <td
                     style="padding-bottom:
               30px;" align="center">
-                    <table cellspacing="0"
-                      cellpadding="0" border="0">
-                      <tbody>
-                        <tr>
-                          <td
-                            style="border-collapse:
-                      collapse; padding:
-                      0px 10px;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><span
-                              style="font-family: Verdana, Geneva, sans-serif; background: rgb(255, 0,
-                        0); border-radius:
-                        2px; color: rgb(0,
-                        0, 0); font-size:
-                        16px; font-weight:
-                        bold;
-                        letter-spacing:
-                        1px; padding: 10px
-                        18px;
-                        text-transform:
-                        uppercase;">#70000TONS</span></td>
-                          <td
-                            style="border-collapse:
-                      collapse;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="http://www.facebook.com/70000TONS" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/facebook_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="http://www.twitter.com/70000tons" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/x_icon.png"
-                                style="min-height: auto; line-height: 0px; outline: none; text-decoration: none;"
-                                moz-do-not-send="true" alt="" width="48" height="48" border="0"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="http://www.70000TONS.tv" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/youtube_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="http://www.instagram.com/70000TONS" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/instagram_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="https://www.tiktok.com/@70000tons?lang=en" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/tiktok_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse;
-                      vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="http://www.70000tons.com/forum" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/forum_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse; padding:
-                      0px; vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="https://t.me/original70000tons" target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/telegram_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                          <td
-                            style="border-collapse:
-                      collapse; padding:
-                      0px; vertical-align:
-                      middle;"
-                            valign="middle"><a
-                              href="https://open.spotify.com/user/31wphhaqhspcwfbk7kn2vcicr3wy?si=7b2cd2cac632470d"
-                              target="_blank"
-                              style="color:
-                        rgb(0, 0, 238);
-                        text-decoration:
-                        underline;"><img
-                                src="https://70000tons.com/_mailinglist/media/icon/spotify_icon.png"
-                                style="height:
-                          48px; width:
-                          48px; border:
-                          0px; min-height:
-                          auto;
-                          line-height:
-                          0px; outline:
-                          none;
-                          text-decoration:
-                          none;"
-                                align="bottom"></a></td>
-                        </tr>
-                      </tbody>
+                    <table width="auto" cellspacing="0" cellpadding="0" border="0" align="center">
+                      <tr>
+                        <td valign="middle" style="border-collapse:collapse;padding:0 10px;vertical-align:middle">
+                          <span style="margin-bottom: 6px; display: inline-block; background:#FF0000;border-radius:2px;color:#000000;font-size:16px;font-weight:bold;letter-spacing:1px;padding:10px 18px;text-transform:uppercase;"> #70000TONS </span>
+                        </td>
+                      </tr>
+                    </table>
+                    <table width="auto" cellspacing="0" cellpadding="0" border="0" align="center">
+                      <tr>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://70000tons.com/forum/" target="_blank">
+                            <img src="https://70000tons.com/images/icons/forum_black.png" alt="Forum" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://www.facebook.com/70000tons" target="_blank">
+                            <img src="https://70000tons.com/images/icons/facebook_black.png" alt="Facebook" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://instagram.com/70000tons" target="_blank">
+                            <img src="https://70000tons.com/images/icons/instagram_black.png" alt="Instagram" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://www.threads.net/@70000tons" target="_blank">
+                            <img src="https://70000tons.com/images/icons/threads_black.png" alt="Threads" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="http://www.youtube.com/70000tons" target="_blank">
+                            <img src="https://70000tons.com/images/icons/youtube_black.png" alt="YouTube" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://www.tiktok.com/@70000tons?lang=en" target="_blank">
+                            <img src="https://70000tons.com/images/icons/tiktok_black.png" alt="TikTok" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://bsky.app/profile/70000tons.bsky.social" target="_blank">
+                            <img src="https://70000tons.com/images/icons/bluesky_black.png" alt="Bluesky" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="http://www.twitter.com/70000tons" target="_blank">
+                            <img src="https://70000tons.com/images/icons/xtwitter_black.png" alt="X" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://t.me/original70000tons" target="_blank">
+                            <img src="https://70000tons.com/images/icons/telegram_black.png" alt="Telegram" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                        <td valign="middle" style="border-collapse:collapse;vertical-align:middle">
+                          <a href="https://open.spotify.com/user/31wphhaqhspcwfbk7kn2vcicr3wy?si=7b2cd2cac632470d" target="_blank">
+                            <img src="https://70000tons.com/images/icons/spotify_black.png" alt="Spotify" style=" height: 25px; margin: 10px 5px; filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));  width: 25px; border:0; line-height:100%; outline:none; text-decoration:none;" />
+                          </a>
+                        </td>
+                      </tr>
                     </table>
                   </td>
                 </tr>

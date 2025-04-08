@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXWAITLIST-OFFERXX 70000TONS OF METAL 2025 – Oferta de Lista
+    <title>XXWAITLIST-OFFERXX 70000TONS OF METAL 2026 – Oferta de Lista
       de Espera</title>
   </head>
   <body>
@@ -107,7 +107,7 @@ style="color: rgb(102, 102,
 
                                             por tu solicitud de para la
                                             Lista de Espera para
-                                            70000TONS OF METAL 2025!<br>
+                                            70000TONS OF METAL 2026!<br>
                                             <br>
                                             Nos gustaría brindarte la
                                             oportunidad de reservar tu

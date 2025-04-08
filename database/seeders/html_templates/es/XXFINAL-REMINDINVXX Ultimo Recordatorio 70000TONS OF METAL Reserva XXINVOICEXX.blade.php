@@ -111,7 +111,7 @@ style="color: rgb(102, 102,
                                             Por favor, ten en cuenta que
                                             no hemos recibido el pago de
                                             tu reserva para 70000TONS OF
-                                            METAL 2025.<br>
+                                            METAL 2026.<br>
                                             <br>
                                             <strong>Por favor, actualiza
                                               tu balance inmediatamente.
@@ -128,7 +128,7 @@ style="color: rgb(102, 102,
                                               del Este) del XXWEEKDAYXX,
                                               XXDAYXX de XXMONTHXX de
                                               2024 tu reserva para
-                                              70000TONS OF METAL 2025<span>
+                                              70000TONS OF METAL 2026<span>
                                               </span><span
 style="text-decoration:
                                                 underline;">será

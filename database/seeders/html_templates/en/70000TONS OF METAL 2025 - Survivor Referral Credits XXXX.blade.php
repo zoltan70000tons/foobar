@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>70000TONS OF METAL 2025 - Survivor Referral Credits XXXX</title>
+    <title>70000TONS OF METAL 2026 - Survivor Referral Credits XXXX</title>
   </head>
   <body>
     <table
@@ -149,7 +149,7 @@
                                               padding-bottom: 15px;
                                             "
                                           >
-                                            We're looking forward to seeing you on board for 70000TONS OF METAL 2025!<br />
+                                            We're looking forward to seeing you on board for 70000TONS OF METAL 2026!<br />
                                             <br />
                                             You will receive<span>&nbsp;</span
                                             ><strong
@@ -177,7 +177,7 @@
                                             <br />
                                             Cheers,<br />
                                             <br />
-                                            your 70000TONS OF METAL team
+                                            your 70000TONS OF METAL crew
                                           </td>
                                         </tr>
                                       </tbody>

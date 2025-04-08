@@ -109,7 +109,7 @@ style="color: rgb(102, 102,
                                             Please note that we have not
                                             received payment for your
                                             booking for 70000TONS OF
-                                            METAL 2025.<br>
+                                            METAL 2026.<br>
                                             <br>
                                             <strong>Please bring your
                                               account into good standing
@@ -126,7 +126,7 @@ style="color: rgb(102, 102,
                                               by 12:00PM EST on XXXX
                                               XXXX XX, 2024 your booking
                                               for 70000TONS OF METAL
-                                              2025<span> </span><span
+                                              2026<span> </span><span
 style="text-decoration:
                                                 underline;">will be
                                                 cancelled.</span><br>
@@ -219,7 +219,7 @@ style="color: rgb(0, 0,
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team</td>
+                                            your 70000TONS OF METAL crew</td>
                                         </tr>
                                       </tbody>
                                     </table>

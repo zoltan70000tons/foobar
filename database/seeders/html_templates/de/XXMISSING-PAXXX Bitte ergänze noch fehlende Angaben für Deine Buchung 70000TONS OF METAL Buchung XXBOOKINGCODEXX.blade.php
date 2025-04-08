@@ -106,7 +106,7 @@ style="padding: 0px
                                               gibt es noch mindestens
                                               einen fehlenden Reisenden
                                               in Deiner Buchung für
-                                              70000TONS OF METAL 2025.<br>
+                                              70000TONS OF METAL 2026.<br>
                                               <br>
                                               Im Anhang findest Du Deine
                                               Buchungsbestätigung und

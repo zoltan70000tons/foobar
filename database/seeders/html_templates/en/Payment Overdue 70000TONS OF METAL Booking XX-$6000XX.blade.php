@@ -100,7 +100,7 @@ style="color: rgb(102, 102,
                                             received payment from the
                                             XXXX Passenger, {PASSENGER_NAME}, in
                                             your booking for 70000TONS
-                                            OF METAL 2025.<br>
+                                            OF METAL 2026.<br>
                                             <br>
                                             <strong>As per Ticketing
                                               Contract (Section XX; Page
@@ -201,7 +201,7 @@ style="color: rgb(0, 0,
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team<br>
+                                            your 70000TONS OF METAL crew<br>
                                             <br>
                                           </td>
                                         </tr>

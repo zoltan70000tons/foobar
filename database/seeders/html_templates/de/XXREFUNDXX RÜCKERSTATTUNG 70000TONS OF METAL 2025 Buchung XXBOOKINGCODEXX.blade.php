@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXREFUNDXX RÜCKERSTATTUNG 70000TONS OF METAL 2025 Buchung
+    <title>XXREFUNDXX RÜCKERSTATTUNG 70000TONS OF METAL 2026 Buchung
       {BOOKING_CODE}</title>
   </head>
   <body>

@@ -104,7 +104,7 @@ style="color: rgb(102, 102,
                                             no hemos recibido el pago
                                             del XXPAX#XX Pasajero,
                                             XXPAXNAMEXX, de tu reserva
-                                            con 70000TONS OF METAL 2025.<br>
+                                            con 70000TONS OF METAL 2026.<br>
                                             <br>
                                             <strong><i>Por favor,
                                                 realiza tu pago o

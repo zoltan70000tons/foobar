@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXREF-CREDIT$XX 70000TONS OF METAL 2025 - Survivor Referral
+    <title>XXREF-CREDIT$XX 70000TONS OF METAL 2026 - Survivor Referral
       Credits XXXX</title>
   </head>
   <body>

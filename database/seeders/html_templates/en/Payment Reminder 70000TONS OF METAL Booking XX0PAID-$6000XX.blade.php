@@ -101,7 +101,7 @@ style="color: rgb(102, 102,
                                             Please note that we have not
                                             received payment for your
                                             booking for 70000TONS OF
-                                            METAL 2025.<br>
+                                            METAL 2026.<br>
                                             <br>
                                             <strong>Please bring your
                                               account into good standing
@@ -194,7 +194,7 @@ style="color: red;
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team<br>
+                                            your 70000TONS OF METAL crew<br>
                                             <br>
                                           </td>
                                         </tr>

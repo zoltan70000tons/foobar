@@ -137,7 +137,7 @@ class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            your 70000TONS OF METAL team<br>
+                                            your 70000TONS OF METAL crew<br>
                                             <br>
                                           </td>
                                         </tr>

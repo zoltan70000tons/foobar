@@ -105,7 +105,7 @@ style="color: rgb(102, 102,
                                             el/los pasajero(s)
                                             adicional(es) a tu reserva
                                             para 70000TONS OF METAL
-                                            2025.<br>
+                                            2026.<br>
                                             <br>
                                             Para tu referencia, hemos
                                             adjuntado tu Confirmación de

@@ -104,7 +104,7 @@ style="color: rgb(102, 102,
                                             Bitte beachte, dass wir für
                                             {PASSENGER_NAME}, den XXPAX#XX
                                             Passagier Deiner Buchung für
-                                            70000TONS OF METAL 2025,
+                                            70000TONS OF METAL 2026,
                                             noch keine Zahlung erhalten
                                             haben.<br>
                                             <br>

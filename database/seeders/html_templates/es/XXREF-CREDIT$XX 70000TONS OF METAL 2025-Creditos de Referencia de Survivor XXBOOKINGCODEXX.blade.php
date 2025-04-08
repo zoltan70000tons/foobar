@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXREF-CREDIT$XX 70000TONS OF METAL 2025 – Créditos de
+    <title>XXREF-CREDIT$XX 70000TONS OF METAL 2026 – Créditos de
       Referencia de Survivor {BOOKING_CODE}</title>
   </head>
   <body>
@@ -106,7 +106,7 @@ style="color: rgb(102, 102,
                                             padding-bottom: 15px;">¡Estaremos
 
                                             encantados de verte a bordo
-                                            de 70000TONS OF METAL 2025!<br>
+                                            de 70000TONS OF METAL 2026!<br>
                                             <br>
                                             Recibirás<span>&nbsp;</span><strong>USD
 

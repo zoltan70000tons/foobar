@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXREFUNDXX REEMBOLSO 70000TONS OF METAL 2025 RESERVA XXXX</title>
+    <title>XXREFUNDXX REEMBOLSO 70000TONS OF METAL 2026 RESERVA XXXX</title>
   </head>
   <body>
     <table
@@ -97,7 +97,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Lamentamos que no puedas
                                             asistir a 70000TONS OF METAL
-                                            2025.<br>
+                                            2026.<br>
                                             <br>
                                             <strong>Hemos transferido el
                                               crédito para la cantidad

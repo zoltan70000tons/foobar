@@ -103,7 +103,7 @@ style="color: rgb(102, 102,
                                             Por favor, ten en cuenta que
                                             no hemos recibido el pago de
                                             tu reserva con 70000TONS OF
-                                            METAL 2025.<br>
+                                            METAL 2026.<br>
                                             <br>
                                             <strong>Por favor, realiza
                                               tu pago o correrás el
