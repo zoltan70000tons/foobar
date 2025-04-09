@@ -127,7 +127,7 @@ class BookingsController extends Controller
 
         function ($event_id, $keyword, $tag) use ($status, $tab) {
           // THIS IS SLOW
-          $bookings = $this->bookingRepository->getByStatus($status, $keyword); // Only fetch one set
+          //$bookings = $this->bookingRepository->getByStatus($status, $keyword, ); // Only fetch one set
 
           $event = $this->eventRepository->find($event_id);
           $users = $this->teamRepository->getAllMembers(1);
@@ -145,7 +145,7 @@ class BookingsController extends Controller
 
           return Inertia::render('Bookings/Index', [
             'event' => $event,
-            'bookings' => $bookings,
+            'bookings' => [],
             'users' => $users,
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
@@ -162,9 +162,7 @@ class BookingsController extends Controller
     }
   }
 
-  public function create()
-  {
-  }
+  public function create() {}
 
   public function store(Request $request)
   {
@@ -323,7 +321,7 @@ class BookingsController extends Controller
             }
 
             $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
-            
+
             // Update the booking with the adjustments
             $this->paymentInfoService->syncAllocatedCost($booking);
           }
@@ -341,9 +339,7 @@ class BookingsController extends Controller
     }
   }
 
-  public function edit(Request $request)
-  {
-  }
+  public function edit(Request $request) {}
 
   public function assignAgent(Request $request)
   {
@@ -433,13 +429,9 @@ class BookingsController extends Controller
     }
   }
 
-  public function destroy(Cabin $cabin)
-  {
-  }
+  public function destroy(Cabin $cabin) {}
 
-  public function addTag(Request $request)
-  {
-  }
+  public function addTag(Request $request) {}
 
   public function editMode(Request $request)
   {
@@ -724,8 +716,37 @@ class BookingsController extends Controller
         $event_id,
         $filters
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
+  }
+
+
+  public function getData(Request $request)
+  {
+   try {
+    $event_id = $request->route('id');
+    $status = match ((int) $request->get('tab', 1)) {
+      0 => 'NEW',
+      1 => 'ON HOLD',
+      2 => 'UPLOADED',
+      3 => 'CANCELLED',
+      default => 'ON HOLD',
+    };
+
+    $keyword = $request->input('keyword');
+    $perPage = $request->input('per_page', 10);
+    $sortKey = $request->input('sort_key', 'created_at');
+    $sortDirection = $request->input('sort_direction', 'desc');
+    $tags = array_filter(explode(',', $request->input('tags', '')));
+    $bookings = $this->bookingRepository->getByStatus($status, $keyword, $perPage, $sortKey, $sortDirection, $tags);
+
+    return response()->json([
+      'data' => $bookings->items(),
+      'total' => $bookings->total(),
+    ]);
+   } catch (Exception $e) {
+    $this->logException($e);
+   }
   }
 }

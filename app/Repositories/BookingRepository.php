@@ -109,8 +109,9 @@ class BookingRepository implements BookingInterface
     return $results;
   }
 
-  function getByStatus($status, $keyword = null)
+  function getByStatus($status, $keyword = null, ?int $perPage = 10, ?string $sortKey = 'created_at', ?string $sortDirection = 'desc', $tags =[])
   {
+
     $query = Booking::with([
       'cabin',
       'cabin.cabinType',
@@ -154,8 +155,20 @@ class BookingRepository implements BookingInterface
         });
       });
     }
+   
+    if (!empty($tags)) {
+      $query->where(function ($q) use ($tags) {
+          foreach ($tags as $tag) {
+              $q->orWhereJsonContains('tags', $tag);
+          }
+      });
+  }
 
-    $results = $query->get();
+    if (!empty($sortKey)) {
+      $query->orderBy($sortKey, $sortDirection ?? 'desc');
+    }
+
+    $results = $query->paginate($perPage);
 
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
