@@ -362,7 +362,6 @@ const Row: FC<RowProps<any>> = ({
                   </TableHead>
                   <TableBody>
                     {paginatedSubRows.map((subRow, index) => {
-                      console.log(subRow, index);
 
                       const uniqueIndex = `${index}-${subRow.id}`; // Create a unique key for each subRow
 

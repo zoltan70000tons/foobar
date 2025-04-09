@@ -236,4 +236,6 @@ Route::prefix('discounts')->group(function () {
   Route::post('{event_id}/{booking_id}/delete', [DiscountsController::class, 'delete'])->name('delete.discount');
 });
 
+Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
+
 require __DIR__ . '/auth.php';
