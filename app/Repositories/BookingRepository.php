@@ -8,7 +8,7 @@ use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Services\PaymentInfoService;
 use App\Traits\CabinFilter;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use App\Models\BookingLog;
@@ -160,6 +160,13 @@ class BookingRepository implements BookingInterface
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
+
+      $editingUsername = DB::table('booking_agent_sessions')
+        ->where('booking_id', $booking->id)
+        ->join('users', 'booking_agent_sessions.agent_id', '=', 'users.id')
+        ->value('username');
+
+      $booking->editingUsername = $editingUsername;
       /*       // Sort passengers to place lead passenger first
       if ($booking->passengers && $index == 1) {
         $booking->passengers = $booking->passengers

@@ -231,13 +231,20 @@ const Index = ({
         header: "Actions",
         accessor: "",
         disableFilter: true,
-        draw: (row: any) => (
-          <div style={{ display: "flex", gap: "10px" }}>
-            {hasPermission(Permissions.ViewCabins) && (
-              <Visibility onClick={() => handleViewClick(row)} style={{ cursor: "pointer" }} />
-            )}
-          </div>
-        ),
+        draw: (row: any) => {
+          return (
+            <>
+              <div style={{ display: "flex", gap: "10px" }}>
+                {hasPermission(Permissions.ViewCabins) && (
+                  <Visibility onClick={() => handleViewClick(row)} style={{ cursor: "pointer" }} />
+                )}
+              </div>
+              {row?.editingUsername && (
+                <Typography variant="div" color="textSecondary">Being viewed by {row.editingUsername}</Typography>
+              )}
+            </>
+          );
+        },
       },
     ],
     [],
