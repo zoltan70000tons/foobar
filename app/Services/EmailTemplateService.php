@@ -85,10 +85,18 @@ class EmailTemplateService
     {
         $event = $booking->event;
         $cabin = $booking->cabin;
-        $nextInstallment = false;
+
+        $installmentStatus = false;
+        $nextInstallmentAmount = false;
+        $nextInstallmentDate = false;
+        
         if ($passenger) {
-            $nextInstallment = $passenger->getNextInstallmentAttribute();
+            $installmentStatus = $passenger->getInstallmentStatus();
+            $nextInstallmentAmount = $installmentStatus['next_installment']['amount_due'] ?? false;
+            $nextInstallmentDate = $installmentStatus['next_installment']['due_date'] ?? false;
         }
+
+        
         $values = [];
         foreach ($placeholders as $placeholder) {
             switch ($placeholder) {
@@ -114,10 +122,10 @@ class EmailTemplateService
                     $values[$placeholder] = $booking->payment_plan ?? '';
                     break;
                 case 'NEXT_INSTALLMENT_DATE':
-                    $values[$placeholder] = formatDate($nextInstallment['due_date']) ?? '';
+                    $values[$placeholder] = formatDate($nextInstallmentDate) ?? '';
                     break;
                 case 'NEXT_INSTALLMENT_AMOUNT':
-                    $values[$placeholder] = formatCurrency($nextInstallment['amount']) ?? '';
+                    $values[$placeholder] = formatCurrency($nextInstallmentAmount) ?? '';
                     break;
                 default:
                     $values[$placeholder] = $extraData[$placeholder] ?? '';

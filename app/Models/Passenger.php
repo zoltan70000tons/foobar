@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
+use Carbon\Carbon;
 use Log;
 use Str;
 
@@ -104,7 +105,7 @@ class Passenger extends Model
 
   public function getEmptyAttribute()
   {
-   return $this->empty_seat;
+    return $this->empty_seat;
   }
 
   // passenger may have installments
@@ -123,10 +124,10 @@ class Passenger extends Model
     return $this->hasMany(Fee::class);
   }
 
-  public function discounts(){
+  public function discounts()
+  {
     return $this->hasMany(PassengerDiscount::class);
   }
-  
   public function getPaymentInfoAttribute()
   {
     try {
@@ -354,5 +355,124 @@ class Passenger extends Model
           ->where('event_id', $eventId);
       })
       ->exists();
+  }
+
+  /**
+   * Get the installment status for a passenger.
+   */
+  public function getInstallmentStatus(): array
+  {
+    $balance = $this->passenger_balance ?? 0;
+    $today = now()->startOfDay();
+
+    // Fetch all installments for the passenger (FEE and PAYMENT)
+    $installments = $this->installments()
+      ->with('fee')
+      ->orderBy('due_date')
+      ->get();
+
+    // Calculate total fees and how much each payment installment should be
+    $feeAmountTotal = $this->fees()->sum('amount');
+    $paymentInstallments = $installments->where('type', 'PAYMENT');
+    $paymentCount = $paymentInstallments->count();
+
+    $installmentAmount = $paymentCount > 0
+      ? ($this->passenger_allocated_cost - $feeAmountTotal) / $paymentCount
+      : 0;
+
+    $paidInstallments = [];
+    $remainingInstallments = [];
+    $nextInstallment = null;
+
+    // Loop through all installments, oldest first
+    foreach ($installments as $installment) {
+      $isDue = Carbon::parse($installment->due_date)->lte($today);
+
+      // Determine the expected amount for this installment
+      $amount = $installment->type === 'FEE'
+        ? ($installment->fee->amount ?? 0)
+        : $installmentAmount;
+
+      if ($isDue && $balance >= $amount) {
+        // Installment is due and has been covered by balance
+        $balance -= $amount;
+        $paidInstallments[] = [
+          'installment_id' => $installment->id,
+          'type' => $installment->type,
+          'amount' => $amount,
+          'due_date' => $installment->due_date,
+        ];
+      } elseif ($isDue) {
+        // This installment is due but not fully paid — it's the next one
+        $nextAmount = $amount - $balance;
+        $balance = 0;
+
+        // If this is a PAYMENT installment, also add any unpaid due FEE amounts
+        if ($installment->type === 'PAYMENT') {
+          $unpaidFees = $installments
+            ->where('type', 'FEE')
+            ->filter(
+              fn($feeInstallment) =>
+              Carbon::parse($feeInstallment->due_date)->lte($today) &&
+                !collect($paidInstallments)->pluck('installment_id')->contains($feeInstallment->id)
+            )
+            ->sum(fn($feeInstallment) => $feeInstallment->fee->amount ?? 0);
+
+          $nextAmount += $unpaidFees;
+        }
+
+        // Save this as the next thing to pay
+        $nextInstallment = [
+          'installment_id' => $installment->id,
+          'type' => $installment->type,
+          'amount_due' => round($nextAmount, 2),
+          'due_date' => $installment->due_date,
+        ];
+
+        // Add it to the remaining installments list
+        $remainingInstallments[] = $nextInstallment;
+
+        // Stop here — future installments are not yet due
+        break;
+      }
+    }
+
+    // Any future installments (due after today) are considered remaining
+    $futureInstallments = $installments->filter(fn($i) => Carbon::parse($i->due_date)->gt($today));
+
+    foreach ($futureInstallments as $installment) {
+      $amount = $installment->type === 'FEE'
+        ? ($installment->fee->amount ?? 0)
+        : $installmentAmount;
+
+      $remainingInstallments[] = [
+        'installment_id' => $installment->id,
+        'type' => $installment->type,
+        'amount_due' => round($amount, 2),
+        'due_date' => $installment->due_date,
+      ];
+    }
+
+    // Apply remaining balance to first future installment
+    if (count($remainingInstallments)) {
+      $remainingInstallments[0]['amount_due'] = round(
+        max(0, $remainingInstallments[0]['amount_due'] - $balance),
+        2
+      );
+      $balance = 0;
+    }
+
+    // Fallback: set the next unpaid installment even if it's in the future
+    if (!$nextInstallment && count($remainingInstallments)) {
+      $nextInstallment = $remainingInstallments[0];
+    }
+
+    // Final result
+    return [
+      'paid_installments' => $paidInstallments,
+      'remaining_installments' => $remainingInstallments,
+      'next_installment' => $nextInstallment,
+      'fully_paid' => count($remainingInstallments) === 0,
+    ];
   }
 }
