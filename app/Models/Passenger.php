@@ -365,114 +365,93 @@ class Passenger extends Model
     $balance = $this->passenger_balance ?? 0;
     $today = now()->startOfDay();
 
-    // Fetch all installments for the passenger (FEE and PAYMENT)
+    // Fetch all installments ordered by due date, including associated fee data
     $installments = $this->installments()
       ->with('fee')
       ->orderBy('due_date')
       ->get();
 
-    // Calculate total fees and how much each payment installment should be
+    // Calculate total fee amount (from the fees table)
     $feeAmountTotal = $this->fees()->sum('amount');
+
+    // Count how many PAYMENT-type installments exist
     $paymentInstallments = $installments->where('type', 'PAYMENT');
     $paymentCount = $paymentInstallments->count();
 
+    // Calculate base amount for each PAYMENT installment
     $installmentAmount = $paymentCount > 0
       ? ($this->passenger_allocated_cost - $feeAmountTotal) / $paymentCount
       : 0;
 
+    // Output containers
     $paidInstallments = [];
     $remainingInstallments = [];
     $nextInstallment = null;
 
-    // Loop through all installments, oldest first
+    // Loop through all installments in due date order
     foreach ($installments as $installment) {
-      $isDue = Carbon::parse($installment->due_date)->lte($today);
-
-      // Determine the expected amount for this installment
+      // Determine how much this installment is worth
       $amount = $installment->type === 'FEE'
         ? ($installment->fee->amount ?? 0)
         : $installmentAmount;
 
-      if ($isDue && $balance >= $amount) {
-        // Installment is due and has been covered by balance
+      // Prepare base response object
+      $installmentData = [
+        'installment_id' => $installment->id,
+        'type' => $installment->type,
+        'due_date' => $installment->due_date,
+      ];
+
+      if ($balance >= $amount) {
+        // 🔹 Fully paid with available balance
+        $installmentData['amount'] = round($amount, 2);
+        $paidInstallments[] = $installmentData;
         $balance -= $amount;
-        $paidInstallments[] = [
-          'installment_id' => $installment->id,
-          'type' => $installment->type,
-          'amount' => $amount,
-          'due_date' => $installment->due_date,
-        ];
-      } elseif ($isDue) {
-        // This installment is due but not fully paid — it's the next one
-        $nextAmount = $amount - $balance;
-        $balance = 0;
+      } elseif ($balance > 0) {
+        // 🔹 Partially paid (some balance remaining)
+        $installmentData['amount_due'] = round($amount - $balance, 2);
+        $remainingInstallments[] = $installmentData;
 
-        // If this is a PAYMENT installment, also add any unpaid due FEE amounts
-        if ($installment->type === 'PAYMENT') {
-          $unpaidFees = $installments
-            ->where('type', 'FEE')
-            ->filter(
-              fn($feeInstallment) =>
-              Carbon::parse($feeInstallment->due_date)->lte($today) &&
-                !collect($paidInstallments)->pluck('installment_id')->contains($feeInstallment->id)
-            )
-            ->sum(fn($feeInstallment) => $feeInstallment->fee->amount ?? 0);
-
-          $nextAmount += $unpaidFees;
+        // Set this as the next installment to be paid
+        if (!$nextInstallment) {
+          $nextInstallment = $installmentData;
         }
 
-        // Save this as the next thing to pay
-        $nextInstallment = [
-          'installment_id' => $installment->id,
-          'type' => $installment->type,
-          'amount_due' => round($nextAmount, 2),
-          'due_date' => $installment->due_date,
-        ];
+        $balance = 0;
+      } else {
+        // 🔹 Not paid at all
+        $installmentData['amount_due'] = round($amount, 2);
+        $remainingInstallments[] = $installmentData;
 
-        // Add it to the remaining installments list
-        $remainingInstallments[] = $nextInstallment;
-
-        // Stop here — future installments are not yet due
-        break;
+        // Set this as the next installment to be paid (if none set yet)
+        if (!$nextInstallment) {
+          $nextInstallment = $installmentData;
+        }
       }
     }
 
-    // Any future installments (due after today) are considered remaining
-    $futureInstallments = $installments->filter(fn($i) => Carbon::parse($i->due_date)->gt($today));
+    // If there are unpaid FEE installments due today or earlier,
+    // and they haven't been fully paid, add their amount to the next installment
+    if ($nextInstallment) {
+      $unpaidDueFees = $installments
+        ->where('type', 'FEE')
+        ->filter(function ($installment) use ($paidInstallments, $today) {
+          return Carbon::parse($installment->due_date)->lte($today)
+            && !collect($paidInstallments)->pluck('installment_id')->contains($installment->id);
+        })
+        ->sum(fn($installment) => $installment->fee->amount ?? 0);
 
-    foreach ($futureInstallments as $installment) {
-      $amount = $installment->type === 'FEE'
-        ? ($installment->fee->amount ?? 0)
-        : $installmentAmount;
-
-      $remainingInstallments[] = [
-        'installment_id' => $installment->id,
-        'type' => $installment->type,
-        'amount_due' => round($amount, 2),
-        'due_date' => $installment->due_date,
-      ];
+      if ($unpaidDueFees > 0) {
+        $nextInstallment['amount_due'] = round(($nextInstallment['amount_due'] ?? 0) + $unpaidDueFees, 2);
+      }
     }
 
-    // Apply remaining balance to first future installment
-    if (count($remainingInstallments)) {
-      $remainingInstallments[0]['amount_due'] = round(
-        max(0, $remainingInstallments[0]['amount_due'] - $balance),
-        2
-      );
-      $balance = 0;
-    }
-
-    // Fallback: set the next unpaid installment even if it's in the future
-    if (!$nextInstallment && count($remainingInstallments)) {
-      $nextInstallment = $remainingInstallments[0];
-    }
-
-    // Final result
+    // Final structured output
     return [
-      'paid_installments' => $paidInstallments,
-      'remaining_installments' => $remainingInstallments,
-      'next_installment' => $nextInstallment,
-      'fully_paid' => count($remainingInstallments) === 0,
+      'paid_installments' => $paidInstallments,               // All installments fully covered
+      'remaining_installments' => $remainingInstallments,     // All unpaid or partially paid
+      'next_installment' => $nextInstallment,                 // First unpaid one in order
+      'fully_paid' => count($remainingInstallments) === 0,    // All covered?
     ];
   }
 }
