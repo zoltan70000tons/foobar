@@ -30,6 +30,8 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
+use App\Services\PaymentInfoService;
+
 class BookingsController extends Controller
 {
   use HandlePermissions;
@@ -43,6 +45,7 @@ class BookingsController extends Controller
   protected CabinInterface $cabinRepository;
   protected CabinCategoryInterface $cabinCategoryRepository;
   protected AdjustmentsRepository $adjustmentsRepository;
+  protected PaymentInfoService $paymentInfoService;
 
   public function __construct(
     EventRepository $eventRepository,
@@ -51,7 +54,8 @@ class BookingsController extends Controller
     TeamRepository $teamRepository,
     CabinRepository $cabinRepository,
     CabinCategoryRepository $cabinCategoryRepository,
-    AdjustmentsRepository $adjustmentsRepository
+    AdjustmentsRepository $adjustmentsRepository,
+    PaymentInfoService $paymentInfoService
   ) {
     $this->eventRepository = $eventRepository;
     $this->bookingRepository = $bookingRepository;
@@ -60,6 +64,7 @@ class BookingsController extends Controller
     $this->cabinRepository = $cabinRepository;
     $this->cabinCategoryRepository = $cabinCategoryRepository;
     $this->adjustmentsRepository = $adjustmentsRepository;
+    $this->paymentInfoService = $paymentInfoService;
   }
   public function index(Request $request)
   {
@@ -318,6 +323,9 @@ class BookingsController extends Controller
             }
 
             $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
+            
+            // Update the booking with the adjustments
+            $this->paymentInfoService->syncAllocatedCost($booking);
           }
         },
         $event_id,
