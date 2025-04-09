@@ -17,7 +17,8 @@ import {
   FormControl,
   Grid,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  Autocomplete
 } from "@mui/material";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
@@ -274,30 +275,28 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
           {isSending ? (
             <CircularProgress />
           ) : (
-            <Select
+            <Autocomplete
               size="small"
               disabled={canSendEmail}
-              value={selectedTemplate ? JSON.stringify(selectedTemplate) : ""}
-              onChange={(e) => {
-                const selectedObject = JSON.parse(e.target.value);
-                setSelectedTemplate(selectedObject);
-                setSubject(selectedObject.subject + ' ' + booking.booking_code);
+              options={[...templates].sort((a, b) => a.name.localeCompare(b.name))}
+              value={selectedTemplate}
+              onChange={(event, newValue) => {
+                if (newValue) {
+                  setSelectedTemplate(newValue);
+                  setSubject(newValue.subject + ' ' + booking.booking_code);
+                }
               }}
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="" disabled>
-                Select an email template
-              </MenuItem>
-              {templates.map((template) => (
-                <MenuItem key={template.id} value={JSON.stringify(template)}>
-                  {template.subject}
-                </MenuItem>
-              ))}
-            </Select>
+              getOptionLabel={(option) => option.name || ""}
+              renderInput={(params) => (
+                <TextField {...params} label="Select an email template" fullWidth />
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              disableClearable
+              freeSolo={false}
+            />
           )}
         </Grid>
-        {/* <Grid item xs={2}>
+        <Grid item xs={2}>
           <FormControlLabel
             disabled={canSendEmail}
             control={
@@ -313,8 +312,8 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             }
             label="Passenger Selector"
           />
-        </Grid> */}
-        {/* {isCheckboxEnabled && (
+        </Grid>
+        
           <Grid item xs={4}>
             {isSending ? (
               <CircularProgress />
@@ -341,7 +340,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
               </Select>
             )}
           </Grid>
-        )} */}
+        
 
         {/* Button */}
         <Grid item xs={4}>

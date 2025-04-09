@@ -127,9 +127,12 @@ class NotificationController extends Controller
                     );
                 }
             }
-            return response()->json(['message' => 'Payment processed, email sent successfully'], 500);
+            return response()->json(['message' => 'Payment processed, email sent successfully'], 200);
         } catch (\Throwable $e) {
-            $this->logException($e);
+            \Log::error("Error processing payment", [
+                'exception' => $e->getMessage(),
+                'request' => $request->all(),
+            ]);
             return response()->json(['error' => 'Unexpected error occurred'], 500);
         }
     }
