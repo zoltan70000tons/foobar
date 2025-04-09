@@ -60,6 +60,10 @@ class AdjustmentsRepository
           ->value('user_id');
 
       $user = User::query()->where('id', $userUuid)->first();
+      
+      if (!$user->membership) {
+          return null;
+      }
 
       $memberType = strtoupper($user->membership->memberType->name);
       $result = null;
