@@ -210,7 +210,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
       confirmed_booking_email: selectedUser.confirmed_booking_email || false,
       travel_info: selectedUser.travel_info || false,
       terms_n_cons: true,
-      single_t_agreement: selectedUser.single_t_agreement || false,
+      single_t_agreement: (isSingleRoom ? true : (selectedUser.single_t_agreement || false)),
       was_on_board: selectedUser.was_on_board || false,
       newsletter: selectedUser.newsletter || false,
       passenger_allocated_cost: selectedUser.passenger_allocated_cost || "",
@@ -861,8 +861,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                       control={
                         <Checkbox
                           size="small"
-                          checked={passenger?.single_t_agreement || true}
-                          onChange={(e) => onChange('single_t_agreement', e.target.checked)}
+                          checked={true}
                         />
                       }
                       label="STA"
