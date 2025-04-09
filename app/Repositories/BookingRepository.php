@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Enums\StatusCabin;
+use App\Helpers\InstallmentHelper;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
@@ -160,6 +161,9 @@ class BookingRepository implements BookingInterface
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
+
+      $longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+      $booking->longestDueDateInstallment = $longestDueDateInstallment;
       /*       // Sort passengers to place lead passenger first
       if ($booking->passengers && $index == 1) {
         $booking->passengers = $booking->passengers

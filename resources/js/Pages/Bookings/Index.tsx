@@ -168,6 +168,44 @@ const Index = ({
         ),
       },
       {
+        header: "Payment Due",
+        accessor: "longestDueDateInstallment",
+        sortable: true,
+        draw: (row: { longestDueDateInstallment?: string | null }) => {
+          const today = new Date();
+          const longestDueDate = row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment) : null;
+
+          if (!longestDueDate) {
+            return <>-</>;
+          }
+
+          const twentyFiveDaysFromNow = new Date(today);
+          twentyFiveDaysFromNow.setDate(today.getDate() + 25);
+
+          const oneDayFromNow = new Date(today);
+          oneDayFromNow.setDate(today.getDate() + 1);
+
+          const fiveDaysFromNow = new Date(today);
+          fiveDaysFromNow.setDate(today.getDate() + 5);
+
+          let backgroundColor = "transparent";
+
+          if (longestDueDate > twentyFiveDaysFromNow) {
+            backgroundColor = "green";
+          } else if (longestDueDate > oneDayFromNow && longestDueDate <= fiveDaysFromNow) {
+            backgroundColor = "yellow";
+          } else if (longestDueDate <= today) {
+            backgroundColor = "red";
+          }
+
+          return (
+            <div style={{ backgroundColor: backgroundColor }}>
+              {row?.longestDueDateInstallment}
+            </div>
+          );
+        },
+      },
+      {
         header: "Booking code",
         accessor: "booking_code",
       },

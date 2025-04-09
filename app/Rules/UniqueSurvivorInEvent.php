@@ -30,6 +30,7 @@ class UniqueSurvivorInEvent implements ValidationRule
         $exists = Booking::whereHas('passengers', function ($query) use ($value) {
             $query->where('survivor_number', $value);
         })
+        ->where('status', '!=', 'CANCELLED')
         ->where('event_id', $this->eventId)
         ->when($this->bookingId, function ($query) {
             $query->where('id', '!=', $this->bookingId);
