@@ -200,7 +200,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
       country: selectedUser.country || "",
       emergency_c_name: selectedUser.emergency_c_name || "",
       emergency_c_phone: selectedUser.emergency_c_phone || "",
-      payment_method: selectedUser.payment_method || "",
+      payment_method: (paymentPlan?.id === 'INSTALLMENTS' ? 'CREDIT_CARD' : selectedUser.payment_method || ''),
       special_request: selectedUser.special_request || "",
       lead_passenger: selectedUser.lead_passenger || true,
       confirmed_booking_email: selectedUser.confirmed_booking_email || false,
@@ -358,6 +358,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
       setIsFetching(false);
     }
   };
+
+  console.log(paymentPlan?.id, paymentPlan?.id === 'INSTALLMENTS')
 
   return (
     <Box sx={{ width: '100%', margin: '0 auto', mt: 4 }}>
@@ -782,11 +784,11 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
                 <FormControl fullWidth size="small">
                   <InputLabel>Payment Method</InputLabel>
                   <Select
-                    value={passenger?.payment_method || ''}
+                    value={paymentPlan?.id === 'INSTALLMENTS' ? 'CREDIT_CARD' : passenger?.payment_method || ''}
                     onChange={(e) => onChange('payment_method', e.target.value)}
                   >
                     <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
-                    <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>
+                    {paymentPlan?.id !== 'INSTALLMENTS' && (<MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>)}
                   </Select>
                   {/* {validation?.payment_method?.[0] && (
                                             <FormHelperText>{validation.payment_method[0]}</FormHelperText>
