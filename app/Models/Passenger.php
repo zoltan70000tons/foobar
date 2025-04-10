@@ -128,6 +128,12 @@ class Passenger extends Model
   {
     return $this->hasMany(PassengerDiscount::class);
   }
+    
+  public function getInstallmentStatusAttribute()
+  {
+    return $this->getInstallmentStatus();
+  }
+  
   public function getPaymentInfoAttribute()
   {
     try {
