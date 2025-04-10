@@ -243,9 +243,9 @@ class BookingRepository implements BookingInterface
 
   function assignAgent($code, $user)
   {
-    Log::info($code);
-    Log::info($user);
-    dd('ok');
+    //Log::info($code);
+    //Log::info($user);
+    //dd('ok');
   }
 
   function addTags($booking, $tags)
@@ -254,21 +254,21 @@ class BookingRepository implements BookingInterface
       if (!is_array($tags)) {
         throw new InvalidArgumentException('Tags must be an array.');
       }
-
+      $uniqueTags = array_unique($tags);
       $originalTags = $booking->tags;
 
       $booking->update([
-        'tags' => $tags,
+        'tags' => $uniqueTags,
       ]);
 
-      if ($originalTags !== $tags) {
+      if ($originalTags !== $uniqueTags) {
         $this->saveBookingLog(
           $booking->id,
           'Changed booking tags',
           sprintf(
             'Booking tags changed from [%s] to [%s].',
             implode(', ', is_array($originalTags) ? $originalTags : []),
-            implode(', ', is_array($tags) ? $tags : [])
+            implode(', ', is_array($uniqueTags) ? $uniqueTags : [])
           )
         );
       }
