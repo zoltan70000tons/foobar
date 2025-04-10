@@ -9,7 +9,7 @@ use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Services\PaymentInfoService;
 use App\Traits\CabinFilter;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use App\Models\BookingLog;
@@ -110,8 +110,9 @@ class BookingRepository implements BookingInterface
     return $results;
   }
 
-  function getByStatus($status, $keyword = null)
+  function getByStatus($status, $keyword = null, ?int $perPage = 10, ?string $sortKey = 'created_at', ?string $sortDirection = 'desc', $tags =[])
   {
+
     $query = Booking::with([
       'cabin',
       'cabin.cabinType',
@@ -155,8 +156,20 @@ class BookingRepository implements BookingInterface
         });
       });
     }
+   
+    if (!empty($tags)) {
+      $query->where(function ($q) use ($tags) {
+          foreach ($tags as $tag) {
+              $q->orWhereJsonContains('tags', $tag);
+          }
+      });
+  }
 
-    $results = $query->get();
+    if (!empty($sortKey)) {
+      $query->orderBy($sortKey, $sortDirection ?? 'desc');
+    }
+
+    $results = $query->paginate($perPage);
 
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
@@ -164,6 +177,13 @@ class BookingRepository implements BookingInterface
 
       $longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
       $booking->longestDueDateInstallment = $longestDueDateInstallment;
+
+      $editingUsername = DB::table('booking_agent_sessions')
+        ->where('booking_id', $booking->id)
+        ->join('users', 'booking_agent_sessions.agent_id', '=', 'users.id')
+        ->value('username');
+
+      $booking->editingUsername = $editingUsername;
       /*       // Sort passengers to place lead passenger first
       if ($booking->passengers && $index == 1) {
         $booking->passengers = $booking->passengers
