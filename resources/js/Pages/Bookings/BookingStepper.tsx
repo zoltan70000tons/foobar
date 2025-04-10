@@ -359,8 +359,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close }) => {
     }
   };
 
-  console.log(paymentPlan?.id, paymentPlan?.id === 'INSTALLMENTS')
-
   return (
     <Box sx={{ width: '100%', margin: '0 auto', mt: 4 }}>
       <Stepper activeStep={activeStep}>
