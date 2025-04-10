@@ -3,30 +3,27 @@
 namespace App\Helpers;
 
 use App\Models\Booking;
+use Illuminate\Support\Carbon;
+use function PHPUnit\Framework\isArray;
 
 class InstallmentHelper
 {
     public static function getFirstUnpaidInstallmentForBooking(Booking $booking): string|null
     {
-        $longestDueDateInstallment = null;
+        $longestDueDateInstallment = [];
 
         foreach ($booking->passengers as $passenger) {
-            $installments = $passenger->installments;
-
-            foreach ($installments as $installment) {
-                $payment = \DB::table('installment_payment')
-                    ->where('installment_id', $installment->id)
-                    ->where('status', 'PAID')
-                    ->first();
-
-                if (!$payment) {
-                    if (!$longestDueDateInstallment || $installment->due_date < $longestDueDateInstallment->due_date) {
-                        $longestDueDateInstallment = $installment;
-                    }
-                }
+            $passengerInstallmentStatus = $passenger->getInstallmentStatus();
+            if (isArray($passengerInstallmentStatus['next_installment'])) {
+                $longestDueDateInstallment[] = $passengerInstallmentStatus['next_installment']['due_date'];
             }
         }
 
-        return $longestDueDateInstallment?->due_date;
+        $oldestDate = collect($longestDueDateInstallment)
+            ->map(fn($date) => Carbon::parse($date))
+            ->sort()
+            ->first();
+
+        return $oldestDate->toDateString();
     }
 }
