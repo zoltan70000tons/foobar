@@ -12,13 +12,13 @@ import {
 } from "@mui/material";
 import { Autocomplete } from "@mui/lab";
 import AddIcon from "@mui/icons-material/Add";
-import { BookingTagEnum } from "@/enums/TagEnum";
+import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 
 
 
-const availableTags = Object.values(BookingTagEnum).map((tag) => ({
+const availableTags = Object.values(TagEnum).map((tag) => ({
     label: tag,
     value: tag,
 }));
@@ -33,7 +33,7 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
         if (Array.isArray(booking?.tags)) {
             setTags(booking.tags);
         } else {
-            setTags([]); 
+            setTags([]);
         }
     }, [booking]);
 
@@ -46,33 +46,39 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
     };
 
     const handleSaveTags = (newTags: string[]) => {
-        setTags(newTags);
+        const uniqueTags = [...new Set(newTags)];
+        setTags(uniqueTags);
         setLoading(true);
         router.post(
             route("bookings.updateTags", { id: event.id }),
             {
-                tags: newTags,
+                tags: uniqueTags,
                 booking_id: booking.id,
             },
             {
-                onSuccess: () => setLoading(false),  
-                onError: () => setLoading(false),   
+                onSuccess: () => setLoading(false),
+                onError: () => setLoading(false),
                 onFinish: () => setLoading(false),
             }
         );
-    
         setDialogOpen(false);
     };
-    
 
-    console.log(tags);
+
     return (
         <Box>
             <Box display="flex" alignItems="center" gap={1}>
                 <span>Tags:</span>
-                {tags && tags.length > 0 && tags.map((tag, index) => (
-                    <Chip key={index} label={tag} />
-                ))}
+                {tags && tags.length > 0 && tags.map((tag, index) => {
+                    const tagStyle = TagEnumStyles[tag as TagEnum]; 
+                    return (
+                        <Chip
+                            key={index}
+                            label={tag}
+                            style={{ backgroundColor: tagStyle?.color ?? "#e0e0e0", color: "#fff" }}
+                        />
+                    );
+                })}
                 <IconButton onClick={handleOpenDialog} disabled={!editable}>
                     <AddIcon />
                 </IconButton>
@@ -92,14 +98,34 @@ const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ edita
                         renderInput={(params) => (
                             <TextField {...params} label="Tags" placeholder="Select or remove tags" />
                         )}
+                        renderOption={(props, option) => {
+                            const tagStyle = TagEnumStyles[option.value as TagEnum];
+                            return (
+                                <li {...props}>
+                                    <Chip
+                                        label={option.label}
+                                        style={{
+                                            backgroundColor: tagStyle?.color ?? "#e0e0e0",
+                                            color: "#fff",
+                                            marginRight: 8,
+                                        }}
+                                        size="small"
+                                    />
+                                </li>
+                            );
+                        }}
                         renderTags={(tagValue, getTagProps) =>
-                            tagValue.map((option, index) => (
-                                <Chip
-                                    key={index}
-                                    label={option.label}
-                                    {...getTagProps({ index })}
-                                />
-                            ))
+                            tagValue.map((option, index) => {
+                                const tagStyle = TagEnumStyles[option.value as TagEnum];
+                                return (
+                                    <Chip
+                                        key={index}
+                                        label={option.label}
+                                        {...getTagProps({ index })}
+                                        style={{ backgroundColor: tagStyle?.color ?? "#e0e0e0", color: "#fff" }}
+                                    />
+                                );
+                            })
                         }
                     />
                 </DialogContent>

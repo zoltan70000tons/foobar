@@ -17,7 +17,8 @@ export enum TagEnum {
   OVERDUE = "OVERDUE",
 }
 
-export enum BookingTagEnum {
+// I dont know if we are using it anohter, place but not in booking detail REMOVE ??
+export enum BookingTagEnum { 
   NOT_ASSIGNE = "NOT ASSIGNED", 
   NEW = "NEW", 
   OVERDUE = "OVERDUE", 
@@ -26,7 +27,7 @@ export enum BookingTagEnum {
   IN_MANIFEST = "IN MANIFEST"
 }
 
-// ✅ Tag styles para TagEnum
+// Tag styles for TagEnum
 export const TagEnumStyles: { [key in TagEnum]: { label: string; color: string } } = {
   [TagEnum.NEW]: { label: "NEW", color: "#66bb6a" },
   [TagEnum.STAFF]: { label: "STAFF", color: "#1976d2" },
@@ -44,7 +45,7 @@ export const TagEnumStyles: { [key in TagEnum]: { label: string; color: string }
   [BookingTagEnum.OVERDUE]: { label: "OVERDUE", color: "#f44336" },
 };
 
-// ✅ Tag styles para BookingTagEnum
+// Tag styles for BookingTagEnum
 export const BookingTagEnumStyles: { [key in BookingTagEnum]: { label: string; color: string } } = {
   [BookingTagEnum.NOT_ASSIGNE]: { label: "NOT ASSIGNED", color: "#757575" },
   [BookingTagEnum.NEW]: { label: "NEW", color: "#4caf50" },

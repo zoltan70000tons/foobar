@@ -223,7 +223,7 @@ const Status = ({ event, booking, editMode, users }) => {
                   </Grid>
                 </Grid>
                 <Grid container mt={2}>
-                  <Tags editable={true} event={event} booking={booking} />
+                  <Tags editable={editMode} event={event} booking={booking} />
                 </Grid>
               </Grid>
             </Grid>
