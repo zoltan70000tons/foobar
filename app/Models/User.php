@@ -13,6 +13,8 @@ use App\Traits\UUID;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Notifications\Notification;
+
 use App\Mail\CustomerResetPassword;
 
 use Laravel\Sanctum\HasApiTokens;
@@ -28,6 +30,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements CanResetPassword
 {
   use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
+
   protected $keyType = 'string';
   public $incrementing = false;
 
@@ -58,6 +61,14 @@ class User extends Authenticatable implements CanResetPassword
       'email_verified_at' => 'datetime',
       'password' => 'hashed',
     ];
+  }
+
+  /**
+   * Route notifications for the Slack channel.
+   */
+  public function routeNotificationForSlack(Notification $notification): mixed
+  {
+    return '#booking-engine-notifications';
   }
 
   // bookings
