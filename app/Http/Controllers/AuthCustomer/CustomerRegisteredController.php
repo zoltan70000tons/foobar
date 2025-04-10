@@ -22,6 +22,8 @@ use App\Mail\CustomerRegistered;
 use App\Mail\ActivateSurvivor;
 use App\Helpers\CustomerHelper;
 use App\Traits\StringNormalization;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewUserRegistered;
 
 class CustomerRegisteredController extends Controller
 {
@@ -94,6 +96,8 @@ class CustomerRegisteredController extends Controller
       DB::commit();
 
       // Send a welcome email to the customer
+      Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(new NewUserRegistered($user));
+
       $this->sendWelcomeEmail($user, $language, $survivorNumber);
 
       return response()->json(
