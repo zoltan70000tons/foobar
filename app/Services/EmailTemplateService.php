@@ -91,7 +91,7 @@ class EmailTemplateService
         $nextInstallmentDate = false;
         
         if ($passenger) {
-            $installmentStatus = $passenger->getInstallmentStatus();
+            $installmentStatus = $passenger->installment_status;
             $nextInstallmentAmount = $installmentStatus['next_installment']['amount_due'] ?? false;
             $nextInstallmentDate = $installmentStatus['next_installment']['due_date'] ?? false;
         }
