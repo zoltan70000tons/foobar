@@ -398,8 +398,8 @@ class Passenger extends Model
     foreach ($installments as $installment) {
       // Determine how much this installment is worth
       $amount = $installment->type === 'FEE'
-        ? ($installment->fee->amount ?? 0)
-        : $installmentAmount;
+        ? (round($installment->fee->amount,2) ?? 0)
+        : round($installmentAmount, 2);
 
       // Prepare base response object
       $installmentData = [
@@ -408,12 +408,12 @@ class Passenger extends Model
         'due_date' => $installment->due_date,
       ];
 
-      if ($balance >= $amount) {
+      if (round($balance, 2) >= $amount) {
         // 🔹 Fully paid with available balance
         $installmentData['amount'] = round($amount, 2);
         $paidInstallments[] = $installmentData;
         $balance -= $amount;
-      } elseif ($balance > 0) {
+      } elseif (round($balance) > 0) {
         // 🔹 Partially paid (some balance remaining)
         $installmentData['amount_due'] = round($amount - $balance, 2);
         $remainingInstallments[] = $installmentData;
