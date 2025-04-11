@@ -70,8 +70,10 @@ class CustomerBookingRepository
         ->where('dob', $dob)
         ->first();
         
-      // Add installment status to the passenger
-      $passenger->setAttribute('installment_status', $passenger->installment_status);
+      // Add installment status to each passenger
+      $booking->passengers->each(function ($passenger) {
+        $passenger->setAttribute('installment_status', $passenger->installment_status);
+      });
 
       if (!$passenger) {
         return response()->json(['message' => 'Passenger not found'], 404);
