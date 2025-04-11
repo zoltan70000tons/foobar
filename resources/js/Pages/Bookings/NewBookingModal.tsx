@@ -28,13 +28,19 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
         </DialogContent>
         <DialogActions>
           {isCreateCustomerVisible && (
-            <Button
-              onClick={() => router.get(route('customers.create'))}
-              variant="outlined"
-              color="warning"
+            <a
+              href={route('customers.create')}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
             >
-              Create Customer
-            </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+              >
+                Create Customer
+              </Button>
+            </a>
           )}
           <Button onClick={handleClose} variant="outlined" color="secondary">
             Cancel

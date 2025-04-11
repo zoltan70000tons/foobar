@@ -74,11 +74,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     payment_method: "",
     special_request: "",
     lead_passenger: true,
-    confirmed_booking_email: false,
     travel_info: false,
     terms_n_cons: true,
     single_t_agreement: false,
-    was_on_board: false,
     newsletter: false,
     passenger_allocated_cost: "",
     passenger_balance: "",
@@ -161,7 +159,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
           passenger.dob &&
           passenger.gender &&
           passenger.payment_method &&
-          passenger.confirmed_booking_email &&
           passenger.terms_n_cons &&
           (isSingleRoom ? passenger.single_t_agreement : true)
         );
@@ -207,11 +204,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
       payment_method: (paymentPlan?.id === 'INSTALLMENTS' ? 'CREDIT_CARD' : selectedUser.payment_method || ''),
       special_request: selectedUser.special_request || "",
       lead_passenger: selectedUser.lead_passenger || true,
-      confirmed_booking_email: selectedUser.confirmed_booking_email || false,
       travel_info: selectedUser.travel_info || false,
       terms_n_cons: true,
       single_t_agreement: (isSingleRoom ? true : (selectedUser.single_t_agreement || false)),
-      was_on_board: selectedUser.was_on_board || false,
       newsletter: selectedUser.newsletter || false,
       passenger_allocated_cost: selectedUser.passenger_allocated_cost || "",
       passenger_balance: selectedUser.passenger_balance || "",
@@ -275,11 +270,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
         payment_method: passenger.payment_method,
         special_request: passenger.special_request,
         lead_passenger: passenger.lead_passenger,
-        confirmed_booking_email: passenger.confirmed_booking_email,
         travel_info: passenger.travel_info,
         terms_n_cons: true,
         single_t_agreement: passenger.single_t_agreement,
-        was_on_board: passenger.was_on_board,
         newsletter: passenger.newsletter,
         passenger_allocated_cost: passenger.passenger_allocated_cost,
         passenger_balance: passenger.passenger_balance,
@@ -817,19 +810,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                                         )} */ }
                 </FormControl>
               </Grid>
-
-              <Grid item xs={12} md={3}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={passenger?.confirmed_booking_email || false}
-                      onChange={(e) => onChange('confirmed_booking_email', e.target.checked)}
-                    />
-                  }
-                  label="Confirmed booking email"
-                />
-              </Grid>
               <Grid item xs={12} md={2}>
                 <FormControlLabel
                   control={
@@ -869,18 +849,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   </Tooltip>
                 </Grid>
               )}
-              <Grid item xs={12} md={2}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={passenger?.was_on_board || false}
-                      onChange={(e) => onChange('was_on_board', e.target.checked)}
-                    />
-                  }
-                  label="WOB"
-                />
-              </Grid>
             </Grid>
           </Box>
         )}
