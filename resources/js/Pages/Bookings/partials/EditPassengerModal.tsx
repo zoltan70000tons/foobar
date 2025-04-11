@@ -17,6 +17,7 @@ import {
     CircularProgress,
     FormHelperText,
     Tooltip,
+    Chip,
 } from "@mui/material";
 
 import axios from "axios";
@@ -25,6 +26,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { LoadingButton } from "@mui/lab";
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const EditPassengerModal = ({
     open,
@@ -48,6 +50,7 @@ const EditPassengerModal = ({
     const isLeadPassenger = passenger?.lead_passenger;
     const validation = errors?.response?.data?.errors;
     const { hasPermission } = usePermissions();
+    const { showSnackbar } = useSnackbar();
 
     const canEdit = hasPermission(Permissions.EditPassengers);
     const canReset = hasPermission(Permissions.ResetSeat);
@@ -86,6 +89,12 @@ const EditPassengerModal = ({
 
     const handlePrefill = () => {
         if (!selectedUser) return;
+
+        if (selectedUser.has_booking) {
+          showSnackbar("User already has a booking for the same event!", "error");
+          return;
+        }
+
         //inputs
         onChange("first_name", selectedUser.first_name);
         onChange("middle_name", selectedUser.middle_name || "");
@@ -169,6 +178,18 @@ const EditPassengerModal = ({
                                         ),
                                     }}
                                 />
+                            )}
+                            renderOption={(props, option) => (
+                              <li {...props}>
+                                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                                      <span>
+                                        {`${option.first_name} ${option.last_name} (${option.email})`}
+                                      </span>
+                                      {option.has_booking && (
+                                        <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: '20px' }} />
+                                      )}
+                                  </div>
+                              </li>
                             )}
                         />
                         <Button
