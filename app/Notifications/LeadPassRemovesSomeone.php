@@ -3,23 +3,25 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\SlackMessage;
+use Illuminate\Notifications\Notification;
 
-use App\Models\User;
-
-class NewUserRegistered extends Notification
+class LeadPassRemovesSomeone extends Notification
 {
   use Queueable;
 
-  protected $email;
+  protected $bookingCode;
+  protected $survivorNumber;
+  protected $removedEmail;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(User $user)
+  public function __construct(string $bookingCode, string $survivorNumber, string $removedEmail)
   {
-    $this->email = $user->email;
+    $this->bookingCode = $bookingCode;
+    $this->survivorNumber = $survivorNumber;
+    $this->removedEmail = $removedEmail;
   }
 
   /**
@@ -38,15 +40,14 @@ class NewUserRegistered extends Notification
   public function toSlack(object $notifiable)
   {
     return (new SlackMessage())
-      ->success()
-      ->content(':marilyn-manson: Welcome to the dark side')
+      ->warning()
+      ->content(':sweating_jordan_peele: Oh no! someone is kicked out')
       ->attachment(function ($attachment) {
-        $attachment
-          ->title('New User Registered')
-          ->fields([
-            'Email' => $this->email,
-          ])
-          ->color('#4B0082');
+        $attachment->title('Lead passenger remove someone')->fields([
+          'Booking code' => $this->bookingCode,
+          'Lead Pass Survivor Number' => $this->survivorNumber,
+          'Who was removed' => $this->removedEmail,
+        ]);
       });
   }
 

@@ -24,6 +24,7 @@ use App\Helpers\CustomerHelper;
 use App\Traits\StringNormalization;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewUserRegistered;
+use App\Notifications\CustomerRecoverAccount;
 
 class CustomerRegisteredController extends Controller
 {
@@ -95,9 +96,14 @@ class CustomerRegisteredController extends Controller
 
       DB::commit();
 
-      // Send a welcome email to the customer
-      Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(new NewUserRegistered($user));
+      try {
+        Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(new NewUserRegistered($user));
+      } catch (\Exception $e) {
+        // Optionally log the failure so you know something went wrong
+        Log::warning('Slack notification failed: ' . $e->getMessage());
+      }
 
+      // Send a welcome email to the customer
       $this->sendWelcomeEmail($user, $language, $survivorNumber);
 
       return response()->json(
@@ -189,6 +195,16 @@ class CustomerRegisteredController extends Controller
       'email' => $request->email,
       'password' => Hash::make($request->password),
     ]);
+
+    // Send a welcome email to the customer
+    try {
+      Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+        new CustomerRecoverAccount($user)
+      );
+    } catch (\Exception $e) {
+      // Optionally log the failure so you know something went wrong
+      Log::warning('Slack notification failed: ' . $e->getMessage());
+    }
 
     // Send welcome email
     $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);

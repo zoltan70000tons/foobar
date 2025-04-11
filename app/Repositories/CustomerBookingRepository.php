@@ -13,6 +13,10 @@ use App\Mail\CustomerResetSeat;
 use App\Models\User;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 use App\Services\EmailTemplateService;
+use App\Notifications\NewAddPaxAddedToBooking;
+use App\Notifications\LeadPassRemovesSomeone;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 
 class CustomerBookingRepository
 {
@@ -69,7 +73,7 @@ class CustomerBookingRepository
         ->where('last_name', $lastName)
         ->where('dob', $dob)
         ->first();
-        
+
       // Add installment status to each passenger
       $booking->passengers->each(function ($passenger) {
         $passenger->setAttribute('installment_status', $passenger->installment_status);
@@ -236,6 +240,20 @@ class CustomerBookingRepository
         return response()->json(['message' => 'Error while adding passenger'], 500);
       }
 
+      $msg = $dataToUpdate['survivor_number']
+        ? 'Passenger added with his own acocunt'
+        : 'Passenger added via form without account';
+
+      // send notification to slack
+      try {
+        Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+          new NewAddPaxAddedToBooking($bookingCode, $emptyPassenger->email, $msg)
+        );
+      } catch (\Exception $e) {
+        // Optionally log the failure so you know something went wrong
+        Log::warning('Slack notification failed: ' . $e->getMessage());
+      }
+
       // Send confirmation email
       $this->sendPassengerConfirmationEmail($booking, $emptyPassenger);
 
@@ -305,6 +323,16 @@ class CustomerBookingRepository
           'passenger_data' => $validated,
         ]);
         return response()->json(['message' => 'Error while adding passenger'], 500);
+      }
+
+      // send notification to slack
+      try {
+        Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+          new NewAddPaxAddedToBooking($bookingCode, $passenger->email, 'Passenger added manually by Lead Passenger')
+        );
+      } catch (\Exception $e) {
+        // Optionally log the failure so you know something went wrong
+        Log::warning('Slack notification failed: ' . $e->getMessage());
       }
 
       // Send confirmation email
@@ -443,6 +471,8 @@ class CustomerBookingRepository
 
     $passengers = $booking->passengers;
 
+    $leadPassenger = $booking->passengers->where('lead_passenger', true)->first();
+
     // get passenger based on passenger order
     $passenger = $passengers
       ->filter(function ($passenger) use ($passengerOrder) {
@@ -488,6 +518,16 @@ class CustomerBookingRepository
         ]);
       } catch (\Exception $e) {
         return response()->json(['message' => 'Error while resetting passenger seat'], 500);
+      }
+
+      // send notification to slack
+      try {
+        Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+          new LeadPassRemovesSomeone($bookingCode, $leadPassenger->email, $passengerEmail)
+        );
+      } catch (\Exception $e) {
+        // Optionally log the failure so you know something went wrong
+        Log::warning('Slack notification failed: ' . $e->getMessage());
       }
 
       // send email to passenger, the invitation has been reset

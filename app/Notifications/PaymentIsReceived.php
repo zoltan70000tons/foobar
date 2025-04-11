@@ -3,23 +3,25 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\SlackMessage;
+use Illuminate\Notifications\Notification;
 
-use App\Models\User;
-
-class NewUserRegistered extends Notification
+class PaymentIsReceived extends Notification
 {
   use Queueable;
 
-  protected $email;
+  protected $booking;
+  protected $passenger;
+  protected $payment;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(User $user)
+  public function __construct(object $booking, object $passenger, object $payment)
   {
-    $this->email = $user->email;
+    $this->booking = $booking;
+    $this->passenger = $passenger;
+    $this->payment = $payment;
   }
 
   /**
@@ -39,14 +41,13 @@ class NewUserRegistered extends Notification
   {
     return (new SlackMessage())
       ->success()
-      ->content(':marilyn-manson: Welcome to the dark side')
+      ->content(':scarface: Money, money, money!')
       ->attachment(function ($attachment) {
-        $attachment
-          ->title('New User Registered')
-          ->fields([
-            'Email' => $this->email,
-          ])
-          ->color('#4B0082');
+        $attachment->title('Payment is received')->fields([
+          'Booking ID' => $this->booking->id,
+          'From' => $this->passenger->email,
+          'Value' => $this->payment->value,
+        ]);
       });
   }
 

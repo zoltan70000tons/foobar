@@ -39,11 +39,14 @@ class CustomerRecoverAccount extends Notification
   {
     return (new SlackMessage())
       ->success()
-      ->content(':rock: Customer Recover Account')
+      ->content(':speed_metal: Guess Whos Back?')
       ->attachment(function ($attachment) {
-        $attachment->title('New User Registered')->fields([
-          'Survivor Number' => $this->survivorNumber,
-        ]);
+        $attachment
+          ->title('Customer recover account')
+          ->fields([
+            'Survivor Number' => $this->survivorNumber,
+          ])
+          ->color('#0000ff');
       });
   }
 

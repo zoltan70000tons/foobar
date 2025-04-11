@@ -3,23 +3,27 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\SlackMessage;
+use Illuminate\Notifications\Notification;
 
-use App\Models\User;
-
-class NewUserRegistered extends Notification
+class NewBookingRequest extends Notification
 {
   use Queueable;
 
+  protected $bookingRequestId;
+  protected $survivorNumber;
   protected $email;
+  protected $cabinType;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(User $user)
+  public function __construct(string $bookingRequestId, string $survivorNumber, string $email, string $cabinType)
   {
-    $this->email = $user->email;
+    $this->bookingRequestId = $bookingRequestId;
+    $this->survivorNumber = $survivorNumber;
+    $this->email = $email;
+    $this->cabinType = $cabinType;
   }
 
   /**
@@ -39,14 +43,14 @@ class NewUserRegistered extends Notification
   {
     return (new SlackMessage())
       ->success()
-      ->content(':marilyn-manson: Welcome to the dark side')
+      ->content(':borat: Very Nice!')
       ->attachment(function ($attachment) {
-        $attachment
-          ->title('New User Registered')
-          ->fields([
-            'Email' => $this->email,
-          ])
-          ->color('#4B0082');
+        $attachment->title('New Booking Request!')->fields([
+          'Booking Request ID' => $this->bookingRequestId,
+          'Survivor Number' => $this->survivorNumber,
+          'Email' => $this->email,
+          'Cabin Type' => $this->cabinType,
+        ]);
       });
   }
 

@@ -3,23 +3,25 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\SlackMessage;
+use Illuminate\Notifications\Notification;
 
-use App\Models\User;
-
-class NewUserRegistered extends Notification
+class NewAddPaxAddedToBooking extends Notification
 {
   use Queueable;
 
+  protected $bookingCode;
   protected $email;
+  protected $message;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(User $user)
+  public function __construct(string $bookingCode, string $email, ?string $message)
   {
-    $this->email = $user->email;
+    $this->bookingCode = $bookingCode;
+    $this->email = $email;
+    $this->message = $message ?? '';
   }
 
   /**
@@ -39,14 +41,13 @@ class NewUserRegistered extends Notification
   {
     return (new SlackMessage())
       ->success()
-      ->content(':marilyn-manson: Welcome to the dark side')
+      ->content(':vibe: Lets go!')
       ->attachment(function ($attachment) {
-        $attachment
-          ->title('New User Registered')
-          ->fields([
-            'Email' => $this->email,
-          ])
-          ->color('#4B0082');
+        $attachment->title('New add pax added to booking!')->fields([
+          'Booking Code' => $this->bookingCode,
+          'Email of new pax' => $this->email,
+          'Additional message' => $this->message,
+        ]);
       });
   }
 
