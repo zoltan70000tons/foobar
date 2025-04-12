@@ -3,7 +3,7 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
-
+import { router } from "@inertiajs/react";
 
 const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
 
@@ -12,6 +12,7 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
   const handleClose = () => setOpen(false);
   const {hasPermission} = usePermissions(); 
   const canCreateBooking = hasPermission(Permissions.CreateBookings);
+  const [isCreateCustomerVisible, setIsCreateCustomerVisible] = useState(false);
 
   return (
     <>
@@ -23,9 +24,24 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         <DialogTitle>New Booking</DialogTitle>
         <DialogContent>
-          <BookingStepper cabinTypes={cabinTypes} cabinCategories={cabinCategories} close={handleClose} />
+          <BookingStepper cabinTypes={cabinTypes} cabinCategories={cabinCategories} close={handleClose} setIsCreateCustomerVisible={setIsCreateCustomerVisible} />
         </DialogContent>
         <DialogActions>
+          {isCreateCustomerVisible && (
+            <a
+              href={route('customers.create')}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <Button
+                variant="outlined"
+                color="warning"
+              >
+                Create Customer
+              </Button>
+            </a>
+          )}
           <Button onClick={handleClose} variant="outlined" color="secondary">
             Cancel
           </Button>
