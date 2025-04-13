@@ -77,6 +77,11 @@
             color: red;
         }
 
+        .add-pax a {
+            color: red;
+            text-decoration: none;
+        }
+
         .passenger_title {
             font-size: 0.7rem;
         }
@@ -130,7 +135,7 @@
         </section>
         <section class="body">
             <h2 style="text-align: center;margin-top:0px;">BOOKING CONFIRMATION</h2>
-           
+
             <table class="table-container" width="100%" style="margin-top:0px;">
                 <tr>
                     <th width="50%">Date Issued:</th>
@@ -175,9 +180,15 @@
                 {{ $booking = $data['booking'] }}
 
                 @foreach ($paymentInfo['passengers'] as $passenger)
-                {{ $pass = $passenger['passenger'] }}
-                {{ $installments = $pass->getPaymentInfoAttribute()['installments'] }}
-
+                @php
+                $pass = $passenger['passenger'];
+                $payment_method = match ($pass->payment_method) {
+                'CREDIT_CARD' => 'Credit Card*',
+                'PAY_IN_FULL' => 'Full Payment',
+                default => 'Unknown',
+                };
+                $installments = $pass->getInstallmentStatus();
+                @endphp
                 <tr>
                     <td colspan="2">
                         <table width="100%">
@@ -236,49 +247,53 @@
                                             <td width="20%">&nbsp;</td>
                                             <td width="15%">&nbsp;</td>
                                         </tr>
-                                       
-                                        @foreach ($installments as $installment)
+                                        @if($booking->payment_plan == 'INSTALLMENTS')
                                         @php
-                                        $isFee = $installment['type'] == 'FEE';
-                                        $isPaid = $installment['status'] == 'PAID';
-                                        $isOverdue = $installment['status'] == 'OVERDUE';
-                                        $isPending = $installment['status'] == 'PENDING';
-                                        $isPartiallyPaid = $installment['status'] == 'PARTIALLY_PAID';
-                                        $showPaymentMethod = $isPaid || $isPartiallyPaid;
+                                        $paidInstallments = $installments['paid_installments'];
                                         @endphp
+
+                                        @foreach ($paidInstallments as $installment)
                                         <tr>
-                                            @if ($isFee && !$isPaid)
-                                            <td class="bold">Due immediately</td>
-                                            <td>{{ formatCurrency($installment['remaining_amount']) }}</td>
+                                            @php
+                                            $isFee = $installment['type'] == 'FEE';
+                                            @endphp
+                                            <td class="">Paid at {{formatDate($installment['due_date'])}}</td>
+                                            <td>{{ formatCurrency($installment['amount']) }}</td>
+                                            <td>{{$payment_method}}</td>
                                             <td></td>
-                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
-                                            @elseif ($isOverdue)
-                                            <td class="bold">Due immediately</td>
-                                            <td>{{ formatCurrency($installment['remaining_amount']) }}</td>
-                                            <td></td>
-                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
-                                            @elseif ($isPaid || $isPartiallyPaid)
-                                            <td width="25%">Paid at {{ formatDate($installment['payment_date']) }}</td>
-                                            <td width="25%">{{ formatCurrency($installment['total_paid']) }}</td>
-                                            <td width="25%">
-                                                @if ($showPaymentMethod)
-                                                {{ $pass->payment_method == 'CREDIT_CARD' ? 'Credit Card*' : 'Pay In Full' }}
-                                                @endif
-                                            </td>
-                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
-                                            @elseif ($isPending)
-                                            <td width="25%">Due at {{ formatDate($installment['due_date']) }}</td>
-                                            <td width="25%">{{ formatCurrency($installment['amount']) }}</td>
-                                            <td width="25%">
-                                                @if ($showPaymentMethod)
-                                                {{ $pass->payment_method == 'CREDIT_CARD' ? 'Credit Card*' : 'Pay In Full' }}
-                                                @endif
-                                            </td>
-                                            <td>{{ $isFee ? $installment['code'] : '' }}</td>
-                                            @endif
+
                                         </tr>
                                         @endforeach
-                                       
+
+                                        @php
+                                        $remainingInstallments = $installments['remaining_installments'];
+                                        @endphp
+                                        @foreach ($remainingInstallments as $installment)
+                                        <tr>
+                                            @php
+                                            $isFee = $installment['type'] == 'FEE';
+                                            @endphp
+                                            <td class="">Due Date: {{formatDate($installment['due_date'])}}</td>
+                                            <td>{{ formatCurrency($installment['amount_due']) }}</td>
+                                            <td>{{ $payment_method }}</td>
+                                            <td></td>
+
+                                        </tr>
+                                        @endforeach
+
+                                        @else
+                                        @php
+                                        $fullPaymentStatus = $pass->getFullPaymentStatus();
+                                        @endphp
+                                        <tr>
+                                            <td class="">Due Date: {{formatDate($fullPaymentStatus['due_date'])}}</td>
+                                            <td>{{ formatCurrency($fullPaymentStatus['amount']) }}</td>
+                                            <td>{{$payment_method}}</td>
+                                            <td></td>
+
+                                        </tr>
+
+                                        @endif
 
 
                                     </table>
@@ -397,9 +412,10 @@
                 <td>&nbsp;</td>
             </tr>
         </table>
-        <div class="add-pax center" style="text-align: center;"> To add or correct Passenger Information please visit: addpax.com
-            <br>
-            <br>
+        <div class="add-pax center" style="text-align: center;">
+            To add or correct Passenger Information please visit:
+            <a href="{{ $data['addpax_url'] }}" target="_blank">AddPax.com</a>
+            <br><br>
         </div>
 
         <table width="100%" cellspacing="0" cellpadding="5">

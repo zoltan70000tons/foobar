@@ -33,6 +33,7 @@ class PDFService
             'cabin_category' => $booking->cabin->category,
             'category_specs' => $booking->cabin->category->spec,
             'logo' => $logoSrc,
+            'addpax_url' => env('ADDPAX_URL', 'https://70000tons.com/addpax'),
         ];
 
         $html = View::make('pdf.booking_confirmation', ['data' => $data, 'paymentInfo' => $paymentInfo])->render();
