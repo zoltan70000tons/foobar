@@ -187,12 +187,15 @@ class BookingController extends Controller
       }
 
       try {
+        $bookingObj = Booking::where('booking_code', $bookingCode)->first();
+
         Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
           new NewBookingRequest(
             $bookingRequestId,
             $user->survivorNumber->survivor_number,
             $passengerEmail,
-            $cart['cabin_type']
+            $cart['cabin_type'],
+            $bookingObj
           )
         );
       } catch (\Exception $e) {

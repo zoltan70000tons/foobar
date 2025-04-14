@@ -14,16 +14,23 @@ class NewBookingRequest extends Notification
   protected $survivorNumber;
   protected $email;
   protected $cabinType;
+  protected $urlConstruct;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(string $bookingRequestId, string $survivorNumber, string $email, string $cabinType)
-  {
+  public function __construct(
+    string $bookingRequestId,
+    string $survivorNumber,
+    string $email,
+    string $cabinType,
+    object $booking
+  ) {
     $this->bookingRequestId = $bookingRequestId;
     $this->survivorNumber = $survivorNumber;
     $this->email = $email;
     $this->cabinType = $cabinType;
+    $this->urlConstruct = config('app.url') . '/events/' . $booking->event_id . '/bookings/' . $booking->booking_code;
   }
 
   /**
@@ -52,6 +59,7 @@ class NewBookingRequest extends Notification
             'Survivor Number' => $this->survivorNumber,
             'Email' => $this->email,
             'Cabin Type' => $this->cabinType,
+            'URL to booking' => $this->urlConstruct,
           ])
           ->color('#f525b6');
       });

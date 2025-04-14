@@ -247,7 +247,7 @@ class CustomerBookingRepository
       // send notification to slack
       try {
         Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
-          new NewAddPaxAddedToBooking($bookingCode, $emptyPassenger->email, $msg)
+          new NewAddPaxAddedToBooking($bookingCode, $emptyPassenger->email, $msg, $booking)
         );
       } catch (\Exception $e) {
         // Optionally log the failure so you know something went wrong
@@ -328,7 +328,12 @@ class CustomerBookingRepository
       // send notification to slack
       try {
         Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
-          new NewAddPaxAddedToBooking($bookingCode, $passenger->email, 'Passenger added manually by Lead Passenger')
+          new NewAddPaxAddedToBooking(
+            $bookingCode,
+            $passenger->email,
+            'Passenger added manually by Lead Passenger',
+            $booking
+          )
         );
       } catch (\Exception $e) {
         // Optionally log the failure so you know something went wrong
@@ -523,7 +528,7 @@ class CustomerBookingRepository
       // send notification to slack
       try {
         Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
-          new LeadPassRemovesSomeone($bookingCode, $leadPassenger->email, $passengerEmail)
+          new LeadPassRemovesSomeone($bookingCode, $leadPassenger->email, $passengerEmail, $booking)
         );
       } catch (\Exception $e) {
         // Optionally log the failure so you know something went wrong

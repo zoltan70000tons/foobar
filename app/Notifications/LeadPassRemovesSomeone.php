@@ -13,15 +13,17 @@ class LeadPassRemovesSomeone extends Notification
   protected $bookingCode;
   protected $survivorNumber;
   protected $removedEmail;
+  protected $urlConstruct;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(string $bookingCode, string $survivorNumber, string $removedEmail)
+  public function __construct(string $bookingCode, string $survivorNumber, string $removedEmail, object $booking)
   {
     $this->bookingCode = $bookingCode;
     $this->survivorNumber = $survivorNumber;
     $this->removedEmail = $removedEmail;
+    $this->urlConstruct = config('app.url') . '/events/' . $booking->event_id . '/bookings/' . $booking->booking_code;
   }
 
   /**
@@ -47,6 +49,7 @@ class LeadPassRemovesSomeone extends Notification
           'Booking code' => $this->bookingCode,
           'Lead Pass Survivor Number' => $this->survivorNumber,
           'Who was removed' => $this->removedEmail,
+          'URL to booking' => $this->urlConstruct,
         ]);
       });
   }

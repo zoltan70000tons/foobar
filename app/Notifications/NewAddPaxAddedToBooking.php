@@ -13,15 +13,17 @@ class NewAddPaxAddedToBooking extends Notification
   protected $bookingCode;
   protected $email;
   protected $message;
+  protected $urlConstruct;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(string $bookingCode, string $email, ?string $message)
+  public function __construct(string $bookingCode, string $email, ?string $message, object $booking)
   {
     $this->bookingCode = $bookingCode;
     $this->email = $email;
     $this->message = $message ?? '';
+    $this->urlConstruct = config('app.url') . '/events/' . $booking->event_id . '/bookings/' . $booking->booking_code;
   }
 
   /**
@@ -47,6 +49,7 @@ class NewAddPaxAddedToBooking extends Notification
           'Booking Code' => $this->bookingCode,
           'Email of new pax' => $this->email,
           'Additional message' => $this->message,
+          'URL to booking' => $this->urlConstruct,
         ]);
       });
   }
