@@ -65,16 +65,23 @@ class CabinSeeder extends Seeder
         'balcony' => $balcony,
         'obstructed_view' => $obstructedView,
       ]);
+      
+      $cabinType = match ($record['Category Type']) {
+        'PRIVATE CABIN' => 1,
+        'SINGLE MALE' => 2,
+        'SINGLE FEMALE' => 3,
+        default => 1,
+      };
 
       // Prepare the dynamic data for the Cabin
       $cabinData = [
         'cabin_category_id' => $cabinCategory->id,
-        'cabin_type_id' => $record['Category Type'],
+        'cabin_type_id' => $cabinType,
         'cabin_spec_id' => $cabinSpec->id,
         'inventory' => $record['Inventory'],
         'notes' => $record['Notes'],
         'internal_notes' => $record['Internal Notes'] ?? "",
-        'tags' => $record['Tags'],
+        'tags' => array_map('trim', explode(',', $record['Tags'])),
         'status' => $record['Status'],
       ];
 
