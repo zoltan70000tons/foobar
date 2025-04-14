@@ -128,12 +128,12 @@ class Passenger extends Model
   {
     return $this->hasMany(PassengerDiscount::class);
   }
-    
+
   public function getInstallmentStatusAttribute()
   {
     return $this->getInstallmentStatus();
   }
-  
+
   public function getPaymentInfoAttribute()
   {
     try {
@@ -398,8 +398,8 @@ class Passenger extends Model
     foreach ($installments as $installment) {
       // Determine how much this installment is worth
       $amount = $installment->type === 'FEE'
-        ? ($installment->fee->amount ?? 0)
-        : $installmentAmount;
+        ? (round($installment->fee->amount, 2) ?? 0)
+        : round($installmentAmount, 2);
 
       // Prepare base response object
       $installmentData = [
@@ -408,12 +408,12 @@ class Passenger extends Model
         'due_date' => $installment->due_date,
       ];
 
-      if ($balance >= $amount) {
+      if (round($balance, 2) >= $amount) {
         // 🔹 Fully paid with available balance
         $installmentData['amount'] = round($amount, 2);
         $paidInstallments[] = $installmentData;
         $balance -= $amount;
-      } elseif ($balance > 0) {
+      } elseif (round($balance) > 0) {
         // 🔹 Partially paid (some balance remaining)
         $installmentData['amount_due'] = round($amount - $balance, 2);
         $remainingInstallments[] = $installmentData;
@@ -458,6 +458,26 @@ class Passenger extends Model
       'remaining_installments' => $remainingInstallments,     // All unpaid or partially paid
       'next_installment' => $nextInstallment,                 // First unpaid one in order
       'fully_paid' => count($remainingInstallments) === 0,    // All covered?
+    ];
+  }
+
+
+  public function getFullPaymentStatus(): array
+  {
+    $amount = round($this->passenger_allocated_cost, 2);
+    $totalPaid = round($this->passenger_balance, 2);
+    $remainingAmount = round($amount - $totalPaid, 2);
+    $status = 'PENDING';
+    if ($totalPaid >= $amount) {
+      $status = 'PAID';
+    } elseif ($totalPaid > 0) {
+      $status = 'PARTIALLY_PAID';
+    }
+    return [
+      'due_date' => $this->booking->created_at,
+      'amount' => $totalPaid,
+      'remaining_amount' => $remainingAmount,
+      'status' => $status,
     ];
   }
 }

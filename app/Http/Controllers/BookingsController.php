@@ -200,7 +200,6 @@ class BookingsController extends Controller
       'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
       'passenger.special_request' => ['nullable', 'string', 'max:1000'],
       'passenger.lead_passenger' => ['required', 'boolean'],
-      'passenger.confirmed_booking_email' => ['required', 'accepted'],
       'passenger.travel_info' => ['required', 'boolean'],
       'passenger.terms_n_cons' => ['required', 'accepted'],
       'passenger.single_t_agreement' => [
@@ -220,7 +219,6 @@ class BookingsController extends Controller
           }
         },
       ],
-      'passenger.was_on_board' => ['nullable', 'boolean'],
       'passenger.newsletter' => ['nullable', 'boolean'],
       'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
       'passenger.passenger_balance' => ['nullable', 'numeric', 'min:0'],
