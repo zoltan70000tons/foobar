@@ -12,16 +12,20 @@ class PaymentIsReceived extends Notification
 
   protected $booking;
   protected $passenger;
-  protected $payment;
+  protected $amount;
+  protected $urlConstruct;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(object $booking, object $passenger, object $payment)
+  public function __construct(object $booking, object $passenger, $amount)
   {
     $this->booking = $booking;
     $this->passenger = $passenger;
-    $this->payment = $payment;
+    $this->amount = $amount;
+
+    $this->urlConstruct =
+      config('app.url') . '/events/' . $this->booking->event_id . '/bookings/' . $this->booking->booking_code;
   }
 
   /**
@@ -39,14 +43,17 @@ class PaymentIsReceived extends Notification
    */
   public function toSlack(object $notifiable)
   {
+    // uri events/1/bookings/8714LGVD-F14R
+
     return (new SlackMessage())
       ->success()
       ->content(':scarface: Money, money, money!')
       ->attachment(function ($attachment) {
         $attachment->title('Payment is received')->fields([
-          'Booking ID' => $this->booking->id,
+          'Booking Code' => $this->booking->booking_code,
           'From' => $this->passenger->email,
-          'Value' => $this->payment->value,
+          'Amount' => $this->amount,
+          'URL to booking' => $this->urlConstruct,
         ]);
       });
   }

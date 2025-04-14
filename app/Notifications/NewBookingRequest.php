@@ -45,12 +45,15 @@ class NewBookingRequest extends Notification
       ->success()
       ->content(':borat: Very Nice!')
       ->attachment(function ($attachment) {
-        $attachment->title('New Booking Request!')->fields([
-          'Booking Request ID' => $this->bookingRequestId,
-          'Survivor Number' => $this->survivorNumber,
-          'Email' => $this->email,
-          'Cabin Type' => $this->cabinType,
-        ]);
+        $attachment
+          ->title('New Booking Request!')
+          ->fields([
+            'Booking Request ID' => $this->bookingRequestId,
+            'Survivor Number' => $this->survivorNumber,
+            'Email' => $this->email,
+            'Cabin Type' => $this->cabinType,
+          ])
+          ->color('#f525b6');
       });
   }
 
