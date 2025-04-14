@@ -171,6 +171,9 @@ Route::middleware('auth')->group(function () {
   Route::get('/customers/{user}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
   Route::put('/customers/{user}/update', [CustomerController::class, 'update'])->name('customers.update');
   Route::delete('/customers/{user}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+  Route::get('/customers/by-survivor-number/{survivorNumber}', [CustomerController::class, 'editBySurvivorNumber'])
+      ->where('survivorNumber', '[0-9]{9}')
+      ->name('customers.editBySurvivorNumber');
   Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
   Route::resource('customers', CustomerController::class);
 
