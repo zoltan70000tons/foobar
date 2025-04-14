@@ -109,7 +109,15 @@ class BookingRepository implements BookingInterface
     return $results;
   }
 
-  function getByStatus($status, $keyword = null, ?int $perPage = 10, ?string $sortKey = 'created_at', ?string $sortDirection = 'desc', $tags =[])
+  function getByStatus(
+      $eventId,
+      $status,
+      $keyword = null,
+      ?int $perPage = 10,
+      ?string $sortKey = 'created_at',
+      ?string $sortDirection = 'desc',
+      $tags =[]
+  )
   {
 
     $query = Booking::with([
@@ -125,6 +133,7 @@ class BookingRepository implements BookingInterface
     ])
       ->withSum('passengers as balance', 'passenger_balance')
       ->withSum('passengers as cost', 'passenger_allocated_cost')
+      ->where('event_id', '=', $eventId)
       ->where('status', '=', $status);
 
     if (!empty($keyword)) {

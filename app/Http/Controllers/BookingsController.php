@@ -723,7 +723,7 @@ class BookingsController extends Controller
   public function getData(Request $request)
   {
    try {
-    $event_id = $request->route('id');
+    $eventId = $request->route('id');
     $status = match ((int) $request->get('tab', 1)) {
       0 => 'NEW',
       1 => 'ON HOLD',
@@ -737,7 +737,8 @@ class BookingsController extends Controller
     $sortKey = $request->input('sort_key', 'created_at');
     $sortDirection = $request->input('sort_direction', 'desc');
     $tags = array_filter(explode(',', $request->input('tags', '')));
-    $bookings = $this->bookingRepository->getByStatus($status, $keyword, $perPage, $sortKey, $sortDirection, $tags);
+    $bookings = $this->bookingRepository->getByStatus($eventId, $status, $keyword, $perPage, $sortKey,
+        $sortDirection, $tags);
 
     return response()->json([
       'data' => $bookings->items(),
