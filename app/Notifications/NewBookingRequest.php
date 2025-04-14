@@ -3,23 +3,34 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\SlackMessage;
-use App\Models\User;
+use Illuminate\Notifications\Notification;
 
-class CustomerRecoverAccount extends Notification
+class NewBookingRequest extends Notification
 {
   use Queueable;
 
+  protected $bookingRequestId;
   protected $survivorNumber;
+  protected $email;
+  protected $cabinType;
+  protected $urlConstruct;
 
   /**
    * Create a new notification instance.
    */
-  public function __construct(User $user)
-  {
-    $this->survivorNumber = $user->survivorNumber->survivor_number;
+  public function __construct(
+    string $bookingRequestId,
+    string $survivorNumber,
+    string $email,
+    string $cabinType,
+    object $booking
+  ) {
+    $this->bookingRequestId = $bookingRequestId;
+    $this->survivorNumber = $survivorNumber;
+    $this->email = $email;
+    $this->cabinType = $cabinType;
+    $this->urlConstruct = config('app.url') . '/events/' . $booking->event_id . '/bookings/' . $booking->booking_code;
   }
 
   /**
@@ -39,14 +50,18 @@ class CustomerRecoverAccount extends Notification
   {
     return (new SlackMessage())
       ->success()
-      ->content(':speed_metal: Guess Whos Back?')
+      ->content(':borat: Very Nice!')
       ->attachment(function ($attachment) {
         $attachment
-          ->title('Customer recover account')
+          ->title('New Booking Request!')
           ->fields([
+            'Booking Request ID' => $this->bookingRequestId,
             'Survivor Number' => $this->survivorNumber,
+            'Email' => $this->email,
+            'Cabin Type' => $this->cabinType,
+            'URL to booking' => $this->urlConstruct,
           ])
-          ->color('#0000ff');
+          ->color('#f525b6');
       });
   }
 

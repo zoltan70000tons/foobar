@@ -12,7 +12,6 @@ use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
 use App\Helpers\PriceCalculation;
-use App\Interfaces\PassengerInterface;
 use App\Models\Adjustment;
 use App\Models\CabinType;
 use App\Models\Event;
@@ -22,11 +21,15 @@ use App\Models\SurvivorNumber;
 use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
-use Illuminate\Validation\Rules\Numeric;
 use App\Models\Cart;
 use App\Traits\BookingLogTrait;
 use App\Traits\StringNormalization;
 use App\Helpers\AgeRestriction;
+use App\Notifications\NewBookingRequest;
+use App\Notifications\NewAddPaxAddedToBooking;
+use App\Notifications\LeadPassRemovesSomeone;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
@@ -169,17 +172,35 @@ class BookingController extends Controller
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
+      $bookingRequestId = $result['booking']['booking_request_id'];
 
       if (!$bookingCode || !$passengerEmail) {
         return response()->json(
           [
             'message' => 'Booking created successfully, but failed to send confirmation email.',
             'booking' => [
-              'booking_request_id' => $result['booking']['booking_request_id'],
+              'booking_request_id' => $bookingRequestId,
             ],
           ],
           201
         );
+      }
+
+      try {
+        $bookingObj = Booking::where('booking_code', $bookingCode)->first();
+
+        Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+          new NewBookingRequest(
+            $bookingRequestId,
+            $user->survivorNumber->survivor_number,
+            $passengerEmail,
+            $cart['cabin_type'],
+            $bookingObj
+          )
+        );
+      } catch (\Exception $e) {
+        // Optionally log the failure so you know something went wrong
+        Log::warning('Slack notification failed: ' . $e->getMessage());
       }
 
       // Send confirmation email
@@ -189,7 +210,7 @@ class BookingController extends Controller
         [
           'message' => 'Booking created successfully.',
           'booking' => [
-            'booking_request_id' => $result['booking']['booking_request_id'],
+            'booking_request_id' => $bookingRequestId,
           ],
           // "passenger" => $result["passenger"],
         ],
