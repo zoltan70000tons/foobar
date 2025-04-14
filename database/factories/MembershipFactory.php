@@ -22,11 +22,10 @@ class MembershipFactory extends Factory
   public function definition(): array
   {
     return [
-      'customer_id' => User::factory(),
+      'user_id' => User::factory(),
       'membership_id' => MembershipType::all()->random()->id,
     ];
   }
-
 
   public function forCustomer($customerId)
   {
