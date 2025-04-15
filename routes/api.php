@@ -98,69 +98,69 @@ Route::middleware(['membership_sales'])->group(function () {
   Route::get('/events/{id}', [EventController::class, 'showOne']);
 });
 
-Route::middleware(['auth:sanctum', 'team_context', 'verified', 'booking_status', 'clear_expired_reservation'])->group(
-  function () {
-    // Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinDeck}', [CabinController::class, 'show']);
-    Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [
-      CabinController::class,
-      'show',
-    ]);
+Route::middleware([
+  'auth:sanctum',
+  'team_context',
+  'verified',
+  'booking_status',
+  'membership_sales',
+  'one_booking_per_user',
+  'clear_expired_reservation',
+])->group(function () {
+  // Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinDeck}', [CabinController::class, 'show']);
+  Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [CabinController::class, 'show']);
 
-    // reserve cabin
-    Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
-    Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
-    Route::post('/cabin/release', [CabinController::class, 'release']);
+  // reserve cabin
+  Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);
+  Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
+  Route::post('/cabin/release', [CabinController::class, 'release']);
 
-    Route::get('/customer', [CustomerAuthController::class, 'customer']);
-    Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
-    Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
-    Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
-    Route::post('/delete-account', [CustomerAuthController::class, 'deleteAccount']);
+  Route::get('/customer', [CustomerAuthController::class, 'customer']);
+  Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
+  Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
+  Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
+  Route::post('/delete-account', [CustomerAuthController::class, 'deleteAccount']);
 
-    // set slot empty
-    Route::post('/my-bookings/{eventId}/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
-    Route::put('/my-bookings/{eventId}/{bookingCode}/remove-empty-seat', [BookingController::class, 'removeEmptySeat']);
+  // set slot empty
+  Route::post('/my-bookings/{eventId}/{bookingCode}/set-empty-seat', [BookingController::class, 'emptySeat']);
+  Route::put('/my-bookings/{eventId}/{bookingCode}/remove-empty-seat', [BookingController::class, 'removeEmptySeat']);
 
-    // reset passenger seat
-    Route::put('/my-bookings/{eventId}/{bookingCode}/reset-passenger-seat', [
-      BookingController::class,
-      'resetPassengerSeat',
-    ]);
+  // reset passenger seat
+  Route::put('/my-bookings/{eventId}/{bookingCode}/reset-passenger-seat', [
+    BookingController::class,
+    'resetPassengerSeat',
+  ]);
 
-    // add passenger manually
-    Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
-    // add passenger via email
-    Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger-via-email', [
-      BookingController::class,
-      'addPassengerViaEmail',
-    ]);
-    // cancel invitation
-    Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation', [
-      BookingController::class,
-      'cancelInvitation',
-    ]);
+  // add passenger manually
+  Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger', [BookingController::class, 'addPassenger']);
+  // add passenger via email
+  Route::post('/my-bookings/{eventId}/{bookingCode}/add-passenger-via-email', [
+    BookingController::class,
+    'addPassengerViaEmail',
+  ]);
+  // cancel invitation
+  Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation', [BookingController::class, 'cancelInvitation']);
 
-    // Booking
-    // --- booking init
-    Route::post('/booking-init', [BookingController::class, 'store']);
-    // --- all bookings
-    Route::get('/my-bookings', [BookingController::class, 'allBookings']);
-    // --- single booking
-    Route::get('/my-bookings/{eventId}/{bookingCode}', [BookingController::class, 'singleBooking']);
-    // --- single invitation
-    Route::get('/my-bookings/{eventId}/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
-    // --- single invitation add pax
-    Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/add-pax', [
-      InvitationController::class,
-      'addPax',
-    ]);
-    // --- single invitation remove invitation
-    Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/cancel', [
-      InvitationController::class,
-      'removeInvitation',
-    ]);
-  }
-);
+  // Booking
+  // --- booking init
+  Route::post('/booking-init', [BookingController::class, 'store']);
+  // --- all bookings
+  Route::get('/my-bookings', [BookingController::class, 'allBookings']);
+  // --- single booking
+  Route::get('/my-bookings/{eventId}/{bookingCode}', [BookingController::class, 'singleBooking']);
+  // --- single invitation
+  Route::get('/my-bookings/{eventId}/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
+  // --- single invitation add pax
+  Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/add-pax', [
+    InvitationController::class,
+    'addPax',
+  ]);
+  // --- single invitation remove invitation
+  Route::post('/my-bookings/{eventId}/{bookingCode}/invitation/{token}/cancel', [
+    InvitationController::class,
+    'removeInvitation',
+  ]);
+});
 
 // --- NOTIFICATION ---
 // Route::middleware(['allowed_domains'])->group(function () {
