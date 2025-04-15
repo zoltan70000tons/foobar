@@ -10,8 +10,17 @@ class TeamContext
   {
     //$teamId = Auth::user()->currentTeam->id ?? 1;
 
-    setPermissionsTeamId(1);
+    if (Auth::check()) {
+      // Set it only if not already set
+      if (!getPermissionsTeamId()) {
+        setPermissionsTeamId(1);
+      }
+    }
 
     return $next($request);
+
+    // setPermissionsTeamId(1);
+
+    // return $next($request);
   }
 }

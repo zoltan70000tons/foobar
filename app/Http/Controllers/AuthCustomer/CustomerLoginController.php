@@ -46,6 +46,8 @@ class CustomerLoginController extends Controller
     ];
 
     if (Auth::attempt($credentials, $remember)) {
+      setPermissionsTeamId(1);
+
       $user = Auth::user();
 
       if ($user && $user->hasRole('Customer')) {

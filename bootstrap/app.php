@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
       'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
       'allowed_domains' => \App\Http\Middleware\CheckAllowedDomains::class,
       'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
+      'team_context' => \App\Http\Middleware\TeamContext::class,
     ]);
 
     $middleware->web(
@@ -43,8 +44,10 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->api(
       prepend: [
         //\App\Http\Middleware\RestoreCartMiddleware::class,
+        \App\Http\Middleware\TeamsPermission::class,
         \App\Http\Middleware\ApiRedirectHttp::class,
-        \App\Http\Middleware\TeamContext::class,
+
+        //\App\Http\Middleware\TeamContext::class,
         //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]
