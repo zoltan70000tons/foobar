@@ -39,6 +39,10 @@ class CustomerRegisteredController extends Controller
   */
   public function store(Request $request): JsonResponse
   {
+    // set language
+    $language = $request->language;
+    App::setLocale($language);
+
     $request->validate([
       'name' => ['required', 'string', 'max:255'],
       'middlename' => ['nullable', 'string', 'max:255'],
@@ -53,10 +57,6 @@ class CustomerRegisteredController extends Controller
     // make sure email is lowercase
     $email = strtolower($request->email);
     $request->merge(['email' => $email]);
-
-    // set language
-    $language = $request->language;
-    App::setLocale($language);
 
     DB::beginTransaction();
 
