@@ -25,6 +25,7 @@ use App\Traits\StringNormalization;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewUserRegistered;
 use App\Notifications\CustomerRecoverAccount;
+use App\Rules\UniqueActivatedEmail;
 
 class CustomerRegisteredController extends Controller
 {
@@ -50,7 +51,7 @@ class CustomerRegisteredController extends Controller
       'date_of_birth' => ['required', 'date'],
       'country' => ['required', 'string', 'max:255'],
       'gender' => ['required', 'string', 'max:255'],
-      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255', new UniqueActivatedEmail()],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
     ]);
 
