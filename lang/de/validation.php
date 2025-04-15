@@ -154,7 +154,7 @@ return [
   'starts_with' => ':attribute field muss mit einer/m (depends on what follows) der folgenden beginnen: :values.',
   'string' => ':attribute field muss eine Kette sein.',
   'timezone' => ':attribute field muss eine gültige Zeitzone sein.',
-  'unique' => ':attribute ist bereits vergeben.',
+  'unique' => 'Diese :attribute ist bereits vergeben.',
   'uploaded' => ':attribute konnte nicht geladen werden.',
   'uppercase' => ':attribute muss groß geschrieben sein.',
   'url' => ':attribute field muss eine gültige URL sein.',
