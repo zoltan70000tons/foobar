@@ -57,6 +57,10 @@ const EditPassengerModal = ({
 
     const editable = isLeadPassenger || !canEdit || !editMode;
 
+    const disabledByDesign = !canEdit || !editMode;
+
+    const isDisabled = passenger?.survivor_number || disabledByDesign;
+
     useEffect(() => {
         if (searchQuery.length < 3) {
             setSuggestions([]);
@@ -148,7 +152,7 @@ const EditPassengerModal = ({
             >
                 <Paper sx={{ p: 4, maxWidth: 900, width: "100%" }}>
                     <Typography variant="h6" gutterBottom>
-                        {isLeadPassenger ? "View Lead Passenger" : "Edit Passenger"}
+                        {isLeadPassenger ? "Edit Lead Passenger" : "Edit Passenger"}
                     </Typography>
 
                     {/* Autocomplete Search */}
@@ -162,7 +166,7 @@ const EditPassengerModal = ({
                             inputValue={searchQuery}
                             onInputChange={(e, value) => setSearchQuery(value)}
                             onChange={(e, value) => setSelectedUser(value)}
-                            disabled={!canEdit || isLeadPassenger}
+                            disabled={isDisabled}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -213,7 +217,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.first_name || ""}
                                 onChange={(e) => onChange("first_name", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.first_name}
                                 helperText={validation?.first_name?.[0]}
                                 required
@@ -227,7 +231,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.middle_name || ""}
                                 onChange={(e) => onChange("middle_name", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.middle_name}
                                 helperText={validation?.middle_name?.[0]}
                             />
@@ -240,7 +244,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.last_name || ""}
                                 onChange={(e) => onChange("last_name", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.last_name}
                                 helperText={validation?.last_name?.[0]}
                                 required
@@ -256,7 +260,7 @@ const EditPassengerModal = ({
                                 value={passenger?.dob || ""}
                                 onChange={(e) => onChange("dob", e.target.value)}
                                 InputLabelProps={{ shrink: true }}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.dob}
                                 helperText={validation?.dob?.[0]}
                                 required
@@ -268,7 +272,7 @@ const EditPassengerModal = ({
                                 <Select
                                     value={passenger?.gender || ""}
                                     onChange={(e) => onChange("gender", e.target.value)}
-                                    disabled={editable}
+                                    disabled={isDisabled}
                                     error={!!validation?.gender}
                                     helperText={validation?.gender?.[0]}
                                     required
@@ -288,7 +292,7 @@ const EditPassengerModal = ({
                               size="small"
                               name={ "citizenship" }
                               onChange={ (e) => onChange('citizenship', e) }
-                              disabled={editable}
+                              disabled={isDisabled}
                               error={!!validation?.citizenship}
                               helperText={validation?.citizenship?.[0]}
                               required
@@ -302,7 +306,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.survivor_number || ""}
                                 onChange={(e) => onChange("survivor_number", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.survivor_number}
                                 helperText={validation?.survivor_number?.[0]}
                             />
@@ -315,7 +319,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.email || ""}
                                 onChange={(e) => onChange("email", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.email}
                                 helperText={validation?.email?.[0]}
                                 required
@@ -331,7 +335,7 @@ const EditPassengerModal = ({
                               forceDialCode={ true }
                               name={ "phone" }
                               onChange={(e) => onChange("phone", e)}
-                              disabled={editable}
+                              disabled={isDisabled}
                               error={!!validation?.phone}
                               helperText={validation?.phone?.[0]}
                               required
@@ -345,7 +349,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.address_first || ""}
                                 onChange={(e) => onChange("address_first", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.address_first}
                                 helperText={validation?.address_first?.[0]}
                                 required
@@ -359,7 +363,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.address_second || ""}
                                 onChange={(e) => onChange("address_second", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.address_second}
                                 helperText={validation?.citizenship?.[0]}
                             />
@@ -372,7 +376,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.city || ""}
                                 onChange={(e) => onChange("city", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.city}
                                 helperText={validation?.city?.[0]}
                                 required
@@ -386,7 +390,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.state || ""}
                                 onChange={(e) => onChange("state", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.state}
                                 helperText={validation?.state?.[0]}
                             />
@@ -399,7 +403,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.postal_code || ""}
                                 onChange={(e) => onChange("postal_code", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.postal_code}
                                 helperText={validation?.postal_code?.[0]}
                                 required
@@ -414,7 +418,7 @@ const EditPassengerModal = ({
                               size="small"
                               name={ "country" }
                               onChange={ (e) => onChange('country', e) }
-                              disabled={editable}
+                              disabled={isDisabled}
                               error={!!validation?.country}
                               helperText={validation?.country?.[0]}
                               required
@@ -428,7 +432,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.emergency_c_name || ""}
                                 onChange={(e) => onChange("emergency_c_name", e.target.value)}
-                                disabled={editable}
+                                disabled={isDisabled}
                                 error={!!validation?.emergency_c_name}
                                 helperText={validation?.emergency_c_name?.[0]}
                                 required
@@ -444,7 +448,7 @@ const EditPassengerModal = ({
                               forceDialCode={ true }
                               name={ "emergency_c_phone" }
                               onChange={(e) => onChange("emergency_c_phone", e)}
-                              disabled={editable}
+                              disabled={isDisabled}
                               error={!!validation?.emergency_c_phone}
                               helperText={validation?.emergency_c_phone?.[0]}
                               required
@@ -456,7 +460,7 @@ const EditPassengerModal = ({
                                 <Select
                                     value={passenger?.payment_method || ""}
                                     onChange={(e) => onChange("payment_method", e.target.value)}
-                                    disabled={editable}
+                                    disabled={disabledByDesign}
                                     required
                                     error={!!validation?.payment_method}
                                     helperText={validation?.payment_method?.[0]}
@@ -477,7 +481,7 @@ const EditPassengerModal = ({
                                         size="small"
                                         checked={passenger?.confirmed_booking_email || false}
                                         onChange={(e) => onChange("confirmed_booking_email", e.target.checked)}
-                                        disabled={editable}
+                                        disabled={disabledByDesign}
                                     />
                                 }
                                 label="Confirmed booking email"
@@ -490,7 +494,7 @@ const EditPassengerModal = ({
                                         size="small"
                                         checked={passenger?.terms_n_cons || isLeadPassenger === false}
                                         onChange={(e) => onChange("terms_n_cons", e.target.checked)}
-                                        disabled={editable}
+                                        disabled={disabledByDesign}
                                     />
                                 }
                                 label="Terms"
@@ -506,7 +510,7 @@ const EditPassengerModal = ({
                                 size="small"
                                 value={passenger?.special_request || ""}
                                 onChange={(e) => onChange("special_request", e.target.value)}
-                                disabled={editable}
+                                disabled={disabledByDesign}
                             />
                         </Grid>
                         <Grid item xs={12} md={2}>
@@ -516,7 +520,7 @@ const EditPassengerModal = ({
                                         size="small"
                                         checked={passenger?.newsletter || false}
                                         onChange={(e) => onChange("newsletter", e.target.checked)}
-                                        disabled={editable}
+                                        disabled={disabledByDesign}
                                     />
                                 }
                                 label="Newsletter"
@@ -529,7 +533,7 @@ const EditPassengerModal = ({
                                         size="small"
                                         checked={passenger?.travel_info || false}
                                         onChange={(e) => onChange("travel_info", e.target.checked)}
-                                        disabled={editable}
+                                        disabled={disabledByDesign}
                                     />
                                 }
                                 label="Travel Info"
@@ -544,7 +548,7 @@ const EditPassengerModal = ({
                                                 size="small"
                                                 checked={passenger?.single_t_agreement || false}
                                                 onChange={(e) => onChange("single_t_agreement", e.target.checked)}
-                                                disabled={editable}
+                                                disabled={disabledByDesign}
                                             />
 
                                     }
@@ -559,7 +563,7 @@ const EditPassengerModal = ({
                                         size="small"
                                         checked={passenger?.cabin_conf_accp || isLeadPassenger === false}
                                         onChange={(e) => onChange("cabin_conf_accp", e.target.checked)}
-                                        disabled={editable}
+                                        disabled={disabledByDesign}
                                     />
                                 }
                                 label="CCA"
@@ -572,7 +576,7 @@ const EditPassengerModal = ({
                                         size="small"
                                         checked={passenger?.was_on_board || false}
                                         onChange={(e) => onChange("was_on_board", e.target.checked)}
-                                        disabled={editable}
+                                        disabled={disabledByDesign}
                                     />
                                 }
                                 label="WOB"
@@ -584,9 +588,9 @@ const EditPassengerModal = ({
 
                     <Box mt={2} display="flex" justifyContent="space-between">
                         <Box display="flex" gap={1}>
-                            {!isLeadPassenger && canEdit && (
+                            {!disabledByDesign && (
                                 <>
-                                    <LoadingButton loading={savingLoading} variant="outlined" color="primary" onClick={onSave}  disabled={editable}>
+                                    <LoadingButton loading={savingLoading} variant="outlined" color="primary" onClick={onSave}  disabled={disabledByDesign}>
                                         Save Changes
                                     </LoadingButton>
                                     {canReset && (<LoadingButton loading={releaseLoading} variant="outlined" color="error" onClick={onDelete} disabled={editable}>
@@ -595,11 +599,27 @@ const EditPassengerModal = ({
                                 </>
                             )}
                         </Box>
-                        <Button variant="outlined" color="secondary" onClick={onClose}>
-                            {isLeadPassenger || !canEdit ? "Close" : "Cancel"}
-                        </Button>
+                        <Box display="flex" gap={1}>
+                            {passenger?.survivor_number && !disabledByDesign && (
+                                <a
+                                    href={route('customers.editBySurvivorNumber', {survivorNumber: passenger.survivor_number})}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ textDecoration: 'none' }}
+                                >
+                                    <Button
+                                        variant="outlined"
+                                        color="warning"
+                                    >
+                                        Edit Customer
+                                    </Button>
+                                </a>
+                            )}
+                            <Button variant="outlined" color="secondary" onClick={onClose}>
+                                {disabledByDesign ? "Close" : "Cancel"}
+                            </Button>
+                        </Box>
                     </Box>
-
                 </Paper>
             </Modal>
         </>

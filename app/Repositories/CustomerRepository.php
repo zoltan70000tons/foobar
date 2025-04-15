@@ -62,6 +62,10 @@
           $user->email = $request->input('email');
         }
 
+        if ($request->filled('username')) {
+          $user->username = $request->input('username');
+        }
+
         if ($request->filled('gender')) {
           $user->detail->gender = $request->input('gender');
         }
