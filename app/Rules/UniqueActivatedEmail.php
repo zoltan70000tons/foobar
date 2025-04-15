@@ -25,7 +25,7 @@ class UniqueActivatedEmail implements ValidationRule
             ->exists();
 
         if ($exists) {
-          $fail(__('validation.unique_activated_email'));
+          $fail(Lang::get('validation.unique_activated_email'));
         }
     }
 }
