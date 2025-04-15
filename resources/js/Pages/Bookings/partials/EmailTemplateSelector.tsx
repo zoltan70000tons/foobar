@@ -40,6 +40,11 @@ interface EmailTemplateEditorProps {
   editMode: boolean;
 }
 
+interface Passenger {
+  id: number;
+  email: string;
+}
+
 const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, editMode }) => {
   const [lang, setLang] = useState<string>("en");
   const [templates, setTemplates] = useState<string[]>([]);
@@ -52,7 +57,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [subject, setSubject] = useState<string>("");
-  const [selectedPassenger, setSelectedPassenger] = useState<string>("");
+  const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(null);
   const [isCheckboxEnabled, setIsCheckboxEnabled] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -207,10 +212,8 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       formData.append("booking_id", booking.id);
       formData.append("template_id", selectedTemplate.id);
       formData.append("subject", subject)
-      // formData.append("single_email", isCheckboxEnabled ? 1 : 0);
-      // if (isCheckboxEnabled) {
-      //   formData.append("passenger_id", selectedPassenger.id);
-      // }
+      formData.append("selected_email", selectedPassenger.email);
+      formData.append("selected_pass_id", selectedPassenger.id);
       attachments.forEach((file) => formData.append("attachments[]", file));
       formData.append("booking_pdf", pdfFile ? 1 : 0);
       formData.append("booking_image", imgFile ? 1 : 0);
@@ -223,7 +226,9 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
           method: "POST",
           headers: { "X-CSRF-TOKEN": getCsrfToken() },
           body: formData,
+          credentials: "include"
         });
+
         const data = await response.json();
         if (data.success) {
           showSnackbar("Email sent successfully!", "success");
@@ -296,24 +301,6 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             />
           )}
         </Grid>
-        <Grid item xs={2}>
-          <FormControlLabel
-            disabled={canSendEmail}
-            control={
-              <Checkbox
-                checked={isCheckboxEnabled}
-                onChange={(e) => {
-                  setIsCheckboxEnabled(e.target.checked);
-                  if (!e.target.checked) {
-                    setSelectedPassenger("");
-                  }
-                }}
-              />
-            }
-            label="Passenger Selector"
-          />
-        </Grid>
-        
           <Grid item xs={4}>
             {isSending ? (
               <CircularProgress />
@@ -321,10 +308,10 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
               <Select
                 size="small"
                 disabled={canSendEmail}
-                value={selectedPassenger ? JSON.stringify(selectedPassenger) : ""}
+                value={selectedPassenger ? JSON.stringify(selectedPassenger) : ''}
                 onChange={(e) => {
                   const selectedObject = JSON.parse(e.target.value);
-                  setSelectedPassenger(selectedObject);
+                  setSelectedPassenger({id: selectedObject.id, email: selectedObject.email});
                 }}
                 displayEmpty
                 fullWidth
@@ -333,7 +320,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
                   Select Passenger
                 </MenuItem>
                 {booking.passengers.map((passenger) => (
-                  <MenuItem key={passenger.id} value={JSON.stringify(passenger)}>
+                  <MenuItem key={passenger.id} value={JSON.stringify({id: passenger.id, email: passenger.email})}>
                     {passenger.email}
                   </MenuItem>
                 ))}
@@ -351,7 +338,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             fullWidth
             style={{ height: '40px' }}
             startIcon={<EditIcon />}
-            disabled={canSendEmail || !selectedTemplate}
+            disabled={canSendEmail || !selectedTemplate || !selectedPassenger}
           >
             Edit & Send
           </Button>
