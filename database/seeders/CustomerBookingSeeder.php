@@ -102,7 +102,7 @@ class CustomerBookingSeeder extends Seeder
           'language' => $language,
           'phone' => str_replace(' ', '', $record['Pax Phone']) ?? null,
           'emergency_c_name' => $record['Pax Emergency Contact'] ?? null,
-          'emergency_c_phone' => str_replace(' ', '', $record['Pax Phone']) ?? null,
+          'emergency_c_phone' => str_replace(' ', '', $record['Pax Emergency Phone']) ?? null,
           'created_at' => Carbon::now(),
           'updated_at' => Carbon::now(),
         ]);
@@ -198,7 +198,7 @@ class CustomerBookingSeeder extends Seeder
                   'phone' => str_replace(' ', '', $record['Pax Phone']) ?? null,
                   'email' => $record['Pax eMail'] ?? null,
                   'emergency_c_name' => $record['Pax Emergency Contact'] ?? null,
-                  'emergency_c_phone' => str_replace(' ', '', $record['Pax Phone']) ?? null,
+                  'emergency_c_phone' => str_replace(' ', '', $record['Pax Emergency Phone']) ?? null,
                   'address_first' => $record['Pax Address Line'],
                   'address_second' => $record['Pax Address Line2'] ?? null,
                   'city' => $record['Pax City'],
