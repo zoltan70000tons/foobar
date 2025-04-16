@@ -217,7 +217,7 @@ const Index = ({
         ),
       },
       {
-        header: "Payment Due",
+        header: "Next Payment",
         accessor: "longestDueDateInstallment",
         sortable: true,
         draw: (row: { longestDueDateInstallment?: string | null }) => {
@@ -237,20 +237,21 @@ const Index = ({
           const fiveDaysFromNow = new Date(today);
           fiveDaysFromNow.setDate(today.getDate() + 5);
 
-          let backgroundColor = "transparent";
+          let status: 'default' | 'success' | 'warning' | 'error' = "default"; // Default color
 
           if (longestDueDate > twentyFiveDaysFromNow) {
-            backgroundColor = "green";
+            status = "success";
           } else if (longestDueDate > oneDayFromNow && longestDueDate <= fiveDaysFromNow) {
-            backgroundColor = "yellow";
+            status = "warning";
           } else if (longestDueDate <= today) {
-            backgroundColor = "red";
+            status = "error";
           }
 
           return (
-            <div style={{ backgroundColor: backgroundColor }}>
-              {row?.longestDueDateInstallment}
-            </div>
+            <Chip
+            label={row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'No date'}
+            color={status} 
+            />
           );
         },
       },
@@ -343,7 +344,7 @@ const Index = ({
                 )}
               </div>
               {row?.editingUsername && (
-                <Typography variant="div" color="textSecondary">Being viewed by {row.editingUsername}</Typography>
+                <Box component="small" sx={{width: "10px"}} color="warning.main">Being used by {row.editingUsername}</Box>
               )}
             </>
           );
