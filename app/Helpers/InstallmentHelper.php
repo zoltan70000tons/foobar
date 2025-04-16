@@ -24,6 +24,6 @@ class InstallmentHelper
             ->sort()
             ->first();
 
-        return $oldestDate->toDateString();
+        return $oldestDate?->toDateString();
     }
 }
