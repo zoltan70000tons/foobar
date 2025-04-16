@@ -126,14 +126,9 @@ class EmailController extends Controller
             'lang' => 'required|string|in:en,es,de',
             'template_id' => 'required|integer',
             'booking_id' => 'required|integer',
-            'single_email' => 'required|boolean',
-            'passenger_id' => 'required_if:single_email,true|integer',
+            'passenger_id' => 'required|integer',
         ])->validate();
-
-        $passenger = null;
-        if ($validated['single_email'] == '1') {
-            $passenger = Passenger::find($validated['passenger_id']);
-        }
+        $passenger = Passenger::find($validated['passenger_id']);
 
         $htmlContent = $this->emailTemplateService->getProcessedTemplate(
             $validated['booking_id'],
@@ -177,15 +172,32 @@ class EmailController extends Controller
 
     //for testing
 
-    // public function showEmail(Request $request)
-    // {
+    public function showEmail(Request $request)
+    {
     //   $booking_id = $request->input('id');
+    //   $passenger_id = $request->input('passenger_id');
     //   $booking = Booking::find($booking_id);
+    //   $passenger = Passenger::find($passenger_id);
+    //   if (!$booking || !$passenger) {
+    //       return response()->json(['error' => 'Booking or Passenger not found'], 404);
+    //   }
     //   $service = new PDFService();
     //    $pdf = $service->generateBookingConfirmationPDF($booking);
     //    $pdf->setPaper('letter', 'potrait');
     //    return $pdf->stream();
-    // }
+
+        // $htmlContent = $this->emailTemplateService->getProcessedTemplate(
+        //     $booking_id,
+        //     77,
+        //     $passenger,
+        //     []
+        // );
+        // if (!$htmlContent) {
+        //     return response()->json(['error' => 'Template not found'], 404);
+        // }
+        // echo $htmlContent;
+        //return response()->json(['html' => $htmlContent]);
+    }
 
     public function generateBookingPDF(Request $request)
     {

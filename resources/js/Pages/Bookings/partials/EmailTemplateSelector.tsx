@@ -119,7 +119,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
 
     try {
       const response = await fetch(
-        `/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}&single_email=${isCheckboxEnabled ? 1 : 0}` +
+        `/get-email-template?lang=${lang}&template_id=${selectedTemplate.id}&booking_id=${booking.id}` +
         `${selectedPassenger?.id ? `&passenger_id=${selectedPassenger.id}` : ''}`
       );
 

@@ -89,7 +89,7 @@ class EmailTemplateService
         $installmentStatus = '';
         $nextInstallmentAmount = '';
         $nextInstallmentDate = '';
-
+    
         if ($passenger) {
             if ($booking->payment_plan == 'PAY_IN_FULL') {
                 $paymentData = $passenger->getFullPaymentStatus();
