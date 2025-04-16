@@ -9,7 +9,6 @@ use App\Http\Controllers\DeletedController;
 use App\Http\Controllers\ContactFormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\MailTestController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotAllowedController;
 use App\Http\Controllers\Permission\PermissionController;
