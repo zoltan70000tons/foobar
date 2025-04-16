@@ -174,25 +174,42 @@ class BookingRepository implements BookingInterface
       });
     }
 
-    if (!empty($sortKey) && $sortKey !== 'longestDueDateInstallment') {
+    $advancedSorts = ['longestDueDateInstallment', 'cabinType', 'fullName'];
+
+    if (!empty($sortKey) && !in_array($sortKey, $advancedSorts)) {
       $query->orderBy($sortKey, $sortDirection ?? 'desc');
     }
 
     $results = $query->get();
 
-    if ($sortKey === 'longestDueDateInstallment') {
-        $results = $results->sortBy(function ($booking) {
+    if (in_array($sortKey, $advancedSorts)) {
+      switch ($sortKey) {
+        case 'longestDueDateInstallment':
+          $results = $results->sortBy(function ($booking) {
+            $firstUnpaidInstallmentDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
 
-        $firstUnpaidInstallmentDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+            return $firstUnpaidInstallmentDate ? Carbon::parse($firstUnpaidInstallmentDate) : Carbon::now()->addYears(1000);
+          });
+          break;
+        case 'cabinType':
+          $results = $results->sortBy(function ($booking) {
+            return $booking?->cabin?->cabinType?->id;
+          });
+          break;
+        case 'fullName':
+          $results = $results->sortBy(function ($booking) {
+            $lpax = $booking->passengers->firstWhere('passenger_order', 1);
 
-        return $firstUnpaidInstallmentDate ? Carbon::parse($firstUnpaidInstallmentDate) : Carbon::now()->addYears(1000);
-      });
-
-      if ($sortDirection === 'desc') {
-        $results = $results->reverse();  // Reverses the collection for descending order
+            return $lpax->first_name;
+          });
+          break;
       }
 
-      $results = $results->values();  // Re-index the collection after sorting
+      if ($sortDirection === 'desc') {
+        $results = $results->reverse();
+      }
+
+      $results = $results->values();
     }
 
     $currentPage = request()->get('page', 1);
