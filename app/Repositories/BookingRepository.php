@@ -9,6 +9,7 @@ use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Services\PaymentInfoService;
 use App\Traits\CabinFilter;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -120,7 +121,6 @@ class BookingRepository implements BookingInterface
       $tags =[]
   )
   {
-
     $query = Booking::with([
       'cabin',
       'cabin.cabinType',
@@ -172,15 +172,45 @@ class BookingRepository implements BookingInterface
               $q->orWhereJsonContains('tags', $tag);
           }
       });
-  }
+    }
 
-    if (!empty($sortKey)) {
+    if (!empty($sortKey) && $sortKey !== 'longestDueDateInstallment') {
       $query->orderBy($sortKey, $sortDirection ?? 'desc');
     }
 
-    $results = $query->paginate($perPage);
+    $results = $query->get();
 
-    $results->each(function ($booking, $index) {
+    if ($sortKey === 'longestDueDateInstallment') {
+        $results = $results->sortBy(function ($booking) {
+
+        $firstUnpaidInstallmentDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+
+        return $firstUnpaidInstallmentDate ? Carbon::parse($firstUnpaidInstallmentDate) : Carbon::now()->addYears(1000);
+      });
+
+      if ($sortDirection === 'desc') {
+        $results = $results->reverse();  // Reverses the collection for descending order
+      }
+
+      $results = $results->values();  // Re-index the collection after sorting
+    }
+
+    $currentPage = request()->get('page', 1);
+
+    $offset = ($currentPage - 1) * $perPage;
+    $paginatedResults = $results->slice($offset, $perPage);
+
+    $total = $results->count();
+
+    $paginatedResults = new \Illuminate\Pagination\LengthAwarePaginator(
+      $paginatedResults,
+      $total,
+      $perPage,
+      $currentPage,
+      ['path' => request()->url(), 'query' => request()->query()]
+    );
+
+    $paginatedResults->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
 
@@ -203,7 +233,7 @@ class BookingRepository implements BookingInterface
       $booking->subRows = $booking->passengers ?? [];
     });
 
-    return $results;
+    return $paginatedResults;
   }
 
   function find($id)
