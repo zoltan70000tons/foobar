@@ -39,7 +39,7 @@ interface DataGridProps<T> {
     rowsPerPage: number,
     filters: { [key: string]: string },
     sort: { key: keyof T | string; direction: "asc" | "desc" },
-  ) => Promise<{ data: T[]; total: number }>;
+  ) => Promise<{ data: T[]; total: number | null | undefined }>;
   showCheckBox?: boolean;
   showSubCheckBox?: boolean;
   onApplyTags?: (subRowIds: (string | number)[], selectedTags: string[]) => void;
@@ -105,7 +105,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
     }
   }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
 
-  const dataArray = Array.isArray(data) ? data : Object.values(data);
+  const dataArray = Array.isArray(data) ? data : data ? Object.values(data) : [];
 
   const filteredData = dataArray.filter((row) => {
     return Object.keys(filters).every((key) => {
@@ -336,7 +336,15 @@ const MuiTable: FC<DataGridProps<any>> = ({
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={serverSidePagination ? totalCount : Array.isArray(data) ? data.length : Object.keys(data).length}
+        count={
+          serverSidePagination
+            ? totalCount ?? 0
+            : Array.isArray(data)
+              ? data.length
+              : data
+              ? Object.keys(data).length
+              : 0
+        }
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handlePageChange}
