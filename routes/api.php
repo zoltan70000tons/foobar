@@ -100,7 +100,6 @@ Route::middleware(['membership_sales'])->group(function () {
 
 Route::middleware([
   'auth:sanctum',
-  'team_context',
   'verified',
   'booking_status',
   'membership_sales',
