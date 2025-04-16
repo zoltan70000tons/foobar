@@ -17,12 +17,6 @@ class MembershipSales
 
   public function handle(Request $request, Closure $next): Response
   {
-    // return test error
-    return response()->json([
-      'status' => 500,
-      'message' => 'test error',
-    ]);
-
     $language = $request->query('language', 'en');
     $id = $request->route('id') ?? null;
 
