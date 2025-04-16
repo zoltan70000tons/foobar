@@ -256,11 +256,11 @@ const Index = ({
         },
       },
       {
-        header: "Booking code",
+        header: "Booking Code",
         accessor: "booking_code",
       },
       {
-        header: "Lead passenger",
+        header: "Lead Passenger",
         accessor: "fullName",
         sortable: true,
       },
@@ -308,7 +308,7 @@ const Index = ({
       ,
 
       {
-        header: "Assigned to",
+        header: "Assigned To",
         accessor: "agent_id",
         sortable: true,
         draw: (row: any) => {
