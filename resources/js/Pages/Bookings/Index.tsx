@@ -217,6 +217,45 @@ const Index = ({
         ),
       },
       {
+        header: "Next Payment",
+        accessor: "longestDueDateInstallment",
+        sortable: true,
+        draw: (row: { longestDueDateInstallment?: string | null }) => {
+          const today = new Date();
+          const longestDueDate = row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment) : null;
+
+          if (!longestDueDate) {
+            return <>-</>;
+          }
+
+          const twentyFiveDaysFromNow = new Date(today);
+          twentyFiveDaysFromNow.setDate(today.getDate() + 25);
+
+          const oneDayFromNow = new Date(today);
+          oneDayFromNow.setDate(today.getDate() + 1);
+
+          const fiveDaysFromNow = new Date(today);
+          fiveDaysFromNow.setDate(today.getDate() + 5);
+
+          let status: 'default' | 'success' | 'warning' | 'error' = "default"; // Default color
+
+          if (longestDueDate > twentyFiveDaysFromNow) {
+            status = "success";
+          } else if (longestDueDate > oneDayFromNow && longestDueDate <= fiveDaysFromNow) {
+            status = "warning";
+          } else if (longestDueDate <= today) {
+            status = "error";
+          }
+
+          return (
+            <Chip
+            label={row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'No date'}
+            color={status} 
+            />
+          );
+        },
+      },
+      {
         header: "Booking code",
         accessor: "booking_code",
       },
@@ -305,7 +344,7 @@ const Index = ({
                 )}
               </div>
               {row?.editingUsername && (
-                <Typography variant="div" color="textSecondary">Being viewed by {row.editingUsername}</Typography>
+                <Box component="small" sx={{width: "10px"}} color="warning.main">Being used by {row.editingUsername}</Box>
               )}
             </>
           );

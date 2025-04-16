@@ -213,7 +213,7 @@ const Row: FC<RowProps<any>> = ({
             <Checkbox checked={isSelected} onChange={onSelectRow} />
           </TableCell>
         )}
-        <TableCell>
+        <TableCell size="small">
           {subRows ? (
             <IconButton onClick={onToggle}>{isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}</IconButton>
           ) : null}

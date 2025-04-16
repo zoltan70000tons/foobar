@@ -222,7 +222,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
         </Box>
       )}
       <TableContainer>
-        <Table sx={{ tableLayout: "fixed", width: "100%" }}>
+        <Table sx={{ width: "100%" }}>
           <TableHead>
             {/* first row for headers */}
             <TableRow>
@@ -299,7 +299,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
                   <CircularProgress />
                 </TableCell>
               </TableRow>
-            ) : displayedData.length > 0 ? (
+            ) : displayedData?.length > 0 ? (
               displayedData.map((row) => (
                 <Row
                   key={row.id}

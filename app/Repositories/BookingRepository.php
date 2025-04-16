@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Enums\StatusCabin;
+use App\Helpers\InstallmentHelper;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
@@ -182,6 +183,9 @@ class BookingRepository implements BookingInterface
     $results->each(function ($booking, $index) {
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
+
+      $longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+      $booking->longestDueDateInstallment = $longestDueDateInstallment;
 
       $editingUsername = DB::table('booking_agent_sessions')
         ->where('booking_id', $booking->id)

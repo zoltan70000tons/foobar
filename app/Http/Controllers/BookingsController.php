@@ -23,6 +23,7 @@ use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
@@ -318,10 +319,13 @@ class BookingsController extends Controller
               }
             }
 
-            $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
+            DB::transaction(function () use ($adjustmentIds, $booking) {
+              $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
 
-            // Update the booking with the adjustments
-            $this->paymentInfoService->syncAllocatedCost($booking);
+              $booking->refresh();
+
+              $this->paymentInfoService->syncAllocatedCost($booking);
+            });
           }
         },
         $event_id,
