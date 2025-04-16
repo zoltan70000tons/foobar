@@ -1,16 +1,33 @@
 <?php
 
 use App\Models\User;
+use App\Models\UserDetail;
 use App\Models\Membership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\SurvivorNumber;
 use App\Helpers\CustomerHelper;
+use function Pest\Faker\fake;
 
 // test the user can
 test('periods sales customer type doesnt have access', function () {
   $user = User::factory()->create();
 
-  Membership::factory()->create([
+  UserDetail::create([
+    'user_id' => $user->id,
+    'gender' => fake()->randomElement(['M', 'F']),
+    'first_name' => strtoupper('TEST-' . fake()->firstname),
+    'middle_name' => strtoupper(fake()->firstName),
+    'last_name' => strtoupper(fake()->lastName),
+    'dob' => '1999-01-01',
+    'citizenship' => fake()->countryISOAlpha3(),
+    'phone' => fake()->e164PhoneNumber(),
+    'avatar' => fake()->imageUrl(),
+    'emergency_c_name' => fake()->name,
+    'emergency_c_phone' => fake()->e164PhoneNumber(),
+    'language' => fake()->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
+  ]);
+
+  Membership::create([
     'user_id' => $user->id,
     'membership_id' => 4,
   ]);
@@ -37,6 +54,8 @@ test('periods sales customer type doesnt have access', function () {
     'language' => 'en',
   ]);
 
+  $this->actingAs($user);
+
   $response->assertStatus(200);
 
   $response->assertOk();
@@ -46,16 +65,16 @@ test('periods sales customer type doesnt have access', function () {
   $response->assertStatus(200);
 
   $payload = [
-    'event_id' => '2',
-    'cabin_type' => 'shared-cabin',
-    'cabin_code' => '3AB',
-    'cabin_capacity' => 4,
-    'cabin_category' => 3,
-    'cabin_category_decks' => '5,6,7',
-    'cabin_full_title' => 'Deluxe Ocean View 3AB',
-    'cabin_category_type' => 'Ocean View',
-    'cabin_price' => '2499.00',
-    'single_t_agreement' => true,
+    'event_id' => '1',
+    'cabin_type' => 'private-cabin',
+    'cabin_code' => '2V',
+    'cabin_capacity' => 2,
+    'cabin_category' => 6,
+    'cabin_category_decks' => '2,3,6,7,8,9,10',
+    'cabin_full_title' => 'Standard Interior 2V',
+    'cabin_category_type' => 'Interior',
+    'cabin_price' => '2066.00',
+    'single_t_agreement' => false,
     'addons' => [
       [
         'id' => 15,
@@ -82,13 +101,16 @@ test('periods sales customer type doesnt have access', function () {
         'system' => true,
       ],
     ],
-    'reservation_id' => 2,
-    'reservation_timestamp' => '2025-04-14T12:00:00.000000Z',
+    'reservation_id' => null,
+    'reservation_timestamp' => null,
     'step' => 3,
-    'force_clear' => false,
+    'force_clear' => true,
   ];
 
   $response = $this->postJson('/api/cart', $payload);
 
-  $response->assertStatus(400);
+  // except "PRESALE_NO_ACCOUNT" message
+  $response->assertJson([
+    'message' => 'PRESALE_NO_ACCOUNT',
+  ]);
 });

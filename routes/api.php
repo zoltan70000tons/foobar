@@ -80,12 +80,12 @@ Route::middleware(['throttle:25,1', 'check_booking_session'])->group(function ()
   Route::post('/check-booking-logout', [CheckBookingController::class, 'logout']);
 });
 
-// --- CART ---
-Route::middleware(['throttle:40,1', 'one_booking_per_user'])->group(function () {
-  Route::post('/cart', [CartController::class, 'store']);
-  Route::put('/cart', [CartController::class, 'update']);
-  Route::delete('/cart', [CartController::class, 'destroy']);
-});
+// // --- CART ---
+// Route::middleware(['throttle:40,1', 'one_booking_per_user'])->group(function () {
+//   Route::post('/cart', [CartController::class, 'store']);
+//   Route::put('/cart', [CartController::class, 'update']);
+//   Route::delete('/cart', [CartController::class, 'destroy']);
+// });
 
 // --- GET CABINS ---
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
@@ -106,6 +106,11 @@ Route::middleware([
   'one_booking_per_user',
   'clear_expired_reservation',
 ])->group(function () {
+  // --- CART ---
+  Route::post('/cart', [CartController::class, 'store']);
+  Route::put('/cart', [CartController::class, 'update']);
+  Route::delete('/cart', [CartController::class, 'destroy']);
+
   // Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinDeck}', [CabinController::class, 'show']);
   Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [CabinController::class, 'show']);
 

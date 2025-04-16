@@ -40,6 +40,7 @@
     "opcodesio/log-viewer": "^3.14",
     "pestphp/pest": "^3.4",
     "pestphp/pest-plugin-drift": "^3.0",
+    "pestphp/pest-plugin-faker": "^3.0",
     "pestphp/pest-plugin-stressless": "^3.0"
   },
   "autoload": {
