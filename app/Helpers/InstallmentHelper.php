@@ -14,7 +14,7 @@ class InstallmentHelper
 
         foreach ($booking->passengers as $passenger) {
             $passengerInstallmentStatus = $passenger->getInstallmentStatus();
-            if (isArray($passengerInstallmentStatus['next_installment'])) {
+            if (is_array($passengerInstallmentStatus['next_installment'])) {
                 $longestDueDateInstallment[] = $passengerInstallmentStatus['next_installment']['due_date'];
             }
         }
