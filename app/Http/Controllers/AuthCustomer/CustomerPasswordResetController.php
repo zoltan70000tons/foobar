@@ -34,7 +34,7 @@ class CustomerPasswordResetController extends Controller
   {
     $request->validate([
       'email' => 'required|email',
-      'language' => 'sometimes|string|in:en,es,fr', // Add supported languages
+      'language' => 'sometimes|string|in:en,es,de', // Add supported languages
     ]);
 
     // Set the application locale if language is provided
