@@ -17,8 +17,8 @@ class MembershipSales
 
   public function handle(Request $request, Closure $next): Response
   {
-    $language = $request->query("language", "en");
-    $id = $request->route("id") ?? null;
+    $language = $request->query('language', 'en');
+    $id = $request->route('id') ?? ($request->get('event_id') ?? ($request->query('event_id') ?? null));
 
     // log cookies sended
     // Log::info("--- Incoming Request ---");
@@ -34,7 +34,7 @@ class MembershipSales
 
     // check if the Auth
     $user = Auth::check() ? Auth::user() : null;
-    $customer = $user && $user->hasRole("Customer") ? $user : null;
+    $customer = $user && $user->hasRole('Customer') ? $user : null;
 
     //Log::info("Customer: " . json_encode($customer));
 
@@ -46,10 +46,20 @@ class MembershipSales
 
     $access = $this->checkMembershipAccess($membership, null, $id);
 
+    if ($access['status'] === false) {
+      return response()->json(
+        [
+          'purchase_access' => $access['status'],
+          'access_message' => $access['message'] ?? null,
+        ],
+        403
+      );
+    }
+
     // Attach access information to the request
     $request->merge([
-      "purchase_access" => $access["status"],
-      "access_message" => $access["message"] ?? null,
+      'purchase_access' => $access['status'],
+      'access_message' => $access['message'] ?? null,
     ]);
 
     return $next($request);

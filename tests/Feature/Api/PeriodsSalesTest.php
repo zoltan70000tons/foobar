@@ -1,61 +1,76 @@
 <?php
 
 use App\Models\User;
+use App\Models\UserDetail;
 use App\Models\Membership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\SurvivorNumber;
 use App\Helpers\CustomerHelper;
+use function Pest\Faker\fake;
 
-// test the user can
-test('periods sales customer type doesnt have access', function () {
+// --- SCHEMA
+// USER
+function setupTestCustomerWithMembership(int $membershipId = 4): User
+{
   $user = User::factory()->create();
 
-  Membership::factory()->create([
+  UserDetail::create([
     'user_id' => $user->id,
-    'membership_id' => 4,
+    'gender' => fake()->randomElement(['M', 'F']),
+    'first_name' => strtoupper('TEST-' . fake()->firstname),
+    'middle_name' => strtoupper(fake()->firstName),
+    'last_name' => strtoupper(fake()->lastName),
+    'dob' => '1999-01-01',
+    'citizenship' => fake()->countryISOAlpha3(),
+    'phone' => fake()->e164PhoneNumber(),
+    'avatar' => fake()->imageUrl(),
+    'emergency_c_name' => fake()->name,
+    'emergency_c_phone' => fake()->e164PhoneNumber(),
+    'language' => fake()->randomElement(['es', 'de', 'en']),
   ]);
 
-  $this->withHeaders([
-    'referer' => env('SANCTUM_STATEFUL_DOMAINS'),
+  Membership::create([
+    'user_id' => $user->id,
+    'membership_id' => $membershipId,
   ]);
 
   setPermissionsTeamId(1);
   $user->assignRole('Customer');
 
-  // Generate a unique survivor number
   $survivorNumber = CustomerHelper::generateSurvivorNumber();
-
-  // Save survivor number in the survivor_numbers table
   SurvivorNumber::create([
     'user_id' => $user->id,
     'survivor_number' => $survivorNumber,
   ]);
 
-  $response = $this->postJson('/api/login-customer', [
-    'identifier' => $user->survivorNumber->survivor_number,
+  test()->withHeaders(['referer' => env('SANCTUM_STATEFUL_DOMAINS')]);
+
+  $response = test()->postJson('/api/login-customer', [
+    'identifier' => $survivorNumber,
     'password' => 'password',
     'language' => 'en',
   ]);
 
-  $response->assertStatus(200);
-
+  test()->actingAs($user);
   $response->assertOk();
 
-  $response = $this->getJson('/api/events/1');
+  return $user;
+}
 
-  $response->assertStatus(200);
-
-  $payload = [
-    'event_id' => '2',
-    'cabin_type' => 'shared-cabin',
-    'cabin_code' => '3AB',
-    'cabin_capacity' => 4,
-    'cabin_category' => 3,
-    'cabin_category_decks' => '5,6,7',
-    'cabin_full_title' => 'Deluxe Ocean View 3AB',
-    'cabin_category_type' => 'Ocean View',
-    'cabin_price' => '2499.00',
-    'single_t_agreement' => true,
+// CART
+function baseCartPayload(): array
+{
+  return [
+    'event_id' => '1',
+    'cabin_type' => 'private-cabin',
+    'cabin_code' => '2V',
+    'cabin_capacity' => 2,
+    'cabin_category' => 6,
+    'cabin_category_decks' => '2,3,6,7,8,9,10',
+    'cabin_full_title' => 'Standard Interior 2V',
+    'cabin_category_type' => 'Interior',
+    'cabin_price' => '2066.00',
+    'single_t_agreement' => false,
     'addons' => [
       [
         'id' => 15,
@@ -63,10 +78,7 @@ test('periods sales customer type doesnt have access', function () {
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => '150.00',
-        'restrictions' => null,
         'event_id' => 2,
-        'created_at' => '2025-04-14T10:00:00.000000Z',
-        'updated_at' => '2025-04-14T10:00:00.000000Z',
         'system' => true,
       ],
       [
@@ -75,20 +87,61 @@ test('periods sales customer type doesnt have access', function () {
         'type' => 'DISCOUNT',
         'operation' => 'PERCENTAGE',
         'value' => '10.00',
-        'restrictions' => null,
         'event_id' => 2,
-        'created_at' => '2025-04-14T10:00:00.000000Z',
-        'updated_at' => '2025-04-14T10:00:00.000000Z',
         'system' => true,
       ],
     ],
-    'reservation_id' => 2,
-    'reservation_timestamp' => '2025-04-14T12:00:00.000000Z',
+    'reservation_id' => null,
+    'reservation_timestamp' => null,
     'step' => 3,
-    'force_clear' => false,
+    'force_clear' => true,
   ];
+}
 
-  $response = $this->postJson('/api/cart', $payload);
+// ---------------- test the user can not post to cart
+test('user with no access cannot post to cart', function () {
+  setupTestCustomerWithMembership(4);
 
-  $response->assertStatus(400);
+  $response = $this->postJson('/api/cart', baseCartPayload());
+
+  $response->assertJson([
+    'access_message' => [
+      'code' => 'NO_MEMBERSHIP_ACCESS',
+    ],
+  ]);
+});
+
+// ---------------- test the user can not update cart
+test('user with no access cannot update cart', function () {
+  setupTestCustomerWithMembership(4);
+
+  $response = $this->putJson('/api/cart', baseCartPayload());
+
+  $response->assertJson([
+    'access_message' => [
+      'code' => 'NO_MEMBERSHIP_ACCESS',
+    ],
+  ]);
+});
+
+// ---------------- test the user can not delete cart
+test('user with no access cannot delete cart', function () {
+  setupTestCustomerWithMembership(4);
+
+  $response = $this->deleteJson('/api/cart?event_id=1');
+
+  $response->assertJson([
+    'access_message' => [
+      'code' => 'NO_MEMBERSHIP_ACCESS',
+    ],
+  ]);
+});
+
+// ---------------- test the user CAN get card without access
+test('user with no access can get cart', function () {
+  setupTestCustomerWithMembership(4);
+
+  $response = $this->getJson('/api/cart/1');
+
+  $response->assertOk();
 });
