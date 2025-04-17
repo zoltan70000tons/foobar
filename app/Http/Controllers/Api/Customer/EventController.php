@@ -7,9 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Facades\App;
 use Carbon\Carbon;
+use App\Traits\MembershipAccess;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
+  use MembershipAccess;
+
   /**
    * Show only events that are in pre-sale or public status
    *
@@ -78,15 +82,27 @@ class EventController extends Controller
     }
 
     // Get purchase access information from the request
-    $purchaseAccess = $request->get('purchase_access', false);
-    $accessMessage = $request->get('access_message', '');
+    // $purchaseAccess = $request->get('purchase_access', false);
+    // $accessMessage = $request->get('access_message', '');
+
+    // check if the Auth
+    $user = Auth::check() ? Auth::user() : null;
+    $customer = $user && $user->hasRole('Customer') ? $user : null;
+
+    $membership = null;
+
+    if ($customer) {
+      $membership = $customer->membershipTypes->first() ?? null;
+    }
+
+    $access = $this->checkMembershipAccess($membership, null, $id);
 
     return response()->json([
       'status' => 200,
       'event_status' => $event->status,
       'event' => $event,
-      'purchase_access' => $purchaseAccess,
-      'access_message' => $accessMessage,
+      'purchase_access' => $access['status'],
+      'access_message' => $access['message'] ?? null,
     ]);
   }
 }

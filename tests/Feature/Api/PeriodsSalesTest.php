@@ -8,8 +8,10 @@ use App\Models\SurvivorNumber;
 use App\Helpers\CustomerHelper;
 use function Pest\Faker\fake;
 
-// test the user can
-test('periods sales customer type doesnt have access', function () {
+// --- SCHEMA
+// USER
+function setupTestCustomerWithMembership(int $membershipId = 4): User
+{
   $user = User::factory()->create();
 
   UserDetail::create([
@@ -24,47 +26,41 @@ test('periods sales customer type doesnt have access', function () {
     'avatar' => fake()->imageUrl(),
     'emergency_c_name' => fake()->name,
     'emergency_c_phone' => fake()->e164PhoneNumber(),
-    'language' => fake()->randomElement(['es', 'de', 'en']), // Only ESP, DEU, or ENG
+    'language' => fake()->randomElement(['es', 'de', 'en']),
   ]);
 
   Membership::create([
     'user_id' => $user->id,
-    'membership_id' => 4,
-  ]);
-
-  $this->withHeaders([
-    'referer' => env('SANCTUM_STATEFUL_DOMAINS'),
+    'membership_id' => $membershipId,
   ]);
 
   setPermissionsTeamId(1);
   $user->assignRole('Customer');
 
-  // Generate a unique survivor number
   $survivorNumber = CustomerHelper::generateSurvivorNumber();
-
-  // Save survivor number in the survivor_numbers table
   SurvivorNumber::create([
     'user_id' => $user->id,
     'survivor_number' => $survivorNumber,
   ]);
 
-  $response = $this->postJson('/api/login-customer', [
-    'identifier' => $user->survivorNumber->survivor_number,
+  test()->withHeaders(['referer' => env('SANCTUM_STATEFUL_DOMAINS')]);
+
+  $response = test()->postJson('/api/login-customer', [
+    'identifier' => $survivorNumber,
     'password' => 'password',
     'language' => 'en',
   ]);
 
-  $this->actingAs($user);
-
-  $response->assertStatus(200);
-
+  test()->actingAs($user);
   $response->assertOk();
 
-  $response = $this->getJson('/api/events/1');
+  return $user;
+}
 
-  $response->assertStatus(200);
-
-  $payload = [
+// CART
+function baseCartPayload(): array
+{
+  return [
     'event_id' => '1',
     'cabin_type' => 'private-cabin',
     'cabin_code' => '2V',
@@ -82,10 +78,7 @@ test('periods sales customer type doesnt have access', function () {
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => '150.00',
-        'restrictions' => null,
         'event_id' => 2,
-        'created_at' => '2025-04-14T10:00:00.000000Z',
-        'updated_at' => '2025-04-14T10:00:00.000000Z',
         'system' => true,
       ],
       [
@@ -94,10 +87,7 @@ test('periods sales customer type doesnt have access', function () {
         'type' => 'DISCOUNT',
         'operation' => 'PERCENTAGE',
         'value' => '10.00',
-        'restrictions' => null,
         'event_id' => 2,
-        'created_at' => '2025-04-14T10:00:00.000000Z',
-        'updated_at' => '2025-04-14T10:00:00.000000Z',
         'system' => true,
       ],
     ],
@@ -106,11 +96,52 @@ test('periods sales customer type doesnt have access', function () {
     'step' => 3,
     'force_clear' => true,
   ];
+}
 
-  $response = $this->postJson('/api/cart', $payload);
+// ---------------- test the user can not post to cart
+test('user with no access cannot post to cart', function () {
+  setupTestCustomerWithMembership(4);
 
-  // except "PRESALE_NO_ACCOUNT" message
+  $response = $this->postJson('/api/cart', baseCartPayload());
+
   $response->assertJson([
-    'message' => 'PRESALE_NO_ACCOUNT',
+    'access_message' => [
+      'code' => 'NO_MEMBERSHIP_ACCESS',
+    ],
   ]);
+});
+
+// ---------------- test the user can not update cart
+test('user with no access cannot update cart', function () {
+  setupTestCustomerWithMembership(4);
+
+  $response = $this->putJson('/api/cart', baseCartPayload());
+
+  $response->assertJson([
+    'access_message' => [
+      'code' => 'NO_MEMBERSHIP_ACCESS',
+    ],
+  ]);
+});
+
+// ---------------- test the user can not delete cart
+test('user with no access cannot delete cart', function () {
+  setupTestCustomerWithMembership(4);
+
+  $response = $this->deleteJson('/api/cart?event_id=1');
+
+  $response->assertJson([
+    'access_message' => [
+      'code' => 'NO_MEMBERSHIP_ACCESS',
+    ],
+  ]);
+});
+
+// ---------------- test the user CAN get card without access
+test('user with no access can get cart', function () {
+  setupTestCustomerWithMembership(4);
+
+  $response = $this->getJson('/api/cart/1');
+
+  $response->assertOk();
 });
