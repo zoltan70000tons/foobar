@@ -248,7 +248,7 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
         accessor: 'cruise_id',
       },
       {
-        header: 'Event Id',
+        header: 'Event ID',
         accessor: 'event_id',
       },
 

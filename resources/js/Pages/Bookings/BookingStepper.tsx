@@ -336,7 +336,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
         showSnackbar(response.data.error, 'error');
       }
       if (response?.data?.cabins.length === 0) {
-        showSnackbar('No available cabins for this category o filters', 'error');
+        showSnackbar('Unavailable cabins for this category or filters', 'error');
       }
       const decks = Array.isArray(response?.data?.cabins)
         ? [...new Set(response.data.cabins.map(cabin => cabin.deck))]
@@ -498,10 +498,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                       setIsSingleRoom(newValue?.cabin_type_id !== 1);
                       setCabinNumber(newValue?.cabin_number || null);
                     }}
-                    renderInput={(params) => <TextField {...params} label="Available Cabins" disabled={!cabinType || !cabinCategory} />}
+                    renderInput={(params) => <TextField {...params} label="Available Cabins" disabled={!cabinType || !cabinCategory || !availableCabins?.length} />}
                     loading={fetching}
                     loadingText="Loading cabins..."
-                    disabled={!cabinType || !cabinCategory}
+                    disabled={!cabinType || !cabinCategory || !availableCabins?.length}
                   />
                 </FormControl>
               </Grid>
