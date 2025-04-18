@@ -80,6 +80,8 @@ class CabinController extends Controller
   | Reserve a specific cabin for the user.
   |--------------------------------------------------------------------------
   |
+  |  ONLY FOR PRIVATE CABINS !!!
+  |
   |  User select a specific cabin.
   |
   |  If user have a reservation, and he want to create new.
@@ -100,6 +102,11 @@ class CabinController extends Controller
 
     $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
+
+    // if cabin type id is not 1, return error
+    if ($cabinTypeId !== 1) {
+      return response()->json(['message' => 'Option available only for private cabin'], 400);
+    }
 
     // ------- If user have a reservation, and he want to create new.
     if ($cart && $reservationId) {
