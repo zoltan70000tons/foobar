@@ -474,7 +474,7 @@ class Passenger extends Model
       $status = 'PARTIALLY_PAID';
     }
     return [
-      'due_date' => $this->booking->created_at,
+      'due_date' => $this->booking->created_at->format('Y-m-d'),
       'amount' => $totalPaid,
       'remaining_amount' => $remainingAmount,
       'status' => $status,

@@ -27,6 +27,8 @@ class SendEmailJob implements ShouldQueue
   protected $ticketContract;
   protected $emailContent;
   protected $subject;
+  protected $to;
+
 
   /**
    * Create a new job instance.
@@ -42,6 +44,7 @@ class SendEmailJob implements ShouldQueue
     bool $ticketContract = false,
     string $emailContent,
     string $subject,
+    array $to =[],
   ) {
     $this->templateId = $templateId;
     $this->booking = $booking;
@@ -53,6 +56,7 @@ class SendEmailJob implements ShouldQueue
     $this->ticketContract = $ticketContract;
     $this->emailContent = $emailContent;
     $this->subject = $subject;
+    $this->to = $to;
   }
 
   /**
@@ -138,7 +142,7 @@ class SendEmailJob implements ShouldQueue
       // sending email
       Mail::send([], [], function ($message) use ($subject, $content) {
         $message
-          ->to($this->passenger->email)
+          ->to($this->to)
           ->subject($subject)
           ->html($content);
 

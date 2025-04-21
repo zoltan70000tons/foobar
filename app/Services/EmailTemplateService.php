@@ -86,17 +86,23 @@ class EmailTemplateService
         $event = $booking->event;
         $cabin = $booking->cabin;
 
-        $installmentStatus = false;
-        $nextInstallmentAmount = false;
-        $nextInstallmentDate = false;
-        
+        $installmentStatus = '';
+        $nextInstallmentAmount = '';
+        $nextInstallmentDate = '';
+    
         if ($passenger) {
-            $installmentStatus = $passenger->installment_status;
-            $nextInstallmentAmount = $installmentStatus['next_installment']['amount_due'] ?? false;
-            $nextInstallmentDate = $installmentStatus['next_installment']['due_date'] ?? false;
+            if ($booking->payment_plan == 'PAY_IN_FULL') {
+                $paymentData = $passenger->getFullPaymentStatus();
+                $nextInstallmentAmount = $paymentData['amount'] ?? '';
+                $nextInstallmentDate = $paymentData['due_date'] ?? '';
+            } else {
+                $paymentData = $passenger->getInstallmentStatus();
+                $nextInstallmentAmount = $paymentData['next_installment']['amount_due'] ?? '';
+                $nextInstallmentDate = $paymentData['next_installment_date']['due_date'] ?? '';
+            }
         }
 
-        
+
         $values = [];
         foreach ($placeholders as $placeholder) {
             switch ($placeholder) {
@@ -152,13 +158,20 @@ class EmailTemplateService
     }
 
 
-    public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac =false, $emailContent = '', $subject = ''): bool
+    public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac = false, $emailContent = '', $subject = ''): bool
     {
         try {
             Log::info('Booking pdf sendMail: ' . json_encode($bookingPdf));
             Log::info('Event Image sendmail: ' . json_encode($eventImage));
             Log::info('TicketContract sendMail: ' . json_encode($ticketContrac));
-            SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac,$emailContent,$subject)
+
+            $to = $booking->passengers
+                ->pluck('email')
+                ->filter(fn($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
+                ->values()
+                ->toArray();
+            Log::info('sending email to: ' . json_encode($to));
+            SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac, $emailContent, $subject, $to)
                 ->onQueue('emails');
             return true;
         } catch (Exception $e) {

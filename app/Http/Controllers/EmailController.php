@@ -38,65 +38,53 @@ class EmailController extends Controller
             'event_id' => 'required|integer',
             'subject' => 'required|string',
             'booking_id' => 'required|integer|exists:bookings,id',
-            // 'single_email' => 'required|boolean',
-            // 'passenger_id' => 'required_if:single_email,true|integer',
+            'selected_email' => 'required|email',
+            'selected_pass_id' => 'required_if:selected_email,true|integer',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
             'booking_pdf' => 'required|boolean',
             'booking_image' => 'required|boolean'
         ]);
         try {
             return $this->withPermission(
-                [Permissions::ViewBookings,Permissions::SendEmail],
+                [Permissions::ViewBookings, Permissions::SendEmail],
                 function ($validated, $request) {
                     $booking = Booking::find($validated['booking_id']);
-                    $passengers = $booking->passengers;
                     $content = $validated['email_content'];
                     $subject = $validated['subject'];
                     $templateId = $validated['template_id'];
                     $preparedAttachments = [];
                     $pdf = $validated['booking_pdf'];
                     $image = $validated['booking_image'];
-                    foreach ($request->file('attachments', []) as $file) {
-                        $path = $file->store('temp_attachments');
-                        $preparedAttachments[] = [
-                            'path' => $path,
-                            'name' => $file->getClientOriginalName(),
-                            'original_name' => $file->getClientOriginalName(),
-                            'mime' => $file->getMimeType(),
-                        ];
-                    }
-                    // if ($validated['single_email'] == true) {
-                    //     $passenger = Passenger::find($validated['passenger_id']);
-                    //     $this->emailTemplateService->sendEmail(
-                    //         $templateId,
-                    //         $booking,
-                    //         $passenger,
-                    //         $preparedAttachments,
-                    //         [],
-                    //         $pdf,
-                    //         $image,
-                    //         false,
-                    //         $content,
-                    //         $subject
-                    //     );
-                    // } else {
-                        foreach ($passengers as $passenger) {
-                            $this->emailTemplateService->sendEmail(
-                                $templateId,
-                                $booking,
-                                $passenger,
-                                $preparedAttachments,
-                                [],
-                                $pdf,
-                                $image,
-                                false,
-                                $content,
-                                $subject
-                            );
+                    $passenger = Passenger::where('id', $validated['selected_pass_id'])
+                        ->where('email', '=', $validated['selected_email'])
+                        ->where('booking_id', $validated['booking_id'])
+                        ->first();
+                    if ($passenger) {
+                        foreach ($request->file('attachments', []) as $file) {
+                            $path = $file->store('temp_attachments');
+                            $preparedAttachments[] = [
+                                'path' => $path,
+                                'name' => $file->getClientOriginalName(),
+                                'original_name' => $file->getClientOriginalName(),
+                                'mime' => $file->getMimeType(),
+                            ];
                         }
-                    // }
-                    $this->saveBookingLog($booking->id, 'Email Sent to Costumers', $validated['subject']);
-                    return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
+                        $this->emailTemplateService->sendEmail(
+                            $templateId,
+                            $booking,
+                            $passenger,
+                            $preparedAttachments,
+                            [],
+                            $pdf,
+                            $image,
+                            false,
+                            $content,
+                            $subject
+                        );
+
+                        $this->saveBookingLog($booking->id, 'Email Sent to Costumers', $validated['subject']);
+                        return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
+                    }
                 },
                 $validated,
                 $request
@@ -138,14 +126,9 @@ class EmailController extends Controller
             'lang' => 'required|string|in:en,es,de',
             'template_id' => 'required|integer',
             'booking_id' => 'required|integer',
-            'single_email' => 'required|boolean',
-            'passenger_id' => 'required_if:single_email,true|integer',
+            'passenger_id' => 'required|integer',
         ])->validate();
-
-        $passenger = null;
-        if ($validated['single_email'] == '1') {
-            $passenger = Passenger::find($validated['passenger_id']);
-        }
+        $passenger = Passenger::find($validated['passenger_id']);
 
         $htmlContent = $this->emailTemplateService->getProcessedTemplate(
             $validated['booking_id'],
@@ -189,15 +172,32 @@ class EmailController extends Controller
 
     //for testing
 
-    // public function showEmail(Request $request)
-    // {
+    public function showEmail(Request $request)
+    {
     //   $booking_id = $request->input('id');
+    //   $passenger_id = $request->input('passenger_id');
     //   $booking = Booking::find($booking_id);
+    //   $passenger = Passenger::find($passenger_id);
+    //   if (!$booking || !$passenger) {
+    //       return response()->json(['error' => 'Booking or Passenger not found'], 404);
+    //   }
     //   $service = new PDFService();
     //    $pdf = $service->generateBookingConfirmationPDF($booking);
     //    $pdf->setPaper('letter', 'potrait');
     //    return $pdf->stream();
-    // }
+
+        // $htmlContent = $this->emailTemplateService->getProcessedTemplate(
+        //     $booking_id,
+        //     77,
+        //     $passenger,
+        //     []
+        // );
+        // if (!$htmlContent) {
+        //     return response()->json(['error' => 'Template not found'], 404);
+        // }
+        // echo $htmlContent;
+        //return response()->json(['html' => $htmlContent]);
+    }
 
     public function generateBookingPDF(Request $request)
     {
