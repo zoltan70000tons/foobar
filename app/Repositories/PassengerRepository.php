@@ -87,7 +87,7 @@ class PassengerRepository implements PassengerInterface
 
       if ($availableSeats > 0) {
         $installments = false;
-        if (is_numeric($data['number_of_installments']) && $data['number_of_installments'] > 1) {
+        if (is_numeric($data['number_of_installments']) && $data['number_of_installments'] >= 1) {
           //here we have to enable installments
           $installments = $data['number_of_installments'];
           // $this->paymentService->createInstallments($passId, $installments);
@@ -172,7 +172,7 @@ class PassengerRepository implements PassengerInterface
         ];
         Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
         $seat = Passenger::create($additionalPassengerData);
-        if (is_numeric($installments) && $installments > 1) {
+        if (is_numeric($installments) && $installments >= 1) {
           $this->paymentService->createInstallments($seat->id, $installments);
         }
       }
