@@ -235,7 +235,7 @@
                                 <td colspan="4" style="padding: 0; margin: 0; vertical-align: top;" width="50%">
                                     <table width="100%">
                                         <tr>
-                                            <td width="30%"><span class="bold underline">Installment Plan:</span></td>
+                                            <td width="30%"><span class="bold underline">Payment Plan:</span></td>
                                             <td width="15%"></td>
                                             <td width="20%"><span class="bold underline">Form Of Payment:</span></td>
                                             <td width="15%"></td>
