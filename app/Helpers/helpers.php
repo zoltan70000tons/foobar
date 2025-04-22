@@ -84,6 +84,7 @@ if (! function_exists('sanitizeInput')) {
     if (!function_exists('formatDate')) {
         function formatDate($date, $fullMonth = false, $hideYear = false)
         {
+            if (empty($date)) return null;
             $format = ($fullMonth ? 'F' : 'M') . ' d' . ($hideYear ? '' : ', Y');
             return Carbon::parse($date)->format($format);
         }
