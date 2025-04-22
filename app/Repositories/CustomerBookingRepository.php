@@ -254,8 +254,12 @@ class CustomerBookingRepository
         Log::warning('Slack notification failed: ' . $e->getMessage());
       }
 
+      // reload passengers after update
+      $emptyPassenger->refresh();
+      $booking->load('passengers');
+
       // Send confirmation email
-      $this->sendPassengerConfirmationEmail($booking, $emptyPassenger);
+      $this->sendPassengerConfirmationEmail($booking);
 
       return response()->json(['message' => 'Passenger added'], 200);
     }
@@ -339,6 +343,10 @@ class CustomerBookingRepository
         // Optionally log the failure so you know something went wrong
         Log::warning('Slack notification failed: ' . $e->getMessage());
       }
+
+      // reload passengers after update
+      $passenger->refresh();
+      $booking->load('passengers');
 
       // Send confirmation email
       $this->sendPassengerConfirmationEmail($booking);
