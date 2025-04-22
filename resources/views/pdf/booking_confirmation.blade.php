@@ -420,6 +420,8 @@
 
         <table width="100%" cellspacing="0" cellpadding="5">
             @foreach ($data['passengers'] as $index => $passenger)
+            {{-- Check if the index is even or odd to determine the row structure --}}
+            {{-- If even, start a new row --}}
             @if ($index % 2 == 0)
             <tr>
                 @endif
@@ -457,7 +459,7 @@
                         </tr>
                         <tr>
                             <td width="50%"><strong>Survivor Status:</strong></td>
-                            <td width="50%">{{ $passenger['survivor_status'] ?? 'N/A' }}</td>
+                            <td width="50%">{{ $passenger['survivor_status'] }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Date of Birth:</strong></td>
@@ -534,7 +536,7 @@
                 </td>
 
                 @if ($index % 2 == 1 || $loop->last)
-                {{-- Si el total de pasajeros es impar, agregamos una celda vacía para completar la fila --}}
+                {{-- If the total number of passengers is odd, add an empty cell to complete the row --}}
                 @if ($index % 2 == 0)
                 <td width="50%"></td>
                 @endif
