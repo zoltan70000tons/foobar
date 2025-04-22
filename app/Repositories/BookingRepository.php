@@ -512,7 +512,7 @@ class BookingRepository implements BookingInterface
       }
 
       // JG ---- start Installments
-      if ($passenger && $bookingData['payment_plan'] === 'INSTALLMENTS' && $bookingData['number_of_installments'] > 1) {
+      if ($passenger && $bookingData['number_of_installments'] >= 1) {
         // get passenger who lead_passenger have true
         $passId = $passenger->id;
         $installments = (int) $bookingData['number_of_installments'];
