@@ -49,7 +49,7 @@ class PaymentIsReceived extends Notification
       ->success()
       ->content(':scarface: Money, money, money!')
       ->attachment(function ($attachment) {
-        $attachment->title('Payment is received')->fields([
+        $attachment->title('Payment received')->fields([
           'Booking Code' => $this->booking->booking_code,
           'From' => $this->passenger->email,
           'Amount' => $this->amount,
@@ -66,7 +66,7 @@ class PaymentIsReceived extends Notification
   public function toArray(object $notifiable): array
   {
     return [
-        //
-      ];
+      //
+    ];
   }
 }

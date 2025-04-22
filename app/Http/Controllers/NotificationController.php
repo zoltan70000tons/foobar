@@ -98,6 +98,11 @@ class NotificationController extends Controller
         "System {$validated['type']} of \${$validated['amount']} was added to booking"
       );
 
+      // If the type is REFUND, we don't need to send an email or do anything else
+      if ($validated['type'] === 'REFUND') {
+        return response()->json(['message' => 'Refund processed successfully'], 200);
+      }
+
       // Email template handling
       $template = match ($booking->payment_plan) {
         'PAY_IN_FULL' => 'thanks_payment_full',
@@ -110,6 +115,7 @@ class NotificationController extends Controller
       }
 
       $lead = $booking->passengers->where('lead_passenger', true)->first();
+      $payingPassenger = $booking->passengers->where('id', $validated['passenger_id'])->first();
       $user = User::where('email', $lead->email)->first();
       $detail = $user->detail;
       $language = $detail->language ?? 'en';
@@ -122,11 +128,9 @@ class NotificationController extends Controller
       }
 
       $extraData = ['PAID_AMOUNT' => formatCurrency($validated['amount'])];
-      foreach ($booking->passengers as $passenger) {
-        if (!empty($passenger->email) && filter_var($passenger->email, FILTER_VALIDATE_EMAIL)) {
-          $this->emailService->sendEmail($templateId, $booking, $passenger, [], $extraData, true, true);
-        }
-      }
+
+      $this->emailService->sendEmail($templateId, $booking, $payingPassenger, [], $extraData, true, true);
+
       return response()->json(['message' => 'Payment processed, email sent successfully'], 200);
     } catch (\Throwable $e) {
       \Log::error('Error processing payment', [

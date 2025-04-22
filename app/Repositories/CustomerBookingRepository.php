@@ -341,7 +341,7 @@ class CustomerBookingRepository
       }
 
       // Send confirmation email
-      $this->sendPassengerConfirmationEmail($booking, $passenger);
+      $this->sendPassengerConfirmationEmail($booking);
 
       return response()->json(['message' => 'Passenger added'], 200);
     }
@@ -568,7 +568,7 @@ class CustomerBookingRepository
   | @param string $templateCode
   | @return void
   */
-  private function sendPassengerConfirmationEmail($booking, $passenger, $templateCode = 'updated')
+  private function sendPassengerConfirmationEmail($booking, $templateCode = 'updated')
   {
     $leadPassenger = $booking->passengers->where('lead_passenger', true)->first();
     $leadPassengerLanguage = $leadPassenger?->language ?? 'en';
@@ -583,6 +583,6 @@ class CustomerBookingRepository
       return;
     }
 
-    $this->emailService->sendEmail($templateId, $booking, $passenger, [], [], true, true);
+    $this->emailService->sendEmail($templateId, $booking, $leadPassenger, [], [], true, true);
   }
 }
