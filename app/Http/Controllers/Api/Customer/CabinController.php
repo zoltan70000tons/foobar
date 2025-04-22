@@ -25,6 +25,15 @@ class CabinController extends Controller
   {
     // Convert parameters to the correct type
     $cabinTypeId = intval($cabinTypeId);
+    if ($cabinTypeId !== 1) {
+      return response()->json(
+        [
+          'message' => 'Option avaialble only for private cabins.',
+        ],
+        404
+      );
+    }
+
     $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
     $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
 
