@@ -231,7 +231,7 @@ class BookingsController extends Controller
       $cabin_number = $validated['cabin_number'];
       $passenger_data = $validated['passenger'];
       $passenger_data['cabin_conf_accp'] = true; //CCA is a required field, thus should go set as true by default - Nic
-      $number_of_installments = $validated['number_of_installments'] ?? null;
+      $number_of_installments = $validated['number_of_installments'] ?? 1;
       $payment_plan = $validated['payment_plan'];
       $carbonOffset = $validated['carbon_offset'];
 
@@ -694,32 +694,6 @@ class BookingsController extends Controller
           'booking_code' => $result?->booking_code ?? ($booking->booking_code ?? ''),
         ])
       );
-    }
-  }
-
-  public function filter(Request $request)
-  {
-    try {
-      $event_id = request()->route('id');
-      $filters = $request->all();
-
-      return $this->withPermission(
-        [Permissions::ViewBookings],
-        function ($event_id, $filters) {
-          $event = $this->eventRepository->find($event_id);
-          $bookings = $this->bookingRepository->filterBookings($event_id, $filters);
-
-          return Inertia::render('Bookings/Index', [
-            'event' => $event,
-            'bookings' => $bookings,
-            'filters' => $filters,
-          ]);
-        },
-        $event_id,
-        $filters
-      );
-    } catch (Exception $e) {
-      $this->logException($e);
     }
   }
 
