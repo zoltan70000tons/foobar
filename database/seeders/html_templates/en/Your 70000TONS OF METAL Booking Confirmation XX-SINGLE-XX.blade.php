@@ -173,7 +173,7 @@ style="padding: 0px
                                               !important; margin: 0px
                                               !important; text-align:
                                               center; font-size: 1.8em;"><a
-href="http://70000tons.com/make-a-payment/"
+href={{$makePaymentLink}}
 style="color: rgb(0, 0,
                                                 238); text-decoration:
                                                 underline;"><strong>CLICK

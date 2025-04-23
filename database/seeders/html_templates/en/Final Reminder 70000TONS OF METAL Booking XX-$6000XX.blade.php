@@ -200,7 +200,7 @@
                                                 color: red;
                                               "
                                               ><a
-                                                href="http://70000tons.com/make-a-payment/"
+                                                href={{$makePaymentLink}}
                                                 target="_blank"
                                                 style="color: rgb(0, 0, 238); text-decoration: underline"
                                                 >CLICK HERE TO PAY NOW</a

@@ -169,7 +169,7 @@ style="padding: 0px
                                               !important; margin: 0px
                                               !important; text-align:
                                               center; font-size: 1.8em;"><a
-href="http://book70000tons.com/booking/addon/?lan=de"
+href={{$addPassengerLink}}
 style="color:
                                                 rgb(0, 0, 238);
                                                 text-decoration:
