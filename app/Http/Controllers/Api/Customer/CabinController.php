@@ -107,7 +107,7 @@ class CabinController extends Controller
     $cabinCapacity = $request->input('cabin_capacity');
     $cabinCategoryCode = $request->input('category_code');
 
-    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
@@ -127,29 +127,33 @@ class CabinController extends Controller
 
       // remove cabin_number from session, because if something went wrong.
       // we don't want to keep the old cabin_number in session to prevent booking.
-      if (!$user) {
-        $request->session()->put('cart.cabin_number', null);
-        $request->session()->put('cart.reservation_id', null);
-        $request->session()->put('cart.reservation_timestamp', null);
-      } else {
-        $cart['cabin_number'] = null;
-        $cart['reservation_id'] = null;
-        $cart['reservationTimestamp'] = null;
-        Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
-      }
+      // if (!$user) {
+      //   $request->session()->put('cart.cabin_number', null);
+      //   $request->session()->put('cart.reservation_id', null);
+      //   $request->session()->put('cart.reservation_timestamp', null);
+      // } else {
+      //   $cart['cabin_number'] = null;
+      //   $cart['reservation_id'] = null;
+      //   $cart['reservationTimestamp'] = null;
+      //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
+      // }
+
+      $cart['cabin_number'] = null;
+      $cart['reservation_id'] = null;
+      $cart['reservationTimestamp'] = null;
+      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
     }
 
     // ------- If user id is in tepmorary reservation table, thriow error
-    if ($user) {
-      $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
 
-      // if user have a reservation throw error
-      if ($tempReservationId->isNotEmpty()) {
-        return response()->json(['message' => __('feedback.double_booking')], 403);
-      }
+    $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
 
-      // TemporaryReservation::where('user_id', $user->id)->delete();
+    // if user have a reservation throw error
+    if ($tempReservationId->isNotEmpty()) {
+      return response()->json(['message' => __('feedback.double_booking')], 403);
     }
+
+    // TemporaryReservation::where('user_id', $user->id)->delete();
 
     // -------- Proceed with new reservation
     if (!$cabinNumber || !$cabinTypeId || !$cabinCategoryCode || !$cabinCapacity) {
@@ -194,15 +198,17 @@ class CabinController extends Controller
 
     $user = Auth::user();
 
-    // ------- If user id is in tepmorary reservation table, thriow error
-    if ($user) {
-      $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
+    if (!$user) {
+      return response()->json(['message' => 'User not authenticated'], 401);
+    }
 
-      // if user have a reservation throw error
-      if ($tempReservationId->isNotEmpty()) {
-        TemporaryReservation::where('user_id', $user->id)->delete();
-        return response()->json(['message' => __('feedback.double_booking')], 403);
-      }
+    // ------- If user id is in tepmorary reservation table, thriow error
+    $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
+
+    // if user have a reservation throw error
+    if ($tempReservationId->isNotEmpty()) {
+      TemporaryReservation::where('user_id', $user->id)->delete();
+      return response()->json(['message' => __('feedback.double_booking')], 403);
     }
 
     if (!$cabinTypeId || !$cabinCategoryCode || !$cabinCapacity) {
@@ -278,27 +284,38 @@ class CabinController extends Controller
 
       $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
 
-      if (!$user) {
-        $request->session()->put('cart', [
-          'cabinSelection' => $selectionType,
-          'reservationId' => $reserved->id,
-          'cabin_number' => $cabin['cabin_number'],
-          'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
-          'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
-          'lower_bed_type_2' => $cabin['lower_bed_type_2'],
-        ]);
-      } else {
-        $cart = $user->cart_data;
+      // if (!$user) {
+      //   $request->session()->put('cart', [
+      //     'cabinSelection' => $selectionType,
+      //     'reservationId' => $reserved->id,
+      //     'cabin_number' => $cabin['cabin_number'],
+      //     'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
+      //     'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
+      //     'lower_bed_type_2' => $cabin['lower_bed_type_2'],
+      //   ]);
+      // } else {
+      //   $cart = $user->cart_data;
 
-        $cart['cabinSelection'] = $selectionType;
-        $cart['reservationId'] = $reserved->id;
-        $cart['cabin_number'] = $cabin['cabin_number'];
-        $cart['cabin_category_type'] = $cabin['cabin_category_type'] ?? null;
-        $cart['reservationTimestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
-        $cart['lower_bed_type_2'] = $cabin['lower_bed_type_2'];
+      //   $cart['cabinSelection'] = $selectionType;
+      //   $cart['reservationId'] = $reserved->id;
+      //   $cart['cabin_number'] = $cabin['cabin_number'];
+      //   $cart['cabin_category_type'] = $cabin['cabin_category_type'] ?? null;
+      //   $cart['reservationTimestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
+      //   $cart['lower_bed_type_2'] = $cabin['lower_bed_type_2'];
 
-        Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
-      }
+      //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
+      // }
+
+      $cart = $user->cart_data;
+
+      $cart['cabinSelection'] = $selectionType;
+      $cart['reservationId'] = $reserved->id;
+      $cart['cabin_number'] = $cabin['cabin_number'];
+      $cart['cabin_category_type'] = $cabin['cabin_category_type'] ?? null;
+      $cart['reservationTimestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
+      $cart['lower_bed_type_2'] = $cabin['lower_bed_type_2'];
+
+      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
 
       DB::commit();
 
