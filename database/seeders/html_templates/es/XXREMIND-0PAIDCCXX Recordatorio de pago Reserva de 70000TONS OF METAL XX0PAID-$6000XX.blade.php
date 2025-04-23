@@ -164,7 +164,7 @@ style="display:
                                             pudiera causar.<br>
                                             <br>
                                             <a target="_blank"
-href="https://www.70000tons.com/make-a-payment/?lang=es"
+href={{$makePaymentLink}}
 style="color: rgb(0, 0,
                                               238); text-decoration:
                                               underline; font-size:

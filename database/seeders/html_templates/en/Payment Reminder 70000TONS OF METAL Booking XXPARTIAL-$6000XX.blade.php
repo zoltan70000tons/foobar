@@ -160,7 +160,7 @@ style="display:
                                             cause.<br>
                                             <br>
                                             <a
-href="https://www.70000tons.com/make-a-payment/"
+href={{$makePaymentLink}}
 style="color: rgb(0, 0,
                                               238); text-decoration:
                                               underline; font-size:

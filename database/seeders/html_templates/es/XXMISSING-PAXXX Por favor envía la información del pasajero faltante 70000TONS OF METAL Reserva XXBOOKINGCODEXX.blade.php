@@ -147,7 +147,7 @@ style="padding: 0px
                                               !important; text-align:
                                               center; font-size: 1.8em;"><a
                                                 target="_blank"
-href="http://www.70000tons.com/booking/addon"
+href={{$addPassengerLink}}
 style="color: rgb(0, 0,
                                                 238); text-decoration:
                                                 underline;"><strong>HAZ

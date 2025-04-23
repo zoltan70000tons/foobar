@@ -135,7 +135,7 @@ style="text-align:
                                               center; font-size: 1.8em;
                                               padding: 0px !important;
                                               margin: 0px !important;"><a
-href="http://www.70000tons.com/booking/addon"
+href={{$addPassengerLink}}
 style="color: rgb(0, 0,
                                                 238); text-decoration:
                                                 underline;"><strong>CLICK

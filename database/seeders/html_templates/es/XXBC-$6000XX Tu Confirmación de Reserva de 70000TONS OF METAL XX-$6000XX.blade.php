@@ -146,7 +146,7 @@
                                           teléfono indicados al final del correo:<br />
                                           <br />
                                           <strong style="text-align: center; font-size: 1.8em; display: block"><a
-                                              href="http://www.70000tons.com/booking/addon"
+                                              href={{$addPassengerLink}}
                                               style="color: rgb(0, 0, 238); text-decoration: underline">HAZ CLIC AQUÍ PARA AÑADIR PASAJEROS</a></strong><br />
                                           <br />
                                           Asegúrate de leer y entender completamente los Términos y Condiciones de tu
@@ -180,7 +180,7 @@
                                           causar.<br />
                                           <br />
                                           <strong style="text-align: center; font-size: 1.8em; display: block"><a
-                                              href="http://70000tons.com/make-a-payment/?lang=es"
+                                              href={{$makePaymentLink}}
                                               style="color: rgb(0, 0, 238); text-decoration: underline">HAZ CLIC AQUÍ PARA PAGAR AHORA</a></strong><br />
                                           <br />
                                           Recibirás una Confirmación de Reserva actualizada dentro de los tres (3)

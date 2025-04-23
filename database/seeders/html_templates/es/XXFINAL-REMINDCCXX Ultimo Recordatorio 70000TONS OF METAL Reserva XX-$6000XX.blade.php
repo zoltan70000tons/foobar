@@ -186,7 +186,7 @@ style="display:
                                               font-size: 1.8em;
                                               text-decoration:
                                               underline; color: red;"><a
-href="http://70000tons.com/make-a-payment/?lang=es" target="_blank"
+href={{$makePaymentLink}} target="_blank"
 style="color: rgb(0, 0,
                                                 238); text-decoration:
                                                 underline;">HAZ CLIC

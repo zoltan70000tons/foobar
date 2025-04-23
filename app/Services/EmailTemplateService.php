@@ -44,11 +44,12 @@ class EmailTemplateService
         }
 
         $bodyContent = DB::table('email_templates')->where('id', $templateId)->value('body');
-
         $data = [
             'header' => DB::table('email_templates')->where('name', '=', $header_template)->value('body'),
             'footer' => DB::table('email_templates')->where('name', '=', $footer_template)->value('body'),
             'passenger' => $passenger,
+            'addPassengerLink' => env('FRONTEND_URL') . '/dashboard/my-bookings',
+            'makePaymentLink' => env('FRONTEND_URL') . '/make-a-payment',
         ];
 
         $processedBody = Blade::render($bodyContent, $data);

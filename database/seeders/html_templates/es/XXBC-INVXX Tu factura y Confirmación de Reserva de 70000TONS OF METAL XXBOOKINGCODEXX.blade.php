@@ -145,7 +145,7 @@ class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
 style="text-align:
                                               center; font-size: 1.8em;
                                               display: block;"><a
-href="http://www.70000tons.com/booking/addon"
+href={{$addPassengerLink}}
 style="color: rgb(0, 0,
                                                 238); text-decoration:
                                                 underline;">HAZ CLIC
