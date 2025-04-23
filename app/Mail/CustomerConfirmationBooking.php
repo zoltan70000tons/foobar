@@ -88,7 +88,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
           : 0,
         'choose_your_cabin' => $adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0,
         'carbon_offset' =>
-        $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
+          $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
           $this->cart['cabin_price'],
           $this->cart['price_save']
@@ -101,13 +101,13 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
         'payment_schedule_installments' => !empty($this->installments)
           ? collect($this->installments)
-          ->map(
-            fn($installment) => [
-              'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
-              'amount' => number_format($installment['amount'], 2),
-            ]
-          )
-          ->toArray()
+            ->map(
+              fn($installment) => [
+                'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
+                'amount' => number_format($installment['amount'], 2),
+              ]
+            )
+            ->toArray()
           : 'N/A',
         'todays_date' => $this->getLocalizedDate(now(), $this->language),
         'booking_request_id' => $booking->booking_request_id ?? 'N/A',
@@ -170,6 +170,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   // envelope
   public function envelope(): Envelope
   {
+    App::setLocale($this->language);
     $data = $this->prepareDataForTemplate();
 
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
