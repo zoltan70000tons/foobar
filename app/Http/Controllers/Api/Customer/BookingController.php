@@ -64,9 +64,10 @@ class BookingController extends Controller
 
     // Get authenticated user
     $user = Auth::user();
-    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+    //$cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
-    if (!$cart) {
+    if (!$cart || empty($cart)) {
       return response()->json(['message' => 'Cart is empty'], 400);
     }
 
@@ -158,13 +159,12 @@ class BookingController extends Controller
       //      \Log::info('Booking created successfully', $result);
 
       // Delete current sesion
-      $request->session()->forget('cart');
+      //$request->session()->forget('cart');
       $request->session()->forget('reservation_id');
 
       // delete cart from db
-      if ($user) {
-        Cart::where('user_id', $user->id)->delete();
-      }
+
+      Cart::where('user_id', $user->id)->delete();
 
       // \Log::info('Result ----> data: ', ['result' => $result]);
       // \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);

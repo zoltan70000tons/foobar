@@ -29,7 +29,9 @@ class CartController extends Controller
   {
     // Fetch cart from session
     $user = Auth::user();
-    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+    // $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
+
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (empty($cart)) {
       return [];
@@ -111,9 +113,9 @@ class CartController extends Controller
       'cabin_number' => 'nullable|integer',
       'reservation_id' => 'nullable|integer',
       'reservation_timestamp' => 'nullable|string',
-      'cabin_price' => 'nullable|string',
-      'cabin_capacity' => 'nullable|integer',
-      'cabin_code' => 'nullable|string',
+      'cabin_price' => 'required|string',
+      'cabin_capacity' => 'required|integer',
+      'cabin_code' => 'required|string',
       'cabin_category' => 'nullable|integer',
       'cabin_category_decks' => 'nullable|string',
       'cabin_category_type' => 'nullable|string',
@@ -128,18 +130,26 @@ class CartController extends Controller
       'lower_bed_type_2' => 'nullable|string',
     ]);
 
+    $user = Auth::user();
+
+    if (!$user) {
+      return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
     if ($validated['force_clear'] === true) {
       // Attempt to release the cabin
       $reservationService->releaseCabin($request);
 
       // Always clear the cart regardless of the reservation status
-      $request->session()->forget('cart');
+      //$request->session()->forget('cart');
       // Clear the cart from the database
-      $user = Auth::user();
+      // $user = Auth::user();
 
-      if ($user) {
-        Cart::where('user_id', $user->id)->delete();
-      }
+      // if ($user) {
+      //   Cart::where('user_id', $user->id)->delete();
+      // }
+
+      Cart::where('user_id', $user->id)->delete();
     }
 
     $defaultCart = [
@@ -170,11 +180,13 @@ class CartController extends Controller
       return response()->json(['message' => 'Date of birth is required'], 400);
     }
 
-    if ($user) {
-      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
-    } else {
-      session(['cart' => $mergedCart]);
-    }
+    // if ($user) {
+    //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
+    // } else {
+    //   session(['cart' => $mergedCart]);
+    // }
+
+    Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
 
     return response()->json(
       [
@@ -209,7 +221,7 @@ class CartController extends Controller
       'reservation_timestamp' => 'nullable|string',
       'cabin_price' => 'nullable|string',
       'cabin_capacity' => 'nullable|integer',
-      'cabin_code' => 'nullable|string',
+      'cabin_code' => 'required|string',
       'cabin_category' => 'nullable|integer',
       'cabin_category_decks' => 'nullable|string',
       'cabin_category_type' => 'required|string',
@@ -225,6 +237,10 @@ class CartController extends Controller
 
     $user = Auth::user();
 
+    if (!$user) {
+      return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
     // Age verification
     $dateOfBirth = $user->detail->dob ?? null;
     if ($dateOfBirth) {
@@ -237,11 +253,13 @@ class CartController extends Controller
       return response()->json(['message' => 'Date of birth is required'], 400);
     }
 
-    if ($user) {
-      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
-    } else {
-      session(['cart' => $validated]);
-    }
+    // if ($user) {
+    //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
+    // } else {
+    //   session(['cart' => $validated]);
+    // }
+
+    Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
 
     return response()->json(
       [
@@ -264,11 +282,17 @@ class CartController extends Controller
   {
     $user = Auth::user();
 
-    if ($user) {
-      Cart::where('user_id', $user->id)->delete();
-    } else {
-      $request->session()->forget('cart');
+    if (!$user) {
+      return response()->json(['message' => 'User not authenticated'], 401);
     }
+
+    // if ($user) {
+    //   Cart::where('user_id', $user->id)->delete();
+    // } else {
+    //   $request->session()->forget('cart');
+    // }
+
+    Cart::where('user_id', $user->id)->delete();
 
     $reservationService->releaseCabin($request);
 
