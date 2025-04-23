@@ -112,15 +112,14 @@ class BookingRepository implements BookingInterface
   }
 
   function getByStatus(
-      $eventId,
-      $status,
-      $keyword = null,
-      ?int $perPage = 10,
-      ?string $sortKey = 'created_at',
-      ?string $sortDirection = 'desc',
-      $tags =[]
-  )
-  {
+    $eventId,
+    $status,
+    $keyword = null,
+    ?int $perPage = 10,
+    ?string $sortKey = 'created_at',
+    ?string $sortDirection = 'desc',
+    $tags = []
+  ) {
     $query = Booking::with([
       'cabin',
       'cabin.cabinType',
@@ -165,12 +164,12 @@ class BookingRepository implements BookingInterface
         });
       });
     }
-   
+
     if (!empty($tags)) {
       $query->where(function ($q) use ($tags) {
-          foreach ($tags as $tag) {
-              $q->orWhereJsonContains('tags', $tag);
-          }
+        foreach ($tags as $tag) {
+          $q->orWhereJsonContains('tags', $tag);
+        }
       });
     }
 
@@ -260,7 +259,7 @@ class BookingRepository implements BookingInterface
 
   function findByCode($code)
   {
-    return Booking::with([
+    $booking = Booking::with([
       'cabin',
       'cabin.cabinType',
       'cabin.category',
@@ -282,6 +281,12 @@ class BookingRepository implements BookingInterface
     ])
       ->where('booking_code', '=', $code)
       ->first();
+
+    $booking->passengers->each(function ($passenger) {
+      $passenger->setAttribute('installment_status', $passenger->installment_status);
+    });
+
+    return $booking;
   }
 
   function save(array $data): ?Booking
@@ -297,9 +302,7 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id)
-  {
-  }
+  function delete($id) {}
 
   function assignAgent($code, $user)
   {
