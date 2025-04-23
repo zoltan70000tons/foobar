@@ -404,7 +404,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
         const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees;
         const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
-        const filteredInstallments = pax.installments.filter((inst) => inst.type !== 'FEE');
+        const filteredInstallments = pax.installments.filter((inst) => inst.type !== 'FEE').sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+        
 
         return (
           <Box key={index}>
@@ -447,10 +448,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             <Paper variant="outlined" sx={{ p: 3, backgroundColor: '#1c1c1c', mb: 4 }}>
               {/* SectionPercentage Integration */}
               <SectionPercentage
-                passenger={{
-                  passenger_allocated_cost: totalCostWihoutFees,
-                  passenger_balance: pax.passenger_balance,
-                }}
+                passenger={pax}
                 booking={booking}
                 installments={filteredInstallments}
                 setIsBookingError={(error) => console.error('Booking Error:', error)}
