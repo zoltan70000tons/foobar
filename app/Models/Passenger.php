@@ -61,7 +61,7 @@ class Passenger extends Model
     'language',
   ];
 
-  protected $appends = ['full_name', 'empty', 'paymentInfo'];
+  protected $appends = ['full_name', 'empty'];
 
   protected $casts = [
     'special_options' => 'array',
