@@ -48,6 +48,7 @@ class EmailTemplateService
         $data = [
             'header' => DB::table('email_templates')->where('name', '=', $header_template)->value('body'),
             'footer' => DB::table('email_templates')->where('name', '=', $footer_template)->value('body'),
+            'passenger' => $passenger,
         ];
 
         $processedBody = Blade::render($bodyContent, $data);
