@@ -220,6 +220,8 @@ const Index = ({
         header: "Next Payment",
         accessor: "longestDueDateInstallment",
         sortable: true,
+        dateRange: true,
+        width: '15%',
         draw: (row: { longestDueDateInstallment?: string | null }) => {
           const today = new Date();
           const longestDueDate = row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment) : null;
@@ -421,7 +423,8 @@ const Index = ({
   };
 
 
-  const fetchData = useCallback(async (page, rowsPerPage, filters, sort) => {
+  const fetchData = useCallback(async (page, rowsPerPage, filters, sort, dateRangeState) => {
+    console.log(searchTerm);
     try {
       const res = await axios.get(route("bookings.data", { id: event.id }), {
         params: {
@@ -433,6 +436,7 @@ const Index = ({
           tab: selectedTab ?? 0,
           tags: selectedTags.join(','),
           user_ids: selectedUsers.map((user) => user.id),
+          date_range: dateRangeState,
           ...filters,
         },
       });

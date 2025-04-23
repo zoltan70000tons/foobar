@@ -76,6 +76,11 @@ type Passenger = {
   installments: Installment[];
   payments: Payment[];
   fees: Fee[];
+  installment_state: null | {
+    next_installment?: {
+      due_date: string;
+    };
+  };
 };
 
 type Adjustment = {
@@ -592,6 +597,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                         {formatCurrency(totalCostAfterAdjustments - pax.passenger_balance)}
                       </Box>
                     </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Next Payment</TableCell>
+                    <TableCell align="right" sx={!pax.installment_state?.next_installment ? { color: '#4CAF50' } : {}}>{!pax.installment_state?.next_installment ? 'Paid' : pax.installment_state.next_installment.due_date}</TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 </TableBody>
