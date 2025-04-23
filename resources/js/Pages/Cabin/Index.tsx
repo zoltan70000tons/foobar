@@ -124,7 +124,7 @@ const Index = ({ auth, event, categories, cabins, errors }: PageProps & { tab: s
           <>
             <Chip
               size="small"
-              label={row.cabin_status}
+              label={row.cabin_status === "RESERVED" ? "EXCLUDED" : row.cabin_status}
               color={CabinStatusColor[row.cabin_status]}
               sx={{
                 margin: 'auto',

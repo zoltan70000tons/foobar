@@ -274,7 +274,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
                           </MenuItem>
                           {column.filterOptions?.map((option) => (
                             <MenuItem key={option} value={option}>
-                              {option}
+                              {option === "RESERVED" ? "EXCLUDED" : option}
                             </MenuItem>
                           ))}
                         </Select>
@@ -338,12 +338,12 @@ const MuiTable: FC<DataGridProps<any>> = ({
         component="div"
         count={
           serverSidePagination
-            ? totalCount ?? 0
+            ? (totalCount ?? 0)
             : Array.isArray(data)
               ? data.length
               : data
-              ? Object.keys(data).length
-              : 0
+                ? Object.keys(data).length
+                : 0
         }
         rowsPerPage={rowsPerPage}
         page={page}

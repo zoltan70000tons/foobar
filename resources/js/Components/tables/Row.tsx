@@ -276,7 +276,7 @@ const Row: FC<RowProps<any>> = ({
                       <Select value={selectedStatus} onChange={handleStatusChange} label="Status">
                         {statusOptions.map((status) => (
                           <MenuItem key={status} value={status}>
-                            {status}
+                            {status === "RESERVED" ? "EXCLUDED" : status}
                           </MenuItem>
                         ))}
                       </Select>
@@ -339,7 +339,7 @@ const Row: FC<RowProps<any>> = ({
                                     </MenuItem>
                                     {column.filterOptions?.map((option) => (
                                       <MenuItem key={`filter-option-${option}`} value={option}>
-                                        {option}
+                                        {option === "RESERVED" ? "EXCLUDED" : option}
                                       </MenuItem>
                                     ))}
                                   </Select>
