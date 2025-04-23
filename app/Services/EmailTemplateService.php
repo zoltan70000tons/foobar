@@ -92,15 +92,11 @@ class EmailTemplateService
         $nextInstallmentDate = '';
     
         if ($passenger) {
-            if ($booking->payment_plan == 'PAY_IN_FULL') {
-                $paymentData = $passenger->getFullPaymentStatus();
-                $nextInstallmentAmount = $paymentData['amount'] ?? '';
-                $nextInstallmentDate = $paymentData['due_date'] ?? '';
-            } else {
+
                 $paymentData = $passenger->getInstallmentStatus();
                 $nextInstallmentAmount = $paymentData['next_installment']['amount_due'] ?? '';
                 $nextInstallmentDate = $paymentData['next_installment_date']['due_date'] ?? '';
-            }
+            
         }
 
 
