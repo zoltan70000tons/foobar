@@ -528,8 +528,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                     <Autocomplete
                       fullWidth
                       options={[
+                        { id: 2, value: 2 },
                         { id: 3, value: 3 },
                         { id: 4, value: 4 },
+                        { id: 5, value: 5 },
                       ]}
                       getOptionLabel={(option) => `${option.value}`}
                       value={numberOfInstallments}
