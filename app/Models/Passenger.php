@@ -108,7 +108,7 @@ class Passenger extends Model
     return $this->empty_seat;
   }
 
-  // passenger may have installments
+  // Installments mean the due dates for the passenger payments
   public function installments()
   {
     return $this->hasMany(Installment::class);
@@ -127,6 +127,11 @@ class Passenger extends Model
   public function discounts()
   {
     return $this->hasMany(PassengerDiscount::class);
+  }
+  
+  public function onboardCredits()
+  {
+    return $this->hasMany(OnboardCredit::class);
   }
 
   public function getInstallmentStatusAttribute()
