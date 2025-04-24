@@ -80,8 +80,11 @@ class CustomerBookingRepository
       });
 
       if (!$passenger) {
-        return response()->json(['message' => 'Passenger not found'], 404);
+        return null;
       }
+    } else {
+      // return response error 403
+      return null;
     }
 
     // if booking is_single_occupancy then do not return other passengers
