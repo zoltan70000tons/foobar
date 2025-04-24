@@ -363,7 +363,7 @@ const Row: FC<RowProps<any>> = ({
                   <TableBody>
                     {paginatedSubRows.map((subRow, index) => {
 
-                      const uniqueIndex = `${index}-${subRow.id}`; // Create a unique key for each subRow
+                      //const uniqueIndex = `${index}-${subRow.id}`; // Create a unique key for each subRow
 
                       return (
                         <TableRow key={subRow.id}>
@@ -375,8 +375,8 @@ const Row: FC<RowProps<any>> = ({
                               />
                             </TableCell>
                           )}
-                          {subColumns?.map((column) => (
-                            <TableCell key={uniqueIndex} sx={{ width: column?.width || "100px" }}>
+                          {subColumns?.map((column, index) => (
+                            <TableCell key={subRow.id + index} sx={{ width: column?.width || "100px" }}>
                               {column.draw ? column.draw(subRow) : subRow[column.accessor]}
                             </TableCell>
                           ))}
