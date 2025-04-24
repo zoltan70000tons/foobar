@@ -60,6 +60,7 @@ const Index = ({
   const [keyword, setKeyword] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<{ id: string, username: string }[]>([]);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState<number>(tabIndex);
@@ -68,6 +69,7 @@ const Index = ({
   const [tableKey, setTableKey] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const eventId = event.id;
+
 
 
   // useEffect(() => {
@@ -188,15 +190,13 @@ const Index = ({
 
   const getTagStyle = (rawTag: string) => {
     const normalized = rawTag.trim().toUpperCase();
-  
+
     const match = Object.values(TagEnum).find((enumValue) => enumValue.toUpperCase() === normalized);
-    console.log(normalized);
     if (match) {
       return TagEnumStyles[match as TagEnum];
     }
 
-    console.log('no match', normalized);
-  
+
     // fallback
     return {
       label: normalized,
@@ -249,8 +249,8 @@ const Index = ({
 
           return (
             <Chip
-            label={row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'No date'}
-            color={status} 
+              label={row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'No date'}
+              color={status}
             />
           );
         },
@@ -283,7 +283,7 @@ const Index = ({
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
               row.tags.map((tag: string, index: number) => {
                 const tagStyle = getTagStyle(tag);
-      
+
                 return (
                   <Chip
                     key={index}
@@ -304,7 +304,7 @@ const Index = ({
           </Box>
         ),
       }
-      
+
       ,
 
       {
@@ -344,7 +344,7 @@ const Index = ({
                 )}
               </div>
               {row?.editingUsername && (
-                <Box component="small" sx={{width: "10px"}} color="warning.main">Being used by {row.editingUsername}</Box>
+                <Box component="small" sx={{ width: "10px" }} color="warning.main">Being used by {row.editingUsername}</Box>
               )}
             </>
           );
@@ -404,7 +404,6 @@ const Index = ({
 
 
   const clearFilter = () => {
-    console.log('clearFilter');
     setInputValue("");
     setSearchTerm("");
     setKeyword("");
@@ -423,7 +422,6 @@ const Index = ({
 
 
   const fetchData = useCallback(async (page, rowsPerPage, filters, sort) => {
-    console.log(searchTerm);
     try {
       const res = await axios.get(route("bookings.data", { id: event.id }), {
         params: {
@@ -434,6 +432,7 @@ const Index = ({
           keyword: searchTerm,
           tab: selectedTab ?? 0,
           tags: selectedTags.join(','),
+          user_ids: selectedUsers.map((user) => user.id),
           ...filters,
         },
       });
@@ -441,7 +440,7 @@ const Index = ({
     } catch (err) {
       throw err;
     }
-  }, [event.id, searchTerm, selectedTab, selectedTags]);
+  }, [event.id, searchTerm, selectedTab, selectedTags, selectedUsers]);
 
 
 
@@ -468,7 +467,6 @@ const Index = ({
       icon: <CancelIcon />,
     },
   ];
-
 
 
 
@@ -591,6 +589,23 @@ const Index = ({
                 >
                   <SearchIcon />
                 </IconButton> */}
+
+                <Autocomplete
+                  multiple
+                  size="small"
+                  options={users}
+                  getOptionLabel={(option) => option.user_name}
+                  value={selectedUsers}
+                  onChange={(event, newValue) => setSelectedUsers(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      placeholder="Filter by Users"
+                    />
+                  )}
+                  sx={{ minWidth: 250 }}
+                />
 
               </Box>
             </Grid>

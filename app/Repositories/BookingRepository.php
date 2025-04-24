@@ -118,7 +118,8 @@ class BookingRepository implements BookingInterface
     ?int $perPage = 10,
     ?string $sortKey = 'created_at',
     ?string $sortDirection = 'desc',
-    $tags = []
+    $tags = [],
+    $user_ids = []
   ) {
     $query = Booking::with([
       'cabin',
@@ -163,6 +164,13 @@ class BookingRepository implements BookingInterface
           });
         });
       });
+
+      $query->orWhereHas('agent', function ($query) use ($keyword) {
+        $query->where(function ($query) use ($keyword) {
+          $query
+            ->where(DB::raw('LOWER(username)'), 'like', '%' . $keyword . '%');
+        });
+      });
     }
 
     if (!empty($tags)) {
@@ -172,6 +180,13 @@ class BookingRepository implements BookingInterface
         }
       });
     }
+
+
+    if (!empty($user_ids)) {
+      $query->whereIn('agent_id', $user_ids);
+    }
+    
+    
 
     $advancedSorts = ['longestDueDateInstallment', 'cabinType', 'fullName'];
 
