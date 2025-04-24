@@ -656,7 +656,7 @@ class BookingsController extends Controller
         });
 
       return response()->json([
-        'cabins' => $filteredCabins->values()->all(),
+        'cabins' => $filteredCabins->sortBy('cabin_number')->values()->all(),
       ]);
     } catch (\Exception $e) {
       //throw $th;
