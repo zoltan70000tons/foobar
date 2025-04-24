@@ -467,17 +467,15 @@ class Passenger extends Model
     $amount = round($this->passenger_allocated_cost, 2);
     $totalPaid = round($this->passenger_balance, 2);
     $remainingAmount = round($amount - $totalPaid, 2);
-    $status = 'PENDING';
+    $paid = false;
     if ($totalPaid >= $amount) {
-      $status = 'PAID';
-    } elseif ($totalPaid > 0) {
-      $status = 'PARTIALLY_PAID';
+      $paid = true;
     }
     return [
       'due_date' => $this->booking->created_at->format('Y-m-d'),
       'amount' => $totalPaid,
       'remaining_amount' => $remainingAmount,
-      'status' => $status,
+      'fully_paid' => $paid,
     ];
   }
 }

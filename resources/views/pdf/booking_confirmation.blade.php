@@ -284,10 +284,18 @@
                                         @else
                                         @php
                                         $fullPaymentStatus = $pass->getFullPaymentStatus();
+                                        $fullyPaid =$fullPaymentStatus['fully_paid'];
+                                        $amount = $fullyPaid ? $fullPaymentStatus['amount'] : $fullPaymentStatus['remaining_amount'];
                                         @endphp
                                         <tr>
-                                            <td class="">Due Date: {{formatDate($fullPaymentStatus['due_date'])}}</td>
-                                            <td>{{ formatCurrency($fullPaymentStatus['amount']) }}</td>
+                                            <td>
+                                                @if($fullyPaid)
+                                                Paid at {{formatDate($fullPaymentStatus['due_date'])}}
+                                                @else
+                                                Due at {{formatDate($fullPaymentStatus['due_date'])}}
+                                                @endif
+                                                </td>
+                                            <td>{{ formatCurrency($amount) }}</td>
                                             <td>{{$payment_method}}</td>
                                             <td></td>
 
