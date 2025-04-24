@@ -165,6 +165,13 @@ class PassengerController extends Controller
         ]);
         try {
             $slot = Passenger::where('id', '=', $validated['slotId'])->first();
+           // ---- start @JG if passenger invitation exists, delete it
+            $passengerInvitation = PassengerInvitation::where('passenger_id', $slot->id)->first();
+            if ($passengerInvitation) {
+                $passengerInvitation->delete();
+            }
+            // ---- end @JG
+           
             if ($slot) {
                 $slot->confirmed_booking_email = false;
                 $slot->lead_passenger = false;
