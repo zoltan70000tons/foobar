@@ -272,15 +272,14 @@ class BookingRepository implements BookingInterface
       $booking->fullName = $booking->customer->detail->full_name ?? null;
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
 
-      $isBalanceSufficient = $this->isBalanceSufficient($booking);
+      $longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
 
-      if ($isBalanceSufficient) {
-          $booking->longestDueDateInstallment = null;
-      } else {
-          $longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
-
-          $booking->longestDueDateInstallment = $longestDueDateInstallment;
-      }
+      $booking->longestDueDateInstallment = $longestDueDateInstallment;
+      
+      // Add Installment status to each passenger
+      $booking->passengers->each(function ($passenger) {
+        $passenger->setAttribute('installment_status', $passenger->installment_status);
+      });
 
       $editingUsername = DB::table('booking_agent_sessions')
         ->where('booking_id', $booking->id)
@@ -288,12 +287,6 @@ class BookingRepository implements BookingInterface
         ->value('username');
 
       $booking->editingUsername = $editingUsername;
-      /*       // Sort passengers to place lead passenger first
-      if ($booking->passengers && $index == 1) {
-        $booking->passengers = $booking->passengers
-        ->sortBy('passenger_order') 
-        ->values(); 
-      } */
 
       $booking->subRows = $booking->passengers ?? [];
     });
@@ -334,19 +327,6 @@ class BookingRepository implements BookingInterface
     $booking->passengers->each(function ($passenger) {
       $passenger->setAttribute('installment_status', $passenger->installment_status);
     });
-    if ($booking && $booking->passengers) {
-      $isBalanceSufficient = $this->isBalanceSufficient($booking);
-
-      if ($isBalanceSufficient) {
-        foreach ($booking->passengers as $passenger) {
-          $passenger->installment_state = null;
-        }
-      } else {
-        foreach ($booking->passengers as $passenger) {
-          $passenger->installment_state = $passenger->getInstallmentStatus();
-        }
-      }
-    }
 
     return $booking;
   }

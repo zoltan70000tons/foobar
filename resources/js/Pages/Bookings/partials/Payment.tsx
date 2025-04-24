@@ -67,6 +67,21 @@ type Installment = {
   passengerAllocatedCost: number;
 };
 
+type InstallmentItem = {
+  installment_id: number;
+  type: "PAYMENT" | "FEE";
+  amount?: number;
+  amount_due?: number;
+  due_date: string;
+};
+
+type InstallmentStatus = {
+  paid_installments: InstallmentItem[];
+  remaining_installments: InstallmentItem[];
+  next_installment?: InstallmentItem;
+  fully_paid: boolean;
+};
+
 type Passenger = {
   id: number;
   name: string;
@@ -76,11 +91,7 @@ type Passenger = {
   installments: Installment[];
   payments: Payment[];
   fees: Fee[];
-  installment_state: null | {
-    next_installment?: {
-      due_date: string;
-    };
-  };
+  installment_status: InstallmentStatus;
 };
 
 type Adjustment = {
@@ -601,7 +612,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   </TableRow>
                   <TableRow>
                     <TableCell>Next Payment</TableCell>
-                    <TableCell align="right" sx={!pax.installment_state?.next_installment ? { color: '#4CAF50' } : {}}>{!pax.installment_state?.next_installment ? 'Paid' : pax.installment_state.next_installment.due_date}</TableCell>
+                    <TableCell align="right" sx={!pax.installment_status.next_installment ? { color: '#4CAF50' } : {}}>
+                      {pax.installment_status.fully_paid ? 'Paid' : pax.installment_status?.next_installment?.due_date}
+                    </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 </TableBody>
