@@ -35,6 +35,9 @@ import LoadingOverlay from '@/Components/LoadingOverlay';
 import DiscountForm from './DiscountForm';
 import HistoryIcon from '@mui/icons-material/History';
 
+//Helpers
+import { formatDate } from '@/Helpers/stringUtils';
+
 const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
@@ -613,7 +616,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   <TableRow>
                     <TableCell>Next Payment</TableCell>
                     <TableCell align="right" sx={!pax.installment_status.next_installment ? { color: '#4CAF50' } : {}}>
-                      {pax.installment_status.fully_paid ? 'Paid' : pax.installment_status?.next_installment?.due_date}
+                      {pax.installment_status.fully_paid ? 'Paid' : formatDate(pax.installment_status?.next_installment?.due_date)}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>

@@ -38,6 +38,9 @@ import { BookingStatusColor, BookingStatusEnum } from "@/enums/StatusEnum";
 import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete } from "@mui/material";
 
+//Helpers
+import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
+
 const Index = ({
   auth,
   event,
@@ -205,7 +208,7 @@ const Index = ({
         sortable: true,
         draw: (row: any) => (
           <>
-            {new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            {formatDate(row.created_at)}
           </>
         ),
       },
@@ -246,11 +249,7 @@ const Index = ({
             <Chip
               label={
                 row?.longestDueDateInstallment
-                  ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
+                  ? formatDate(row.longestDueDateInstallment)
                   : "No date"
               }
               color={status}
@@ -276,7 +275,7 @@ const Index = ({
       {
         header: "Balance",
         accessor: "balance",
-        draw: (row: any) => <>{row.balance != null && row.cost != null && <>{row.balance + " / " + row.cost}</>}</>,
+        draw: (row: any) => <>{row.balance != null && row.cost != null && <>{formatCurrency(row.balance, false, false) + " / " + formatCurrency(row.cost, false, false)}</>}</>,
       },
       {
         header: "Tags",
@@ -393,7 +392,7 @@ const Index = ({
         accesor: "passenger_allocated_cost",
         draw: (row: any) => (
           <div style={{ display: "flex", gap: "10px" }}>
-            {row.passenger_balance + " / " + row.passenger_allocated_cost}
+            {formatCurrency(row.passenger_balance, false, false) + " / " + formatCurrency(row.passenger_allocated_cost, false, false)}
           </div>
         ),
       },
@@ -403,7 +402,7 @@ const Index = ({
         draw: (row: any) => (
           <div style={{ display: "flex", gap: "10px" }}>
             <Chip
-              label={row.installment_status.fully_paid ? "Paid" : row.installment_status.next_installment?.due_date}
+              label={row.installment_status.fully_paid ? "Paid" : formatDate(row.installment_status.next_installment?.due_date)}
               color={row.installment_status.fully_paid ? "success" : "error"}
               size="small"
               sx={{
