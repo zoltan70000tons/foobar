@@ -611,15 +611,4 @@ class BookingRepository implements BookingInterface
       ];
     }
   }
-
-  public function isBalanceSufficient(Booking $booking): bool
-  {
-    $passengers = $booking->passengers;
-
-    $totalPassengerBalance = $passengers->sum('passenger_balance');
-
-    $allocatedCost = $passengers->sum('passenger_allocated_cost');
-
-    return $totalPassengerBalance >= $allocatedCost;
-  }
 }
