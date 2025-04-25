@@ -17,8 +17,10 @@ import {
   Box,
 } from "@mui/material";
 import Row from "./Row";
+import { DateRange, HeaderDateRange } from "@/Components/HeaderDateRange";
 
 interface ColumnProps<T> {
+  dateRange?: string;
   header: string;
   accessor: keyof T | string;
   sortable?: boolean;
@@ -85,13 +87,14 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const [paginatedData, setPaginatedData] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [customFilter, setCustomFilter] = useState("");
+  const [dateRangeState, setDateRangeState] = useState<Record<string, DateRange>>({});
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
       const fetchTableData = async () => {
         setLoading(true);
         try {
-          const response = await fetchData(page, rowsPerPage, filters, sort);
+          const response = await fetchData(page, rowsPerPage, filters, sort, dateRangeState);
           setPaginatedData(response.data);
           setTotalCount(response.total);
         } catch (error) {
@@ -103,7 +106,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
 
       fetchTableData();
     }
-  }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData]);
+  }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData, dateRangeState]);
 
   const dataArray = Array.isArray(data) ? data : data ? Object.values(data) : [];
 
@@ -237,17 +240,43 @@ const MuiTable: FC<DataGridProps<any>> = ({
               )}
               <TableCell />
               {columns.map((column) => (
-                <TableCell key={column.accessor as string} sx={column.width ? { width: column.width } : {}}>
-                  {column.sortable ? (
-                    <TableSortLabel
-                      active={sort.key === column.accessor}
-                      direction={sort.direction}
-                      onClick={() => handleSort(column.accessor)}
-                    >
-                      {column.header}
-                    </TableSortLabel>
+                <TableCell
+                  key={column.accessor as string}
+                  sx={column.width ? { width: column.width } : { textAlign: 'center', verticalAlign: 'middle' }}
+                >
+                  {column?.dateRange ? (
+                    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap'}}>
+                      {column.sortable ? (
+                        <TableSortLabel
+                          active={sort.key === column.accessor}
+                          direction={sort.direction}
+                          onClick={() => handleSort(column.accessor)}
+                        >
+                          {column.header}
+                        </TableSortLabel>
+                      ) : (
+                        column.header
+                      )}
+                      <HeaderDateRange
+                        accessor={column.accessor as string}
+                        dateRangeState={dateRangeState}
+                        setDateRangeState={setDateRangeState}
+                      />
+                    </div>
                   ) : (
-                    column.header
+                    <>
+                      {column.sortable ? (
+                        <TableSortLabel
+                          active={sort.key === column.accessor}
+                          direction={sort.direction}
+                          onClick={() => handleSort(column.accessor)}
+                        >
+                          {column.header}
+                        </TableSortLabel>
+                      ) : (
+                        column.header
+                      )}
+                    </>
                   )}
                 </TableCell>
               ))}

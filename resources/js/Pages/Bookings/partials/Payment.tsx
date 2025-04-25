@@ -35,6 +35,9 @@ import LoadingOverlay from '@/Components/LoadingOverlay';
 import DiscountForm from './DiscountForm';
 import HistoryIcon from '@mui/icons-material/History';
 
+//Helpers
+import { formatDate } from '@/Helpers/stringUtils';
+
 const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
@@ -67,6 +70,21 @@ type Installment = {
   passengerAllocatedCost: number;
 };
 
+type InstallmentItem = {
+  installment_id: number;
+  type: "PAYMENT" | "FEE";
+  amount?: number;
+  amount_due?: number;
+  due_date: string;
+};
+
+type InstallmentStatus = {
+  paid_installments: InstallmentItem[];
+  remaining_installments: InstallmentItem[];
+  next_installment?: InstallmentItem;
+  fully_paid: boolean;
+};
+
 type Passenger = {
   id: number;
   name: string;
@@ -76,6 +94,7 @@ type Passenger = {
   installments: Installment[];
   payments: Payment[];
   fees: Fee[];
+  installment_status: InstallmentStatus;
 };
 
 type Adjustment = {
@@ -591,6 +610,13 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                       <Box component="span" sx={{ color: '#2196F3', fontWeight: '600', fontSize: '1.2rem' }}>
                         {formatCurrency(totalCostAfterAdjustments - pax.passenger_balance)}
                       </Box>
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Next Payment</TableCell>
+                    <TableCell align="right" sx={!pax.installment_status.next_installment ? { color: '#4CAF50' } : {}}>
+                      {pax.installment_status.fully_paid ? 'Paid' : formatDate(pax.installment_status?.next_installment?.due_date)}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>

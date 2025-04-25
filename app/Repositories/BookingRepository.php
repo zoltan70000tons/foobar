@@ -118,7 +118,9 @@ class BookingRepository implements BookingInterface
     ?int $perPage = 10,
     ?string $sortKey = 'created_at',
     ?string $sortDirection = 'desc',
-    $tags = []
+    $tags = [],
+    $user_ids = [],
+    $dateRange = null
   ) {
     $query = Booking::with([
       'cabin',
@@ -163,6 +165,13 @@ class BookingRepository implements BookingInterface
           });
         });
       });
+
+      $query->orWhereHas('agent', function ($query) use ($keyword) {
+        $query->where(function ($query) use ($keyword) {
+          $query
+            ->where(DB::raw('LOWER(username)'), 'like', '%' . $keyword . '%');
+        });
+      });
     }
 
     if (!empty($tags)) {
@@ -172,6 +181,13 @@ class BookingRepository implements BookingInterface
         }
       });
     }
+
+
+    if (!empty($user_ids)) {
+      $query->whereIn('agent_id', $user_ids);
+    }
+    
+    
 
     $advancedSorts = ['longestDueDateInstallment', 'cabinType', 'fullName'];
 
@@ -211,6 +227,32 @@ class BookingRepository implements BookingInterface
       $results = $results->values();
     }
 
+    if ($dateRange && isset($dateRange['longestDueDateInstallment'])) {
+        $startDate = $dateRange['longestDueDateInstallment']['startDate'];
+        $endDate = null;
+        if (isset($dateRange['longestDueDateInstallment']['endDate'])) {
+            $endDate = $dateRange['longestDueDateInstallment']['endDate'];
+        }
+
+        $filteredResults = [];
+
+        foreach ($results as $booking) {
+            $firstUnpaidInstallmentDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+
+            if ($firstUnpaidInstallmentDate === null) {
+                continue;
+            }
+
+            $firstUnpaidInstallmentDate = Carbon::parse($firstUnpaidInstallmentDate);
+
+            if (($firstUnpaidInstallmentDate->gte($startDate)) && ($endDate ? $firstUnpaidInstallmentDate->lte($endDate) : true)) {
+                $filteredResults[] = $booking;
+            }
+        }
+
+        $results = collect($filteredResults);
+    }
+
     $currentPage = request()->get('page', 1);
 
     $offset = ($currentPage - 1) * $perPage;
@@ -231,7 +273,13 @@ class BookingRepository implements BookingInterface
       $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
 
       $longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+
       $booking->longestDueDateInstallment = $longestDueDateInstallment;
+      
+      // Add Installment status to each passenger
+      $booking->passengers->each(function ($passenger) {
+        $passenger->setAttribute('installment_status', $passenger->installment_status);
+      });
 
       $editingUsername = DB::table('booking_agent_sessions')
         ->where('booking_id', $booking->id)
@@ -239,12 +287,6 @@ class BookingRepository implements BookingInterface
         ->value('username');
 
       $booking->editingUsername = $editingUsername;
-      /*       // Sort passengers to place lead passenger first
-      if ($booking->passengers && $index == 1) {
-        $booking->passengers = $booking->passengers
-        ->sortBy('passenger_order') 
-        ->values(); 
-      } */
 
       $booking->subRows = $booking->passengers ?? [];
     });
