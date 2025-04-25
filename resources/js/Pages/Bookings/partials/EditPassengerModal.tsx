@@ -157,8 +157,8 @@ const EditPassengerModal = ({
                         {isLeadPassenger ? "Edit Lead Passenger" : "Edit Passenger"}
                     </Typography>
                     {passenger?.empty_seat && (
-                        <Typography variant="body2" color="error" gutterBottom>
-                            This passenger is marked as an empty seat. Please uncheck the empty seat option to edit the passenger details.
+                        <Typography variant="body2" color="error" gutterBottom marginBottom={1}>
+                            This passenger is marked as an Empty Seat. Please RELEASE the empty seat option to edit the passenger details.
                         </Typography>
                     )}
 
