@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\ClearOldBookingSessions;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -29,3 +30,5 @@ Schedule::call(function () {
 })->everyFourHours();
 
 Schedule::command('telescope:prune')->daily();
+
+Schedule::job(new ClearOldBookingSessions())->everyMinute();
