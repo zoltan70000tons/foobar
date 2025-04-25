@@ -31,6 +31,6 @@ class ClearOldBookingSessions implements ShouldQueue
             ->where('time', '<', $expiredTime)
             ->delete();
 
-        logger()->info("ClearOldBookingSessions: Deleted {$deleted} expired booking session(s).");
+        //logger()->info("ClearOldBookingSessions: Deleted {$deleted} expired booking session(s).");
     }
 }

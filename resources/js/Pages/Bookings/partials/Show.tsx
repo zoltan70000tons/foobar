@@ -34,6 +34,7 @@ import BookingSidebar from "./BookingSidebar";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import { BookingSessionTimer } from "./BookingSessionTimer";
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments }: PageProps) => {
   const [editMode, setEditMode] = useState(false);
@@ -143,11 +144,15 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
     });
   };
 
+  console.log("Booking:", booking.locked_by);
+
   return (
     <AuthenticatedLayout user={auth.user} header={"Booking Detail"}>
       <Head title="Booking " />
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {editMode && (<BookingSessionTimer lockedAt={booking?.locked_by?.time} sessionDurationMinutes={10} eventId={event.id} bookingId={booking.id} />)}
+
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Grid item xs={6}>
             <FormGroup>
@@ -204,15 +209,12 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
           </Grid>
         </Box>
 
-        {booking.locked_by && booking.status !== "CANCELLED" && (
+        {booking.locked_by && booking.locked_by.agent_id !== auth.user.id && booking.status !== "CANCELLED" && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Warning</AlertTitle>
-            {booking.locked_by.agent_id === auth.user.id
-              ? "Once you finish editing, remember to exit edit mode."
-              : "This booking request is currently being edited by another agent, so all editable fields have been disabled."}
+            This booking request is currently being edited by another agent, so all editable fields have been disabled.
           </Alert>
         )}
-
         <Status event={event} editMode={editMode} booking={booking} users={users} />
         <Detail
           event={event}
