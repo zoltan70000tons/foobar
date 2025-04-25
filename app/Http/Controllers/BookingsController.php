@@ -716,8 +716,9 @@ class BookingsController extends Controller
     $sortDirection = $request->input('sort_direction', 'desc');
     $tags = array_filter(explode(',', $request->input('tags', '')));
     $user_ids = $request->input('user_ids', []);
+    $dateRange = $request->input('date_range', null);
     $bookings = $this->bookingRepository->getByStatus($eventId, $status, $keyword, $perPage, $sortKey,
-        $sortDirection, $tags,$user_ids);
+        $sortDirection, $tags, $user_ids, $dateRange);
 
     return response()->json([
       'data' => $bookings->items(),

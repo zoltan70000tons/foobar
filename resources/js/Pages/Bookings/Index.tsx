@@ -34,9 +34,8 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { green, lightGreen } from '@mui/material/colors';
 import { BookingStatusColor, BookingStatusEnum } from "@/enums/StatusEnum";
-import SearchIcon from '@mui/icons-material/Search';
+import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete } from "@mui/material";
 
 const Index = ({
@@ -69,8 +68,6 @@ const Index = ({
   const [tableKey, setTableKey] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const eventId = event.id;
-
-
 
   // useEffect(() => {
   //   const debounced = debounce(() => {
@@ -169,10 +166,6 @@ const Index = ({
 
     const url = `/events/${event.id}/bookings/${row.booking_code}`;
 
-    // TODO: JG - Leo can we use visit instead of location.href?
-    // https://inertiajs.com/manual-visits
-
-    // window.location.href = url; we can delete it 
     router.visit(url);
   };
 
@@ -220,6 +213,8 @@ const Index = ({
         header: "Next Payment",
         accessor: "longestDueDateInstallment",
         sortable: true,
+        dateRange: true,
+        width: "15%",
         draw: (row: { longestDueDateInstallment?: string | null }) => {
           const today = new Date();
           const longestDueDate = row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment) : null;
@@ -237,7 +232,7 @@ const Index = ({
           const fiveDaysFromNow = new Date(today);
           fiveDaysFromNow.setDate(today.getDate() + 5);
 
-          let status: 'default' | 'success' | 'warning' | 'error' = "default"; // Default color
+          let status: "default" | "success" | "warning" | "error" = "default"; // Default color
 
           if (longestDueDate > twentyFiveDaysFromNow) {
             status = "success";
@@ -249,7 +244,15 @@ const Index = ({
 
           return (
             <Chip
-              label={row?.longestDueDateInstallment ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : 'No date'}
+              label={
+                row?.longestDueDateInstallment
+                  ? new Date(row.longestDueDateInstallment).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "No date"
+              }
               color={status}
             />
           );
@@ -303,9 +306,7 @@ const Index = ({
             )}
           </Box>
         ),
-      }
-
-      ,
+      },
 
       {
         header: "Assigned To",
@@ -344,7 +345,9 @@ const Index = ({
                 )}
               </div>
               {row?.editingUsername && (
-                <Box component="small" sx={{ width: "10px" }} color="warning.main">Being used by {row.editingUsername}</Box>
+                <Box component="small" sx={{ width: "10px" }} color="warning.main">
+                  Being used by {row.editingUsername}
+                </Box>
               )}
             </>
           );
@@ -395,6 +398,23 @@ const Index = ({
         ),
       },
       {
+        header: "Next Payment",
+        accesor: "installment_status",
+        draw: (row: any) => (
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Chip
+              label={row.installment_status.fully_paid ? "Paid" : row.installment_status.next_installment?.due_date}
+              color={row.installment_status.fully_paid ? "success" : "error"}
+              size="small"
+              sx={{
+                fontSize: "0.7rem",
+                fontWeight: 500,
+              }}
+            />
+          </div>
+        ),
+      },
+      {
         header: "Payment Method",
         accessor: "payment_method",
       },
@@ -402,26 +422,22 @@ const Index = ({
     [],
   );
 
-
   const clearFilter = () => {
     setInputValue("");
     setSearchTerm("");
     setKeyword("");
     //setSelectedTags([]);
-    setTableKey(prev => prev + 1);
+    setTableKey((prev) => prev + 1);
   };
 
   const handleFilter = () => {
     setSearchTerm(inputValue);
   };
 
+  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => {};
 
-  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-  };
-
-
-  const fetchData = useCallback(async (page, rowsPerPage, filters, sort) => {
+  const fetchData = useCallback(async (page, rowsPerPage, filters, sort, dateRangeState) => {
+    console.log(searchTerm);
     try {
       const res = await axios.get(route("bookings.data", { id: event.id }), {
         params: {
@@ -433,6 +449,7 @@ const Index = ({
           tab: selectedTab ?? 0,
           tags: selectedTags.join(','),
           user_ids: selectedUsers.map((user) => user.id),
+          date_range: dateRangeState,
           ...filters,
         },
       });
@@ -507,11 +524,7 @@ const Index = ({
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton
-                          onClick={clearFilter}
-                          disabled={!inputValue}
-                          size="small"
-                        >
+                        <IconButton onClick={clearFilter} disabled={!inputValue} size="small">
                           <Clear />
                         </IconButton>
                         <IconButton
@@ -569,13 +582,7 @@ const Index = ({
                       </Box>
                     );
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      placeholder="Filter by Tags"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Tags" />}
                   sx={{ minWidth: 250 }}
                 />
                 {/* <IconButton
@@ -609,7 +616,7 @@ const Index = ({
 
               </Box>
             </Grid>
-            <Box sx={{ mt: '1rem;' }}>
+            <Box sx={{ mt: "1rem;" }}>
               {/* Tabs for navigation */}
               <Tabs
                 value={selectedTab}
@@ -645,19 +652,12 @@ const Index = ({
                 }}
               >
                 {bookingTabs.map((tab, index) => (
-                  <Tab
-                    key={tab.status}
-                    icon={tab.icon}
-                    iconPosition="start"
-                    label={tab.label}
-                    value={index}
-                  />
+                  <Tab key={tab.status} icon={tab.icon} iconPosition="start" label={tab.label} value={index} />
                 ))}
               </Tabs>
 
               {/* Display the bookings */}
               <MuiTable
-
                 columns={bookingColumns}
                 data={[]}
                 subColumns={subColumns}
