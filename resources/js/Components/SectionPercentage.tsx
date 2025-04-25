@@ -4,6 +4,9 @@ import { green, blue, red } from "@mui/material/colors";
 import { InfoRounded } from "@mui/icons-material";
 import dayjs from "dayjs";
 
+// Helpers
+import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
+
 // Define types
 type Props = {
   passenger: any;
@@ -35,40 +38,6 @@ type InstallmentStatus = {
   next_installment?: InstallmentItem;
   fully_paid: boolean;
 };
-
-// Function to format currency
-const localNumberFormat = (value: number) =>
-  `${new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)} USD`;
-
-// Function to format date
-function localDateFormat(date: string | Date, locale: string = "en"): string {
-  let parsedDate: Date;
-
-  if (typeof date === "string") {
-    // Check if it's a simple date (YYYY-MM-DD) or a full ISO string
-    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      const [year, month, day] = date.split("-").map(Number);
-      parsedDate = new Date(Date.UTC(year, month - 1, day));
-    } else {
-      // Fallback to ISO parsing
-      parsedDate = new Date(date);
-    }
-  } else if (date instanceof Date) {
-    parsedDate = date;
-  } else {
-    throw new Error("Invalid date format");
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    year: "numeric",
-    month: locale === "es" ? "long" : "short",
-    day: "2-digit",
-    timeZone: "UTC", // Forces UTC formatting
-  }).format(parsedDate);
-}
 
 // Installment payment part
 const InstallmentPayment = ({
@@ -129,8 +98,8 @@ const InstallmentPayment = ({
       >
         <Typography fontSize="12px">
           {status === "paid"
-            ? `${localNumberFormat(installment?.amount)}`
-            : `${localNumberFormat(installment?.amount_due)}`}
+            ? `${formatCurrency(installment?.amount)}`
+            : `${formatCurrency(installment?.amount_due)}`}
         </Typography>
 
         {status === "paid" ? (
@@ -140,7 +109,7 @@ const InstallmentPayment = ({
         ) : (
           <Typography fontSize={"12px"}>
             Due Date: {" "}
-            {localDateFormat(installment?.due_date)}
+            {formatDate(installment?.due_date)}
           </Typography>
         )}
       </Box>

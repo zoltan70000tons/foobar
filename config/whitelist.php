@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'allowed_characters' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    'allowed_characters' => 'ABCDEFGHJKLMNPQRTUVWXYZ',
     'blocked_words' => [
         'ABCD', 'XXXX', 'TEST', 'EVIL' // Add inappropriate words here
     ],
