@@ -43,6 +43,7 @@ const CabinType = Object.freeze({
 const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }) => {
   const [editPassengerOpen, setEditPassengerOpen] = useState(false);
   const [openConfirmCancelInvitation, setOpenConfirmCancelInvitation] = useState(false);
+  const [openConfirmSeatEmpty, setOpenConfirmSeatEmpty] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [passengers, setPassengers] = useState(
@@ -180,6 +181,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
 
   const handleCancel = () => {
     setOpenConfirm(false);
+    setOpenConfirmSeatEmpty(false);
   };
 
   const getAvatar = (passenger) => {
@@ -228,6 +230,46 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     if (passenger.empty) return "#90CAF9";
     return "#FFF59D";
   };
+
+
+  // Handle set seat as empty
+  const showModalSeatEmpty = () => {
+    setOpenConfirmSeatEmpty(true);
+  }
+
+  // handle confirm / unset empty seat
+  const handleConfirmEmptySeat = async () => {
+    setOpenConfirmSeatEmpty(false);
+
+    setReleaseLoading(true);
+    try {
+      const response = await axios.post(route('seat.empty', {  id: booking.event_id,  booking_id: booking.id, slot_id: editedPassengerData?.id}), {
+        ...editedPassengerData,
+        empty_seat: !editedPassengerData?.empty_seat
+      });
+
+      setPassengers((prev) =>
+        prev.map((p) =>
+          p.id === editedPassengerData.id
+            ? { ...p, ...response.data }
+            : p
+        )
+      );
+      setEditPassengerOpen(false);
+      setEditingPassenger(null);
+      setErrors({});
+      router.reload({ only: ['booking'] });
+      showSnackbar("Seat updated successfully!", "success");
+    }
+    catch (error) {
+      setErrors(error);
+      console.error(error);
+      showSnackbar("Error updating seat!" + (error.response?.data?.error || error), "error");
+    }
+    finally {
+      setReleaseLoading(false);
+    }
+  }
 
   const renderChip = (passenger) => {
     if (passenger.empty_seat) {
@@ -317,8 +359,10 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         editMode={editMode}
         onSave={handleSavePassenger}
         onDelete={onDelete}
+        showModalSeatEmpty={showModalSeatEmpty}
         savingLoading={savinLoading}
         releaseLoading={releaseLoading}
+        emptySeatLoading={releaseLoading}
         isSingleRoom={isSingleRoom}
         onChange={(field, value) =>
           setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
@@ -357,6 +401,24 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
             Cancel
           </Button>
           <Button onClick={handleConfirmCancelInvitation} color="error" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+      <Dialog open={openConfirmSeatEmpty} onClose={handleCancel}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {editedPassengerData?.empty_seat ? "Are you sure you want delete empty seat? This seat will be available again" : "Are you sure you want to SET this seat as empty?"}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmEmptySeat} color="error" variant="contained">
             Confirm
           </Button>
         </DialogActions>

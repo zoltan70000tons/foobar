@@ -80,9 +80,9 @@ class CustomerBookingRepository
       });
 
       if (!$passenger) {
-        return response()->json(['message' => 'Passenger not found'], 404);
+        return null;
       }
-    }
+    } 
 
     // if booking is_single_occupancy then do not return other passengers
     if ($booking->is_single_occupancy) {
@@ -368,6 +368,9 @@ class CustomerBookingRepository
   public function setEmptySeat(int $eventId, string $bookingCode, $passengerOrder)
   {
     $booking = $this->getBookingByCode($eventId, $bookingCode);
+
+    \Log::info('booking passenger: ' . json_encode($booking));
+
 
     //$cabinCapacity = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;

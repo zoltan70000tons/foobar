@@ -34,12 +34,14 @@ const EditPassengerModal = ({
     passenger,
     onSave,
     onDelete,
+    showModalSeatEmpty,
     isSingleRoom,
     onChange,
     errors,
     editMode,
     savingLoading,
     releaseLoading,
+    emptySeatLoading,
     bookingId,
     eventId,
 }) => {
@@ -59,7 +61,7 @@ const EditPassengerModal = ({
 
     const disabledByDesign = !canEdit || !editMode;
 
-    const isDisabled = passenger?.survivor_number || disabledByDesign;
+    const isDisabled = passenger?.survivor_number || passenger?.empty_seat || disabledByDesign;
 
     useEffect(() => {
         if (searchQuery.length < 3) {
@@ -154,6 +156,11 @@ const EditPassengerModal = ({
                     <Typography variant="h6" gutterBottom>
                         {isLeadPassenger ? "Edit Lead Passenger" : "Edit Passenger"}
                     </Typography>
+                    {passenger?.empty_seat && (
+                        <Typography variant="body2" color="error" gutterBottom marginBottom={1}>
+                            This passenger is marked as an Empty Seat. Please RELEASE the empty seat option to edit the passenger details.
+                        </Typography>
+                    )}
 
                     {/* Autocomplete Search */}
                     <Box mb={3}>
@@ -595,6 +602,9 @@ const EditPassengerModal = ({
                                     </LoadingButton>
                                     {canReset && (<LoadingButton loading={releaseLoading} variant="outlined" color="error" onClick={onDelete} disabled={editable}>
                                         Release
+                                    </LoadingButton>)}
+                                    {(<LoadingButton loading={emptySeatLoading} variant="outlined" color="warning" onClick={showModalSeatEmpty} disabled={editable}>
+                                        {passenger?.empty_seat ? 'Unset empty seat' : 'Set empty seat'}
                                     </LoadingButton>)}
                                 </>
                             )}
