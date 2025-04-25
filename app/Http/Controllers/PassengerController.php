@@ -157,14 +157,37 @@ class PassengerController extends Controller
         return response()->json($slot);
     }
 
+    /*
+     |----------------------------------------------------------
+     | Release Seat REQUEST
+     | ---------------------------------------------------------
+    */
     public function releaseSeat(Request $request)
     {
         $validated = $request->validate([
             'slotId' => 'required|int',
             'bookingId' => 'required|int'
         ]);
+
+        $slotPassenger = Passenger::where('id', '=', $validated['slotId'])->first();
+        $slot = $this->clearSlot($slotPassenger);
+        return response()->json($slot);
+
+    }
+
+    /*
+     |----------------------------------------------------------
+     | Clear Slot
+     | ---------------------------------------------------------
+    */
+    private function clearSlot($slot)
+    {
+        if (!$slot) {
+            return response()->json('error', 422);
+        }
+
         try {
-            $slot = Passenger::where('id', '=', $validated['slotId'])->first();
+           // $slot = Passenger::where('id', '=', $slot->id)->first();
            // ---- start @JG if passenger invitation exists, delete it
             $passengerInvitation = PassengerInvitation::where('passenger_id', $slot->id)->first();
             if ($passengerInvitation) {
@@ -202,12 +225,52 @@ class PassengerController extends Controller
                 $slot->single_t_agreement = false;
                // $slot->passenger_allocated_cost = 0;
                // $slot->passenger_balance = 0;
-                $slot->was_on_board = 0;
-                $slot->empty_seat = 0;
+                $slot->was_on_board = false;
+                $slot->empty_seat = false;
                 //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
                 // on passengers table
                 $slot->save();
             }
+            return $slot;
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json('error');
+        }
+    }
+
+    /*
+     |----------------------------------------------------------
+     | Set or Unset Empty Seat
+     | ---------------------------------------------------------
+    */
+    public function emptySeat(Request $request)
+    {
+        $validated = $request->validate([
+            'slot_id' => 'required|int',
+            'booking_id' => 'required|int',
+            'empty_seat' => 'required|boolean'
+        ]);
+
+        $slot = Passenger::where('id', '=', $validated['slot_id'])->first();
+
+        if (!$slot) {
+            return response()->json('error', 422);
+        }
+
+        // $this->clearSlot($slot);
+        // $slot->refresh();
+
+        // If slot have first name, last name or dob then clear the slot
+        if ($slot->first_name || $slot->last_name || $slot->dob) {
+            $this->clearSlot($slot);
+            $slot->refresh();
+        }
+
+        try {
+           
+            $slot->empty_seat = $validated['empty_seat'];
+            $slot->save();
+     
             return response()->json($slot);
         } catch (\Exception $e) {
             Log::error($e->getMessage());

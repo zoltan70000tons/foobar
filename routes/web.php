@@ -182,6 +182,7 @@ Route::middleware('auth')->group(function () {
 
   Route::prefix('/events/{id}/booking/{booking_id}/passengers')->group(function () {
     Route::post('/update/seat', [PassengerController::class, 'updateSeat'])->name('seat.update');
+    Route::post('/empty/seat', [PassengerController::class, 'emptySeat'])->name('seat.empty');
     Route::post('/release/seat', [PassengerController::class, 'releaseSeat'])->name('seat.release');
     Route::post('/cancel/invitation', [PassengerController::class, 'cancelPassengerInvitation'])->name(
       'passenger_invitation.cancel'
