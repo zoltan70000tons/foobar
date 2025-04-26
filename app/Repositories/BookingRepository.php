@@ -188,7 +188,6 @@ class BookingRepository implements BookingInterface
     
         $results = $query->paginate($perPage, ['*'], 'page', request()->get('page', 1));
     
-        // Sort avanzado después de paginar
         if (in_array($sortKey, $advancedSorts) && $results instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $collection = $results->getCollection()->sortBy(function ($booking) use ($sortKey) {
                 return match ($sortKey) {
@@ -207,7 +206,6 @@ class BookingRepository implements BookingInterface
             $results->setCollection($collection->values());
         }
     
-        // Filtro por rango de fechas después de paginar
         if ($dateRange && isset($dateRange['longestDueDateInstallment'])) {
             $startDate = Carbon::parse($dateRange['longestDueDateInstallment']['startDate']);
             $endDate = isset($dateRange['longestDueDateInstallment']['endDate'])
@@ -234,7 +232,6 @@ class BookingRepository implements BookingInterface
             );
         }
     
-        // Post procesamiento
         $results->getCollection()->each(function ($booking) {
             $booking->fullName = $booking->customer->detail->full_name ?? null;
             $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
