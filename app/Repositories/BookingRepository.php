@@ -133,47 +133,41 @@ class BookingRepository implements BookingInterface
             'agent',
             'agent.detail',
         ])
-            ->withSum('passengers as balance', 'passenger_balance')
-            ->withSum('passengers as cost', 'passenger_allocated_cost')
-            ->where('event_id', '=', $eventId)
-            ->where('status', '=', $status);
-
+        ->withSum('passengers as balance', 'passenger_balance')
+        ->withSum('passengers as cost', 'passenger_allocated_cost')
+        ->where('event_id', $eventId)
+        ->where('status', $status);
+    
         if (!empty($keyword)) {
             $keyword = strtolower($keyword);
+    
             $query->where(function ($query) use ($keyword) {
-                $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%');
-
-                $query->orWhereHas('customer.detail', function ($query) use ($keyword) {
-                    $query->where(function ($query) use ($keyword) {
-                        $query
-                            ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
-                            ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
-                            ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
+                $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
+                    ->orWhereHas('customer.detail', function ($query) use ($keyword) {
+                        $query->where(function ($query) use ($keyword) {
+                            $query
+                                ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
+                                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
+                                ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
+                        });
+                    })
+                    ->orWhereHas('cabin.cabinType', function ($query) use ($keyword) {
+                        $query->where(DB::raw('LOWER(cabin_type)'), 'like', '%' . $keyword . '%');
+                    })
+                    ->orWhereHas('passengers', function ($query) use ($keyword) {
+                        $query->where(function ($query) use ($keyword) {
+                            $query
+                                ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
+                                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
+                                ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
+                        });
+                    })
+                    ->orWhereHas('agent', function ($query) use ($keyword) {
+                        $query->where(DB::raw('LOWER(username)'), 'like', '%' . $keyword . '%');
                     });
-                });
-
-                $query->orWhereHas('cabin.cabinType', function ($query) use ($keyword) {
-                    $query->where(DB::raw('LOWER(cabin_type)'), 'like', '%' . $keyword . '%');
-                });
-
-                $query->orWhereHas('passengers', function ($query) use ($keyword) {
-                    $query->where(function ($query) use ($keyword) {
-                        $query
-                            ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
-                            ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
-                            ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
-                    });
-                });
-            });
-
-            $query->orWhereHas('agent', function ($query) use ($keyword) {
-                $query->where(function ($query) use ($keyword) {
-                    $query
-                        ->where(DB::raw('LOWER(username)'), 'like', '%' . $keyword . '%');
-                });
             });
         }
-
+    
         if (!empty($tags)) {
             $query->where(function ($q) use ($tags) {
                 foreach ($tags as $tag) {
@@ -181,24 +175,21 @@ class BookingRepository implements BookingInterface
                 }
             });
         }
-
-
+    
         if (!empty($user_ids)) {
             $query->whereIn('agent_id', $user_ids);
         }
-
-
-
+    
         $advancedSorts = ['longestDueDateInstallment', 'cabinType', 'fullName'];
-
+    
         if (!empty($sortKey) && !in_array($sortKey, $advancedSorts)) {
             $query->orderBy($sortKey, $sortDirection ?? 'desc');
         }
-
+    
         $results = $query->paginate($perPage, ['*'], 'page', request()->get('page', 1));
-
-        // Sort by custom fields after pagination
-        if (in_array($sortKey, $advancedSorts)) {
+    
+        // Sort avanzado después de paginar
+        if (in_array($sortKey, $advancedSorts) && $results instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $collection = $results->getCollection()->sortBy(function ($booking) use ($sortKey) {
                 return match ($sortKey) {
                     'longestDueDateInstallment' => Carbon::parse(
@@ -208,67 +199,59 @@ class BookingRepository implements BookingInterface
                     'fullName' => $booking->passengers->firstWhere('passenger_order', 1)?->first_name ?? '',
                 };
             });
-
+    
             if ($sortDirection === 'desc') {
                 $collection = $collection->reverse();
             }
-
+    
             $results->setCollection($collection->values());
         }
-
-        // if ($dateRange && isset($dateRange['longestDueDateInstallment'])) {
-        //   $startDate = Carbon::parse($dateRange['longestDueDateInstallment']['startDate']);
-        //   $endDate = isset($dateRange['longestDueDateInstallment']['endDate'])
-        //     ? Carbon::parse($dateRange['longestDueDateInstallment']['endDate'])
-        //     : null;
-
-        //   $filtered = $results->getCollection()->filter(function ($booking) use ($startDate, $endDate) {
-        //     $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
-        //     if (!$dueDate) return false;
-
-        //     $dueDate = Carbon::parse($dueDate);
-        //     return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
-        //   });
-
-        //   $results->setCollection($filtered->values());
-        //   $results->setTotal($filtered->count());
-        // }
-
+    
+        // Filtro por rango de fechas después de paginar
         if ($dateRange && isset($dateRange['longestDueDateInstallment'])) {
             $startDate = Carbon::parse($dateRange['longestDueDateInstallment']['startDate']);
             $endDate = isset($dateRange['longestDueDateInstallment']['endDate'])
                 ? Carbon::parse($dateRange['longestDueDateInstallment']['endDate'])
                 : null;
-
+    
             $filtered = $results->getCollection()->filter(function ($booking) use ($startDate, $endDate) {
                 $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
                 if (!$dueDate) return false;
-
+    
                 $dueDate = Carbon::parse($dueDate);
                 return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
-            });
-
-            $results->setCollection($filtered->values());
-            $results->setTotal($filtered->count());
+            })->values();
+    
+            $results = new \Illuminate\Pagination\LengthAwarePaginator(
+                $filtered,
+                $filtered->count(),
+                $results->perPage(),
+                $results->currentPage(),
+                [
+                    'path' => request()->url(),
+                    'query' => request()->query(),
+                ]
+            );
         }
-
+    
+        // Post procesamiento
         $results->getCollection()->each(function ($booking) {
             $booking->fullName = $booking->customer->detail->full_name ?? null;
             $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
             $booking->longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
-
+    
             $booking->passengers->each(function ($passenger) {
                 $passenger->setAttribute('installment_status', $passenger->installment_status);
             });
-
+    
             $booking->editingUsername = DB::table('booking_agent_sessions')
                 ->where('booking_id', $booking->id)
                 ->join('users', 'booking_agent_sessions.agent_id', '=', 'users.id')
                 ->value('username');
-
+    
             $booking->subRows = $booking->passengers ?? [];
         });
-
+    
         return $results;
     }
 
