@@ -246,6 +246,7 @@ class RolesSeeder extends Seeder
             Permissions::DeleteEvents,
             Permissions::ViewCabins,
             Permissions::CreateCabins,
+            Permissions::EditFullCabins,
             Permissions::EditCabins,
             Permissions::DeleteCabins,
             Permissions::ViewCabinCategories,

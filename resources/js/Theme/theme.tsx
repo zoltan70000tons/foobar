@@ -24,6 +24,19 @@ const theme = createTheme({
         //    // main: '#000000',
         // },
     },
+    components: {
+        MuiInputBase: {
+          styleOverrides: {
+            input: {
+                "&.Mui-readOnly": {
+                color: 'rgba(255, 255, 255, 0.5)',
+                pointerEvents: 'none',
+                backgroundColor: 'rgba(255,255,255,0.04)',
+                },
+            },
+          },
+        },
+    },
 });
 
 export default theme;

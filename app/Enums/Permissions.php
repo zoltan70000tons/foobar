@@ -27,6 +27,7 @@ enum Permissions: string
     // Manage Cabins
     case ViewCabins = 'View Cabins';
     case CreateCabins = 'Create Cabins';
+    case EditFullCabins = 'Edit Full Cabins';
     case EditCabins = 'Edit Cabins';
     case DeleteCabins = 'Delete Cabins';
 

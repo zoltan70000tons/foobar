@@ -45,13 +45,24 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
+
+type Props = PageProps & {
+  auth: any;
+  cabin: any;
+  event: any;
+  categories: any[];
+  tab: string;
+  data: any;
+};
+
+
 const Edit = ({
   auth,
   cabin,
   event,
   categories,
   errors,
-}: PageProps & { tab: string; data: any }) => {
+}: Props ) => {
   const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
   const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_number);
@@ -83,9 +94,9 @@ const Edit = ({
     obstructedView: cabin.cabin_spec.obstructed_view,
   });
 
-  const { hasPermission } = usePermissions();
+  //const { hasPermission } = usePermissions();
   const { showSnackbar } = useSnackbar();
-  const { flash } = usePage().props;
+  const { flash } = usePage().props as any;
 
   useEffect(() => {
     if (flash.message) {
@@ -110,7 +121,9 @@ const Edit = ({
   const disableFields = cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED;
   const statusSource = disableFields ? CabinStatus : CabinStatusReduced;
 
-  const canUpdateInventory = hasPermission(Permissions.EditCabinInventory);
+  //const canUpdateInventory = hasPermission(Permissions.EditCabinInventory);
+
+  console.log('cabin', cabin);
 
   const statusIcons = {
     [CabinStatus.AVAILABLE]: (
@@ -178,6 +191,9 @@ const Edit = ({
       ticket_inventory: ticketInventory,
     };
 
+
+    console.log("Form Data:", formData); // Debugging line
+
     router.post(
       route("cabins.update", { id: event.id, cabin_id: cabin.id }),
       formData,
@@ -196,10 +212,21 @@ const Edit = ({
 
 
   const hasAnyPermission =
-    hasPermission(Permissions.ViewCabins) ||
-    hasPermission(Permissions.EditCabins);
+    auth.permissions.includes(Permissions.ViewCabins) ||
+    auth.permissions.includes(Permissions.EditCabins);
 
-  const canEdit = !hasPermission(Permissions.EditCabins);
+ // const canEdit = !hasPermission(Permissions.EditCabins);
+
+  const canEditFull = auth.permissions.includes(Permissions.EditFullCabins);
+  const canEditPartiallyRaw = auth.permissions.includes(Permissions.EditCabins) && !canEditFull;
+
+  const allowedStatuses = [CabinStatus.AVAILABLE, CabinStatus.PARTIALLY_BOOKED];
+  const canEditPartially = canEditPartiallyRaw && allowedStatuses.includes(cabinStatus);
+
+  console.log('canEditWhenStatus', canEditPartially);
+  
+  const canEdit = canEditFull || canEditPartially;
+
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
@@ -254,10 +281,10 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Status</InputLabel>
                           <Select
+                            readOnly={!canEdit}
                             value={cabinStatus}
                             onChange={handleCabinStatusChange}
                             label="Status"
@@ -330,7 +357,6 @@ const Edit = ({
                     <Grid item xs={12} md={6}>
                       <Box sx={{ mb: 2 }}>
                         <Autocomplete
-                          disabled={canEdit}
                           multiple
                           options={Object.values(TagEnum)}
                           value={selectedTags}
@@ -350,6 +376,7 @@ const Edit = ({
                               variant="outlined"
                               label="Tags"
                               placeholder="Add tags"
+                              
                             />
                           )}
                           fullWidth
@@ -363,10 +390,10 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Cabin Category</InputLabel>
                           <Select
+                            readOnly={!canEditFull}
                             value={cabinCategory}
                             onChange={(e) => setCabinCategory(e.target.value)}
                             label="Cabin Category"
@@ -385,7 +412,6 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
                           name="cabin_number"
                           label="Cabin Number"
                           variant="outlined"
@@ -394,6 +420,9 @@ const Edit = ({
                           onChange={(e) => setCabinNumber(e.target.value)}
                           error={Boolean(errors.cabin_number)}
                           helperText={errors.cabin_number}
+                          InputProps={{
+                            readOnly: !canEditFull,
+                          }}
                         />
                       </Box>
                     </Grid>
@@ -404,14 +433,13 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Cabin Type</InputLabel>
                           <Select
                             value={cabinType}
+                            readOnly={!canEdit}
                             onChange={(e) => setCabinType(e.target.value)}
                             label="Cabin Type"
-                            disabled={canEdit || disableFields}
                           >
                             {cabinTypeOptions.map((option) => (
                               <MenuItem key={option.value} value={option.value}>
@@ -442,7 +470,9 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
+                          InputProps={{
+                            readOnly: !canEditFull,
+                          }}
                           name="deck"
                           label="Deck"
                           variant="outlined"
@@ -461,10 +491,10 @@ const Edit = ({
                         <FormControl
                           fullWidth
                           variant="outlined"
-                          disabled={canEdit || disableFields}
                         >
                           <InputLabel>Location</InputLabel>
                           <Select
+                            readOnly={!canEditFull}
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             label="Location"
@@ -481,7 +511,9 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
+                          InputProps={{
+                            readOnly: !canEditFull,
+                          }}
                           name="connects_with"
                           label="Connects With"
                           variant="outlined"
@@ -504,7 +536,7 @@ const Edit = ({
                               checked={features.accessible}
                               onChange={handleFeatureChange}
                               name="accessible"
-                              disabled={canEdit || disableFields}
+                              disabled={!canEditFull}
                             />
                           }
                           label="Accessible"
@@ -515,7 +547,7 @@ const Edit = ({
                               checked={features.balcony}
                               onChange={handleFeatureChange}
                               name="balcony"
-                              disabled={canEdit || disableFields}
+                              disabled={!canEditFull}
                             />
                           }
                           label="Balcony"
@@ -526,7 +558,7 @@ const Edit = ({
                               checked={features.obstructedView}
                               onChange={handleFeatureChange}
                               name="obstructedView"
-                              disabled={canEdit || disableFields}
+                              disabled={!canEditFull}
                             />
                           }
                           label="Obstructed View"
@@ -538,7 +570,9 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
+                          InputProps={{
+                            readOnly: !canEdit,
+                          }}
                           name="total_berths"
                           label="Total Berths"
                           variant="outlined"
@@ -555,7 +589,9 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
+                          InputProps={{
+                            readOnly: !canEditFull,
+                          }}
                           name="lower_bed_type_1"
                           label="Lower Bed Type 1"
                           variant="outlined"
@@ -572,7 +608,9 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
+                          InputProps={{
+                            readOnly: !canEditFull,
+                          }}
                           name="lower_bed_type_2"
                           label="Lower Bed Type 2"
                           variant="outlined"
@@ -589,7 +627,9 @@ const Edit = ({
                     <Grid item xs={12} md={2}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit || disableFields}
+                          InputProps={{
+                            readOnly: !canEditFull,
+                          }}
                           name="upper_berths"
                           label="Upper Berths"
                           variant="outlined"
@@ -606,7 +646,9 @@ const Edit = ({
                     <Grid item xs={12}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          InputProps={{
+                            readOnly: !canEdit,
+                          }}
                           name="notes"
                           label="Notes"
                           variant="outlined"
@@ -625,7 +667,9 @@ const Edit = ({
                     <Grid item xs={12}>
                       <Box sx={{ mb: 2 }}>
                         <TextField
-                          disabled={canEdit}
+                          InputProps={{
+                            readOnly: !canEdit,
+                          }}
                           name="internal_notes"
                           label="Internal Notes"
                           variant="outlined"
@@ -641,7 +685,7 @@ const Edit = ({
                     </Grid>
                   </Grid>
 
-                  {hasPermission(Permissions.EditCabins) && (
+                  {auth.permissions.includes(Permissions.EditCabins) && (
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
                         <Box sx={{ mb: 2 }}>
