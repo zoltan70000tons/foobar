@@ -452,6 +452,7 @@ class BookingsController extends Controller
             $bookingSession = new BookingAgentSessions();
             $bookingSession->agent_id = Auth::user()->id;
             $bookingSession->booking_id = $booking->id;
+            $bookingSession->time = now();
             $bookingSession->save();
 
             return Inertia::location(url()->previous());
@@ -459,7 +460,6 @@ class BookingsController extends Controller
             $bookingSession = BookingAgentSessions::where('booking_id', $booking_id)->first();
             if ($bookingSession) {
               $bookingSession->delete();
-
               return Inertia::location(url()->previous());
             }
           }
