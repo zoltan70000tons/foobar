@@ -59,6 +59,10 @@ const Status = ({ event, booking, editMode, users }) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
+  
+  // Get default language from the lead passenger for email templates
+  const leadPassenger = booking.passengers.find((p) => p.lead_passenger);
+  const defaultLanguage = leadPassenger?.language || "en"; // fallback to 'en' if not found
 
   const handleUpdate = () => {
     router.post(
@@ -251,7 +255,7 @@ const Status = ({ event, booking, editMode, users }) => {
               Email Templates:
             </Typography>
 
-            <EmailTemplateSelector booking={booking} editMode={editMode} />
+            <EmailTemplateSelector booking={booking} editMode={editMode} defaultLanguage={defaultLanguage} />
           </Paper>
         )}
       </Box>
