@@ -447,99 +447,92 @@
 
                         <tr>
                             <td width="50%"><strong>Gender:</strong></td>
-                            <td width="50%">{{ $passenger['gender'] }}</td>
+                            <td width="50%">{{ $passenger->gender }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>First Name:</strong></td>
-                            <td width="50%">{{ $passenger['first_name'] }}</td>
+                            <td width="50%">{{ $passenger->first_name }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Middle Name:</strong></td>
-                            <td width="50%">{{ $passenger['middle_name'] }}</td>
+                            <td width="50%">{{ $passenger->middle_name }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Last Name:</strong></td>
-                            <td width="50%">{{ $passenger['last_name'] }}</td>
+                            <td width="50%">{{ $passenger->last_name }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Survivor Number:</strong></td>
-                            <td width="50%">{{ $passenger['survivor_number'] }}</td>
+                            <td width="50%">{{ $passenger->survivor_number }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Survivor Status:</strong></td>
-                            <td width="50%">{{ $passenger['survivor_status'] }}</td>
-                        </tr>
+                            <td width="50%">{{ $passenger->getMemberShip() }}</td>
+                      
                         <tr>
                             <td width="50%"><strong>Date of Birth:</strong></td>
-                            <td width="50%">{{ formatDate($passenger['dob']) }}</td>
+                            <td width="50%">{{ formatDate($passenger->dob ) }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Citizenship:</strong></td>
-                            <td width="50%">{{ $passenger['citizenship'] }}</td>
+                            <td width="50%">{{ $passenger->citizenship }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Address:</strong></td>
-                            <td width="50%">{{ $passenger['address_first'] }}</td>
+                            <td width="50%">{{ $passenger->address_first }}</td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>City:</strong></td>
-                            <td width="50%">{{ $passenger['city'] }}</td>
+                            <td width="50%">{{ $passenger->city }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>State/Province/Region:</strong></td>
-                            <td width="50%">{{ $passenger['state'] }}</td>
+                            <td width="50%">{{ $passenger->state }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Postal Code:</strong></td>
-                            <td width="50%">{{ $passenger['postal_code'] }}</td>
+                            <td width="50%">{{ $passenger->postal_code }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Country:</strong></td>
-                            <td width="50%">{{ $passenger['country'] }}</td>
+                            <td width="50%">{{ $passenger->country }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Email:</strong></td>
-                            <td width="50%">{{ $passenger['email'] }}</td>
+                            <td width="50%">{{ $passenger->email }}</td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Phone:</strong></td>
-                            <td width="50%">{{ $passenger['phone'] }}</td>
+                            <td width="50%">{{ $passenger->phone }}</td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Emergency Name:</strong></td>
-                            <td width="50%">{{ $passenger['emergency_c_name'] }}</td>
+                            <td width="50%">{{ $passenger->emergency_c_name }}</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Emergency Phone:</strong></td>
-                            <td width="50%">{{ $passenger['emergency_c_phone'] }}</td>
+                            <td width="50%">{{ $passenger->emergency_c_phone }}</td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
                         <tr>
                             <td width="50%"><strong>Special Requests:</strong></td>
-                            <td width="50%">{{ $passenger['special_request'] }}</td>
+                            <td width="50%">{{ $passenger->special_request }}</td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
-                        <tr>
-                            <td width="50%"><strong>Onboard Credit:</strong></td>
-                            <td width="50%">{{ $passenger['onboard_credit'] }}</td>
-                        </tr>
-                        <tr>
-                            <td width="50%"><strong>Reason For Credit:</strong></td>
-                            <td width="50%">{{ $passenger['credit_reason'] }}</td>
-                        </tr>
+
                     </table>
                 </td>
 

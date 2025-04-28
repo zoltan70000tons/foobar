@@ -478,4 +478,19 @@ class Passenger extends Model
       'fully_paid' => $paid,
     ];
   }
+
+  public function getMembership()
+  {
+    $survivor = SurvivorNumber::where('survivor_number', $this->survivor_number)->first();
+
+    if (!$survivor || !$survivor->user_id) {
+      return '';
+    }
+    $membership = Membership::where('user_id', $survivor->user_id)->first();
+    if (!$membership || !$membership->membership_id) {
+      return '';
+    }
+    $membershipType = MembershipType::where('id', $membership->membership_id)->first();
+    return $membershipType?->name ?? '';
+  }
 }
