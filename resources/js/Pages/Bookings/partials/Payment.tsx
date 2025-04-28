@@ -461,7 +461,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             </Box>
 
             <Typography variant="h5" mb={2} sx={{ textAlign: 'center' }}>
-              {displayText}
+              {displayText} { pax?.first_name ? `- ${pax?.first_name} ${pax?.last_name}` : null }
             </Typography>
 
             <Paper variant="outlined" sx={{ p: 3, backgroundColor: '#1c1c1c', mb: 4 }}>
