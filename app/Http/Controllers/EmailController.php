@@ -106,9 +106,10 @@ class EmailController extends Controller
         ])->validate();
 
         $templates = DB::table('email_templates')
-            ->select(['id', 'name', 'lang', 'subject'])
+            ->select(['id', 'name', 'lang', 'subject', 'hidden', 'priority'])
             ->where('lang', $validated['lang'])
             ->distinct()
+            ->orderBy('priority', 'desc')
             ->get();
 
         return response()->json(['templates' => $templates]);
