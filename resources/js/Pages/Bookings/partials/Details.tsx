@@ -44,8 +44,7 @@ import {
   Notes as NotesIcon,
 } from "@mui/icons-material";
 
-
-import { formatDate } from "@/helpers/stringUtils";
+import { formatDate } from "@/Helpers/stringUtils";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
