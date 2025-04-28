@@ -2,13 +2,9 @@ import React, { useState, useEffect } from "react";
 import {
   Grid,
   Typography,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
+ 
   Paper,
   Box,
-  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,37 +15,37 @@ import {
   ToggleButton,
   Switch,
   FormControlLabel,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
+
   Alert,
   AlertTitle,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItem,
-  ListItemText,
   Chip,
   CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import InboxIcon from '@mui/icons-material/Inbox';
 import FilterListIcon from "@mui/icons-material/FilterList";
 import axios from "axios";
 import { router } from "@inertiajs/react";
 import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import DateRangeIcon from '@mui/icons-material/DateRange';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
-import GroupIcon from '@mui/icons-material/Group';
 import PinIcon from '@mui/icons-material/Pin';
-import PaymentIcon from '@mui/icons-material/Payment';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ClearIcon from '@mui/icons-material/Clear'
+import {
+  DateRange as DateRangeIcon,
+  LocationOn as LocationOnIcon,
+  ConfirmationNumber as ConfirmationNumberIcon,
+  DirectionsBoat as DirectionsBoatIcon,
+  Group as GroupIcon,
+  Payment as PaymentIcon,
+  Bed as BedIcon,
+  Fingerprint as FingerprintIcon,
+  EventNote as EventNoteIcon,
+  Notes as NotesIcon,
+} from "@mui/icons-material";
+
+
+import { formatDate } from "@/helpers/stringUtils";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
@@ -178,116 +174,128 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     );
   };
 
-
   return (
     <>
       <Box>
         <Typography variant="h5" mb={2}>
-          Booking Details - {event.name}
+          Booking Code - {booking?.booking_code}
         </Typography>
-        <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
-          <Grid container spacing={2}>
+        <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c" }}>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
-              <img src={event.image} alt="" width={'100%'} />
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  paddingTop: "100%",
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <img
+                  src={event?.image}
+                  alt="Event"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </Box>
             </Grid>
-            <Grid item xs={12} md={8}>
-              {/* <List >
-                <ListItem disablePadding >
-                  <ListItemButton disableGutters disableRipple>
-                    <ListItemIcon >
-                      <InboxIcon fontSize="10px"/>
-                    </ListItemIcon>
-                    <ListItemText primary="Event Date :" />
-                  </ListItemButton>
-                </ListItem>
-                </List> */}
-              <Table size="small">
-                <TableBody>
-                  <TableRow>
-                    <TableCell width={250}>
-                      <Box display="flex" alignItems="center">
-                        <DateRangeIcon sx={{ mr: 1 }} /> Event Date:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {event.start_date + " - " + event.end_date}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell width={250}>
-                      <Box display="flex" alignItems="center">
-                        <VisibilityIcon sx={{ mr: 1 }} /> Event Status:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={event.status} />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center">
-                        <LocationOnIcon sx={{ mr: 1 }} /> Destination:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {event.address}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center">
-                        <ConfirmationNumberIcon sx={{ mr: 1 }} /> Booking Type:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {booking?.cabin?.cabin_type?.cabin_type}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center">
-                        <DirectionsBoatIcon sx={{ mr: 1 }} /> Cabin Category:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {booking?.cabin?.category?.title}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center">
-                        <GroupIcon sx={{ mr: 1 }} /> Cabin Capacity:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {booking?.cabin?.category?.capacity}
-                    </TableCell>
-                  </TableRow>
 
-                  <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center">
-                        <PaymentIcon sx={{ mr: 1 }} /> Payment Plan:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {booking?.payment_plan == 'INSTALLMENTS' ? 'Installments' : 'Pay In Full At Booking'}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <Box display="flex" alignItems="center" >
-                        <PinIcon sx={{ mr: 1 }} /> Cabin Number:
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {booking?.cabin?.cabin_number} <IconButton color="secondary" disabled={!editMode} onClick={handleEditClick}>
-                        <EditIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+            <Grid item xs={12} md={8}>
+              <Grid container spacing={2}>
+                {[
+                  {
+                    icon: <DateRangeIcon fontSize="small" />,
+                    label: "Event Dates",
+                    value:
+                      event?.start_date && event?.end_date
+                        ? `${formatDate(event.start_date)} - ${formatDate(event.end_date)}`
+                        : "-",
+                  },
+                  {
+                    icon: <LocationOnIcon fontSize="small" />,
+                    label: "Destination",
+                    value: event?.address || "-",
+                  },
+                  {
+                    icon: <FingerprintIcon fontSize="small" />,
+                    label: "Booking Request ID",
+                    value: booking?.booking_request_id || "-",
+                  },
+                  {
+                    icon: <ConfirmationNumberIcon fontSize="small" />,
+                    label: "Booking Type",
+                    value: booking?.cabin?.cabin_type?.cabin_type || "-",
+                  },
+                  {
+                    icon: <DirectionsBoatIcon fontSize="small" />,
+                    label: "Cabin Category",
+                    value: booking?.cabin?.category?.title || "-",
+                  },
+                  {
+                    icon: <GroupIcon fontSize="small" />,
+                    label: "Cabin Capacity",
+                    value: booking?.cabin?.category?.capacity || "-",
+                  },
+                  {
+                    icon: <PaymentIcon fontSize="small" />,
+                    label: "Payment Plan",
+                    value: booking?.payment_plan === "INSTALLMENTS" ? "Installments" : "Pay In Full At Booking",
+                  },
+                  {
+                    icon: <BedIcon fontSize="small" />,
+                    label: "Bed Configuration",
+                    value: booking?.bed_config || "-",
+                  },
+                  {
+                    icon: <PinIcon fontSize="small" />,
+                    label: "Cabin Number",
+                    value: booking?.cabin?.cabin_number || "-",
+                  },
+                  {
+                    icon: <VisibilityIcon fontSize="small" />,
+                    label: "Status",
+                    value: booking?.status || "-",
+                  },
+                  {
+                    icon: <EventNoteIcon fontSize="small" />,
+                    label: "Notes",
+                    value: booking?.cabin?.notes || "-",
+                  },
+                  {
+                    icon: <NotesIcon fontSize="small" />,
+                    label: "Internal Notes",
+                    value: booking?.cabin?.internal_notes || "-",
+                  },
+                  
+                ].map((field, index) => (
+                  <Grid item xs={12} sm={6} key={index}>
+                    <Box display="flex" alignItems="center" mb={0.5}>
+                      {field.icon}
+                      <Typography variant="body2" sx={{ ml: 1, fontWeight: "bold" }}>
+                        {field.label}:
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {field.value}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {editMode && (
+                <Box mt={3} textAlign="right">
+                  <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleEditClick}>
+                    Swap Cabin
+                  </Button>
+                </Box>
+              )}
             </Grid>
           </Grid>
         </Paper>
@@ -345,7 +353,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                 if (next) {
                 } else {
                   setSelectedDeck(null);
-                  setAvailableCabins(null);
+                  setAvailableCabins([]);
                   setOnlyAccessible(false);
                   setOnlyBalcony(false);
                 }
