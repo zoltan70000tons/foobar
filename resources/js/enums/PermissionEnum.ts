@@ -23,6 +23,7 @@ export enum Permissions {
     ViewCabins = "View Cabins",
     CreateCabins = "Create Cabins",
     EditCabins = "Edit Cabins",
+    EditFullCabins = "Edit Full Cabins",
     DeleteCabins = "Delete Cabins",
 
     // Manage Cabin Categories
