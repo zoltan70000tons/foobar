@@ -10,7 +10,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Log;
 use Str;
+use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * @property \Illuminate\Database\Eloquent\Collection|\App\Models\OnboardCredit[] $onboardCredits
+ */
 class Passenger extends Model
 {
   use HasApiTokens, HasFactory;

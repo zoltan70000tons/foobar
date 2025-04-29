@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property float $amount
+ * @property string $reason
+ * @property int $passenger_id
+ */
 class OnboardCredit extends Model
 {
   use HasApiTokens, HasFactory;
@@ -17,8 +22,6 @@ class OnboardCredit extends Model
     'reason',
     'passenger_id',
   ];
-
-  protected static function boot() {}
 
   public function passenger()
   {

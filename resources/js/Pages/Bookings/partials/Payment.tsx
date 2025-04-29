@@ -31,7 +31,8 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { Delete, Payment as PaymentIcon } from "@mui/icons-material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { router } from "@inertiajs/react";
-import DiscountForm from "./DiscountForm";
+import DiscountForm, { Discount } from "./DiscountForm";
+import OnboardCreditForm from "./OnboardCreditForm";
 import HistoryIcon from "@mui/icons-material/History";
 
 import { formatCurrency } from "@/Helpers/stringUtils";
@@ -77,7 +78,14 @@ type InstallmentStatus = {
   fully_paid: boolean;
 };
 
-type Passenger = {
+type OnboardCredit = {
+  amount: number;
+  id: number;
+  passenger_id: number;
+  reason: string;
+}
+
+export type Passenger = {
   id: number;
   name: string;
   lead_passenger: boolean;
@@ -87,6 +95,9 @@ type Passenger = {
   payments: Payment[];
   fees: Fee[];
   installment_status: InstallmentStatus;
+  onboard_credits: OnboardCredit[];
+  full_name?: string;
+  discounts: Discount[];
 };
 
 type Adjustment = {
@@ -121,6 +132,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const canDeleteFee = hasPermission(Permissions.DeleteFees);
   const canCreateDiscount = hasPermission(Permissions.CreatePassengerDiscounts);
   const canDeleteDiscount = hasPermission(Permissions.DeletePassengerDiscounts);
+  const canCreateOnboardCredit = hasPermission(Permissions.CreatePassengerOnboardCredit);
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
@@ -359,14 +371,14 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     );
   };
 
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    return timestamp.split("T")[0];
+  };
+
   const mergeFeesWithPayments = (fees = [], payments = []) => {
     fees = fees || [];
     payments = payments || [];
-
-    const formatDate = (timestamp) => {
-      if (!timestamp) return "N/A";
-      return timestamp.split("T")[0];
-    };
 
     const mergedFees = fees.map((fee) => ({
       BIP_ID: "N/A",
@@ -420,7 +432,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         const { passengerDiscounts, totalPassengerDiscounts } = calculateDiscounts(pax, pricePerPerson);
         const totalPassengerDiscount = totalDiscounts + totalPassengerDiscounts;
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
-        const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees;
+        const totalOnboardCredit = pax.onboard_credits.reduce((acc, credit) => acc + Number(credit.amount || 0), 0);
+        const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees - totalOnboardCredit;
         const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
         const filteredInstallments = pax.installments
           .filter((inst) => inst.type !== "FEE")
@@ -567,6 +580,16 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
+                  {/*** Onboard credits ***/}
+                  <TableRow>
+                    <TableCell style={{ fontWeight: "400", color: "#4CAF50" }} sx={{ pl: "2rem" }}>
+                      Total Onboard credit:
+                    </TableCell>
+                    <TableCell align="right" style={{ fontWeight: "400", color: "#4CAF50" }}>
+                      {totalOnboardCredit > 0 ? `-${formatCurrency(totalOnboardCredit)}` : `${formatCurrency(totalOnboardCredit)}`}
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
                   {pax.fees.map((fee, i) => (
                     <TableRow key={`fee-${i}`}>
                       <TableCell sx={{ pl: "3rem" }}>Fee ({fee.type}):</TableCell>
@@ -643,7 +666,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 {canCreateFee && (
                   <Grid item xs={12} sm={3}>
                     <FeesForm
-                      passenger_id={pax.id}
+                      passenger={pax}
                       booking_id={booking.id}
                       event_id={booking.event_id}
                       editMode={editMode}
@@ -653,7 +676,17 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 {canCreateDiscount && (
                   <Grid item xs={12} sm={3}>
                     <DiscountForm
-                      passenger_id={pax.id}
+                      passenger={pax}
+                      booking_id={booking.id}
+                      event_id={booking.event_id}
+                      editMode={editMode}
+                    />
+                  </Grid>
+                )}
+                {/*canCreateOnboardCredit*/ true && (
+                  <Grid item xs={12} sm={3}>
+                    <OnboardCreditForm
+                      passenger={pax}
                       booking_id={booking.id}
                       event_id={booking.event_id}
                       editMode={editMode}

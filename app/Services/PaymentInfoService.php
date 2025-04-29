@@ -237,10 +237,12 @@ class PaymentInfoService
       $adjustedBasePrice = max(0, $basePrice - $totalBookingDiscount + $totalBookingAddon);
 
       // Loop through each passenger to calculate their individual allocated cost
+      /* @var $passenger \App\Models\Passenger */
       foreach ($booking->passengers as $passenger) {
         $passengerTotal = $adjustedBasePrice;
         $totalPassengerDiscount = 0;
         $totalPassengerFees = 0;
+        $totalOnboardCredit = 0;
 
         // Process passenger-specific discounts
         foreach ($passenger->discounts as $discount) {
@@ -253,8 +255,12 @@ class PaymentInfoService
           $totalPassengerDiscount += $discountValue;
         }
 
+        foreach ($passenger->onboardCredits as $onboardCredit) {
+            $totalOnboardCredit += $onboardCredit->amount;
+        }
+
         // Apply passenger-level discounts
-        $passengerTotal = max(0, $passengerTotal - $totalPassengerDiscount);
+        $passengerTotal = max(0, $passengerTotal - $totalPassengerDiscount - $totalOnboardCredit);
 
         // Process passenger fees (always added)
         foreach ($passenger->fees as $fee) {
