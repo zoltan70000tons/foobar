@@ -40,6 +40,7 @@ import PhoneNumber from "@/Components/PhoneNumber";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from '@mui/icons-material/Clear'
+import { LoadingButton } from "@mui/lab";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -49,7 +50,7 @@ const TabPanel = ({ children, value, index }) => {
   );
 };
 
-const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCreateCustomerVisible }) => {
+const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCreateCustomerVisible,onBookingCreated }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [cabin, setCabin] = useState("");
   const [passenger, setPassenger] = useState({
@@ -287,10 +288,11 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     setCreateLoader(true);
 
     router.post(route('bookings.createManual', { id: 1 }), payload, {
+
       onSuccess: () => {
         showSnackbar('Booking created successfully!', 'success');
         setActiveStep(0);
-
+        if (onBookingCreated) onBookingCreated();
         close();
       },
       onError: (errors) => {
@@ -1032,9 +1034,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
             Back
           </Button>
           {activeStep === steps.length - 1 ? (
-            <Button onClick={handleSubmit} variant="outlined" color="success">
+            <LoadingButton onClick={handleSubmit} variant="outlined" color="success" loading={createLoader}
+            loadingPosition="start">
               Create Booking
-            </Button>
+            </LoadingButton>
           ) : (
             <Button onClick={handleNext} variant="contained" color="primary" disabled={isNextDisabled}>
               Next
