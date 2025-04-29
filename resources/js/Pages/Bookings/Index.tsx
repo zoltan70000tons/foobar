@@ -71,23 +71,14 @@ const Index = ({
   const [tableKey, setTableKey] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const eventId = event.id;
+  const [shouldReload, setShouldReload] = useState(false);
 
-  // useEffect(() => {
-  //   const debounced = debounce(() => {
-  //     setKeyword(inputValue);
-  //   }, 500);
-
-  //   debounced();
-
-  //   return () => {
-  //     debounced.cancel(); // Limpieza
-  //   };
-  // }, [inputValue]);
-
-  // const getStatusFromTab = (tabIndex: number) => {
-  //   const statuses = ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'];
-  //   return statuses[tabIndex] || 'NEW';
-  // };
+  useEffect(() => {
+    if (shouldReload) {
+      setShouldReload(false);
+      setTableKey((prev) => prev + 1);
+    }
+  }, [shouldReload]);
 
   const handleOpenModal = (userId: string | null, booking_id: string | null) => {
     setSelectedBookingId(booking_id);
@@ -436,7 +427,6 @@ const Index = ({
   const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => {};
 
   const fetchData = useCallback(async (page, rowsPerPage, filters, sort, dateRangeState) => {
-    console.log(searchTerm);
     try {
       const res = await axios.get(route("bookings.data", { id: event.id }), {
         params: {
@@ -456,7 +446,7 @@ const Index = ({
     } catch (err) {
       throw err;
     }
-  }, [event.id, searchTerm, selectedTab, selectedTags, selectedUsers]);
+  }, [event.id, searchTerm, selectedTab, selectedTags, selectedUsers, tableKey]);
 
 
 
@@ -512,7 +502,7 @@ const Index = ({
                 }}
               >
                 <Box sx={{ minHeight: "40px", display: "flex", alignItems: "center" }}>
-                  <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} />
+                  <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories}  onBookingCreated={() => setShouldReload(true)}/>
                 </Box>
                 <TextField
                   size="small"

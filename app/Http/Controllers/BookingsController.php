@@ -336,8 +336,16 @@ class BookingsController extends Controller
         $number_of_installments,
         $carbonOffset
       );
+      return redirect()->back()->with('flash', [
+        'message' => 'Booking created successfully.',
+        'success' => true,
+      ]);
     } catch (\Exception $e) {
       $this->logException($e);
+      return redirect()->back()->with('flash', [
+        'message' => 'Error creating booking.',
+        'success' => false,
+      ]);
     }
   }
 

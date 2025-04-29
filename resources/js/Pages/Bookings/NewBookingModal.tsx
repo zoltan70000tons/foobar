@@ -5,7 +5,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
 import { router } from "@inertiajs/react";
 
-const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
+const NewBookingModal: React.FC = ({cabinTypes, cabinCategories,onBookingCreated}) => {
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -24,7 +24,7 @@ const NewBookingModal: React.FC = ({cabinTypes, cabinCategories}) => {
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         <DialogTitle>New Booking</DialogTitle>
         <DialogContent>
-          <BookingStepper cabinTypes={cabinTypes} cabinCategories={cabinCategories} close={handleClose} setIsCreateCustomerVisible={setIsCreateCustomerVisible} />
+          <BookingStepper cabinTypes={cabinTypes} cabinCategories={cabinCategories} close={handleClose} setIsCreateCustomerVisible={setIsCreateCustomerVisible} onBookingCreated={onBookingCreated}/>
         </DialogContent>
         <DialogActions>
           {isCreateCustomerVisible && (
