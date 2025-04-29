@@ -191,10 +191,10 @@ style="display:
                                             <br>
                                             Una primera transacción por
                                             la cantidad de: USD
-                                            XX$6,000.00XX;<br>
+                                            XX6,000.00XX;<br>
                                             y una segunda transacción
                                             por la cantidad de: USD
-                                            XX+$6,000.00XX<br>
+                                            XX+6,000.00XX<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco
