@@ -126,7 +126,7 @@ style="color: rgb(102, 102,
                                               de Reserva actualizada de
                                               nuestra parte.</i><br>
                                             <br>
-                                            Hemos adjuntado tu factura,
+                                            Hemos adjuntado tu
                                             Confirmación de Reserva y
                                             Contrato del Ticket
                                             (Ticketing Contract) como
