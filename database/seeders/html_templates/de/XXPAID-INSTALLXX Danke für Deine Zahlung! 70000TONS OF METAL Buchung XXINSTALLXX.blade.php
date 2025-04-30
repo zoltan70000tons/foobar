@@ -117,24 +117,27 @@
                                           @endif
 
                                           <br>
-                                          Im Anhang findest Du Deine
-                                          aktualisierte
-                                          Buchungsbestätigung und
-                                          Deinen Ticketvertrag (Ticket
-                                          Contract).<br>
-                                          <br>
-                                          Um diese Dokumente ansehen
-                                          zu können, benötigst Du den
-                                          „Adobe Reader“. Dieses
-                                          Programm kannst Du hier
-                                          herunterladen:<br>
+                                          Im Anhang findest Du Deine 
+                                          Buchungsbestätigung. Um dieses 
+                                          Dokument ansehen zu können, 
+                                          benötigst Du den „Adobe Reader“. 
+                                          Dieses Programm kannst Du 
+                                          hier herunterladen:<br>
                                           <br>
                                           <a
-                                            href="https://get.adobe.com/reader"
-                                            style="color: rgb(0, 0,
-                                              238); text-decoration:
-                                              underline;"
-                                            class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+href="https://get.adobe.com/reader"
+style="color: rgb(0, 0,
+                                            238); text-decoration:
+                                            underline;"
+class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+                                          <br>
+                                          Deinen Ticketvertrag (Ticket 
+                                          Contract) findest Du 
+                                          <a 
+                                            href="https://70000tons.com/terms-conditions/?lang=de"
+                                            style="color: rgb(0, 0, 238); text-decoration: none;"
+                                            >hier</a> 
+                                          auf unserer Webseite.<br>
                                           <br>
                                           <strong>Wichtiger Hinweis
                                             für in den USA ansässige
