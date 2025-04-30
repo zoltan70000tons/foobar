@@ -103,6 +103,7 @@ const Index = ({
             message: "User assigned successfully.",
           });
           setOpenModal(false);
+          setShouldReload(true);
         },
         onError: (errors) => {
           setSnackbar({
