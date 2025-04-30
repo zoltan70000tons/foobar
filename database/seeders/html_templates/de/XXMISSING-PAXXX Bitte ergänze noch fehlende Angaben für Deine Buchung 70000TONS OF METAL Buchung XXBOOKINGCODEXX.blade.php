@@ -108,20 +108,27 @@ style="padding: 0px
                                               in Deiner Buchung für
                                               70000TONS OF METAL 2026.<br>
                                               <br>
-                                              Im Anhang findest Du Deine
-                                              Buchungsbestätigung und
-                                              Deinen Ticketvertrag
-                                              (Ticket Contract). Um
-                                              diese Dokumente ansehen zu
-                                              können, benötigst Du den
-                                              „Adobe Reader“. Dieses
-                                              Programm kannst Du hier
-                                              herunterladen: ,<a
-href="https://get.adobe.com/reader/"
+                                              Im Anhang findest Du Deine 
+                                            Buchungsbestätigung. Um dieses 
+                                            Dokument ansehen zu können, 
+                                            benötigst Du den „Adobe Reader“. 
+                                            Dieses Programm kannst Du 
+                                            hier herunterladen:<br>
+                                            <br>
+                                            <a
+href="https://get.adobe.com/reader"
 style="color: rgb(0, 0,
-                                                238); text-decoration:
-                                                underline;"
-class="moz-txt-link-freetext">https://get.adobe.com/reader/</a></p>
+                                              238); text-decoration:
+                                              underline;"
+class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+                                            <br>
+                                            Deinen Ticketvertrag (Ticket 
+                                            Contract) findest Du 
+                                            <a 
+                                              href="https://70000tons.com/terms-conditions/?lang=de"
+                                              style="color: rgb(0, 0, 238); text-decoration: none;"
+                                              >hier</a> 
+                                             auf unserer Webseite.</p>
                                             <p
 style="padding: 0px
                                               !important; margin: 0px
