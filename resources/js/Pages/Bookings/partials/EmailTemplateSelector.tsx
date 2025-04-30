@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Button,
@@ -26,6 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import UnlayerEditor from "@/Components/UnlayerEditor";
@@ -74,6 +76,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
   const [isCheckboxEnabled, setIsCheckboxEnabled] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [imgFile, setImgFile] = useState<File | null>(null);
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
 
   const { hasPermission } = usePermissions();
 
@@ -118,6 +121,10 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
   const attachDefaultFiles = async () => {
     await handleInsertPDF();
     await handleInsertImg();
+    
+    if (booking.passengers[0].payment_method === "BANK_TRANSFER") {
+      await handleInsertInvoice();
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,6 +206,22 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       setIsLoading(false);
     }
   };
+  
+  const handleInsertInvoice = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/generate-invoice-pdf?booking_id=${booking.id}&lang=${lang}`);
+      if (!response.ok) throw new Error("Failed to generate PDF");
+
+      const blob = await response.blob();
+      const file = new File([blob], `${booking.booking_code}inv.pdf`, { type: "application/pdf" });
+      setInvoiceFile(file);
+    } catch (error) {
+      showSnackbar("Failed to generate Invoice.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePreview = (file) => {
     const fileURL = URL.createObjectURL(file);
@@ -227,6 +250,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       attachments.forEach((file) => formData.append("attachments[]", file));
       formData.append("booking_pdf", pdfFile ? 1 : 0);
       formData.append("booking_image", imgFile ? 1 : 0);
+      formData.append("invoice_file", invoiceFile ? 1 : 0);
 
       try {
         // for (let pair of formData.entries()) {
@@ -431,6 +455,15 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
                   icon={<InsertPhotoIcon />}
                 />
               )}
+              {invoiceFile && (
+                <Chip
+                  label={invoiceFile.name}
+                  onClick={() => handlePreview(invoiceFile)}
+                  onDelete={() => setInvoiceFile(null)}
+                  style={{ marginRight: "5px" }}
+                  icon={<ReceiptIcon />}
+                />
+              )}
 
               {attachments.map((file, index) => (
                 <Chip
@@ -448,26 +481,33 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
             </div>
 
             <div>
-              <Tooltip title="Attach Files">
-                <IconButton onClick={() => fileInputRef.current?.click()}>
-                  <AttachFileIcon />
-                </IconButton>
-              </Tooltip>
-
               {!pdfFile && (
-                <Tooltip title="Insert Booking Confirmation PDF">
+                <Tooltip title="Attach Booking Confirmation PDF">
                   <IconButton onClick={handleInsertPDF}>
                     <PictureAsPdfIcon />
                   </IconButton>
                 </Tooltip>
               )}
               {!imgFile && (
-                <Tooltip title="Insert Event Image">
+                <Tooltip title="Attach Event Image">
                   <IconButton onClick={handleInsertImg}>
                     <InsertPhotoIcon />
                   </IconButton>
                 </Tooltip>
               )}
+              {!invoiceFile && (
+                <Tooltip title="Attach Bank Transfer Invoice">
+                  <IconButton onClick={handleInsertInvoice}>
+                    <ReceiptIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+              
+              <Tooltip title="Attach Other files">
+                <IconButton onClick={() => fileInputRef.current?.click()}>
+                  <AttachFileIcon />
+                </IconButton>
+              </Tooltip>
               <input
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"

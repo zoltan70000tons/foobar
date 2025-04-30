@@ -212,7 +212,11 @@ class EmailController extends Controller
             $pdf = $service->generateBookingConfirmationPDF($booking);
             return $pdf->stream();
         } catch (\Throwable $th) {
-            //throw $th;
+            \Log::error('Error generating booking PDF', [
+                'error' => $th->getMessage(),
+                'line' => $th->getLine(),
+                'file' => $th->getFile(),
+            ]);
         }
     }
 
@@ -240,6 +244,28 @@ class EmailController extends Controller
             return response($imageData, 200)->header('Content-Type', $mimeType);
         } catch (\Throwable $th) {
             return response()->json(['error' => 'Error retrieving image'], 500);
+        }
+    }
+    
+    public function generateInvoicePDF(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            // 'lang' => 'required|string|in:en,es,de',
+            'booking_id' => 'required|integer',
+            'lang' => 'string|in:en,es,de',
+        ])->validate();
+        try {
+            $booking = Booking::find($validated['booking_id']);
+            $lang = $validated['lang'] ?? 'en';
+            $service = new PDFService();
+            $pdf = $service->generateInvoicePDF($booking, $lang);
+            return $pdf->stream();
+        } catch (\Throwable $th) {
+            \Log::error('Error generating invoice PDF', [
+                'error' => $th->getMessage(),
+                'line' => $th->getLine(),
+                'file' => $th->getFile(),
+            ]);
         }
     }
 }

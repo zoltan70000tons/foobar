@@ -229,6 +229,7 @@ Route::middleware('auth')->group(function () {
   Route::get('/show-email', [EmailController::class, 'showEmail'])->name('email.show');
   Route::get('/generate-booking-pdf', [EmailController::class, 'generateBookingPDF'])->name('email.generateBookingPDF');
   Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
+  Route::get('/generate-invoice-pdf', [EmailController::class, 'generateInvoicePDF'])->name('email.generateInvoicePDF');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');
