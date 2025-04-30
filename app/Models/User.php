@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Notifications\Notification;
 
 use App\Mail\CustomerResetPassword;
+use App\Mail\RegularResetPassword;
 
 use Laravel\Sanctum\HasApiTokens;
 
@@ -126,9 +127,18 @@ class User extends Authenticatable implements CanResetPassword
     // front end url
     $url = config('app.frontend_url');
     $email = $this->email;
-
     $tokenToSend = $url . '/en/password-reset?token=' . $token . '&email=' . $email;
 
-    return Mail::to($this->email)->queue(new CustomerResetPassword($this, $tokenToSend));
+    // internal admin url
+    $adminUrl = config('app.url');
+    $adminTokenToSend = $adminUrl . '/reset-password/' . $token . '?email=' . urlencode($this->email);
+
+    // return Mail::to($this->email)->queue (new CustomerResetPassword($this, $tokenToSend));
+
+    if ($this->hasRole('Customer')) {
+      Mail::to($this->email)->queue(new CustomerResetPassword($this, $tokenToSend));
+    } else {
+        Mail::to($this->email)->queue(new RegularResetPassword($this, $adminTokenToSend));
+    }
   }
 }

@@ -1,6 +1,18 @@
-import React, { useEffect, FormEventHandler, useState } from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { TextField, Button, Box, Checkbox, Stack, Alert, Container } from "@mui/material";
+import { FormEventHandler, useState } from "react";
+import { Link, useForm } from "@inertiajs/react";
+import { 
+  FormControlLabel,
+  TextField, 
+  Button, 
+  Box, 
+  Checkbox, 
+  Stack, 
+  Alert, 
+  Container,
+  Typography,
+  alpha 
+} from "@mui/material";
+import { blue } from "@mui/material/colors";
 import CheckIcon from "@mui/icons-material/Check";
 import GuestLayout from "@/Layouts/GuestLayout";
 // import LoadingOverlay from "@/Components/LoadingOverlay";
@@ -55,11 +67,39 @@ export default function Login({ status, canResetPassword }: { status?: string; c
         sx={{
           display: "flex",
           alignItems: "center",
+          flexDirection: "column",
           justifyContent: "center",
-          minHeight: "100vh",
+          minHeight: "calc(100vh + 64px)",
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "start",
+            width: "100%",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            Log in
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Please enter your credentials to log in.
+          </Typography>
+        </Box>
+        <Box 
+          sx={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center", 
+            width: "100%", 
+            gap: 4,
+            backgroundColor: alpha("#fff", 0.05),
+            padding: 4,
+            borderRadius: 2,
+          }}
+        >
           {status && (
             <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
               {status}
@@ -106,21 +146,42 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                 onChange={(e) => setData("password", e.target.value)}
               />
 
-              <Box sx={{ width: "100%" }}>
+              {/* <Box sx={{ width: "100%" }}>
                 <Checkbox
                   name="remember"
                   checked={data.remember}
                   onChange={(e) => setData("remember", e.target.checked)}
                 />
                 <span>Remember me</span>
-              </Box>
+              </Box> */}
+              <FormControlLabel 
+                control={
+                  <Checkbox                   
+                    name="remember"
+                    checked={data.remember}
+                    onChange={(e) => setData("remember", e.target.checked)} 
+                  />} 
+                label="Remember me" 
+              />
               <Stack spacing={2} sx={{ width: "100%" }}>
                 {canResetPassword && (
-                  <Link href={route("password.request")} className="">
+                  <Link href={route("password.request")}
+                    style={{
+                      textDecoration: "none",
+                      color: blue[500],
+                      textAlign: "left",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
                     Forgot your password?
                   </Link>
                 )}
-                <Button variant="contained" disabled={processing} type="submit">
+                <Button 
+                  variant="contained" 
+                  disabled={processing} 
+                  type="submit"
+                >
                   Log in
                 </Button>
               </Stack>
