@@ -19,7 +19,7 @@ import { Permissions } from '@/enums/PermissionEnum';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import { formatCurrency } from "@/Helpers/stringUtils";
+import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 
 type OnboardCredit = {
@@ -27,6 +27,7 @@ type OnboardCredit = {
   reason: string;
   amount: number;
   passenger_id: number;
+  created_at: string;
 }
 
 type Passenger = {
@@ -208,6 +209,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
                   <TableRow>
                     <TableCell>Reason</TableCell>
                     <TableCell>Amount</TableCell>
+                    <TableCell>Created At</TableCell>
                     <TableCell>Delete</TableCell>
                   </TableRow>
                 </TableHead>
@@ -218,6 +220,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
                       <TableCell>
                         {formatCurrency(credit.amount)}
                       </TableCell>
+                      <TableCell>{formatDate(credit.created_at)}</TableCell>
                       <TableCell>
                         <IconButton
                           aria-label="delete"

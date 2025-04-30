@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
-import FeesForm from "./FeesForm";
+import FeesForm, { Fee } from "./FeesForm";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -49,12 +49,6 @@ type Payment = {
   amount: number;
   transactionDate: string;
   bipId?: string;
-};
-
-type Fee = {
-  id: number;
-  type: string;
-  amount: number;
 };
 
 type Installment = {

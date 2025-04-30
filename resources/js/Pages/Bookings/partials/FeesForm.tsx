@@ -20,7 +20,7 @@ import { Permissions } from '@/enums/PermissionEnum';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
-import { formatCurrency } from "@/Helpers/stringUtils";
+import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 
 type FeesFormProps = {
@@ -30,14 +30,16 @@ type FeesFormProps = {
   editMode: boolean;
 };
 
-type Fee = {
+export type Fee = {
   type: string;
   amount: number;
+  created_at: string;
+  id: number;
 };
 
 const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Fee>({ type: '', amount: 0 });
+  const [formData, setFormData] = useState<Pick<Fee, 'type' | 'amount'>>({ type: '', amount: 0 });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -192,6 +194,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
                   <TableRow>
                     <TableCell>Type</TableCell>
                     <TableCell>Amount</TableCell>
+                    <TableCell>Created At</TableCell>
                     <TableCell>Delete</TableCell>
                   </TableRow>
                 </TableHead>
@@ -202,6 +205,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
                       <TableCell>
                         {formatCurrency(fee.amount)}
                       </TableCell>
+                      <TableCell>{formatDate(fee.created_at)}</TableCell>
                       <TableCell>
                         <IconButton
                           aria-label="delete"

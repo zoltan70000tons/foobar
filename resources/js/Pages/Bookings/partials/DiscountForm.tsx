@@ -19,7 +19,7 @@ import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import { formatCurrency } from "@/Helpers/stringUtils";
+import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { Delete } from "@mui/icons-material";
 
@@ -36,11 +36,12 @@ export type Discount = {
   amount: number;
   operation: string;
   id: number;
+  created_at: string;
 };
 
 const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Discount>({ id: 0, type: '', amount: 0, operation: '' });
+  const [formData, setFormData] = useState<Pick<Discount, 'type' | 'amount' | 'operation'>>({ type: '', amount: 0, operation: '' });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -88,7 +89,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ id: 0, type: '', amount: 0, operation: '' });
+          setFormData({ type: '', amount: 0, operation: '' });
           setOpen(false);
           showSnackbar('Discount created successfully', 'success');
           router.reload({ only: ['user'] });
@@ -210,6 +211,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                     <TableCell>Type</TableCell>
                     <TableCell>Operation</TableCell>
                     <TableCell>Amount</TableCell>
+                    <TableCell>Created At</TableCell>
                     <TableCell>Delete</TableCell>
                   </TableRow>
                 </TableHead>
@@ -221,6 +223,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                       <TableCell>
                         {formatCurrency(discount.amount)}
                       </TableCell>
+                      <TableCell>{formatDate(discount.created_at)}</TableCell>
                       <TableCell>
                         <IconButton
                           aria-label="delete"
