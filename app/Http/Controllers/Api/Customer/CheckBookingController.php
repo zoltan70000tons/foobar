@@ -113,6 +113,10 @@ class CheckBookingController extends Controller
       return response()->json(['message' => 'Passenger not found'], 404);
     }
 
+    // Set installment status attribute
+    $matchedPassenger->setAttribute('installment_status', $matchedPassenger->installment_status);
+
+
     // Store booking details in session instead of querying database again
     Session::put('booking_data', [
       'booking' => $booking,
