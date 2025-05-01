@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use Log;
 use View; 
 use NumberToWords\NumberToWords;
@@ -85,6 +86,8 @@ class PDFService
 
   public function generateInvoicePDF(Booking $booking, $language = 'en')
   {
+    App::setLocale($language);
+    
     try {
       // 1) Static bank details
       $bank = [
