@@ -250,7 +250,8 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       attachments.forEach((file) => formData.append("attachments[]", file));
       formData.append("booking_pdf", pdfFile ? 1 : 0);
       formData.append("booking_image", imgFile ? 1 : 0);
-      formData.append("invoice_file", invoiceFile ? 1 : 0);
+      //formData.append("invoice_file", invoiceFile ? 1 : 0);
+      if (invoiceFile) formData.append("attachments[]", invoiceFile);
 
       try {
         // for (let pair of formData.entries()) {
@@ -266,7 +267,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
         const data = await response.json();
         if (data.success) {
           showSnackbar("Email sent successfully!", "success");
-          setAttachments([]);
+         // setAttachments([]);
         } else {
           showSnackbar("Failed to send email.", "error");
           throw new Error("Failed to send email.");
