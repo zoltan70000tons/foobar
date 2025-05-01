@@ -532,7 +532,18 @@
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
-
+                        @php
+                          $creditAmount = $passenger->onboardCredits->pluck('amount')->implode(' | ');
+                          $creditReason = $passenger->onboardCredits->pluck('reason')->implode(' | ');
+                        @endphp
+                        <tr>
+                          <td width="50%"><strong>Onboard Credit:</strong></td>
+                          <td width="50%">{{ formatCurrency($creditAmount) }}</td>
+                        </tr>
+                        <tr>
+                          <td width="50%"><strong>Reason For Credit:</strong></td>
+                          <td width="50%">{{ $creditReason }}</td>
+                        </tr>
                     </table>
                 </td>
 
