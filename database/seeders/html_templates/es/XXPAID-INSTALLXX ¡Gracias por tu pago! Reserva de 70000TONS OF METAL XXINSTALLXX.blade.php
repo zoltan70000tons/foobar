@@ -114,23 +114,19 @@
 
                                                                                     @endif
                                                                                     <br>
-                                                                                    Puedes encontrar tu
-                                                                                    Confirmación de Reserva y el
-                                                                                    Contrato del Ticket
-                                                                                    (Ticketing Contract)
-                                                                                    adjuntos. Para poder ver
-                                                                                    estos documentos será
-                                                                                    necesario tener instalado
-                                                                                    Acrobat Reader, el cual
-                                                                                    podrás descargar aquí:<br>
-                                                                                    <br>
+                                                                                    Puedes encontrar tu Confirmación de Reserva adjunta. Para poder ver este documento 
+                                                                                    será necesario tener instalado "Adobe Reader", el cual podrás descargar aquí:<br />
+                                                                                    <br />
+                                                                                    <a class="moz-txt-link-freetext" href="https://get.adobe.com/reader">https://get.adobe.com/reader</a><br />
+                                                                                    <br />
+                                                                                    Tu Contrato de Ticket (Ticketing Contract) se puede encontrar 
                                                                                     <a
-                                                                                        href="https://get.adobe.com/reader"
-                                                                                        style="color: rgb(0, 0,
-                                              238); text-decoration:
-                                              underline;"
-                                                                                        class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
-                                                                                    <br>
+                                                                                    href="https://70000tons.com/terms-conditions/?lang=es"
+                                                                                    style="color: rgb(0, 0, 238); text-decoration: none;"
+                                                                                    >
+                                                                                    aquí</a> 
+                                                                                    en nuestro sitio web.<br/>
+                                                                                    <br/>
                                                                                     <strong>Aviso importante
                                                                                         para nuestros Clientes
                                                                                         estadounidenses:</strong><span>&nbsp;</span>Aunque
