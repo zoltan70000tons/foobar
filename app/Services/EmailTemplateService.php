@@ -95,7 +95,7 @@ class EmailTemplateService
         if ($passenger) {
           $paymentData = $passenger->installment_status;
           $nextInstallmentAmount = $paymentData['next_installment']['amount_due'] ?? '';
-          $nextInstallmentDate = $paymentData['next_installment_date']['due_date'] ?? '';
+          $nextInstallmentDate = $paymentData['next_installment']['due_date'] ?? '';
         }
 
 

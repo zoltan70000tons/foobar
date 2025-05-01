@@ -48,6 +48,10 @@ class EmailController extends Controller
             return $this->withPermission(
                 [Permissions::ViewBookings, Permissions::SendEmail],
                 function ($validated, $request) {
+                    $folderPath = storage_path('app/temp_attachments');
+                    if (!file_exists($folderPath)) {
+                        mkdir($folderPath, 0775, true); 
+                    }
                     $booking = Booking::find($validated['booking_id']);
                     $content = $validated['email_content'];
                     $subject = $validated['subject'];
@@ -60,15 +64,18 @@ class EmailController extends Controller
                         ->where('booking_id', $validated['booking_id'])
                         ->first();
                     if ($passenger) {
+                        //dd($request->file('attachments', []));
                         foreach ($request->file('attachments', []) as $file) {
-                            $path = $file->store('temp_attachments');
+                            $storedPath = $file->store('temp_attachments', 'local');
+                            $absolutePath = storage_path("app/{$storedPath}");
                             $preparedAttachments[] = [
-                                'path' => $path,
+                                'path' =>  $absolutePath,
                                 'name' => $file->getClientOriginalName(),
                                 'original_name' => $file->getClientOriginalName(),
                                 'mime' => $file->getMimeType(),
                             ];
                         }
+
                         $this->emailTemplateService->sendEmail(
                             $templateId,
                             $booking,
@@ -212,7 +219,11 @@ class EmailController extends Controller
             $pdf = $service->generateBookingConfirmationPDF($booking);
             return $pdf->stream();
         } catch (\Throwable $th) {
-            //throw $th;
+            \Log::error('Error generating booking PDF', [
+                'error' => $th->getMessage(),
+                'line' => $th->getLine(),
+                'file' => $th->getFile(),
+            ]);
         }
     }
 
@@ -240,6 +251,28 @@ class EmailController extends Controller
             return response($imageData, 200)->header('Content-Type', $mimeType);
         } catch (\Throwable $th) {
             return response()->json(['error' => 'Error retrieving image'], 500);
+        }
+    }
+    
+    public function generateInvoicePDF(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            // 'lang' => 'required|string|in:en,es,de',
+            'booking_id' => 'required|integer',
+            'lang' => 'string|in:en,es,de',
+        ])->validate();
+        try {
+            $booking = Booking::find($validated['booking_id']);
+            $lang = $validated['lang'] ?? 'en';
+            $service = new PDFService();
+            $pdf = $service->generateInvoicePDF($booking, $lang);
+            return $pdf->stream();
+        } catch (\Throwable $th) {
+            \Log::error('Error generating invoice PDF', [
+                'error' => $th->getMessage(),
+                'line' => $th->getLine(),
+                'file' => $th->getFile(),
+            ]);
         }
     }
 }

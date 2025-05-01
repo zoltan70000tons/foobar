@@ -184,8 +184,8 @@
                 $pass = $passenger['passenger'];
                 $payment_method = match ($pass->payment_method) {
                 'CREDIT_CARD' => 'Credit Card*',
-                'PAY_IN_FULL' => 'Full Payment',
-                default => 'Unknown',
+                'BANK_TRANSFER' => 'Bank Transfer',
+                default => '',
                 };
                 $installments = $pass->getInstallmentStatus();
                 @endphp
