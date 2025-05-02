@@ -10,7 +10,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Log;
 use Str;
+use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * @property \Illuminate\Database\Eloquent\Collection|\App\Models\OnboardCredit[] $onboardCredits
+ */
 class Passenger extends Model
 {
   use HasApiTokens, HasFactory;
@@ -108,7 +112,7 @@ class Passenger extends Model
     return $this->empty_seat;
   }
 
-  // passenger may have installments
+  // Installments mean the due dates for the passenger payments
   public function installments()
   {
     return $this->hasMany(Installment::class);
@@ -127,6 +131,11 @@ class Passenger extends Model
   public function discounts()
   {
     return $this->hasMany(PassengerDiscount::class);
+  }
+  
+  public function onboardCredits()
+  {
+    return $this->hasMany(OnboardCredit::class);
   }
 
   public function getInstallmentStatusAttribute()

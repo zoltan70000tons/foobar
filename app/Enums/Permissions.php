@@ -96,5 +96,8 @@ enum Permissions: string
     case CreatePassengerDiscounts = 'Create Passenger Discounts';
     case DeletePassengerDiscounts = 'Delete Passenger Discounts';
 
+    case CreatePassengerOnboardCredit = 'Create Passenger Onboard Credit';
+    case DeletePassengerOnboardCredit = 'Delete Passenger Onboard Credit';
+
 
 }

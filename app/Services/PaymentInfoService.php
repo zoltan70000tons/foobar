@@ -237,6 +237,7 @@ class PaymentInfoService
       $adjustedBasePrice = max(0, $basePrice - $totalBookingDiscount + $totalBookingAddon);
 
       // Loop through each passenger to calculate their individual allocated cost
+      /* @var $passenger \App\Models\Passenger */
       foreach ($booking->passengers as $passenger) {
         $passengerTotal = $adjustedBasePrice;
         $totalPassengerDiscount = 0;

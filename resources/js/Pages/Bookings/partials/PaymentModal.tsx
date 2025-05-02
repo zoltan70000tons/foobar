@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -10,49 +10,77 @@ import {
   DialogContent,
   DialogActions,
   Grid,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
-import { router } from '@inertiajs/react';
-import dayjs, { Dayjs } from 'dayjs';
-import { sanitizeInput } from '@/Helpers/inputSanitizer';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import PaymentIcon from '@mui/icons-material/Payment';
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Paper,
+  Divider,
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
+import { router } from "@inertiajs/react";
+import dayjs, { Dayjs } from "dayjs";
+import { Delete } from "@mui/icons-material";
+import { sanitizeInput } from "@/Helpers/inputSanitizer";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { formatCurrency } from "@/Helpers/stringUtils";
 
 type PaymentModalProps = {
-  passenger_id: number;
+  passenger: any;
   booking_id: number;
   event_id: number;
   editMode: boolean;
+  paymentHistory: Array<{
+    id: number;
+    type: string;
+    amount: number;
+    transaction_date: string;
+    BIP_ID: string;
+    source: string;
+  }>;
+  open: boolean;
+  onClose: () => void;
 };
 
 type Payment = {
   BIP_ID: string;
   amount: number;
-  type: 'PAYMENT' | 'REFUND';
+  type: "PAYMENT" | "REFUND";
   notes?: string;
   transaction_date: Dayjs | null;
 };
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ passenger_id, booking_id, event_id, editMode }) => {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Payment>({
-    BIP_ID: '',
-    amount: 0,
-    type: 'PAYMENT',
-    notes: '',
-    transaction_date: dayjs(), // Default to today
-  });
+const PaymentModal: React.FC<PaymentModalProps> = ({
+  passenger,
+  booking_id,
+  event_id,
+  editMode,
+  paymentHistory,
+  open,
+  onClose,
+}) => {
   const [loading, setLoading] = useState(false);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const { showSnackbar } = useSnackbar();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const [formData, setFormData] = useState<Payment>({
+    BIP_ID: "",
+    amount: 0,
+    type: "PAYMENT",
+    notes: "",
+    transaction_date: dayjs(),
+  });
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : sanitizeInput(value),
+      [name]: name === "amount" ? parseFloat(value) : sanitizeInput(value),
     }));
   };
 
@@ -65,45 +93,37 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ passenger_id, booking_id, e
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!formData.BIP_ID || formData.amount <= 0) {
-      showSnackbar('Please fill in all fields correctly.', 'error');
+      showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
 
     setLoading(true);
-
-    // Send form data to the server using the router
     router.post(
-      route('manual.payment', {
-        event_id: event_id,
-        booking_id: booking_id,
-      }),
+      route("manual.payment", { event_id, booking_id }),
       {
-        passenger_id,
+        passenger_id: passenger.id,
         BIP_ID: formData.BIP_ID,
         amount: formData.amount,
         type: formData.type,
         notes: formData.notes,
-        transaction_date: formData.transaction_date?.format('YYYY-MM-DD'), // Format the date for Laravel
+        transaction_date: formData.transaction_date?.format("YYYY-MM-DD"),
       },
       {
         onSuccess: () => {
-          // Reset form and close dialog only on success
+          showSnackbar("Payment created successfully", "success");
           setFormData({
-            BIP_ID: '',
+            BIP_ID: "",
             amount: 0,
-            type: 'PAYMENT',
-            notes: '',
+            type: "PAYMENT",
+            notes: "",
             transaction_date: dayjs(),
           });
-          showSnackbar('Payment created successfully', 'success');
-          setOpen(false);
+          onClose();
         },
-        onError: (errors) => {
-          // Log or display errors if needed
-          console.error('Validation errors:', errors);
-          showSnackbar('Failed to save the payment. Please check your inputs.', 'error');
+        onError: (err) => {
+          console.error(err);
+          showSnackbar("Failed to save the payment.", "error");
         },
         onFinish: () => {
           setLoading(false);
@@ -112,101 +132,182 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ passenger_id, booking_id, e
     );
   };
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleOpenDelete = (paymentId: number) => {
+    setSelectedPaymentId(paymentId);
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedPaymentId) return;
+
+    setLoading(true);
+    router.post(
+      route("payments.delete", { event_id, booking_id }),
+      {
+        passenger_id: passenger.id,
+        payment_id: selectedPaymentId,
+      },
+      {
+        onSuccess: () => {
+          showSnackbar("Payment deleted successfully.", "success");
+        },
+        onError: () => {
+          showSnackbar("Could not delete payment.", "error");
+        },
+        onFinish: () => {
+          setLoading(false);
+          setConfirmDeleteOpen(false);
+          setSelectedPaymentId(null);
+        },
+      },
+    );
+  };
 
   return (
-    <Box>
-      <Button
-        fullWidth
-        variant="outlined"
-        sx={{ color: 'white', borderColor: 'gray' }}
-        onClick={handleOpen}
-        disabled={!editMode}
-        startIcon={<PaymentIcon />}
-      >
-        Add Payment/Refund
-      </Button>
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Add Payment</DialogTitle>
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" >
+        <DialogTitle>Payments and Refunds</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label="BIP ID"
-                name="BIP_ID"
-                type="text"
-                value={formData.BIP_ID}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                required
-              />
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2} mt={1}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="BIP ID"
+                  name="BIP_ID"
+                  value={formData.BIP_ID}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                />
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <TextField
+                  label="Amount"
+                  name="amount"
+                  type="number"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  fullWidth
+                  inputProps={{ step: 0.01, min: 0 }}
+                  required
+                />
+              </Grid>
+              <Grid item xs={6} md={3}>
+                <TextField
+                  select
+                  label="Type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                >
+                  <MenuItem value="PAYMENT">Payment</MenuItem>
+                  <MenuItem value="REFUND">Refund</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <DatePicker
+                  label="Transaction Date"
+                  value={formData.transaction_date}
+                  onChange={handleDateChange}
+                  slotProps={{ textField: { fullWidth: true, required: true } }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  inputProps={{ maxLength: 255 }}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label="Amount"
-                name="amount"
-                type="number"
-                value={formData.amount}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                inputProps={{ step: 0.01, min: 0 }}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                select
-                label="Type"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                required
-              >
-                <MenuItem value="PAYMENT">Payment</MenuItem>
-                <MenuItem value="REFUND">Refund</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <DatePicker
-                sx={{ mt: '1rem', width: '100%' }}
-                label="Transaction Date"
-                value={formData.transaction_date}
-                onChange={handleDateChange}
-                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required />}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                multiline
-                rows={4}
-                inputProps={{ maxLength: 255 }}
-                helperText={`${formData.notes?.length || 0}/255`}
-              />
-            </Grid>
-          </Grid>
+
+            <DialogActions>
+              <Button onClick={onClose} color="secondary">
+                Cancel
+              </Button>
+              <Button type="submit" color="primary" variant="contained" disabled={loading}>
+                Save
+              </Button>
+            </DialogActions>
+          </form>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" gutterBottom>
+            Payment History for {passenger?.full_name || "Unknown Passenger"}
+          </Typography>
+
+          {paymentHistory.length > 0 ? (
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>BIP ID</TableCell>
+                    <TableCell>Source</TableCell>
+                    <TableCell>Delete</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paymentHistory.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell>{payment.type}</TableCell>
+                      <TableCell>
+                        {payment.type === "PAYMENT" ? "+" : payment.type === "REFUND" ? "-" : ""}
+                        {formatCurrency(payment.amount)}
+                      </TableCell>
+                      <TableCell>{new Date(payment.transaction_date).toLocaleDateString()}</TableCell>
+                      <TableCell>{payment.BIP_ID || "N/A"}</TableCell>
+                      <TableCell>{payment.source || "N/A"}</TableCell>
+                      <TableCell>
+                        {payment.source === "MANUAL" && (
+                          <IconButton
+                            aria-label="delete"
+                            color="error"
+                            size="small"
+                            disabled={!editMode}
+                            onClick={() => handleOpenDelete(payment.id)}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography>No payments found for this passenger.</Typography>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <DialogTitle>Delete Payment</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this payment?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" color="secondary" onClick={handleClose}>
+          <Button onClick={() => setConfirmDeleteOpen(false)} color="secondary">
             Cancel
           </Button>
-          <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
-            Save
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Confirm
           </Button>
         </DialogActions>
-        {/* <LoadingOverlay open={loading} /> */}
       </Dialog>
-    </Box>
+    </>
   );
 };
 
