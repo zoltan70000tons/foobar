@@ -58,6 +58,7 @@ class NotificationController extends Controller
         'type' => 'required|string|in:PAYMENT,REFUND',
         'notes' => 'nullable|string|max:255',
         'transaction_date' => 'required|date',
+        'splitAmount' => 'nullable',
       ]);
 
       // Prevent duplicate BIP_ID processing
@@ -66,7 +67,6 @@ class NotificationController extends Controller
       }
 
       $validated['source'] = 'SYSTEM';
-
       $passenger = Passenger::find($validated['passenger_id']);
       $booking = $passenger->booking;
 
@@ -74,21 +74,56 @@ class NotificationController extends Controller
         return response()->json(['error' => 'No booking found for this passenger'], 404);
       }
 
-      // Process payment
-      Payment::create($validated);
+      $splitAmount = filter_var($validated['splitAmount'], FILTER_VALIDATE_BOOLEAN);
 
-      // Sync passeger balance
+      // Check if the payment is a split payment
+      if ($splitAmount) {
+        $passengers = $booking->passengers;
+        $splitValue = round($validated['amount'] / $passengers->count(), 2);
+        $totalDistributed = 0;
+
+        foreach ($passengers as $index => $pax) {
+          $individualAmount = ($index === $passengers->count() - 1)
+            ? $validated['amount'] - $totalDistributed // Fix rounding error on last passenger
+            : $splitValue;
+
+          Payment::create([
+            'amount' => $individualAmount,
+            'passenger_id' => $pax->id,
+            'BIP_ID' => $validated['BIP_ID'] . "_{$pax->id}",
+            'type' => $validated['type'],
+            'notes' => $validated['notes'],
+            'transaction_date' => $validated['transaction_date'],
+            'source' => $validated['source'],
+          ]);
+
+          $this->paymentInfoService->syncBalance($pax->id, $booking->id, $booking->event_id);
+          $totalDistributed += $individualAmount;
+        }
+
+        DB::commit();
+
+        $this->saveBookingLog(
+          $booking->id,
+          'System Split Payment Received',
+          "System {$validated['type']} of \${$validated['amount']} was split across all passengers"
+        );
+
+        return response()->json(['message' => 'Split payment processed successfully'], 200);
+      }
+
+      // Single payment path
+      Payment::create($validated);
       $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking->id, $booking->event_id);
 
       DB::commit();
 
-      // send notification to slack
+      // Send Slack notification
       try {
         Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
           new PaymentIsReceived($booking, $passenger, $validated['amount'])
         );
       } catch (\Exception $e) {
-        // Optionally log the failure so you know something went wrong
         Log::warning('Slack notification failed: ' . $e->getMessage());
       }
 
