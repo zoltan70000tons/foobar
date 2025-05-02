@@ -100,9 +100,8 @@ style="color: rgb(102, 102,
                                             having you on board!<br>
                                             <br>
                                             Please find your Booking
-                                            Confirmation and Ticketing
-                                            Contract attached. To view
-                                            these documents you will
+                                            Confirmation attached. To view
+                                            these document you will
                                             need "Adobe Reader", which
                                             you can download here:<span>&nbsp;</span><a
 href="https://get.adobe.com/reader/"

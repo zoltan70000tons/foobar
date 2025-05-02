@@ -99,10 +99,9 @@ style="color: rgb(102, 102,
                                             payment {PASSENGER_NAME}. Thank you!<br>
                                             <br>
                                             Please find your updated
-                                            Booking Confirmation and
-                                            Ticketing Contract attached.<br>
+                                            Booking Confirmation attached.<br>
                                             <br>
-                                            To view these documents you
+                                            To view this document you
                                             will need "Adobe Reader",
                                             which you can download here:<br>
                                             <br>
@@ -112,6 +111,15 @@ style="color: rgb(0, 0,
                                               238); text-decoration:
                                               underline;"
 class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+                                          <br />
+                                          Your Ticket Contract can be found 
+                                          <a
+                                            href="https://70000tons.com/terms-conditions/?lang=en"
+                                            style="color: rgb(0, 0, 238); text-decoration: underline; font-weight: bold;"
+                                          >
+                                           here</a> 
+                                           on our website.<br/>
+                                          <br/>
                                             <br>
                                             Please review your Booking
                                             Confirmation and report any
