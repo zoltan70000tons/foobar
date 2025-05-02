@@ -45,7 +45,6 @@
 
                     ]);
                     OnboardCredit::create($validated);
-                    $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
 
                     DB::commit();
 
@@ -94,7 +93,6 @@
                     }
 
                     $onboardCredit->delete();
-                    $this->paymentInfoService->syncAllocatedCost($booking);
 
                     DB::commit();
 

@@ -242,7 +242,6 @@ class PaymentInfoService
         $passengerTotal = $adjustedBasePrice;
         $totalPassengerDiscount = 0;
         $totalPassengerFees = 0;
-        $totalOnboardCredit = 0;
 
         // Process passenger-specific discounts
         foreach ($passenger->discounts as $discount) {
@@ -255,12 +254,8 @@ class PaymentInfoService
           $totalPassengerDiscount += $discountValue;
         }
 
-        foreach ($passenger->onboardCredits as $onboardCredit) {
-            $totalOnboardCredit += $onboardCredit->amount;
-        }
-
         // Apply passenger-level discounts
-        $passengerTotal = max(0, $passengerTotal - $totalPassengerDiscount - $totalOnboardCredit);
+        $passengerTotal = max(0, $passengerTotal - $totalPassengerDiscount);
 
         // Process passenger fees (always added)
         foreach ($passenger->fees as $fee) {

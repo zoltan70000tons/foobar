@@ -426,8 +426,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         const { passengerDiscounts, totalPassengerDiscounts } = calculateDiscounts(pax, pricePerPerson);
         const totalPassengerDiscount = totalDiscounts + totalPassengerDiscounts;
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
-        const totalOnboardCredit = pax.onboard_credits.reduce((acc, credit) => acc + Number(credit.amount || 0), 0);
-        const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees - totalOnboardCredit;
+        const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees;
         const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
         const filteredInstallments = pax.installments
           .filter((inst) => inst.type !== "FEE")
@@ -571,16 +570,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     </TableCell>
                     <TableCell align="right" style={{ fontWeight: "400", color: "#FFC107" }}>
                       {totalFees > 0 ? `+${formatCurrency(totalFees)}` : `${formatCurrency(totalFees)}`}
-                    </TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                  {/*** Onboard credits ***/}
-                  <TableRow>
-                    <TableCell style={{ fontWeight: "400", color: "#4CAF50" }} sx={{ pl: "2rem" }}>
-                      Total Onboard credit:
-                    </TableCell>
-                    <TableCell align="right" style={{ fontWeight: "400", color: "#4CAF50" }}>
-                      {totalOnboardCredit > 0 ? `-${formatCurrency(totalOnboardCredit)}` : `${formatCurrency(totalOnboardCredit)}`}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
