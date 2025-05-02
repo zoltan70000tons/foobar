@@ -90,11 +90,12 @@ class NotificationController extends Controller
           Payment::create([
             'amount' => $individualAmount,
             'passenger_id' => $pax->id,
-            'BIP_ID' => $validated['BIP_ID'] . "_{$pax->id}",
+            'BIP_ID' => $validated['BIP_ID'] . "SPLIT_{$pax->id}",
             'type' => $validated['type'],
             'notes' => $validated['notes'],
             'transaction_date' => $validated['transaction_date'],
             'source' => $validated['source'],
+            'splitAmount' => true,
           ]);
 
           $this->paymentInfoService->syncBalance($pax->id, $booking->id, $booking->event_id);
