@@ -11,15 +11,6 @@ import {
   Button,
   Grid,
   Avatar,
-  TableContainer,
-  TableHead,
-  Modal,
-  Dialog,
-  DialogContent,
-  IconButton,
-  DialogTitle,
-  DialogContentText,
-  DialogActions,
 } from "@mui/material";
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
@@ -28,12 +19,11 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
-import { Delete, Payment as PaymentIcon } from "@mui/icons-material";
+import { Payment as PaymentIcon } from "@mui/icons-material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { router } from "@inertiajs/react";
 import DiscountForm, { Discount } from "./DiscountForm";
 import OnboardCreditForm from "./OnboardCreditForm";
-import HistoryIcon from "@mui/icons-material/History";
 
 import { formatCurrency } from "@/Helpers/stringUtils";
 
@@ -130,18 +120,10 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const { hasPermission } = usePermissions();
   const canCreateFee = hasPermission(Permissions.CreateFees);
   const canCreatePayment = hasPermission(Permissions.CreatePayments);
-  const canDeleteFee = hasPermission(Permissions.DeleteFees);
   const canCreateDiscount = hasPermission(Permissions.CreatePassengerDiscounts);
-  const canDeleteDiscount = hasPermission(Permissions.DeletePassengerDiscounts);
   const canCreateOnboardCredit = hasPermission(Permissions.CreatePassengerOnboardCredit);
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
-  const [loading, setLoading] = useState(false);
-  // State for modal
-  const [open, setModalOpen] = useState(false);
-  const [openConfirm, setOpenConfirm] = useState(false);
-  const [openConfirmDeleteDiscount, setOpenConfirmDeleteDiscount] = useState(false);
-  const [openConfirmPayment, setOpenConfirmPayment] = useState(false);
   const [currentPassenger, setCurrentPassenger] = useState<Passenger | null>(null);
   const [selectedFeeId, setSelectedFeeId] = useState<number | null>(null);
   const [selectedPassengerId, setSelectedPassengerId] = useState<number | null>(null);
@@ -221,179 +203,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const summaryBalance = getSummaryBalance(booking);
   const summaryToPay = Number(summaryAllocatedCost) - Number(summaryBalance);
 
-  const handleOpenModal = (passenger: Passenger) => {
-    setCurrentPassenger(passenger); // Set the selected passenger
-    setModalOpen(true); // Open the modal
-  };
-  const handleOpenConfirm = (passengerId: number, feeId: number) => {
-    setSelectedPassengerId(passengerId);
-    setSelectedFeeId(feeId);
-    setOpenConfirm(true);
-  };
-
-  const handleOpenConfirmDeleteDiscount = (passengerId: number, discountId: number) => {
-    setSelectedPassengerId(passengerId);
-    setSelectedDiscountId(discountId);
-    setOpenConfirmDeleteDiscount(true);
-  };
-
-  const handleCancel = () => {
-    setOpenConfirm(false);
-    setOpenConfirmDeleteDiscount(false);
-    setSelectedPassengerId(null);
-    setSelectedFeeId(null);
-    setSelectedDiscountId(null);
-  };
-
-  const handleOpenConfirmPayment = (paymentId: number) => {
-    setSelectedPaymentId(paymentId);
-    setOpenConfirmPayment(true);
-  };
-
-  const handleCancelPaymentDelete = () => {
-    setOpenConfirmPayment(false);
-    setSelectedPaymentId(null);
-  };
-
-  const handleConfirmPaymentDelete = () => {
-    if (selectedPaymentId && currentPassenger) {
-      handleDeletePayment(currentPassenger.id, selectedPaymentId);
-    }
-    handleCancelPaymentDelete();
-  };
-
-  const handleConfirm = () => {
-    if (selectedPassengerId && selectedFeeId) {
-      handleDeleteFee(selectedPassengerId, selectedFeeId);
-    }
-    handleCancel();
-  };
-
-  const handleConfirmDeleteDiscount = () => {
-    if (selectedPassengerId && selectedDiscountId) {
-      handleDeleteDiscount(selectedPassengerId, selectedDiscountId);
-    }
-    handleCancel();
-  };
-
-  const handleDeleteFee = (passengerId: number, feeId: number) => {
-    setLoading(true);
-
-    router.post(
-      route("fees.delete", {
-        event_id: booking.event_id,
-        booking_id: booking.id,
-      }),
-      { passenger_id: passengerId, fee_id: feeId },
-      {
-        onSuccess: () => {
-          const updatedPassengers = passengers.map((pax) => {
-            //FIXME
-            if (pax.id === passengerId) {
-              return {
-                ...pax,
-                fees: pax.fees.filter((fee) => fee.id !== feeId),
-              };
-            }
-            return pax;
-          });
-          showSnackbar("Fee deleted successfully.", "success");
-        },
-        onError: (errors) => {
-          console.error("Failed to delete fee:", errors);
-          showSnackbar("An error occurred while trying to delete the fee.", "error");
-        },
-        onFinish: () => {
-          setLoading(false);
-        },
-      },
-    );
-  };
-
-  const handleDeletePayment = (passengerId: number, paymentId: number) => {
-    setLoading(true);
-
-    router.post(
-      route("payments.delete", {
-        event_id: booking.event_id,
-        booking_id: booking.id,
-      }),
-      { passenger_id: passengerId, payment_id: paymentId },
-      {
-        onSuccess: () => {
-          showSnackbar("Payment deleted successfully.", "success");
-          setCurrentPassenger((prev) => ({
-            ...prev!,
-            payments: prev!.payments.filter((payment) => payment.id !== paymentId),
-          }));
-        },
-        onError: (errors) => {
-          console.error("Failed to delete payment:", errors);
-          showSnackbar("An error occurred while trying to delete the payment.", "error");
-        },
-        onFinish: () => {
-          setLoading(false);
-        },
-      },
-    );
-  };
-
-  const handleDeleteDiscount = (passengerId: number, discountId: number) => {
-    setLoading(true);
-    router.post(
-      route("delete.discount", {
-        event_id: booking.event_id,
-        booking_id: booking.id,
-      }),
-      { passenger_id: passengerId, discount_id: discountId },
-      {
-        onSuccess: () => {
-          const updatedPassengers = passengers.map((pax) => {
-            //FIXME
-            if (pax.id === passengerId) {
-              return {
-                ...pax,
-                fees: pax.discounts.filter((dis) => dis.id !== discountId),
-              };
-            }
-            return pax;
-          });
-          showSnackbar("Discount deleted successfully.", "success");
-        },
-        onError: (errors) => {
-          console.error("Failed to delete fee:", errors);
-          showSnackbar("An error occurred while trying to delete the discount.", "error");
-        },
-        onFinish: () => {
-          setLoading(false);
-        },
-      },
-    );
-  };
-
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
     return timestamp.split("T")[0];
-  };
-
-  const mergeFeesWithPayments = (fees = [], payments = []) => {
-    fees = fees || [];
-    payments = payments || [];
-
-    const mergedFees = fees.map((fee) => ({
-      BIP_ID: "N/A",
-      amount: fee.amount || "N/A",
-      created_at: fee.created_at || "N/A",
-      id: fee.id || "N/A",
-      notes: "N/A",
-      passenger_id: fee.passenger_id || "N/A",
-      source: "FEE",
-      transaction_date: formatDate(fee.created_at),
-      type: fee.type || "N/A",
-      updated_at: fee.updated_at || "N/A",
-    }));
-
-    return [...payments, ...mergedFees];
   };
 
   const paymentHistory = currentPassenger?.payments;
@@ -527,15 +339,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                           : `${formatCurrency(discount.value)}`}
                       </TableCell>
                       <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          size="small"
-                          disabled={!editMode || !canDeleteDiscount}
-                          onClick={() => handleOpenConfirmDeleteDiscount(pax.id, discount.id)}
-                        >
-                          <Delete style={{ fontSize: "1rem" }} />
-                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -590,15 +393,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                         </Box>
                       </TableCell>
                       <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          size="small"
-                          disabled={!editMode || !canDeleteFee}
-                          onClick={() => handleOpenConfirm(pax.id, fee.id)}
-                        >
-                          <Delete style={{ fontSize: "1rem" }} />
-                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
