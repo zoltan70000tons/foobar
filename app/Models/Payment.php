@@ -19,7 +19,8 @@ class Payment extends Model
     'transaction_date',
     'amount',
     'notes',
-    'source'
+    'source',
+    'splitAmount',
   ];
 
   protected static function boot()
