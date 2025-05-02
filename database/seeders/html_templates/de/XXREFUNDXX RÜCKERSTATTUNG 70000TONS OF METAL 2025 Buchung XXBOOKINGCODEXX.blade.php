@@ -125,11 +125,11 @@ style="color: rgb(102, 102,
                                             herunterladen:<br>
                                             <br>
                                             <a
-href="https://get.adobe.com/reader"
+href="https://get.adobe.com/de/reader"
 style="color: rgb(0, 0,
                                               238); text-decoration:
                                               underline;"
-class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+class="moz-txt-link-freetext">https://get.adobe.com/de/reader</a><br>
                                             <br>
                                             Bei Fragen stehen wir
                                             jederzeit gerne zur

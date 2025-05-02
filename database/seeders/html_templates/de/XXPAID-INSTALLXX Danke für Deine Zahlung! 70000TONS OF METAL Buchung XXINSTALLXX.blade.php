@@ -125,11 +125,11 @@
                                           hier herunterladen:<br>
                                           <br>
                                           <a
-href="https://get.adobe.com/reader"
+href="https://get.adobe.com/de/reader"
 style="color: rgb(0, 0,
                                             238); text-decoration:
                                             underline;"
-class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+class="moz-txt-link-freetext">https://get.adobe.com/de/reader</a><br>
                                           <br>
                                           Deinen Ticketvertrag (Ticket 
                                           Contract) findest Du 
