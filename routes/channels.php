@@ -17,3 +17,8 @@ Broadcast::channel("bookings-locked", function () {
 Broadcast::channel("test-channel", function () {
   return true;
 });
+
+
+Broadcast::channel("booking-status", function () {
+  return true;
+});

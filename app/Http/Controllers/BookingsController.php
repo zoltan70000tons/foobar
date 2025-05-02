@@ -443,50 +443,116 @@ class BookingsController extends Controller
 
   public function addTag(Request $request) {}
 
+  // Reassign booking to another agent
+  public function reAssign(Request $request)
+  {
+      $bookingId = $request->input('booking_id');
+      $user = Auth::user();
+
+      DB::table('booking_agent_sessions')
+      ->where('booking_id', $bookingId)
+      ->delete();
+
+
+      DB::table('booking_agent_sessions')->insert([
+          'booking_id' => $bookingId,
+          'agent_id' => $user->id,
+          'time' => now(),
+      ]);
+ 
+      broadcast(new \App\Events\BookingAgentSession(
+        agentId: $user->id,
+        bookingId: $bookingId,
+        username: $user->username
+      ));
+
+      return Inertia::location(url()->previous());
+  }
+
+  // edit mode
   public function editMode(Request $request)
   {
-    try {
-      $booking_id = $request->input('booking_id');
-      $lock = $request->input('lock');
-      $event_id = $request->input('event_id');
 
-      return $this->withPermission(
-        [Permissions::EditBookings],
-        function ($event_id, $booking_id, $lock) {
-          $event = $this->eventRepository->find($event_id);
-          $booking = Booking::find($booking_id);
+    $bookingId = $request->input('booking_id');
+    $eventId = $request->input('event_id');
+    $lock = $request->input('lock') === '1';
+    $user = Auth::user();
 
-          if ($lock == '1') {
-            $bookingSession = new BookingAgentSessions();
-            $bookingSession->agent_id = Auth::user()->id;
-            $bookingSession->booking_id = $booking->id;
-            $bookingSession->time = now();
-            $bookingSession->save();
-
-            return Inertia::location(url()->previous());
-          } elseif ($lock == '0') {
-            $bookingSession = BookingAgentSessions::where('booking_id', $booking_id)->first();
-            if ($bookingSession) {
-              $bookingSession->delete();
-              return Inertia::location(url()->previous());
-            }
-          }
-
-          return response()->json(
+    if ($lock) {
+        DB::table('booking_agent_sessions')->updateOrInsert(
             [
-              'success' => false,
-              'message' => 'Invalid lock value.',
+              'booking_id' => $bookingId, 
+              'agent_id' => $user->id
             ],
-            400
-          );
-        },
-        $event_id,
-        $booking_id,
-        $lock
-      );
-    } catch (\Exception $e) {
-      $this->logException($e);
+            [
+                'time' => now()
+            ]
+        );
+    } else {
+        DB::table('booking_agent_sessions')
+            ->where('booking_id', $bookingId)
+            ->where('agent_id', $user->id)
+            ->delete();
     }
+
+    broadcast(new \App\Events\BookingAgentSession(
+        agentId: $user->id,
+        bookingId: $bookingId,
+        username: $lock ? $user->username : null
+    ));
+
+    
+    // // return inertia
+    return Inertia::location(url()->previous());
+
+    // try {
+    //   $booking_id = $request->input('booking_id');
+    //   $lock = $request->input('lock');
+    //   $event_id = $request->input('event_id');
+
+    //   broadcast(new \App\Events\BookingAgentSession(
+    //     bookingId: $booking_id,
+    //     username: $lock ? Auth::user()->username : null
+    //   ));
+
+
+    //   return $this->withPermission(
+    //     [Permissions::EditBookings],
+    //     function ($event_id, $booking_id, $lock) {
+    //       $event = $this->eventRepository->find($event_id);
+    //       $booking = Booking::find($booking_id);
+
+    //       if ($lock == '1') {
+    //         $bookingSession = new BookingAgentSessions();
+    //         $bookingSession->agent_id = Auth::user()->id;
+    //         $bookingSession->booking_id = $booking->id;
+    //         $bookingSession->time = now();
+    //         $bookingSession->save();
+
+    //         return Inertia::location(url()->previous());
+    //       } elseif ($lock == '0') {
+    //         $bookingSession = BookingAgentSessions::where('booking_id', $booking_id)->first();
+    //         if ($bookingSession) {
+    //           $bookingSession->delete();
+    //           return Inertia::location(url()->previous());
+    //         }
+    //       }
+
+    //       return response()->json(
+    //         [
+    //           'success' => false,
+    //           'message' => 'Invalid lock value.',
+    //         ],
+    //         400
+    //       );
+    //     },
+    //     $event_id,
+    //     $booking_id,
+    //     $lock
+    //   );
+    // } catch (\Exception $e) {
+    //   $this->logException($e);
+    // }
   }
 
   public function statusUpdate(Request $request)

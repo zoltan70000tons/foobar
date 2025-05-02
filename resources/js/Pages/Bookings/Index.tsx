@@ -37,9 +37,13 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { BookingStatusColor, BookingStatusEnum } from "@/enums/StatusEnum";
 import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete } from "@mui/material";
+import LockedByAgent from "./partials/LockedByAgent";
 
 //Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
+
+// reverb
+import '@/echo';
 
 const Index = ({
   auth,
@@ -73,7 +77,9 @@ const Index = ({
   const eventId = event.id;
   const [shouldReload, setShouldReload] = useState(false);
 
+
   useEffect(() => {
+
     if (shouldReload) {
       setShouldReload(false);
       setTableKey((prev) => prev + 1);
@@ -328,6 +334,8 @@ const Index = ({
         accessor: "",
         disableFilter: true,
         draw: (row: any) => {
+
+      
           return (
             <>
               <div style={{ display: "flex", gap: "10px" }}>
@@ -335,11 +343,17 @@ const Index = ({
                   <Visibility onClick={() => handleViewClick(row)} style={{ cursor: "pointer" }} />
                 )}
               </div>
-              {row?.editingUsername && (
+              <LockedByAgent 
+                bookingId={row?.id} 
+                currentEditingUser={row?.editingUsername}
+              />
+              {/* <IconButton onClick={() => handleClick(row.agent_id, row.booking_code)} size="small" color="primary">
+                <Person />
+              {/* {row?.editingUsername && (
                 <Box component="small" sx={{ width: "10px" }} color="warning.main">
                   Being used by {row.editingUsername}
                 </Box>
-              )}
+              )} */}
             </>
           );
         },

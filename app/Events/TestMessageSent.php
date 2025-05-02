@@ -21,6 +21,13 @@ class TestMessageSent implements ShouldBroadcast
         return ['test-channel'];
     }
 
+    public function broadcastWith()
+    {
+        return [
+            'message' => $this->message,
+        ];
+    }
+
     public function broadcastAs()
     {
         return 'TestEvent';

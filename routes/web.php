@@ -158,6 +158,8 @@ Route::middleware('auth')->group(function () {
     'bookings.assignAgent'
   );
   Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
+  Route::get('/bookings/edit-mode-reassign', [BookingsController::class, 'reAssign'])->name('bookings.reAssign');
+
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
 
