@@ -52,9 +52,13 @@ type Payment = {
 };
 
 type Installment = {
-  perc: number;
-  installments: Array<{ due_date: string }>;
-  passengerAllocatedCost: number;
+  //perc: number;
+  //installments: Array<{ due_date: string }>;
+  //passengerAllocatedCost: number;
+  due_date: string;
+  type: "PAYMENT" | "FEE";
+  id: number;
+  passenger_id: number;
 };
 
 type InstallmentItem = {
@@ -73,10 +77,11 @@ type InstallmentStatus = {
 };
 
 type OnboardCredit = {
-  amount: number;
   id: number;
-  passenger_id: number;
   reason: string;
+  amount: number;
+  passenger_id: number;
+  created_at: string;
 }
 
 export type Passenger = {
@@ -92,6 +97,8 @@ export type Passenger = {
   onboard_credits: OnboardCredit[];
   full_name?: string;
   discounts: Discount[];
+  first_name?: string;
+  last_name?: string;
 };
 
 type Adjustment = {
@@ -130,7 +137,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
-
   // State for modal
   const [open, setModalOpen] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -666,7 +672,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     />
                   </Grid>
                 )}
-                {/*canCreateOnboardCredit*/ true && (
+                {canCreateOnboardCredit && (
                   <Grid item xs={12} sm={3}>
                     <OnboardCreditForm
                       passenger={pax}

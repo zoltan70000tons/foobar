@@ -21,20 +21,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
-
-type OnboardCredit = {
-  id: number;
-  reason: string;
-  amount: number;
-  passenger_id: number;
-  created_at: string;
-}
-
-type Passenger = {
-  id: number;
-  full_name?: string;
-  onboard_credits: OnboardCredit[];
-}
+import { Passenger } from "@/Pages/Bookings/partials/Payment";
 
 type OnboardCreditFormProps = {
   passenger: Passenger;
@@ -55,17 +42,17 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
   const [formData, setFormData] = useState<OnboardCreditFormData>({ reason: '', amount: 0 });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
-
+  const { hasPermission } = usePermissions();
+  const canDeleteOnboardCredit = hasPermission(Permissions.DeletePassengerOnboardCredit);
   const onboardCredit = passenger.onboard_credits;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    console.log(e.target);
+
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'amount' ? parseFloat(value) : value,
     }));
-    console.log(formData);
   };
 
   const handleOpen = () => setOpen(true);
@@ -222,15 +209,17 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
                       </TableCell>
                       <TableCell>{formatDate(credit.created_at)}</TableCell>
                       <TableCell>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          size="small"
-                          disabled={!editMode}
-                          onClick={() => handleOpenDelete(credit.id)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
+                        {canDeleteOnboardCredit && (
+                          <IconButton
+                            aria-label="delete"
+                            color="error"
+                            size="small"
+                            disabled={!editMode}
+                            onClick={() => handleOpenDelete(credit.id)}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
