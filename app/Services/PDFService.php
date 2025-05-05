@@ -26,7 +26,7 @@ class PDFService
             $logoData = base64_encode(file_get_contents($logoUrl));
             $logoSrc = 'data:image/jpeg;base64,' . $logoData;
             $dateIssued = formatDate($booking->created_at);
-            $lastUpdated = formatDate($booking->passengers->max('updated_at'));
+            $lastUpdated = formatDate($booking->passengers->min('updated_at')); //oldest updated_at date
 
             $data = [
                 'event' => $booking->event,
