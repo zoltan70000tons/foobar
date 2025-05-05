@@ -50,37 +50,43 @@ if (! function_exists('sanitizeInput')) {
                 '%',       // Wildcard
                 '*',       // SQL wildcard
                 '=',       // Equals
-                '(', ')',  // Parentheses
+                '(',
+                ')',  // Parentheses
             ];
-    
+
             // If allowedTags are specified, strip all other tags
             if ($allowedTags) {
                 $sanitized = strip_tags($input, implode('', $allowedTags));
             } else {
                 // Remove all HTML tags if no allowedTags are specified
                 $sanitized = strip_tags($input);
-    
+
                 // Remove dangerous characters
                 foreach ($dangerousCharacters as $char) {
                     $sanitized = str_replace($char, '', $sanitized);
                 }
             }
-    
+
             // Remove invisible characters and unnecessary spaces
             $sanitized = preg_replace('/[\x00-\x1F\x7F]/u', '', $sanitized);
             $sanitized = trim($sanitized);
-    
+
             // Return sanitized input
             return $sanitized;
         }
     }
 
     if (!function_exists('formatCurrency')) {
-        function formatCurrency(float $amount, $hideCurrency = false): string
+        function formatCurrency($amount, $hideCurrency = false): string
         {
-            return ($hideCurrency ? '' : 'USD ') . number_format($amount, 2, '.', ',');
+            if (!is_numeric($amount)) {
+                return '';
+            }
+    
+            return ($hideCurrency ? '' : 'USD ') . number_format((float) $amount, 2, '.', ',');
         }
     }
+    
     if (!function_exists('formatDate')) {
         function formatDate($date, $fullMonth = false, $hideYear = false)
         {
@@ -103,6 +109,4 @@ if (! function_exists('sanitizeInput')) {
             return ucwords(strtolower($text));
         }
     }
-    
-    
 }
