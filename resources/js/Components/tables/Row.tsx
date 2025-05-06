@@ -52,6 +52,7 @@ interface RowProps<T> {
   onChangeStatus?: (selectedStatus: string) => void;
   tagOptions?: string[];
   statusOptions?: string[];
+  perPageOptions?: number[];
 }
 
 const Row: FC<RowProps<any>> = ({
@@ -72,9 +73,10 @@ const Row: FC<RowProps<any>> = ({
   onChangeStatus,
   tagOptions = [],
   statusOptions = [],
+  perPageOptions = [8],
 }) => {
   const [subPage, setSubPage] = useState(0);
-  const [subRowsPerPage, setSubRowsPerPage] = useState(5);
+  const [subRowsPerPage, setSubRowsPerPage] = useState(8);
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
   const [subSort, setSubSort] = useState<{
     key: keyof any | string;
@@ -391,7 +393,7 @@ const Row: FC<RowProps<any>> = ({
                   </TableBody>
                 </Table>
                 <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
+                  rowsPerPageOptions={perPageOptions}
                   component="div"
                   count={sortedSubRows.length}
                   rowsPerPage={subRowsPerPage}
