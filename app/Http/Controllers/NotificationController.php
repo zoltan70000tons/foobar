@@ -90,7 +90,7 @@ class NotificationController extends Controller
           Payment::create([
             'amount' => $individualAmount,
             'passenger_id' => $pax->id,
-            'BIP_ID' => $validated['BIP_ID'] . "SPLIT_{$pax->id}",
+            'BIP_ID' => $validated['BIP_ID'] . "_SPLIT_{$pax->id}",
             'type' => $validated['type'],
             'notes' => $validated['notes'],
             'transaction_date' => $validated['transaction_date'],
@@ -102,20 +102,22 @@ class NotificationController extends Controller
           $totalDistributed += $individualAmount;
         }
 
-        DB::commit();
-
         $this->saveBookingLog(
           $booking->id,
           'System Split Payment Received',
           "System {$validated['type']} of \${$validated['amount']} was split across all passengers"
         );
+      } else {
+        // Single payment path
+        Payment::create($validated);
+        $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking->id, $booking->event_id);
 
-        return response()->json(['message' => 'Split payment processed successfully'], 200);
+        $this->saveBookingLog(
+          $booking->id,
+          'System Transaction Received',
+          "System {$validated['type']} of \${$validated['amount']} was added to booking"
+        );
       }
-
-      // Single payment path
-      Payment::create($validated);
-      $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking->id, $booking->event_id);
 
       DB::commit();
 
@@ -127,12 +129,6 @@ class NotificationController extends Controller
       } catch (\Exception $e) {
         Log::warning('Slack notification failed: ' . $e->getMessage());
       }
-
-      $this->saveBookingLog(
-        $booking->id,
-        'System Transaction Received',
-        "System {$validated['type']} of \${$validated['amount']} was added to booking"
-      );
 
       // If the type is REFUND, we don't need to send an email or do anything else
       if ($validated['type'] === 'REFUND') {
