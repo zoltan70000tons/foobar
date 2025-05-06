@@ -83,58 +83,56 @@ class EmailTemplateService
      * @param array $extraData
      * @return array
      */
-    private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger = null, array $extraData = []): array
+    private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger, array $extraData = []): array
     {
-        $event = $booking->event;
-        $cabin = $booking->cabin;
-
-        $installmentStatus = '';
-        $nextInstallmentAmount = '';
-        $nextInstallmentDate = '';
-    
-        if ($passenger) {
-          $paymentData = $passenger->installment_status;
-          $nextInstallmentAmount = $paymentData['next_installment']['amount_due'] ?? '';
-          $nextInstallmentDate = $paymentData['next_installment']['due_date'] ?? '';
-        }
-
-
-        $values = [];
-        foreach ($placeholders as $placeholder) {
-            switch ($placeholder) {
-                case 'EVENT_LOCATION':
-                    $values[$placeholder] = $event->location ?? '';
-                    break;
-                case 'BOOKING_CODE':
-                    $values[$placeholder] = $booking->booking_code ?? '';
-                    break;
-                case 'PASSENGER_NAME':
-                    $values[$placeholder] = capitalizeWords($passenger?->first_name ?? '');
-                    break;
-                case 'GRAND_TOTAL':
-                    $values[$placeholder] = formatCurrency($booking->getGrandTotal(), true) ?? '';
-                    break;
-                case 'INDIVIDUAL_TOTAL':
-                    $values[$placeholder] = formatCurrency($passenger->passenger_allocated_cost, true) ?? '';
-                    break;
-                case 'CABIN_TYPE':
-                    $values[$placeholder] = $booking->cabinType->cabin_type ?? '';
-                    break;
-                case 'PAYMENT_PLAN':
-                    $values[$placeholder] = $booking->payment_plan ?? '';
-                    break;
-                case 'NEXT_INSTALLMENT_DATE':
-                    $values[$placeholder] = formatDate($nextInstallmentDate) ?? '';
-                    break;
-                case 'NEXT_INSTALLMENT_AMOUNT':
-                    $values[$placeholder] = formatCurrency($nextInstallmentAmount) ?? '';
-                    break;
-                default:
-                    $values[$placeholder] = $extraData[$placeholder] ?? '';
-                    break;
+        // Booking and passenger details
+        $eventLocation = $booking->event->location ?? '';
+        $cabinType = $booking->cabinType->cabin_type ?? '';
+        $bookingCode = $booking->booking_code ?? '';
+        $paymentPlan = $booking->payment_plan ?? '';
+        $grandTotal = $booking->getGrandTotal() ?? 0;
+        $individualTotal = $passenger->passenger_allocated_cost ?? 0;
+      
+        // Installment data
+        $paymentData = $passenger->installment_status ?? [];
+        $nextInstallmentAmountRaw = $paymentData['next_installment']['amount_due'] ?? '';
+        $nextInstallmentDateRaw = $paymentData['next_installment']['due_date'] ?? '';
+      
+        // Adjust totals if on installment plan
+        if ($paymentPlan === 'INSTALLMENTS') {
+            $paymentCount = $passenger->installments()->where('type', 'PAYMENT')->count();
+            if ($paymentCount > 0) {
+                $grandTotal /= $paymentCount;
+                $individualTotal /= $paymentCount;
             }
         }
-
+      
+        // Pre-format values
+        $formattedGrandTotal = formatCurrency($grandTotal, true) ?? '';
+        $formattedIndividualTotal = formatCurrency($individualTotal, true) ?? '';
+        $formattedNextInstallmentAmount = formatCurrency($nextInstallmentAmountRaw) ?? '';
+        $formattedNextInstallmentDate = formatDate($nextInstallmentDateRaw) ?? '';
+        $passengerName = capitalizeWords($passenger->first_name ?? '');
+      
+        // Map placeholder values
+        $lookup = [
+            'EVENT_LOCATION'         => $eventLocation,
+            'BOOKING_CODE'           => $bookingCode,
+            'PASSENGER_NAME'         => $passengerName,
+            'GRAND_TOTAL'            => $formattedGrandTotal,
+            'INDIVIDUAL_TOTAL'       => $formattedIndividualTotal,
+            'CABIN_TYPE'             => $cabinType,
+            'PAYMENT_PLAN'           => $paymentPlan,
+            'NEXT_INSTALLMENT_DATE'  => $formattedNextInstallmentDate,
+            'NEXT_INSTALLMENT_AMOUNT'=> $formattedNextInstallmentAmount,
+        ];
+      
+        // Build the output values
+        $values = [];
+        foreach ($placeholders as $placeholder) {
+            $values[$placeholder] = $lookup[$placeholder] ?? $extraData[$placeholder] ?? '';
+        }
+      
         return $values;
     }
 
