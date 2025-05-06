@@ -15,9 +15,9 @@ export default function LockedByAgent({bookingId, currentEditingUser}: Props) {
  
   useEffect(() => {
     
-    const channel = window.Echo.channel('booking-status');
+    const channel = window.Echo.channel('reverb-lock-booking');
   
-    channel.listen('.BookingEditStatusUpdated', ({ bookingId, username }: any) => {
+    channel.listen('.ReverbLockBooking', ({ bookingId, username }: any) => {
       // console.log('BookingEditStatusUpdated event received:', bookingId, username);
       if (bookingId === bookingId) {
         setUserName(username);
@@ -25,7 +25,7 @@ export default function LockedByAgent({bookingId, currentEditingUser}: Props) {
     });
   
     return () => {
-      window.Echo.leave('booking-status');
+      window.Echo.leave('reverb-lock-booking');
     };
   }, []);
 

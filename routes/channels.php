@@ -18,7 +18,7 @@ Broadcast::channel("test-channel", function () {
   return true;
 });
 
-
-Broadcast::channel("booking-status", function () {
+// For Reverb lock booking while user is editing the booking
+Broadcast::channel("reverb-lock-booking", function () {
   return true;
 });

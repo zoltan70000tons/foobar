@@ -23,11 +23,11 @@ class BookingAgentSession implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return ['booking-status'];
+        return ['reverb-lock-booking'];
     }
     
     public function broadcastAs()
     {
-        return 'BookingEditStatusUpdated';
+        return 'ReverbLockBooking';
     }
 }

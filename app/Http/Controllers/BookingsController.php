@@ -443,15 +443,23 @@ class BookingsController extends Controller
 
   public function addTag(Request $request) {}
 
+
+
   // Reassign booking to another agent
   public function reAssign(Request $request)
   {
       $bookingId = $request->input('booking_id');
       $user = Auth::user();
 
+      // is user have permissio EditBookings
+      if (!$user->hasRole(['Manager', 'Admin', 'SuperAdmin'])) {
+        // return back with error message
+        return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
+      }
+
       DB::table('booking_agent_sessions')
-      ->where('booking_id', $bookingId)
-      ->delete();
+        ->where('booking_id', $bookingId)
+        ->delete();
 
 
       DB::table('booking_agent_sessions')->insert([
@@ -503,7 +511,7 @@ class BookingsController extends Controller
 
     
     // // return inertia
-    return Inertia::location(url()->previous());
+    return $this->withPermission([Permissions::EditBookings], fn() => Inertia::location(url()->previous()));
 
     // try {
     //   $booking_id = $request->input('booking_id');

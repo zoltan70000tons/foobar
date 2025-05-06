@@ -20,7 +20,7 @@ import {
   FormControlLabel,
   Switch,
   AlertTitle,
-  Drawer,
+  Chip,
 } from "@mui/material";
 import CommentIcon from "@mui/icons-material/Comment";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -36,6 +36,7 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { BookingSessionTimer } from "./BookingSessionTimer";
+import FaceIcon from '@mui/icons-material/Face';
 import '@/echo';
 
 
@@ -49,6 +50,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   const [logs, setLogs] = useState(booking.logs || []);
   const [isDynamicLocked, setIsDynamicLocked] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [whoLocked, setWhoLocked] = useState(booking.locked_by?.username || booking.locked_by?.agent?.username || null);
   const theme = useTheme();
   dayjs.extend(localizedFormat);
   const { showSnackbar } = useSnackbar();
@@ -56,22 +58,22 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
 
   const { flash } = usePage().props;
 
-  // useEffect(() => {
-  //   if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
-  //     setEditMode(true);
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (booking.locked_by && booking.locked_by.agent_id === auth.user.id) {
+      setEditMode(true);
+    }
+  }, []);
 
 
   console.log('!@$$$@$', auth);
   console.log('booking', booking);
-
+  console.log('whoLocked', whoLocked);
 
   useEffect(() => {
-    const channel = window.Echo.channel('booking-status');
+    const channel = window.Echo.channel('reverb-lock-booking');
   
-    channel.listen('.BookingEditStatusUpdated', ({ agentId, bookingId, username }: any) => {
-     console.log('BookingEditStatusUpdated event received:',agentId, bookingId, username);
+    channel.listen('.ReverbLockBooking', ({ agentId, bookingId, username }: any) => {
+     console.log('ReverbLockBooking event received:',agentId, bookingId, username);
       if (
         bookingId === bookingId && 
         username !== null &&
@@ -79,16 +81,26 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
       ) {
         setIsDynamicLocked(true);
         setIsOverlayOpen(true);
+        setWhoLocked(username);
+        setEditMode(false);
+  
+      }
+      if (bookingId === bookingId && username === null) {
+        setIsDynamicLocked(false);
+        setIsOverlayOpen(false);
+        setWhoLocked(null);
+        setEditMode(false);
       }
     });
   
     return () => {
-      window.Echo.leave('booking-status');
+      window.Echo.leave('reverb-lock-booking');
     };
   }, []);
 
 
   console.log('isDynamicLocked', isDynamicLocked);
+  console.log('isEditMode', editMode);
 
   const handleEditChange = (e) => {
     setLoading(true);
@@ -262,37 +274,58 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                   This booking has been cancelled and cannot be edited.
                 </Alert>
               ) : (
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={
-                        editMode || 
-                        (!isDynamicLocked && booking.locked_by && booking.locked_by.agent_id === auth.user.id)
-                     
-                      }
-                      onChange={handleEditChange}
-                      disabled={!isDynamicLocked && booking.locked_by && booking.locked_by.agent_id !== auth.user.id}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={
+                          editMode || 
+                          (whoLocked !== null && !isDynamicLocked && booking.locked_by && booking.locked_by.agent_id === auth.user.id)
+                      
+                        }
+                        onChange={handleEditChange}
+                        disabled={isDynamicLocked || ( booking.locked_by && booking.locked_by.agent_id !== auth.user.id)}
+                        sx={{
+                          width: 68,
+                          height: 38,
+                          '& .MuiSwitch-thumb': {
+                            width: 24,
+                            height: 24,
+                            marginTop: '-2px',
+                            marginLeft: '2px',
+                          },
+                          '& .MuiSwitch-track': {
+                            borderRadius: 8,
+                          },
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography sx={{ fontSize: '1.1rem' }}>
+                        Edit Mode
+                      </Typography>
+                    }
+                  />
+                  {whoLocked && (
+                    <Box
                       sx={{
-                        width: 68,
-                        height: 38,
-                        '& .MuiSwitch-thumb': {
-                          width: 24,
-                          height: 24,
-                          marginTop: '-2px',
-                          marginLeft: '2px',
-                        },
-                        '& .MuiSwitch-track': {
-                          borderRadius: 8,
-                        },
+                        ml: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
                       }}
-                    />
-                  }
-                  label={
-                    <Typography sx={{ fontSize: '1.1rem' }}>
-                      Edit Mode
-                    </Typography>
-                  }
-                />
+                    >
+                      <Typography variant={'body2'}>Locked by: </Typography>
+                      <Chip icon={<FaceIcon />} color="warning" label={whoLocked} />
+                    </Box>
+                  )}
+                </Box>
               )}
             </FormGroup>
           </Grid>
