@@ -171,7 +171,7 @@ style="display:
                                               de Pago:</strong><br>
                                             <br>
                                             {PASSENGER_NAME}, tu pago individual
-                                            es de: USD {INDIVIDUAL_PAYMENT}<br>
+                                            es de: USD {INDIVIDUAL_TOTAL}<br>
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
                                             total a pagar es: USD
