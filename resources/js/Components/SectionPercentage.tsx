@@ -219,8 +219,6 @@ export default function SectionPercentage({ passenger, booking, installments }: 
   const passengerPercentage = (passengerBalance / passengerAllocatedCost) * 100;
 
   const passengerPercentageRounded = Math.min(100, Math.round(passengerPercentage));
-  
-  console.log("passenger Id", passenger?.id, "installment_status", installment_status, "passengerAllocatedCost", passengerAllocatedCost, "passengerBalance", passengerBalance);
 
   return (
     <Box

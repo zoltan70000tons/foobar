@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -27,6 +27,7 @@ import { Delete } from "@mui/icons-material";
 import { sanitizeInput } from "@/Helpers/inputSanitizer";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { formatCurrency } from "@/Helpers/stringUtils";
+import payment from "@/Pages/Bookings/partials/Payment";
 
 type PaymentModalProps = {
   passenger: any;
@@ -65,6 +66,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [localPaymentHistory, setLocalPaymentHistory] = useState(paymentHistory);
+
+  useEffect(() => {
+    setLocalPaymentHistory(paymentHistory);
+  }, [paymentHistory])
 
   const { showSnackbar } = useSnackbar();
 
@@ -149,6 +155,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       },
       {
         onSuccess: () => {
+          setLocalPaymentHistory(prevHistory =>
+            prevHistory.filter(payment => payment.id !== selectedPaymentId)
+          );
+
           showSnackbar("Payment deleted successfully.", "success");
         },
         onError: () => {
@@ -244,7 +254,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             Payment History for {passenger?.full_name || "Unknown Passenger"}
           </Typography>
 
-          {paymentHistory.length > 0 ? (
+          {localPaymentHistory.length > 0 ? (
             <TableContainer component={Paper}>
               <Table size="small">
                 <TableHead>
@@ -258,7 +268,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paymentHistory.map((payment) => (
+                  {localPaymentHistory.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell>{payment.type}</TableCell>
                       <TableCell>

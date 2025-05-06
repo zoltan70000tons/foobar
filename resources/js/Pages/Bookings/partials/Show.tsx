@@ -144,8 +144,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
     });
   };
 
-  console.log("Booking:", booking.locked_by);
-
   return (
     <AuthenticatedLayout user={auth.user} header={"Booking Detail"}>
       <Head title="Booking " />
