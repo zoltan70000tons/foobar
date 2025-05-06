@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
   TextField,
   MenuItem,
   Button,
@@ -27,7 +26,6 @@ import { Delete } from "@mui/icons-material";
 import { sanitizeInput } from "@/Helpers/inputSanitizer";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { formatCurrency } from "@/Helpers/stringUtils";
-import payment from "@/Pages/Bookings/partials/Payment";
 
 type PaymentModalProps = {
   passenger: any;
