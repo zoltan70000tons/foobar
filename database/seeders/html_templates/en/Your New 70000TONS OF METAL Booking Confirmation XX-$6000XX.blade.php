@@ -98,7 +98,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Your<span>&nbsp;</span><strong>NEW</strong><span>&nbsp;</span>Booking
 
-                                            Code is:<span>&nbsp;</span><strong>XXXX</strong><br>
+                                            Code is:<span>&nbsp;</span><strong>{BOOKING_CODE}</strong><br>
                                             <br>
                                             Please find your Booking
                                             Confirmation attached. To view
@@ -173,11 +173,11 @@ style="display:
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            USD {INDIVIDUAL_TOTAL}<br>
                                             If you pay for all
                                             passengers at once, your
                                             total amount due is: USD
-                                            XXXX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your
