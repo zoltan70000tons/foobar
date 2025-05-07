@@ -9,65 +9,58 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid, Divider, TableContainer, Table, Paper, TableHead, TableRow, TableCell, TableBody, IconButton,
+  Grid, Paper, Divider, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, IconButton,
 } from '@mui/material';
 
 import { router } from '@inertiajs/react';
-import { sanitizeInput } from '@/Helpers/inputSanitizer';
 import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
-import { Passenger } from "@/Pages/Bookings/partials/Payment";
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
+import { Passenger } from "@/Pages/Bookings/partials/Payment";
 
-
-type DiscountFormProps = {
+type OnboardCreditFormProps = {
   passenger: Passenger;
   event_id: number;
   booking_id: number;
   editMode: boolean;
 };
 
-export type Discount = {
-  type: string;
+type OnboardCreditFormData = {
+  reason: string;
   amount: number;
-  operation: string;
-  id: number;
-  created_at: string;
 };
 
-const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
+const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Pick<Discount, 'type' | 'amount' | 'operation'>>({ type: '', amount: 0, operation: '' });
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [creditIdToDelete, setCreditIdToDelete] = useState(null);
+  const [formData, setFormData] = useState<OnboardCreditFormData>({ reason: '', amount: 0 });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [discountIdToDelete, setDiscountIdToDelete] = useState(null);
+  const { hasPermission } = usePermissions();
+  const canDeleteOnboardCredit = hasPermission(Permissions.DeletePassengerOnboardCredit);
+  const onboardCredit = passenger.onboard_credits;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    console.log(e.target);
+
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'amount' ? parseFloat(value) : value,
     }));
-    console.log(formData);
   };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleOpenDelete = (discountId) => {
-    setDiscountIdToDelete(discountId);
-    setConfirmDeleteOpen(true);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.type || formData.amount <= 0) {
+    if (!formData.reason || formData.amount <= 0) {
       showSnackbar('Please fill in all fields correctly.', 'error');
       return;
     }
@@ -76,28 +69,27 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
 
     // Send form data to the server using the router
     router.post(
-      route('manual.discount', {
+      route('manual.onboard-credit', {
         event_id: event_id,
         booking_id: booking_id,
       }),
       {
         passenger_id: passenger.id,
         amount: formData.amount,
-        type: formData.type,
-        operation: formData.operation,
+        reason: formData.reason,
       },
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ type: '', amount: 0, operation: '' });
+          setFormData({ reason: '', amount: 0 });
           setOpen(false);
-          showSnackbar('Discount created successfully', 'success');
+          showSnackbar('Onboard credit created successfully', 'success');
           router.reload({ only: ['user'] });
         },
         onError: (errors) => {
           // Log or display errors if needed
           console.error('Validation errors:', errors);
-          showSnackbar('Failed to save discount. Please check your inputs.', 'error');
+          showSnackbar('Failed to save onboard credit. Please check your inputs.', 'error');
         },
         onFinish: () => {
           setLoading(false);
@@ -106,27 +98,32 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
     );
   };
 
+  const handleOpenDelete = (onboardCreditId) => {
+    setCreditIdToDelete(onboardCreditId);
+    setConfirmDeleteOpen(true);
+  };
+
   const handleConfirmDelete = () => {
-    if (!discountIdToDelete) return;
+    if (!creditIdToDelete) return;
 
     setLoading(true);
     router.post(
-      route("delete.discount", { event_id, booking_id }),
+      route("delete.onboard-credit", { event_id, booking_id }),
       {
         passenger_id: passenger.id,
-        discount_id: discountIdToDelete,
+        onboard_credit_id: creditIdToDelete,
       },
       {
         onSuccess: () => {
-          showSnackbar("Discount deleted successfully.", "success");
+          showSnackbar("Onboard credit deleted successfully.", "success");
         },
         onError: () => {
-          showSnackbar("Could not delete discount.", "error");
+          showSnackbar("Could not delete onboard credit.", "error");
         },
         onFinish: () => {
           setLoading(false);
           setConfirmDeleteOpen(false);
-          setDiscountIdToDelete(null);
+          setCreditIdToDelete(null);
         },
       },
     );
@@ -140,35 +137,14 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
         sx={{ color: 'white', borderColor: 'gray' }}
         onClick={handleOpen}
         disabled={!editMode}
-        startIcon={<LocalOfferIcon />}
+        startIcon={<AccountBalanceWalletIcon />}
       >
-        Add Discount
+        Add Onboard Credit
       </Button>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Add Discount</DialogTitle>
+        <DialogTitle>Add Onboard Credit</DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              label="Type"
-              name="type"
-              type="text"
-              value={formData.type}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              select
-              label="Operation"
-              name="operation"
-              value={formData.operation}
-              onChange={handleChange}
-              fullWidth
-            >
-              <MenuItem value="FIXED">Fixed</MenuItem>
-              <MenuItem value="PERCENTAGE">Percentage</MenuItem>
-            </TextField>
             <TextField
               label="Amount"
               name="amount"
@@ -178,6 +154,16 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
               fullWidth
               margin="normal"
               inputProps={{ step: 0.01, min: 0 }}
+              required
+            />
+            <TextField
+              label="Reason"
+              name="reason"
+              type="text"
+              value={formData.reason}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
               required
             />
           </Box>
@@ -200,40 +186,40 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
           <Divider sx={{ my: 3 }} />
 
           <Typography variant="h6" gutterBottom>
-            Discount History for {passenger?.full_name || "Unknown Passenger"}
+            Onboard Credit History for {passenger?.full_name || "Unknown Passenger"}
           </Typography>
 
-          {passenger.discounts.length > 0 ? (
+          {onboardCredit.length > 0 ? (
             <TableContainer component={Paper}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Operation</TableCell>
+                    <TableCell>Reason</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Created At</TableCell>
                     <TableCell>Delete</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {passenger.discounts.map((discount) => (
-                    <TableRow key={discount.id}>
-                      <TableCell>{discount.type}</TableCell>
-                      <TableCell>{discount.operation}</TableCell>
+                  {onboardCredit.map((credit) => (
+                    <TableRow key={credit.id}>
+                      <TableCell>{credit.reason}</TableCell>
                       <TableCell>
-                        {formatCurrency(discount.amount)}
+                        {formatCurrency(credit.amount)}
                       </TableCell>
-                      <TableCell>{formatDate(discount.created_at)}</TableCell>
+                      <TableCell>{formatDate(credit.created_at)}</TableCell>
                       <TableCell>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          size="small"
-                          disabled={!editMode}
-                          onClick={() => handleOpenDelete(discount.id)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
+                        {canDeleteOnboardCredit && (
+                          <IconButton
+                            aria-label="delete"
+                            color="error"
+                            size="small"
+                            disabled={!editMode}
+                            onClick={() => handleOpenDelete(credit.id)}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -241,16 +227,16 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
               </Table>
             </TableContainer>
           ) : (
-            <Typography>No discount found for this passenger.</Typography>
+            <Typography>No onboard credit found for this passenger.</Typography>
           )}
         </DialogContent>
         <LoadingOverlay open={loading} />
       </Dialog>
       {/* Delete Confirmation */}
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
-        <DialogTitle>Delete Discount</DialogTitle>
+        <DialogTitle>Delete Onboard Credit</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to delete this discount?</Typography>
+          <Typography>Are you sure you want to delete this credit?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteOpen(false)} color="secondary">
@@ -265,4 +251,4 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
   );
 };
 
-export default DiscountForm;
+export default OnboardCreditForm;

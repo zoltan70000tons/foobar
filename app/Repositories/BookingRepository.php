@@ -271,6 +271,7 @@ class BookingRepository implements BookingInterface
             'passengers.payments',
             'passengers.fees',
             'passengers.discounts',
+            'passengers.onboardCredits',
             'passengers.passengerInvitation',
             'logs',
             'logs.user',

@@ -28,6 +28,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountsController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardCreditController;
 
 Route::get('/', function () {
   return Inertia::render('Welcome', [
@@ -240,6 +241,11 @@ Route::put('/join-organization', [OrganizationController::class, 'join'])->name(
 Route::prefix('discounts')->group(function () {
   Route::post('{event_id}/{booking_id}/store', [DiscountsController::class, 'store'])->name('manual.discount');
   Route::post('{event_id}/{booking_id}/delete', [DiscountsController::class, 'delete'])->name('delete.discount');
+});
+
+Route::prefix('onboard-credit')->group(function () {
+  Route::post('{event_id}/{booking_id}/store', [OnboardCreditController::class, 'store'])->name('manual.onboard-credit');
+  Route::post('{event_id}/{booking_id}/delete', [OnboardCreditController::class, 'delete'])->name('delete.onboard-credit');
 });
 
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');

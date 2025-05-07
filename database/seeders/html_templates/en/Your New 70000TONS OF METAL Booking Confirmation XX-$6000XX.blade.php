@@ -98,12 +98,11 @@ style="color: rgb(102, 102,
                                             <br>
                                             Your<span>&nbsp;</span><strong>NEW</strong><span>&nbsp;</span>Booking
 
-                                            Code is:<span>&nbsp;</span><strong>XXXX</strong><br>
+                                            Code is:<span>&nbsp;</span><strong>{BOOKING_CODE}</strong><br>
                                             <br>
                                             Please find your Booking
-                                            Confirmation and Ticketing
-                                            Contract attached. To view
-                                            these documents you will
+                                            Confirmation attached. To view
+                                            this document you will
                                             need "Adobe Reader", which
                                             you can download here:<br>
                                             <br>
@@ -113,6 +112,15 @@ style="color: rgb(0, 0,
                                               238); text-decoration:
                                               underline;"
 class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+                                          <br />
+                                          Your Ticket Contract can be found 
+                                          <a
+                                            href="https://70000tons.com/terms-conditions/?lang=en"
+                                            style="color: rgb(0, 0, 238); text-decoration: underline; font-weight: bold;"
+                                          >
+                                           here</a> 
+                                           on our website.<br/>
+                                          <br/>
                                             <br>
                                             Please review your Booking
                                             Confirmation and report any
@@ -148,12 +156,12 @@ style="color: rgb(0, 0,
                                             Please be sure that you read
                                             and fully understand the
                                             Terms and Conditions of your
-                                            Ticketing Contract before
+                                            Ticket Contract before
                                             making your payment. By
                                             making your payment you
                                             agree to the Terms and
                                             Conditions outlined in the
-                                            Ticketing Contract.<br>
+                                            Ticket Contract.<br>
                                             <br>
                                             <strong
 style="display:
@@ -165,11 +173,11 @@ style="display:
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            USD {INDIVIDUAL_TOTAL}<br>
                                             If you pay for all
                                             passengers at once, your
                                             total amount due is: USD
-                                            XXXX<br>
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your

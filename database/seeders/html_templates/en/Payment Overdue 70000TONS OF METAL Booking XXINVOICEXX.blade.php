@@ -123,7 +123,7 @@ style="color: rgb(102, 102,
                                             For your reference, please
                                             find attached your Invoice,
                                             Booking Confirmation and
-                                            Ticketing Contract.<br>
+                                            Ticket Contract.<br>
                                             <br>
                                             <strong
 style="display:

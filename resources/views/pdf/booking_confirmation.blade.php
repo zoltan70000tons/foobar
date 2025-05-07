@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 {{ $booking = $data['booking'] }}
+{{ $lastUpdated = $data['last_updated']}}
+{{ $dateIssued = $data['date_issued']}}
 {{ $event =$booking->event }}
 {{ $cabin = $booking->cabin }}
 {{ $category = $cabin->category }}
 {{ $categorySpec = $cabin->cabinSpecs }}
-
 
 
 <head>
@@ -139,7 +140,7 @@
             <table class="table-container" width="100%" style="margin-top:0px;">
                 <tr>
                     <th width="50%">Date Issued:</th>
-                    <td width="50%" class="align-left" style="padding-left: 5px;"> {{formatDate($event->created_at)}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{formatDate($event->updated_at)}}</td>
+                    <td width="50%" class="align-left" style="padding-left: 5px;"> {{$dateIssued}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{$lastUpdated}}</td>
                 </tr>
                 <tr>
                     <th class="bold">Booking Code:</th>
@@ -385,7 +386,7 @@
         <table class="table-container" width="100%">
             <tr>
                 <th width="50%">Date Issued:</th>
-                <td width="50%" class="align-left" style="padding-left: 5px;"> {{formatDate($data['booking']->created_at)}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{formatDate($data['booking']->updated_at)}}</td>
+                <td width="50%" class="align-left" style="padding-left: 5px;"> {{$dateIssued}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{$lastUpdated}}</td>
             </tr>
             <tr>
                 <th class="bold">Booking Code:</th>
@@ -532,7 +533,18 @@
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
-
+                        @php
+                          $creditAmount = $passenger->onboardCredits->pluck('amount')->implode(' | ');
+                          $creditReason = $passenger->onboardCredits->pluck('reason')->implode(' | ');
+                        @endphp
+                        <tr>
+                          <td width="50%"><strong>Onboard Credit:</strong></td>
+                          <td width="50%">{{ formatCurrency($creditAmount) }}</td>
+                        </tr>
+                        <tr>
+                          <td width="50%"><strong>Reason For Credit:</strong></td>
+                          <td width="50%">{{ $creditReason }}</td>
+                        </tr>
                     </table>
                 </td>
 

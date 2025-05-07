@@ -107,7 +107,7 @@ style="color: rgb(102, 102,
                                               booking less the
                                               Cancellation Fee of USD
                                               100.00 (per passenger) as
-                                              per Ticketing Contract
+                                              per Ticket Contract
                                               Page XX; Section XX.</strong><br>
                                             <br>
                                             Please find the confirmation
@@ -124,6 +124,15 @@ style="color: rgb(0, 0,
                                               238); text-decoration:
                                               underline;"
 class="moz-txt-link-freetext">https://get.adobe.com/reader</a><br>
+                                          <br />
+                                          Your Ticket Contract can be found 
+                                          <a
+                                            href="https://70000tons.com/terms-conditions/?lang=en"
+                                            style="color: rgb(0, 0, 238); text-decoration: underline; font-weight: bold;"
+                                          >
+                                           here</a> 
+                                           on our website.<br/>
+                                          <br/>
                                             <br>
                                             If you have any questions or
                                             concerns, please don't

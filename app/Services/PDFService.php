@@ -25,6 +25,8 @@ class PDFService
             $logoUrl = 'https://70000tons.com/wp-content/uploads/2019/04/70K_Logo_Claim_BW_HiRes.jpg';
             $logoData = base64_encode(file_get_contents($logoUrl));
             $logoSrc = 'data:image/jpeg;base64,' . $logoData;
+            $dateIssued = formatDate($booking->created_at);
+            $lastUpdated = formatDate($booking->passengers->min('updated_at')); //oldest updated_at date
 
             $data = [
                 'event' => $booking->event,
@@ -38,6 +40,8 @@ class PDFService
                 'cabin_category' => $booking->cabin->category,
                 'category_specs' => $booking->cabin->category->spec,
                 'logo' => $logoSrc,
+                'last_updated' => $lastUpdated,
+                'date_issued' => $dateIssued,
                 'addpax_url' => env('ADDPAX_URL', 'https://70000tons.com/addpax'),
             ];
 

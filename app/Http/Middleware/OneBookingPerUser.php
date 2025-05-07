@@ -2,6 +2,9 @@
 namespace App\Http\Middleware;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Booking;
+use App\Models\Cart;
+use App\Services\ReservationService;
+
 
 use Closure;
 
@@ -22,6 +25,15 @@ class OneBookingPerUser
         ->exists();
 
       if ($bookingExists) {
+        $reservationService = new ReservationService();
+
+        $cart = Cart::where('user_id', $user->id)->first();
+      
+        if ($cart) {
+          $cart->delete();
+          $reservationService->releaseCabin($request);
+        }
+
         return response()->json(
           [
             'message' => 'You already have a booking for this event',
