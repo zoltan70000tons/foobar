@@ -11,7 +11,7 @@ import {
   Tabs,
   Tab,
   Chip,
-  Checkbox,
+  Button,
   Avatar,
   TextField,
   InputAdornment,
@@ -337,12 +337,24 @@ const Index = ({
 
       
           return (
-            <>
-              <div style={{ display: "flex", gap: "10px" }}>
+            <Box
+              sx={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+              }}
+            >
                 {hasPermission(Permissions.ViewCabins) && (
-                  <Visibility onClick={() => handleViewClick(row)} style={{ cursor: "pointer" }} />
+                <Button 
+                  variant="outlined" 
+                  onClick={() => handleViewClick(row)}
+                  color="primary"
+                  >
+                    <Visibility />
+                </Button>
                 )}
-              </div>
+          
               <LockedByAgent 
                 bookingId={row?.id} 
                 currentEditingUser={row?.editingUsername}
@@ -354,7 +366,7 @@ const Index = ({
                   Being used by {row.editingUsername}
                 </Box>
               )} */}
-            </>
+            </Box>
           );
         },
       },

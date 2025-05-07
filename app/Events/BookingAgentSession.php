@@ -9,7 +9,7 @@ class BookingAgentSession implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets;
 
-    public function __construct(public string $agentId, public int $bookingId, public string | null $username) {}
+    public function __construct(public string $agentId, public int | null $bookingId, public string | null $username) {}
 
 
     public function broadcastWith()

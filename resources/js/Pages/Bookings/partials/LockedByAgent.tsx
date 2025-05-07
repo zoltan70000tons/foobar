@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 // reverb
 import '@/echo';
 
@@ -30,12 +30,14 @@ export default function LockedByAgent({bookingId, currentEditingUser}: Props) {
   }, []);
 
   if(!userName) {
-    return null;
+    return <></>;
   }
 
   return (
-   
-    <Box component="small" sx={{ width: "10px" }} color="warning.main">
+    <Box 
+      component="small" 
+      color="warning.main"
+   >
       Being used by {userName}
     </Box>
   )
