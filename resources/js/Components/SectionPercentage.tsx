@@ -4,12 +4,22 @@ import { green, blue, red } from "@mui/material/colors";
 import { InfoRounded } from "@mui/icons-material";
 import dayjs from "dayjs";
 import FeeInstallmentList from "@/Components/FeeInstallmentList";
+import { getOrdinalName } from "@/Helpers/stringUtils";
 import type { InstallmentItem, InstallmentStatus, Fee, Installment } from "@/types/payments"; // Adjust the import path as needed
 
 // Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 
+
+// Define types
+type Props = {
+  passenger: any;
+  booking: any;
+  installments: any;
+};
+
 type InstallmentPaymentProps = {
+  order: number;
   installment: any;
   status: "paid" | "unpaid";
   isOverdue: boolean;
@@ -19,15 +29,9 @@ type InstallmentPaymentProps = {
   perc: number;
 };
 
-// Define types
-type Props = {
-  passenger: any;
-  booking: any;
-  installments: any;
-};
-
 // Installment payment part
 const InstallmentPayment = ({
+  order,
   installment,
   status,
   isOverdue,
@@ -36,11 +40,6 @@ const InstallmentPayment = ({
   installmentCost,
   perc,
 }: InstallmentPaymentProps) => {
-  useEffect(() => {
-    if (isOverdue) {
-      console.warn("Payment for booking is overdue");
-    }
-  }, [isOverdue]);
 
   return (
     <Box
@@ -94,6 +93,10 @@ const InstallmentPayment = ({
         ) : (
           <Typography fontSize={"12px"}>Due Date: {formatDate(installment?.due_date)}</Typography>
         )}
+        
+        <Typography fontSize="12px" fontWeight="bold">
+          {getOrdinalName(order + 1)} Installment
+        </Typography>
       </Box>
     </Box>
   );
@@ -170,6 +173,7 @@ const Installments = ({
         return (
           <InstallmentPayment
             key={index}
+            order={index}
             installment={installmentEntry}
             status={status}
             isOverdue={isOverdue}
