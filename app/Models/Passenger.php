@@ -132,7 +132,7 @@ class Passenger extends Model
   {
     return $this->hasMany(PassengerDiscount::class);
   }
-  
+
   public function onboardCredits()
   {
     return $this->hasMany(OnboardCredit::class);
@@ -187,7 +187,7 @@ class Passenger extends Model
   public function getInstallmentStatus(): array
   {
     $balance = $this->passenger_balance ?? 0;
-    $today = now()->startOfDay();
+    $today = now()->addDay();
 
     // Fetch all installments ordered by due date, including associated fee data
     $installments = $this->installments()
@@ -223,16 +223,17 @@ class Passenger extends Model
       $installmentData = [
         'installment_id' => $installment->id,
         'type' => $installment->type,
+        'original_amount_due' => $amount,
         'due_date' => $installment->due_date,
       ];
 
+      // 🔹 Fully paid with available balance
       if (round($balance, 2) >= $amount) {
-        // 🔹 Fully paid with available balance
         $installmentData['amount'] = round($amount, 2);
         $paidInstallments[] = $installmentData;
         $balance -= $amount;
-      } elseif (round($balance) > 0) {
         // 🔹 Partially paid (some balance remaining)
+      } elseif (round($balance) > 0) {
         $installmentData['amount_due'] = round($amount - $balance, 2);
         $remainingInstallments[] = $installmentData;
 
@@ -256,7 +257,8 @@ class Passenger extends Model
 
     // If there are unpaid FEE installments due today or earlier,
     // and they haven't been fully paid, add their amount to the next installment
-    if ($nextInstallment) {
+    if ($nextInstallment && $nextInstallment['type'] === 'PAYMENT') {
+      // Filter unpaid FEE installments due today or earlier
       $unpaidDueFees = $installments
         ->where('type', 'FEE')
         ->filter(function ($installment) use ($paidInstallments, $today) {
@@ -267,6 +269,7 @@ class Passenger extends Model
 
       if ($unpaidDueFees > 0) {
         $nextInstallment['amount_due'] = round(($nextInstallment['amount_due'] ?? 0) + $unpaidDueFees, 2);
+        $nextInstallment['added_fees'] = $unpaidDueFees; // Added unpaid fees to the next installment
       }
     }
 
