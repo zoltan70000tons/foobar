@@ -143,8 +143,16 @@ class SendEmailJob implements ShouldQueue
       Mail::send([], [], function ($message) use ($subject, $content) {
         $message
           ->to($this->to)
+          ->bcc(env('MAIL_BCC'))
           ->subject($subject)
           ->html($content);
+
+      // Get the Symfony message instance to manipulate headers
+      $swiftMessage = $message->getSymfonyMessage();
+
+      // Add Mandrill-specific header to preserve "To" recipients visibility
+      $headers = $swiftMessage->getHeaders();
+      $headers->addTextHeader('X-MC-PreserveRecipients', 'true');
 
         // attach files
         foreach ($this->attachments as $file) {
