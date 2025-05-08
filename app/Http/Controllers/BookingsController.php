@@ -452,7 +452,7 @@ class BookingsController extends Controller
       $user = Auth::user();
 
       // is user have permissio EditBookings
-      if (!$user->hasRole(['Manager', 'Admin', 'SuperAdmin'])) {
+      if (!$user->hasAnyPermission([Permissions::InterceptBookings])) {
         // return back with error message
         return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
       }
