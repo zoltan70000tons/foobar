@@ -41,23 +41,23 @@ class AutoTagBookingJob implements ShouldQueue
     {
         $tags = collect($this->booking->tags ?? []);
         $isOverdue = false;
-    
+
         foreach ($this->booking->passengers as $passenger) {
             $installmentStatus = $passenger->getInstallmentStatus();
             $nextInstallment = $installmentStatus['next_installment'] ?? null;
-    
+
             if (!$nextInstallment || empty($nextInstallment['due_date'])) {
                 continue;
             }
-    
+
             $dueDate = Carbon::parse($nextInstallment['due_date']);
-    
+
             if ($dueDate->lt($this->now->copy()->subHours(48))) {
                 $isOverdue = true;
                 break;
             }
         }
-    
+
         if ($isOverdue) {
             if (!$tags->contains('OVERDUE')) {
                 $tags->push('OVERDUE');
@@ -70,26 +70,27 @@ class AutoTagBookingJob implements ShouldQueue
             }
         }
     }
-    
+
 
     protected function handleMissingInfoTag()
     {
         $tags = collect($this->booking->tags ?? []);
         $missingInfo = false;
-    
+
         foreach ($this->booking->passengers as $passenger) {
+            $isPrivateCabin = $this->booking->cabin->cabinType->id == 1;
+            $isSeatOccupied = $passenger->empty_seat === false;
+
             if (
-                empty($passenger->first_name) ||
-                empty($passenger->last_name) ||
-                empty($passenger->dob) &&
-                $passenger->cabin_type == 1 &&
-                $passenger->empty_seat === false
+                (empty($passenger->first_name) || empty($passenger->last_name) || empty($passenger->dob)) &&
+                $isPrivateCabin &&
+                $isSeatOccupied
             ) {
                 $missingInfo = true;
                 break;
             }
         }
-    
+
         if ($missingInfo) {
             if (!$tags->contains('MISSING INFO')) {
                 $tags->push('MISSING INFO');
@@ -102,5 +103,4 @@ class AutoTagBookingJob implements ShouldQueue
             }
         }
     }
-    
 }
