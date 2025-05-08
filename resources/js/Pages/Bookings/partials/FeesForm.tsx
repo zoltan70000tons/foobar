@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -9,19 +9,26 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid, Divider, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton,
-} from '@mui/material';
+  Grid,
+  Divider,
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+} from "@mui/material";
 
-import { router } from '@inertiajs/react';
-import { sanitizeInput } from '@/Helpers/inputSanitizer';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import PriceChangeIcon from '@mui/icons-material/PriceChange';
+import { router } from "@inertiajs/react";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import PriceChangeIcon from "@mui/icons-material/PriceChange";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
+import { getOrdinalName } from "@/Helpers/stringUtils";
 
 type FeesFormProps = {
   passenger: Passenger;
@@ -35,11 +42,19 @@ export type Fee = {
   amount: number;
   created_at: string;
   id: number;
+  due_date?: string; // Optional, only if the fee is related to an installment
 };
 
 const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Pick<Fee, 'type' | 'amount'>>({ type: '', amount: 0 });
+  const [formData, setFormData] = useState<
+    Pick<Fee, "type" | "amount"> & { due_date?: string; installment_id?: number }
+  >({
+    type: "",
+    amount: 0,
+    due_date: undefined,
+    installment_id: undefined,
+  });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -49,14 +64,14 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : value,
+      [name]: name === "amount" ? parseFloat(value) : value,
     }));
   };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleOpenDelete = (feeId) => {
+  const handleOpenDelete = (feeId: any) => {
     setFeeIdToDelete(feeId);
     setConfirmDeleteOpen(true);
   };
@@ -64,15 +79,17 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.type || formData.amount <= 0) {
-      showSnackbar('Please fill in all fields correctly.', 'error');
+      showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
+    
+   
 
     setLoading(true);
 
     // Send form data to the server using the router
     router.post(
-      route('manual.fee', {
+      route("manual.fee", {
         event_id: event_id,
         booking_id: booking_id,
       }),
@@ -80,19 +97,20 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
         passenger_id: passenger.id,
         amount: formData.amount,
         type: formData.type,
+        due_date: formData.due_date,
       },
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ type: '', amount: 0 });
+          setFormData({ type: "", amount: 0 });
           setOpen(false);
-          showSnackbar('Fee created successfully', 'success');
-          router.reload({ only: ['user'] });
+          showSnackbar("Fee created successfully", "success");
+          router.reload({ only: ["user"] });
         },
         onError: (errors) => {
           // Log or display errors if needed
-          console.error('Validation errors:', errors);
-          showSnackbar('Failed to save fee. Please check your inputs.', 'error');
+          console.error("Validation errors:", errors);
+          showSnackbar("Failed to save fee. Please check your inputs.", "error");
         },
         onFinish: () => {
           setLoading(false);
@@ -132,12 +150,12 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
       <Button
         fullWidth
         variant="outlined"
-        sx={{ color: 'white', borderColor: 'gray' }}
+        sx={{ color: "white", borderColor: "gray" }}
         onClick={handleOpen}
         disabled={!editMode}
         startIcon={<PriceChangeIcon />}
       >
-        Add Fee
+        Fees
       </Button>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Add Fee</DialogTitle>
@@ -164,6 +182,39 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
               inputProps={{ step: 0.01, min: 0 }}
               required
             />
+            <TextField
+              select
+              label="Fee/Installment Plan"
+              name="installment_id"
+              helperText="This fee must be paid before the selected installment can be processed."
+              value={formData.installment_id ?? ""}
+              required
+              onChange={(e) => {
+                const selected = passenger.installments.find((i) => i.id === Number(e.target.value));
+                if (selected) {
+                  const dueDate = new Date(selected.due_date);
+                  dueDate.setDate(dueDate.getDate() - 1);
+                  const formattedDueDate = dueDate.toISOString().split("T")[0]; // yyyy-mm-dd
+
+                  setFormData((prev) => ({
+                    ...prev,
+                    installment_id: selected.id,
+                    due_date: formattedDueDate,
+                  }));
+                }
+              }}
+              fullWidth
+              margin="normal"
+            >
+              {passenger.installments
+                .filter((install) => install.type === "PAYMENT")
+                .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                .map((inst, index) => (
+                  <MenuItem key={inst.id} value={inst.id} sx={{ textTransform: "capitalize" }}>
+                    {`${getOrdinalName(index + 1)} Installment - Due: ${formatDate(inst.due_date)}`}
+                  </MenuItem>
+                ))}
+            </TextField>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -202,9 +253,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
                   {passenger.fees.map((fee) => (
                     <TableRow key={fee.id}>
                       <TableCell>{fee.type}</TableCell>
-                      <TableCell>
-                        {formatCurrency(fee.amount)}
-                      </TableCell>
+                      <TableCell>{formatCurrency(fee.amount)}</TableCell>
                       <TableCell>{formatDate(fee.created_at)}</TableCell>
                       <TableCell>
                         <IconButton
