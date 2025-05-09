@@ -78,7 +78,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.type || formData.amount <= 0) {
+    if (!formData.type || formData.amount <= 0 || !formData.due_date) {
       showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
