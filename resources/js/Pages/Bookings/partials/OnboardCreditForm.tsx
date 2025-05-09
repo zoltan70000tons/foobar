@@ -144,44 +144,46 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Add Onboard Credit</DialogTitle>
         <DialogContent>
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              label="Amount"
-              name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              inputProps={{ step: 0.01, min: 0 }}
-              required
-            />
-            <TextField
-              label="Reason"
-              name="reason"
-              type="text"
-              value={formData.reason}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-          </Box>
+          <form onSubmit={handleSubmit}>
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                label="Amount"
+                name="amount"
+                type="number"
+                value={formData.amount}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                inputProps={{ step: 0.01, min: 0 }}
+                required
+              />
+              <TextField
+                label="Reason"
+                name="reason"
+                type="text"
+                value={formData.reason}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+            </Box>
+            <DialogActions>
+              <Grid container spacing={2} sx={{ px: 2 }}>
+                <Grid item xs={6}>
+                  <Button variant="outlined" color="secondary" fullWidth onClick={handleClose}>
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button type="submit" variant="contained" color="primary" fullWidth>
+                    Save
+                  </Button>
+                </Grid>
+              </Grid>
+            </DialogActions>
+          </form>
         </DialogContent>
-        <DialogActions>
-          <Grid container spacing={2} sx={{ px: 2 }}>
-            <Grid item xs={6}>
-              <Button variant="outlined" color="secondary" fullWidth onClick={handleClose}>
-                Cancel
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button type="submit" variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-                Save
-              </Button>
-            </Grid>
-          </Grid>
-        </DialogActions>
         <DialogContent>
           <Divider sx={{ my: 3 }} />
 

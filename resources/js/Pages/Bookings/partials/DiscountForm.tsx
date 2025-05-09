@@ -46,6 +46,8 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [discountIdToDelete, setDiscountIdToDelete] = useState(null);
+  const { hasPermission } = usePermissions();
+  const canDeletePassengerDiscounts = hasPermission(Permissions.DeletePassengerDiscounts);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -227,15 +229,17 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                       </TableCell>
                       <TableCell>{formatDate(discount.created_at)}</TableCell>
                       <TableCell>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          size="small"
-                          disabled={!editMode}
-                          onClick={() => handleOpenDelete(discount.id)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
+                        {canDeletePassengerDiscounts && (
+                          <IconButton
+                            aria-label="delete"
+                            color="error"
+                            size="small"
+                            disabled={!editMode}
+                            onClick={() => handleOpenDelete(discount.id)}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
