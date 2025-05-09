@@ -27,7 +27,7 @@ class FeeController extends Controller
     public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService)
     {
         $this->passengerRepository = $passengerRepository;
-        $this->paymentInfoService =$paymentInfoService;
+        $this->paymentInfoService = $paymentInfoService;
     }
 
     public function store(Request $request)
@@ -36,19 +36,31 @@ class FeeController extends Controller
             return $this->withPermission([Permissions::CreateFees], function ($request) {
                 $booking_id = $request->route('booking_id');
                 $event_id = $request->route('event_id');
+
                 $validated = $request->validate([
                     'passenger_id' => 'required|exists:passengers,id',
                     'amount' => 'required|numeric|min:0.01',
                     'type' => 'required|string|max:255',
-
+                    'due_date' => 'nullable|date',
                 ]);
-                Fee::create($validated);
-                $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
+
+                DB::transaction(function () use ($validated, $request, $booking_id) {
+                    $fee = new Fee($validated);
+                    $fee->temp_due_date = $request->input('due_date');
+                    $fee->save();
+
+                    // Defer sync until after all DB changes (fee + installment) are committed
+                    DB::afterCommit(function () use ($booking_id) {
+                        $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
+                    });
+                });
+
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Manual Fee',
                     "Manual {$validated['type']} value: \${$validated['amount']} was added to booking"
                 );
+
                 return redirect()->back()->with('success', 'Fee added successfully!');
             }, $request);
         } catch (\Exception $e) {

@@ -3,9 +3,13 @@ import { Box, Typography, alpha } from "@mui/material";
 import { green, blue, red } from "@mui/material/colors";
 import { InfoRounded } from "@mui/icons-material";
 import dayjs from "dayjs";
+import FeeInstallmentList from "@/Components/FeeInstallmentList";
+import { getOrdinalName } from "@/Helpers/stringUtils";
+import type { InstallmentItem, InstallmentStatus, Fee, Installment } from "@/types/payments"; // Adjust the import path as needed
 
 // Helpers
-import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
+import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
+
 
 // Define types
 type Props = {
@@ -15,6 +19,7 @@ type Props = {
 };
 
 type InstallmentPaymentProps = {
+  order: number;
   installment: any;
   status: "paid" | "unpaid";
   isOverdue: boolean;
@@ -24,23 +29,9 @@ type InstallmentPaymentProps = {
   perc: number;
 };
 
-type InstallmentItem = {
-  installment_id: number;
-  type: "PAYMENT" | "FEE";
-  amount?: number;
-  amount_due?: number;
-  due_date: string;
-};
-
-type InstallmentStatus = {
-  paid_installments: InstallmentItem[];
-  remaining_installments: InstallmentItem[];
-  next_installment?: InstallmentItem;
-  fully_paid: boolean;
-};
-
 // Installment payment part
 const InstallmentPayment = ({
+  order,
   installment,
   status,
   isOverdue,
@@ -49,11 +40,6 @@ const InstallmentPayment = ({
   installmentCost,
   perc,
 }: InstallmentPaymentProps) => {
-  useEffect(() => {
-    if (isOverdue) {
-      console.warn("Payment for booking is overdue");
-    }
-  }, [isOverdue]);
 
   return (
     <Box
@@ -97,9 +83,7 @@ const InstallmentPayment = ({
         }}
       >
         <Typography fontSize="12px">
-          {status === "paid"
-            ? `${formatCurrency(installment?.amount)}`
-            : `${formatCurrency(installment?.amount_due)}`}
+          {status === "paid" ? `${formatCurrency(installment?.amount)}` : `${formatCurrency(installment?.amount_due)}`}
         </Typography>
 
         {status === "paid" ? (
@@ -107,11 +91,12 @@ const InstallmentPayment = ({
         ) : isOverdue ? (
           <Typography fontSize={"12px"}>Due Immediately</Typography>
         ) : (
-          <Typography fontSize={"12px"}>
-            Due Date: {" "}
-            {formatDate(installment?.due_date)}
-          </Typography>
+          <Typography fontSize={"12px"}>Due Date: {formatDate(installment?.due_date)}</Typography>
         )}
+        
+        <Typography fontSize="12px" fontWeight="bold">
+          {getOrdinalName(order + 1)} Installment
+        </Typography>
       </Box>
     </Box>
   );
@@ -177,19 +162,18 @@ const Installments = ({
           status = "unpaid";
         }
 
-        // Get matching installment entry
+        // Get matching installment Item from installment status
         const installmentEntry =
           installment_plan?.paid_installments?.find((i: InstallmentItem) => i.installment_id === id) ??
-          (installment_plan?.next_installment?.installment_id === id
-            ? installment_plan?.next_installment
-            : (installment_plan?.remaining_installments?.find((i: InstallmentItem) => i.installment_id === id) ??
-              null));
+          installment_plan?.remaining_installments?.find((i: InstallmentItem) => i.installment_id === id) ??
+          null;
 
         const isOverdue = fillPerc < 100 && today.isAfter(dueDate);
 
         return (
           <InstallmentPayment
             key={index}
+            order={index}
             installment={installmentEntry}
             status={status}
             isOverdue={isOverdue}
@@ -206,13 +190,25 @@ const Installments = ({
 
 // Section Percentage
 export default function SectionPercentage({ passenger, booking, installments }: Props) {
-  const passengerFees = passenger?.fees?.reduce((acc: number, fee: any) => acc + Number(fee.amount || 0), 0);
-  const installment_status = passenger?.installment_status;
-  const paidFeeIds = installment_status?.paid_installments?.filter((i: any) => i.type === "FEE") ?? [];
+  const paymentInstallments = installments
+    .filter((inst: Installment) => inst.type === "PAYMENT")
+    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+  const feeInstallments = installments
+    .filter((inst: Installment) => inst.type === "FEE")
+    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
+  // Get the total fees and calculate total fees
+  const passengerFees = (passenger?.fees as Fee[]) || [];
+  const totalFees = passengerFees.reduce((acc: number, fee: any) => acc + Number(fee.amount || 0), 0);
+
+  // Get the installment status
+  const installment_status = passenger?.installment_status;
+
+  // Get the paid installments and calculate the total paid fees
+  const paidFeeIds = installment_status?.paid_installments?.filter((i: any) => i.type === "FEE") ?? [];
   const passengerPaidFees = paidFeeIds.reduce((acc: number, fee: any) => acc + Number(fee.amount || 0), 0);
 
-  const passengerAllocatedCost = Number(passenger?.passenger_allocated_cost - passengerFees); // We do not want to include fees to not affect installments. This are counted separately
+  const passengerAllocatedCost = Number(passenger?.passenger_allocated_cost - totalFees); // We do not want to include fees to not affect installments. This are counted separately
   const passengerBalance = Number(passenger?.passenger_balance) - Number(passengerPaidFees) || 0;
 
   // Calculate percentage of total payment that has been paid
@@ -220,8 +216,19 @@ export default function SectionPercentage({ passenger, booking, installments }: 
 
   const passengerPercentageRounded = Math.min(100, Math.round(passengerPercentage));
 
-  
-  // console.log("passenger Id", passenger?.id, "installment_status", installment_status, "passengerAllocatedCost", passengerAllocatedCost, "passengerBalance", passengerBalance);
+  // Debugging logs - DO NOT REMOVE
+  console.log(
+    "passengerid",
+    passenger?.id,
+    "installmentStatus",
+    installment_status,
+    "balanceMinusPaidFees",
+    passengerBalance,
+    "allocatedcost",
+    passengerAllocatedCost,
+    "passengerPercentage",
+    passengerPercentageRounded,
+  );
 
   return (
     <Box
@@ -242,19 +249,10 @@ export default function SectionPercentage({ passenger, booking, installments }: 
           mt: 1,
         }}
       >
-        {/* <Typography
-          sx={{
-            fontSize: "12px",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {tSectionPercentage("pay")} {`${passengerPercentageRounded}%`}
-        </Typography> */}
-
         <Installments
           perc={passengerPercentage}
           passengerAllocatedCost={passengerAllocatedCost}
-          installments={installments}
+          installments={paymentInstallments}
           installment_plan={installment_status}
         />
 
@@ -267,6 +265,20 @@ export default function SectionPercentage({ passenger, booking, installments }: 
           {`${passengerPercentageRounded}%`}
         </Typography>
       </Box>
+
+      {passengerFees.length > 0 && (
+        <Box mt={3}>
+          <Typography fontSize="14px" fontWeight="bold" mb={1}>
+            Additional Fees
+          </Typography>
+          <FeeInstallmentList
+            fees={passengerFees}
+            feeInstallments={feeInstallments}
+            installmentPlan={installment_status}
+          />
+        </Box>
+      )}
+
       <Box
         sx={{
           mt: 2,

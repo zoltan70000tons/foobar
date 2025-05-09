@@ -246,9 +246,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
         const totalFees = pax.fees.reduce((acc, fee) => acc + Number(fee.amount || 0), 0);
         const totalCostAfterAdjustments = pricePerPerson - totalPassengerDiscount + totalAddons + totalFees;
         const totalCostWihoutFees = totalCostAfterAdjustments - totalFees;
-        const filteredInstallments = pax.installments
-          .filter((inst) => inst.type !== "FEE")
-          .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+        const filteredInstallments = pax.installments;
 
         return (
           <Box key={index}>
