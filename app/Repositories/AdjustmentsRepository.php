@@ -65,10 +65,6 @@ class AdjustmentsRepository
           return null;
       }
 
-      if (!$user->membership) {
-          return null;
-      }
-
       $memberType = strtoupper($user->membership->memberType->name);
       $result = null;
 
