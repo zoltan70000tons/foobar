@@ -14,7 +14,7 @@ import {
 
 import { router } from '@inertiajs/react';
 import { sanitizeInput } from '@/Helpers/inputSanitizer';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
 import LoadingOverlay from '@/Components/LoadingOverlay';
