@@ -85,10 +85,11 @@ const Country: React.FC<Props> = ({
     >
       <FormControl fullWidth error={error}>
         <InputLabel id="country-label" sx={size === 'small' ? {marginTop} : {}}>{label ? label : "Country"}</InputLabel>
+        {/* <InputLabel>Country</InputLabel> */}
         <Select
           name={nameOfField}
           labelId="country-label"
-          label="Country"
+          label={label ? label : "Country"}
           value={value}
           sx={{
             backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -96,15 +97,20 @@ const Country: React.FC<Props> = ({
           }}
           onChange={handleChangeCountry}
           disabled={disabled}
-          renderValue={(selected) => (
-            <Typography>
-              <Box
-                component={"span"}
-                sx={{ mr: 1 }}
-              ></Box>{" "}
-              {getCountryName(selected as string)}
-            </Typography>
-          )}
+          renderValue={(selected) => {
+            const alpha2 = countries.alpha3ToAlpha2(selected as string)?.toLowerCase();
+            return (
+              <Box display="flex" alignItems="center">
+                <Box
+                  component="span"
+                  className={`fi fi-${alpha2}`}
+                  sx={{ mr: 1 }}
+                />
+                {getCountryName(selected as string)}
+              </Box>
+            );
+          }}
+          
         >
           {CountryList}
         </Select>

@@ -364,8 +364,15 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         releaseLoading={releaseLoading}
         emptySeatLoading={releaseLoading}
         isSingleRoom={isSingleRoom}
-        onChange={(field, value) =>
+        onChange={(field, value) => {
+          if (field === "state") {
+            if(value?.value){
+              value = value.value;
+            }
+          }
           setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
+        }
+          
         }
         errors={errors}
         bookingdId={booking.id}
