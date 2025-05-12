@@ -78,12 +78,10 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.type || formData.amount <= 0) {
+    if (!formData.type || formData.amount <= 0 || !formData.due_date) {
       showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
-    
-   
 
     setLoading(true);
 
@@ -160,77 +158,79 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Add Fee</DialogTitle>
         <DialogContent>
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              label="Type"
-              name="type"
-              type="text"
-              value={formData.type}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              label="Amount"
-              name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              inputProps={{ step: 0.01, min: 0 }}
-              required
-            />
-            <TextField
-              select
-              label="Fee/Installment Plan"
-              name="installment_id"
-              helperText="This fee must be paid before the selected installment can be processed."
-              value={formData.installment_id ?? ""}
-              required
-              onChange={(e) => {
-                const selected = passenger.installments.find((i) => i.id === Number(e.target.value));
-                if (selected) {
-                  const dueDate = new Date(selected.due_date);
-                  dueDate.setDate(dueDate.getDate() - 1);
-                  const formattedDueDate = dueDate.toISOString().split("T")[0]; // yyyy-mm-dd
+          <form onSubmit={handleSubmit}>
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                label="Type"
+                name="type"
+                type="text"
+                value={formData.type}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+              <TextField
+                label="Amount"
+                name="amount"
+                type="number"
+                value={formData.amount}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                inputProps={{ step: 0.01, min: 0 }}
+                required
+              />
+              <TextField
+                select
+                label="Fee/Installment Plan"
+                name="installment_id"
+                helperText="This fee must be paid before the selected installment can be processed."
+                value={formData.installment_id ?? ""}
+                required
+                onChange={(e) => {
+                  const selected = passenger.installments.find((i) => i.id === Number(e.target.value));
+                  if (selected) {
+                    const dueDate = new Date(selected.due_date);
+                    dueDate.setDate(dueDate.getDate() - 1);
+                    const formattedDueDate = dueDate.toISOString().split("T")[0]; // yyyy-mm-dd
 
-                  setFormData((prev) => ({
-                    ...prev,
-                    installment_id: selected.id,
-                    due_date: formattedDueDate,
-                  }));
-                }
-              }}
-              fullWidth
-              margin="normal"
-            >
-              {passenger.installments
-                .filter((install) => install.type === "PAYMENT")
-                .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
-                .map((inst, index) => (
-                  <MenuItem key={inst.id} value={inst.id} sx={{ textTransform: "capitalize" }}>
-                    {`${getOrdinalName(index + 1)} Installment - Due: ${formatDate(inst.due_date)}`}
-                  </MenuItem>
-                ))}
-            </TextField>
-          </Box>
+                    setFormData((prev) => ({
+                      ...prev,
+                      installment_id: selected.id,
+                      due_date: formattedDueDate,
+                    }));
+                  }
+                }}
+                fullWidth
+                margin="normal"
+              >
+                {passenger.installments
+                  .filter((install) => install.type === "PAYMENT")
+                  .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                  .map((inst, index) => (
+                    <MenuItem key={inst.id} value={inst.id} sx={{ textTransform: "capitalize" }}>
+                      {`${getOrdinalName(index + 1)} Installment - Due: ${formatDate(inst.due_date)}`}
+                    </MenuItem>
+                  ))}
+              </TextField>
+            </Box>
+            <DialogActions>
+              <Grid container spacing={2} sx={{ px: 2 }}>
+                <Grid item xs={6}>
+                  <Button variant="outlined" color="secondary" fullWidth onClick={handleClose}>
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button type="submit" variant="contained" color="primary" fullWidth>
+                    Save
+                  </Button>
+                </Grid>
+              </Grid>
+            </DialogActions>
+          </form>
         </DialogContent>
-        <DialogActions>
-          <Grid container spacing={2} sx={{ px: 2 }}>
-            <Grid item xs={6}>
-              <Button variant="outlined" color="secondary" fullWidth onClick={handleClose}>
-                Cancel
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button type="submit" variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-                Save
-              </Button>
-            </Grid>
-          </Grid>
-        </DialogActions>
         <DialogContent>
           <Divider sx={{ my: 3 }} />
 

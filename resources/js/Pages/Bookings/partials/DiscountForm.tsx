@@ -46,6 +46,8 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [discountIdToDelete, setDiscountIdToDelete] = useState(null);
+  const { hasPermission } = usePermissions();
+  const canDeletePassengerDiscounts = hasPermission(Permissions.DeletePassengerDiscounts);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -147,55 +149,57 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Add Discount</DialogTitle>
         <DialogContent>
-          <Box component="form" onSubmit={handleSubmit}>
-            <TextField
-              label="Type"
-              name="type"
-              type="text"
-              value={formData.type}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              select
-              label="Operation"
-              name="operation"
-              value={formData.operation}
-              onChange={handleChange}
-              fullWidth
-            >
-              <MenuItem value="FIXED">Fixed</MenuItem>
-              <MenuItem value="PERCENTAGE">Percentage</MenuItem>
-            </TextField>
-            <TextField
-              label="Amount"
-              name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              inputProps={{ step: 0.01, min: 0 }}
-              required
-            />
-          </Box>
+          <form onSubmit={handleSubmit}>
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                label="Type"
+                name="type"
+                type="text"
+                value={formData.type}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+              <TextField
+                select
+                label="Operation"
+                name="operation"
+                value={formData.operation}
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="FIXED">Fixed</MenuItem>
+                <MenuItem value="PERCENTAGE">Percentage</MenuItem>
+              </TextField>
+              <TextField
+                label="Amount"
+                name="amount"
+                type="number"
+                value={formData.amount}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                inputProps={{ step: 0.01, min: 0 }}
+                required
+              />
+            </Box>
+            <DialogActions>
+              <Grid container spacing={2} sx={{ px: 2 }}>
+                <Grid item xs={6}>
+                  <Button variant="outlined" color="secondary" fullWidth onClick={handleClose}>
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button type="submit" variant="contained" color="primary" fullWidth>
+                    Save
+                  </Button>
+                </Grid>
+              </Grid>
+            </DialogActions>
+          </form>
         </DialogContent>
-        <DialogActions>
-          <Grid container spacing={2} sx={{ px: 2 }}>
-            <Grid item xs={6}>
-              <Button variant="outlined" color="secondary" fullWidth onClick={handleClose}>
-                Cancel
-              </Button>
-            </Grid>
-            <Grid item xs={6}>
-              <Button type="submit" variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-                Save
-              </Button>
-            </Grid>
-          </Grid>
-        </DialogActions>
         <DialogContent>
           <Divider sx={{ my: 3 }} />
 
@@ -225,15 +229,17 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                       </TableCell>
                       <TableCell>{formatDate(discount.created_at)}</TableCell>
                       <TableCell>
-                        <IconButton
-                          aria-label="delete"
-                          color="error"
-                          size="small"
-                          disabled={!editMode}
-                          onClick={() => handleOpenDelete(discount.id)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
+                        {canDeletePassengerDiscounts && (
+                          <IconButton
+                            aria-label="delete"
+                            color="error"
+                            size="small"
+                            disabled={!editMode}
+                            onClick={() => handleOpenDelete(discount.id)}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

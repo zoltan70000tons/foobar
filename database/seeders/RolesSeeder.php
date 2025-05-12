@@ -167,7 +167,9 @@ class RolesSeeder extends Seeder
             Permissions::DeletePayments,
             Permissions::SendEmail,
             Permissions::CreatePassengerDiscounts,
-            Permissions::DeletePassengerDiscounts
+            Permissions::DeletePassengerDiscounts,
+            Permissions::CreatePassengerOnboardCredit,
+            Permissions::DeletePassengerOnboardCredit
         ]);
         $this->assignToRole(Roles::Agent, [
             Permissions::ViewDashboard,
@@ -226,7 +228,9 @@ class RolesSeeder extends Seeder
             Permissions::DeletePayments,
             Permissions::SendEmail,
             Permissions::CreatePassengerDiscounts,
-            Permissions::DeletePassengerDiscounts
+            Permissions::DeletePassengerDiscounts,
+            Permissions::CreatePassengerOnboardCredit,
+            Permissions::DeletePassengerOnboardCredit
         ]);
 
         $this->assignToRole(Roles::Admin, [ //Superadmin
@@ -288,7 +292,9 @@ class RolesSeeder extends Seeder
             Permissions::DeletePayments,
             Permissions::SendEmail,
             Permissions::CreatePassengerDiscounts,
-            Permissions::DeletePassengerDiscounts
+            Permissions::DeletePassengerDiscounts,
+            Permissions::CreatePassengerOnboardCredit,
+            Permissions::DeletePassengerOnboardCredit
         ]);
 
         $this->assignToRole(Roles::Owner, [ // Superadmin
@@ -348,7 +354,9 @@ class RolesSeeder extends Seeder
             Permissions::DeletePayments,
             Permissions::SendEmail,
             Permissions::CreatePassengerDiscounts,
-            Permissions::DeletePassengerDiscounts
+            Permissions::DeletePassengerDiscounts,
+            Permissions::CreatePassengerOnboardCredit,
+            Permissions::DeletePassengerOnboardCredit
         ]);
 
         $this->assignToRole(Roles::Trainee, [  // Only View Access
@@ -408,7 +416,9 @@ class RolesSeeder extends Seeder
             // Permissions::DeletePayments,
             // Permissions::SendEmail,
             // Permissions::CreatePassengerDiscounts,
-            // Permissions::DeletePassengerDiscounts
+            // Permissions::DeletePassengerDiscounts,
+            // Permissions::CreatePassengerOnboardCredit,
+            // Permissions::DeletePassengerOnboardCredit
         ]);
     }
 
