@@ -262,7 +262,6 @@
                                             <td>{{ formatCurrency($installment['amount']) }}</td>
                                             <td>{{$payment_method}}</td>
                                             <td></td>
-
                                         </tr>
                                         @endforeach
 
@@ -295,7 +294,7 @@
                                                 @else
                                                 Due at {{formatDate($fullPaymentStatus['due_date'])}}
                                                 @endif
-                                                </td>
+                                            </td>
                                             <td>{{ formatCurrency($amount) }}</td>
                                             <td>{{$payment_method}}</td>
                                             <td></td>
@@ -304,28 +303,15 @@
 
                                         @endif
 
-
-                                    </table>
-
-                                </td>
-
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td width="100%" colspan="2">
-                        <table width="100%">
-                            <tr>
-                                <td width="40%">
-                                </td>
-                                <td width="60%">
-                                    <table width="100%">
                                         <tr>
-                                            <td width="40%" class="bold underline">Total {{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid:</td>
+                                            <td>&nbsp;</td>
+                                        </tr>
 
-                                            <td class="bold" width="70px">{{ $passenger['formatted_balance'] }}</td>
-                                            <td class="underline bold text-left"></td>
+                                        <tr>
+                                            <td width="30%" class="bold underline">Total {{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid:</td>
+                                            <td width="15%" class="bold underline">{{ $passenger['formatted_balance'] }}</td>
+                                            <td width="20%">&nbsp;</td>
+                                            <td width="15%">&nbsp;</td>
                                         </tr>
                                     </table>
                                 </td>
@@ -339,22 +325,26 @@
                 <tr>
                     <td>&nbsp;</td>
                 </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
                 @endforeach
-            </table>
 
-            <table class="table-container">
                 <tr>
-                    <td width="12.5%"></td>
-                    <td width="12.5%"></td>
-                    <td width="12.5%"></td>
-                    <td width="12.5%"></td>
-                    <td width="12.5%" class="bold underline">Grand Total Paid:</td>
-                    <td width="12.5%" class="bold underline">{{ formatCurrency($booking->getTotalPaid())}}</td>
-                    <td width="12.5%"></td>
-                    <td width="12.5%"></td>
+                    <td colspan="2">
+                        <table width="100%">
+                            <tr>
+                                <td width="50%"></td>
+                                <td colspan="4" style="padding: 0; margin: 0; vertical-align: top;" width="50%">
+                                    <table width="100%">
+                                        <tr>
+                                            <td width="30%" class="bold underline">Grand Total Paid:</td>
+                                            <td width="15%" class="bold underline">{{ formatCurrency($booking->getTotalPaid())}}</td>
+                                            <td width="20%">&nbsp;</td>
+                                            <td width="15%">&nbsp;</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
                 </tr>
             </table>
         </section>
@@ -469,7 +459,7 @@
                         <tr>
                             <td width="50%"><strong>Survivor Status:</strong></td>
                             <td width="50%">{{ $passenger->getMemberShip() }}</td>
-                      
+
                         <tr>
                             <td width="50%"><strong>Date of Birth:</strong></td>
                             <td width="50%">{{ formatDate($passenger->dob ) }}</td>
@@ -534,16 +524,16 @@
                             <td colspan="2">&nbsp;</td>
                         </tr>
                         @php
-                          $creditAmount = $passenger->onboardCredits->pluck('amount')->implode(' | ');
-                          $creditReason = $passenger->onboardCredits->pluck('reason')->implode(' | ');
+                        $creditAmount = $passenger->onboardCredits->pluck('amount')->implode(' | ');
+                        $creditReason = $passenger->onboardCredits->pluck('reason')->implode(' | ');
                         @endphp
                         <tr>
-                          <td width="50%"><strong>Onboard Credit:</strong></td>
-                          <td width="50%">{{ formatCurrency($creditAmount) }}</td>
+                            <td width="50%"><strong>Onboard Credit:</strong></td>
+                            <td width="50%">{{ formatCurrency($creditAmount) }}</td>
                         </tr>
                         <tr>
-                          <td width="50%"><strong>Reason For Credit:</strong></td>
-                          <td width="50%">{{ $creditReason }}</td>
+                            <td width="50%"><strong>Reason For Credit:</strong></td>
+                            <td width="50%">{{ $creditReason }}</td>
                         </tr>
                     </table>
                 </td>
