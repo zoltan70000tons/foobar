@@ -24,8 +24,8 @@ use App\Http\Middleware\ApiRedirectHttp;
 use App\Http\Middleware\EnsureUserIsNotCustomer;
 
 // --- PASSWORD RESET ---
-Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware('throttle:6,1');
-Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware('throttle:6,1');
+Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:6,1', 'guest']);
+Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:6,1', 'guest']);
 
 // --- LOGIN ---
 Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:10,1', 'verified']);
