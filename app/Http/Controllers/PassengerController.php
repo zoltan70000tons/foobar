@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Repositories\PassengerRepository;
 use App\Rules\UniqueSurvivorInEvent;
+use Illuminate\Validation\Rule;
 use Log;
 
 class PassengerController extends Controller
@@ -83,7 +84,10 @@ class PassengerController extends Controller
                 'string',
                 'max:20',
                 'nullable',
-                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/',
+                Rule::requiredIf(function () {
+                    return in_array(request('country'), ['CAN', 'USA']);
+                }),
             ],
             'postal_code' => [
                 'string',

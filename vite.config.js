@@ -10,4 +10,15 @@ export default defineConfig({
     }),
     react(),
   ],
+  server: {
+    host: 'admin.booking-engine.test',
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      host: 'admin.booking-engine.test',
+    },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
+  },
 });

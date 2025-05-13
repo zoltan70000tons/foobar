@@ -364,6 +364,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         releaseLoading={releaseLoading}
         emptySeatLoading={releaseLoading}
         isSingleRoom={isSingleRoom}
+        booking={booking}
         onChange={(field, value) => {
           if (field === "state") {
             if(value?.value){
@@ -375,8 +376,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
           
         }
         errors={errors}
-        bookingdId={booking.id}
-        eventId={booking.event_id}
       />
 
       <Dialog open={openConfirm} onClose={handleCancel}>

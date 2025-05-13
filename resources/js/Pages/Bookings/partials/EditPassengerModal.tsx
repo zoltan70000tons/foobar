@@ -21,6 +21,15 @@ import {
     Dialog,
     Stack,
 } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import HomeIcon from '@mui/icons-material/Home';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
+import PersonIcon from '@mui/icons-material/Person';
+
 
 import axios from "axios";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -39,14 +48,14 @@ const EditPassengerModal = ({
     onDelete,
     showModalSeatEmpty,
     isSingleRoom,
+    booking,
     onChange,
     errors,
     editMode,
     savingLoading,
     releaseLoading,
     emptySeatLoading,
-    bookingId,
-    eventId,
+
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
@@ -67,7 +76,8 @@ const EditPassengerModal = ({
     const disabledByDesign = !canEdit || !editMode;
 
     const isDisabled = passenger?.survivor_number || passenger?.empty_seat || disabledByDesign;
-    console.log(passenger);
+    const bookingId = booking.id;
+    const eventId = booking.event_id;
 
     useEffect(() => {
         if (searchQuery.length < 3) {
@@ -91,12 +101,15 @@ const EditPassengerModal = ({
     }, [searchQuery]);
 
     useEffect(() => {
-        console.log('Passenger', passenger);
         if (selectedCountry === null) return;
         setSelectedOptions(getStateOptions(selectedCountry));
-        console.log('Selected Options', selectedOptions);
-        console.log('Selected Country', selectedCountry);
     }, [selectedCountry]);
+
+    useEffect(() => {
+        if (passenger?.country && passenger.country !== selectedCountry) {
+            setSelectedCountry(passenger.country);
+        }
+    }, [passenger?.country]);
 
     const handleOnClose = () => {
         setSearchQuery("");
@@ -156,7 +169,6 @@ const EditPassengerModal = ({
     };
 
     const onChangeCountry = (e) => {
-        console.log('Event', e);
         setSelectedCountry(e);
         onChange('country', e);
     }
@@ -175,7 +187,14 @@ const EditPassengerModal = ({
     };
 
 
-
+    const SectionTitle = ({ icon: Icon, title, color = 'primary.main' }) => (
+        <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', pb: 1 }}>
+                <Icon sx={{ mr: 1, color }} />
+                <Typography variant="h6">{title}</Typography>
+            </Box>
+        </Box>
+    );
 
 
     return (
@@ -186,11 +205,69 @@ const EditPassengerModal = ({
                 fullScreen
                 fullWidth
                 maxWidth="lg"
+                disableEscapeKeyDown={false}
             >
-                <Paper sx={{ p: 4, width: "100%" }}>
-                    <Typography variant="h6" gutterBottom>
-                        {isLeadPassenger ? "Edit Lead Passenger" : "Edit Passenger"}
+                <Box
+                    sx={{
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 1201,
+                        backgroundColor: 'background.paper',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        px: 4,
+                        py: 2,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        width: '100%',
+                        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)', // sutil sombra elegante
+                        backdropFilter: 'blur(6px)', // da efecto de fondo tipo "glass"
+                    }}
+                >
+                    <Typography
+                        variant="h5"
+                        sx={{
+                            fontWeight: 500,
+                            color: 'text.primary',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Typography
+                                variant="h5"
+                                sx={{ fontWeight: 500, color: 'text.primary' }}
+                            >
+                                {isLeadPassenger ? "Edit Lead Passenger" : "Edit Passenger"}
+                            </Typography>
+                            <Chip
+                                label={`BC: ${booking.booking_code}`}
+                                color="info"
+                                variant="outlined"
+                                sx={{ fontWeight: 500 }}
+                            />
+                        </Box>
                     </Typography>
+
+                    <IconButton
+                        aria-label="close"
+                        onClick={handleOnClose}
+                        sx={{
+                            color: 'text.secondary',
+                            transition: 'color 0.2s ease',
+                            '&:hover': {
+                                color: 'error.main',
+                            },
+                        }}
+                    >
+                        <CloseIcon fontSize="medium" />
+                    </IconButton>
+                </Box>
+
+
+                <Paper sx={{ p: 4, width: "100%" }}>
                     {passenger?.empty_seat && (
                         <Typography variant="body2" color="error" gutterBottom marginBottom={1}>
                             This passenger is marked as an Empty Seat. Please RELEASE the empty seat option to edit the passenger details.
@@ -253,7 +330,7 @@ const EditPassengerModal = ({
 
                     <Grid>
 
-                        <Typography variant="overline" sx={{ mb: '1rem' }}>Personal Info</Typography>
+                        <SectionTitle icon={PersonIcon} title={'PERSONAL INFO'} />
                         {/* First group */}
                         <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
                             {/* First Column */}
@@ -364,7 +441,7 @@ const EditPassengerModal = ({
                             </Grid>
                         </Grid>
 
-                        <Typography variant="overline" sx={{ mb: '1rem' }}>Contact Info</Typography>
+                        <SectionTitle icon={ContactMailIcon} title={'CONTACT INFO'} />
                         {/* Second group*/}
                         <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
                             <Grid item xs={12} md={3}>
@@ -400,7 +477,7 @@ const EditPassengerModal = ({
                         </Grid>
 
 
-                        <Typography variant="overline" sx={{ mb: '1rem' }}>Address Info</Typography>
+                        <SectionTitle icon={HomeIcon} title={'ADDRESS INFO'} />
                         {/* First group */}
                         <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
                             <Grid item xs={12} md={5}>
@@ -478,9 +555,10 @@ const EditPassengerModal = ({
                                 <Autocomplete
                                     options={selectedOptions}
                                     getOptionLabel={(option) => option.label ? option.label : ""}
-                                    value={passenger?.state || ""}
+                                    value={selectedOptions.find(option => option.value === passenger?.state) || null}
                                     onChange={(e, value) => onChange("state", value)}
                                     disabled={isDisabled}
+                                    isOptionEqualToValue={(option, value) => option.value === value.value}
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
@@ -520,7 +598,7 @@ const EditPassengerModal = ({
                             </Grid>
                         </Grid>
 
-                        <Typography variant="overline" sx={{ mb: '1rem' }}>Emergency Contact Info</Typography>
+                        <SectionTitle icon={ReportProblemIcon} title={'EMERGENCY CONTACT'} />
                         {/* First group */}
                         <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
                             <Grid item xs={12} md={3}>
@@ -556,7 +634,7 @@ const EditPassengerModal = ({
 
                         </Grid>
 
-                        <Typography variant="overline" sx={{ mb: '1rem' }}>Payment Info</Typography>
+                        <SectionTitle icon={CreditCardIcon} title="PAYMENT INFO" />
                         {/* First group */}
                         <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
                             <Grid item xs={12} md={3}>
@@ -583,7 +661,7 @@ const EditPassengerModal = ({
 
 
 
-                        <Typography variant="overline" sx={{ mb: '1rem' }}>Travel Info</Typography>
+                        <SectionTitle icon={DirectionsBoatIcon} title="TRAVEL INFO" />
                         {/* Second group*/}
                         <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
                             <Grid item xs={12} md={3}>
@@ -618,7 +696,7 @@ const EditPassengerModal = ({
                                     variant="outlined"
                                     fullWidth
                                     multiline
-                                    placeholder="Near to elevators please"
+                                    placeholder="e.g. Allergy to peanuts, prefer cabin near elevator"
                                     rows={3}
                                     size="small"
                                     value={passenger?.special_request || ""}
@@ -706,39 +784,7 @@ const EditPassengerModal = ({
 
                     <Box mt={2} display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
                         {/* Left Side Actions */}
-                        {!disabledByDesign && (
-                            <Stack direction="row" spacing={1}>
-                                {/* <LoadingButton
-                                    loading={savingLoading}
-                                    variant="outlined"
-                                    color="primary"
-                                    onClick={onSave}
-                                    disabled={disabledByDesign}
-                                >
-                                    Save Changes
-                                </LoadingButton>
-                                {canReset && (
-                                    <LoadingButton
-                                        loading={releaseLoading}
-                                        variant="outlined"
-                                        color="error"
-                                        onClick={onDelete}
-                                        disabled={editable}
-                                    >
-                                        Release
-                                    </LoadingButton>
-                                )}
-                                <LoadingButton
-                                    loading={emptySeatLoading}
-                                    variant="outlined"
-                                    color="warning"
-                                    onClick={showModalSeatEmpty}
-                                    disabled={editable}
-                                >
-                                    {passenger?.empty_seat ? 'Unset empty seat' : 'Set empty seat'}
-                                </LoadingButton> */}
-                            </Stack>
-                        )}
+                        <Stack direction="row" spacing={1}></Stack>
 
                         {/* Right Side Actions */}
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
