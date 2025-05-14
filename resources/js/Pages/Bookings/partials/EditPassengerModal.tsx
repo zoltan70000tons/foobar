@@ -170,6 +170,7 @@ const EditPassengerModal = ({
 
     const onChangeCountry = (e) => {
         setSelectedCountry(e);
+        passenger.state = "";
         onChange('country', e);
     }
 
@@ -562,6 +563,7 @@ const EditPassengerModal = ({
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
+                                            required
                                             label="State"
                                             variant="outlined"
                                             error={!!validation?.state}
@@ -571,7 +573,7 @@ const EditPassengerModal = ({
                             </Grid>) : (
                                 <Grid item xs={12} md={3}><TextField
                                     fullWidth
-                                    label="state"
+                                    label="State"
                                     variant="outlined"
                                     value={passenger?.state || ""}
                                     // size="small"
@@ -580,7 +582,6 @@ const EditPassengerModal = ({
                                     disabled={isDisabled}
                                     error={!!validation?.state}
                                     helperText={validation?.state?.[0]}
-                                    required
                                 /></Grid>)}
                             <Grid item xs={12} md={3}>
                                 <TextField
