@@ -49,11 +49,11 @@ class DiscountsController extends Controller
                     'Added Manual Discount',
                     "Manual Discount {$validated['type']} value: \${$validated['amount']} was added to booking"
                 );
-                return redirect()->back()->with('success', 'Fee added successfully!');
+                return redirect()->back()->with('success', 'Discount added successfully!');
             }, $request);
         } catch (\Exception $e) {
             $this->logException($e);
-            return redirect()->back()->with('error', 'Error creating fee!');
+            return redirect()->back()->with('error', 'Error creating discount!');
         }
     }
 
@@ -98,7 +98,7 @@ class DiscountsController extends Controller
                 DB::rollBack();
                 $this->logException($e);
 
-                return redirect()->back()->with('error', 'Discount deleting fee!');
+                return redirect()->back()->with('error', 'Discount deleting discount!');
             }
         }, $request);
     }
