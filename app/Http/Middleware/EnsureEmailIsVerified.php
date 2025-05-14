@@ -26,7 +26,5 @@ class EnsureEmailIsVerified
     }
 
     return $next($request);
-
-    return $next($request);
   }
 }
