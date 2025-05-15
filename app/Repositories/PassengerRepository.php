@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Models\Passenger;
+use App\Models\User;
+use App\Models\UserLog;
 use App\Services\PaymentService;
 use Illuminate\Support\Facades\Auth;
 use Log;
@@ -80,6 +82,19 @@ class PassengerRepository implements PassengerInterface
       ];
 
       $leadPassenger = Passenger::create($passengerData);
+
+      if ($data['email']) {
+          $customer = User::query()->where('email', '=', $data['email'])->first();
+          if ($customer) {
+              UserLog::create([
+                  'customer_id' => $customer->id,
+                  'author_id' => $user->id,
+                  'action' => 'User assigned to booking as Lead Passenger',
+                  'description' => 'Booking id: ' . $booking->id,
+              ]);
+          }
+      }
+
       $availableSeats = $booking->cabin->category->capacity - 1;
       if ($cabinType == 2 || $cabinType == 3) {
         $availableSeats = 0;

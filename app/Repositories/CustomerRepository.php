@@ -6,16 +6,23 @@
   use App\Http\Requests\CustomerRequest;
   use App\Interfaces\CustomerInterface;
   use App\Models\Booking;
+  use App\Models\Comment;
   use App\Models\CustomerAddress;
   use App\Models\SurvivorNumber;
   use App\Models\User;
+  use App\Models\UserComment;
   use App\Models\UserDetail;
+  use App\Models\UserLog;
+  use App\Models\UserTag;
   use Exception;
   use Illuminate\Contracts\Pagination\LengthAwarePaginator;
   use Illuminate\Database\Eloquent\Collection as DBCollection;
   use Illuminate\Support\Collection;
+  use Illuminate\Support\Facades\Auth;
   use Illuminate\Support\Facades\DB;
+  use Illuminate\Support\Facades\Log;
   use Illuminate\Support\Str;
+  use InvalidArgumentException;
   use Throwable;
 
   class CustomerRepository implements CustomerInterface
@@ -46,53 +53,67 @@
       try {
         DB::beginTransaction();
 
+        $customerData = [];
+
         if ($request->filled('first_name')) {
           $user->detail->first_name = $request->input('first_name');
+          $customerData['first_name'] = $request->input('first_name');
         }
 
         if ($request->filled('last_name')) {
           $user->detail->last_name = $request->input('last_name');
+            $customerData['last_name'] = $request->input('last_name');
         }
 
         if ($request->filled('middle_name')) {
           $user->detail->middle_name = $request->input('middle_name');
+            $customerData['middle_name'] = $request->input('middle_name');
         }
 
         if ($request->filled('email')) {
           $user->email = $request->input('email');
+            $customerData['email'] = $request->input('email');
         }
 
         if ($request->filled('username')) {
           $user->username = $request->input('username');
+            $customerData['username'] = $request->input('username');
         }
 
         if ($request->filled('gender')) {
           $user->detail->gender = $request->input('gender');
+            $customerData['gender'] = $request->input('gender');
         }
 
         if ($request->filled('citizenship')) {
           $user->detail->citizenship = $request->input('citizenship');
+            $customerData['citizenship'] = $request->input('citizenship');
         }
 
         if ($request->filled('phone')) {
           $user->detail->phone = $request->input('phone');
+            $customerData['phone'] = $request->input('phone');
         }
 
         if ($request->filled('emergency_c_name')) {
           $user->detail->emergency_c_name = $request->input('emergency_c_name');
+            $customerData['emergency_c_name'] = $request->input('emergency_c_name');
         }
 
         if ($request->filled('emergency_c_phone')) {
           $user->detail->emergency_c_phone = $request->input('emergency_c_phone');
+            $customerData['emergency_c_phone'] = $request->input('emergency_c_phone');
         }
 
         if ($request->filled('language')) {
           $user->detail->language = $request->input('language');
+            $customerData['language'] = $request->input('language');
         }
 
         if ($request->filled('dob')) {
           $timestampDOB = strtotime($request->input('dob'));
           $user->detail->dob = date('Y-m-d', $timestampDOB);
+            $customerData['dob'] = date('Y-m-d', $timestampDOB);
         }
 
         $customerAddressData = [];
@@ -132,9 +153,24 @@
         $user->customerAddress->save();
         $user->save();
 
+          UserLog::create([
+              'customer_id' => $user->id,
+              'author_id' => Auth::id(),
+              'action' => 'User updated',
+              'description' => json_encode($customerData),
+          ]);
+
+          UserLog::create([
+              'customer_id' => $user->id,
+              'author_id' => Auth::id(),
+              'action' => 'Customer address updated',
+              'description' => json_encode($customerAddressData),
+          ]);
+
         DB::commit();
       } catch (Exception $e) {
         DB::rollBack();
+        dd($e->getMessage());
       }
     }
 
@@ -187,6 +223,12 @@
         $user->assignRole('Customer');
         $user->save();
 
+          UserLog::create([
+              'customer_id' => $user->id,
+              'author_id' => Auth::id(),
+              'action' => 'User created',
+          ]);
+
         DB::commit();
       } catch (Exception $e) {
         DB::rollBack();
@@ -216,6 +258,12 @@
           'emergency_c_phone' => null,
         ]);
       }
+
+        UserLog::create([
+            'customer_id' => $user->id,
+            'author_id' => Auth::id(),
+            'action' => 'User deleted',
+        ]);
     }
 
     function getAllCustomerData(int $perPage = 50): LengthAwarePaginator
@@ -315,4 +363,82 @@
           ];
         });
     }
+
+      public function addComment(User $customer, string $comment): bool
+      {
+          try {
+              if (empty($comment)) {
+                  throw new InvalidArgumentException('The comment field cannot be empty.');
+              }
+              $sanitizedComment = htmlspecialchars(strip_tags($comment));
+              $formattedComment = ucfirst($sanitizedComment);
+              UserComment::create([
+                  'customer_id' => $customer->id,
+                  'author_id' => Auth::id(),
+                  'comment' => $formattedComment,
+              ]);
+
+              UserLog::create([
+                  'customer_id' => $customer->id,
+                  'author_id' => Auth::id(),
+                  'action' => 'New comment added',
+                  'description' => $formattedComment,
+              ]);
+
+              return true;
+          } catch (\Exception $e) {
+              Log::info($e);
+              return false;
+          }
+      }
+
+      function addTags(User $customer, array $tags)
+      {
+          try {
+              if (!is_array($tags)) {
+                  throw new InvalidArgumentException('Tags must be an array.');
+              }
+              $uniqueTags = array_unique($tags);
+              $originalTags = $customer->tags;
+              $originalTagIds = $originalTags->pluck('id')->toArray();
+
+              $customer->tags()->sync($uniqueTags);
+
+              $user = Auth::user();
+
+              UserLog::create([
+                  'customer_id' => $customer->id,
+                  'author_id' => $user->id,
+                  'action' => 'Tags updated on user',
+                  'description' => 'The original tags were: ' .json_encode($originalTagIds). ', and the new tags are: '
+                      . json_encode($uniqueTags),
+              ]);
+
+              return true;
+          } catch (\Throwable $e) {
+              \Log::error("Failed to update tags for customer ID {$customer->id}: {$e->getMessage()}");
+              throw $e;
+          }
+      }
+
+      function deleteComment(User $customer, int $commentId)
+      {
+          try {
+              UserComment::query()
+                  ->where('customer_id', '=', $customer->id)
+                  ->where('id', '=', $commentId)
+                  ->delete();
+
+              $user = Auth::user();
+              UserLog::create([
+                  'customer_id' => $customer->id,
+                  'author_id' => $user->id,
+                  'action' => 'Comment deleted from user',
+                  'description' => 'Comment ID: ' . $commentId,
+              ]);
+          } catch (\Throwable $e) {
+              \Log::error("Failed to delete comment from customer ID {$customer->id}: {$e->getMessage()}");
+              throw $e;
+          }
+      }
   }

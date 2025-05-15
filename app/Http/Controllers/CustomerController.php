@@ -6,8 +6,10 @@
   use App\Helpers\CustomerHelper;
   use App\Http\Requests\CustomerRequest;
   use App\Interfaces\CustomerInterface;
+  use App\Models\Booking;
   use App\Models\SurvivorNumber;
   use App\Models\User;
+  use App\Models\UserTag;
   use App\Repositories\CustomerRepository;
   use App\Services\CustomerService;
   use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -104,12 +106,15 @@
     {
       try {
         return $this->withPermission([Permissions::ViewCustomers], function ($user) {
-          $user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings']);
+          $user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings', 'comments.author', 'logs.author',
+              'tags']);
           $bookings = $this->customerRepository->getBookingDataForCustomer($user);
+          $availableTags = UserTag::all();
 
           return Inertia::render('Customer/View', [
             'customer' => $user,
             'bookings' => $bookings,
+            'availableTags' => $availableTags,
           ]);
         }, $user);
       } catch (\Exception $e) {
@@ -157,4 +162,104 @@
 
         return $this->edit($customer);
     }
+
+    public function addComment(Request $request): Response|RedirectResponse
+    {
+        try {
+          $customerId = request()->route('user');
+          $comment = $request->input('comment');
+
+          return $this->withPermission(
+            [Permissions::EditCustomers],
+            function ($customerId, $comment) {
+              $customer = $this->customerRepository->find($customerId);
+              $result = $this->customerRepository->addComment($customer, $comment);
+
+              if ($result) {
+                return redirect()
+                  ->route('customers.show', ['customer' => $customerId])
+                  ->with('success', 'Comment added successfully.');
+              }
+
+                return redirect()
+                    ->route('customers.show', ['customer' => $customerId])
+                    ->with('error', 'Failed to add comment.');
+            },
+            $customerId,
+            $comment
+          );
+        } catch (\Exception $e) {
+          $this->logException($e);
+
+            return redirect()
+                ->route('customers.show', ['customer' => $customerId])
+                ->with('error', 'Failed to add comment.');
+        }
+      }
+
+      public function updateTags(Request $request)
+      {
+          try {
+              $customerId = request()->route('user');
+              $tags = $request->input('tags');
+              return $this->withPermission(
+                  [Permissions::EditCustomers],
+                  function ($customerId, $tags) {
+                      $customer = User::find($customerId);
+                      $result = $this->customerRepository->addTags($customer, $tags);
+                      if ($result) {
+                          return redirect()
+                              ->route('customers.show', ['customer' => $customerId])
+                              ->with('success', 'Tags updated successfully.');
+                      }
+
+                      return redirect()
+                          ->route('customers.show', ['customer' => $customerId])
+                          ->with('error', 'Failed to update tags.');
+                  },
+                  $customerId,
+                  $tags
+              );
+          } catch (\Exception $e) {
+              dd($e->getMessage());
+              $this->logException($e);
+
+              return redirect()
+                  ->route('customers.show', ['customer' => $customerId])
+                  ->with('error', 'Failed to update tags.');
+          }
+      }
+
+      public function deleteComment(Request $request)
+      {
+          try {
+              $customerId = $request->route('user');
+              $commentId = $request->get('comment_id');
+              return $this->withPermission(
+                  [Permissions::EditCustomers],
+                  function ($customerId, $commentId) {
+                      $customer = User::find($customerId);
+                      $result = $this->customerRepository->deleteComment($customer, $commentId);
+                      if ($result) {
+                          return redirect()
+                              ->route('customers.show', ['customer' => $customerId])
+                              ->with('success', 'Comment deleted successfully.');
+                      }
+
+                      return redirect()
+                          ->route('customers.show', ['customer' => $customerId])
+                          ->with('error', 'Failed to delete comment.');
+                  },
+                  $customerId,
+                  $commentId
+              );
+          } catch (\Exception $e) {
+              dd($e->getMessage());
+              $this->logException($e);
+
+              return redirect()
+                  ->route('customers.show', ['customer' => $customerId])
+                  ->with('error', 'Failed to delete comment.');
+          }
+      }
   }
