@@ -258,7 +258,7 @@
                                             @php
                                             $isFee = $installment['type'] == 'FEE';
                                             @endphp
-                                            <td class="">Paid at {{formatDate($installment['due_date'])}}</td>
+                                            <td class="">Paid, {{formatDate($installment['due_date'])}}</td>
                                             <td>{{ formatCurrency($installment['amount']) }}</td>
                                             <td>{{$payment_method}}</td>
                                             <td></td>
@@ -273,7 +273,7 @@
                                             @php
                                             $isFee = $installment['type'] == 'FEE';
                                             @endphp
-                                            <td class="">Due Date: {{formatDate($installment['due_date'])}}</td>
+                                            <td class="">Unpaid, {{formatDate($installment['due_date'])}}</td>
                                             <td>{{ formatCurrency($installment['amount_due']) }}</td>
                                             <td>{{ $payment_method }}</td>
                                             <td></td>
@@ -290,9 +290,9 @@
                                         <tr>
                                             <td>
                                                 @if($fullyPaid)
-                                                Paid at {{formatDate($fullPaymentStatus['due_date'])}}
+                                                Paid, {{formatDate($fullPaymentStatus['due_date'])}}
                                                 @else
-                                                Due at {{formatDate($fullPaymentStatus['due_date'])}}
+                                                Unpaid, {{formatDate($fullPaymentStatus['due_date'])}}
                                                 @endif
                                             </td>
                                             <td>{{ formatCurrency($amount) }}</td>
