@@ -221,7 +221,6 @@
                   $tags
               );
           } catch (\Exception $e) {
-              dd($e->getMessage());
               $this->logException($e);
 
               return redirect()
@@ -254,7 +253,6 @@
                   $commentId
               );
           } catch (\Exception $e) {
-              dd($e->getMessage());
               $this->logException($e);
 
               return redirect()

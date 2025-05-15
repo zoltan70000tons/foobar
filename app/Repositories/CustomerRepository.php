@@ -170,7 +170,6 @@
         DB::commit();
       } catch (Exception $e) {
         DB::rollBack();
-        dd($e->getMessage());
       }
     }
 

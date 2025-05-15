@@ -122,7 +122,6 @@ class PassengerRepository implements PassengerInterface
       Log::info('Passenger Data: ' . json_encode($passengerData));
       return $leadPassenger;
     } catch (\Exception $e) {
-      dd($e->getMessage());
       Log::error($e->getMessage());
       Log::info('PassengerRepository@create: ' . $e->getMessage());
       return false;
@@ -193,7 +192,6 @@ class PassengerRepository implements PassengerInterface
       }
       return true;
     } catch (\Exception $e) {
-      dd($e->getMessage());
       Log::error('Error filling additional seats: ' . $e->getMessage());
       return false;
     }
