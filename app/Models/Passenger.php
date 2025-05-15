@@ -464,6 +464,21 @@ class Passenger extends Model
       }
     }
 
+    // If the next installment is a FEE, check if there's a PAYMENT installment after it
+    if ($nextInstallment && $nextInstallment['type'] === 'FEE') {
+      // Find the first unpaid PAYMENT installment after this fee
+      $nextPayment = collect($remainingInstallments)
+        ->first(fn($i) => $i['type'] === 'PAYMENT');
+
+      if ($nextPayment) {
+        $nextInstallment['amount_due'] = round(
+          ($nextInstallment['amount_due'] ?? 0) + ($nextPayment['amount_due'] ?? 0),
+          2
+        );
+      }
+    }
+
+
     // Final structured output
     return [
       'paid_installments' => $paidInstallments,               // All installments fully covered
