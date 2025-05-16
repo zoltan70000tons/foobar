@@ -135,11 +135,11 @@ style="display:
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            {INDIVIDUAL_TOTAL}<br>
                                             If you pay for all
                                             passengers at once, your
-                                            total amount due is: USD
-                                            XXXX<br>
+                                            total amount due is:
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your

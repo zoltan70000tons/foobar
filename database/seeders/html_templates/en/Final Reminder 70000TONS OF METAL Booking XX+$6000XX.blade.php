@@ -124,7 +124,7 @@ style="color: rgb(102, 102,
                                               <br>
                                               If we do not hear from you
                                               by 12:00PM EST on XXXX
-                                              XXXX XX, 2024 your booking
+                                              XXXX XX, 2025 your booking
                                               for 70000TONS OF METAL
                                               2026<span> </span><span
 style="text-decoration:
@@ -141,17 +141,16 @@ style="display: block;
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            {INDIVIDUAL_TOTAL}<br>
                                             <br>
                                             If you pay for all
                                             passengers at once, your
-                                            total amount due is: USD
-                                            XXXX<br>
+                                            total amount due is: {GRAND_TOTAL}<br>
                                             <br>
                                             For your own safety, each
                                             transaction may not exceed
                                             the total amount of USD
-                                            6,000.00<br>
+                                            10,000.00<br>
                                             <br>
                                             As your total amount due
                                             exceeds this limit, you will

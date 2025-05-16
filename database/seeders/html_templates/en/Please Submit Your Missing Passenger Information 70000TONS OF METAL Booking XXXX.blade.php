@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>Please Submit Your Missing Passenger Information 70000TONS OF
-      METAL Booking XXXX</title>
+      METAL Booking {BOOKING_CODE}</title>
   </head>
   <body>
     <table

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>REFUND 70000TONS OF METAL 2026 BOOKING XXXX</title>
+    <title>REFUND 70000TONS OF METAL 2026 BOOKING {BOOKING_CODE}</title>
   </head>
   <body>
     <table
@@ -93,7 +93,7 @@ style="color: rgb(102, 102,
                                             line-height: 28px;
                                             text-align: left;
                                             padding-bottom: 15px;">Hi
-                                            XXXX,<br>
+                                            {PASSENGER_NAME},<br>
                                             <br>
                                             We are sorry that you cannot
                                             join us on board 70000TONS
