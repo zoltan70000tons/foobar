@@ -124,7 +124,7 @@ style="color: rgb(102, 102,
                                               <br>
                                               If we do not hear from you
                                               by 12:00PM EST on XXXX
-                                              XXXX XX, 2024 your booking
+                                              XXXX XX, 2025 your booking
                                               for 70000TONS OF METAL
                                               2026<span> </span><span
 style="text-decoration:

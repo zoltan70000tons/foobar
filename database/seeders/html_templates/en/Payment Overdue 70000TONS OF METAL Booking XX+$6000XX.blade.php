@@ -137,16 +137,16 @@ style="display:
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            {INDIVIDUAL_TOTAL}<br>
                                             If you pay for all
                                             passengers at once, your
-                                            total amount due is: USD
-                                            XXXX<br>
+                                            total amount due is:
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>For your own safety,
                                               each transaction may not
                                               exceed the total amount of
-                                              USD 6,000.00</strong><br>
+                                              USD 10,000.00</strong><br>
                                             <br>
                                             As your total amount due
                                             exceeds this limit, you will

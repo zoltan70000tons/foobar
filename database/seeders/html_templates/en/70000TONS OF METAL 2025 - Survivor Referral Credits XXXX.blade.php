@@ -134,7 +134,7 @@
                                               padding-bottom: 15px;
                                             "
                                           >
-                                            Hi XXXX,
+                                            Hi {PASSENGER_NAME},
                                           </td>
                                         </tr>
                                         <tr>

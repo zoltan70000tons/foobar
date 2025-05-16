@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>Onboard Credit for 70000TONS OF METAL Booking Confirmation
-      XXXX</title>
+      {BOOKING_CODE}</title>
   </head>
   <body>
     <table
