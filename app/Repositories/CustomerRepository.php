@@ -53,94 +53,105 @@
       try {
         DB::beginTransaction();
 
-        $customerData = [];
+          $originalUserData = $user->getOriginal();
+          $originalDetailData = $user->detail->getOriginal();
 
-        if ($request->filled('first_name')) {
-          $user->detail->first_name = $request->input('first_name');
-          $customerData['first_name'] = $request->input('first_name');
-        }
+          // Arrays to track changes
+          $logUserDescription = [];
+          $logUserAddressDescription = [];
 
-        if ($request->filled('last_name')) {
-          $user->detail->last_name = $request->input('last_name');
-            $customerData['last_name'] = $request->input('last_name');
-        }
+          $customerAddressData = [];
 
-        if ($request->filled('middle_name')) {
-          $user->detail->middle_name = $request->input('middle_name');
-            $customerData['middle_name'] = $request->input('middle_name');
-        }
+          if ($request->filled('first_name') && $request->input('first_name') !== $originalDetailData['first_name']) {
+              $logUserDescription[] = "first_name was changed from {$originalDetailData['first_name']} to {$request->input('first_name')}";
+              $user->detail->first_name = $request->input('first_name');
+          }
 
-        if ($request->filled('email')) {
-          $user->email = $request->input('email');
-            $customerData['email'] = $request->input('email');
-        }
+          if ($request->filled('last_name') && $request->input('last_name') !== $originalDetailData['last_name']) {
+              $logUserDescription[] = "last_name was changed from {$originalDetailData['last_name']} to {$request->input('last_name')}";
+              $user->detail->last_name = $request->input('last_name');
+          }
 
-        if ($request->filled('username')) {
-          $user->username = $request->input('username');
-            $customerData['username'] = $request->input('username');
-        }
+          if ($request->filled('middle_name') && $request->input('middle_name') !== $originalDetailData['middle_name']) {
+              $logUserDescription[] = "middle_name was changed from {$originalDetailData['middle_name']} to {$request->input('middle_name')}";
+              $user->detail->middle_name = $request->input('middle_name');
+          }
 
-        if ($request->filled('gender')) {
-          $user->detail->gender = $request->input('gender');
-            $customerData['gender'] = $request->input('gender');
-        }
+          if ($request->filled('email') && $request->input('email') !== $originalUserData['email']) {
+              $logUserDescription[] = "email was changed from {$originalUserData['email']} to {$request->input('email')}";
+              $user->email = $request->input('email');
+          }
 
-        if ($request->filled('citizenship')) {
-          $user->detail->citizenship = $request->input('citizenship');
-            $customerData['citizenship'] = $request->input('citizenship');
-        }
+          if ($request->filled('username') && $request->input('username') !== $originalUserData['username']) {
+              $logUserDescription[] = "username was changed from {$originalUserData['username']} to {$request->input('username')}";
+              $user->username = $request->input('username');
+          }
 
-        if ($request->filled('phone')) {
-          $user->detail->phone = $request->input('phone');
-            $customerData['phone'] = $request->input('phone');
-        }
+          if ($request->filled('gender') && $request->input('gender') !== $originalDetailData['gender']) {
+              $logUserDescription[] = "gender was changed from {$originalDetailData['gender']} to {$request->input('gender')}";
+              $user->detail->gender = $request->input('gender');
+          }
 
-        if ($request->filled('emergency_c_name')) {
-          $user->detail->emergency_c_name = $request->input('emergency_c_name');
-            $customerData['emergency_c_name'] = $request->input('emergency_c_name');
-        }
+          if ($request->filled('citizenship') && $request->input('citizenship') !== $originalDetailData['citizenship']) {
+              $logUserDescription[] = "citizenship was changed from {$originalDetailData['citizenship']} to {$request->input('citizenship')}";
+              $user->detail->citizenship = $request->input('citizenship');
+          }
 
-        if ($request->filled('emergency_c_phone')) {
-          $user->detail->emergency_c_phone = $request->input('emergency_c_phone');
-            $customerData['emergency_c_phone'] = $request->input('emergency_c_phone');
-        }
+          if ($request->filled('phone') && $request->input('phone') !== $originalDetailData['phone']) {
+              $logUserDescription[] = "phone was changed from {$originalDetailData['phone']} to {$request->input('phone')}";
+              $user->detail->phone = $request->input('phone');
+          }
 
-        if ($request->filled('language')) {
-          $user->detail->language = $request->input('language');
-            $customerData['language'] = $request->input('language');
-        }
+          if ($request->filled('emergency_c_name') && $request->input('emergency_c_name') !== $originalDetailData['emergency_c_name']) {
+              $logUserDescription[] = "emergency_c_name was changed from {$originalDetailData['emergency_c_name']} to {$request->input('emergency_c_name')}";
+              $user->detail->emergency_c_name = $request->input('emergency_c_name');
+          }
 
-        if ($request->filled('dob')) {
-          $timestampDOB = strtotime($request->input('dob'));
-          $user->detail->dob = date('Y-m-d', $timestampDOB);
-            $customerData['dob'] = date('Y-m-d', $timestampDOB);
-        }
+          if ($request->filled('emergency_c_phone') && $request->input('emergency_c_phone') !== $originalDetailData['emergency_c_phone']) {
+              $logUserDescription[] = "emergency_c_phone was changed from {$originalDetailData['emergency_c_phone']} to {$request->input('emergency_c_phone')}";
+              $user->detail->emergency_c_phone = $request->input('emergency_c_phone');
+          }
 
-        $customerAddressData = [];
+          if ($request->filled('language') && $request->input('language') !== $originalDetailData['language']) {
+              $logUserDescription[] = "language was changed from {$originalDetailData['language']} to {$request->input('language')}";
+              $user->detail->language = $request->input('language');
+          }
 
-        if ($request->filled('address_first')) {
-          $customerAddressData['address_first'] = $request->input('address_first');
-        }
+          if ($request->filled('dob') && date('Y-m-d', strtotime($request->input('dob'))) !== $originalDetailData['dob']) {
+              $dob = date('Y-m-d', strtotime($request->input('dob')));
+              $logUserDescription[] = "dob was changed from {$originalDetailData['dob']} to {$dob}";
+              $user->detail->dob = $dob;
+          }
 
-        if ($request->filled('address_second')) {
-          $customerAddressData['address_second'] = $request->input('address_second');
-        }
+          if ($request->filled('address_first') && $request->input('address_first') !== $user->customerAddress->address_first) {
+              $logUserAddressDescription[] = "address_first was changed from {$user->customerAddress->address_first} to {$request->input('address_first')}";
+              $customerAddressData['address_first'] = $request->input('address_first');
+          }
 
-        if ($request->filled('city')) {
-          $customerAddressData['city'] = $request->input('city');
-        }
+          if ($request->filled('address_second') && $request->input('address_second') !== $user->customerAddress->address_second) {
+              $logUserAddressDescription[] = "address_second was changed from {$user->customerAddress->address_second} to {$request->input('address_second')}";
+              $customerAddressData['address_second'] = $request->input('address_second');
+          }
 
-        if ($request->filled('state')) {
-          $customerAddressData['state'] = $request->input('state');
-        }
+          if ($request->filled('city') && $request->input('city') !== $user->customerAddress->city) {
+              $logUserAddressDescription[] = "city was changed from {$user->customerAddress->city} to {$request->input('city')}";
+              $customerAddressData['city'] = $request->input('city');
+          }
 
-        if ($request->filled('postal_code')) {
-          $customerAddressData['postal_code'] = $request->input('postal_code');
-        }
+          if ($request->filled('state') && $request->input('state') !== $user->customerAddress->state) {
+              $logUserAddressDescription[] = "state was changed from {$user->customerAddress->state} to {$request->input('state')}";
+              $customerAddressData['state'] = $request->input('state');
+          }
 
-        if ($request->filled('country')) {
-          $customerAddressData['country'] = $request->input('country');
-        }
+          if ($request->filled('postal_code') && $request->input('postal_code') !== $user->customerAddress->postal_code) {
+              $logUserAddressDescription[] = "postal_code was changed from {$user->customerAddress->postal_code} to {$request->input('postal_code')}";
+              $customerAddressData['postal_code'] = $request->input('postal_code');
+          }
+
+          if ($request->filled('country') && $request->input('country') !== $user->customerAddress->country) {
+              $logUserAddressDescription[] = "country was changed from {$user->customerAddress->country} to {$request->input('country')}";
+              $customerAddressData['country'] = $request->input('country');
+          }
 
         // Update or create the customer address for the user
         $user->customerAddress()->updateOrCreate(
@@ -153,19 +164,26 @@
         $user->customerAddress->save();
         $user->save();
 
-          UserLog::create([
-              'customer_id' => $user->id,
-              'author_id' => Auth::id(),
-              'action' => 'User updated',
-              'description' => json_encode($customerData),
-          ]);
+          // Only save the logs if there are changes
+          if (!empty($logUserDescription)) {
+              $description = implode(', ', $logUserDescription); // Join the changes into a single string
+              UserLog::create([
+                  'customer_id' => $user->id,
+                  'author_id' => Auth::id(),
+                  'action' => 'Customer was updated',
+                  'description' => $description,
+              ]);
+          }
 
-          UserLog::create([
-              'customer_id' => $user->id,
-              'author_id' => Auth::id(),
-              'action' => 'Customer address updated',
-              'description' => json_encode($customerAddressData),
-          ]);
+          if (!empty($customerAddressData)) {
+              $description = implode(', ', $logUserAddressDescription); // Join the changes into a single string
+              UserLog::create([
+                  'customer_id' => $user->id,
+                  'author_id' => Auth::id(),
+                  'action' => 'Customer address was updated',
+                  'description' => $description,
+              ]);
+          }
 
         DB::commit();
       } catch (Exception $e) {
