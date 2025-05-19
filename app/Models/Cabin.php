@@ -126,7 +126,7 @@ class Cabin extends Model
   {
     return Attribute::get(fn() => $this->cabinSpec?->accessible ?? null);
   }
-  
+
   /**
    * Accessor: Get the lower bed type 2 from the related CabinSpec.
    */
@@ -162,6 +162,7 @@ class Cabin extends Model
     }
 
     $this->save();
+
   }
 
   /**
@@ -190,12 +191,27 @@ class Cabin extends Model
   }
 
   protected static function booted()
-{
+  {
     static::saving(function (Cabin $cabin) {
-        if (is_array($cabin->tags) && in_array('RCCL', $cabin->tags) && $cabin->status !== StatusCabin::CLOSED->value) {
-            // Force status to "RESERVED" if 'RCCL' tag is present
-            $cabin->status = StatusCabin::RESERVED->value;
-        }
+      if (is_array($cabin->tags) && in_array('RCCL', $cabin->tags) && $cabin->status !== StatusCabin::CLOSED->value) {
+        // Force status to "RESERVED" if 'RCCL' tag is present
+        $cabin->status = StatusCabin::RESERVED->value;
+      }
     });
-}
+  }
+
+  protected static function boot()
+  {
+    parent::boot();
+     static::updated(function ($cabin) {
+       static::where('cabin_spec_id', $cabin->cabin_spec_id)
+      ->where('id', '!=', $cabin->id)
+      ->update([
+        'inventory' => $cabin->inventory,
+        'status' => $cabin->status,
+      ]);
+   
+    });
+
+  }
 }
