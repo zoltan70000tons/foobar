@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXUNNAMED-PAXXX Envía la información faltante de tu(s)
+    <title>Envía la información faltante de tu(s)
       pasajero(s) 70000TONS OF METAL Reserva {BOOKING_CODE}</title>
   </head>
   <body>
@@ -121,11 +121,11 @@ style="color: rgb(102, 102,
                                               demora de USD 100.00 por
                                               cada pasajero añadido a la
                                               reserva después del 30 de
-                                              octubre de 2024 y hasta el
-                                              30 de diciembre de 2024.<br>
+                                              octubre de 2025 y hasta el
+                                              30 de diciembre de 2025.<br>
                                               <br>
                                               ¡Después del 30 de
-                                              diciembre de 2024, el
+                                              diciembre de 2025, el
                                               cargo extra por demora
                                               aumentará a USD 300.00 por
                                               cada pasajero añadido a la

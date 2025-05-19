@@ -128,7 +128,7 @@ style="color: rgb(102, 102,
                                             Resumen de Precios (Por
                                             Pasajero)<br>
                                             Precio oficial del Ticket:
-                                            USD XXXX<br>
+                                            XXXX<br>
                                             Impuestos y cargos de
                                             servicio*: USD 487.00<br>
                                             Cargo extra por compra de
@@ -136,13 +136,10 @@ style="color: rgb(102, 102,
                                             Ticket): USD 100.00
                                             XXDELETE?XX<br>
                                             <strong>Precio total del
-                                              Ticket:<span>&nbsp;</span></strong>USD
-
-                                            XXXX<br>
+                                              Ticket:<span>&nbsp;</span></strong>{GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Precio Total de la
-                                              Reserva:</strong><span>&nbsp;</span>USD
-
+                                              Reserva:</strong><span>&nbsp;</span>
                                             {GRAND_TOTAL}<br>
                                             <i><br>
                                             </i><i>*Impuestos,

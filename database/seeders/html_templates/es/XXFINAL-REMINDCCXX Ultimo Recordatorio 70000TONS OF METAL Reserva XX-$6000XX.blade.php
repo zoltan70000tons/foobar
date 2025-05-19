@@ -127,7 +127,7 @@ style="color: rgb(102, 102,
                                               de las 12:00PM EST (Hora
                                               del Este) del XXWEEKDAYXX,
                                               XXDAYXX de XXMONTHXX de
-                                              2024 tu reserva para
+                                              2025 tu reserva para
                                               70000TONS OF METAL 2026<span>
                                               </span><span
 style="text-decoration:
@@ -142,11 +142,11 @@ style="display: block;
                                               underline;">Instrucciones
                                               de Pago:</strong><br>
                                             {PASSENGER_NAME}, tu pago individual
-                                            es de: USD {INDIVIDUAL_TOTAL}<br>
+                                            es de: {INDIVIDUAL_TOTAL}<br>
                                             <br>
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
-                                            total a pagar es: USD
+                                            total a pagar es: 
                                             {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Por favor ponte en
