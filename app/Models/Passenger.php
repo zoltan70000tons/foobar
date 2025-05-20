@@ -534,4 +534,9 @@ class Passenger extends Model
   {
     return $this->onboardCredits()->sum('amount');
   }
+
+  public function getRefoundAmount()
+  {
+    return $this->payments()->where('type', 'REFUND')->sum('amount');
+  }
 }

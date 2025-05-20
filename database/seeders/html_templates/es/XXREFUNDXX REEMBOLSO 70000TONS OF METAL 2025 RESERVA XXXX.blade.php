@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXREFUNDXX REEMBOLSO 70000TONS OF METAL 2026 RESERVA {BOOKING_CODE}</title>
+    <title>REEMBOLSO 70000TONS OF METAL 2026 RESERVA {BOOKING_CODE}</title>
   </head>
   <body>
     <table
@@ -101,9 +101,8 @@ style="color: rgb(102, 102,
                                             <br>
                                             <strong>Hemos transferido el
                                               crédito para la cantidad
-                                              de USD XXREFUND$XX
-                                              (XXWRITTEN$XX 00/00;
-                                              dólares estadounidenses) a
+                                              de USD {REFUND}
+                                              ({REFUND_IN_WORDS}) a
                                               tu tarjeta de crédito para
                                               reembolsar tu reserva
                                               menos el cargo por
