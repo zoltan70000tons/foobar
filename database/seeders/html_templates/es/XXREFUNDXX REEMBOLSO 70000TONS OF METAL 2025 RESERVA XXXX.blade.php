@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXREFUNDXX REEMBOLSO 70000TONS OF METAL 2026 RESERVA XXXX</title>
+    <title>XXREFUNDXX REEMBOLSO 70000TONS OF METAL 2026 RESERVA {BOOKING_CODE}</title>
   </head>
   <body>
     <table

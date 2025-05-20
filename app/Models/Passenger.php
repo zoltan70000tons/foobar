@@ -421,11 +421,13 @@ class Passenger extends Model
       // 🔹 Fully paid with available balance
       if (round($balance, 2) >= $amount) {
         $installmentData['amount'] = round($amount, 2);
+        $installmentData['status'] = 'Paid';
         $paidInstallments[] = $installmentData;
         $balance -= $amount;
         // 🔹 Partially paid (some balance remaining)
       } elseif (round($balance) > 0) {
         $installmentData['amount_due'] = round($amount - $balance, 2);
+        $installmentData['status'] = 'Partially Paid';
         $remainingInstallments[] = $installmentData;
 
         // Set this as the next installment to be paid
@@ -437,6 +439,7 @@ class Passenger extends Model
       } else {
         // 🔹 Not paid at all
         $installmentData['amount_due'] = round($amount, 2);
+        $installmentData['status'] = 'Unpaid';
         $remainingInstallments[] = $installmentData;
 
         // Set this as the next installment to be paid (if none set yet)
@@ -464,6 +467,21 @@ class Passenger extends Model
       }
     }
 
+    // If the next installment is a FEE, check if there's a PAYMENT installment after it
+    if ($nextInstallment && $nextInstallment['type'] === 'FEE') {
+      // Find the first unpaid PAYMENT installment after this fee
+      $nextPayment = collect($remainingInstallments)
+        ->first(fn($i) => $i['type'] === 'PAYMENT');
+
+      if ($nextPayment) {
+        $nextInstallment['amount_due'] = round(
+          ($nextInstallment['amount_due'] ?? 0) + ($nextPayment['amount_due'] ?? 0),
+          2
+        );
+      }
+    }
+
+
     // Final structured output
     return [
       'paid_installments' => $paidInstallments,               // All installments fully covered
@@ -479,17 +497,23 @@ class Passenger extends Model
     $amount = round($this->passenger_allocated_cost, 2);
     $totalPaid = round($this->passenger_balance, 2);
     $remainingAmount = round($amount - $totalPaid, 2);
-    $paid = false;
+
+    $status = 'Unpaid';
     if ($totalPaid >= $amount) {
-      $paid = true;
+      $status = 'Paid';
+    } elseif ($totalPaid > 0 && $totalPaid < $amount) {
+      $status = 'Partially Paid';
     }
+
     return [
       'due_date' => $this->booking->created_at->format('Y-m-d'),
       'amount' => $totalPaid,
       'remaining_amount' => $remainingAmount,
-      'fully_paid' => $paid,
+      'fully_paid' => $totalPaid >= $amount,
+      'status' => $status,
     ];
   }
+
 
   public function getMembership()
   {

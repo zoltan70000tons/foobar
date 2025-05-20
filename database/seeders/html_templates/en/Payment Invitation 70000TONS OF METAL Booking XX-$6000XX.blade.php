@@ -98,7 +98,7 @@ style="color: rgb(102, 102,
                                             METAL!<br>
                                             <br>
                                             Your next installment
-                                            payment is due on XXXX.<br>
+                                            payment is due on {NEXT_INSTALLMENT_DATE}.<br>
                                             <br>
                                             Please find your Booking
                                             Confirmation. To view
@@ -170,11 +170,11 @@ style="display:
                                             If each passenger will be
                                             paying separately, your
                                             individual payments will be:
-                                            USD XXXX<br>
+                                            {INDIVIDUAL_TOTAL}<br>
                                             If you pay for all
                                             passengers at once, your
-                                            total amount due is: USD
-                                            XXXX<br>
+                                            total amount due is:
+                                            {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your

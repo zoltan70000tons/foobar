@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>Please Submit Your Unnamed Passenger(s) 70000TONS OF METAL
-      Booking XXXX</title>
+      Booking {BOOKING_CODE}</title>
   </head>
   <body>
     <table
@@ -116,9 +116,9 @@ style="color: rgb(102, 102,
                                               guest added to the booking
                                               after October 30, 2024 up
                                               and until December 30,
-                                              2024.<br>
+                                              2025.<br>
                                               <br>
-                                              After December 30, 2024
+                                              After December 30, 2025
                                               this fee is subject to
                                               increase to USD 300.00 per
                                               guest added to the

@@ -160,7 +160,7 @@
                                             ><strong
                                               ><br />
                                               <br />
-                                              If we do not hear from you by 12:00PM EST on XXXX XXXX XX, 2024 your
+                                              If we do not hear from you by 12:00PM EST on XXXX XXXX XX, 2025 your
                                               booking for 70000TONS OF METAL 2026<span> </span
                                               ><span style="text-decoration: underline">will be cancelled.</span><br />
                                               <br /> </strong
@@ -174,9 +174,9 @@
                                               >Payment Instructions:</strong
                                             ><br />
                                             If each passenger will be paying separately, your individual payments will
-                                            be: USD XXXX<br />
+                                            be: {INDIVIDUAL_TOTAL}<br />
                                             <br />
-                                            If you pay for all passengers at once, your total amount due is: USD XXXX<br />
+                                            If you pay for all passengers at once, your total amount due is: {GRAND_TOTAL}<br />
                                             <br />
                                             <strong>Please contact your bank before making your payment online.</strong
                                             ><br />

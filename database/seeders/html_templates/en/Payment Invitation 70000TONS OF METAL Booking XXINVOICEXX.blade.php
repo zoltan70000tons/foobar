@@ -98,7 +98,7 @@ style="color: rgb(102, 102,
                                             METAL!<br>
                                             <br>
                                             Your next installment
-                                            payment is due on XXXX.<br>
+                                            payment is due on {NEXT_INSTALLMENT_DATE}.<br>
                                             <br>
                                             Please find your Booking
                                             Confirmation attached. To view

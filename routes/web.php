@@ -178,6 +178,15 @@ Route::middleware('auth')->group(function () {
       ->name('customers.editBySurvivorNumber');
   Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
   Route::resource('customers', CustomerController::class);
+    Route::post('/customers/{user}/add-comment', [CustomerController::class, 'addComment'])->name(
+        'customers.addComment'
+    );
+    Route::post('/customers/{user}/update-tags', [CustomerController::class, 'updateTags'])->name(
+        'customers.updateTags'
+    );
+    Route::post('/customers/{user}/delete-comment', [CustomerController::class, 'deleteComment'])->name(
+        'customers.delete-comment'
+    );
 
   Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
   Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');

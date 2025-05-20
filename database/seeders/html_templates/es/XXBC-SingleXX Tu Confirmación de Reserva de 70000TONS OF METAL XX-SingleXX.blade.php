@@ -147,7 +147,7 @@ style="display:
                                               de Pago:</strong><br>
                                             <br>
                                             {PASSENGER_NAME}, el total a pagar
-                                            es: USD {INDIVIDUAL_TOTAL}<br>
+                                            es: {INDIVIDUAL_TOTAL}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco

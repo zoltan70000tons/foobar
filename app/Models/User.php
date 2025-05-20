@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -27,6 +28,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $email
  * @property string|null $username
  * @property string $id
+ *
+ * @property UserTag[] $tags
  */
 class User extends Authenticatable implements CanResetPassword
 {
@@ -119,6 +122,23 @@ class User extends Authenticatable implements CanResetPassword
   public function memberShip()
   {
     return $this->hasOne(Membership::class, foreignKey: 'user_id');
+  }
+
+  public function comments(): HasMany
+  {
+    return $this->hasMany(UserComment::class, 'customer_id');
+  }
+
+  public function logs(): HasMany
+  {
+    return $this->hasMany(UserLog::class, 'customer_id');
+  }
+
+  public function tags(): belongsToMany
+  {
+      return $this->belongsToMany(UserTag::class, 'user_has_tags', 'user_id', 'tag_id');
+          //->withTimestamps() // Include created_at and updated_at from the pivot table
+          //->withTrashed();  // Include soft deleted tags if necessary
   }
 
   // send password

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\PassengerInvitation;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
 use App\Models\User;
 use App\Repositories\PassengerRepository;
 use App\Rules\UniqueSurvivorInEvent;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Log;
 
 class PassengerController extends Controller
@@ -83,7 +86,10 @@ class PassengerController extends Controller
                 'string',
                 'max:20',
                 'nullable',
-                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
+                'regex:/^[#.0-9a-zA-Z\s,-]+$/',
+                Rule::requiredIf(function () {
+                    return in_array(request('country'), ['CAN', 'USA']);
+                }),
             ],
             'postal_code' => [
                 'string',
@@ -154,6 +160,17 @@ class PassengerController extends Controller
         $this->passengerRepository->updateSeat($slot, $booking, $validated);
         $slot->update($validated);
 
+        $customer = User::query()->where('email', '=', $slot['email'])->first();
+        $user = Auth::user();
+        if ($customer) {
+            UserLog::create([
+                'customer_id' => $customer->id,
+                'author_id' => $user->id,
+                'action' => 'User assigned to booking',
+                'description' => 'Booking id: ' . $booking->id,
+            ]);
+        }
+
         return response()->json($slot);
     }
 
@@ -171,8 +188,21 @@ class PassengerController extends Controller
 
         $slotPassenger = Passenger::where('id', '=', $validated['slotId'])->first();
         $slot = $this->clearSlot($slotPassenger);
-        return response()->json($slot);
 
+        if ($slotPassenger) {
+            $customer = User::query()->where('email', '=', $slotPassenger->email)->first();
+            $user = Auth::user();
+            if ($customer) {
+                UserLog::create([
+                    'customer_id' => $customer->id,
+                    'author_id' => $user->id,
+                    'action' => 'User released from booking',
+                    'description' => 'Booking id: ' . $validated['bookingId'],
+                ]);
+            }
+        }
+
+        return response()->json($slot);
     }
 
     /*
@@ -190,6 +220,7 @@ class PassengerController extends Controller
            // $slot = Passenger::where('id', '=', $slot->id)->first();
            // ---- start @JG if passenger invitation exists, delete it
             $passengerInvitation = PassengerInvitation::where('passenger_id', $slot->id)->first();
+            $passengerInvitationEmail = $passengerInvitation->email;
             if ($passengerInvitation) {
                 $passengerInvitation->delete();
             }
@@ -230,7 +261,23 @@ class PassengerController extends Controller
                 //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
                 // on passengers table
                 $slot->save();
+
+                if ($passengerInvitationEmail) {
+                    $customer = User::query()->where('email', '=', $passengerInvitationEmail)->first();
+
+                    if ($customer) {
+                        $user = Auth::user();
+
+                        UserLog::create([
+                            'customer_id' => $customer->id,
+                            'author_id' => $user->id,
+                            'action' => 'User slot cleared',
+                            'description' => '',
+                        ]);
+                    }
+                }
             }
+
             return $slot;
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -257,6 +304,8 @@ class PassengerController extends Controller
             return response()->json('error', 422);
         }
 
+        $passengerEmail = $slot->email;
+
         // $this->clearSlot($slot);
         // $slot->refresh();
 
@@ -270,6 +319,21 @@ class PassengerController extends Controller
            
             $slot->empty_seat = $validated['empty_seat'];
             $slot->save();
+
+            if ($passengerEmail) {
+                $customer = User::query()->where('email', '=', $passengerEmail)->first();
+
+                if ($customer) {
+                    $user = Auth::user();
+
+                    UserLog::create([
+                        'customer_id' => $customer->id,
+                        'author_id' => $user->id,
+                        'action' => 'User seat emptied',
+                        'description' => '',
+                    ]);
+                }
+            }
      
             return response()->json($slot);
         } catch (\Exception $e) {
@@ -389,6 +453,7 @@ class PassengerController extends Controller
             $passenger = Passenger::query()
                 ->where('id', $validated['passengerId'])
                 ->first();
+            $passengerEmail = $passenger->email;
             $passenger->empty_seat = false;
             $passenger->save();
 
@@ -396,6 +461,21 @@ class PassengerController extends Controller
                 ->with(['installments', 'payments', 'fees', 'passengerInvitation'])
                 ->where('booking_id', $validated['bookingId'])
                 ->get();
+
+            if ($passengerEmail) {
+                $customer = User::query()->where('email', '=', $passengerEmail)->first();
+
+                if ($customer) {
+                    $user = Auth::user();
+
+                    UserLog::create([
+                        'customer_id' => $customer->id,
+                        'author_id' => $user->id,
+                        'action' => 'User slot cleared',
+                        'description' => '',
+                    ]);
+                }
+            }
 
             return response()->json(['passengers' => $passengers]);
         } catch (\Exception $e) {
