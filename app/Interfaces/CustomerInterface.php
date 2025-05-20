@@ -24,4 +24,10 @@ interface CustomerInterface
     function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters);
 
     function getBookingDataForCustomer(User $user);
+
+    function addComment(User $customer, string $comment);
+
+    function addTags(User $customer, array $tags);
+
+    function deleteComment(User $customer, int $commentId);
 }
