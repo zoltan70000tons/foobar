@@ -92,6 +92,8 @@ class EmailTemplateService
         $paymentPlan = $booking->payment_plan ?? '';
         $grandTotal = $booking->getGrandTotal() ?? 0;
         $individualTotal = $passenger->passenger_allocated_cost ?? 0;
+        $passengerOnboardCredit = $passenger->getOnboardCredit();
+        $category = $booking->cabin->category->title ?? '';
       
         // Installment data
         $paymentData = $passenger->installment_status ?? [];
@@ -113,6 +115,8 @@ class EmailTemplateService
         $formattedNextInstallmentAmount = formatCurrency($nextInstallmentAmountRaw) ?? '';
         $formattedNextInstallmentDate = formatDate($nextInstallmentDateRaw) ?? '';
         $passengerName = capitalizeWords($passenger->first_name ?? '');
+        $formatedOnboardCredit = formatCurrency($passengerOnboardCredit) ?? '';
+
       
         // Map placeholder values
         $lookup = [
@@ -125,6 +129,8 @@ class EmailTemplateService
             'PAYMENT_PLAN'           => $paymentPlan,
             'NEXT_INSTALLMENT_DATE'  => $formattedNextInstallmentDate,
             'NEXT_INSTALLMENT_AMOUNT'=> $formattedNextInstallmentAmount,
+            'ONBOARD_CREDIT'         => $formatedOnboardCredit,
+            'CATEGORY'               => $category ?? '',
         ];
       
         // Build the output values

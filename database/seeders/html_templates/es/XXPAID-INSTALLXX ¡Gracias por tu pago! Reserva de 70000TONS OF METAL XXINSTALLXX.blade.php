@@ -96,7 +96,7 @@
                                             line-height: 28px;
                                             text-align: left;
                                             padding-bottom: 15px;">Hemos
-                                                                                    recibido tu {PAID_AMOUNT} pago
+                                                                                    recibido tu USD {PAID_AMOUNT} pago
                                                                                     {PASSENGER_NAME}. ¡Gracias!<br>
                                                                                     <br>
                                                                                     @if($passenger)
@@ -107,7 +107,7 @@
                                                                                     Por favor toma en cuenta,
                                                                                     {PASSENGER_NAME}:<strong> Tu próximo
                                                                                         pago a plazos por la
-                                                                                        cantidad de 
+                                                                                        cantidad de USD 
                                                                                         {NEXT_INSTALLMENT_AMOUNT} se deberá
                                                                                         realizar el {NEXT_INSTALLMENT_DATE}</strong><br>
                                                                                     @endif

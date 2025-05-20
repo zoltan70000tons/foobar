@@ -529,4 +529,9 @@ class Passenger extends Model
     $membershipType = MembershipType::where('id', $membership->membership_id)->first();
     return $membershipType?->name ?? '';
   }
+
+  public function getOnboardCredit()
+  {
+    return $this->onboardCredits()->sum('amount');
+  }
 }

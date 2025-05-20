@@ -121,7 +121,7 @@ style="color: rgb(102, 102,
                                             Privada / Ticket Individual
                                             (Single Ticket)<br>
                                             Categoría de Cabina:
-                                            XXCATEGORYXX<br>
+                                            {CATEGORY}<br>
                                             Cantidad de Pasajeros:
                                             XX#OFPAXXX<br>
                                             <br>
@@ -140,7 +140,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             <strong>Precio Total de la
                                               Reserva:</strong><span>&nbsp;</span>
-                                            {GRAND_TOTAL}<br>
+                                            USD {GRAND_TOTAL}<br>
                                             <i><br>
                                             </i><i>*Impuestos,
                                               gratificaciones

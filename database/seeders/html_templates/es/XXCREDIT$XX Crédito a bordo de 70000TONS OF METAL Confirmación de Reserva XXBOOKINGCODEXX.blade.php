@@ -108,7 +108,7 @@ style="color: rgb(102, 102,
                                             70000TONS OF METAL!<br>
                                             <br>
                                             Hemos agregado el Crédito a
-                                            Bordo de XXCREDIT$XX a tu
+                                            Bordo de {ONBOARD_CREDIT} a tu
                                             nombre en la reserva.<br>
                                             <br>
                                             Tu crédito estará disponible
