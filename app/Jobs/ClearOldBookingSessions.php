@@ -5,6 +5,7 @@ namespace App\Jobs;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
+use App\Events\BookingAgentSession;
 
 class ClearOldBookingSessions implements ShouldQueue
 {
@@ -30,6 +31,14 @@ class ClearOldBookingSessions implements ShouldQueue
         $deleted = DB::table('booking_agent_sessions')
             ->where('time', '<', $expiredTime)
             ->delete();
+
+        if ($deleted > 0) {
+            broadcast(new BookingAgentSession(
+                agentId: "",
+                bookingId: null,
+                username: null
+            ));
+        }
 
         //logger()->info("ClearOldBookingSessions: Deleted {$deleted} expired booking session(s).");
     }

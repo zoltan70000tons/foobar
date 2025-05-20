@@ -276,6 +276,7 @@ class BookingRepository implements BookingInterface
             'logs',
             'logs.user',
             'lockedBy',
+            'lockedBy.agent',
             'comments',
             'comments.user',
             'agent',

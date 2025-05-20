@@ -16,4 +16,8 @@ class BookingAgentSessions extends Model
       return $this->belongsTo(Booking::class, 'booking_id');
     }
 
+    public function agent()
+    {
+      return $this->belongsTo(User::class, 'agent_id');
+    }
 }
