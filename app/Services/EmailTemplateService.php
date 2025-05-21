@@ -95,6 +95,7 @@ class EmailTemplateService
         $individualTotal = $passenger->passenger_allocated_cost ?? 0;
         $passengerOnboardCredit = $passenger->getOnboardCredit();
         $category = $booking->cabin->category->title ?? '';
+        $order = getPassengerOrderLabel($passenger->passenger_order, $lang);
         $refunds = $passenger->getRefoundAmount(); 
         $dollars = floor($refunds);
         $cents = round(($refunds - $dollars) * 100);
@@ -156,6 +157,7 @@ class EmailTemplateService
             'CATEGORY'               => $category ?? '',
             'REFUND'                 => $formatRefund,
             'REFUND_IN_WORDS'       => $amountInWords,
+            'PASSENGER_ORDER'       => $order,
         ];
       
         // Build the output values

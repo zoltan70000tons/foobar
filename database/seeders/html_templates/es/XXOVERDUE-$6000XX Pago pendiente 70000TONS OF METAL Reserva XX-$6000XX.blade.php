@@ -100,8 +100,8 @@ style="color: rgb(102, 102,
                                             <br>
                                             Por favor, ten en cuenta que
                                             no hemos recibido el pago
-                                            del XXPAX#XX Pasajero,
-                                            XXPAXNAMEXX, de tu reserva
+                                            del {PASSENGER_ORDER},
+                                            {PASSENGER_NAME}, de tu reserva
                                             con 70000TONS OF METAL 2026.<br>
                                             <br>
                                             <strong>Hemos agregado un
