@@ -20,6 +20,8 @@ class ActivateSurvivor extends Mailable implements ShouldQueue
   public $survivorNumber;
   public $activationLink;
 
+  public $queue = 'emails';
+
   /**
    * Create a new message instance.
    */

@@ -11,6 +11,7 @@ class BookingAgentSession implements ShouldBroadcast
 
     public function __construct(public string $agentId, public int | null $bookingId, public string | null $username) {}
 
+    public $queue = 'reverb';
 
     public function broadcastWith()
     {

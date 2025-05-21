@@ -16,6 +16,8 @@ class CustomerResetSeat extends Mailable implements ShouldQueue
 
   public $passengerEmail;
 
+  public $queue = 'emails';
+
   /**
    * Create a new message instance.
    */

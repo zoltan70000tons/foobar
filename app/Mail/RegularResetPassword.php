@@ -17,6 +17,8 @@ class RegularResetPassword extends Mailable implements ShouldQueue
   public $customer;
   public $resetUrl;
 
+  public $queue = 'emails';
+  
   /**
    * Create a new message instance.
    */

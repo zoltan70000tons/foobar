@@ -16,6 +16,8 @@ class CustomerResetPasswordSuccess extends Mailable implements ShouldQueue
 
   public $customer;
 
+  public $queue = 'emails';
+
   /**
    * Create a new message instance.
    */
