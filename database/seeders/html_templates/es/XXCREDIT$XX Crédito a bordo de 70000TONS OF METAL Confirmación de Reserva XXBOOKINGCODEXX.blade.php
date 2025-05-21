@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXCREDIT$XX Crédito a bordo de 70000TONS OF METAL
+    <title>{ONBOARD_CREDIT} Crédito a bordo de 70000TONS OF METAL
       Confirmación de Reserva {BOOKING_CODE}</title>
   </head>
   <body>
@@ -108,7 +108,7 @@ style="color: rgb(102, 102,
                                             70000TONS OF METAL!<br>
                                             <br>
                                             Hemos agregado el Crédito a
-                                            Bordo de XXCREDIT$XX a tu
+                                            Bordo de USD {ONBOARD_CREDIT} a tu
                                             nombre en la reserva.<br>
                                             <br>
                                             Tu crédito estará disponible
