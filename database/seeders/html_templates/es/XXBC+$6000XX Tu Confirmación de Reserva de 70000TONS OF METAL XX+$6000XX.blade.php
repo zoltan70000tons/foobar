@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXBC+$6000XX Tu Confirmación de Reserva de 70000TONS OF METAL
-      XX+$6000XX</title>
+    <title>XXBC+$10000XX Tu Confirmación de Reserva de 70000TONS OF METAL
+      XX+$10000XX</title>
   </head>
   <body>
     <table
@@ -177,7 +177,7 @@ style="display:
                                             Para tu propia seguridad,
                                             cada transacción no puede
                                             exceder la cantidad total de
-                                            USD 6,000.00<br>
+                                            USD 10,000.00<br>
                                             <br>
                                             Ya que el total a pagar
                                             supera este límite,
@@ -187,10 +187,10 @@ style="display:
                                             <br>
                                             Una primera transacción por
                                             la cantidad de: USD
-                                            XX6,000.00XX;<br>
+                                            {FIRST_CHUNK}<br>
                                             y una segunda transacción
                                             por la cantidad de: USD
-                                            XX+6,000.00XX<br>
+                                            {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco

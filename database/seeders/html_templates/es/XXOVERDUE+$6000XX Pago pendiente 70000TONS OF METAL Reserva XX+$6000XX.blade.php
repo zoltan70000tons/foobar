@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>XXOVERDUE+$6000XX Pago pendiente 70000TONS OF METAL Reserva
-      XX+$6000XX</title>
+    <title>XXOVERDUE+$10000XX Pago pendiente 70000TONS OF METAL Reserva
+      XX+$10000XX</title>
   </head>
   <body>
     <table
@@ -105,15 +105,12 @@ style="color: rgb(102, 102,
                                             {PASSENGER_NAME}, de tu reserva
                                             con 70000TONS OF METAL 2026.<br>
                                             <br>
-                                            <strong>Hemos agregado un
-                                              cargo por pago atrasado de
-                                              USD 50.00 por cada
-                                              pasajero con pagos
-                                              pendientes según el
-                                              Contrato del Ticket
-                                              (Ticketing Contract,
-                                              Sección XXSECTIONXX;
-                                              Página XXPAGEXX).<br>
+                                            <strong>Hemos agregado un cargo por pago atrasado de USD 50.00 por cada pasajero 
+                                              con pagos pendientes según el Contrato del Ticket 
+                                              (Ticketing Contract, Sección 2; Página 1), 
+                                              disponible <a href="https://70000tons.com/terms-conditions/?lang=es" 
+                                              style="color: rgb(0, 0, 238); text-decoration: none;">aquí</a> 
+                                              en nuestro sitio web.<br>
                                               <br>
                                               ¡Por favor, actualiza tu
                                               balance, incluyendo el
@@ -153,7 +150,7 @@ style="display:
                                               seguridad, cada
                                               transacción no puede
                                               exceder la cantidad total
-                                              de USD 6,000.00.</strong><br>
+                                              de USD 10,000.00.</strong><br>
                                             <br>
                                             Ya que el total a pagar
                                             supera este límite,
@@ -163,10 +160,10 @@ style="display:
                                             <br>
                                             Una primera transacción por
                                             la cantidad de: USD
-                                            XX$6,000.00XX;<br>
+                                            {FIRST_CHUNK}<br>
                                             y una segunda transacción
                                             por la cantidad de: USD
-                                            XX+6,000.00XX<br>
+                                            {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco
