@@ -27,12 +27,23 @@ import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import CommentIcon from "@mui/icons-material/Comment";
+import CustomerSidebar from "@/Pages/Bookings/partials/CustomerSidebar";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { StatusEnum } from "@/enums/StatusEnum";
+import Tags from "@/Pages/Bookings/partials/Tags";
+import CustomerTags from "@/Pages/Bookings/partials/CustomerTags";
 
-const View = ({ auth, customer, bookings }: PageProps) => {
+const View = ({ auth, customer, bookings, availableTags }: PageProps) => {
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
+  const { showSnackbar } = useSnackbar();
 
   const [selectedTab, setSelectedTab] = useState(0);
+
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+  const [comments, setComments] = useState(customer.comments || []);
 
   const handleEdit = () => {
     get(route('customers.edit', { customer: customer.id }));
@@ -56,6 +67,30 @@ const View = ({ auth, customer, bookings }: PageProps) => {
     setSelectedTab(newValue);
   };
 
+  const handleAddComment = (comment: string) => {
+    router.post(
+      route("customers.addComment", {
+        user: customer.id,
+      }),
+      {
+        comment: comment,
+      },
+      {
+        onSuccess: (page) => {
+          const newComment = page.props.customer.comments.slice(-1)[0];
+          setComments((prevComments) => [...prevComments, newComment]);
+          showSnackbar("Comment added successfully!", "success");
+        },
+        onError: (errors) => {
+          showSnackbar("Error adding comment:", "error");
+          console.error("Error adding comment:", errors);
+        },
+        preserveScroll: true,
+        preserveState: true,
+      },
+    );
+  };
+
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="View Customer"/>
@@ -63,7 +98,26 @@ const View = ({ auth, customer, bookings }: PageProps) => {
         <Button variant="outlined" color="secondary" onClick={ handleBack }>
           Back
         </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<CommentIcon />}
+          onClick={toggleSidebar}
+          sx={{ ml: 2 }}
+        >
+          View Comments & Logs
+        </Button>
       </Toolbar>
+
+      <Paper variant="outlined" sx={{ p: 2, backgroundColor: '#1c1c1c', mb: 4 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
+            <Grid container mt={2}>
+              <CustomerTags customer={customer} availableTags={availableTags} />
+            </Grid>
+          </Grid>
+        </Grid>
+      </Paper>
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
@@ -327,6 +381,15 @@ const View = ({ auth, customer, bookings }: PageProps) => {
             <BookingHistory auth={ auth } bookings={ bookings }/>
           ) }
         </Grid>
+        <CustomerSidebar
+          isOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+          logs={customer.logs}
+          comments={comments}
+          auth={auth}
+          onAddComment={handleAddComment}
+          customerId={customer.id}
+        />
       </Container>
     </AuthenticatedLayout>
   );

@@ -9,6 +9,7 @@ use Blade;
 use DB;
 use Exception;
 use Log;
+use NumberToWords\NumberToWords;
 
 class EmailTemplateService
 {
@@ -55,7 +56,7 @@ class EmailTemplateService
         $processedBody = Blade::render($bodyContent, $data);
 
         $placeholders = $this->extractPlaceholders($processedBody);
-        $values = $this->fetchPlaceholderValues($placeholders, $booking, $passenger, $extraData);
+        $values = $this->fetchPlaceholderValues($placeholders, $booking, $passenger, $extraData, $lang);
         $processedBody = $this->replacePlaceholders($processedBody, $values);
 
         return $processedBody;
@@ -83,7 +84,7 @@ class EmailTemplateService
      * @param array $extraData
      * @return array
      */
-    private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger, array $extraData = []): array
+    private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger, array $extraData = [], $lang): array
     {
         // Booking and passenger details
         $eventLocation = $booking->event->location ?? '';
@@ -92,6 +93,30 @@ class EmailTemplateService
         $paymentPlan = $booking->payment_plan ?? '';
         $grandTotal = $booking->getGrandTotal() ?? 0;
         $individualTotal = $passenger->passenger_allocated_cost ?? 0;
+        $passengerOnboardCredit = $passenger->getOnboardCredit();
+        $category = $booking->cabin->category->title ?? '';
+        $order = getPassengerOrderLabel($passenger->passenger_order, $lang);
+        $refunds = $passenger->getRefoundAmount(); 
+        $dollars = floor($refunds);
+        $cents = round(($refunds - $dollars) * 100);
+        $numberToWords = new NumberToWords();
+        $transformer = $numberToWords->getNumberTransformer($lang);
+        $words = strtoupper($transformer->toWords($dollars));
+        $centsFormatted = str_pad($cents, 2, '0', STR_PAD_LEFT);
+        switch ($lang) {
+                case 'es':
+                    $amountInWords = "{$words} CON {$centsFormatted}/100; DÓLARES ESTADOUNIDENSES";
+                    break;
+                case 'en':
+                    $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
+                    break;
+                case 'de':
+                    $amountInWords = "{$words} UND {$centsFormatted}/100; US-DOLLAR";
+                    break;
+                default:
+                    $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
+            }
+                        
       
         // Installment data
         $paymentData = $passenger->installment_status ?? [];
@@ -113,6 +138,9 @@ class EmailTemplateService
         $formattedNextInstallmentAmount = formatCurrency($nextInstallmentAmountRaw) ?? '';
         $formattedNextInstallmentDate = formatDate($nextInstallmentDateRaw) ?? '';
         $passengerName = capitalizeWords($passenger->first_name ?? '');
+        $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true) ?? '';
+        $formatRefund = formatCurrency($refunds, true) ?? '';
+
       
         // Map placeholder values
         $lookup = [
@@ -125,6 +153,11 @@ class EmailTemplateService
             'PAYMENT_PLAN'           => $paymentPlan,
             'NEXT_INSTALLMENT_DATE'  => $formattedNextInstallmentDate,
             'NEXT_INSTALLMENT_AMOUNT'=> $formattedNextInstallmentAmount,
+            'ONBOARD_CREDIT'         => $formatedOnboardCredit,
+            'CATEGORY'               => $category ?? '',
+            'REFUND'                 => $formatRefund,
+            'REFUND_IN_WORDS'       => $amountInWords,
+            'PASSENGER_ORDER'       => $order,
         ];
       
         // Build the output values

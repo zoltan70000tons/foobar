@@ -174,8 +174,8 @@ style="display:
                                             es de: USD {INDIVIDUAL_TOTAL}<br>
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
-                                            total a pagar es: USD
-                                            {GRAND_TOTAL}<br>
+                                            total a pagar es: 
+                                            USD {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco

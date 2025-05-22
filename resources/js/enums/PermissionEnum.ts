@@ -37,6 +37,7 @@ export enum Permissions {
     CreateBookings = "Create Bookings",
     EditBookings = "Edit Bookings",
     DeleteBookings = "Delete Bookings",
+    InterceptBookings = "Intercept Bookings",
 
     // Manage Taxes
     ViewTaxes = "View Taxes",

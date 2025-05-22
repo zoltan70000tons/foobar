@@ -82,11 +82,11 @@ if (! function_exists('sanitizeInput')) {
             if (!is_numeric($amount)) {
                 return '';
             }
-    
+
             return ($hideCurrency ? '' : 'USD ') . number_format((float) $amount, 2, '.', ',');
         }
     }
-    
+
     if (!function_exists('formatDate')) {
         function formatDate($date, $fullMonth = false, $hideYear = false)
         {
@@ -109,4 +109,40 @@ if (! function_exists('sanitizeInput')) {
             return ucwords(strtolower($text));
         }
     }
+
+   if (!function_exists('getPassengerOrderLabel')) {
+    function getPassengerOrderLabel(int $order, string $lang = 'en'): string
+    {
+        $specialLabels = [
+            'en' => [1 => 'Lead Passenger'],
+            'es' => [1 => 'Pasajero Principal'],
+            'de' => [1 => 'Hauptpassagier'],
+        ];
+
+        $suffixes = [
+            'en' => fn($n) => match ($n) {
+                1 => 'st', 2 => 'nd', 3 => 'rd',
+                default => 'th'
+            },
+            'es' => fn($n) => '°',
+            'de' => fn($n) => '.',
+        ];
+
+        if ($order < 1 || $order > 8) return '';
+
+        if (isset($specialLabels[$lang][$order])) {
+            return $specialLabels[$lang][$order];
+        }
+
+        $suffix = $suffixes[$lang]($order);
+
+        return match ($lang) {
+            'en' => "{$order}{$suffix} Passenger",
+            'es' => "{$order}{$suffix} Pasajero",
+            'de' => "{$order}{$suffix} Passagier",
+            default => '',
+        };
+    }
+}
+
 }

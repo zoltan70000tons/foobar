@@ -274,6 +274,7 @@ class RolesSeeder extends Seeder
             Permissions::CreateBookings,
             Permissions::EditBookings,
             Permissions::DeleteBookings,
+            Permissions::InterceptBookings,
             Permissions::EditCabinInventory,
             Permissions::EditPassengers,
             Permissions::ResetSeat,

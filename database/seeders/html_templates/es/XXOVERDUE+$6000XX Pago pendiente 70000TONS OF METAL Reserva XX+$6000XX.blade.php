@@ -101,8 +101,8 @@ style="color: rgb(102, 102,
                                             <br>
                                             Por favor, ten en cuenta que
                                             no hemos recibido el pago
-                                            del XXPAX#XX Pasajero,
-                                            XXPAXNAMEXX, de tu reserva
+                                            del {PASSENGER_ORDER},
+                                            {PASSENGER_NAME}, de tu reserva
                                             con 70000TONS OF METAL 2026.<br>
                                             <br>
                                             <strong>Hemos agregado un
@@ -146,8 +146,8 @@ style="display:
                                             <br>
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
-                                            total a pagar es: USD
-                                            {GRAND_TOTAL}<br>
+                                            total a pagar es: 
+                                            USD {GRAND_TOTAL}<br>
                                             <br>
                                             <strong>Para tu propia
                                               seguridad, cada
