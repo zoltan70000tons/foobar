@@ -26,6 +26,7 @@ import DiscountForm, { Discount } from "./DiscountForm";
 import OnboardCreditForm from "./OnboardCreditForm";
 
 import { formatCurrency } from "@/Helpers/stringUtils";
+import PaymentTransferForm, { PaymentTransfer } from "@/Pages/Bookings/partials/PaymentTransferForm";
 
 const getOrdinalSuffix = (n: number): string => {
   if (n === 1) return "st";
@@ -34,11 +35,21 @@ const getOrdinalSuffix = (n: number): string => {
   return "th";
 };
 
+type MergedTransfer = {
+  payment_id_from: number;
+  payment_id_to: number;
+}
+
 type Payment = {
   id: number;
   amount: number;
   transactionDate: string;
   bipId?: string;
+  type: string;
+  mergedTransfers: MergedTransfer[];
+  payment_transfer_from?: PaymentTransfer;
+  payment_transfer_to?: PaymentTransfer;
+  created_at: string;
 };
 
 type Installment = {
@@ -78,8 +89,8 @@ export type Passenger = {
   id: number;
   name: string;
   lead_passenger: boolean;
-  passenger_allocated_cost: number;
-  passenger_balance: number;
+  passenger_allocated_cost: string;
+  passenger_balance: string;
   installments: Installment[];
   payments: Payment[];
   fees: Fee[];
@@ -105,7 +116,7 @@ type Cabin = {
   };
 };
 
-type Booking = {
+export type Booking = {
   id: number;
   passengers: Passenger[];
   payment_plan: string;
@@ -470,6 +481,15 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                       passenger={pax}
                       booking_id={booking.id}
                       event_id={booking.event_id}
+                      editMode={editMode}
+                    />
+                  </Grid>
+                )}
+                {canCreatePayment && (
+                  <Grid item xs={12} sm={3}>
+                    <PaymentTransferForm
+                      passenger={pax}
+                      booking={booking}
                       editMode={editMode}
                     />
                   </Grid>

@@ -246,6 +246,11 @@ Route::prefix('onboard-credit')->group(function () {
   Route::post('{event_id}/{booking_id}/delete', [OnboardCreditController::class, 'delete'])->name('delete.onboard-credit');
 });
 
+Route::prefix('payment-transfer')->group(function () {
+    Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\PaymentTransferController::class, 'store'])->name('manual.payment-transfer');
+    Route::post('{event_id}/{booking_id}/delete', [\App\Http\Controllers\PaymentTransferController::class, 'delete'])->name('delete.payment-transfer');
+});
+
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
 
 require __DIR__ . '/auth.php';
