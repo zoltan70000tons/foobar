@@ -17,6 +17,8 @@ class EmailUpdated extends Mailable implements ShouldQueue
   public $user;
   public $language;
 
+  public $queue = 'emails';
+
   /**
    * Create a new message instance.
    */

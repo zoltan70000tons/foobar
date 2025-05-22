@@ -18,6 +18,9 @@ class AutoTagBookingJob implements ShouldQueue
     protected $booking;
     protected $now;
 
+    public $queue = 'default';
+
+
     /**
      * Create a new job instance.
      */

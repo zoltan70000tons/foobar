@@ -24,6 +24,8 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   public $language;
   public $event;
 
+  public $queue = 'emails';
+
   public function __construct(Booking $booking, array $cart, array $installments, string $language, $event)
   {
     $this->booking = $booking;

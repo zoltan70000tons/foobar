@@ -20,6 +20,8 @@ class CustomerVerificationEmail extends Mailable implements ShouldQueue
   public $verificationUrl;
   public $language;
 
+  public $queue = 'emails';
+
   public function __construct($user, $verificationUrl, $language)
   {
     $this->user = $user;

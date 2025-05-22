@@ -22,6 +22,8 @@ class AddPassengerDirectly extends Mailable implements ShouldQueue
   public $toWho;
   public $event;
 
+  public $queue = 'emails';
+
   /**
    * Create a new message instance.
    */
