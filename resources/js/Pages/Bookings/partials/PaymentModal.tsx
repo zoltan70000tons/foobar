@@ -120,7 +120,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       },
       {
         onSuccess: () => {
-          console.log(PaymentType[formData.type.toUpperCase()])
           showSnackbar(`${PaymentType[formData.type.toUpperCase()]} created successfully`, "success");
           setFormData({
             BIP_ID: "",
