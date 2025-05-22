@@ -55,7 +55,7 @@ const Index = ({ auth, bookings }: PageProps) => {
             {hasPermission(Permissions.ViewBookings) && (
               <Visibility
                 onClick={() => {
-                  router.get(route('bookings.index', { id: row.booking_id }));
+                  router.get(route('bookings.show', { id: row.booking_id, booking_code: row.booking_code }));
                 }}
                 style={{ cursor: 'pointer' }}
               />
