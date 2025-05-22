@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentType;
 use App\Enums\Permissions;
 use App\Exceptions\InvalidBipIdException;
 use App\Models\Booking;
@@ -72,7 +73,9 @@ class PaymentController extends Controller
                     "Manual {$validated['type']} value: \${$validated['amount']} was added to booking"
                 );
 
-                return redirect()->back()->with('success', 'Payment added successfully!');
+                $type = PaymentType::from($validated['type']);
+
+                return redirect()->back()->with('success', $type->getLabel() . ' added successfully!');
             } catch (InvalidBipIdException $e) {
                 DB::rollBack();
                 $this->logException($e);

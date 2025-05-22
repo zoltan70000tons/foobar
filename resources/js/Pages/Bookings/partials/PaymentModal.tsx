@@ -52,6 +52,11 @@ type Payment = {
   transaction_date: Dayjs | null;
 };
 
+enum PaymentType {
+  PAYMENT = "Payment",
+  REFUND = "Refund",
+}
+
 const PaymentModal: React.FC<PaymentModalProps> = ({
   passenger,
   booking_id,
@@ -115,7 +120,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       },
       {
         onSuccess: () => {
-          showSnackbar("Payment created successfully", "success");
+          showSnackbar(`${PaymentType[formData.type.toUpperCase()]} created successfully`, "success");
           setFormData({
             BIP_ID: "",
             amount: 0,
@@ -127,7 +132,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         },
         onError: (err) => {
           console.error(err);
-          showSnackbar("Failed to save the payment.", "error");
+          showSnackbar(`Failed to save the ${PaymentType[formData.type.toUpperCase()]}.`, "error");
         },
         onFinish: () => {
           setLoading(false);
