@@ -22,7 +22,6 @@ class AddPassengerDirectly extends Mailable implements ShouldQueue
   public $toWho;
   public $event;
 
-  public $queue = 'emails';
 
   /**
    * Create a new message instance.
@@ -36,6 +35,8 @@ class AddPassengerDirectly extends Mailable implements ShouldQueue
     $this->fromWho = $fromWho;
     $this->toWho = $toWho;
     $this->event = $event;
+    $this->onQueue('emails');
+    
   }
 
   /**

@@ -21,8 +21,6 @@ class CustomerRegistered extends Mailable implements ShouldQueue
   public $survivorNumber;
   public $activationLink;
 
-  public $queue = 'emails';
-
   /**
    * Create a new message instance.
    */
@@ -36,6 +34,7 @@ class CustomerRegistered extends Mailable implements ShouldQueue
       'id' => $customer->id,
       'hash' => sha1($customer->email),
     ]);
+    $this->onQueue('emails');
   }
 
   /**

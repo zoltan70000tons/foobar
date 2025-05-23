@@ -16,7 +16,6 @@ class CustomerResetSeat extends Mailable implements ShouldQueue
 
   public $passengerEmail;
 
-  public $queue = 'emails';
 
   /**
    * Create a new message instance.
@@ -24,6 +23,7 @@ class CustomerResetSeat extends Mailable implements ShouldQueue
   public function __construct(string $passengerEmail)
   {
     $this->passengerEmail = $passengerEmail;
+    $this->onQueue('emails');
   }
 
   /**

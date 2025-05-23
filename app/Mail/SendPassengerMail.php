@@ -15,7 +15,6 @@ class SendPassengerMail extends Mailable implements ShouldQueue
   public $subjectLine;
   private array $customAttachments = [];
 
-  public $queue = 'emails';
 
   public function __construct($subjectLine, $content, $attachments = [])
   {

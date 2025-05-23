@@ -22,7 +22,6 @@ class AddPassenger extends Mailable implements ShouldQueue
   public $toWho;
   public $event;
 
-  public $queue = 'emails';
 
   /**
    * Create a new message instance.
@@ -39,6 +38,7 @@ class AddPassenger extends Mailable implements ShouldQueue
     $this->fromWho = $fromWho;
     $this->toWho = $toWho;
     $this->event = $event;
+    $this->onQueue('emails');
     // Generate the activation (verification) link
   }
 

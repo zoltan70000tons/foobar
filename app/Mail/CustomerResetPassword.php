@@ -17,7 +17,6 @@ class CustomerResetPassword extends Mailable implements ShouldQueue
   public $customer;
   public $resetUrl;
 
-  public $queue = 'emails';
 
   /**
    * Create a new message instance.
@@ -26,6 +25,7 @@ class CustomerResetPassword extends Mailable implements ShouldQueue
   {
     $this->customer = $user;
     $this->resetUrl = $resetUrl;
+    $this->onQueue('emails');
   }
 
   /**
