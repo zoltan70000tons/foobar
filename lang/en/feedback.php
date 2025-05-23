@@ -15,4 +15,5 @@ return [
   'slot_already_taken' => 'Passenger with this slot has already been taken',
   'cannot_reset_own_seat' => 'You cannot reset your own seat',
   'age_restriction' => 'You must be at least twenty-one (21) years old at the time of boarding to be able to book.',
+  'cabin_not_available' => 'This cabin is no longer available. Please try selecting a different cabin or category or check back later.',
 ];

@@ -14,7 +14,7 @@ return [
   'cbe_subject' => 'Tu Solicitud de Reserva para',
   'cbe_hello' => 'Hola',
   'cbe_thank_you' => 'Hemos recibido tu Solicitud de Reserva. ¡Gracias!',
-  'cbe_please_note' => 'Por favor toma en cuenta que esta es una Solicitud de Reserva, la cual no garantiza una reservación sin antes haber sido confirmada por 70000TONS OF METAL. Recibirás una confirmación de nuestra parte en los próximos 3 días hábiles.',
+  'cbe_please_note' => 'Recibirás un correo de Confirmación de Reserva dentro de los 3 días hábiles posteriores a la verificación, con información sobre cómo agregar pasajeros y realizar tus pagos.',
   'cbe_important' => 'Si tu Solicitud de Reserva es errónea o si te gustaría cambiarla, por favor contáctanos lo antes posible. Nuestra información de contacto se encuentra al final de este correo electrónico.',
   'cbe_following_booking' => 'Solicitaste la siguiente reserva',
   'cbe_booking_type' => 'Tipo de Reserva',

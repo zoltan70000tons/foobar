@@ -19,7 +19,7 @@ return [
   'email_hi' => 'Hola',
   'email_thanks' => 'Saludos,',
   'email_regards' => 'Tu equipo de 70000TONS OF METAL',
-  'email_excited' => '¡Nos emociona tenerte a bordo!',
+  'email_excited' => '¡Estamos emocionados de darte la bienvenida a bordo!',
   'email_account_created' => 'Tu cuenta ha sido creada exitosamente.',
   'email_activated_account' => 'Tu cuenta ahora se encuentra activa.',
   'email_new_survivor_number' => 'Tu Número de Survivor es:',

@@ -2,7 +2,7 @@
   <tr>
       <td align="center" style="word-wrap: break-word; word-break: break-word;">
           <a href="{{ $url }}" target="_blank"
-             style="color: #007BFF; text-decoration: none; font-size: 16px; word-break: break-all;">
+             style="color: #007BFF; text-decoration: none; word-break: break-all;">
               {{ $slot }}
           </a>
       </td>

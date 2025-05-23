@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Cabin;
 use Carbon\Carbon;
 use App\Enums\StatusCabin;
+use App\Models\TemporaryReservation;
 
 trait CabinFilter
 {
@@ -30,7 +31,7 @@ trait CabinFilter
 
     $cabinsQuery = Cabin::with(['category.spec']) // Eager load spec for deck filtering: https://laravel.com/docs/11.x/pennant#eager-loading
       ->where('cabin_type_id', $cabinTypeId)
-      ->when($onlyAvailable, function ($query) use($cabinTypeId){
+      ->when($onlyAvailable, function ($query) use ($cabinTypeId) {
         // Only return cabins that are available or PARTIALLY_BOOKED
         if ($cabinTypeId == 1) {
           $query->where('status', StatusCabin::AVAILABLE->value);
@@ -82,10 +83,21 @@ trait CabinFilter
       ];
     }
 
+
+    $temporarilyReservedCabinNumbers = [];
+
+    if ($cabinTypeId == 1) {
+      $temporarilyReservedCabinNumbers = TemporaryReservation::where('expires_at', '>', $currentTime)
+        ->pluck('cabin_number')
+        ->unique()
+        ->toArray();
+    }
+
     $formattedCabins = $cabins
-      ->filter(function ($cabin) {
+      ->filter(function ($cabin) use ($temporarilyReservedCabinNumbers) {
         if ($cabin->cabin_type_id == 1) {
-          return $cabin->active_reservations_count == 0; // Private cabins must have no active reservations
+          // For private cabins, exclude if the itself or cabin_number is reserved
+          return !in_array($cabin->cabin_number, $temporarilyReservedCabinNumbers) && $cabin->active_reservations_count == 0;
         } else {
           return $cabin->active_reservations_count < $cabin->inventory; // Single ticket cabins must have available inventory
         }
@@ -110,7 +122,7 @@ trait CabinFilter
 
     if ($formattedCabins->isEmpty()) {
       return [
-        'error' => 'No cabins available after filtering',
+        'error' => __('feedback.cabin_not_available'),
         'status' => 404,
       ];
     }

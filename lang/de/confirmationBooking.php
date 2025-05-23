@@ -14,7 +14,7 @@ return [
   'cbe_subject' => 'Deine Buchungsanfrage für',
   'cbe_hello' => 'Hallo',
   'cbe_thank_you' => 'Wir haben Deine Buchungsanfrage erhalten. Vielen Dank!',
-  'cbe_please_note' => 'Bitte beachte, dies ist eine Buchungsanfrage und garantiert keine Buchung.',
+  'cbe_please_note' => 'Du erhältst deine Buchungsbestätigung per E-Mail innerhalb von 3 Werktagen nach der Überprüfung – mit Informationen dazu, wie du Passagiere hinzufügen und deine Zahlungen vornehmen kannst.',
   'cbe_important' => 'Falls Deine Buchungsanfrage falsch ist oder Du sie ändern möchtest, kontaktiere uns bitte so bald wie möglich. Die Kontaktdaten findest Du am Ende dieser eMail.',
   'cbe_following_booking' => 'Du hast die folgende Buchung angefragt',
   'cbe_booking_type' => 'Buchungstyp',
