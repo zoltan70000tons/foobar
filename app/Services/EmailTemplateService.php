@@ -141,6 +141,8 @@ class EmailTemplateService
         $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true) ?? '';
         $formatRefund = formatCurrency($refunds, true) ?? '';
         $firstChunk = 10000;
+        $firstChunkFormated = '';
+        $secondChunkFormated = '';
         if ($grandTotal > $firstChunk) {
             $firstChunkFormated = formatCurrency($firstChunk, true);
             $secondChunkFormated = formatCurrency($grandTotal - $firstChunk,true); 
