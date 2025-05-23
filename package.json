@@ -5,7 +5,8 @@
         "serve": "php artisan serve",
         "queue": "php artisan queue:work redis --queue=emails,reverb,default",
         "reverb": "php artisan reverb:start",
-        "dev": "concurrently \"vite\" \"php artisan serve\" \"php artisan queue:work redis --queue=emails,reverb,default\" \"php artisan reverb:start\"",
+        "single": "concurrently \"vite\" \"php artisan serve\" \"php artisan queue:work redis --queue=emails,reverb,default\" \"php artisan reverb:start\"",
+        "dev": "vite",
         "build": "vite build",
         "watch": "vite build --watch"
     },
