@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
   //Events crud
   Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
   Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+  Route::get('/events', [EventController::class, 'index'])->name('events.index');
   Route::resource('/events', EventController::class);
 
   Route::get('/events/{id}/cabins', [CabinsController::class, 'index'])->name('cabins.index');
