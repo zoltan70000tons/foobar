@@ -153,7 +153,7 @@ style="display: block;
                                               seguridad, cada
                                               transacción no puede
                                               exceder la cantidad total
-                                              de USD 6,000.00</strong><br>
+                                              de USD 10,000.00</strong><br>
                                             <br>
                                             Ya que el total a pagar
                                             supera este límite,
@@ -163,10 +163,10 @@ style="display: block;
                                             <br>
                                             Una primera transacción por
                                             la cantidad de: USD
-                                            XX$6,000.00XX;<br>
+                                            {FIRST_CHUNK};<br>
                                             y una segunda transacción
                                             por la cantidad de: USD
-                                            XX+6,000.00XX<br>
+                                            {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Por favor ponte en
                                               contacto con tu banco
