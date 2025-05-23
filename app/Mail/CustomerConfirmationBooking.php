@@ -24,7 +24,6 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   public $language;
   public $event;
 
-  public $queue = 'emails';
 
   public function __construct(Booking $booking, array $cart, array $installments, string $language, $event)
   {
@@ -33,6 +32,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
     $this->installments = $installments;
     $this->language = $language;
     $this->event = $event;
+    $this->onQueue('emails');
   }
 
   // PREPARE DATA FOR TEMPLATE

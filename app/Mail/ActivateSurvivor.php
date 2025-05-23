@@ -20,7 +20,6 @@ class ActivateSurvivor extends Mailable implements ShouldQueue
   public $survivorNumber;
   public $activationLink;
 
-  public $queue = 'emails';
 
   /**
    * Create a new message instance.
@@ -30,6 +29,7 @@ class ActivateSurvivor extends Mailable implements ShouldQueue
     $this->customer = $customer;
     $this->language = $language;
     $this->survivorNumber = $survivorNumber;
+    $this->onQueue('emails');
 
     // Generate the activation (verification) link
     $this->activationLink = URL::temporarySignedRoute('verificationApi.verify', now()->addMinutes(60), [

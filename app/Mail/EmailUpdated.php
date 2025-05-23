@@ -17,7 +17,6 @@ class EmailUpdated extends Mailable implements ShouldQueue
   public $user;
   public $language;
 
-  public $queue = 'emails';
 
   /**
    * Create a new message instance.
@@ -26,6 +25,7 @@ class EmailUpdated extends Mailable implements ShouldQueue
   {
     $this->user = $user;
     $this->language = $language;
+    $this->onQueue('emails');
   }
 
   /**
