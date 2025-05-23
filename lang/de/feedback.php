@@ -15,4 +15,5 @@ return [
   'slot_already_taken' => 'Der Passagier mit diesem Platz ist bereits besetzt.',
   'cannot_reset_own_seat' => 'Du kannst Deinen eigenen Platz nicht zurücksetzen.',
   'age_restriction' => 'Passagiere müssen zum Zeitpunkt des Boardings mindestens einundzwanzig (21) Jahre alt sein, um buchen zu können.',
+  'cabin_not_available' => 'Diese Kabine ist nicht mehr verfügbar. Bitte wähle eine andere Kabine oder Kategorie aus oder versuche es später erneut.',
 ];

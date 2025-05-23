@@ -15,7 +15,7 @@ return [
   'cbe_subject' => 'your Booking Request for ',
   'cbe_hello' => 'Hello',
   'cbe_thank_you' => 'We have received your Booking Request. Thank you!',
-  'cbe_please_note' => 'Please note that this is a Booking Request and does not guarantee a booking, until it is confirmed by 70000TONS OF METAL. You will receive a confirmation from us within 3 business days.',
+  'cbe_please_note' => 'You will receive a Booking Confirmation eMail within 3 business days of verification, with information on how to add passengers and make your payments.',
   'cbe_important' => 'If your Booking Request is wrong or you would like to change it, please contact us as soon as possible. Our contact details can be found at the end of this eMail.',
   'cbe_following_booking' => 'You requested the following booking',
   'cbe_booking_type' => 'Booking Type',

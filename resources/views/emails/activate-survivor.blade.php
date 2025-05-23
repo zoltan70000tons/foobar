@@ -18,7 +18,6 @@
 
 @section('content')
     <p>{{ __('systemEmails.email_hi') }} {{ $customer->detail->first_name }},</p>
-    <p>{{ __('systemEmails.email_excited') }}</p>
     <p>{{ __('systemEmails.email_account_created') }}
     <p>{{ __('systemEmails.email_new_survivor_number') }}
         <strong>{{ $survivorNumber }}</strong>.
@@ -34,6 +33,8 @@
         'url' => $activationLink,
         'slot' => $activationLink
     ])
+
+    <p>{{ __('systemEmails.email_excited') }}</p>
 @endsection
 
 @section('regards')

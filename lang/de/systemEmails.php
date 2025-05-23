@@ -11,8 +11,8 @@ return [
     | these language lines according to your application's requirements.
     |
     */
-    
-    
+
+
   'email_send' => 'eMail wurde erfolgreich versendet.',
   'email_not_send' => 'eMail konnte nicht gesendet werden.',
   'email_verified_already' => 'eMailadresse wurde bereits bestätigt.',
@@ -20,7 +20,7 @@ return [
   'email_hi' => 'Hi',
   'email_thanks' => 'Cheers,',
   'email_regards' => 'Deine 70000TONS OF METAL Crew',
-  'email_excited' => 'Wir freuen uns darauf, Dich an Bord zu haben!',
+  'email_excited' => 'Wir freuen uns, dich an Bord willkommen zu heißen!',
   'email_account_created' => 'Dein Account wurde erfolgreich erstellt.',
   'email_activated_account' => 'Dein Account ist jetzt aktiv.',
   'email_new_survivor_number' => 'Deine Survivornummer ist:',
