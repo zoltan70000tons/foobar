@@ -96,7 +96,7 @@ class EmailTemplateService
         $passengerOnboardCredit = $passenger->getOnboardCredit();
         $category = $booking->cabin->category->title ?? '';
         $order = getPassengerOrderLabel($passenger->passenger_order, $lang);
-        $refunds = $passenger->getRefoundAmount(); 
+        $refunds = $passenger->getRefoundAmount();
         $dollars = floor($refunds);
         $cents = round(($refunds - $dollars) * 100);
         $numberToWords = new NumberToWords();
@@ -104,25 +104,25 @@ class EmailTemplateService
         $words = strtoupper($transformer->toWords($dollars));
         $centsFormatted = str_pad($cents, 2, '0', STR_PAD_LEFT);
         switch ($lang) {
-                case 'es':
-                    $amountInWords = "{$words} CON {$centsFormatted}/100; DÓLARES ESTADOUNIDENSES";
-                    break;
-                case 'en':
-                    $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
-                    break;
-                case 'de':
-                    $amountInWords = "{$words} UND {$centsFormatted}/100; US-DOLLAR";
-                    break;
-                default:
-                    $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
-            }
-                        
-      
+            case 'es':
+                $amountInWords = "{$words} CON {$centsFormatted}/100; DÓLARES ESTADOUNIDENSES";
+                break;
+            case 'en':
+                $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
+                break;
+            case 'de':
+                $amountInWords = "{$words} UND {$centsFormatted}/100; US-DOLLAR";
+                break;
+            default:
+                $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
+        }
+
+
         // Installment data
         $paymentData = $passenger->installment_status ?? [];
         $nextInstallmentAmountRaw = $paymentData['next_installment']['amount_due'] ?? '';
         $nextInstallmentDateRaw = $paymentData['next_installment']['due_date'] ?? '';
-      
+
         // Adjust totals if on installment plan
         if ($paymentPlan === 'INSTALLMENTS') {
             $paymentCount = $passenger->installments()->where('type', 'PAYMENT')->count();
@@ -131,7 +131,7 @@ class EmailTemplateService
                 $individualTotal /= $paymentCount;
             }
         }
-      
+
         // Pre-format values
         $formattedGrandTotal = formatCurrency($grandTotal, true) ?? '';
         $formattedIndividualTotal = formatCurrency($individualTotal, true) ?? '';
@@ -140,8 +140,13 @@ class EmailTemplateService
         $passengerName = capitalizeWords($passenger->first_name ?? '');
         $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true) ?? '';
         $formatRefund = formatCurrency($refunds, true) ?? '';
+        $firstChunk = 10000;
+        if ($grandTotal > $firstChunk) {
+            $firstChunkFormated = formatCurrency($firstChunk, true);
+            $secondChunkFormated = formatCurrency($grandTotal - $firstChunk,true); 
+        }
 
-      
+
         // Map placeholder values
         $lookup = [
             'EVENT_LOCATION'         => $eventLocation,
@@ -152,20 +157,22 @@ class EmailTemplateService
             'CABIN_TYPE'             => $cabinType,
             'PAYMENT_PLAN'           => $paymentPlan,
             'NEXT_INSTALLMENT_DATE'  => $formattedNextInstallmentDate,
-            'NEXT_INSTALLMENT_AMOUNT'=> $formattedNextInstallmentAmount,
+            'NEXT_INSTALLMENT_AMOUNT' => $formattedNextInstallmentAmount,
             'ONBOARD_CREDIT'         => $formatedOnboardCredit,
             'CATEGORY'               => $category ?? '',
             'REFUND'                 => $formatRefund,
             'REFUND_IN_WORDS'       => $amountInWords,
             'PASSENGER_ORDER'       => $order,
+            'FIRST_CHUNK'           => $firstChunkFormated,
+            'SECOND_CHUNK'          => $secondChunkFormated,
         ];
-      
+
         // Build the output values
         $values = [];
         foreach ($placeholders as $placeholder) {
             $values[$placeholder] = $lookup[$placeholder] ?? $extraData[$placeholder] ?? '';
         }
-      
+
         return $values;
     }
 

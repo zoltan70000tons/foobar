@@ -99,19 +99,12 @@ style="color: rgb(102, 102,
                                             asistir a 70000TONS OF METAL
                                             2026.<br>
                                             <br>
-                                            <strong>Hemos transferido el
-                                              crédito para la cantidad
-                                              de USD {REFUND}
-                                              ({REFUND_IN_WORDS}) a
-                                              tu tarjeta de crédito para
-                                              reembolsar tu reserva
-                                              menos el cargo por
-                                              cancelación de USD 100.00
-                                              (por pasajero) según la
-                                              Página XXPAGEXX del
-                                              Contrato de Ticket
-                                              (Ticketing Contract);
-                                              Sección XXSECTIONXX.</strong><br>
+                                            <strong>Hemos transferido el crédito por la cantidad de USD {REFUND} 
+                                              ({REFUND_IN_WORDS}) a tu tarjeta de crédito para reembolsar tu reserva, 
+                                              menos el cargo por cancelación de USD 100.00 (por pasajero), 
+                                              según la Página 1 del Contrato de Ticket (Ticketing Contract; Sección 2), 
+                                              disponible <a href="https://70000tons.com/terms-conditions/?lang=es" style="color: rgb(0, 0, 238); text-decoration: none;">aquí</a> 
+                                              en nuestro sitio web.</strong><br>
                                             <br>
                                             Por favor, encuentra la
                                             confirmación de tu

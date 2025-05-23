@@ -104,15 +104,12 @@ style="color: rgb(102, 102,
                                             {PASSENGER_NAME}, de tu reserva
                                             con 70000TONS OF METAL 2026.<br>
                                             <br>
-                                            <strong>Hemos agregado un
-                                              cargo por pago atrasado de
-                                              USD 50.00 por cada
-                                              pasajero con pagos
-                                              pendientes según el
-                                              Contrato del Ticket
-                                              (Ticketing Contract,
-                                              Sección XXSECTIONXX;
-                                              Página XXPAGEXX).<br>
+                                            <strong>Hemos agregado un cargo por pago atrasado de USD 50.00 por cada pasajero 
+                                              con pagos pendientes según el Contrato del Ticket 
+                                              (Ticketing Contract, Sección 2; Página 1), 
+                                              disponible <a href="https://70000tons.com/terms-conditions/?lang=es" 
+                                              style="color: rgb(0, 0, 238); text-decoration: none;">aquí</a> 
+                                              en nuestro sitio web.<br>
                                               <br>
                                               ¡Por favor, actualiza tu
                                               balance, incluyendo el
