@@ -13,8 +13,6 @@ import {
   Button,
   Typography,
   SelectChangeEvent,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -28,10 +26,9 @@ import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 
 const Edit = ({ auth, errors}: PageProps) => {
-
-const { event } = usePage().props;
-const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
-const { hasPermission } = usePermissions();
+  const { event } = usePage().props;
+  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+  const { hasPermission } = usePermissions();
   const { data, setData, head, processing } = useForm({
     name: event.name || "",
     description: event.description || "",
@@ -39,9 +36,8 @@ const { hasPermission } = usePermissions();
     start_date: event.start_date || "",
     end_date: event.end_date || "",
     status: event.status || "",
-    image: event.image || null, 
+    image: event.image || null,
   });
-
 
   const handleDateChange = (field: 'start_date' | 'end_date') => (newValue: Dayjs | null) => {
     setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
@@ -59,7 +55,7 @@ const { hasPermission } = usePermissions();
 
   const handleStatusChange = (event: SelectChangeEvent<EventStatus>) => {
     setData("status", event.target.value);
-};
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,6 +86,10 @@ const { hasPermission } = usePermissions();
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleBack = () => {
+    router.visit(route('events.index'));
+  };
+
   return (
     <AuthenticatedLayout user={auth.user} header={"Events"}>
       <Head title="Events" />
@@ -105,7 +105,27 @@ const { hasPermission } = usePermissions();
               width: "100%",
             }}
           >
-            <h1>Edit Event</h1>
+            <Box style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "8px",
+            }}>
+              <h1>Edit Event</h1>
+              <Box>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    gap: "8px",
+                  }}
+                >
+                  <Button onClick={handleBack} variant="outlined" color="secondary">
+                    Back
+                  </Button>
+                </div>
+              </Box>
+            </Box>
             <form onSubmit={handleSubmit} encType="multipart/form-data">
               <Box sx={{ mt: 4 }}>
                 <Typography variant="body2" style={{ marginBottom: "1rem" }}>
