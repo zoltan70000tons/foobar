@@ -99,8 +99,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Tu próximo pago a plazos se
                                             deberá realizar para el
-                                            XXDAYXX de XXMONTHXX de
-                                            2025.<br>
+                                            {NEXT_INSTALLMENT_DATE}.<br>
                                             <br>
                                             Puedes encontrar tu Confirmación de Reserva adjunta. Para poder ver este documento 
                                             será necesario tener instalado "Adobe Reader", el cual podrás descargar aquí:<br />
