@@ -375,6 +375,7 @@
             'booking_id' => $booking->id,
             'cabin_type' => optional($booking->cabin?->cabinType)->cabin_type,
             'event_name' => $booking->event->name,
+            'event_id' => $booking->event->id,
             'booking_code' => $booking->booking_code,
             'category_full_title' => optional($booking->cabin?->category)->getTitleAttribute(),
           ];
