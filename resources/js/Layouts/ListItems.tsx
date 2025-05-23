@@ -7,6 +7,7 @@ import {
   Logout as LogoutIcon,
   RoomPreferences as RoomPreferenceIcon,
   Person as PersonIcon,
+  DirectionsBoat as EventIcon
 } from "@mui/icons-material";
 
 import { Link, router, usePage } from "@inertiajs/react";
@@ -14,11 +15,17 @@ import axios from "axios";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 
+type Event = {
+  id: number;
+  name: string;
+  code: string;
+}
+
 const MenuItems: React.FC = () => {
   const { hasPermission } = usePermissions();
 
-  const { props } = usePage<{ menu?: { events: any[] } }>();
-  const events: any[] = props.menu?.events || [];
+  const { props } = usePage<{ menu?: { events: Event[] } }>();
+  const events: Event[] = props.menu?.events || [];
 
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   //const [events, setEvents] = useState<any[]>([]);
@@ -31,6 +38,7 @@ const MenuItems: React.FC = () => {
   const isTeamRoute = currentPath.includes("team");
   const isCabinsRoute = currentPath.includes("cabins");
   const isCustomersRoute = currentPath.includes("customer");
+  const isEventsRoute = currentPath.includes("event");
 
   // useEffect(() => {
   //   const fetchEvents = async () => {
@@ -167,6 +175,19 @@ const MenuItems: React.FC = () => {
                 }}
               >
                 <PersonIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission(Permissions.ViewEvents) && (
+            <Tooltip title="Events" placement="right">
+              <IconButton
+                component={Link}
+                href={route("events.index")}
+                style={{
+                  backgroundColor: isEventsRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
+                <EventIcon />
               </IconButton>
             </Tooltip>
           )}
