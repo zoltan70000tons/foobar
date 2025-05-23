@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Customer;
 
+use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CabinCategory;
@@ -100,6 +101,8 @@ class CabinController extends Controller
   public function reserveCabinInType(Request $request, ReservationService $reservationService)
   {
     $user = Auth::user();
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
 
     // REQUEST INPUT DATA
     $cabinNumber = $request->input('cabin_number');
@@ -124,19 +127,6 @@ class CabinController extends Controller
 
       // release the current reservation
       $reservationService->releaseCabin($request);
-
-      // remove cabin_number from session, because if something went wrong.
-      // we don't want to keep the old cabin_number in session to prevent booking.
-      // if (!$user) {
-      //   $request->session()->put('cart.cabin_number', null);
-      //   $request->session()->put('cart.reservation_id', null);
-      //   $request->session()->put('cart.reservation_timestamp', null);
-      // } else {
-      //   $cart['cabin_number'] = null;
-      //   $cart['reservation_id'] = null;
-      //   $cart['reservationTimestamp'] = null;
-      //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
-      // }
 
       $cart['cabin_number'] = null;
       $cart['reservation_id'] = null;
@@ -169,7 +159,7 @@ class CabinController extends Controller
     $cabin = collect($filteredCabins['cabins'])->firstWhere('cabin_number', $cabinNumber);
 
     if (!$cabin) {
-      return response()->json(['message' => 'Cabin not found or may be reserved'], 404);
+      return response()->json(['message' => __('feedback.cabin_not_available')], 404);
     }
 
     return $this->createTemporaryReservation($cabin, $request, 'clientSelect', $keepOldTimeStamp);
