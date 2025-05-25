@@ -38,7 +38,7 @@ class CabinController extends Controller
     $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
     $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity);
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity, true);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);

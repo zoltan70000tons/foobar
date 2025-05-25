@@ -25,7 +25,8 @@ trait CabinFilter
     $cabinDeck = null,
     $onlyAvailable = true,
     $cabinCategoryCode = null,
-    $cabinCapacity = null
+    $cabinCapacity = null,
+    $returnInProgress = false // Used to show in progress cabins as not available
   ) {
     $currentTime = Carbon::now();
 
@@ -120,6 +121,35 @@ trait CabinFilter
         ];
       });
 
+    if ($returnInProgress && $cabinTypeId == 1) {
+      $inProgressCabins = $cabins
+        ->filter(function ($cabin) use ($temporarilyReservedCabinNumbers) {
+          return in_array($cabin->cabin_number, $temporarilyReservedCabinNumbers);
+        })
+        ->reject(function ($cabin) use ($formattedCabins) {
+          return $formattedCabins->contains('id', $cabin->id);
+        })
+        ->map(function ($cabin) {
+          return [
+            'id' => $cabin->id,
+            'cabin_number' => (string) $cabin->cabin_number,
+            'deck' => $cabin->deck,
+            'status' => 'IN PROGRESS', // pseudo status for in-progress cabins
+            'location' => $cabin->location,
+            'accessible' => $cabin->accessible,
+            'balcony' => $cabin->balcony,
+            'lower_bed_type_2' => $cabin->lowerBedType2,
+            'cabin_type_id' => $cabin->cabin_type_id,
+            'cabin_category_id' => $cabin->cabin_category_id,
+            'cabin_inventory' => $cabin->inventory,
+            'cabin_category_name' => $cabin->category->categoryName,
+            'cabin_category_type' => $cabin->category->categoryType,
+          ];
+        });
+
+      // Append to the available cabins list
+      $formattedCabins = $formattedCabins->merge($inProgressCabins);
+    }
     if ($formattedCabins->isEmpty()) {
       return [
         'error' => __('feedback.cabin_not_available'),
