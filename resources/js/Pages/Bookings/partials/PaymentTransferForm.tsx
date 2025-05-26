@@ -27,7 +27,7 @@ import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
 import LoadingOverlay from '@/Components/LoadingOverlay';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 import Payment, { Booking, Passenger } from "@/Pages/Bookings/partials/Payment";
@@ -60,13 +60,12 @@ export type PaymentTransfer = {
 const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, booking, editMode }) => {
   const passengers: Passenger[] = booking.passengers;
   const openedPassenger = passenger;
-  const otherPassengers: Passenger[] = passengers.filter((pax: Passenger) => pax.id != openedPassenger.id);
+  const otherPassengers: Passenger[] = passengers.filter((pax: Passenger) => pax.id != openedPassenger.id)
+    .sort((a, b) => a.passenger_order - b.passenger_order);
 
   const [selectedPassengerId, setSelectedPassengerId] = useState(otherPassengers?.[0].id);
 
-  const [transferableBalance, setTransferableBalance] = useState(
-    Math.max(0, parseFloat(openedPassenger.passenger_balance) - parseFloat(openedPassenger.passenger_allocated_cost))
-  );
+  const [transferableBalance, setTransferableBalance] = useState(parseFloat(openedPassenger.passenger_balance));
 
   const [manualTransfers, setManualTransfers] = useState<Payment[]>([]);
 
@@ -76,7 +75,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
   }, [openedPassenger]);
 
   useEffect(() => {
-    setTransferableBalance(Math.max(0, parseFloat(openedPassenger.passenger_balance) - parseFloat(openedPassenger.passenger_allocated_cost)));
+    setTransferableBalance(parseFloat(openedPassenger.passenger_balance));
   }, [passenger, openedPassenger]);
 
   const [open, setOpen] = useState(false);
@@ -87,6 +86,14 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
   const [loading, setLoading] = useState(false);
   const { hasPermission } = usePermissions();
   const canDeleteTransfer = hasPermission(Permissions.DeletePayments);
+
+  const decimalFormatter = (number) => {
+    if (Number.isInteger(number)) {
+      return number.toString();
+    } else {
+      return parseFloat(number.toFixed(2)).toString();
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -185,7 +192,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
         sx={{ color: 'white', borderColor: 'gray' }}
         onClick={handleOpen}
         disabled={!editMode}
-        startIcon={<AccountBalanceWalletIcon />}
+        startIcon={<CompareArrowsIcon />}
       >
         Add Payment Transfer
       </Button>
@@ -195,7 +202,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
           <form onSubmit={handleSubmit}>
             <Box component="form" onSubmit={handleSubmit}>
               <Typography variant="div">
-                Transferable amount: {transferableBalance}
+                Transferable amount: {decimalFormatter(transferableBalance)}
               </Typography>
               <TextField
                 label="Amount"
@@ -220,7 +227,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
               >
                 {Object.values(otherPassengers).map((pax: Passenger) => (
                   <MenuItem key={pax.id} value={pax.id}>
-                    {pax.full_name}
+                    {pax.full_name !== "" ? pax.full_name : `Passenger #${pax.passenger_order}`}
                   </MenuItem>
                 ))}
               </Select>

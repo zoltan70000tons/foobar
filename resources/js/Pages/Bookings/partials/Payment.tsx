@@ -100,6 +100,7 @@ export type Passenger = {
   discounts: Discount[];
   first_name?: string;
   last_name?: string;
+  passenger_order: number;
 };
 
 type Adjustment = {
