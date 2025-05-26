@@ -109,7 +109,7 @@ style="color: rgb(102, 102,
                                             METAL!<br>
                                             <br>
                                             We have added an Onboard
-                                            Credit of XXXX to your
+                                            Credit of USD {ONBOARD_CREDIT} to your
                                             reservation.<br>
                                             <br>
                                             Your Credit will be
