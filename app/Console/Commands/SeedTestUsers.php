@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Models\UserDetail;
 use App\Models\CustomerAddress;
 use App\Models\SurvivorNumber;
+use App\Models\UserTag;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Faker\Factory as Faker;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class SeedTestUsers extends Command
@@ -92,7 +94,14 @@ class SeedTestUsers extends Command
                 'membership_id' => $membershipType->id,
             ]);
 
-            $user->tags()->attach(1);
+            $tag = UserTag::firstOrCreate(
+                ['name' => 'TEST'],
+                [
+                    'description' => 'TEST',
+                    'color' => '#ff9800',
+                ]
+            );
+            $user->tags()->attach($tag->id);
 
             setPermissionsTeamId(1);
             $user->assignRole('Customer');
