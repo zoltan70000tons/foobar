@@ -8,6 +8,8 @@ use App\Models\CabinCategory;
 use App\Models\CabinType;
 use Illuminate\Support\Facades\Concurrency;
 use App\Enums\StatusCabin;
+use App\Models\TemporaryReservation;
+
 
 class PricingMatrixController extends Controller
 {
@@ -41,6 +43,13 @@ class PricingMatrixController extends Controller
     if (!$categories->count()) {
       return response()->json(['message' => 'No categories found'], 404);
     }
+    
+    $reservationsCabinNumbers = TemporaryReservation::whereHas('cabin', function ($query) use ($cabinTypeId) {
+      $query->where('cabin_type_id', $cabinTypeId);
+    })
+      ->pluck('cabin_number')
+      ->toArray();
+    
 
     // Group categories by type, sort, and select the first for each type
     $groupedCategories = $categories
@@ -50,7 +59,7 @@ class PricingMatrixController extends Controller
 
     // Format categories for response
     $formattedCategories = $groupedCategories->map(
-      fn($category) => $this->formatCategory($category, $categories, $cabinTypeId)
+      fn($category) => $this->formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
     );
 
     return response()->json($formattedCategories->values());
@@ -59,7 +68,7 @@ class PricingMatrixController extends Controller
   /**
    * Format a category for response.
    */
-  protected function formatCategory($category, $categories, $cabinTypeId)
+  protected function formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
   {
     $categorySpec = $category->spec;
 
@@ -76,7 +85,7 @@ class PricingMatrixController extends Controller
         'name' => $categorySpec->category_type,
         'display_order' => $categorySpec->display_order,
         'max_capacity' => $maxCapacity,
-        'categories' => $this->getCategories($categorySpec->category_type, $categories, $cabinTypeId),
+        'categories' => $this->getCategories($categorySpec->category_type, $categories, $cabinTypeId, $reservationsCabinNumbers),
       ],
     ];
   }
@@ -84,27 +93,27 @@ class PricingMatrixController extends Controller
   /**
    * Get categories based on category type.
    */
-  public function getCategories($categoryType, $categories, $cabinTypeId)
+  public function getCategories($categoryType, $categories, $cabinTypeId, $reservationsCabinNumbers)
   {
     // Filter, group, and sort categories by category type
     return $categories
       ->where('category_type', $categoryType)
       ->sortBy('display_order')
       ->unique('category_name')
-      ->map(fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId))
+      ->map(fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers))
       ->values(); // Reset collection keys
   }
 
   /**
    * Format a filtered category for response.
    */
-  protected function formatFilteredCategory($category, $categories, $cabinTypeId)
+  protected function formatFilteredCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
   {
     return [
       'name' => $category->category_name,
       'cabin_category_id' => $category->id,
       'display_order' => $category->display_order,
-      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId),
+      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId, $reservationsCabinNumbers),
     ];
   }
 }

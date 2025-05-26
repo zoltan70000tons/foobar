@@ -28,4 +28,16 @@ class TemporaryReservation extends Model
   {
     return $this->belongsTo(User::class);
   }
+
+  // Accessor to get the cabin type ID
+  public function getCabinTypeIdAttribute()
+  {
+    return $this->cabin->cabin_type_id ?? null;
+  }
+
+  // Accessor to get the cabin category ID
+  public function getCabinCategoryIdAttribute()
+  {
+    return $this->cabin->cabin_category_id ?? null;
+  }
 }
