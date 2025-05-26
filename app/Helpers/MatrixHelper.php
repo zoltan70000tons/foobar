@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Enums\StatusCabin;
 use App\Models\CabinCategory;
+use App\Models\TemporaryReservation;
 
 class MatrixHelper
 {
@@ -19,7 +20,7 @@ class MatrixHelper
     return $decks->implode(',');
   }
 
-  public static function getUniqueCategories($categories, $parentCategoryName, $ticketType)
+  public static function getUniqueCategories($categories, $parentCategoryName, $ticketType, $reservationsCabinNumbers)
   {
     // Filter categories by parent category name and ticket type
     $filteredCategories = $categories
@@ -30,7 +31,7 @@ class MatrixHelper
     $groupedByCode = $filteredCategories->groupBy(fn($category) => $category->spec->category_code);
 
     // Map each group to a single entry, merging decks across all categories in the group
-    $result = $groupedByCode->map(function ($group) use ($categories) {
+    $result = $groupedByCode->map(function ($group) use ($categories, $ticketType, $reservationsCabinNumbers) {
       $firstCategory = $group->first();
 
       // $allCabins = $group->flatMap(fn($category) => $category->cabins);
@@ -48,7 +49,7 @@ class MatrixHelper
         'images' => $firstCategory->images,
         'full_title' => $firstCategory->getTitleAttribute(),
         'description' => $firstCategory->description,
-        'price_and_availability' => self::getPriceDetails($categories, $firstCategory->category_code),
+        'price_and_availability' => self::getPriceDetails($categories, $firstCategory->category_code, $ticketType, $reservationsCabinNumbers),
       ];
     });
 
@@ -61,7 +62,7 @@ class MatrixHelper
    *
    * @return array
    */
-  public static function getPriceDetails($categories, $code)
+  public static function getPriceDetails($categories, $code, $ticketType, $reservationsCabinNumbers)
   {
     $filteredCategories = $categories
       ->where('category_code', $code)
@@ -72,15 +73,21 @@ class MatrixHelper
     return collect(range(2, 8))
       ->mapWithKeys(
         fn($capacity) => [
-          "price_capacity_$capacity" => self::getSinglePrice($filteredCategories, $capacity),
+          "price_capacity_$capacity" => self::getSinglePrice($filteredCategories, $capacity, $ticketType, $reservationsCabinNumbers),
         ]
       )
       ->toArray();
   }
 
   // Single price for a specific capacity
-  public static function getSinglePrice($cabins, $capacity)
+  public static function getSinglePrice($cabins, $capacity, $ticketType, $reservationsCabinNumbers)
   {
+
+    // \Log::debug('MatrixHelper::getSinglePrice', [
+    //   'capacity' => $capacity,
+    //   'reservationsCabinNumbers' => $reservationsCabinNumbers,
+    // ]);
+
     // Filter cabins by the specific capacity
     $filteredCabins = $cabins->where('capacity', $capacity);
 
@@ -97,9 +104,19 @@ class MatrixHelper
     }
 
     // Check if any of the cabins are available
-    $isAvailable = $filteredCabins->first()->cabins->contains(function ($cabin) {
-      return $cabin->status === StatusCabin::AVAILABLE->value ||
+    $isAvailable = $filteredCabins->first()->cabins->contains(function ($cabin) use ($reservationsCabinNumbers, $ticketType) {
+      // return $cabin->status === StatusCabin::AVAILABLE->value ||
+      //   $cabin->status === StatusCabin::PARTIALLY_BOOKED->value;
+      $byStatus = $cabin->status === StatusCabin::AVAILABLE->value ||
         $cabin->status === StatusCabin::PARTIALLY_BOOKED->value;
+
+      // if single cabin number is in array of reservations, then it is not available
+      $byReservation = self::isAvailableByReservation($cabin, $reservationsCabinNumbers, $ticketType);
+
+      $avaialble = $byStatus && $byReservation;
+
+      return $avaialble;
+
     });
 
     // Get first instance just to get category attributes
@@ -117,5 +134,26 @@ class MatrixHelper
       'cabin_category_id' => $cabin->id,
       'full_title' => $category_full_title,
     ];
+  }
+
+
+  /**
+  * Available by reservation check
+  * If the ticket type is 1 (Single Ticket), then the cabin must not be in the reservations list.
+  * If the ticket type is not 1 (Private Cabin), then we collect same reservation numbers and compare it with the cabin inventory.
+  * If the count of same reservation numbers is less than the cabin inventory, then it is available.
+  */
+  public static function isAvailableByReservation($cabin, $reservationsCabinNumbers, $ticketType)
+  {
+    // Check if the cabin is available by checking its status and reservation numbers
+    if ($ticketType == 1) {
+      return !in_array($cabin->cabin_number, $reservationsCabinNumbers);
+    } else {
+      $sameReservationCount = collect($reservationsCabinNumbers)->filter(function ($number) use ($cabin) {
+        return $number === $cabin->cabin_number;
+      })->count();
+
+      return $sameReservationCount < $cabin->inventory;
+    }
   }
 }
