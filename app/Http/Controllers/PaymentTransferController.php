@@ -43,7 +43,6 @@ class PaymentTransferController extends Controller
 
             try {
                 $booking_id = $request->route('booking_id');
-                //$event_id = $request->route('event_id'); //FIXME currently unused
                 $validated = $request->validate([
                     'passenger_id' => 'required|exists:passengers,id',
                     'amount' => 'required|numeric|min:0.01',

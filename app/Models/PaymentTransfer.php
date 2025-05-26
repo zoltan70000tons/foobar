@@ -17,13 +17,11 @@ class PaymentTransfer extends Model
         'passenger_id_to',
     ];
 
-    // Relationship to the "payments" table (payer)
     public function paymentFrom()
     {
         return $this->belongsTo(Payment::class, 'payment_id_from');
     }
 
-    // Relationship to the "payments" table (receiver)
     public function paymentTo()
     {
         return $this->belongsTo(Payment::class, 'payment_id_to');

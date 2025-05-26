@@ -42,7 +42,6 @@ class Payment extends Model
         return $this->hasOne(PaymentTransfer::class, 'payment_id_from');
     }
 
-    // Define the relationship where this payment is the receiver (to payment_transfers)
     public function paymentTransferTo()
     {
         return $this->hasOne(PaymentTransfer::class, 'payment_id_to');
@@ -51,12 +50,12 @@ class Payment extends Model
     public function getMergedPaymentTransfersAttribute()
     {
         // Retrieve payment transfers: from and to, defaulting to null if not set
-        $transfersFrom = $this->paymentTransferFrom; // Single PaymentTransfer or null
-        $transfersTo = $this->paymentTransferTo; // Single PaymentTransfer or null
+        $transfersFrom = $this->paymentTransferFrom;
+        $transfersTo = $this->paymentTransferTo;
 
         // If both are null, return an empty collection
         if (is_null($transfersFrom) && is_null($transfersTo)) {
-            return collect(); // Return empty collection
+            return collect();
         }
 
         // If either transfer exists, return the relevant one(s)

@@ -288,13 +288,6 @@ class BookingRepository implements BookingInterface
 
         $booking->passengers->each(function ($passenger) {
             $passenger->setAttribute('installment_status', $passenger->installment_status);
-
-            /*foreach ($passenger->payments as $payment) {
-                // Access the merged payment transfers (from and to, or empty if neither exist)
-                $mergedTransfers = $payment->merged_payment_transfers;
-
-                $payment->setAttribute('mergedTransfers', $mergedTransfers);
-            }*/
         });
 
         return $booking;
