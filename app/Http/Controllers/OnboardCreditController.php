@@ -105,7 +105,7 @@ class OnboardCreditController extends Controller
                 DB::rollBack();
                 $this->logException($e);
 
-                return redirect()->back()->with('error', 'Discount deleting onboard credit!');
+                return redirect()->back()->with('error', 'Failed to delete onboard credit!');
             }
         }, $request);
     }

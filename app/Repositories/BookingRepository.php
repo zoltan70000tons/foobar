@@ -268,7 +268,9 @@ class BookingRepository implements BookingInterface
                 $query->orderBy('passenger_order', 'asc');
             },
             'passengers.installments',
-            'passengers.payments',
+            'passengers.payments' => function ($query) {
+                $query->with(['paymentTransferFrom', 'paymentTransferTo']);
+            },
             'passengers.fees',
             'passengers.discounts',
             'passengers.onboardCredits',

@@ -282,7 +282,8 @@ class PaymentInfoService
         ->selectRaw(
           "
                     SUM(CASE WHEN type = 'PAYMENT' THEN amount ELSE 0 END) -
-                    SUM(CASE WHEN type = 'REFUND' THEN amount ELSE 0 END) AS balance
+                    SUM(CASE WHEN type = 'REFUND' THEN amount ELSE 0 END) +
+                    SUM(CASE WHEN type = 'TRANSFER' THEN amount ELSE 0 END)AS balance
                 "
         )
         ->first();
