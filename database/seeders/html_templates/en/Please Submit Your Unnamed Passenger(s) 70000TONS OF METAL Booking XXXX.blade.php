@@ -114,7 +114,7 @@ style="color: rgb(102, 102,
                                               there is an administrative
                                               fee of USD 100.00 per
                                               guest added to the booking
-                                              after October 30, 2024 up
+                                              after October 30, 2025 up
                                               and until December 30,
                                               2025.<br>
                                               <br>

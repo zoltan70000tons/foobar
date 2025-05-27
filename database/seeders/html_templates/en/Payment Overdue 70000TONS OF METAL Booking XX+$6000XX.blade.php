@@ -98,13 +98,14 @@ style="color: rgb(102, 102,
                                             <br>
                                             Please note that we have not
                                             received payment from the
-                                            XXXX Passenger, {PASSENGER_NAME}, in
+                                            {PASSENGER_ORDER}, {PASSENGER_NAME}, in
                                             your booking for 70000TONS
                                             OF METAL 2026.<br>
                                             <br>
-                                            <strong>As per Ticketing
-                                              Contract (Section XX; Page
-                                              XX) each overdue Passenger
+                                            <strong>>As per the Ticketing Contract (Section 4, Page 1), available 
+                                              <a href="https://70000tons.com/terms-conditions/?lang=en" style="color: rgb(0, 0, 238); text-decoration: none;">here</a> 
+                                              on our website.
+                                              each overdue Passenger
                                               has been charged a USD
                                               50.00 Late Fee.<br>
                                               <br>
@@ -154,9 +155,9 @@ style="display:
                                             transactions, for example:<br>
                                             <br>
                                             A first transaction for the
-                                            amount of: USD XXXX;<br>
+                                            amount of: USD {FIRST_CHUNK};<br>
                                             and a second transaction for
-                                            the amount of: USD XXXX<br>
+                                            the amount of: USD {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your

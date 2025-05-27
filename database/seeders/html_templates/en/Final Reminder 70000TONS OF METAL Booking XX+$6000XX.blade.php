@@ -158,9 +158,9 @@ style="display: block;
                                             transactions, for example:<br>
                                             <br>
                                             A first transaction for the
-                                            amount of: USD XXXX;<br>
+                                            amount of: USD {FIRST_CHUNK};<br>
                                             and a second transaction for
-                                            the amount of: USD XXXX<br>
+                                            the amount of: USD {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Please contact your
                                               bank before making your

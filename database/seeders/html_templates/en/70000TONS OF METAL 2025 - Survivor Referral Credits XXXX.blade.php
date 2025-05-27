@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>70000TONS OF METAL 2026 - Survivor Referral Credits XXXX</title>
+    <title>70000TONS OF METAL 2026 - Survivor Referral Credits {BOOKING_CODE}</title>
   </head>
   <body>
     <table
@@ -153,7 +153,7 @@
                                             <br />
                                             You will receive<span>&nbsp;</span
                                             ><strong
-                                              >USD XXCREDITXX Onboard Spending Credit to your Onboard Expense Account
+                                              >USD {ONBOARD_CREDIT} Onboard Spending Credit to your Onboard Expense Account
                                               for referring XXNEWXX new paying passenger(s)<span>&nbsp;</span></strong
                                             >that have never sailed on any UMC cruise and are not part of your booking.
                                             Enjoy! (Please note that if the passenger(s) cancel their reservation your
