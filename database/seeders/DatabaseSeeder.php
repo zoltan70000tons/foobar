@@ -32,7 +32,8 @@ class DatabaseSeeder extends Seeder
             AdjustmentsSeeder::class,
             //PaymentSeeder::class,
             EmailTemplatesSeeder::class,  
-            CustomerBookingSeeder::class,     
+            CustomerBookingSeeder::class,
+            UserTagsSeeder::class,     
         ]);
     }
 }
