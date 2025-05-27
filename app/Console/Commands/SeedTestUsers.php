@@ -32,12 +32,16 @@ class SeedTestUsers extends Command
 
         $csvContent = implode(',', $headers) . "\n";
 
-        $membershipTypeName = ucfirst(strtolower($this->option('membership')));
-        $membershipType = \App\Models\MembershipType::where('name', $membershipTypeName)->first();
+        if ($membership === 'none') {
+            $membershipType = null;
+        } else {
+            $membershipTypeName = ucfirst($membership);
+            $membershipType = \App\Models\MembershipType::where('name', $membershipTypeName)->first();
 
-        if (!$membershipType) {
-            $this->error("Error, '$membershipTypeName' not found.");
-            return;
+            if (!$membershipType) {
+                $this->error("Error, '$membershipTypeName' not found.");
+                return;
+            }
         }
 
         for ($i = 1; $i <= $count; $i++) {
@@ -89,11 +93,12 @@ class SeedTestUsers extends Command
                 'survivor_number' => $survivorNumber,
             ]);
 
-            $user->membership()->create([
-                'user_id' => $user->id,
-                'membership_id' => $membershipType->id,
-            ]);
-
+            if ($membershipType) {
+                $user->membership()->create([
+                    'user_id' => $user->id,
+                    'membership_id' => $membershipType->id,
+                ]);
+            }
             $tag = UserTag::firstOrCreate(
                 ['name' => 'TEST'],
                 [
