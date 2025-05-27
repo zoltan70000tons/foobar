@@ -35,3 +35,4 @@ Schedule::job(new ClearOldBookingSessions())->everyMinute();
 
 // Autotag bookings with OVERDUE and MISSING_INFO tags
 Schedule::command('bookings:dispatch-tags')->dailyAt('00:00')->timezone('America/Los_Angeles');
+Schedule::command('app:clean-temporary-files')->dailyAt('00:00')->timezone('America/Los_Angeles');
