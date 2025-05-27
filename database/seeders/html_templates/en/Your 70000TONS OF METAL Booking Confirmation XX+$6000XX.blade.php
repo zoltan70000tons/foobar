@@ -178,7 +178,7 @@ style="display:
                                             For your own safety, each
                                             transaction may not exceed
                                             the total amount of USD
-                                            6,000.00<br>
+                                            10,000.00<br>
                                             <br>
                                             As your total amount due
                                             exceeds this limit, you will
