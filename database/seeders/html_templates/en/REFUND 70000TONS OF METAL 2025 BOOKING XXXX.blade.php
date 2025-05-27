@@ -101,14 +101,15 @@ style="color: rgb(102, 102,
                                             <br>
                                             <strong>You have been
                                               credited the amount of USD
-                                              XXXX (XXXX 00/00; United
-                                              States Dollars) to your
+                                              {REFUND} ({REFUND_IN_WORDS}) to your
                                               Credit Card to refund your
                                               booking less the
                                               Cancellation Fee of USD
                                               100.00 (per passenger) as
                                               per Ticket Contract
-                                              Page XX; Section XX.</strong><br>
+                                              (Section 9, Page 1) available 
+                                              <a href="https://70000tons.com/terms-conditions/?lang=en" style="color: rgb(0, 0, 238); text-decoration: none;">here</a> 
+                                              on our website.</strong><br>
                                             <br>
                                             Please find the confirmation
                                             of your Booking Cancellation

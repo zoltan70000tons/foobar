@@ -157,16 +157,16 @@
                                             Cruise.<br />
                                             <br />
                                             Booking Type: Private Cabin / Single Ticket<br />
-                                            Cabin Category: XXXX<br />
-                                            Number of Passengers: XXXX<br />
+                                            Cabin Category: {CATEGORY}<br />
+                                            Number of Passengers: {CAPACITY}<br />
                                             <br />
                                             Pricing Breakdown (Per Passenger)<br />
-                                            Official Ticket Price: USD XXXX<br />
+                                            Official Ticket Price: USD {TICKET_PRICE}<br />
                                             Taxes &amp; Fees: USD 487.00<br />
                                             Single Traveler Surcharge: USD 100.00 XXDELETE?XX<br />
-                                            <strong>Total Ticket Price:</strong><span>&nbsp;</span>USD XXXX<br />
+                                            <strong>Total Ticket Price:</strong><span>&nbsp;</span>USD {INDIVIDUAL_TOTAL}<br />
                                             <br />
-                                            <strong>Grand Total Booking Price:</strong><span>&nbsp;</span>USD XXXX<br />
+                                            <strong>Grand Total Booking Price:</strong><span>&nbsp;</span>USD {GRAND_TOTAL}<br />
                                             <br />
                                             Please respond to this eMail within 24 hours to confirm that you would like
                                             to place a booking and our Customer Support Team will be in contact with you

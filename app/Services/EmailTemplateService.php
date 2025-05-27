@@ -117,6 +117,8 @@ class EmailTemplateService
                 $amountInWords = "{$words} AND {$centsFormatted}/100; UNITED STATES DOLLARS";
         }
 
+        $capacity = $booking->cabin->cabinSpec->capacity ?? '';
+
 
         // Installment data
         $paymentData = $passenger->installment_status ?? [];
@@ -140,6 +142,7 @@ class EmailTemplateService
         $passengerName = capitalizeWords($passenger->first_name ?? '');
         $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true) ?? '';
         $formatRefund = formatCurrency($refunds, true) ?? '';
+        $formatedTicketPrice = formatCurrency($booking->cabin->category->price, true) ?? '';
         $firstChunk = 10000;
         $firstChunkFormated = '';
         $secondChunkFormated = '';
@@ -167,6 +170,8 @@ class EmailTemplateService
             'PASSENGER_ORDER'       => $order,
             'FIRST_CHUNK'           => $firstChunkFormated,
             'SECOND_CHUNK'          => $secondChunkFormated,
+            'CAPACITY'              => $capacity,
+            'TICKET_PRICE'          => $formatedTicketPrice,
         ];
 
         // Build the output values
