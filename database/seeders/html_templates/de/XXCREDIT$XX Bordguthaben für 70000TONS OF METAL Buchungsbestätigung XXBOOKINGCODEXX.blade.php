@@ -109,7 +109,7 @@ style="color: rgb(102, 102,
                                             begrüßen zu können!<br>
                                             <br>
                                             Wir haben Dir Bordguthaben
-                                            in Höhe von XXCREDIT$XX
+                                            in Höhe von {ONBOARD_CREDIT}
                                             gutgeschrieben.<br>
                                             <br>
                                             Dein Guthaben wird ab dem

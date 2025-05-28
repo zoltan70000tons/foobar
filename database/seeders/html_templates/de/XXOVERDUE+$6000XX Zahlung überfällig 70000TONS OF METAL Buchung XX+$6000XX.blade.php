@@ -99,7 +99,7 @@ style="color: rgb(102, 102,
                                             begrüßen zu können!<br>
                                             <br>
                                             Bitte beachte, dass wir für
-                                            {PASSENGER_NAME}, den XXPAX#XX
+                                            {PASSENGER_NAME}, den {PASSENGER_ORDER}
                                             Passagier Deiner Buchung für
                                             70000TONS OF METAL 2026,
                                             noch keine Zahlung erhalten
@@ -107,8 +107,8 @@ style="color: rgb(102, 102,
                                             <br>
                                             <strong>Wie im Ticketvertrag
                                               (Ticket Contract, Seite
-                                              XXPAGEXX, Paragraph
-                                              XXSECTIONXX) geregelt,
+                                              1, Paragraph
+                                              4) geregelt,
                                               wurde allen überfälligen
                                               Mitreisenden in Deiner
                                               Buchung eine Säumnisgebühr
@@ -151,7 +151,7 @@ style="display:
                                               Sicherheit wird jeder
                                               Zahlungsvorgang auf den
                                               Höchstbetrag von USD
-                                              6.000,00 beschränkt.</strong><br>
+                                              10.000,00 beschränkt.</strong><br>
                                             <br>
                                             Da Dein Gesamtbetrag dieses
                                             Limit übersteigt, empfehlen
@@ -160,10 +160,10 @@ style="display:
                                             <br>
                                             Eine erste
                                             Kreditkartenzahlung in Höhe
-                                            von: USD XX6.000,00XX;<br>
+                                            von: USD {FIRST_CHUNK};<br>
                                             und eine zweite
                                             Kreditkartenzahlung in Höhe
-                                            von: USD XX+6.000,00XX<br>
+                                            von: USD {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Bitte informiere
                                               Deine Bank vor Deiner

@@ -194,7 +194,7 @@ style="display:
                                             Zu Deiner eigenen Sicherheit
                                             wird jeder Zahlungsvorgang
                                             auf den Höchstbetrag von USD
-                                            6.000,00 beschränkt.<br>
+                                            10.000,00 beschränkt.<br>
                                             <br>
                                             Da Dein Gesamtbetrag dieses
                                             Limit übersteigt, empfehlen
@@ -203,10 +203,10 @@ style="display:
                                             <br>
                                             Eine erste
                                             Kreditkartenzahlung in Höhe
-                                            von: USD XX6.000,00XX;<br>
+                                            von: USD {FIRST_CHUNK};<br>
                                             und eine zweite
                                             Kreditkartenzahlung in Höhe
-                                            von: USD XX+6.000,00XX<br>
+                                            von: USD {SECOND_CHUNK}<br>
                                             <br>
                                             <strong>Bitte informiere
                                               Deine Bank vor Deiner

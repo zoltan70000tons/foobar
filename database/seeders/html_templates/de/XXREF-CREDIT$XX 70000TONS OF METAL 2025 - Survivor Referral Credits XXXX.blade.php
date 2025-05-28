@@ -115,7 +115,7 @@ style="color: rgb(102, 102,
                                             und nicht Teil Deiner
                                             Buchung sind,<span>&nbsp;</span><strong>USD
 
-                                              XXCREDITXX  Bordguthaben
+                                              {ONBOARD_CREDIT}  Bordguthaben
                                               auf Dein Bordkonto
                                               gutgeschrieben</strong>.
                                             Viel Spaß damit!<br>

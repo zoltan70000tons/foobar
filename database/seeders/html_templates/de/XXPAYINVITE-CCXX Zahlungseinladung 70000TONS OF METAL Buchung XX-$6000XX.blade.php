@@ -99,7 +99,7 @@ style="color: rgb(102, 102,
                                             begrüßen zu können!<br>
                                             <br>
                                             Deine Zahlung ist am
-                                            DD.MM.YYYY fällig.<br>
+                                            {NEXT_INSTALLMENT_DATE} fällig.<br>
                                             <br>
                                             Im Anhang findest Du Deine 
                                             Buchungsbestätigung. Um dieses 

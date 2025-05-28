@@ -146,15 +146,15 @@ style="padding: 0px
                                               <br>
                                               <strong>Bitte beachte,
                                                 dass nach dem 30.
-                                                Oktober 2024 und vor dem
-                                                30. Dezember 2024 für
+                                                Oktober 2025 und vor dem
+                                                30. Dezember 2025 für
                                                 hinzugefügte Mitreisende
                                                 eine Bearbeitungsgebühr
                                                 von USD 100,00 pro
                                                 Person anfällt.<br>
                                                 <br>
                                                 Für Mitreisende, die der
-                                                30. Dezember 2024
+                                                30. Dezember 2025
                                                 hinzugefügt werden,
                                                 erhöht sich diese Gebühr
                                                 auf USD 300,00 pro
