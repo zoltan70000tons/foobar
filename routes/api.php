@@ -130,6 +130,8 @@ Route::middleware([
   // Route::post('/cabin/reserve-cabin-in-type', [CabinController::class, 'reserveCabinInType']);
   // Route::post('/cabin/release', [CabinController::class, 'release']);
 
+
+  Route::get('/customer/can-delete-account', [CheckBookingController::class, 'canDeleteAccount']);
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
@@ -158,6 +160,7 @@ Route::middleware([
 
   // --- all bookings
   Route::get('/my-bookings', [BookingController::class, 'allBookings']);
+
   // --- single booking
   Route::get('/my-bookings/{eventId}/{bookingCode}', [BookingController::class, 'singleBooking']);
   // --- single invitation
