@@ -650,8 +650,9 @@ const EditPassengerModal = ({
                                         error={!!validation?.payment_method}
                                         helperText={validation?.payment_method?.[0]}
                                     >
+                                        {booking.payment_plan === 'PAY_IN_FULL' && (<MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>)}
                                         <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
-                                        <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>
+                                        
                                     </Select>
                                     {validation?.payment_method?.[0] && (
                                         <FormHelperText>{validation.payment_method[0]}</FormHelperText>
