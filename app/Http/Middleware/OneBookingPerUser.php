@@ -36,7 +36,7 @@ class OneBookingPerUser
 
         return response()->json(
           [
-            'message' => 'You already have a booking for this event',
+            'message' => __('bookings.already_has_booking'),
             'code' => 'BOOKING_LIMIT_EXCEEDED',
           ],
           403

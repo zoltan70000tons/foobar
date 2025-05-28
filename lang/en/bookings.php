@@ -24,4 +24,5 @@ return [
   'pax_added' => 'Passenger added',
   'empty_seat_added' => 'Empty bed added',
   'empty_seat_removed' => 'Empty bed removed',
+  'already_has_booking' => 'You already have a booking for this event',
 ];
