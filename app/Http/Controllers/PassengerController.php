@@ -28,12 +28,13 @@ class PassengerController extends Controller
     {
 
         $event_id = request()->route("id");
+        $booking = Booking::findOrFail($request->input('booking_id'));
         $validated = $request->validate([
             'id' => 'required|int',
             'booking_id' => 'required|int',
             'confirmed_booking_email' => 'required|boolean',
-            'survivor_number' => ['nullable', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number',new UniqueSurvivorInEvent($event_id, $request->booking_id),],
-            'payment_method' => 'required|string|in:CREDIT_CARD,BANK_TRANSFER',
+            'survivor_number' => ['nullable', 'string', 'regex:/^\d+$/', 'exists:survivor_numbers,survivor_number', new UniqueSurvivorInEvent($event_id, $request->booking_id),],
+            Rule::in($booking->payment_plan === 'INSTALLMENTS'  ? ['CREDIT_CARD'] : ['CREDIT_CARD', 'BANK_TRANSFER']),
             'gender' => 'required|string|in:M,F,O',
             'first_name' => [
                 'string',
@@ -141,7 +142,7 @@ class PassengerController extends Controller
         $slot = Passenger::where('id', '=', $validated['id'])->first();
 
         Log::info($slot);
-        $booking = Booking::findOrFail($validated['booking_id']);
+
         if ($slot->booking_id !== $booking->id) {
             return response()->json([
                 'error' => 'Slot and Booking Id inconsistent.',
@@ -217,15 +218,15 @@ class PassengerController extends Controller
         }
 
         try {
-           // $slot = Passenger::where('id', '=', $slot->id)->first();
-           // ---- start @JG if passenger invitation exists, delete it
+            // $slot = Passenger::where('id', '=', $slot->id)->first();
+            // ---- start @JG if passenger invitation exists, delete it
             $passengerInvitation = PassengerInvitation::where('passenger_id', $slot->id)->first();
             $passengerInvitationEmail = $passengerInvitation->email;
             if ($passengerInvitation) {
                 $passengerInvitation->delete();
             }
             // ---- end @JG
-           
+
             if ($slot) {
                 $slot->confirmed_booking_email = false;
                 $slot->lead_passenger = false;
@@ -254,8 +255,8 @@ class PassengerController extends Controller
                 $slot->terms_n_cons = false;
                 $slot->cabin_conf_accp = false;
                 $slot->single_t_agreement = false;
-               // $slot->passenger_allocated_cost = 0;
-               // $slot->passenger_balance = 0;
+                // $slot->passenger_allocated_cost = 0;
+                // $slot->passenger_balance = 0;
                 $slot->was_on_board = false;
                 $slot->empty_seat = false;
                 //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
@@ -316,7 +317,7 @@ class PassengerController extends Controller
         }
 
         try {
-           
+
             $slot->empty_seat = $validated['empty_seat'];
             $slot->save();
 
@@ -334,7 +335,7 @@ class PassengerController extends Controller
                     ]);
                 }
             }
-     
+
             return response()->json($slot);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
