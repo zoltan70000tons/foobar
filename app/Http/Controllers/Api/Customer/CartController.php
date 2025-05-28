@@ -152,6 +152,16 @@ class CartController extends Controller
       Cart::where('user_id', $user->id)->delete();
     }
 
+    // if user is male ( M ) he cant book cabin type single-female ( single-female )
+    if ($validated['cabin_type'] === 'single-female' && $user->detail->gender === 'M') {
+      return response()->json(['message' => __('feedback.cabin_type_not_allowed')], 400);
+    }
+
+    // if user is female ( F ) she cant book cabin type single male ( single-male ) 
+    if ($validated['cabin_type'] === 'single-male' && $user->detail->gender === 'F') {
+      return response()->json(['message' => __('feedback.cabin_type_not_allowed')], 400);
+    }
+
     $defaultCart = [
       'event_id' => null,
       'cabin_type' => null,

@@ -16,4 +16,5 @@ return [
     'cannot_reset_own_seat' => 'No puedes actualizar tu propio puesto.',
     'age_restriction' => 'Debes tener al menos veintiún (21) años al momento de embarcar para poder reservar.',
     'cabin_not_available' => 'Esta cabina ya no está disponible. Por favor intenta seleccionar otra cabina o categoría, o vuelve a intentarlo más tarde.',
+    'cabin_type_not_allowed' => 'Este tipo de cabina no está permitido para tu reserva. Por favor selecciona otro tipo de cabina o contacta al soporte para asistencia.',
 ];
