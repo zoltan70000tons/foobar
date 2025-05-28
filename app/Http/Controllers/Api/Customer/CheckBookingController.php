@@ -136,6 +136,28 @@ class CheckBookingController extends Controller
 
   /*
   |--------------------------------------------------------------------------
+  | Check user cant delete account
+  |--------------------------------------------------------------------------
+  |
+  | User cannot delete account if they have an active booking.
+  */
+  public function canDeleteAccount(Request $request)
+  {
+    $user = $request->user();
+
+    // Check if user has an active booking
+    $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
+
+    return response()->json([
+        'canDelete' => !$hasActiveBooking,
+        'message' => $hasActiveBooking
+            ? 'You cannot delete your account while you have an active booking.'
+            : 'You can delete your account.',
+    ]);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
   | Check Booking Logout
   |--------------------------------------------------------------------------
   |

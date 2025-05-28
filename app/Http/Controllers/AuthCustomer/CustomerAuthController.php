@@ -202,6 +202,12 @@ class CustomerAuthController extends Controller
       return $this->errorResponse('Unauthorized', 401);
     }
 
+    // if user have bookings, we don't allow to delete account
+    $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
+    if ($hasActiveBooking) {
+      return $this->errorResponse('You cannot delete your account while you have an active booking.', 403);
+    }
+
     // Anonymize email to prevent duplicate uniqueness constraint issues
     $user->update([
       'email' => 'deleted_' . $user->id . '@example.test',
