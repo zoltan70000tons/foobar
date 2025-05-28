@@ -94,16 +94,15 @@ style="color: rgb(102, 102,
                                             line-height: 28px;
                                             text-align: left;
                                             padding-bottom: 15px;">Hi
-                                            XXXX,<br>
+                                            {PASSENGER_NAME},<br>
                                             <br>
                                             schade, dass Du nicht mit
                                             uns an Bord von 70000TONS OF
-                                            METAL 2024 reisen kannst!<br>
+                                            METAL 2026 reisen kannst!<br>
                                             <br>
                                             <strong>Wir haben den Betrag
-                                              von USD XXREFUND$XX
-                                              (XXWRITTEN$XX 00/00;
-                                              US-Dollars) auf Deine
+                                              von USD {REFUND}
+                                              ({REFUND_IN_WORDS}) auf Deine
                                               Kreditkarte zurückgebucht,
                                               um Dir den Preis Deiner
                                               Buchung abzüglich einer
@@ -112,8 +111,8 @@ style="color: rgb(102, 102,
                                               zurückzuerstatten, wie es
                                               im Ticketvertrag (Ticket
                                               Contract) auf Seite
-                                              XXPAGEXX; Paragraph
-                                              XXSECTIONXX geregelt ist.</strong><br>
+                                              1; Paragraph
+                                              9 geregelt ist.</strong><br>
                                             <br>
                                             Im Anhang findest Du Deine
                                             Stornierungsbestätigung.<br>

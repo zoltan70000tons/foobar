@@ -102,7 +102,7 @@ style="color: rgb(102, 102,
                                             METAL begrüßen zu können!<br>
                                             <br>
                                             Bitte beachte, dass wir für
-                                            {PASSENGER_NAME}, den XXPAX#XX
+                                            {PASSENGER_NAME}, den {PASSENGER_ORDER}
                                             Passagier Deiner Buchung für
                                             70000TONS OF METAL 2026,
                                             noch keine Zahlung erhalten
