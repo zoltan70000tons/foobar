@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Booking;
 use App\Models\Cart;
 use App\Services\ReservationService;
+use App;
 
 
 use Closure;
@@ -14,6 +15,8 @@ class OneBookingPerUser
   {
     if (Auth::check()) {
       $user = Auth::user();
+      $language = $request->input('language', 'en');
+      App::setLocale($language);
 
       $bookingExists = Booking::where('event_id', $request->event_id)
         ->where('status', '!=', 'CANCELLED')
