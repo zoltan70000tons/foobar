@@ -14,6 +14,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
 import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
+import TagIcon from '@mui/icons-material/Tag';
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission } = usePermissions();
@@ -79,6 +80,13 @@ export default function Dashboard({ auth }: PageProps) {
       icon: LocalPoliceIcon,
       link: "/team/roles",
       permission: Permissions.ViewRoles,
+    },
+    {
+      title: "Customer Tags",
+      description: "Manage customer tags",
+      icon: TagIcon,
+      link: "/customer-tags",
+      permission: Permissions.ViewCustomers,
     },
   ];
 
