@@ -188,7 +188,6 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
                   onChange={(event, newValue) => setSelectedTags(newValue)}
                   renderTags={(value: string[], getTagProps) =>
                     value.map((option: {name: string; color: string}, index) => {
-                      //const tag = TagEnumStyles[option as TagEnum] ?? { label: option, color: "#9e9e9e" };
                       return (
                         <Chip
                           variant="outlined"
@@ -205,7 +204,6 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
                     })
                   }
                   renderOption={(props, option) => {
-                    //const tag = TagEnumStyles[option as TagEnum] ?? { label: option, color: "#9e9e9e" };
                     return (
                       <Box component="li" {...props}>
                         <Chip
