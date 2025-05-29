@@ -25,6 +25,7 @@ return [
   'cbe_bed_separated' => 'Camas Separadas',
   'cbe_official_ticket_price_per_person' => 'Precio Oficial del Ticket por Persona',
   'cbe_pay_in_full_discount' => 'Descuento de Pago de Contado',
+  'cbe_survivor_discount' => 'Descuento de Survivor',
   'cbe_net_ticket_price_per_person' => 'Precio Neto del Ticket por Persona',
   'cbe_taxes_and_fees_per_person' => 'Impuestos y Tarifas Extra por Persona',
   'cbe_single_traveler_surcharge' => 'Cargo por Ticket Individual',

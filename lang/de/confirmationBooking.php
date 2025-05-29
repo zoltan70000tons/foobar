@@ -24,6 +24,7 @@ return [
   'cbe_bed_joined' => 'Verbundene Betten',
   'cbe_bed_separated' => 'Getrennte Betten',
   'cbe_official_ticket_price_per_person' => 'Offizieller Ticketpreis pro Person',
+  'cbe_survivor_discount' => 'Survivor Rabatt',
   'cbe_pay_in_full_discount' => 'Rabatt nach kompletter Zahlung',
   'cbe_net_ticket_price_per_person' => 'Nettopreis pro Person',
   'cbe_taxes_and_fees_per_person' => 'Steuern und Gebühren pro Person',
