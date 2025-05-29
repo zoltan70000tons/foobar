@@ -88,9 +88,11 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'pay_in_full_discount' => isset($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
           ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
           : 0,
-        'choose_your_cabin' => $adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0,
+        'choose_your_cabin' => number_format($adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0, 2),
+        'survivor_discount' =>
+        $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'MEMBERSHIP_'))?->value ?? 0,
         'carbon_offset' =>
-          $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
+        number_format($adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0, 2),
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
           $this->cart['cabin_price'],
           $this->cart['price_save']
@@ -103,13 +105,13 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
         'payment_schedule_installments' => !empty($this->installments)
           ? collect($this->installments)
-            ->map(
-              fn($installment) => [
-                'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
-                'amount' => number_format($installment['amount'], 2),
-              ]
-            )
-            ->toArray()
+          ->map(
+            fn($installment) => [
+              'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
+              'amount' => number_format($installment['amount'], 2),
+            ]
+          )
+          ->toArray()
           : 'N/A',
         'todays_date' => $this->getLocalizedDate(now(), $this->language),
         'booking_request_id' => $booking->booking_request_id ?? 'N/A',
@@ -176,10 +178,13 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
     $data = $this->prepareDataForTemplate();
 
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+    $bccEmailAddress = env('MAIL_BCC');
 
     return new Envelope(
       from: $mailFromAddress,
-      subject: "{$data->passenger->first_name}, " . __('confirmationBooking.cbe_subject') . " {$this->event->name}!"
+      subject: "{$data->passenger->first_name}, " . __('confirmationBooking.cbe_subject') . " {$this->event->name}!",
+      cc: [],
+      bcc: [$bccEmailAddress]
     );
   }
 

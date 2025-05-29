@@ -53,8 +53,12 @@
             <td>USD {{ $bookingResult->booking->official_ticket_price_per_person }}</td>
         </tr>
         <tr>
+          <td class="booking-table__title">{{ __('confirmationBooking.cbe_survivor_discount') }}:</td>
+          <td>{{ $bookingResult->booking->survivor_discount }}%</td>
+        </tr>
+        <tr>
           <td class="booking-table__title">{{ __('confirmationBooking.cbe_pay_in_full_discount') }}:</td>
-          <td>{{ $bookingResult->booking->pay_in_full_discount }} %</td>
+          <td>{{ $bookingResult->booking->pay_in_full_discount }}%</td>
         </tr>
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_net_ticket_price_per_person') }}:</td>
