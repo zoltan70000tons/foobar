@@ -42,7 +42,7 @@
             $userTags = UserTag::all();
           return Inertia::render('Customer/Index', [
             'customers' => $this->customerRepository->getAllCustomerData(),
-              'userTags' => $userTags,
+            'userTags' => $userTags,
           ]);
         }, $request);
       } catch (\Exception $e) {

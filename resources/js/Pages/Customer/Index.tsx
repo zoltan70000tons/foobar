@@ -17,9 +17,9 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
   const { hasPermission } = usePermissions();
   const { get } = useForm();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-//console.log(userTags)
+
   const [loading, setLoading] = useState(true);
-const userTagAutocomleteOptions = userTags.map(item => ({
+  const userTagAutocomleteOptions = userTags.map(item => ({
     ...item,
     label: item.name,
   }));
@@ -74,8 +74,6 @@ const userTagAutocomleteOptions = userTags.map(item => ({
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
               row.tags.map((tag: {label: string; color: string}, index: number) => {
-                //const tagStyle = getTagStyle(tag);
-
                 return (
                   <Chip
                     key={tag.label}
@@ -134,7 +132,6 @@ const userTagAutocomleteOptions = userTags.map(item => ({
     rowsPerPage: number,
     filters: { [key: string]: string },
     sort: { key: string; direction: 'asc' | 'desc' },
-    //selectedTags,
   ): Promise<{ data: any[]; total: number }> => {
     console.log({selectedTags})
     try {
