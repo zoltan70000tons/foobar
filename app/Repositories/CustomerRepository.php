@@ -285,7 +285,7 @@
 
     function getAllCustomerData(int $perPage = 50): LengthAwarePaginator
     {
-      return User::with(['detail', 'customerAddress', 'survivorNumber', 'membershipTypes'])
+      return User::with(['detail', 'customerAddress', 'survivorNumber', 'membershipTypes', 'tags'])
         ->whereIn('id', function ($query) {
           $query->select('model_has_roles.model_id')
             ->from('model_has_roles')
@@ -302,11 +302,12 @@
             'dob' => $user->detail->dob,
             'survivor_number' => $user->survivorNumber->survivor_number,
             'membership_type' => optional($user->membershipTypes->first())->name,
+            'tags' => $user->tags,
           ];
         });
     }
 
-    function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters): LengthAwarePaginator
+    function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters, $tags): LengthAwarePaginator
     {
       $sortableFields = [
         'first_name' => 'detail.first_name',
@@ -323,6 +324,8 @@
         ->leftJoin('survivor_numbers as sn', 'u.id', '=', 'sn.user_id')
         ->leftJoin('memberships as m', 'u.id', '=', 'm.user_id')
         ->leftJoin('membership_types as mt', 'm.membership_id', '=', 'mt.id')
+        ->leftJoin('user_has_tags as uht', 'uht.user_id', '=', 'u.id')
+        ->leftJoin('user_tags as ut', 'ut.id', '=', 'uht.tag_id')
         ->whereIn('u.id', function ($query) {
           $query->select('model_id')
             ->from('model_has_roles')
@@ -342,6 +345,7 @@
             'email' => 'u.email',
             'survivor_number' => 'sn.survivor_number',
             'membership_type' => 'mt.name',
+            'tags' => 'ut.name as tag_name',
           ];
 
           if (isset($columnMap[$key])) {
@@ -350,9 +354,26 @@
         }
       }
 
-      return $baseQuery
+
+      if (count($tags) > 0) {
+          $tagIds = array_column($tags, 'id');
+          $baseQuery->whereIn('uht.tag_id', $tagIds);
+      }
+
+      /*return $baseQuery
+          ->select([
+              'u.id as user_id',
+              'u.email',
+              'detail.first_name',
+              'detail.last_name',
+              'detail.dob',
+              'sn.survivor_number',
+              'mt.name',
+              DB::raw('string_agg(DISTINCT ut.name, \', \') as tags'),
+          ])
+          ->groupBy('u.id', 'u.email', 'detail.first_name', 'detail.last_name', 'detail.dob', 'sn.survivor_number', 'mt.name')
         ->orderBy($orderBy, $sortDir)
-        ->paginate($perPage, ['u.id as user_id', 'u.email', 'detail.first_name', 'detail.last_name', 'detail.dob', 'sn.survivor_number', 'mt.name'])
+        ->paginate($perPage, ['u.id as user_id', 'u.email', 'detail.first_name', 'detail.last_name', 'detail.dob', 'sn.survivor_number', 'mt.name', 'tags'])
         ->through(fn($user) => [
           'id' => $user->user_id,
           'email' => $user->email,
@@ -361,7 +382,47 @@
           'dob' => $user->dob,
           'survivor_number' => $user->survivor_number ?? null,
           'membership_type' => $user->name ?? null,
-        ]);
+          'tags' => $user->tags ?? null,
+        ]);*/
+        $users = $baseQuery
+            ->select([
+                'u.id as user_id',
+                'u.email',
+                'detail.first_name',
+                'detail.last_name',
+                'detail.dob',
+                'sn.survivor_number',
+                'mt.name as membership_type',
+                'ut.name as tag_name',
+                'ut.color as tag_color',
+            ])
+            ->orderBy($orderBy, $sortDir)
+            ->paginate($perPage);
+
+        $groupedUsers = [];
+        foreach ($users as $user) {
+            if (!isset($groupedUsers[$user->user_id])) {
+                $groupedUsers[$user->user_id] = [
+                    'id' => $user->user_id,
+                    'email' => $user->email,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'dob' => $user->dob,
+                    'survivor_number' => $user->survivor_number ?? null,
+                    'membership_type' => $user->membership_type ?? null,
+                    'tags' => [],
+                ];
+            }
+
+            if ($user->tag_name && $user->tag_color) {
+                $groupedUsers[$user->user_id]['tags'][] = ["label" => $user->tag_name, "color" => $user->tag_color];
+            }
+        }
+
+// Replace paginator items with grouped users collection
+        $users->setCollection(collect(array_values($groupedUsers)));
+
+        return $users;
     }
 
 

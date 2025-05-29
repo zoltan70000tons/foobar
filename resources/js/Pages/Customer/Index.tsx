@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import { Container, Grid, Toolbar, Box, Button } from '@mui/material';
+import { Container, Grid, Toolbar, Box, Button, Chip, Autocomplete, TextField } from '@mui/material';
 import { usePermissions } from '@/Providers/PermissionContext';
 import 'dayjs/locale/en';
 import { Permissions } from '@/enums/PermissionEnum';
@@ -10,12 +10,19 @@ import MuiTable from '@/Components/tables/MuiTable';
 // import LoadingOverlay from '@/Components/LoadingOverlay';
 import { Visibility } from '@mui/icons-material';
 import axios from 'axios';
+import NewBookingModal from "@/Pages/Bookings/NewBookingModal";
+import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
 
-const Index = ({ auth, customers }: PageProps) => {
+const Index = ({ auth, customers, userTags }: PageProps) => {
   const { hasPermission } = usePermissions();
   const { get } = useForm();
-
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+//console.log(userTags)
   const [loading, setLoading] = useState(true);
+const userTagAutocomleteOptions = userTags.map(item => ({
+    ...item,
+    label: item.name,
+  }));
 
   useEffect(() => {
     if (customers) {
@@ -61,6 +68,35 @@ const Index = ({ auth, customers }: PageProps) => {
         width: '17%',
       },
       {
+        header: "Tags",
+        accessor: "Tags",
+        draw: (row: any) => (
+          <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
+            {Array.isArray(row.tags) && row.tags.length > 0 ? (
+              row.tags.map((tag: {label: string; color: string}, index: number) => {
+                //const tagStyle = getTagStyle(tag);
+
+                return (
+                  <Chip
+                    key={tag.label}
+                    label={tag.label}
+                    size="small"
+                    sx={{
+                      fontSize: "0.7rem",
+                      fontWeight: 500,
+                      backgroundColor: tag.color,
+                      color: "#fff",
+                    }}
+                  />
+                );
+              })
+            ) : (
+              <em>No Tags</em>
+            )}
+          </Box>
+        ),
+      },
+      {
         accessor: 'membership_type',
         header: 'Membership',
         filterable: true,
@@ -98,7 +134,9 @@ const Index = ({ auth, customers }: PageProps) => {
     rowsPerPage: number,
     filters: { [key: string]: string },
     sort: { key: string; direction: 'asc' | 'desc' },
+    //selectedTags,
   ): Promise<{ data: any[]; total: number }> => {
+    console.log({selectedTags})
     try {
       const response = await axios.get('/customers/paginated', {
         params: {
@@ -107,6 +145,7 @@ const Index = ({ auth, customers }: PageProps) => {
           sort_by: sort.key,
           sort_direction: sort.direction,
           filters: JSON.stringify(filters),
+          tags: JSON.stringify(selectedTags),
         },
         paramsSerializer: (params) => {
           return new URLSearchParams(params as any).toString();
@@ -134,6 +173,62 @@ const Index = ({ auth, customers }: PageProps) => {
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "stretch",
+                  gap: 2,
+                }}
+              >
+                <Autocomplete
+                  multiple
+                  size="small"
+                  options={userTagAutocomleteOptions}
+                  getOptionLabel={(option) => option}
+                  value={selectedTags}
+                  onChange={(event, newValue) => setSelectedTags(newValue)}
+                  renderTags={(value: string[], getTagProps) =>
+                    value.map((option: {name: string; color: string}, index) => {
+                      //const tag = TagEnumStyles[option as TagEnum] ?? { label: option, color: "#9e9e9e" };
+                      return (
+                        <Chip
+                          variant="outlined"
+                          label={option.name}
+                          {...getTagProps({ index })}
+                          sx={{
+                            backgroundColor: option.color,
+                            color: "#fff",
+                            fontWeight: 500,
+                            fontSize: "0.75rem",
+                          }}
+                        />
+                      );
+                    })
+                  }
+                  renderOption={(props, option) => {
+                    //const tag = TagEnumStyles[option as TagEnum] ?? { label: option, color: "#9e9e9e" };
+                    return (
+                      <Box component="li" {...props}>
+                        <Chip
+                          label={option.label}
+                          size="small"
+                          sx={{
+                            backgroundColor: option.color,
+                            color: "#fff",
+                            fontWeight: 500,
+                            mr: 1,
+                          }}
+                        />
+                      </Box>
+                    );
+                  }}
+                  renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Tags" />}
+                  sx={{ minWidth: 250 }}
+                />
+              </Box>
+            </Grid>
             <Box>
               <Box>
                 {customers ? (

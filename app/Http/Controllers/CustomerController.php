@@ -39,8 +39,10 @@
     {
       try {
         return $this->withPermission([Permissions::ViewCustomers], function () {
+            $userTags = UserTag::all();
           return Inertia::render('Customer/Index', [
             'customers' => $this->customerRepository->getAllCustomerData(),
+              'userTags' => $userTags,
           ]);
         }, $request);
       } catch (\Exception $e) {
@@ -57,8 +59,9 @@
       $sortBy = $request->get('sort_by');
       $sortDir = $request->get('sort_direction');
       $filters = json_decode($request->get('filters'), true);
+      $tags = json_decode($request->get('tags'), true);
 
-      return $this->customerRepository->getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters);
+      return $this->customerRepository->getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters, $tags);
     }
 
     public function create(): InertiaResponse
