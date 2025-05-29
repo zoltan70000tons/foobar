@@ -78,16 +78,17 @@ class CabinCategorySeeder extends Seeder
                 'category_number' => $categoryNumber,
             ];
 
-            $cabinCategorySpec = CabinCategorySpec::firstOrCreate([
+            $cabinCategorySpec = CabinCategorySpec::updateOrCreate([
                 'category_code' => $record['category_code'],
                 'capacity' => $record['capacity'],
             ], $specData);
 
             // Create the CabinCategory with the associated spec and event
-            CabinCategory::create([
-                'price'                   => $record['price'],
+            CabinCategory::updateOrCreate([
                 'cabin_category_spec_id'  => $cabinCategorySpec->id,
                 'event_id'                => $eventId,
+            ], [
+                'price'                   => $record['price'],
             ]);
         }
     }
