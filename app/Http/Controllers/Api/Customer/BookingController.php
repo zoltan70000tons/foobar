@@ -99,7 +99,7 @@ class BookingController extends Controller
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'is_single_occupancy' => false,
-        'tags' => ['NEW'],
+        'tags' => [],
         'bed_config' => $bedConfig,
       ];
 
