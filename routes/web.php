@@ -37,7 +37,7 @@ Route::get('/', function () {
     'laravelVersion' => Application::VERSION,
     'phpVersion' => PHP_VERSION,
   ]);
-});
+})->middleware(['auth', 'verified', 'electron_auth']);
 
 Route::get('/token', function () {
   return csrf_token();
@@ -48,10 +48,10 @@ Route::post('/contact/submit', [ContactFormController::class, 'submit']);
 Route::get('/dashboard', function () {
   return Inertia::render('Dashboard');
 })
-  ->middleware(['auth', 'verified'])
+  ->middleware(['auth', 'verified', 'electron_auth'])
   ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
   Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
   Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
