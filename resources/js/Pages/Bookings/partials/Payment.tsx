@@ -486,7 +486,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                     />
                   </Grid>
                 )}
-                {canCreatePayment && (
+                {canCreatePayment && passengers.length > 1 && (
                   <Grid item xs={12} sm={3}>
                     <PaymentTransferForm
                       passenger={pax}
