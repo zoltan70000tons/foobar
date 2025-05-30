@@ -136,7 +136,7 @@ class BookingController extends Controller
         'emergency_c_name' => $validated['emergency_contact_name'],
         'emergency_c_phone' => $validated['emergency_phone_number'],
         'special_options' => $validated['special_options'],
-        'special_request' => $validated['specia_request'] ?? null,
+        'special_request' => $validated['special_request'] ?? null,
         'newsletter' => $validated['newsletter'],
         'travel_info' => $validated['travel_info'],
         'hear_about' => $validated['info'],
