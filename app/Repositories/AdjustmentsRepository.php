@@ -8,12 +8,9 @@ use App\Models\Passenger;
 use App\Models\Adjustment;
 use App\Models\SurvivorNumber;
 use App\Models\User;
-use App\Traits\MembershipAccess;
 
 class AdjustmentsRepository
 {
-  use MembershipAccess;
-
   protected Booking $booking;
   protected Passenger $passenger;
 
@@ -33,20 +30,10 @@ class AdjustmentsRepository
   {
     try {
       // Get the lead
-      $leadPassenger = $booking->passengers()->where('lead_passenger', true)->first();
-      $membership = $leadPassenger?->user?->membershipType ?? null;
       $event = $booking->event;
-      $access = $this->checkMembershipAccess($membership, now(), $booking->event_id);
 
       // Always exclude MEMBERSHIP_ adjustments if event is PUBLIC
       if ($event && $event->status === 'PUBLIC') {
-          $adjustmentIds = array_filter($adjustmentIds, function ($id) {
-              $adjustment = Adjustment::find($id);
-              return $adjustment && !str_starts_with($adjustment->code, 'MEMBERSHIP_');
-          });
-      }
-      // Otherwise, filter if not allowed by membership access
-      elseif (!$access['status']) {
           $adjustmentIds = array_filter($adjustmentIds, function ($id) {
               $adjustment = Adjustment::find($id);
               return $adjustment && !str_starts_with($adjustment->code, 'MEMBERSHIP_');
