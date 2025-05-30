@@ -221,8 +221,9 @@ class PassengerController extends Controller
             // $slot = Passenger::where('id', '=', $slot->id)->first();
             // ---- start @JG if passenger invitation exists, delete it
             $passengerInvitation = PassengerInvitation::where('passenger_id', $slot->id)->first();
-            $passengerInvitationEmail = $passengerInvitation->email;
+            $passengerInvitationEmail = null;
             if ($passengerInvitation) {
+                $passengerInvitationEmail = $passengerInvitation->email;
                 $passengerInvitation->delete();
             }
             // ---- end @JG
@@ -281,6 +282,7 @@ class PassengerController extends Controller
 
             return $slot;
         } catch (\Exception $e) {
+            //dd($e->getMessage(). ' - ' . $e->getLine());
             Log::error($e->getMessage());
             return response()->json('error');
         }
