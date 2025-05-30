@@ -89,8 +89,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
           ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
           : 0,
         'choose_your_cabin' => number_format($adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0, 2),
-        'survivor_discount' =>
-        $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'MEMBERSHIP_'))?->value ?? 0,
+        'survivor_discount' => $this->event->status !== 'PUBLIC' ? $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'MEMBERSHIP_'))?->value : 0,
         'carbon_offset' =>
         number_format($adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0, 2),
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
@@ -176,6 +175,9 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   {
     App::setLocale($this->language);
     $data = $this->prepareDataForTemplate();
+
+
+    \Log::info('Envelope ----> data: ' . json_encode($data));
 
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
     $bccEmailAddress = env('MAIL_BCC');
