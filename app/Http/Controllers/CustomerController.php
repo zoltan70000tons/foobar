@@ -39,7 +39,7 @@
     {
       try {
         return $this->withPermission([Permissions::ViewCustomers], function () {
-            $userTags = UserTag::all();
+          $userTags = UserTag::all();
           return Inertia::render('Customer/Index', [
             'customers' => $this->customerRepository->getAllCustomerData(),
             'userTags' => $userTags,
@@ -48,7 +48,7 @@
       } catch (\Exception $e) {
         $this->logException($e);
 
-        return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+        return redirect()->route('customers.index')->with('error', 'Something went wrong.');
       }
     }
 
@@ -138,14 +138,14 @@
       } catch (\Exception $e) {
         $this->logException($e);
 
-        return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+        return redirect()->route('customers.index')->with('error', 'Something went wrong.');
       }
     }
 
     public function editBySurvivorNumber(string $survivorNumber)
     {
         if (!$survivorNumber) {
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
 
         $survivorNumberModel = SurvivorNumber::query()
@@ -154,13 +154,13 @@
             ->first();
 
         if (!$survivorNumberModel) {
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
 
         $customer = $survivorNumberModel->user;
 
         if (!$customer) {
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
 
         return $this->edit($customer);

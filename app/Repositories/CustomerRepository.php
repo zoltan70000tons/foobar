@@ -331,7 +331,8 @@
             ->from('model_has_roles')
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->where('roles.name', 'Customer');
-        });
+        })
+        ->whereNull('ut.deleted_at');
 
       $filters = array_filter($filters);
 
@@ -353,7 +354,6 @@
           }
         }
       }
-
 
       if (count($tags) > 0) {
           $tagIds = array_column($tags, 'id');
@@ -419,7 +419,7 @@
             }
         }
 
-// Replace paginator items with grouped users collection
+        // Replace paginator items with grouped users collection
         $users->setCollection(collect(array_values($groupedUsers)));
 
         return $users;
