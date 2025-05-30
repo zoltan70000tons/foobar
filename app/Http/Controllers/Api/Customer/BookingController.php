@@ -105,16 +105,16 @@ class BookingController extends Controller
 
       $adjustments = Adjustment::where('event_id', $eventId)->first();
       $event = Event::find($eventId);
-      $priceCalc = PriceCalculation::calculatePricePerPassenger([
-        'cabinPrice' => (float) $validated['cart']['cabin_price'],
-        'cabinCapacity' => (int) $validated['cart']['cabin_capacity'],
-        'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
-        'selectedAdjustments' => $cart['addons'],
-        'adjustments' => $adjustments,
-        'eventStatus' => $event->status,
-      ]);
+      // $priceCalc = PriceCalculation::calculatePricePerPassenger([
+      //   'cabinPrice' => (float) $validated['cart']['cabin_price'],
+      //   'cabinCapacity' => (int) $validated['cart']['cabin_capacity'],
+      //   'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
+      //   'selectedAdjustments' => $cart['addons'],
+      //   'adjustments' => $adjustments,
+      //   'eventStatus' => $event->status,
+      // ]);
 
-      $totalPassenger = $priceCalc['totalPassenger'];
+      $totalPassenger = $cart['price_total_passenger'];
 
       $language = $validated['language'] ?? 'en';
 
