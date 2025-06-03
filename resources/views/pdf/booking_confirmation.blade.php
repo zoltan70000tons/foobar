@@ -120,6 +120,9 @@
             line-height: 0.7;
             padding: 2px 5px;
         }
+        .booking-code {
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 
@@ -135,14 +138,14 @@
             <div>Freedom Of The Seas</div>
         </section>
         <section class="body">
-            <h2 style="text-align: center;margin-top:0px;">BOOKING CONFIRMATION</h2>
+            <h2 style="text-align: center; margin-top:5px; margin-bottom: 0px;">BOOKING CONFIRMATION</h2>
 
             <table class="table-container" width="100%" style="margin-top:0px;">
                 <tr>
                     <th width="50%">Date Issued:</th>
                     <td width="50%" class="align-left" style="padding-left: 5px;"> {{$dateIssued}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{$lastUpdated}}</td>
                 </tr>
-                <tr>
+                <tr class="booking-code">
                     <th class="bold">Booking Code:</th>
                     <td class="bold align-left" style="padding-left: 5px;">{{ $booking->booking_code }}</td>
                 </tr>
@@ -383,14 +386,14 @@
         <div>Independence of the Seas</div>
     </section>
     <section class="body">
-        <h2 style="text-align: center;">BOOKING CONFIRMATION</h2>
+        <h2 style="text-align: center; margin-top:5px; margin-bottom: 0px;">BOOKING CONFIRMATION</h2>
 
         <table class="table-container" width="100%">
             <tr>
                 <th width="50%">Date Issued:</th>
                 <td width="50%" class="align-left" style="padding-left: 5px;"> {{$dateIssued}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{$lastUpdated}}</td>
             </tr>
-            <tr>
+            <tr class="booking-code">
                 <th class="bold">Booking Code:</th>
                 <td class="bold align-left" style="padding-left: 5px;">{{ $data['booking']->booking_code }}</td>
             </tr>
