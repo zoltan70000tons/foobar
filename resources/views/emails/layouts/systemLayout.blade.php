@@ -66,6 +66,13 @@
       text-align: center;
     }
 
+    .copyrights {
+      margin-top: 20px;
+      font-size: 0.8em;
+      color: #777;
+      text-align: center;
+    }
+
     .logo img {
       max-width: 100%;
       height: auto;
@@ -148,6 +155,9 @@
       <a href="https://70000tons.com/" style="color: red; text-decoration: underline; text-align: center">www.70000tons.com</a>
 
       <p>The information in this internet eMail is confidential, may be legally privileged and is intended solely for the Addressee(s) named above. If you are not the intended recipient, or the employee or agent responsible for delivering it to the intended recipient, then any dissemination or copying of this eMail is prohibited and may be unlawful. If you receive this eMail in error, please immediately notify us by return eMail or by telephone. Thank you.</p>
+    </div>
+    <div class="copyrights">
+      @include('emails.components.copyrights')
     </div>
   </div>
 </body>
