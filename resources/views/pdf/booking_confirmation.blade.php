@@ -199,12 +199,12 @@
                                         <tr>
                                             <td width="40%" class="bold passenger_title">{{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }}
                                             </td>
-                                            <td width="35%">Oficial Ticket Price</td>
+                                            <td width="35%">Official Ticket Price</td>
                                             <td width="30%">{{ formatCurrency($data['booking']->cabin->category->price) }}</td>
                                         </tr>
                                         <tr>
                                             <td width="25%"></td>
-                                            <td width="25%">(% {{ $passenger['total_discounts_percentage'] }}) Discount</td>
+                                            <td width="25%">{{ $passenger['total_discounts_percentage'] }}% Discount</td>
                                             <td width="25%">{{$paymentInfo['formatted_total_discounts']}}</td>
 
                                         </tr>
@@ -258,7 +258,13 @@
                                             @php
                                             $isFee = $installment['type'] == 'FEE';
                                             @endphp
-                                            <td class="">{{$installment['status']}}, {{formatDate($installment['due_date'])}}</td>
+                                            <td class="">
+                                                @if ($installment['status'] === 'Unpaid')
+                                                <strong>Due Immediately</strong>
+                                                @else
+                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
+                                                @endif
+                                            </td>
                                             <td>{{ formatCurrency($installment['amount']) }}</td>
                                             <td>{{$payment_method}}</td>
                                             <td></td>
@@ -270,10 +276,16 @@
                                         @endphp
                                         @foreach ($remainingInstallments as $installment)
                                         <tr>
-                                            @php
-                                            $isFee = $installment['type'] == 'FEE';
-                                            @endphp
-                                            <td class="">{{$installment['status']}}, {{formatDate($installment['due_date'])}}</td>
+                                            <td>
+                                                @php
+                                                $isFee = $installment['type'] == 'FEE';
+                                                @endphp
+                                                @if ($installment['status'] === 'Unpaid')
+                                                <strong>Due Immediately</strong>
+                                                @else
+                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
+                                                @endif
+                                            </td>
                                             <td>{{ formatCurrency($installment['amount_due']) }}</td>
                                             <td>{{ $payment_method }}</td>
                                             <td></td>
@@ -289,7 +301,11 @@
                                         @endphp
                                         <tr>
                                             <td>
-                                                {{$fullPaymentStatus['status']}}, {{formatDate($fullPaymentStatus['due_date'])}}
+                                                @if ($fullPaymentStatus['status'] === 'Unpaid')
+                                                <strong class="strong">Due Immediately</strong>
+                                                @else
+                                                {{ $fullPaymentStatus['status'] }}, {{ formatDate($fullPaymentStatus['due_date']) }}
+                                                @endif
                                             </td>
                                             <td>{{ formatCurrency($amount) }}</td>
                                             <td>{{$payment_method}}</td>
