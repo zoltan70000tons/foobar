@@ -163,6 +163,8 @@ Route::middleware([
 
   // --- single booking
   Route::get('/my-bookings/{eventId}/{bookingCode}', [BookingController::class, 'singleBooking']);
+  Route::get('/my-bookings/{eventId}/request-id/{requestId}', [BookingController::class, 'singleBookingByRequestId']);
+
   // --- single invitation
   Route::get('/my-bookings/{eventId}/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
   // --- single invitation add pax
