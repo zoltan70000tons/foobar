@@ -262,11 +262,7 @@
                                             $isFee = $installment['type'] == 'FEE';
                                             @endphp
                                             <td class="">
-                                                @if ($installment['status'] === 'Unpaid')
-                                                <strong>Due Immediately</strong>
-                                                @else
                                                 {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
-                                                @endif
                                             </td>
                                             <td>{{ formatCurrency($installment['amount']) }}</td>
                                             <td>{{$payment_method}}</td>
@@ -283,7 +279,7 @@
                                                 @php
                                                 $isFee = $installment['type'] == 'FEE';
                                                 @endphp
-                                                @if ($installment['status'] === 'Unpaid')
+                                                @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
                                                 <strong>Due Immediately</strong>
                                                 @else
                                                 {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
