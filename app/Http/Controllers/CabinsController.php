@@ -81,7 +81,55 @@ class CabinsController extends Controller
     }
 
 
-    public function store(Request $request) {}
+    public function store(Request $request) {
+         try {
+            $event_id = $request->route('id');
+            $rules = [
+                'cabin_status'      => 'required|string|max:255',
+                'cabin_number'      => [
+                    'required',
+                    'numeric',
+                ],
+                'cabin_category_id'    => 'required|numeric',
+                'cabin_type_id'        => 'required|numeric',
+                'deck'              => 'required|numeric',
+                'location'          => 'required|string',
+                'connects_with'     => 'nullable|numeric',
+                'total_berths'      => 'nullable|numeric',
+                'lower_bed_type_1'  => 'nullable|string',
+                'lower_bed_type_2'  => 'nullable|string',
+                'features' => 'required|array',
+                'features.accessible' => 'required|boolean',
+                'features.balcony' => 'required|boolean',
+                'features.obstructed_view' => 'required|boolean',
+                'tags' => 'nullable|array',
+                'tags.*' => 'nullable|string',
+                'upper_berths'      => 'nullable|string',
+                'notes'             => 'nullable|string',
+                'internal_notes' => 'nullable|string',
+            ];
+            $validated = $request->validate($rules);
+
+            return $this->withPermission([Permissions::EditCabins], function ($event_id, $validated) {
+                //Arr::forget($validated, 'inventory');
+                $sanitized = Arr::map($validated, function ($value, $key) {
+                    if (is_array($value)) {
+                        return $value;
+                    }
+                    if (is_string($value)) {
+                        return strip_tags(trim($value));
+                    }
+
+                    return $value;
+                });
+                //$this->cabinRepository->update($sanitized, $cabin_id);
+                // return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin_id])
+                //     ->with('success', 'Cabin updated successfully.');
+            }, $event_id,$validated);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
 
     public function edit(Request $request)
     {

@@ -64,8 +64,13 @@ const Create = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/cabins');
+        post(route('cabins.store', { id: event.id }), {
+            onSuccess: () => {
+                router.visit(route('cabins.index', { id: event.id }));
+            },
+        });
     };
+
 
     return (
         <AuthenticatedLayout user={auth.user} header={"Create Cabin"}>
@@ -189,7 +194,7 @@ const Create = ({
 
                                 <Grid item xs={12}>
                                     <Box display="flex" justifyContent="flex-end">
-                                        <Button variant="outlined" disabled={processing}>
+                                        <Button type="submit" variant="outlined" disabled={processing}>
                                             Save Cabin
                                         </Button>
                                     </Box>
