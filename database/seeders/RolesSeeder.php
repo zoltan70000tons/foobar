@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Faker\Generator;
-use Spatie\Permission\Contracts\Permission;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RolesSeeder extends Seeder
@@ -46,12 +46,10 @@ class RolesSeeder extends Seeder
             );
         }
 
-        foreach (Permissions::cases() as $permission) {
-            DB::table('permissions')->updateOrInsert(
-                ['name' => $permission->value],
+        foreach (Permissions::cases() as $permissionEnum) {
+            Permission::firstOrCreate(
+                ['name' => $permissionEnum->value, 'guard_name' => 'web'],
                 [
-                    'name' => $permission->value,
-                    'guard_name' => 'web',
                     'created_at' => now(),
                     'updated_at' => now(),
                     'system' => 1
