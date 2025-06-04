@@ -49,7 +49,7 @@ const View = ({ auth, userTag }: PageProps) => {
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.ViewCustomers) && (
+          { hasPermission(Permissions.ViewCustomerTags) && (
             <>
               <Paper
                 sx={ {

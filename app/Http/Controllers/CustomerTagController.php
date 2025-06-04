@@ -30,9 +30,7 @@ class CustomerTagController extends Controller
     public function index(Request $request): InertiaResponse
     {
         try {
-            // Don't think adding new permission would make a difference, who can interact with customers should be
-            // able to with Customer Tags as well
-            return $this->withPermission([Permissions::ViewCustomers], function () {
+            return $this->withPermission([Permissions::ViewCustomerTags], function () {
                 return Inertia::render('CustomerTag/Index', [
                     'tags' => $this->customerTagRepository->getAll(),
                 ]);
@@ -52,7 +50,7 @@ class CustomerTagController extends Controller
     public function store(CustomerTagRequest $request): RedirectResponse|Response|InertiaResponse
     {
         try {
-            return $this->withPermission([Permissions::CreateUsers], function ($request) {
+            return $this->withPermission([Permissions::CreateCustomerTags], function ($request) {
                 $this->customerTagRepository->store($request);
 
                 return redirect()->route('customer-tags.index')->with('flash', 'Customer tag created successfully.');
@@ -72,10 +70,12 @@ class CustomerTagController extends Controller
     public function update(CustomerTagRequest $request, UserTag $userTag)
     {
         try {
-            $this->customerTagRepository->update($request, $userTag);
+            return $this->withPermission([Permissions::EditCustomerTags], function ($request, $userTag) {
+                $this->customerTagRepository->update($request, $userTag);
 
-            return redirect()->route('customer-tags.edit', $userTag->id)
-                ->with('success', 'Customer tag updated successfully.');
+                return redirect()->route('customer-tags.edit', $userTag->id)
+                    ->with('success', 'Customer tag updated successfully.');
+            }, $request, $userTag);
         } catch (\Exception|\Throwable $e) {
             return redirect()->route('customer-tags.edit', $userTag->id)->with('error', 'Problem updating customer tag.');
         }
@@ -84,7 +84,7 @@ class CustomerTagController extends Controller
     public function show(UserTag $userTag)
     {
         try {
-            return $this->withPermission([Permissions::ViewCustomers], function ($userTag) {
+            return $this->withPermission([Permissions::ViewCustomerTags], function ($userTag) {
                 return Inertia::render('CustomerTag/View', [
                     'userTag' => $userTag,
                 ]);
@@ -99,7 +99,7 @@ class CustomerTagController extends Controller
     public function destroy(UserTag $userTag): RedirectResponse|Response|InertiaResponse
     {
         try {
-            return $this->withPermission([Permissions::DeleteCustomers], function ($userTag) {
+            return $this->withPermission([Permissions::DeleteCustomerTags], function ($userTag) {
                 $this->customerTagRepository->delete($userTag);
 
                 return redirect()->route('customer-tags.index')->with('success', 'Customer tag deleted successfully.');

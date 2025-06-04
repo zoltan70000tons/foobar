@@ -86,7 +86,7 @@ export default function Dashboard({ auth }: PageProps) {
       description: "Manage customer tags",
       icon: TagIcon,
       link: "/customer-tags",
-      permission: Permissions.ViewCustomers,
+      permission: Permissions.ViewCustomerTags,
     },
   ];
 

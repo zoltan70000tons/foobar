@@ -100,5 +100,9 @@ enum Permissions: string
     case CreatePassengerOnboardCredit = 'Create Passenger Onboard Credit';
     case DeletePassengerOnboardCredit = 'Delete Passenger Onboard Credit';
 
-
+    // Manage Customers
+    case ViewCustomerTags = 'View Customer Tags';
+    case CreateCustomerTags = 'Create Customer Tags';
+    case EditCustomerTags = 'Edit Customer Tags';
+    case DeleteCustomerTags = 'Delete Customer Tags';
 }

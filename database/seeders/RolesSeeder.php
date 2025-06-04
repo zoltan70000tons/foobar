@@ -169,7 +169,11 @@ class RolesSeeder extends Seeder
             Permissions::CreatePassengerDiscounts,
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
-            Permissions::DeletePassengerOnboardCredit
+            Permissions::DeletePassengerOnboardCredit,
+            Permissions::ViewCustomerTags,
+            Permissions::EditCustomerTags,
+            Permissions::DeleteCustomerTags,
+            Permissions::CreateCustomerTags,
         ]);
         $this->assignToRole(Roles::Agent, [
             Permissions::ViewDashboard,
@@ -294,7 +298,11 @@ class RolesSeeder extends Seeder
             Permissions::CreatePassengerDiscounts,
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
-            Permissions::DeletePassengerOnboardCredit
+            Permissions::DeletePassengerOnboardCredit,
+            Permissions::ViewCustomerTags,
+            Permissions::EditCustomerTags,
+            Permissions::DeleteCustomerTags,
+            Permissions::CreateCustomerTags,
         ]);
 
         $this->assignToRole(Roles::Owner, [ // Superadmin
@@ -356,7 +364,11 @@ class RolesSeeder extends Seeder
             Permissions::CreatePassengerDiscounts,
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
-            Permissions::DeletePassengerOnboardCredit
+            Permissions::DeletePassengerOnboardCredit,
+            Permissions::ViewCustomerTags,
+            Permissions::EditCustomerTags,
+            Permissions::DeleteCustomerTags,
+            Permissions::CreateCustomerTags,
         ]);
 
         $this->assignToRole(Roles::Trainee, [  // Only View Access
