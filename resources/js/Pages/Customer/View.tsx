@@ -33,6 +33,8 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { StatusEnum } from "@/enums/StatusEnum";
 import Tags from "@/Pages/Bookings/partials/Tags";
 import CustomerTags from "@/Pages/Bookings/partials/CustomerTags";
+// temporaryPassword
+import TemporaryPassword from "@/Pages/Customer/partials/TemporaryPassword";
 
 const View = ({ auth, customer, bookings, availableTags }: PageProps) => {
   const { get, delete: destroy } = useForm();
@@ -107,6 +109,9 @@ const View = ({ auth, customer, bookings, availableTags }: PageProps) => {
         >
           View Comments & Logs
         </Button>
+        <TemporaryPassword 
+          customer={customer}
+        />
       </Toolbar>
 
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: '#1c1c1c', mb: 4 }}>

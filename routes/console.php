@@ -5,6 +5,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Models\TemporaryReservation;
+use App\Models\TemporaryPassword;
 use App\Models\PassengerInvitation;
 use Illuminate\Support\Carbon;
 
@@ -32,6 +33,12 @@ Schedule::call(function () {
 Schedule::command('telescope:prune')->daily();
 
 Schedule::job(new ClearOldBookingSessions())->everyMinute();
+
+
+// Delete temporary passwords after 20 minutes
+Schedule::call(function () {
+  TemporaryPassword::where('expires_at', '<', Carbon::now())->delete();
+})->everyTenMinutes();
 
 // Autotag bookings with OVERDUE and MISSING_INFO tags
 Schedule::command('bookings:dispatch-tags')->dailyAt('00:00')->timezone('America/Los_Angeles');
