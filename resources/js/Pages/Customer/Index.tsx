@@ -18,6 +18,8 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
   const { get } = useForm();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+  const canViewCustomerTags = hasPermission(Permissions.ViewCustomerTags);
+
   const [loading, setLoading] = useState(true);
   const userTagAutocomleteOptions = userTags.map(item => ({
     ...item,
@@ -170,9 +172,11 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
         <Button variant="outlined" color="secondary" onClick={handleCreate} sx={{ mr: 2 }}>
           New Customer
         </Button>
-        <Button variant="outlined" color="primary" onClick={handleViewTags}>
-          Customer Tags
-        </Button>
+        {canViewCustomerTags && (
+          <Button variant="outlined" color="primary" onClick={handleViewTags}>
+            Customer Tags
+          </Button>
+        )}
       </Toolbar>
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
