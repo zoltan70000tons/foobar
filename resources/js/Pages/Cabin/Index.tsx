@@ -26,10 +26,9 @@ import { Visibility, Edit, Delete } from '@mui/icons-material';
 import { Permissions } from '@/enums/PermissionEnum';
 import { usePermissions } from '@/Providers/PermissionContext';
 import apiRoutes from '@/Helpers/ApiRoutes';
-import axios from 'axios';
-import type { Page, PageProps } from '@inertiajs/core';
-
+import type { PageProps } from '@inertiajs/core';
 import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
+import AddIcon from '@mui/icons-material/Add';
 
 type Props = PageProps & {
   auth: any;
@@ -37,11 +36,11 @@ type Props = PageProps & {
   categories: CabinCategory[];
   cabins: any[];
   errors: any;
-  tab: string; 
-  data: any; 
+  tab: string;
+  data: any;
 };
 
-const Index = ({ auth, event, categories, cabins, errors }: Props ) => {
+const Index = ({ auth, event, categories, cabins, errors }: Props) => {
   const { hasPermission } = usePermissions();
 
   // TEST
@@ -62,7 +61,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props ) => {
     if (flash.message) {
       if (flash.success) {
         showSnackbar(flash.message, 'success');
-      } else{
+      } else {
         showSnackbar(flash.message, 'error');
       }
     }
@@ -304,7 +303,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props ) => {
       setLoading(false);
     }
   };
-  
+
 
   const manageStatus = (rows: any, status: string) => {
     const hasInvalidStatus = rows.some(
@@ -356,18 +355,31 @@ const Index = ({ auth, event, categories, cabins, errors }: Props ) => {
               </Tabs>
               <Box sx={{ display: selectedTab === 0 ? 'block' : 'none', mt: 2 }}>
                 {cabins ? (
-                  <MuiTable
-                    columns={columns}
-                    data={cabins}
-                    subColumns={subColumns}
-                    showCheckBox={false}
-                    showTableFilters={true}
-                    showSubTableFilters={true}
-                    tagOptions={Object.values(TagEnum)}
-                    statusOptions={Object.values(CabinStatusReduced)}
-                    onApplyTags={manageTags}
-                    onApplyState={manageStatus}
-                  />
+                  <div>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      startIcon={<AddIcon />}
+                      sx={{ mb: 2, ml: 'auto' }}
+                      onClick={() => {
+                        router.get(route('cabins.create', { id: event.id }));
+                      }}
+                    >
+                      Create Cabin
+                    </Button>
+                    <MuiTable
+                      columns={columns}
+                      data={cabins}
+                      subColumns={subColumns}
+                      showCheckBox={false}
+                      showTableFilters={true}
+                      showSubTableFilters={true}
+                      tagOptions={Object.values(TagEnum)}
+                      statusOptions={Object.values(CabinStatusReduced)}
+                      onApplyTags={manageTags}
+                      onApplyState={manageStatus}
+                    />
+                  </div>
                 ) : (
                   <></>
                 )}

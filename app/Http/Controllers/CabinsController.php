@@ -65,7 +65,19 @@ class CabinsController extends Controller
 
     public function create()
     {
-        return Inertia::render('Cabin/Create');
+        try {
+            $event = $this->eventRepository->find(request()->route('id'));
+            $cabinCategories = $this->cabinCategoryRepository->getAll();
+            return $this->withPermission([Permissions::CreateCabins], function ($event, $cabinCategories) {
+                return Inertia::render('Cabin/Create', [
+                    'event' => $event,
+                    'categories' => $cabinCategories
+                ]);
+            }, $event, $cabinCategories);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+        
     }
 
 

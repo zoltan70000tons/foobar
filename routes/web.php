@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
   Route::get('/events/{id}/cabins', [CabinsController::class, 'index'])->name('cabins.index');
   Route::get('/events/{id}/cabins/categories', [CabinCategoriesController::class, 'index'])->name('cabins.categories');
   Route::get('/events/{id}/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
+  Route::get('/events/{id}/cabins/create', [CabinsController::class, 'create'])->name('cabins.create');
 
   //Cabin categories
   Route::get('/events/{id}/cabins/categories/{catId}/show', [CabinCategoriesController::class, 'show'])->name(
