@@ -127,6 +127,10 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
     get(route('customers.create', {}));
   };
 
+  const handleViewTags = () => {
+    get(route('customer-tags.index', {}));
+  }
+
   const fetchCustomers = async (
     page: number,
     rowsPerPage: number,
@@ -163,8 +167,11 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
     <AuthenticatedLayout user={auth.user} header={'Customers'}>
       <Head title="Customers" />
       <Toolbar sx={{ mt: 8 }}>
-        <Button variant="outlined" color="secondary" onClick={handleCreate}>
+        <Button variant="outlined" color="secondary" onClick={handleCreate} sx={{ mr: 2 }}>
           New Customer
+        </Button>
+        <Button variant="outlined" color="primary" onClick={handleViewTags}>
+          Customer Tags
         </Button>
       </Toolbar>
       <Container maxWidth="lg" sx={{ mb: 4 }}>
