@@ -15,6 +15,8 @@ const Index = ({ auth, customers }: PageProps) => {
   const { hasPermission } = usePermissions();
   const { get } = useForm();
 
+  const canViewCustomerTags = hasPermission(Permissions.ViewCustomerTags);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -134,9 +136,11 @@ const Index = ({ auth, customers }: PageProps) => {
         <Button variant="outlined" color="secondary" onClick={handleCreate} sx={{ mr: 2 }}>
           New Customer
         </Button>
-        <Button variant="outlined" color="primary" onClick={handleViewTags}>
-          Customer Tags
-        </Button>
+        {canViewCustomerTags && (
+          <Button variant="outlined" color="primary" onClick={handleViewTags}>
+            Customer Tags
+          </Button>
+        )}
       </Toolbar>
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>
