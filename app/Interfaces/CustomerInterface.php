@@ -21,7 +21,7 @@ interface CustomerInterface
 
     function getAllCustomerData(int $perPage);
 
-    function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters);
+    function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters, $tags);
 
     function getBookingDataForCustomer(User $user);
 
