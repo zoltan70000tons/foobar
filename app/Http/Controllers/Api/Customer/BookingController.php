@@ -337,6 +337,54 @@ class BookingController extends Controller
 
   /*
   |--------------------------------------------------------------------------
+  |  Get booking by request id
+  |--------------------------------------------------------------------------
+  |
+  |  This method return single booking by request id
+  |
+  */
+  public function singleBookingByRequestId(int $eventId, string $requestId)
+  {
+    $user = Auth::user();
+
+    // if event status is not public or pre-sale return error
+    $event = Event::find($eventId);
+
+    if (!$event || !in_array($event->status, ['PUBLIC', 'PRE-SALE'])) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    $result = $this->customerBookingRepository->getBookingByRequestId($eventId, $requestId, $user);
+
+    if (!$result) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    // hide cabin number if status is new or cancelled
+    if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
+      $result->cabin->makeHidden(['cabin_number']);
+      $result->makeHidden(['booking_code', 'agent_id']);
+      $result->cabin->makeHidden(['internal_notes']);
+      $result->cabin->cabinSpec->makeHidden(['cabin_number']);
+    }
+
+    // hide
+    $result->passengers->map(function ($passenger) {
+      $passenger->payments->map(function ($payment) {
+        $payment->makeHidden(['BIP_ID']);
+        $payment->makeHidden(['notes']);
+      });
+    });
+
+    $schema = [
+      'booking' => $result,
+    ];
+
+    return response()->json($schema);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
   |  Get all bokings
   |--------------------------------------------------------------------------
   |
