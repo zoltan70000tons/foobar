@@ -36,7 +36,7 @@ import CustomerTags from "@/Pages/Bookings/partials/CustomerTags";
 // temporaryPassword
 import TemporaryPassword from "@/Pages/Customer/partials/TemporaryPassword";
 
-const View = ({ auth, customer, bookings, availableTags }: PageProps) => {
+const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: PageProps) => {
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
   const { showSnackbar } = useSnackbar();
@@ -96,22 +96,33 @@ const View = ({ auth, customer, bookings, availableTags }: PageProps) => {
   return (
     <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
       <Head title="View Customer"/>
-      <Toolbar sx={ { mt: 8 } }>
-        <Button variant="outlined" color="secondary" onClick={ handleBack }>
-          Back
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<CommentIcon />}
-          onClick={toggleSidebar}
-          sx={{ ml: 2 }}
-        >
-          View Comments & Logs
-        </Button>
+      <Toolbar 
+        sx={{ 
+          mt: 8,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          gap: 2, 
+        }}
+      >
+        <Box>
+          <Button variant="outlined" color="secondary" onClick={ handleBack }>
+            Back
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<CommentIcon />}
+            onClick={toggleSidebar}
+            sx={{ ml: 2 }}
+          >
+            View Comments & Logs
+          </Button>
+        </Box>
         <TemporaryPassword 
           customer={customer}
+          isTemporaryPassword={isTemporaryPassword}
         />
+        
       </Toolbar>
 
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: '#1c1c1c', mb: 4 }}>

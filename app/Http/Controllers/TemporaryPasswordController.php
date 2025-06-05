@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
-
+use App\Models\UserLog;
 
 class TemporaryPasswordController extends Controller
 {
@@ -35,6 +35,14 @@ class TemporaryPasswordController extends Controller
       'generated_by' => Auth::id(),
       'temporary_password' => Hash::make($randomPassword),
       'expires_at' => Carbon::now()->addMinutes(20),
+    ]);
+
+    // log the action
+    UserLog::create([
+      'author_id' => Auth::id(),
+      'customer_id' => $request->customer_id,
+      'action' => 'Agent created temporary password for customer',
+      'description' => 'Temporary password created successfully for customer ID: ' . $request->customer_id,
     ]);
 
     // return response json
