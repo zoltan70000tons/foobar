@@ -149,7 +149,7 @@ class AdjustmentsSeeder extends Seeder
         'code' => 'TAX',
         'type' => 'ADDON',
         'operation' => 'FIXED',
-        'value' => 487.0,
+        'value' => 494.0,
         'restrictions' => null,
         'event_id' => 1,
         'created_at' => now(),

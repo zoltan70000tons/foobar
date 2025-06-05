@@ -130,7 +130,7 @@ style="color: rgb(102, 102,
                                             Precio oficial del Ticket:
                                             XXXX<br>
                                             Impuestos y cargos de
-                                            servicio*: USD 487.00<br>
+                                            servicio*: USD 494.00<br>
                                             Cargo extra por compra de
                                             Ticket Individual (Single
                                             Ticket): USD 100.00
