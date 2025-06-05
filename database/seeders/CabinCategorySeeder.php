@@ -19,7 +19,8 @@ class CabinCategorySeeder extends Seeder
     public function run()
     {
         // Retrieve the first Event and Cruise
-        $eventId = Event::first()->id;
+        // Prompt the user to enter the Event ID
+        $eventId = (int) $this->command->ask('Please enter the Event ID to seed cabin categories for');
         $cruiseId = Cruise::first()->id;
 
         // Path to the CSV file
