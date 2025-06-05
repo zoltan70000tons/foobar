@@ -105,13 +105,12 @@ style="color: rgb(102, 102,
                                             noch keine Zahlung erhalten
                                             haben.<br>
                                             <br>
-                                            <strong>Wie im Ticketvertrag
-                                              (Ticket Contract, Seite
-                                              1, Paragraph
-                                              4) geregelt,
-                                              wurde allen überfälligen
-                                              Mitreisenden in Deiner
-                                              Buchung eine Säumnisgebühr
+                                            <strong>Wie im Ticketvertrag 
+                                              (Ticket Contract, 
+                                              Paragraf 4) geregelt, 
+                                              wurde allen überfälligen 
+                                              Mitreisenden in Deiner 
+                                              Buchung eine Säumnisgebühr 
                                               von USD 50,00 berechnet.<br>
                                               <br>
                                               Bitte sorge dafür, dass
