@@ -118,7 +118,21 @@
                             the employee or agent responsible for delivering it to the intended recipient, then any
                             dissemination or copying of this eMail is prohibited and may be unlawful. If you receive
                             this eMail in error, please immediately notify us by return eMail or by telephone. Thank
-                            you.
+                            you.<br />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            class="text-footer2"
+                            style="
+                              color: rgb(119, 119, 119);
+                              font-family: Arial, sans-serif;
+                              font-size: 14px;
+                              line-height: 20px;
+                              text-align: center;
+                            ">
+                            70000TONS, 70000TONS OF METAL and the 70000TONS OF METAL logo are registered trademarks of Properties of Metal Ltd. and are used under license.<br />
+                            © 2009–2025 UMCruises International Ltd. All Rights Reserved.
                           </td>
                         </tr>
                       </tbody>
