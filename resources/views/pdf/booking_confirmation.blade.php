@@ -400,7 +400,7 @@
         <section class="post-header">
             <div>{{ formatDate($data['event']->start_date, true, true) }} – {{ formatDate($data['event']->end_date, true) }}</div>
             <div>{{ $data['event']->address }}</div>
-            <div>Independence of the Seas</div>
+            <div>Freedom of the Seas</div>
         </section>
         <section class="body">
             <h2 style="text-align: center; margin-top:5px; margin-bottom: 0px;">BOOKING CONFIRMATION</h2>
