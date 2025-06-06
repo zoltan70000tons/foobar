@@ -50,9 +50,11 @@ class CustomerBookingRepository
     $booking = null;
 
     if($requestId) {
-      $booking = Booking::with(
+      $booking = Booking::with([
         'adjustments',
-        'passengers.fees',
+        'passengers.fees' => function($query) {
+          $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
+        },
         'passengers.installments',
         'passengers.passengerInvitation',
         'cabin.category',
@@ -60,15 +62,17 @@ class CustomerBookingRepository
         'passengers.payments',
         'passengers.discounts',
         'event'
-      )
+      ])
         ->where('booking_request_id', $requestId)
         ->where('event_id', $eventId)
         ->first();
 
     } else {
-      $booking = Booking::with(
+      $booking = Booking::with([
         'adjustments',
-        'passengers.fees',
+          'passengers.fees' => function($query) {
+            $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
+        },
         'passengers.installments',
         'passengers.passengerInvitation',
         'cabin.category',
@@ -76,7 +80,7 @@ class CustomerBookingRepository
         'passengers.payments',
         'passengers.discounts',
         'event'
-      )
+      ])
         ->where('booking_code', $bookingCode)
         ->where('event_id', $eventId)
         ->first();

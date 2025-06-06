@@ -10,8 +10,9 @@ import {
   TableRow,
   Button,
   Grid,
-  Avatar,
+  Avatar, Tooltip, IconButton,
 } from "@mui/material";
+import InfoIcon from '@mui/icons-material/Info';
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
 import FeesForm, { Fee } from "./FeesForm";
@@ -394,7 +395,15 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   </TableRow>
                   {pax.fees.map((fee, i) => (
                     <TableRow key={`fee-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Fee ({fee.type}):</TableCell>
+                      <TableCell sx={{ pl: "3rem" }}>
+                        Fee ({fee.type})
+                        <Tooltip title={fee.notes}>
+                          <IconButton>
+                            <InfoIcon fontSize={"small"} />
+                          </IconButton>
+                        </Tooltip>
+                        :
+                      </TableCell>
                       <TableCell align="right">
                         <Box component="span">
                           {Number(fee.amount) > 0

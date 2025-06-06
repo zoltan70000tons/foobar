@@ -42,6 +42,7 @@ class FeeController extends Controller
                     'amount' => 'required|numeric|min:0.01',
                     'type' => 'required|string|max:255',
                     'due_date' => 'nullable|date',
+                    'notes' => 'nullable|string|max:150',
                 ]);
 
                 DB::transaction(function () use ($validated, $request, $booking_id) {
