@@ -18,6 +18,8 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
   const { get } = useForm();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+  const canViewCustomerTags = hasPermission(Permissions.ViewCustomerTags);
+
   const [loading, setLoading] = useState(true);
   const userTagAutocomleteOptions = userTags.map(item => ({
     ...item,
@@ -127,6 +129,10 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
     get(route('customers.create', {}));
   };
 
+  const handleViewTags = () => {
+    get(route('customer-tags.index', {}));
+  }
+
   const fetchCustomers = async (
     page: number,
     rowsPerPage: number,
@@ -163,9 +169,14 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
     <AuthenticatedLayout user={auth.user} header={'Customers'}>
       <Head title="Customers" />
       <Toolbar sx={{ mt: 8 }}>
-        <Button variant="outlined" color="secondary" onClick={handleCreate}>
+        <Button variant="outlined" color="secondary" onClick={handleCreate} sx={{ mr: 2 }}>
           New Customer
         </Button>
+        {canViewCustomerTags && (
+          <Button variant="outlined" color="primary" onClick={handleViewTags}>
+            Customer Tags
+          </Button>
+        )}
       </Toolbar>
       <Container maxWidth="lg" sx={{ mb: 4 }}>
         <Grid container spacing={3}>

@@ -162,7 +162,7 @@
                                             <br />
                                             Pricing Breakdown (Per Passenger)<br />
                                             Official Ticket Price: USD {TICKET_PRICE}<br />
-                                            Taxes &amp; Fees: USD 487.00<br />
+                                            Taxes &amp; Fees: USD 494.00<br />
                                             Single Traveler Surcharge: USD 100.00 XXDELETE?XX<br />
                                             <strong>Total Ticket Price:</strong><span>&nbsp;</span>USD {INDIVIDUAL_TOTAL}<br />
                                             <br />

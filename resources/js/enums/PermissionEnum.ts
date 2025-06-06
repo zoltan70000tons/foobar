@@ -94,6 +94,11 @@ export enum Permissions {
 
     // Emails
 
-    SendEmails = 'Send Emails'
+    SendEmails = 'Send Emails',
 
+    // Manage Customers
+    ViewCustomerTags = "View Customer Tags",
+    CreateCustomerTags = "Create Customer Tags",
+    EditCustomerTags = "Edit Customer Tags",
+    DeleteCustomerTags = "Delete Customer Tags",
 }
