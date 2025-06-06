@@ -176,7 +176,8 @@ class CabinController extends Controller
   */
   public function reserveType(Request $request)
   {
-    // $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME', 6);
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
 
     if ($request->session()->has('reserved_cabin_id')) {
       return response()->json(['message' => __('feedback.double_booking')], 403);

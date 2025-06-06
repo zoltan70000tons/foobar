@@ -121,6 +121,13 @@ trait CabinFilter
         ];
       });
 
+    // Prioritize PARTIALLY_BOOKED cabins first for non-private types
+    if ($cabinTypeId !== 1) {
+      $formattedCabins = $formattedCabins->sortByDesc(function ($cabin) {
+        return $cabin['status'] === StatusCabin::PARTIALLY_BOOKED->value ? 1 : 0;
+      })->values();
+    }
+
     if ($returnInProgress && $cabinTypeId == 1) {
       $inProgressCabins = $cabins
         ->filter(function ($cabin) use ($temporarilyReservedCabinNumbers) {
