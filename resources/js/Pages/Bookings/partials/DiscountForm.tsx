@@ -9,8 +9,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid, Divider, TableContainer, Table, Paper, TableHead, TableRow, TableCell, TableBody, IconButton,
+  Grid, Divider, TableContainer, Table, Paper, TableHead, TableRow, TableCell, TableBody, IconButton, Tooltip,
 } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
 
 import { router } from '@inertiajs/react';
 import { sanitizeInput } from '@/Helpers/inputSanitizer';
@@ -22,7 +23,6 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { Delete } from "@mui/icons-material";
-
 
 type DiscountFormProps = {
   passenger: Passenger;
@@ -37,11 +37,14 @@ export type Discount = {
   operation: string;
   id: number;
   created_at: string;
+  notes?: string;
 };
 
 const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Pick<Discount, 'type' | 'amount' | 'operation'>>({ type: '', amount: 0, operation: '' });
+  const [formData, setFormData] = useState<
+    Pick<Discount, 'type' | 'amount' | 'operation'> & { notes?: string }
+  >({ type: '', amount: 0, operation: '', notes: '' });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -87,11 +90,12 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
         amount: formData.amount,
         type: formData.type,
         operation: formData.operation,
+        notes: formData.notes ?? '',
       },
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ type: '', amount: 0, operation: '' });
+          setFormData({ type: '', amount: 0, operation: '', notes: '' });
           setOpen(false);
           showSnackbar('Discount created successfully', 'success');
           router.reload({ only: ['user'] });
@@ -183,6 +187,17 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                 inputProps={{ step: 0.01, min: 0 }}
                 required
               />
+              <TextField
+                label="Notes"
+                name="notes"
+                type="text"
+                value={formData.notes}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                multiline
+                minRows={3} // or rows={3}
+              />
             </Box>
             <DialogActions>
               <Grid container spacing={2} sx={{ px: 2 }}>
@@ -222,7 +237,14 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                 <TableBody>
                   {passenger.discounts.map((discount) => (
                     <TableRow key={discount.id}>
-                      <TableCell>{discount.type}</TableCell>
+                      <TableCell>
+                        {discount.type}
+                        <Tooltip title={discount.notes}>
+                          <IconButton>
+                            <InfoIcon fontSize={"small"} />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{discount.operation}</TableCell>
                       <TableCell>
                         {formatCurrency(discount.amount)}

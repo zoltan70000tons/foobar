@@ -40,7 +40,7 @@ class DiscountsController extends Controller
                     'amount' => 'required|numeric|min:0.01',
                     'operation' => 'required|string|in:FIXED,PERCENTAGE',
                     'type' => 'required|string|max:255',
-
+                    'notes' => 'nullable|string|max:150',
                 ]);
                 PassengerDiscount::create($validated);
                 $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));

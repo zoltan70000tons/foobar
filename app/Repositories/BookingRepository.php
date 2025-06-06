@@ -271,9 +271,7 @@ class BookingRepository implements BookingInterface
             'passengers.payments' => function ($query) {
                 $query->with(['paymentTransferFrom', 'paymentTransferTo']);
             },
-            'passengers.fees' => function($query) {
-                $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
-            },
+            'passengers.fees',
             'passengers.discounts',
             'passengers.onboardCredits',
             'passengers.passengerInvitation',

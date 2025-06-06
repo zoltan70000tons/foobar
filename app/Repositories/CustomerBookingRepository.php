@@ -60,7 +60,9 @@ class CustomerBookingRepository
         'cabin.category',
         'cabin.cabinType',
         'passengers.payments',
-        'passengers.discounts',
+        'passengers.discounts' => function($query) {
+          $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
+        },
         'event'
       ])
         ->where('booking_request_id', $requestId)
@@ -78,7 +80,9 @@ class CustomerBookingRepository
         'cabin.category',
         'cabin.cabinType',
         'passengers.payments',
-        'passengers.discounts',
+        'passengers.discounts' => function($query) {
+          $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
+        },
         'event'
       ])
         ->where('booking_code', $bookingCode)
