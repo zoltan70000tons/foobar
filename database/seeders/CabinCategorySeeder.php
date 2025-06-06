@@ -16,10 +16,10 @@ class CabinCategorySeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run($eventId = null)
     {
-        // Retrieve the first Event and Cruise
-        $eventId = Event::first()->id;
+        // If no event ID is provided, use the first event's ID
+        $eventId = $eventId ?? Event::first()->id;
         $cruiseId = Cruise::first()->id;
 
         // Path to the CSV file

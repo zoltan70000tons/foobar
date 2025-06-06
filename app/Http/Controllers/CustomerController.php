@@ -40,14 +40,16 @@
     {
       try {
         return $this->withPermission([Permissions::ViewCustomers], function () {
+          $userTags = UserTag::all();
           return Inertia::render('Customer/Index', [
             'customers' => $this->customerRepository->getAllCustomerData(),
+            'userTags' => $userTags,
           ]);
         }, $request);
       } catch (\Exception $e) {
         $this->logException($e);
 
-        return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+        return redirect()->route('customers.index')->with('error', 'Something went wrong.');
       }
     }
 
@@ -58,8 +60,9 @@
       $sortBy = $request->get('sort_by');
       $sortDir = $request->get('sort_direction');
       $filters = json_decode($request->get('filters'), true);
+      $tags = json_decode($request->get('tags'), true);
 
-      return $this->customerRepository->getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters);
+      return $this->customerRepository->getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters, $tags);
     }
 
     public function create(): InertiaResponse
@@ -141,14 +144,14 @@
       } catch (\Exception $e) {
         $this->logException($e);
 
-        return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+        return redirect()->route('customers.index')->with('error', 'Something went wrong.');
       }
     }
 
     public function editBySurvivorNumber(string $survivorNumber)
     {
         if (!$survivorNumber) {
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
 
         $survivorNumberModel = SurvivorNumber::query()
@@ -157,13 +160,13 @@
             ->first();
 
         if (!$survivorNumberModel) {
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
 
         $customer = $survivorNumberModel->user;
 
         if (!$customer) {
-            return redirect()->route('customer.index')->with('error', 'Something went wrong.');
+            return redirect()->route('customers.index')->with('error', 'Something went wrong.');
         }
 
         return $this->edit($customer);

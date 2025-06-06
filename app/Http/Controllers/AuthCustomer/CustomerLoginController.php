@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AuthCustomer;
 
+use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +20,9 @@ class CustomerLoginController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+    
     // Step 1: Validate the request data
     $request->validate([
       'identifier' => 'required|string',

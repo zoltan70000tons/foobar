@@ -17,4 +17,7 @@ return [
   'age_restriction' => 'Passagiere müssen zum Zeitpunkt des Boardings mindestens einundzwanzig (21) Jahre alt sein, um buchen zu können.',
   'cabin_not_available' => 'Diese Kabine ist nicht mehr verfügbar. Bitte wähle eine andere Kabine oder Kategorie aus oder versuche es später erneut.',
   'cabin_type_not_allowed' => 'Dieser Kabinentyp ist für Deine Buchung nicht erlaubt. Bitte wähle einen anderen Kabinentyp aus oder kontaktiere den Support für Hilfe.',
+  'booking_not_found' => 'Buchung nicht gefunden. Bitte überprüfe die Angaben und versuche es erneut.',
+  'cannot_delete_account' => 'Du kannst dein Konto nicht löschen, solange du eine aktive Buchung hast.',
+  'proceed_delete_account' => 'Fortfahren, um dein Konto zu löschen.',
 ];

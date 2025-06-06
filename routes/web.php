@@ -6,6 +6,7 @@ use App\Http\Controllers\BookingsController;
 use App\Http\Controllers\CabinCategoriesController;
 use App\Http\Controllers\CabinsController;
 use App\Http\Controllers\DeletedController;
+use App\Http\Controllers\CustomerTagController;
 use App\Http\Controllers\ContactFormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
@@ -275,5 +276,16 @@ Route::prefix('payment-transfer')->group(function () {
 });
 
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
+
+Route::get('/customer-tags/paginated', [CustomerTagController::class, 'getPaginated'])->name('customer-tags.paginated');
+Route::get('/customer-tags/create', [CustomerTagController::class, 'create'])->name('customer-tags.create');
+Route::post('/customer-tags', [CustomerTagController::class, 'store'])->name('customer-tags.store');
+Route::get('/customer-tags/{userTag}', [CustomerTagController::class, 'show'])
+    ->where('userTag', '[0-9]+')
+    ->name('customer-tags.show');
+Route::get('/customer-tags/{userTag}/edit', [CustomerTagController::class, 'edit'])->name('customer-tags.edit');
+Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'update'])->name('customer-tags.update');
+Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
+Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 
 require __DIR__ . '/auth.php';
