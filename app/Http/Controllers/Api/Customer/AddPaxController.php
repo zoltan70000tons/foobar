@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Customer;
 
+use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
@@ -32,6 +33,9 @@ class AddPaxController extends Controller
   */
   public function validate(Request $request)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     // if user is auth response error
     $user = Auth::check();
     if ($user) {
@@ -61,7 +65,7 @@ class AddPaxController extends Controller
       ->first();
 
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     // unset agent_id
