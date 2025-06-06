@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { router } from "@inertiajs/react";
@@ -19,12 +19,15 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import ImageUpload from "@/Components/ImageUpload";
 import { EventStatus } from "@/enums/EventStatusEnum";
 import EventStatusSelect from "@/Components/EventStatusSelect";
 import SnackbarAlert from "@/Components/SnackbarAlert";
 
 const Create = ({ auth, errors }: PageProps) => {
+  const { membership_presale_periods } = usePage().props;
   const { data, setData, post, processing } = useForm({
     name: "",
     description: "",
@@ -33,7 +36,13 @@ const Create = ({ auth, errors }: PageProps) => {
     end_date: null,
     status: "",
     image: null,
+    membership_presale_periods: membership_presale_periods || [],
   });
+
+  console.log(membership_presale_periods)
+
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -45,6 +54,26 @@ const Create = ({ auth, errors }: PageProps) => {
     (field: "start_date" | "end_date") => (newValue: Dayjs | null) => {
       setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
     };
+
+  const handlePeriodDateChange = (index: number, field: 'start_date' | 'end_date') => (newValue: Dayjs | null) => {
+    setData((prevData) => {
+      const updated = [...prevData.membership_presale_periods];
+
+      if (!updated[index].presale_period) {
+        updated[index].presale_period = {
+          membership_type_id: updated[index].membership_type.id,
+          start_date: null,
+          end_date: null,
+        };
+      }
+
+      updated[index].presale_period[field] = newValue
+        ? newValue.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
+        : null;
+
+      return { ...prevData, membership_presale_periods: updated };
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -76,9 +105,26 @@ const Create = ({ auth, errors }: PageProps) => {
       return;
     }
 
+    for (const item of data.membership_presale_periods) {
+      const presale = item.presale_period;
+      if (presale) {
+        const start = new Date(presale.start_date);
+        const end = new Date(presale.end_date);
+
+        if (start >= end) {
+          alert('The Pre-Sale end date cannot be earlier than the start date.');
+          return;
+        }
+      }
+    }
+
     const formData = new FormData();
     for (const key in data) {
-      formData.append(key, data[key]);
+      if (key === 'membership_presale_periods') {
+        formData.append(key, JSON.stringify(data[key]));
+      } else {
+        formData.append(key, data[key]);
+      }
     }
     router.post(route("events.store"), formData, {
       forceFormData: true,
@@ -221,6 +267,75 @@ const Create = ({ auth, errors }: PageProps) => {
                   errors={errors}
                 />
               </Box>
+
+              {(data.membership_presale_periods && data.membership_presale_periods.length > 0) && (
+                <>
+                  <Typography
+                    variant="body2"
+                    sx={{ display: 'inline-flex', alignItems: 'center', mt: 4 }}
+                  >
+                    Pre-Sale Periods (Time must be in EST)
+                  </Typography>
+                  <Grid container item xs={12} spacing={2} sx={{mt: 0}}>
+                    {data.membership_presale_periods.map((item, index) => {
+                      return (
+                        <React.Fragment key={item.membership_type.id}>
+                          <Grid item xs={4}>
+                            <TextField
+                              fullWidth
+                              label="Membership Type"
+                              variant="outlined"
+                              value={item.membership_type?.name}
+                              InputProps={{ readOnly: true }}
+                            />
+                          </Grid>
+                          <Grid item xs={4}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DatePicker
+                                label="Start Date"
+                                sx={{ width: "100%" }}
+                                disablePast
+                                onChange={handlePeriodDateChange(index, 'start_date')}
+                                value={
+                                  item.presale_period?.start_date ? dayjs(item.presale_period.start_date) : null
+                                }
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    fullWidth
+                                    InputProps={{ readOnly: true }}
+                                  />
+                                )}
+                              />
+                            </LocalizationProvider>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DatePicker
+                                label="End Date"
+                                sx={{ width: "100%" }}
+                                disablePast
+                                onChange={handlePeriodDateChange(index, 'end_date')}
+                                value={
+                                  item.presale_period?.end_date ? dayjs(item.presale_period.end_date) : null
+                                }
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    fullWidth
+                                    InputProps={{ readOnly: true }}
+                                  />
+                                )}
+                              />
+                            </LocalizationProvider>
+                          </Grid>
+                        </React.Fragment>
+                      );
+                    })}
+                  </Grid>
+                </>
+              )}
+
               <Box sx={{ mt: 4 }}>
                 <Button
                   variant="contained"

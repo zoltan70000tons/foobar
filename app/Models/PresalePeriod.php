@@ -12,6 +12,7 @@ class PresalePeriod extends Model
   protected $table = 'presale_periods';
 
   protected $fillable = [
+    'id',
     'event_id',
     'membership_type_id',
     'start_date',

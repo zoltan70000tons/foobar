@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Head, useForm, usePage } from "@inertiajs/react";
-import { PageProps } from "@/types";
+import { EventType, PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import {
   Container,
@@ -27,8 +27,9 @@ import DashboardCard from "../Dashboard/DashboardCard";
 import RoomPreferencesIcon from '@mui/icons-material/RoomPreferences';
 import { Permissions } from "@/enums/PermissionEnum";
 
+type PropsWithEvent = PageProps<{ event: EventType }>;
 
-const View = ({ auth, event }: PageProps) => {
+const View = ({ auth, event }: PropsWithEvent) => {
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
@@ -171,6 +172,68 @@ const View = ({ auth, event }: PageProps) => {
                   InputProps={{ readOnly: true }}
                 />
               </Box>
+              {(event.presale_periods && event.presale_periods.length > 0) && (
+                <>
+                  <Typography fullWidth variant="body2" sx={{mt: 4}}>
+                    Pre-Sale Periods
+                  </Typography>
+                  <Grid container item xs={12} spacing={2} sx={{mt: 0}}>
+                    {event.presale_periods.map((period) => {
+                      return (
+                        <React.Fragment key={`${period.event_id}_${period.membership_type_id}`}>
+                          <Grid item xs={4}>
+                            <TextField
+                              fullWidth
+                              label="Membership Type"
+                              variant="outlined"
+                              value={period.membership_type?.name}
+                              InputProps={{ readOnly: true }}
+                            />
+                          </Grid>
+                          <Grid item xs={4}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DatePicker
+                                label="Start Date"
+                                sx={{ width: "100%" }}
+                                value={
+                                  period.start_date ? dayjs(period.start_date) : null
+                                }
+                                disabled
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    fullWidth
+                                    InputProps={{ readOnly: true }}
+                                  />
+                                )}
+                              />
+                            </LocalizationProvider>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DatePicker
+                                label="End Date"
+                                sx={{ width: "100%" }}
+                                value={
+                                  period.end_date ? dayjs(period.end_date) : null
+                                }
+                                disabled
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    fullWidth
+                                    InputProps={{ readOnly: true }}
+                                  />
+                                )}
+                              />
+                            </LocalizationProvider>
+                          </Grid>
+                        </React.Fragment>
+                      );
+                    })}
+                  </Grid>
+                </>
+              )}
 
               <Box sx={{ mt: 4 }}>
                 <div
