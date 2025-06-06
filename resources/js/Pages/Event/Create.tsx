@@ -39,8 +39,6 @@ const Create = ({ auth, errors }: PageProps) => {
     membership_presale_periods: membership_presale_periods || [],
   });
 
-  console.log(membership_presale_periods)
-
   dayjs.extend(utc);
   dayjs.extend(timezone);
 

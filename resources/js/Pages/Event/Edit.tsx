@@ -46,8 +46,6 @@ const Edit = ({ auth, errors}: PageProps) => {
   dayjs.extend(utc);
   dayjs.extend(timezone);
 
-  console.log(data.membership_presale_periods)
-
   const handleDateChange = (field: 'start_date' | 'end_date') => (newValue: Dayjs | null) => {
     setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
   };
