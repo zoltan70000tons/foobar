@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Customer;
 
+use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
@@ -56,6 +57,9 @@ class CheckBookingController extends Controller
   */
   public function login(Request $request)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     $request->validate([
       'name' => 'required|string',
       'lastName' => 'required|string',
@@ -85,12 +89,12 @@ class CheckBookingController extends Controller
       ->first();
 
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     // Ensure booking event is in valid status
     if (!in_array($booking->event->status, ['PUBLIC', 'PRE-SALE'])) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     // Normalize input names
@@ -143,16 +147,18 @@ class CheckBookingController extends Controller
   */
   public function canDeleteAccount(Request $request)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
     $user = $request->user();
 
     // Check if user has an active booking
     $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
 
     return response()->json([
-        'canDelete' => !$hasActiveBooking,
-        'message' => $hasActiveBooking
-            ? 'You cannot delete your account while you have an active booking.'
-            : 'You can delete your account.',
+      'canDelete' => !$hasActiveBooking,
+      'message' => $hasActiveBooking
+        ? __('feedback.cannot_delete_account')
+        : __('feedback.proceed_delete_account'),
     ]);
   }
 
