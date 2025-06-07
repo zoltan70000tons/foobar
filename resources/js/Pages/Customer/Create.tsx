@@ -13,7 +13,7 @@ import {
   Button,
   Typography,
   Select,
-  MenuItem,
+  MenuItem, FormHelperText, FormControl, InputLabel,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -24,6 +24,7 @@ import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
 import { usePermissions } from "@/Providers/PermissionContext";
 import dayjs from "dayjs";
+import iso3166 from 'iso-3166-2';
 
 const Create = ({ auth, errors }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -49,7 +50,26 @@ const Create = ({ auth, errors }: PageProps) => {
     language: "",
   });
 
-  console.log(data.dob)
+  const selectedCountry = data.country;
+
+  const getStateOptions = (countryCode: string) => {
+    const subdivisions = iso3166.country(countryCode)?.sub || {};
+
+    const seen = new Set<string>();
+
+    return Object.entries(subdivisions)
+    .map(([fullCode, { name }]) => ({ label: name, value: name }))
+    .filter(({ label }) => {
+      if (seen.has(label)) {
+        return false;
+      }
+      seen.add(label);
+      return true;
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+  };
+
+  const stateOptions = getStateOptions(selectedCountry);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -63,6 +83,15 @@ const Create = ({ auth, errors }: PageProps) => {
     const { name, value } = e.target;
 
     setData(name as keyof TForm, value as TForm[keyof TForm]);
+  };
+
+  const handleSelectChange = (
+    e: React.ChangeEvent<{ name?: string; value: unknown }>
+  ) => {
+    const name = e.target.name;
+    const value = e.target.value;
+
+    setData("state", value as string);
   };
 
   const handleStringChange = <TForm extends Record<string, any>>(
@@ -283,14 +312,24 @@ const Create = ({ auth, errors }: PageProps) => {
                       />
                     </Grid>
                     <Grid item xs={ 4 }>
-                      <TextField
-                        fullWidth
-                        label="State"
-                        variant="outlined"
-                        value={ data.state }
-                        name={ "state" }
-                        onChange={ handleChange }
-                      />
+                      <FormControl required={selectedCountry === "USA" || selectedCountry === "CAN"} fullWidth error={!!errors.state}>
+                        <InputLabel id="state-label">State</InputLabel>
+                        <Select
+                          labelId="state-label"
+                          label="State"
+                          value={data.state}
+                          onChange={handleSelectChange}
+                          variant="outlined"
+                          error={!!errors.state}
+                        >
+                          {stateOptions.map(({ value, label }) => (
+                            <MenuItem key={value} value={value}>
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{errors.state}</FormHelperText>
+                      </FormControl>
                     </Grid>
                     <Grid item xs={ 4 }>
                       <TextField

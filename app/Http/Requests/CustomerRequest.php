@@ -57,9 +57,9 @@ class CustomerRequest extends FormRequest
             ],
             'state' => [
                 'string',
-                'max:20',
+                'max:254',
                 'nullable',
-                'regex:/^[#.0-9a-zA-Z\s,-]+$/'
+                'regex:/^[#.\p{L}0-9\s,-]+$/u'
             ],
             'address_first' => [
                 'string',
