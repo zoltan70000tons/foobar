@@ -19,8 +19,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+//import utc from 'dayjs/plugin/utc';
+//import timezone from 'dayjs/plugin/timezone';
 import ImageUpload from "@/Components/ImageUpload";
 import { EventStatus } from "@/enums/EventStatusEnum";
 import EventStatusSelect from "@/Components/EventStatusSelect";
@@ -39,8 +39,8 @@ const Create = ({ auth, errors }: PageProps) => {
     membership_presale_periods: membership_presale_periods || [],
   });
 
-  dayjs.extend(utc);
-  dayjs.extend(timezone);
+  //dayjs.extend(utc);
+  //dayjs.extend(timezone);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -66,7 +66,7 @@ const Create = ({ auth, errors }: PageProps) => {
       }
 
       updated[index].presale_period[field] = newValue
-        ? newValue.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
+        ? newValue//.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
         : null;
 
       return { ...prevData, membership_presale_periods: updated };

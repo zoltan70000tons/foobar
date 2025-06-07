@@ -15,11 +15,12 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+//import utc from 'dayjs/plugin/utc';
+//import timezone from 'dayjs/plugin/timezone';
 import ImageUpload from "@/Components/ImageUpload";
 import EventStatusSelect from "@/Components/EventStatusSelect";
 import { EventStatus } from "@/enums/EventStatusEnum";
@@ -43,8 +44,8 @@ const Edit = ({ auth, errors}: PageProps) => {
     membership_presale_periods: membership_presale_periods || [],
   });
 
-  dayjs.extend(utc);
-  dayjs.extend(timezone);
+  //dayjs.extend(utc);
+  //dayjs.extend(timezone);
 
   const handleDateChange = (field: 'start_date' | 'end_date') => (newValue: Dayjs | null) => {
     setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
@@ -64,7 +65,7 @@ const Edit = ({ auth, errors}: PageProps) => {
       }
 
       updated[index].presale_period[field] = newValue
-        ? newValue.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
+        ? newValue//.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
         : null;
 
       return { ...prevData, membership_presale_periods: updated };
@@ -286,8 +287,8 @@ const Edit = ({ auth, errors}: PageProps) => {
                           </Grid>
                           <Grid item xs={4}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                              <DatePicker
-                                label="Start Date"
+                              <DateTimePicker
+                                label="Start Time"
                                 sx={{ width: "100%" }}
                                 disablePast
                                 onChange={handlePeriodDateChange(index, 'start_date')}
@@ -306,8 +307,8 @@ const Edit = ({ auth, errors}: PageProps) => {
                           </Grid>
                           <Grid item xs={4}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                              <DatePicker
-                                label="End Date"
+                              <DateTimePicker
+                                label="End Time"
                                 sx={{ width: "100%" }}
                                 disablePast
                                 onChange={handlePeriodDateChange(index, 'end_date')}
