@@ -78,6 +78,8 @@
           return redirect()->route('customers.index')->with('flash', 'Customer created successfully.');
         }, $request);
       } catch (\Exception $e) {
+          dd($e->getMessage());
+          $this->logException($e);
         return redirect()->route('customers.index')->with('error', 'Problem creating customer.');
       }
     }

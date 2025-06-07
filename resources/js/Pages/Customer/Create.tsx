@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -70,6 +70,10 @@ const Create = ({ auth, errors }: PageProps) => {
   };
 
   const stateOptions = getStateOptions(selectedCountry);
+
+  useEffect(() => {
+    setData("state", "");
+  }, [selectedCountry]);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
