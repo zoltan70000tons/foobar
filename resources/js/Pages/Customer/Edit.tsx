@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -15,7 +15,7 @@ import {
   Select,
   MenuItem,
   Tabs,
-  Tab,
+  Tab, FormControl, InputLabel, FormHelperText,
 } from '@mui/material';
 import { usePermissions } from '@/Providers/PermissionContext';
 import SnackbarAlert from '@/Components/SnackbarAlert';
@@ -27,6 +27,7 @@ import LoadingOverlay from '@/Components/LoadingOverlay';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import iso3166 from "iso-3166-2";
 
 type Nullable<T> = T | null;
 
@@ -61,6 +62,28 @@ type PageProps = {
   customer: Customer;
 };
 
+type CustomerFormData = {
+  survivor_number: string;
+  email: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  gender: string;
+  dob: string;
+  citizenship: string;
+  phone: string;
+  address_first: string;
+  address_second: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  emergency_c_name: string;
+  emergency_c_phone: string;
+  language: string;
+};
+
 const Edit = ({ auth, errors }: PageProps) => {
   const { customer, bookings }: PageProps = usePage().props;
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
@@ -68,7 +91,7 @@ const Edit = ({ auth, errors }: PageProps) => {
   const [loading, setLoading] = useState(true);
   const { hasPermission } = usePermissions();
 
-  const { data, setData, head, processing } = useForm({
+  const { data, setData, head, processing } = useForm<CustomerFormData>({
     survivor_number: customer.survivor_number.survivor_number || '',
     email: customer.email || '',
     username: customer.username || '',
@@ -90,12 +113,52 @@ const Edit = ({ auth, errors }: PageProps) => {
     language: customer.detail.language || '',
   });
 
+  const selectedCountry = data.country;
+
+  const getStateOptions = (countryCode: string) => {
+    const subdivisions = iso3166.country(countryCode)?.sub || {};
+
+    const seen = new Set<string>();
+
+    return Object.entries(subdivisions)
+    .map(([fullCode, { name }]) => ({ label: name, value: name }))
+    .filter(({ label }) => {
+      if (seen.has(label)) {
+        return false;
+      }
+      seen.add(label);
+      return true;
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+  };
+
+  const stateOptions = getStateOptions(selectedCountry);
+
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    setData("state", "");
+  }, [selectedCountry]);
+
   const handleChange = <TForm extends Record<string, any>>(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
     setData(name as keyof TForm, value as TForm[keyof TForm]);
+  };
+
+  const handleSelectChange = (
+    e: React.ChangeEvent<{ name?: string; value: unknown }>
+  ) => {
+    const name = e.target.name;
+    const value = e.target.value;
+
+    setData("state", value as string);
   };
 
   const handleStringChange = <TForm extends Record<string, any>>(value: string, name: string) => {
@@ -328,14 +391,24 @@ const Edit = ({ auth, errors }: PageProps) => {
                       />
                     </Grid>
                     <Grid item xs={4}>
-                      <TextField
-                        fullWidth
-                        label="State"
-                        variant="outlined"
-                        value={data.state}
-                        name={'state'}
-                        onChange={handleChange}
-                      />
+                      <FormControl required={selectedCountry === "USA" || selectedCountry === "CAN"} fullWidth error={!!errors.state}>
+                        <InputLabel id="state-label">State</InputLabel>
+                        <Select
+                          labelId="state-label"
+                          label="State"
+                          value={data.state}
+                          onChange={handleSelectChange}
+                          variant="outlined"
+                          error={!!errors.state}
+                        >
+                          {stateOptions.map(({ value, label }) => (
+                            <MenuItem key={value} value={value}>
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{errors.state}</FormHelperText>
+                      </FormControl>
                     </Grid>
                     <Grid item xs={4}>
                       <TextField

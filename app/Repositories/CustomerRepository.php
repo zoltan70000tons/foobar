@@ -240,15 +240,17 @@
         $user->assignRole('Customer');
         $user->save();
 
-          UserLog::create([
-              'customer_id' => $user->id,
-              'author_id' => Auth::id(),
-              'action' => 'User created',
-          ]);
+        UserLog::create([
+          'customer_id' => $user->id,
+          'author_id' => Auth::id(),
+          'action' => 'User created',
+          'description' => 'User created',
+        ]);
 
         DB::commit();
       } catch (Exception $e) {
         DB::rollBack();
+        throw $e;
       }
     }
 
