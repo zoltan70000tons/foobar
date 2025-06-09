@@ -10,6 +10,7 @@
   use App\Models\SurvivorNumber;
   use App\Models\User;
   use App\Models\UserTag;
+  use App\Models\TemporaryPassword;
   use App\Repositories\CustomerRepository;
   use App\Services\CustomerService;
   use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -114,10 +115,15 @@
           $bookings = $this->customerRepository->getBookingDataForCustomer($user);
           $availableTags = UserTag::all();
 
+          // check if user have generated temporary password
+          $isTemporaryPassword = TemporaryPassword::where('customer_id', $user->id)
+            ->exists();
+
           return Inertia::render('Customer/View', [
             'customer' => $user,
             'bookings' => $bookings,
             'availableTags' => $availableTags,
+            'isTemporaryPassword' => $isTemporaryPassword,
           ]);
         }, $user);
       } catch (\Exception $e) {

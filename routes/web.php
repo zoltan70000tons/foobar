@@ -30,6 +30,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardCreditController;
+use App\Http\Controllers\TemporaryPasswordController;
 
 Route::get('/', function () {
   return Inertia::render('Welcome', [
@@ -189,6 +190,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/customers/{user}/delete-comment', [CustomerController::class, 'deleteComment'])->name(
         'customers.delete-comment'
     );
+  
+  // cutsomer temporary password
+  Route::post('/customers/{user}/temporary-password', [TemporaryPasswordController::class, 'create'])->name(
+    'customers.temporaryPassword.create'
+  );
+
+  // delete temporary password
+  Route::delete('/customers/{user}/temporary-password', [TemporaryPasswordController::class, 'delete'])->name(
+    'customers.temporaryPassword.delete'
+  );
 
   Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
   Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
