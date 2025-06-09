@@ -16,7 +16,8 @@ class PassengerDiscount extends Model
     'passenger_id',
     'type',
     'amount',
-    'operation'
+    'operation',
+    'notes',
   ];
 
   public function passenger()
