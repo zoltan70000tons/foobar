@@ -77,6 +77,8 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
     setSelectedTab(newValue);
   };
 
+  console.log('Cabin Index Page', event, categories, cabins);
+
   const columns = useMemo(
     () => [
       {
@@ -114,6 +116,25 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
         header: 'Number',
         filterable: true,
         sortable: true,
+        draw: (row: any) => (
+          <Typography variant="body2" sx={{ fontWeight: '500' }}>
+            {row.cabin_number}
+            {row && row.is_shared_cabin_number && (
+              <Chip
+                label="Shared"
+                size="small"
+                color="warning"
+                sx={{
+                  ml: 1, 
+                  bgcolor: '#ff9800',
+                  color: '#fff', 
+                  fontSize: '0.75em', 
+                  height: '20px',
+                }}
+              />
+            )}
+          </Typography>
+        ),
       },
       {
         accessor: 'cabin_type',
