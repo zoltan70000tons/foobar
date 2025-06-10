@@ -818,14 +818,15 @@ const Edit = ({ auth, cabin, event, categories, shared, errors }: Props) => {
 
   const ListTabContent = (
     <Box sx={{ p: 3 }}>
-      <Button
-        variant="outlined"
-        color="primary"
-        onClick={handleOpenCategoryDialog}
-        sx={{ mb: 2 }}
-      >
-        Add Shared Cabin
-      </Button>
+      {auth.permissions.includes(Permissions.CreateCabins) &&
+        (<Button
+          variant="outlined"
+          color="primary"
+          onClick={handleOpenCategoryDialog}
+          sx={{ mb: 2 }}
+        >
+          Add Shared Cabin
+        </Button>)}
       <MuiTable
         columns={cabinColumns}
         data={shared}

@@ -377,7 +377,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
               <Box sx={{ display: selectedTab === 0 ? 'block' : 'none', mt: 2 }}>
                 {cabins ? (
                   <div>
-                    <Button
+                    {auth.permissions.includes(Permissions.ViewCabinCategories) && (<Button
                       variant="outlined"
                       color="primary"
                       startIcon={<AddIcon />}
@@ -387,7 +387,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
                       }}
                     >
                       Create Cabin
-                    </Button>
+                    </Button>)}
                     <MuiTable
                       columns={columns}
                       data={cabins}

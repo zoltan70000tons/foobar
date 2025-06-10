@@ -26,7 +26,8 @@ import {
     Checkbox,
     ListItemIcon,
     Alert,
-    FormHelperText
+    FormHelperText,
+    Tooltip
 
 } from "@mui/material";
 import {
@@ -38,6 +39,7 @@ import {
     Rule,
     Cabin,
 } from "@mui/icons-material";
+import { Permissions } from "@/enums/PermissionEnum";
 
 
 
@@ -108,6 +110,7 @@ const Create = ({
         ),
     };
 
+
     const handleSubmit = (e) => {
         e.preventDefault();
         post(route('cabins.store', { id: event.id }), {
@@ -126,6 +129,10 @@ const Create = ({
         setData({ ...data, [event.target.name]: event.target.checked });
     };
 
+    const handleBack = () => {
+        router.visit(route('cabins.index', { id: event.id }));
+    };
+
 
     return (
         <AuthenticatedLayout user={auth.user} header={"Create Cabin"}>
@@ -141,13 +148,27 @@ const Create = ({
             <Container maxWidth="lg" sx={{ mb: 4 }}>
                 <Grid container spacing={3}>
                     <Grid item xs={12}>
-                        <h3>Create New Cabin</h3>
+                        <Box>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "flex-start",
+                                    gap: "8px",
+                                }}
+                            >
+                                <Tooltip title="Back">
+                                    <IconButton color="primary" onClick={handleBack}>
+                                        <ArrowBack />
+                                    </IconButton>
+                                </Tooltip>
+                            </div>
+                        </Box>
                         <form onSubmit={handleSubmit}>
                             <Grid container spacing={3}>
                                 <Grid item xs={12} md={12}>
                                     <Alert severity="info" sx={{ mb: 2 }}>
                                         <Typography variant="body1">
-                                            <strong>Note:</strong> This is a new cabin. Please fill in the details below.
+                                            <strong>Note:</strong> This will create a new cabin. Please fill in the details below.
                                         </Typography>
                                     </Alert>
                                 </Grid>
@@ -323,7 +344,7 @@ const Create = ({
                                                 <MenuItem value="MS">Midship</MenuItem>
                                                 <MenuItem value="AF">Aft</MenuItem>
                                             </Select>
-                                            {errors.location && ( 
+                                            {errors.location && (
                                                 <FormHelperText>{errors.location}</FormHelperText>
                                             )}
                                         </FormControl>
@@ -498,14 +519,14 @@ const Create = ({
                                         rows={4}
                                     />
                                 </Grid>
-
-                                <Grid item xs={12}>
-                                    <Box display="flex" justifyContent="flex-end">
-                                        <Button type="submit" variant="outlined" disabled={processing}>
-                                            Save Cabin
-                                        </Button>
-                                    </Box>
-                                </Grid>
+                                {auth.permissions.includes(Permissions.CreateCabins) &&
+                                    <Grid item xs={12}>
+                                        <Box display="flex" justifyContent="flex-end">
+                                            <Button type="submit" variant="outlined" disabled={processing}>
+                                                Save Cabin
+                                            </Button>
+                                        </Box>
+                                    </Grid>}
                             </Grid>
                         </form>
                     </Grid>
