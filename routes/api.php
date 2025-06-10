@@ -123,7 +123,8 @@ Route::middleware([
   });
 
   // Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinDeck}', [CabinController::class, 'show']);
-  Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [CabinController::class, 'show']);
+  //Route::get('/cabins/{cabinTypeId}/{cabinCategoryCode}/{cabinCapacity}/{cabinDeck}', [CabinController::class, 'show']);
+  Route::get('/cabins', [CabinController::class, 'show']);
 
   // reserve cabin
   // Route::post('/cabin/reserve-type', [CabinController::class, 'reserveType']);

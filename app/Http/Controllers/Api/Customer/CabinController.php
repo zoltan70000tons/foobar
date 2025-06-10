@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\CabinCategory;
 use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
+use App\Traits\DecksFilter;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReservationService;
 use Illuminate\Support\Facades\Auth;
@@ -17,34 +18,94 @@ use Log;
 
 class CabinController extends Controller
 {
-  use CabinFilter;
+  use CabinFilter, DecksFilter;
 
   /**
+   * 
+   * THIS IS OLD METHOD, FOR SHORT POLLING
+   * 
+   * 
    * Show cabins filtered by type, category, and deck.
    */
-  public function show($cabinTypeId, $cabinCategoryCode, $cabinCapacity, $cabinDeck)
+  // public function show($cabinTypeId, $cabinCategoryCode, $cabinCapacity, $cabinDeck)
+  // {
+  //   // Convert parameters to the correct type
+  //   $cabinTypeId = intval($cabinTypeId);
+  //   if ($cabinTypeId !== 1) {
+  //     return response()->json(
+  //       [
+  //         'message' => 'Option avaialble only for private cabins.',
+  //       ],
+  //       404
+  //     );
+  //   }
+
+  //   $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
+  //   $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
+
+  //   $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity, true);
+
+  //   if (isset($filteredCabins['error'])) {
+  //     return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
+  //   }
+
+  //   return response()->json($filteredCabins['cabins'], 200);
+  // }
+  public function show(Request $request, ReservationService $reservationService)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     // Convert parameters to the correct type
-    $cabinTypeId = intval($cabinTypeId);
+    $cabinTypeId = intval($request->input('cabin_type_id', 1));
     if ($cabinTypeId !== 1) {
-      return response()->json(
-        [
-          'message' => 'Option avaialble only for private cabins.',
-        ],
-        404
-      );
+      return response()->json(['message' => 'Option available only for private cabins.'], 404);
     }
 
-    $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
-    $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
+    $cabinCategoryCode = $request->input('category_code', null);
+    $cabinCapacity = $request->input('capacity', null);
+    $cabinDeck = $request->input('deck', null);
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity, true);
+    // if all requests parameters are null, try get from cart 
+    if (is_null($cabinCategoryCode) && is_null($cabinCapacity)) {
+      $cart = Auth::user() ? Cart::where('user_id', Auth::id())->first()?->cart_data ?? [] : [];
+      $cart = (array) $cart;
+      
+      Log::info('Cart data:', ['cart' => $cart]);
+      
+      $cabinCategoryCode = $cart['cabin_code'] ?? null;
+      $cabinCapacity = $cart['cabin_capacity'] ?? null;
+    }
+
+    // if still all requests parameters are null, return error
+    if (is_null($cabinCategoryCode) && is_null($cabinCapacity)) {
+      return response()->json(['message' => 'Cabin category code, capacity.'], 400);
+    }
+
+    // decks with cabins only
+    $decks = $this->filterDecks($cabinTypeId, null, true, $cabinCapacity);
+
+    Log::info('Filtered decks:', ['decks' => $decks]);
+    
+    if (!$decks) {
+      return response()->json(['message' => 'No decks found'], 404);
+    }
+
+    // first deck with lowest number
+    $cabinDeck = $cabinDeck ?? $decks->first()->deck;
+
+
+    // Filter cabins based on the provided parameters
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
     }
 
-    return response()->json($filteredCabins['cabins'], 200);
+    return response()->json([
+      'decks' => $decks,
+      'cabins' => $filteredCabins['cabins']
+    ], 200);
   }
 
   /**
