@@ -112,92 +112,96 @@ class EventController extends Controller
 
     public function edit(Event $event)
     {
+      return $this->withPermission([Permissions::EditEvents], function ($event) {
         $membershipTypes = MembershipType::all();
         $presalePeriods = PresalePeriod::where('event_id', $event->id)
-            ->get()
-            ->keyBy('membership_type_id');
+          ->get()
+          ->keyBy('membership_type_id');
 
         $membershipWithPeriods = $membershipTypes->map(function($membershipType) use ($presalePeriods) {
-            return [
-                'membership_type' => $membershipType,
-                'presale_period' => $presalePeriods->get($membershipType->id) ?? null,
-            ];
+          return [
+            'membership_type' => $membershipType,
+            'presale_period' => $presalePeriods->get($membershipType->id) ?? null,
+          ];
         });
 
         return Inertia::render('Event/Edit', [
-            'event' => $event,
-            'membership_presale_periods' => $membershipWithPeriods,
+          'event' => $event,
+          'membership_presale_periods' => $membershipWithPeriods,
         ]);
+      }, $event);
     }
 
     public function update(Request $request, Event $event)
     {
+      return $this->withPermission([Permissions::EditEvents], function ($request, $event) {
         DB::beginTransaction();
 
         try {
-            if ($request->hasFile('image')) {
-                $path = $request->file('image')->storePublicly('events', 's3');
-                $publicPath = Storage::url($path);
-                $event->image = $publicPath;
+          if ($request->hasFile('image')) {
+            $path = $request->file('image')->storePublicly('events', 's3');
+            $publicPath = Storage::url($path);
+            $event->image = $publicPath;
+          }
+
+          $event->name = $request->name;
+          $event->description = $request->description;
+          $event->address = $request->destination;
+          $event->start_date = $request->start_date ? $request->start_date : null;
+          $event->end_date = $request->end_date ? $request->end_date : null;
+          $event->status = $request->status;
+
+          $event->save();
+
+          $membershipPresalePeriods = json_decode($request->membership_presale_periods, true);
+
+          foreach($membershipPresalePeriods as $item) {
+            $membershipTypeId = $item['membership_type']['id'];
+            $presaleData = $item['presale_period'] ?? null;
+
+            // Find existing presale_period for this event and membership_type
+            $presalePeriod = PresalePeriod::query()
+              ->where('event_id', $event->id)
+              ->where('membership_type_id', $membershipTypeId)
+              ->first();
+
+            if ($presalePeriod) {
+              if (!$presaleData) {
+                // Exists in DB but no data sent → delete it
+                $presalePeriod->delete();
+                continue;
+              }
+              // Exists and data sent → update
+              $presalePeriod->update([
+                'start_date' => $presaleData['start_date'],
+                'end_date' => $presaleData['end_date'],
+              ]);
+            } else {
+              if (!$presaleData) {
+                // Does not exist and no data sent → skip
+                continue;
+              }
+              // Does not exist but data sent → create
+
+              PresalePeriod::create([
+                'id' => \Illuminate\Support\Str::uuid()->toString(),
+                'event_id' => $event->id,
+                'membership_type_id' => $membershipTypeId,
+                'start_date' => $presaleData['start_date'],
+                'end_date' => $presaleData['end_date'],
+              ]);
             }
+          }
 
-            $event->name = $request->name;
-            $event->description = $request->description;
-            $event->address = $request->destination;
-            $event->start_date = $request->start_date ? $request->start_date : null;
-            $event->end_date = $request->end_date ? $request->end_date : null;
-            $event->status = $request->status;
+          DB::commit();
 
-            $event->save();
-
-            $membershipPresalePeriods = json_decode($request->membership_presale_periods, true);
-
-            foreach($membershipPresalePeriods as $item) {
-                $membershipTypeId = $item['membership_type']['id'];
-                $presaleData = $item['presale_period'] ?? null;
-
-                // Find existing presale_period for this event and membership_type
-                $presalePeriod = PresalePeriod::query()
-                    ->where('event_id', $event->id)
-                    ->where('membership_type_id', $membershipTypeId)
-                    ->first();
-
-                if ($presalePeriod) {
-                    if (!$presaleData) {
-                        // Exists in DB but no data sent → delete it
-                        $presalePeriod->delete();
-                        continue;
-                    }
-                    // Exists and data sent → update
-                    $presalePeriod->update([
-                        'start_date' => $presaleData['start_date'],
-                        'end_date' => $presaleData['end_date'],
-                    ]);
-                } else {
-                    if (!$presaleData) {
-                        // Does not exist and no data sent → skip
-                        continue;
-                    }
-                    // Does not exist but data sent → create
-
-                    PresalePeriod::create([
-                        'id' => Str::uuid()->toString(),
-                        'event_id' => $event->id,
-                        'membership_type_id' => $membershipTypeId,
-                        'start_date' => $presaleData['start_date'],
-                        'end_date' => $presaleData['end_date'],
-                    ]);
-                }
-            }
-
-            DB::commit();
-
-            return redirect()->route('events.edit', $event->id)
-                ->with('success', 'Event updated successfully.');
+          return redirect()->route('events.edit', $event->id)
+            ->with('success', 'Event updated successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('events.edit', $event->id)->with('error', 'Problem updating event.');
+          DB::rollBack();
+          return redirect()->route('events.edit', $event->id)->with('error', 'Problem updating event.');
         }
+      }, $request, $event);
     }
 
     public function show(Event $event)
