@@ -11,6 +11,9 @@ use App\Models\Event;
 use Illuminate\Support\Str;
 use App\Traits\StringNormalization;
 use Illuminate\Support\Facades\Session;
+use App\Models\PassengerToken;
+use Laravel\Sanctum\PersonalAccessToken;
+
 
 class CheckBookingController extends Controller
 {
@@ -21,27 +24,36 @@ class CheckBookingController extends Controller
   | Check Booking
   |--------------------------------------------------------------------------
   | 
-  | 1. Retrieve booking token from session or cookie.
+  | 1. Retrieve booking based on token.
   | 2. Check if token is valid.
-  | 3. Find booking based on token.
+  | 3. Find booking based on token user.
   | 4. Return booking details.
   */
   public function getBooking(Request $request)
   {
-    // Retrieve token from session or cookie
-    $bookingToken = Session::get('booking_token') ?? $request->cookie('booking_token');
 
-    if (!$bookingToken) {
-      return response()->json(['message' => 'No valid session found'], 401);
-    }
+      $passenger = $request->user();
 
-    // Check if session has stored booking data
-    if (!Session::has('booking_data')) {
-      return response()->json(['message' => 'Session expired or no booking data found'], 401);
-    }
+      if (!$passenger || !$request->user()->tokenCan('view-booking')) {
+          return response()->json(['message' => 'Unauthorized'], 403);
+      }
 
-    // Return stored booking data
-    return response()->json(Session::get('booking_data'));
+      $passenger->load(['fees', 'installments', 'payments']);
+
+      $booking = Booking::with('cabin.category', 'cabin.cabinType', 'adjustments')
+        ->where('id', $passenger->booking_id)
+        ->first();
+
+      if (!$booking) {
+        return response()->json(['message' => 'somethin went wrong'], 404);
+      }
+
+      return response()->json([
+        'booking' => $booking,
+        'event' => Event::find($booking->event_id),
+        'passengers' => $passenger,
+      ], 200);
+
   }
 
   /*
@@ -67,21 +79,6 @@ class CheckBookingController extends Controller
       'dateOfBirth' => 'required|string',
     ]);
 
-    // Generate token if not exists
-    if (!Session::has('booking_token')) {
-      $token = Str::uuid()->toString();
-      Session::put('booking_token', $token);
-      Session::put('booking_token_expires', now()->addHours(24));
-    }
-
-    $bookingToken = Session::get('booking_token');
-    $expiresAt = Session::get('booking_token_expires');
-
-    // If the session is expired, reset session
-    if (now()->greaterThan($expiresAt)) {
-      Session::flush(); // Clear session completely
-      return $this->login($request);
-    }
 
     // Find booking by booking code
     $booking = Booking::with('cabin.category', 'cabin.cabinType', 'adjustments')
@@ -102,8 +99,7 @@ class CheckBookingController extends Controller
     $formattedLastName = $this->normalizeString($request->lastName);
 
     // Fetch all passengers for this booking
-    $passengers = Passenger::with('fees', 'installments', 'payments')
-      ->where('booking_id', $booking->id)
+    $passengers = Passenger::where('booking_id', $booking->id)
       ->where('dob', $request->dateOfBirth)
       ->get();
 
@@ -117,25 +113,22 @@ class CheckBookingController extends Controller
       return response()->json(['message' => 'Passenger not found'], 404);
     }
 
-    // Set installment status attribute
-    $matchedPassenger->setAttribute('installment_status', $matchedPassenger->installment_status);
+      // Create Sanctum token (valid for 24 hours)
+      $token = $matchedPassenger->createToken('guest-booking', ['view-booking']);
+      $expiresAt = now()->addHours(24);
 
+      // Track token (optional, for cleanup or auditing)
+      PassengerToken::create([
+          'passenger_id' => $matchedPassenger->id,
+          'token_id' => $token->accessToken->id,
+          'expires_at' => $expiresAt,
+      ]);
 
-    // Store booking details in session instead of querying database again
-    Session::put('booking_data', [
-      'booking' => $booking,
-      'event' => Event::find($booking->event_id),
-      'passengers' => $matchedPassenger,
-    ]);
+      return response()->json([
+        'token' => $token->plainTextToken,
+        'expires_at' => $expiresAt,
+      ]);
 
-    return response()
-      ->json([
-        'booking' => $booking,
-        'event' => Event::find($booking->event_id),
-        'passengers' => $matchedPassenger,
-        'token' => $bookingToken,
-      ])
-      ->cookie('booking_token', $bookingToken, 1440); // Store token in cookie
   }
 
   /*
@@ -172,7 +165,28 @@ class CheckBookingController extends Controller
   */
   public function logout(Request $request)
   {
-    Session::forget(['booking_token', 'booking_token_expires', 'booking_data']);
+
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
+    $bearerToken = $request->bearerToken();
+
+    if (!$bearerToken) {
+        return response()->json(['message' => 'No token provided'], 401);
+    }
+
+    $accessToken = PersonalAccessToken::findToken($bearerToken);
+
+    if (!$accessToken || $accessToken->tokenable_type !== Passenger::class) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    // Delete the token (only)
+    $accessToken->delete();
+
+    // Optionally clean up custom token tracking
+    PassengerToken::where('token_id', $accessToken->id)->delete();
+
     return response()->json(['message' => 'Logged out']);
   }
 }
