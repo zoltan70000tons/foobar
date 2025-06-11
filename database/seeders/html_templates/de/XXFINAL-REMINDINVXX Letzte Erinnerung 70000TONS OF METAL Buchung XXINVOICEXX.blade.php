@@ -141,11 +141,11 @@ style="display: block;
 style="text-decoration:
                                               underline;">immer Deinen
                                               Booking Code</strong><span>&nbsp;</span>an.<span>&nbsp;</span><strong
-                                              style="color: red;">Alle
-                                              Beträge ausschließlich in
-                                              US-Dollars. Bitte
-                                              ausschließlich US-Dollars
-                                              senden!</strong><br>
+                                              style="color: red;">Alle 
+                                              Beträge sind in US-Dollar 
+                                              angegeben. Bitte sende 
+                                              ausschließlich Zahlungen 
+                                              in US-Dollar!</strong><br>
                                             <br>
                                             Dein Booking Code ist:
                                             {BOOKING_CODE}<br>

@@ -110,7 +110,7 @@
                                           Bitte beachte:<span>&nbsp;</span><strong>Deine
 
                                             nächste Zahlung in Höhe
-                                            von USD {NEXT_INSTALLMENT_AMOUNT}
+                                            von {NEXT_INSTALLMENT_AMOUNT}
                                             ist am {NEXT_INSTALLMENT_DATE} fällig.</strong><br>
                                           @endif
 
