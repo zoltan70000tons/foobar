@@ -106,14 +106,6 @@ class BookingController extends Controller
 
       $adjustments = Adjustment::where('event_id', $eventId)->first();
       $event = Event::find($eventId);
-      // $priceCalc = PriceCalculation::calculatePricePerPassenger([
-      //   'cabinPrice' => (float) $validated['cart']['cabin_price'],
-      //   'cabinCapacity' => (int) $validated['cart']['cabin_capacity'],
-      //   'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
-      //   'selectedAdjustments' => $cart['addons'],
-      //   'adjustments' => $adjustments,
-      //   'eventStatus' => $event->status,
-      // ]);
 
       $totalPassenger = $cart['price_total_passenger'];
 
@@ -156,26 +148,22 @@ class BookingController extends Controller
       // Call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
-      // Send confirmation email
-      //      \Log::info('Booking created successfully', $result);
+      // Get cart variables for client response
+      $totalPrice = $validated['cart']['price_total'];
+      $cabinTitle = $validated['cart']['cabin_title'];
 
       // Delete current sesion
-      //$request->session()->forget('cart');
       $request->session()->forget('reservation_id');
-      $totalPrice = $cart['price_total'];
-      $cabinTitle = $cart['cabin_title'] ?? '';
 
       // delete cart from db
-
       Cart::where('user_id', $user->id)->delete();
-
       // \Log::info('Result ----> data: ', ['result' => $result]);
       // \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);
       // \Log::info('Cart ----> data: ', ['cart' => $cart]);
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
-      $postalCode = $passengerData['postal_code'] ?? '';
+      $postalCode = $passengerData['postal_code'];
       $bookingRequestId = $result['booking']['booking_request_id'];
 
       if (!$bookingCode || !$passengerEmail) {
