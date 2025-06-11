@@ -83,17 +83,16 @@ class CabinController extends Controller
     }
 
     // decks with cabins only
-    $decks = $this->filterDecks($cabinTypeId, null, true, $cabinCapacity);
+    $decks = $this->filterDecks($cabinTypeId, $cabinCategoryCode, true, $cabinCapacity);
 
-    Log::info('Filtered decks:', ['decks' => $decks]);
-    
-    if (!$decks) {
-      return response()->json(['message' => 'No decks found'], 404);
-    }
 
     // first deck with lowest number
-    $cabinDeck = $cabinDeck ?? $decks->first()->deck;
+    $cabinDeck = $cabinDeck ?? collect($decks)->first();
 
+    // if cabinDeck is not in decks, return error
+    if(!$cabinDeck) {
+      return response()->json(['message' => 'No decks found for the given parameters.'], 404);
+    }
 
     // Filter cabins based on the provided parameters
     $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity);

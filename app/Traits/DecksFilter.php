@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Cabin;
 use App\Enums\StatusCabin;
 use App\Models\TemporaryReservation;
+use Log;
 
 trait DecksFilter
 {
@@ -24,9 +25,11 @@ trait DecksFilter
 
     $tempReservedCabinNumbers = TemporaryReservation::pluck('cabin_number')->toArray();
 
-    $decksQuery = Cabin::with(['category.spec'])
+    $decksQuery = Cabin::with(['cabinType', 'cabinSpec', 'category.spec'])
+      ->whereDoesntHave('cabinSpec', function ($query) use ($tempReservedCabinNumbers) {
+        $query->whereIn('cabin_number', $tempReservedCabinNumbers);
+      })
       ->where('cabin_type_id', $cabinTypeId)
-      ->whereNotIn('cabin_number', $tempReservedCabinNumbers)
       ->when($onlyAvailable, function ($query) use ($cabinTypeId) {
         if ($cabinTypeId == 1) {
           $query->where('status', StatusCabin::AVAILABLE->value);
@@ -37,7 +40,7 @@ trait DecksFilter
 
     if ($cabinCategoryCode) {
       $decksQuery->whereHas('category.spec', function ($query) use ($cabinCategoryCode) {
-        $query->where('category_code', $cabinCategoryCode);
+        $query->where('category_code', '=', $cabinCategoryCode);
       });
     }
 
@@ -47,14 +50,13 @@ trait DecksFilter
       });
     }
 
-    // prepare only by unqiue decks
-    $decks = $decksQuery->get()->unique(function ($item) {
-      return $item->cabin->spec->deck;
-    })->sortBy('cabin.spec.deck');
+    $decks = $decksQuery->get();
 
-    // Map to get only the deck numbers
-    $deckNumbers = $decks->pluck('cabin.spec.deck')->unique()->values();
-    return $deckNumbers->toArray();
+    // return only decks numbers 
+    $decksNumbers = $decks->pluck('deck')->unique()->sort()->values();
+
+    return $decksNumbers->toArray();
+
 
   }
 }
