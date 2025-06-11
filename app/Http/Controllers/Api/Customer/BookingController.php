@@ -162,6 +162,8 @@ class BookingController extends Controller
       // Delete current sesion
       //$request->session()->forget('cart');
       $request->session()->forget('reservation_id');
+      $totalPrice = $cart['price_total'];
+      $cabinTitle = $cart['cabin_title'] ?? '';
 
       // delete cart from db
 
@@ -173,6 +175,7 @@ class BookingController extends Controller
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
+      $postalCode = $passengerData['postal_code'] ?? '';
       $bookingRequestId = $result['booking']['booking_request_id'];
 
       if (!$bookingCode || !$passengerEmail) {
@@ -210,8 +213,14 @@ class BookingController extends Controller
       return response()->json(
         [
           'message' => 'Booking created successfully.',
+          'user' => [
+            'email' => $passengerEmail,
+            'postal_code' => $postalCode,
+          ],
           'booking' => [
             'booking_request_id' => $bookingRequestId,
+            'total_price' => $totalPrice,
+            'cabin_title' => $cabinTitle,
           ],
           // "passenger" => $result["passenger"],
         ],
