@@ -136,6 +136,11 @@ class Passenger extends Model
   {
     return $this->hasMany(OnboardCredit::class);
   }
+  
+  public function passengerTokens()
+  {
+    return $this->hasMany(PassengerToken::class);
+  }
 
   public function getInstallmentStatusAttribute()
   {
