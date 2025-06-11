@@ -48,4 +48,9 @@ class Event extends Model
   {
     return $this->hasMany(Adjustment::class);
   }
+
+  public function presalePeriods()
+  {
+      return $this->hasMany(PresalePeriod::class, 'event_id');
+  }
 }

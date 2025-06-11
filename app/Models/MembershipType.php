@@ -19,4 +19,9 @@ class MembershipType extends Model
   {
     return $this->belongsToMany(User::class, 'memberships', 'membership_id', 'customer_id');
   }
+
+  public function presalePeriods()
+  {
+      return $this->belongsToMany(PresalePeriod::class, 'membership_type_id');
+  }
 }
