@@ -45,10 +45,10 @@ class CartController extends Controller
     $cabinTitle = CabinCategorySpec::where('category_code', $cart['cabin_code'])
       ->where('capacity', $cart['cabin_capacity'])
       ->first()
-      ->cabinCategories()
-      ->first()
-      ->getTitleAttribute();
-
+      ?->cabinCategories()
+      ?->first()
+      ?->getTitleAttribute() ?? null;
+      
     $eventStatus = Event::find($eventId)->status;
     $errorCode = null;
 

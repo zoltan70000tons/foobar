@@ -18,8 +18,9 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  IconButton,
+  IconButton, Tooltip,
 } from "@mui/material";
+import InfoIcon from '@mui/icons-material/Info';
 
 import { router } from "@inertiajs/react";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
@@ -43,17 +44,19 @@ export type Fee = {
   created_at: string;
   id: number;
   due_date?: string; // Optional, only if the fee is related to an installment
+  notes?: string;
 };
 
 const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<
-    Pick<Fee, "type" | "amount"> & { due_date?: string; installment_id?: number }
+    Pick<Fee, "type" | "amount"> & { due_date?: string; installment_id?: number, notes?: string }
   >({
     type: "",
     amount: 0,
     due_date: undefined,
     installment_id: undefined,
+    notes: "",
   });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
@@ -96,11 +99,12 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
         amount: formData.amount,
         type: formData.type,
         due_date: formData.due_date,
+        notes: formData.notes ?? "",
       },
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ type: "", amount: 0 });
+          setFormData({ type: "", amount: 0, notes: "", due_date: "", installment_id: 0 });
           setOpen(false);
           showSnackbar("Fee created successfully", "success");
           router.reload({ only: ["user"] });
@@ -214,6 +218,17 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
                     </MenuItem>
                   ))}
               </TextField>
+              <TextField
+                label="Notes"
+                name="notes"
+                type="text"
+                value={formData.notes}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+                multiline
+                minRows={3} // or rows={3}
+              />
             </Box>
             <DialogActions>
               <Grid container spacing={2} sx={{ px: 2 }}>
@@ -252,7 +267,14 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
                 <TableBody>
                   {passenger.fees.map((fee) => (
                     <TableRow key={fee.id}>
-                      <TableCell>{fee.type}</TableCell>
+                      <TableCell>
+                        {fee.type}
+                        <Tooltip title={fee.notes}>
+                          <IconButton>
+                            <InfoIcon fontSize={"small"} />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{formatCurrency(fee.amount)}</TableCell>
                       <TableCell>{formatDate(fee.created_at)}</TableCell>
                       <TableCell>

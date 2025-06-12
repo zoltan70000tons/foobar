@@ -10,8 +10,9 @@ import {
   TableRow,
   Button,
   Grid,
-  Avatar,
+  Avatar, Tooltip, IconButton,
 } from "@mui/material";
+import InfoIcon from '@mui/icons-material/Info';
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
 import FeesForm, { Fee } from "./FeesForm";
@@ -190,7 +191,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           discountValue = (discountValue / 100) * pricePerPerson;
         }
 
-        acc.passengerDiscounts.push({ code: dis.type, value: discountValue, id: dis.id });
+        acc.passengerDiscounts.push({ code: dis.type, value: discountValue, id: dis.id, notes: dis.notes });
         acc.totalPassengerDiscounts += discountValue;
 
         return acc;
@@ -340,18 +341,29 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                       <TableCell></TableCell>
                     </TableRow>
                   ))}
-                  {passengerDiscounts.map((discount, i) => (
-                    <TableRow key={`discount-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Discount ({discount.code}):</TableCell>
-                      <TableCell align="right">
-                        {discount.value > 0
-                          ? `-${formatCurrency(discount.value)}`
-                          : `${formatCurrency(discount.value)}`}
-                      </TableCell>
-                      <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {passengerDiscounts.map((discount, i) => {
+                    console.log(discount)
+                    return (
+                      <TableRow key={`discount-${i}`}>
+                        <TableCell sx={{ pl: "3rem" }}>
+                          Discount ({discount.code})
+                          <Tooltip title={discount.notes}>
+                            <IconButton>
+                              <InfoIcon fontSize={"small"} />
+                            </IconButton>
+                          </Tooltip>
+                          :
+                        </TableCell>
+                        <TableCell align="right">
+                          {discount.value > 0
+                            ? `-${formatCurrency(discount.value)}`
+                            : `${formatCurrency(discount.value)}`}
+                        </TableCell>
+                        <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
 
                   {/*** Official Ticket Price ***/}
                   <TableRow>
@@ -394,7 +406,15 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                   </TableRow>
                   {pax.fees.map((fee, i) => (
                     <TableRow key={`fee-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Fee ({fee.type}):</TableCell>
+                      <TableCell sx={{ pl: "3rem" }}>
+                        Fee ({fee.type})
+                        <Tooltip title={fee.notes}>
+                          <IconButton>
+                            <InfoIcon fontSize={"small"} />
+                          </IconButton>
+                        </Tooltip>
+                        :
+                      </TableCell>
                       <TableCell align="right">
                         <Box component="span">
                           {Number(fee.amount) > 0

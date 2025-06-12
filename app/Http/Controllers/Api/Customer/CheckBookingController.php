@@ -102,7 +102,7 @@ class CheckBookingController extends Controller
     $formattedLastName = $this->normalizeString($request->lastName);
 
     // Fetch all passengers for this booking
-    $passengers = Passenger::with('fees', 'installments')
+    $passengers = Passenger::with('fees', 'installments', 'payments')
       ->where('booking_id', $booking->id)
       ->where('dob', $request->dateOfBirth)
       ->get();
