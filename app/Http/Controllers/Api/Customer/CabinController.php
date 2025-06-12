@@ -53,13 +53,14 @@ class CabinController extends Controller
 
   //   return response()->json($filteredCabins['cabins'], 200);
   // }
-  public function show(Request $request, ReservationService $reservationService)
+  public function show(Request $request)
   {
     $language = $request->input('language', 'en');
     App::setLocale($language);
 
     // Convert parameters to the correct type
     $cabinTypeId = intval($request->input('cabin_type_id', 1));
+
     if ($cabinTypeId !== 1) {
       return response()->json(['message' => 'Option available only for private cabins.'], 404);
     }
@@ -80,7 +81,7 @@ class CabinController extends Controller
     }
 
     // if still all requests parameters are null, return error
-    if (is_null($cabinCategoryCode) && is_null($cabinCapacity)) {
+    if (is_null($cabinCategoryCode) && is_null($cabinCapacity) && is_null($cabinDeck)) {
       return response()->json(['message' => 'Cabin category code, capacity.'], 400);
     }
 
