@@ -99,6 +99,17 @@ const Edit = ({ auth, errors}: PageProps) => {
       if (presale) {
         const start = new Date(presale.start_date);
         const end = new Date(presale.end_date);
+        const now = new Date();
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          alert('Please enter valid start and end dates.');
+          return;
+        }
+
+        if (start < now || end < now) {
+          alert('Start and end dates cannot be in the past.');
+          return;
+        }
 
         if (start >= end) {
           alert('The Pre-Sale end date cannot be earlier than the start date.');
@@ -292,6 +303,7 @@ const Edit = ({ auth, errors}: PageProps) => {
                                 sx={{ width: "100%" }}
                                 disablePast
                                 onChange={handlePeriodDateChange(index, 'start_date')}
+                                inputProps
                                 value={
                                   item.presale_period?.start_date ? dayjs(item.presale_period.start_date) : null
                                 }
@@ -299,7 +311,12 @@ const Edit = ({ auth, errors}: PageProps) => {
                                   <TextField
                                     {...params}
                                     fullWidth
-                                    InputProps={{ readOnly: true }}
+                                    inputProps={{
+                                      readOnly: true,
+                                      onKeyDown: (e) => {
+                                        e.preventDefault(); // block all typing
+                                      },
+                                    }}
                                   />
                                 )}
                               />

@@ -25,6 +25,7 @@ import ImageUpload from "@/Components/ImageUpload";
 import { EventStatus } from "@/enums/EventStatusEnum";
 import EventStatusSelect from "@/Components/EventStatusSelect";
 import SnackbarAlert from "@/Components/SnackbarAlert";
+import { DateTimePicker } from "@mui/x-date-pickers";
 
 const Create = ({ auth, errors }: PageProps) => {
   const { membership_presale_periods } = usePage().props;
@@ -108,6 +109,17 @@ const Create = ({ auth, errors }: PageProps) => {
       if (presale) {
         const start = new Date(presale.start_date);
         const end = new Date(presale.end_date);
+        const now = new Date();
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          alert('Please enter valid start and end dates.');
+          return;
+        }
+
+        if (start < now || end < now) {
+          alert('Start and end dates cannot be in the past.');
+          return;
+        }
 
         if (start >= end) {
           alert('The Pre-Sale end date cannot be earlier than the start date.');
@@ -289,7 +301,7 @@ const Create = ({ auth, errors }: PageProps) => {
                           </Grid>
                           <Grid item xs={4}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                              <DatePicker
+                              <DateTimePicker
                                 label="Start Date"
                                 sx={{ width: "100%" }}
                                 disablePast
@@ -309,7 +321,7 @@ const Create = ({ auth, errors }: PageProps) => {
                           </Grid>
                           <Grid item xs={4}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                              <DatePicker
+                              <DateTimePicker
                                 label="End Date"
                                 sx={{ width: "100%" }}
                                 disablePast
