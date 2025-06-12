@@ -52,7 +52,7 @@ type Props = PageProps & {
     data: any;
 };
 
-const statusOptions = CabinStatus;
+const statusOptions = CabinStatusReduced;
 
 const Create = ({
     auth,
@@ -83,6 +83,7 @@ const Create = ({
         upper_berths: '',
     });
     const cabinTypeEntries = Object.entries(CabinType) as [string, CabinType][];
+    const [inventory, setInventory] = useState(0);
     const statusIcons = {
         [CabinStatus.AVAILABLE]: (
             <CheckCircle
@@ -109,6 +110,20 @@ const Create = ({
             />
         ),
     };
+
+    useEffect(() => {
+        if (!data.cabin_type_id) return;
+        
+        if (data.cabin_type_id === CabinTypeIds["PRIVATE CABIN"]) {
+            setInventory(1);
+        } else if (
+            [CabinTypeIds["SINGLE TICKET MALE"], CabinTypeIds["SINGLE TICKET FEMALE"]].includes(data.cabin_type_id)
+        ) {
+            const category = categories.find(cat => cat.id === data.cabin_category_id);
+            setInventory(category?.spec.capacity);
+        }
+    }, [data.cabin_type_id, data.cabin_category_id, categories]);
+
 
 
     const handleSubmit = (e) => {
@@ -236,7 +251,7 @@ const Create = ({
                                 <Grid item xs={12} sm={6}>
                                     <Autocomplete
                                         options={categories}
-                                        getOptionLabel={(option) => option.title}
+                                        getOptionLabel={(option) => option.title + ' - ' + option.capacity_description}
                                         isOptionEqualToValue={(option, value) => option.id === value.id}
                                         value={categories.find((cat) => cat.id === data.cabin_category_id) || null}
                                         onChange={(event, newValue) =>
@@ -280,9 +295,10 @@ const Create = ({
                                         fullWidth
                                         type="number"
                                         label="Inventory"
-                                        value={data.inventory}
+                                        value={inventory}
                                         onChange={(e) => setData('inventory', parseInt(e.target.value))}
                                         error={!!errors.inventory}
+                                        InputProps={{ readOnly: true }}
                                         helperText={errors.inventory}
                                     />
                                 </Grid>

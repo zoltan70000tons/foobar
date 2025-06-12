@@ -155,8 +155,9 @@ class CabinsController extends Controller
                 $cabin = $this->cabinRepository->save($sanitized);
                 if (!$cabin) {
                     return redirect()->back()->with('error', 'Failed to create cabin. Please try again.');
-                }   
-                return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])->with('success', 'Cabin updated successfully.');
+                }
+                return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])->with('message', 'Cabin created successfully.')
+                    ->with('success', true);
             }, $event_id, $validated);
         } catch (\Exception $e) {
             $this->logException($e);

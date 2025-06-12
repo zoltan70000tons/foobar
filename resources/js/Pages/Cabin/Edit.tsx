@@ -135,8 +135,6 @@ const Edit = ({ auth, cabin, event, categories, shared, errors }: Props) => {
     cabinStatus === CabinStatus.PARTIALLY_BOOKED;
   const statusSource = disableFields ? CabinStatus : CabinStatusReduced;
 
-  console.log("cabin", cabin);
-
   const statusIcons = {
     [CabinStatus.AVAILABLE]: (
       <CheckCircle
@@ -203,7 +201,6 @@ const Edit = ({ auth, cabin, event, categories, shared, errors }: Props) => {
       ticket_inventory: ticketInventory,
     };
 
-    console.log("Form Data:", formData); // Debugging line
 
     router.post(
       route("cabins.update", { id: event.id, cabin_id: cabin.id }),
@@ -237,7 +234,6 @@ const Edit = ({ auth, cabin, event, categories, shared, errors }: Props) => {
 
   const canEdit = canEditFull || canEditPartially;
 
-  console.log("shared:", shared);
 
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -352,26 +348,29 @@ const Edit = ({ auth, cabin, event, categories, shared, errors }: Props) => {
           </Box>
         </Grid>
 
-        {/* Cabin Category */}
         <Grid item xs={12} md={6}>
           <Box sx={{ mb: 2 }}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel>Cabin Category</InputLabel>
-              <Select
-                readOnly={!canEditFull}
-                value={cabinCategory}
-                onChange={(e) => setCabinCategory(e.target.value)}
-                label="Cabin Category"
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              fullWidth
+              readOnly={!canEditFull}
+              options={categories}
+              getOptionLabel={(option) =>
+                `${option.title} - ${option.capacity_description}`
+              }
+              value={
+                categories.find((cat) => cat.id === cabinCategory) || null
+              }
+              onChange={(event, newValue) => {
+                setCabinCategory(newValue ? newValue.id : '');
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Cabin Category" variant="outlined" />
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+            />
           </Box>
         </Grid>
+
 
         {/* Cabin Number */}
         <Grid item xs={12} md={2}>
@@ -837,27 +836,31 @@ const Edit = ({ auth, cabin, event, categories, shared, errors }: Props) => {
       <Dialog open={openCategoryDialog} onClose={handleCloseCategoryDialog}>
         <DialogTitle>Select Category for Shared Cabin</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            This will create a new shared cabin. This means that the cabin number will be available in other categories.
-          </Typography>
-          {/* Cabin Category */}
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              This will create a shared cabin, allowing the same cabin number to be used across multiple categories.
+            </Typography>
+          </Alert>
           <Grid item xs={12} md={12}>
             <Box sx={{ mb: 2 }}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel>Cabin Category</InputLabel>
-                <Select
-                  readOnly={!canEditFull}
-                  value={selectedCategoryForSharedCabin}
-                  onChange={(e) => setSelectedCategoryForSharedCabin(e.target.value)}
-                  label="Cabin Category"
-                >
-                  {categories.map((category) => (
-                    <MenuItem key={category.id} value={category.id}>
-                      {category.title}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                fullWidth
+                disabled={!canEditFull}
+                options={categories}
+                getOptionLabel={(option) =>
+                  `${option.title} - ${option.capacity_description}`
+                }
+                value={
+                  categories.find((cat) => cat.id === selectedCategoryForSharedCabin) || null
+                }
+                onChange={(event, newValue) => {
+                  setSelectedCategoryForSharedCabin(newValue ? newValue.id : '');
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Cabin Category" variant="outlined" />
+                )}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+              />
             </Box>
           </Grid>
 
