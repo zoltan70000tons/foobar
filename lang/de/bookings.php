@@ -24,5 +24,5 @@ return [
   'pax_added' => 'Passagier hinzugefügt.',
   'empty_seat_added' => 'Leeres Bett hinzugefügt.',
   'empty_seat_removed' => 'Leeres Bett entfernt',
-  'already_has_booking' => 'Sie haben bereits eine Buchung für diese Veranstaltung',
+  'already_has_booking' => 'Du hast bereits eine bestehende Buchung für dieses Event.',
 ];

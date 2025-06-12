@@ -162,7 +162,7 @@ style="display:
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            Dein 70000TONS OF METAL Team<br>
+                                            Deine 70000TONS OF METAL Crew<br>
                                             <br>
                                           </td>
                                         </tr>

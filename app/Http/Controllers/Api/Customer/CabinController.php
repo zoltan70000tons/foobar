@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Customer;
 use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
@@ -14,6 +15,7 @@ use App\Services\ReservationService;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Arr;
 use Log;
 
 class CabinController extends Controller
@@ -272,10 +274,34 @@ class CabinController extends Controller
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
     }
 
-    $cabin = collect($filteredCabins['cabins'])->first();
+    $cabin = DB::transaction(function () use ($filteredCabins, $cabinTypeId) {
+      $cabins = $filteredCabins['cabins'] ?? [];
+
+      if (empty($cabins)) {
+        return null;
+      }
+
+      // Shuffle cabins only for private cabins (type 1)
+      $isPrivateCabin = $cabinTypeId == 1;
+      $shuffledCabins = $isPrivateCabin ? Arr::shuffle($cabins) : $cabins;
+
+      foreach ($shuffledCabins as $potentialCabin) {
+        // Lock the cabin row itself to avoid race conditions
+        $lockedCabin = Cabin::where('id', $potentialCabin['id'])
+          ->lockForUpdate()
+          ->first();
+
+        // Return the cabin data if it was successfully locked
+        if ($lockedCabin) {
+          return $potentialCabin;
+        }
+      }
+
+      return null; // All candidates were already taken during lock attempt
+    });
 
     if (!$cabin) {
-      return response()->json(['message' => 'No available cabins found'], 404);
+      return response()->json(['message' => 'There are no available cabins at the moment. Please try again later'], 404);
     }
 
     return $this->createTemporaryReservation($cabin, $request, false);
@@ -313,14 +339,19 @@ class CabinController extends Controller
     try {
       DB::beginTransaction();
 
-      $existingReservation = TemporaryReservation::where('cabin_id', $cabin['id'])
-        ->where('expires_at', '>', now())
-        ->lockForUpdate()
-        ->first();
+      // Only check for existing reservation if this is a private cabin (type 1)
+      if (isset($cabin['cabin_type_id']) && $cabin['cabin_type_id'] == 1) {
+        $existingReservation = TemporaryReservation::where('cabin_id', $cabin['id'])
+          ->where('expires_at', '>', now())
+          ->lockForUpdate()
+          ->first();
+      } else {
+        $existingReservation = null;
+      }
 
       if ($existingReservation) {
         DB::rollBack();
-        return response()->json(['message' => 'Cabin already reserved'], 404);
+        return response()->json(['message' => __('feedback.cabin_not_available')], 404);
       }
 
       $reserved = TemporaryReservation::create([
@@ -334,28 +365,6 @@ class CabinController extends Controller
       $request->session()->put('reserved_cabin_id', $reserved->id);
 
       $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
-
-      // if (!$user) {
-      //   $request->session()->put('cart', [
-      //     'cabinSelection' => $selectionType,
-      //     'reservationId' => $reserved->id,
-      //     'cabin_number' => $cabin['cabin_number'],
-      //     'cabin_category_type' => $cabin['cabin_category_type'] ?? null,
-      //     'reservationTimestamp' => $prevTimestamp ? $prevTimestamp : now()->timestamp,
-      //     'lower_bed_type_2' => $cabin['lower_bed_type_2'],
-      //   ]);
-      // } else {
-      //   $cart = $user->cart_data;
-
-      //   $cart['cabinSelection'] = $selectionType;
-      //   $cart['reservationId'] = $reserved->id;
-      //   $cart['cabin_number'] = $cabin['cabin_number'];
-      //   $cart['cabin_category_type'] = $cabin['cabin_category_type'] ?? null;
-      //   $cart['reservationTimestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
-      //   $cart['lower_bed_type_2'] = $cabin['lower_bed_type_2'];
-
-      //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
-      // }
 
       $cart = $user->cart_data;
 
