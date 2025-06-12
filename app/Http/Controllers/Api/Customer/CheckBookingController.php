@@ -72,8 +72,7 @@ class CheckBookingController extends Controller
   | 1. User sends email and booking code.
   | 2. Check if booking code exists.
   | 3. Check if the name & last name match any passenger in that booking.
-  | 4. Return the booking details.
-  | 5. Generate a token with session.
+  | 4. Generate a token
   */
   public function login(Request $request)
   {
@@ -143,8 +142,7 @@ class CheckBookingController extends Controller
   | Check Booking Logout
   |--------------------------------------------------------------------------
   |
-  | 1. Remove booking token from session.
-  | 2. Remove booking data from session.
+  | Remove all users tokens and return a success message.
   */
   public function logout(Request $request)
   {
@@ -152,23 +150,17 @@ class CheckBookingController extends Controller
     $language = $request->input('language', 'en');
     App::setLocale($language);
 
-    $bearerToken = $request->bearerToken();
-
-    if (!$bearerToken) {
-      return response()->json(['message' => 'No token provided'], 401);
-    }
-
-    $accessToken = PersonalAccessToken::findToken($bearerToken);
-
-    if (!$accessToken || $accessToken->tokenable_type !== Passenger::class) {
+    $passenger = $request->user();
+    
+    if (!$passenger || !$request->user()->tokenCan('view-booking')) {
       return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    // Delete the token (only)
-    $accessToken->delete();
+    // remove all Sanctum tokens for the passenger
+    $passenger->tokens()->delete();
 
-    // Optionally clean up custom token tracking
-    PassengerToken::where('token_id', $accessToken->id)->delete();
+    // Optionally, you can also delete the PassengerToken records
+    PassengerToken::where('passenger_id', $passenger->id)->delete();
 
     return response()->json(['message' => 'Logged out'], 200);
   }
