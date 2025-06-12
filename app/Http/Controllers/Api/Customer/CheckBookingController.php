@@ -31,23 +31,31 @@ class CheckBookingController extends Controller
   */
   public function getBooking(Request $request)
   {
-
+      // get passenger from request
       $passenger = $request->user();
 
+      // Check if passenger is authenticated and has the view-booking token
       if (!$passenger || !$request->user()->tokenCan('view-booking')) {
-          return response()->json(['message' => 'Unauthorized'], 403);
+        return response()->json(['message' => 'Unauthorized'], 403);
       }
 
+      // load related data
       $passenger->load(['fees', 'installments', 'payments']);
 
-      $booking = Booking::with('cabin.category', 'cabin.cabinType', 'adjustments')
+      // get booking details based on passenger's booking_id
+      $booking = Booking::with(['cabin.category', 'cabin.cabinType', 'adjustments', 'event'])
         ->where('id', $passenger->booking_id)
         ->first();
 
+      // Check if booking exists
       if (!$booking) {
         return response()->json(['message' => 'somethin went wrong'], 404);
       }
 
+      // Set installment status attribute
+      $passenger->setAttribute('installment_status', $passenger->installment_status);
+
+      // return booking details, event details, and passenger details
       return response()->json([
         'booking' => $booking,
         'event' => Event::find($booking->event_id),
@@ -81,9 +89,7 @@ class CheckBookingController extends Controller
 
 
     // Find booking by booking code
-    $booking = Booking::with('cabin.category', 'cabin.cabinType', 'adjustments')
-      ->where('booking_code', $request->bookingCode)
-      ->first();
+    $booking = Booking::where('booking_code', $request->bookingCode)->first();
 
     if (!$booking) {
       return response()->json(['message' => __('feedback.booking_not_found')], 404);
@@ -113,47 +119,24 @@ class CheckBookingController extends Controller
       return response()->json(['message' => 'Passenger not found'], 404);
     }
 
-      // Create Sanctum token (valid for 24 hours)
-      $token = $matchedPassenger->createToken('guest-booking', ['view-booking']);
-      $expiresAt = now()->addHours(24);
+    // Create Sanctum token (valid for 24 hours)
+    $token = $matchedPassenger->createToken('guest-booking', ['view-booking']);
+    $expiresAt = now()->addHours(24);
 
-      // Track token (optional, for cleanup or auditing)
-      PassengerToken::create([
-          'passenger_id' => $matchedPassenger->id,
-          'token_id' => $token->accessToken->id,
-          'expires_at' => $expiresAt,
-      ]);
-
-      return response()->json([
-        'token' => $token->plainTextToken,
+    // Track token (optional, for cleanup or auditing)
+    PassengerToken::create([
+        'passenger_id' => $matchedPassenger->id,
+        'token_id' => $token->accessToken->id,
         'expires_at' => $expiresAt,
-      ]);
-
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Check user cant delete account
-  |--------------------------------------------------------------------------
-  |
-  | User cannot delete account if they have an active booking.
-  */
-  public function canDeleteAccount(Request $request)
-  {
-    $language = $request->input('language', 'en');
-    App::setLocale($language);
-    $user = $request->user();
-
-    // Check if user has an active booking
-    $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
+    ]);
 
     return response()->json([
-      'canDelete' => !$hasActiveBooking,
-      'message' => $hasActiveBooking
-        ? __('feedback.cannot_delete_account')
-        : __('feedback.proceed_delete_account'),
+      'token' => $token->plainTextToken,
+      'expires_at' => $expiresAt,
     ]);
+
   }
+
 
   /*
   |--------------------------------------------------------------------------
@@ -172,13 +155,13 @@ class CheckBookingController extends Controller
     $bearerToken = $request->bearerToken();
 
     if (!$bearerToken) {
-        return response()->json(['message' => 'No token provided'], 401);
+      return response()->json(['message' => 'No token provided'], 401);
     }
 
     $accessToken = PersonalAccessToken::findToken($bearerToken);
 
     if (!$accessToken || $accessToken->tokenable_type !== Passenger::class) {
-        return response()->json(['message' => 'Unauthorized'], 403);
+      return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     // Delete the token (only)
@@ -187,6 +170,6 @@ class CheckBookingController extends Controller
     // Optionally clean up custom token tracking
     PassengerToken::where('token_id', $accessToken->id)->delete();
 
-    return response()->json(['message' => 'Logged out']);
+    return response()->json(['message' => 'Logged out'], 200);
   }
 }

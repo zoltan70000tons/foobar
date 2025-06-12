@@ -131,11 +131,11 @@ Route::middleware([
   // Route::post('/cabin/release', [CabinController::class, 'release']);
 
 
-  Route::get('/customer/can-delete-account', [CheckBookingController::class, 'canDeleteAccount']);
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
   Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
+  Route::get('/customer/can-delete-account', [CustomerAuthController::class, 'canDeleteAccount']);
   Route::post('/delete-account', [CustomerAuthController::class, 'deleteAccount']);
 
   // set slot empty
