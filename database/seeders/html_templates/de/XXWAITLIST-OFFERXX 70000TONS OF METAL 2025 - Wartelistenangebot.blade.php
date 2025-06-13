@@ -125,7 +125,7 @@ style="color: rgb(102, 102,
                                             Offizieller Ticketpreis: USD
                                             XXXX<br>
                                             Steuern und Gebühren: USD
-                                            487,00<br>
+                                            494,00<br>
                                             Single-Traveler-Zuschlag:
                                             USD 100,00 XXDELETE?XX<br>
                                             <strong>Gesamtpreis pro
@@ -156,7 +156,7 @@ style="color: rgb(102, 102,
                                             <br>
                                             Cheers,<br>
                                             <br>
-                                            Dein 70000TONS OF METAL Team</td>
+                                            Deine 70000TONS OF METAL Crew</td>
                                         </tr>
                                       </tbody>
                                     </table>

@@ -107,6 +107,7 @@ class StoreBookingRequest extends FormRequest
       'cart.price_total' => 'required|numeric',
       'cart.cabin_conf_accp' => 'required|boolean',
       'cart.single_t_agreement' => 'required|boolean',
+      'cart.cabin_title' => 'required|string',
 
       // Addons array
       'cart.addons' => 'nullable|array',

@@ -221,8 +221,9 @@ class PassengerController extends Controller
             // $slot = Passenger::where('id', '=', $slot->id)->first();
             // ---- start @JG if passenger invitation exists, delete it
             $passengerInvitation = PassengerInvitation::where('passenger_id', $slot->id)->first();
-            $passengerInvitationEmail = $passengerInvitation->email;
+            $passengerInvitationEmail = null;
             if ($passengerInvitation) {
+                $passengerInvitationEmail = $passengerInvitation->email;
                 $passengerInvitation->delete();
             }
             // ---- end @JG
@@ -281,6 +282,7 @@ class PassengerController extends Controller
 
             return $slot;
         } catch (\Exception $e) {
+            //dd($e->getMessage(). ' - ' . $e->getLine());
             Log::error($e->getMessage());
             return response()->json('error');
         }
@@ -371,7 +373,7 @@ class PassengerController extends Controller
                 ->get()
                 ->map(function ($user) use ($eventId, $request) {
                     if ($eventId) {
-                        $bookingId = $request->get('bookingId');
+                        //$bookingId = $request->get('bookingId');
 
                         $baseQuery = Booking::whereHas('passengers', function ($query) use ($user) {
                             $query->where('survivor_number', $user->survivorNumber?->survivor_number);
@@ -379,10 +381,10 @@ class PassengerController extends Controller
                             ->where('event_id', $eventId);
 
                         // If there is a bookingId, it means it's an EditPassenger call
-                        if ($bookingId) {
+                        //if ($bookingId) { //Zoltan: Commented it out for https://app.asana.com/1/1208601927370271/project/1208683268730907/task/1210395025088838
                             // Ensure the current booking is excluded in the double-booking check
-                            $baseQuery->where('id', '!=', $bookingId);  // Exclude current booking
-                        }
+                            //$baseQuery->where('id', '!=', $bookingId);  // Exclude current booking
+                        //}
 
                         $exists = $baseQuery->where('status', '!=', 'CANCELLED')
                             ->exists();

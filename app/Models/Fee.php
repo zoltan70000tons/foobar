@@ -15,7 +15,8 @@ class Fee extends Model
   protected $fillable = [
     'passenger_id',
     'type',
-    'amount'
+    'amount',
+    'notes',
   ];
 
   // Use the 'temp_due_date' attribute to store alternate due date on installment creation

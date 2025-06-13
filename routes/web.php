@@ -6,6 +6,7 @@ use App\Http\Controllers\BookingsController;
 use App\Http\Controllers\CabinCategoriesController;
 use App\Http\Controllers\CabinsController;
 use App\Http\Controllers\DeletedController;
+use App\Http\Controllers\CustomerTagController;
 use App\Http\Controllers\ContactFormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardCreditController;
+use App\Http\Controllers\TemporaryPasswordController;
 
 Route::get('/', function () {
   return Inertia::render('Welcome', [
@@ -96,7 +98,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/events/{id}/cabins', [CabinsController::class, 'index'])->name('cabins.index');
   Route::get('/events/{id}/cabins/categories', [CabinCategoriesController::class, 'index'])->name('cabins.categories');
   Route::get('/events/{id}/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
-
+  Route::get('/events/{id}/cabins/create', [CabinsController::class, 'create'])->name('cabins.create');
+  Route::post('/events/{id}/cabins/store', [CabinsController::class, 'store'])->name('cabins.store');
+  Route::post('/events/{id}/cabins/createShared', [CabinsController::class, 'createShared'])->name('cabins.createShared');
   //Cabin categories
   Route::get('/events/{id}/cabins/categories/{catId}/show', [CabinCategoriesController::class, 'show'])->name(
     'cabinCategory.show'
@@ -188,6 +192,16 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
     Route::post('/customers/{user}/delete-comment', [CustomerController::class, 'deleteComment'])->name(
         'customers.delete-comment'
     );
+  
+  // cutsomer temporary password
+  Route::post('/customers/{user}/temporary-password', [TemporaryPasswordController::class, 'create'])->name(
+    'customers.temporaryPassword.create'
+  );
+
+  // delete temporary password
+  Route::delete('/customers/{user}/temporary-password', [TemporaryPasswordController::class, 'delete'])->name(
+    'customers.temporaryPassword.delete'
+  );
 
   Route::get('/not-allowed', [NotAllowedController::class, 'index'])->name('access.denied');
   Route::get('/menu/bookings', [MenuController::class, 'getEvents'])->name('menu.bookings');
@@ -264,5 +278,16 @@ Route::prefix('payment-transfer')->group(function () {
 });
 
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
+
+Route::get('/customer-tags/paginated', [CustomerTagController::class, 'getPaginated'])->name('customer-tags.paginated');
+Route::get('/customer-tags/create', [CustomerTagController::class, 'create'])->name('customer-tags.create');
+Route::post('/customer-tags', [CustomerTagController::class, 'store'])->name('customer-tags.store');
+Route::get('/customer-tags/{userTag}', [CustomerTagController::class, 'show'])
+    ->where('userTag', '[0-9]+')
+    ->name('customer-tags.show');
+Route::get('/customer-tags/{userTag}/edit', [CustomerTagController::class, 'edit'])->name('customer-tags.edit');
+Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'update'])->name('customer-tags.update');
+Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
+Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 
 require __DIR__ . '/auth.php';

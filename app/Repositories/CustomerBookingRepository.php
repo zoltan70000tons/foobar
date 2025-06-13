@@ -43,24 +43,56 @@ class CustomerBookingRepository
    * @param string $bookingCode
    * @return Booking
    */
-  public function getBookingByCode(int $eventId, string $bookingCode, $user = null)
+  public function getBooking(int $eventId, string | null $bookingCode, $user = null, string | null $requestId = null)
   {
     $user_survivor_number = $user->survivorNumber->survivor_number ?? null;
+  
+    $booking = null;
 
-    $booking = Booking::with(
-      'adjustments',
-      'passengers.fees',
-      'passengers.installments',
-      'passengers.passengerInvitation',
-      'cabin.category',
-      'cabin.cabinType',
-      'passengers.payments',
-      'passengers.discounts',
-      'event'
-    )
-      ->where('booking_code', $bookingCode)
-      ->where('event_id', $eventId)
-      ->first();
+    if($requestId) {
+      $booking = Booking::with([
+        'adjustments',
+        'passengers.fees' => function($query) {
+          $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
+        },
+        'passengers.installments',
+        'passengers.passengerInvitation',
+        'cabin.category',
+        'cabin.cabinType',
+        'passengers.payments',
+        'passengers.discounts' => function($query) {
+          $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
+        },
+        'event'
+      ])
+        ->where('booking_request_id', $requestId)
+        ->where('event_id', $eventId)
+        ->first();
+
+    } else {
+      $booking = Booking::with([
+        'adjustments',
+          'passengers.fees' => function($query) {
+            $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
+        },
+        'passengers.installments',
+        'passengers.passengerInvitation',
+        'cabin.category',
+        'cabin.cabinType',
+        'passengers.payments',
+        'passengers.discounts' => function($query) {
+          $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
+        },
+        'event'
+      ])
+        ->where('booking_code', $bookingCode)
+        ->where('event_id', $eventId)
+        ->first();
+    }
+
+    if (!$booking) {
+      return null;
+    }
 
     // check if user is on the passenger list
     if ($user) {
@@ -118,6 +150,19 @@ class CustomerBookingRepository
     }
 
     return $booking;
+  }
+
+
+  // get booking by booking code
+  public function getBookingByCode(int $eventId, string $bookingCode, $user = null)
+  {
+    return $this->getBooking($eventId, $bookingCode, $user, null);
+  }
+
+  // get booking by request id
+  public function getBookingByRequestId(int $eventId, string $requestId, $user = null) {
+    //
+    return $this->getBooking($eventId, null, $user, $requestId);
   }
 
   /**

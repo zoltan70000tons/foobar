@@ -25,6 +25,7 @@ return [
   'cbe_bed_joined' => 'Joined Beds',
   'cbe_bed_separated' => 'Separated Beds',
   'cbe_official_ticket_price_per_person' => 'Official Ticket Price per Person',
+  'cbe_survivor_discount' => 'Survivor Discount',
   'cbe_pay_in_full_discount' => 'Pay in Full Discount',
   'cbe_net_ticket_price_per_person' => 'Net Ticket Price per Person',
   'cbe_taxes_and_fees_per_person' => 'Taxes and Fees per Person',

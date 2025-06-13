@@ -102,7 +102,20 @@
                     al destinatario adecuado, queda notificado que la divulgación o copia sin autorización puede estar
                     prohibida en virtud de la legislación vigente. Si recibes este mensaje por error, te pedimos que nos
                     informes inmediatamente por este mismo medio o por teléfono. Gracias.<br />
-                    <br />
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    class="text-footer2"
+                    style="
+                              color: rgb(119, 119, 119);
+                              font-family: Arial, sans-serif;
+                              font-size: 14px;
+                              line-height: 20px;
+                              text-align: center;
+                            ">
+                    70000TONS, 70000TONS OF METAL and the 70000TONS OF METAL logo are registered trademarks of Properties of Metal Ltd. and are used under license.<br />
+                    © 2009–2025 UMCruises International Ltd. All Rights Reserved.
                   </td>
                 </tr>
               </tbody>

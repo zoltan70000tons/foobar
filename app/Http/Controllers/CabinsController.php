@@ -8,6 +8,7 @@ use App\Interfaces\CabinCategoryInterface;
 use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
+use App\Models\CabinSpec;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
@@ -16,6 +17,9 @@ use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Illuminate\Support\Arr;
+use App\Rules\CabinNumberIsAvailable;
+use DB;
+use Log;
 
 class CabinsController extends Controller
 {
@@ -65,11 +69,100 @@ class CabinsController extends Controller
 
     public function create()
     {
-        return Inertia::render('Cabin/Create');
+        try {
+            $event = $this->eventRepository->find(request()->route('id'));
+            $cabinCategories = $this->cabinCategoryRepository->getAll();
+            return $this->withPermission([Permissions::CreateCabins], function ($event, $cabinCategories) {
+                return Inertia::render('Cabin/Create', [
+                    'event' => $event,
+                    'categories' => $cabinCategories
+                ]);
+            }, $event, $cabinCategories);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+    public function checkIfExists(Request $request)
+    {
+        $rules = [
+            'cabin_number' => 'required|numeric',
+            'event_id' => 'required|numeric',
+        ];
+        $validated = $request->validate($rules);
+        try {
+            $cabinSpec = CabinSpec::where('cabin_number', $validated['cabin_number'])
+                ->whereHas('cabins', function ($query) use ($validated) {
+                    $query->where('event_id', $validated['event_id']);
+                })
+                ->first();
+            if ($cabinSpec) {
+                return response()->json(['exists' => true, 'cabin_spec_id' => $cabinSpec->id]);
+            } else {
+                return response()->json(['exists' => false]);
+            }
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json(['error' => 'An error occurred while checking cabin availability.'], 500);
+        }
     }
 
 
-    public function store(Request $request) {}
+    public function store(Request $request)
+    {
+        $event_id = $request->route('id');
+        $rules = [
+            'status'      => 'required|string|max:255',
+            'cabin_number'      => [
+                'required',
+                'numeric',
+                new CabinNumberIsAvailable(),
+            ],
+            'cabin_category_id'    => 'required|numeric',
+            'cabin_type_id'        => 'required|numeric',
+            'deck'              => 'required|numeric',
+            'location'          => 'required|string',
+            'connects_with'     => 'nullable|numeric',
+            'total_berths'      => 'nullable|numeric',
+            'lower_bed_type_1'  => 'nullable|string',
+            'lower_bed_type_2'  => 'nullable|string',
+            'accessible' => 'required|boolean',
+            'balcony' => 'required|boolean',
+            'obstructed_view' => 'required|boolean',
+            'tags' => 'nullable|array',
+            'tags.*' => 'nullable|string',
+            'upper_berths'      => 'nullable|string',
+            'notes'             => 'nullable|string',
+            'internal_notes' => 'nullable|string',
+        ];
+        $validated = $request->validate($rules);
+        try {
+
+
+            return $this->withPermission([Permissions::CreateCabins], function ($event_id, $validated) {
+                //Arr::forget($validated, 'inventory');
+                $cabin = null;
+                $sanitized = Arr::map($validated, function ($value, $key) {
+                    if (is_array($value)) {
+                        return $value;
+                    }
+                    if (is_string($value)) {
+                        return strip_tags(trim($value));
+                    }
+
+                    return $value;
+                });
+                $cabin = $this->cabinRepository->save($sanitized);
+                if (!$cabin) {
+                    return redirect()->back()->with('error', 'Failed to create cabin. Please try again.');
+                }
+                return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])->with('message', 'Cabin created successfully.')
+                    ->with('success', true);
+            }, $event_id, $validated);
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
 
     public function edit(Request $request)
     {
@@ -78,10 +171,12 @@ class CabinsController extends Controller
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             return $this->withPermission([Permissions::EditCabins, Permissions::ViewCabins], function ($event, $cabin, $cabinCategories) {
+                $shared = $this->cabinRepository->getSharedCabins($event->id, $cabin->cabin_spec_id);
                 return Inertia::render('Cabin/Edit', [
                     'cabin' => $cabin,
                     'event' => $event,
-                    'categories' => $cabinCategories
+                    'categories' => $cabinCategories,
+                    'shared' => $shared
                 ]);
             }, $event, $cabin, $cabinCategories);
         } catch (\Exception $e) {
@@ -230,6 +325,39 @@ class CabinsController extends Controller
                 'message' => 'Error updating status',
                 'success' => false,
             ]);
+        }
+    }
+
+
+    public function createShared(Request $request)
+    {
+        try {
+            $event_id = $request->route('id');
+            $rules = [
+                'cabin_id' => 'required|numeric',
+                'cabin_category_id' => 'required|numeric',
+            ];
+            $validated = $request->validate($rules);
+            $cabin = $this->cabinRepository->find($validated['cabin_id']);
+            if (!$cabin) {
+                return redirect()->route('cabins.index')->with('error', 'Cabin not found.');
+            }
+            $shared = $this->cabinRepository->createShared(
+                $cabin->id,
+                $validated['cabin_category_id']
+            );
+            // dd($shared);
+            return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])
+                ->with('success', 'Shared cabin created successfully.');
+            // return $this->withPermission([Permissions::CreateCabins], function ($event_id, $cabin, $sharedCabins) {
+            //     return Inertia::render('Cabin/CreateShared', [
+            //         'event_id' => $event_id,
+            //         'cabin' => $cabin,
+            //         'shared' => $sharedCabins
+            //     ]);
+            // }, $event_id, $cabin, $sharedCabins);
+        } catch (\Exception $e) {
+            $this->logException($e);
         }
     }
 }

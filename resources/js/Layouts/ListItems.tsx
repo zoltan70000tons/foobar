@@ -38,7 +38,7 @@ const MenuItems: React.FC = () => {
   const isTeamRoute = currentPath.includes("team");
   const isCabinsRoute = currentPath.includes("cabins");
   const isCustomersRoute = currentPath.includes("customer");
-  const isEventsRoute = currentPath.includes("event");
+  const isEventsRoute = currentPath.includes("event") && !currentPath.includes("bookings");
 
   // useEffect(() => {
   //   const fetchEvents = async () => {

@@ -18,6 +18,29 @@ class CabinSeeder extends Seeder
    */
   public function run()
   {
+    $activeCabinCount = \App\Models\Booking::whereNotNull('cabin_id')
+      ->where('status', '!=', 'CANCELLED')
+      ->where('event_id', 1) // Assuming current event ID
+      ->count();
+
+    if ($this->command) {
+      $this->command->warn("⚠️  Found {$activeCabinCount} bookings with cabins assigned.");
+      $this->command->warn("⚠️  Reseeding cabins will reset inventory. You should cancel these bookings before proceeding.\n");
+
+      $confirm = $this->command->confirm(
+        '❗ Are you sure you want to continue and reseed the cabins?',
+        false // default to NO for safety
+      );
+
+      if (! $confirm) {
+        $this->command->warn('⛔ Operation cancelled. No cabins were updated.');
+        return;
+      } else {
+        $this->command->info('✅ Proceeding with cabin reseeding...');
+      }
+    }
+
+
     // Path to the CSV file
     $csvFilePath = database_path('seeders/data/cabins.csv');
 
@@ -51,7 +74,7 @@ class CabinSeeder extends Seeder
       $accessible = $record['Accessible'] === 'Y';
 
       // Check if a CabinSpec already exists with the same static data
-      $cabinSpec = CabinSpec::firstOrCreate([
+      $cabinSpec = CabinSpec::updateOrCreate([
         'cabin_number' => $record['Cabin #'],
       ], [
         'deck' => $record['Deck'],
@@ -65,7 +88,7 @@ class CabinSeeder extends Seeder
         'balcony' => $balcony,
         'obstructed_view' => $obstructedView,
       ]);
-      
+
       $cabinType = match ($record['Category Type']) {
         'PRIVATE CABIN' => 1,
         'SINGLE MALE' => 2,
@@ -74,10 +97,13 @@ class CabinSeeder extends Seeder
       };
 
       // Prepare the dynamic data for the Cabin
-      $cabinData = [
+      $cabinUniqueData = [
         'cabin_category_id' => $cabinCategory->id,
         'cabin_type_id' => $cabinType,
         'cabin_spec_id' => $cabinSpec->id,
+      ];
+
+      $cabinData = [
         'inventory' => $record['Inventory'],
         'notes' => $record['Notes'],
         'internal_notes' => $record['Internal Notes'] ?? "",
@@ -86,7 +112,7 @@ class CabinSeeder extends Seeder
       ];
 
       // Create the Cabin entry
-      Cabin::create($cabinData);
+      Cabin::updateOrCreate($cabinUniqueData, $cabinData);
     }
   }
 }

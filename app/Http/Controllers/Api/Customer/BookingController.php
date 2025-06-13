@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Customer;
 
+use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
@@ -99,22 +100,14 @@ class BookingController extends Controller
         'payment_plan' => $paymentPlan,
         'number_of_installments' => $numberOfInstallments ? $numberOfInstallments : 1,
         'is_single_occupancy' => false,
-        'tags' => ['NEW'],
+        'tags' => [],
         'bed_config' => $bedConfig,
       ];
 
       $adjustments = Adjustment::where('event_id', $eventId)->first();
       $event = Event::find($eventId);
-      $priceCalc = PriceCalculation::calculatePricePerPassenger([
-        'cabinPrice' => (float) $validated['cart']['cabin_price'],
-        'cabinCapacity' => (int) $validated['cart']['cabin_capacity'],
-        'cabinType' => $cart['cabin_type'] === 'private-cabin' ? true : false,
-        'selectedAdjustments' => $cart['addons'],
-        'adjustments' => $adjustments,
-        'eventStatus' => $event->status,
-      ]);
 
-      $totalPassenger = $priceCalc['totalPassenger'];
+      $totalPassenger = $cart['price_total_passenger'];
 
       $language = $validated['language'] ?? 'en';
 
@@ -136,7 +129,7 @@ class BookingController extends Controller
         'emergency_c_name' => $validated['emergency_contact_name'],
         'emergency_c_phone' => $validated['emergency_phone_number'],
         'special_options' => $validated['special_options'],
-        'special_request' => $validated['specia_request'] ?? null,
+        'special_request' => $validated['special_request'] ?? null,
         'newsletter' => $validated['newsletter'],
         'travel_info' => $validated['travel_info'],
         'hear_about' => $validated['info'],
@@ -155,23 +148,22 @@ class BookingController extends Controller
       // Call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
-      // Send confirmation email
-      //      \Log::info('Booking created successfully', $result);
+      // Get cart variables for client response
+      $totalPrice = $validated['cart']['price_total'];
+      $cabinTitle = $validated['cart']['cabin_title'];
 
       // Delete current sesion
-      //$request->session()->forget('cart');
       $request->session()->forget('reservation_id');
 
       // delete cart from db
-
       Cart::where('user_id', $user->id)->delete();
-
       // \Log::info('Result ----> data: ', ['result' => $result]);
       // \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);
       // \Log::info('Cart ----> data: ', ['cart' => $cart]);
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
+      $postalCode = $passengerData['postal_code'];
       $bookingRequestId = $result['booking']['booking_request_id'];
 
       if (!$bookingCode || !$passengerEmail) {
@@ -209,8 +201,14 @@ class BookingController extends Controller
       return response()->json(
         [
           'message' => 'Booking created successfully.',
+          'user' => [
+            'email' => $passengerEmail,
+            'postal_code' => $postalCode,
+          ],
           'booking' => [
             'booking_request_id' => $bookingRequestId,
+            'total_price' => $totalPrice,
+            'cabin_title' => $cabinTitle,
           ],
           // "passenger" => $result["passenger"],
         ],
@@ -337,6 +335,54 @@ class BookingController extends Controller
 
   /*
   |--------------------------------------------------------------------------
+  |  Get booking by request id
+  |--------------------------------------------------------------------------
+  |
+  |  This method return single booking by request id
+  |
+  */
+  public function singleBookingByRequestId(int $eventId, string $requestId)
+  {
+    $user = Auth::user();
+
+    // if event status is not public or pre-sale return error
+    $event = Event::find($eventId);
+
+    if (!$event || !in_array($event->status, ['PUBLIC', 'PRE-SALE'])) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    $result = $this->customerBookingRepository->getBookingByRequestId($eventId, $requestId, $user);
+
+    if (!$result) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
+
+    // hide cabin number if status is new or cancelled
+    if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
+      $result->cabin->makeHidden(['cabin_number']);
+      $result->makeHidden(['booking_code', 'agent_id']);
+      $result->cabin->makeHidden(['internal_notes']);
+      $result->cabin->cabinSpec->makeHidden(['cabin_number']);
+    }
+
+    // hide
+    $result->passengers->map(function ($passenger) {
+      $passenger->payments->map(function ($payment) {
+        $payment->makeHidden(['BIP_ID']);
+        $payment->makeHidden(['notes']);
+      });
+    });
+
+    $schema = [
+      'booking' => $result,
+    ];
+
+    return response()->json($schema);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
   |  Get all bokings
   |--------------------------------------------------------------------------
   |
@@ -392,13 +438,16 @@ class BookingController extends Controller
   */
   public function emptySeat(Request $request, int $eventId, string $bookingCode)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     $user = Auth::user();
 
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     // no booking
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     if ($booking->is_single_occupancy) {
@@ -432,13 +481,16 @@ class BookingController extends Controller
   */
   public function removeEmptySeat(Request $request, int $eventId, string $bookingCode)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     $user = Auth::user();
 
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     // no booking
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     if ($booking->is_single_occupancy) {
@@ -475,7 +527,7 @@ class BookingController extends Controller
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     if ($booking->is_single_occupancy) {
@@ -556,6 +608,9 @@ class BookingController extends Controller
   */
   public function addPassengerViaEmail(Request $request, int $eventId, string $bookingCode)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     $user = Auth::user();
 
     $email = $request->input('email');
@@ -571,7 +626,7 @@ class BookingController extends Controller
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     if ($booking->is_single_occupancy) {
@@ -594,11 +649,11 @@ class BookingController extends Controller
     // if this email is used in another booking around the same event return error
     if (
       Booking::where('event_id', $eventId)
-        ->where('status', '!=', 'CANCELLED')
-        ->whereHas('passengers', function ($query) use ($email) {
-          $query->where('email', $email);
-        })
-        ->exists()
+      ->where('status', '!=', 'CANCELLED')
+      ->whereHas('passengers', function ($query) use ($email) {
+        $query->where('email', $email);
+      })
+      ->exists()
     ) {
       return response()->json(
         ['message' => 'This email is already used in another booking, use manual add instead'],
@@ -609,8 +664,8 @@ class BookingController extends Controller
     // Check if an invitation already exists for this email and booking
     if (
       PassengerInvitation::where('booking_id', $booking->id)
-        ->where('email', $email)
-        ->exists()
+      ->where('email', $email)
+      ->exists()
     ) {
       return response()->json(['message' => 'Passenger with this email has already been invited'], 400);
     }
@@ -618,8 +673,8 @@ class BookingController extends Controller
     // Check if this slot is already taken
     if (
       PassengerInvitation::where('booking_id', $booking->id)
-        ->where('passenger_id', $passenger->id)
-        ->exists()
+      ->where('passenger_id', $passenger->id)
+      ->exists()
     ) {
       return response()->json(['message' => 'Passenger slot is already taken'], 400);
     }
@@ -661,10 +716,13 @@ class BookingController extends Controller
   */
   public function cancelInvitation(Request $request, int $eventId, string $bookingCode)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     // passenger_id: passengerId,
@@ -709,12 +767,15 @@ class BookingController extends Controller
   */
   public function resetPassengerSeat(Request $request, int $eventId, string $bookingCode)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     $user = Auth::user();
 
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return response()->json(['message' => __('feedback.booking_not_found')], 404);
     }
 
     if ($booking->is_single_occupancy) {

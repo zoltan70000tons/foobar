@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\AuthCustomer;
 
+use App;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SurvivorNumber;
 use Illuminate\Support\Facades\Cookie;
+use App\Models\TemporaryPassword;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerLoginController extends Controller
 {
@@ -16,6 +20,9 @@ class CustomerLoginController extends Controller
    */
   public function store(Request $request): JsonResponse
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+    
     // Step 1: Validate the request data
     $request->validate([
       'identifier' => 'required|string',
@@ -58,6 +65,32 @@ class CustomerLoginController extends Controller
       Auth::logout();
       return response()->json(['message' => __('auth.failed')], 403);
     }
+
+
+    // Step 3: Check for temporary password
+    $user = User::where('email', $email)->first();
+
+    if ($user) {
+        $validTempPassword = TemporaryPassword::where('customer_id', $user->id)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->get()
+            ->first(fn($record) => Hash::check($password, $record->temporary_password));
+
+        if ($validTempPassword) {
+            // Mark as used
+            $validTempPassword->update(['used_at' => now()]);
+
+
+            Auth::login($user, $remember);
+            setPermissionsTeamId(1);
+
+            $request->session()->regenerate();
+
+            return response()->json($user, 200);
+        }
+    }
+
 
     return response()->json(['message' => __('auth.failed')], 401);
   }

@@ -24,16 +24,16 @@ use App\Http\Middleware\ApiRedirectHttp;
 use App\Http\Middleware\EnsureUserIsNotCustomer;
 
 // --- PASSWORD RESET ---
-Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:6,1', 'guest']);
-Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:6,1', 'guest']);
+Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
+Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:10,1', 'verified']);
+Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
 
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
   'auth:sanctum',
-  'throttle:6,1',
+  'throttle:10,1',
 ]);
 
 Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
@@ -42,9 +42,9 @@ Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::cl
   ->name('verificationApi.verify');
 
 // --- REGISTER ---
-Route::post('/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:6,1');
+Route::post('/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor'])->middleware(
-  'throttle:6,1'
+  'throttle:10,1'
 );
 
 // --- LOGOUT ---
@@ -75,7 +75,7 @@ Route::post('/add-pax/{eventId}/{bookingCode}/{token}', [AddPaxController::class
 // --- CHECK BOOKING ---
 Route::post('/check-booking-login', [CheckBookingController::class, 'login'])->middleware(['throttle:15,1']);
 
-Route::middleware(['throttle:25,1', 'check_booking_session'])->group(function () {
+Route::middleware(['check_booking_session'])->group(function () {
   Route::get('/check-booking', [CheckBookingController::class, 'getBooking']);
   Route::post('/check-booking-logout', [CheckBookingController::class, 'logout']);
 });
@@ -163,6 +163,8 @@ Route::middleware([
 
   // --- single booking
   Route::get('/my-bookings/{eventId}/{bookingCode}', [BookingController::class, 'singleBooking']);
+  Route::get('/my-bookings/{eventId}/request-id/{requestId}', [BookingController::class, 'singleBookingByRequestId']);
+
   // --- single invitation
   Route::get('/my-bookings/{eventId}/{bookingCode}/invitation/{token}', [InvitationController::class, 'index']);
   // --- single invitation add pax

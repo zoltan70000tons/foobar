@@ -13,7 +13,7 @@ return [
     |
     */
 
-  'failed' => 'Diese Anmeldedaten stimmen nicht mit unseren Daten überein.',
+  'failed' => 'Deine Anmeldedaten stimmen nicht mit unseren Aufzeichnungen überein.',
   'password' => 'Das angegebene Passwort ist inkorrekt.',
   'throttle' => 'Zu viele fehlgeschlagene Log-In Versuche. Bitte versuche es in :seconds Sekunden erneut.',
   'current_password_incorrect' => 'Das aktuelle Passwort ist inkorrekt.',

@@ -29,6 +29,17 @@ class AdjustmentsRepository
   public function attachAdjustments(array $adjustmentIds, Booking $booking): bool
   {
     try {
+      // Get the lead
+      $event = $booking->event;
+
+      // Always exclude MEMBERSHIP_ adjustments if event is PUBLIC
+      if ($event && $event->status === 'PUBLIC') {
+          $adjustmentIds = array_filter($adjustmentIds, function ($id) {
+              $adjustment = Adjustment::find($id);
+              return $adjustment && !str_starts_with($adjustment->code, 'MEMBERSHIP_');
+          });
+      }
+
       $booking->adjustments()->sync($adjustmentIds);
 
       return true;
@@ -38,16 +49,16 @@ class AdjustmentsRepository
     }
   }
 
-  public function getAdjustments($user, $cabin, $cabinOffset = false, $singleTicket = false){
-       $memberType = strtoupper($user->membership->memberType->name);
-       $price = $cabin->category->price;
-       foreach (MemberShip::cases() as $membership) {
-        if($memberType == $membership->value){
-          $result = Adjustment::where('code', '=', $membership->name)->get();
-        }
+  // public function getAdjustments($user, $cabin, $cabinOffset = false, $singleTicket = false){
+  //      $memberType = strtoupper($user->membership->memberType->name);
+  //      $price = $cabin->category->price;
+  //      foreach (MemberShip::cases() as $membership) {
+  //       if($memberType == $membership->value){
+  //         $result = Adjustment::where('code', '=', $membership->name)->get();
+  //       }
         
-      }
-  }
+  //     }
+  // }
 
   public function getAdjustmentsBySurvivorNumber($survivorNumber): int|null
   {

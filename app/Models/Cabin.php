@@ -207,6 +207,7 @@ class Cabin extends Model
        static::where('cabin_spec_id', $cabin->cabin_spec_id)
       ->where('id', '!=', $cabin->id)
       ->update([
+        'cabin_type_id' => $cabin->cabin_type_id,
         'inventory' => $cabin->inventory,
         'status' => $cabin->status,
       ]);

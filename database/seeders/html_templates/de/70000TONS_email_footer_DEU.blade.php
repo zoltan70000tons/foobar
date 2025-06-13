@@ -117,7 +117,21 @@
                     irrtümlich erhalten haben,
                     informieren Sie uns bitte
                     sofort per eMail oder
-                    Telefon. Vielen Dank.
+                    Telefon. Vielen Dank.<br />
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    class="text-footer2"
+                    style="
+                              color: rgb(119, 119, 119);
+                              font-family: Arial, sans-serif;
+                              font-size: 14px;
+                              line-height: 20px;
+                              text-align: center;
+                            ">
+                    70000TONS, 70000TONS OF METAL and the 70000TONS OF METAL logo are registered trademarks of Properties of Metal Ltd. and are used under license.<br />
+                    © 2009–2025 UMCruises International Ltd. All Rights Reserved.
                   </td>
                 </tr>
               </tbody>

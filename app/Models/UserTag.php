@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string|null $name
+ * @property string|null $description
+ * @property string|null color
+ * @property int $id
+ *
+ * @property User[] $users
+ */
 class UserTag extends Model
 {
     use HasFactory, SoftDeletes;
