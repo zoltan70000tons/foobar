@@ -75,7 +75,7 @@ Route::post('/add-pax/{eventId}/{bookingCode}/{token}', [AddPaxController::class
 // --- CHECK BOOKING ---
 Route::post('/check-booking-login', [CheckBookingController::class, 'login'])->middleware(['throttle:15,1']);
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:passenger'])->group(function () {
   Route::get('/check-booking', [CheckBookingController::class, 'getBooking']);
   Route::post('/check-booking-logout', [CheckBookingController::class, 'logout']);
 });

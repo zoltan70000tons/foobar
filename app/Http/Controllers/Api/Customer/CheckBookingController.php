@@ -146,22 +146,31 @@ class CheckBookingController extends Controller
   */
   public function logout(Request $request)
   {
+      $language = $request->input('language', 'en');
+      App::setLocale($language);
 
-    $language = $request->input('language', 'en');
-    App::setLocale($language);
+      $accessToken = $request->bearerToken(); 
 
-    $passenger = $request->user();
-    
-    if (!$passenger || !$request->user()->tokenCan('view-booking')) {
-      return response()->json(['message' => 'Unauthorized'], 403);
-    }
+      if (!$accessToken) {
+        return response()->json(['message' => 'Missing token'], 401);
+      }
 
-    // remove all Sanctum tokens for the passenger
-    $passenger->tokens()->delete();
+      // Parse token to get token record
+      $tokenId = explode('|', $accessToken)[0];
+      $token = PersonalAccessToken::find($tokenId);
 
-    // Optionally, you can also delete the PassengerToken records
-    PassengerToken::where('passenger_id', $passenger->id)->delete();
+      if (!$token || $token->abilities === null || !in_array('view-booking', $token->abilities)) {
+          return response()->json(['message' => 'Unauthorized'], 403);
+      }
 
-    return response()->json(['message' => 'Logged out'], 200);
+      $passenger = $token->tokenable;
+
+      // Delete all tokens for this passenger
+      $passenger->tokens()->delete();
+
+      // clean up custom token tracking table
+      PassengerToken::where('passenger_id', $passenger->id)->delete();
+
+      return response()->json(['message' => 'Logged out'], 200);
   }
 }

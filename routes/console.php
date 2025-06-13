@@ -8,6 +8,8 @@ use App\Models\TemporaryReservation;
 use App\Models\TemporaryPassword;
 use App\Models\PassengerInvitation;
 use Illuminate\Support\Carbon;
+use App\Models\PassengerToken;
+use Laravel\Sanctum\PersonalAccessToken;
 
 Artisan::command('inspire', function () {
   $this->comment(Inspiring::quote());
@@ -39,6 +41,16 @@ Schedule::job(new ClearOldBookingSessions())->everyMinute();
 Schedule::call(function () {
   TemporaryPassword::where('expires_at', '<', Carbon::now())->delete();
 })->everyTenMinutes();
+
+// Delete personal access tokens after 24 hours
+Schedule::call(function () {
+  PersonalAccessToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
+})->everyOddHour();
+
+// Delete passenger tokens after 24 hours
+Schedule::call(function () {
+  PassengerToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
+})->everyOddHour();
 
 // Autotag bookings with OVERDUE and MISSING_INFO tags
 Schedule::command('bookings:dispatch-tags')->dailyAt('00:00')->timezone('America/Los_Angeles');
