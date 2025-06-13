@@ -57,6 +57,16 @@ class InvitationController extends Controller
       ->where('token', $token)
       ->first();
 
+    // Check if the passenger invitation exists and is associated with a booking
+    if (!$passengerInvitation || !$passengerInvitation->booking) {
+      return response()->json(
+        [
+          'message' => 'Invalid token or user data',
+        ],
+        400
+      );
+    }
+
     // check the eventId is the same as the booking event id
     if ($passengerInvitation->booking->event_id !== $eventId) {
       return response()->json(
@@ -124,7 +134,7 @@ class InvitationController extends Controller
     $result = $this->customerBookingRepository->addPassengerWithToken($eventId, $bookingCode, $token, $dataToUpdate);
 
     return $result;
-    //
+
   }
 
   /*

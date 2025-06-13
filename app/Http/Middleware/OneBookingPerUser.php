@@ -18,12 +18,18 @@ class OneBookingPerUser
       $language = $request->input('language', 'en');
       App::setLocale($language);
 
+      $survivorNumber = $user->survivorNumber?->survivor_number;
+
       $bookingExists = Booking::where('event_id', $request->event_id)
         ->where('status', '!=', 'CANCELLED')
-        ->where(function ($query) use ($user) {
-          $query->where('customer_id', $user->id)->orWhereHas('passengers', function ($q) use ($user) {
-            $q->where('survivor_number', $user->survivorNumber->survivor_number);
-          });
+        ->where(function ($query) use ($user, $survivorNumber) {
+          $query->where('customer_id', $user->id);
+
+          if ($survivorNumber) {
+            $query->orWhereHas('passengers', function ($q) use ($survivorNumber) {
+              $q->where('survivor_number', $survivorNumber);
+            });
+          }
         })
         ->exists();
 

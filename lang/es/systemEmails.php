@@ -42,7 +42,9 @@ return [
   'email_invitation_on_your_account' => 'Tienes una invitación en tu cuenta.',
   'email_invitation_on_your_account_body' => 'Tienes 72 horas para aceptar esta invitación. Si no la aceptas dentro de este lapso de tiempo, la invitación será cancelada. Puedes ver tus invitaciones en tu página de Reservas en tu cuenta. Si tienes alguna pregunta, por favor contacta a nuestro equipo de Servicio al Cliente.',
   'email_not_found' => 'No se encontró el correo electrónico.',
-  'seat_reset_notification' => 'Queremos avisarte que tu asiento asignado en la cabina ha sido restablecido.',
+  
+  'seat_reset_subject' => 'Has sido removido de tu reserva',
+  'seat_reset_notification' => 'Queremos avisarte que haz sido removido de tu reserva.',
   'seat_reset_questions' => 'Si tienes alguna pregunta, por favor dirígete al Pasajero Líder de tu cabina para más información.',
   'booking_code' => 'Código de Reserva'
 ];
