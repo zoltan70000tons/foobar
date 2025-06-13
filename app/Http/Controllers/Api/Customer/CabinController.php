@@ -21,38 +21,12 @@ use Log;
 class CabinController extends Controller
 {
   use CabinFilter, DecksFilter;
-
-  /**
-   * 
-   * THIS IS OLD METHOD, FOR SHORT POLLING
-   * 
-   * 
-   * Show cabins filtered by type, category, and deck.
+  /** 
+   * Show all cabins for a specific cabin type based on filters.
+   *
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
    */
-  // public function show($cabinTypeId, $cabinCategoryCode, $cabinCapacity, $cabinDeck)
-  // {
-  //   // Convert parameters to the correct type
-  //   $cabinTypeId = intval($cabinTypeId);
-  //   if ($cabinTypeId !== 1) {
-  //     return response()->json(
-  //       [
-  //         'message' => 'Option avaialble only for private cabins.',
-  //       ],
-  //       404
-  //     );
-  //   }
-
-  //   $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
-  //   $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
-
-  //   $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity, true);
-
-  //   if (isset($filteredCabins['error'])) {
-  //     return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
-  //   }
-
-  //   return response()->json($filteredCabins['cabins'], 200);
-  // }
   public function show(Request $request)
   {
     $language = $request->input('language', 'en');
