@@ -185,6 +185,33 @@ class CustomerAuthController extends Controller
     }
   }
 
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Check user cant delete account
+  |--------------------------------------------------------------------------
+  |
+  | User cannot delete account if they have an active booking.
+  */
+  public function canDeleteAccount(Request $request)
+  {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+    $user = $request->user();
+
+    // Check if user has an active booking
+    $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
+
+    return response()->json([
+      'canDelete' => !$hasActiveBooking,
+      'message' => $hasActiveBooking
+        ? __('feedback.cannot_delete_account')
+        : __('feedback.proceed_delete_account'),
+    ]);
+  }
+
+
   /**
    * Delete the authenticated user
    *

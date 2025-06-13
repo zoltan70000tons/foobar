@@ -10,7 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Log;
 use Str;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @property \Illuminate\Database\Eloquent\Collection|\App\Models\OnboardCredit[] $onboardCredits
@@ -136,6 +135,11 @@ class Passenger extends Model
   public function onboardCredits()
   {
     return $this->hasMany(OnboardCredit::class);
+  }
+  
+  public function passengerTokens()
+  {
+    return $this->hasMany(PassengerToken::class);
   }
 
   public function getInstallmentStatusAttribute()

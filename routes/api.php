@@ -75,7 +75,7 @@ Route::post('/add-pax/{eventId}/{bookingCode}/{token}', [AddPaxController::class
 // --- CHECK BOOKING ---
 Route::post('/check-booking-login', [CheckBookingController::class, 'login'])->middleware(['throttle:15,1']);
 
-Route::middleware(['check_booking_session'])->group(function () {
+Route::middleware(['auth:passenger'])->group(function () {
   Route::get('/check-booking', [CheckBookingController::class, 'getBooking']);
   Route::post('/check-booking-logout', [CheckBookingController::class, 'logout']);
 });
@@ -131,11 +131,11 @@ Route::middleware([
   // Route::post('/cabin/release', [CabinController::class, 'release']);
 
 
-  Route::get('/customer/can-delete-account', [CheckBookingController::class, 'canDeleteAccount']);
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
   Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
   Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
+  Route::get('/customer/can-delete-account', [CustomerAuthController::class, 'canDeleteAccount']);
   Route::post('/delete-account', [CustomerAuthController::class, 'deleteAccount']);
 
   // set slot empty
