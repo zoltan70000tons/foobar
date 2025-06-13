@@ -43,6 +43,8 @@ return [
   'email_invitation_on_your_account' => 'Du hast eine Einladung in Deinem Account.',
   'email_invitation_on_your_account_body' => 'Du hast 72 Stunden, die Einladung anzunehmen. Wenn Du die Einladung nicht in dieser Zeit annimmst, wird die Einladung storniert. Du kannst Deine Einladungen bei Deinen Buchungen in Deinem Account sehen. Wenn Du Fragen hast, kontaktiere bitte unsere Customer Service Crew.',
   'email_not_found' => 'eMailadresse wurde nicht gefunden.',
+
+  'seat_reset_subject' => 'Du wurdest aus Deiner Buchung entfernt',
   'seat_reset_notification' => 'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
   'seat_reset_questions' => 'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
   'booking_code' => 'Buchungscode'
