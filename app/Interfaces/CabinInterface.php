@@ -14,4 +14,6 @@ interface CabinInterface
     function getCategoriesAndCabins(int $event_id);
     function addTags(array $tags, array $cabins);
     function getTypes();
+    function getSharedCabins(int $eventId, int $cabinSpecId);
+    function createShared(int $cabinId,int $categoryId);
 }

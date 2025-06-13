@@ -9,6 +9,7 @@ use App\Models\CabinCategory;
 use App\Models\CabinSpec;
 use App\Models\CabinType;
 use App\Traits\ExceptionLogger;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 
@@ -30,66 +31,113 @@ class CabinRepository implements CabinInterface
 
   function save(array $data): ?Cabin
   {
-    return new Cabin();
+    DB::beginTransaction();
+
+    try {
+      $cabin = new Cabin();
+      $cabinSpec = new CabinSpec();
+
+      $cabin->notes = $data['notes'] ?? null;
+      $cabin->internal_notes = $data['internal_notes'] ?? null;
+      $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
+
+      if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
+
+        if (isset($data['cabin_type']) && $data['cabin_type'] != $cabin->cabin_type_id) {
+          if ($cabin->cabin_type_id === 1 && in_array($data['cabin_type'], ["2", "3"])) {
+            $cabin->inventory = $cabin->category->capacity;
+          } elseif (in_array($cabin->cabin_type_id, [2, 3]) && $data['cabin_type'] === "1") {
+            $cabin->inventory = 1;
+          }
+          $cabin->cabin_type_id = $data['cabin_type'];
+        }
+        $cabin->cabin_type_id = $data['cabin_type_id']; // Default to type 1 if not provided
+        $cabin->status = $data['status'];
+        $cabin->cabin_category_id = $data['cabin_category_id'];
+        $cabinSpec->cabin_number = $data['cabin_number'];
+        $cabinSpec->deck = $data['deck'];
+        $cabinSpec->location = $data['location'];
+        $cabinSpec->connects_with = $data['connects_with'] ?? null;
+        $cabinSpec->total_berths = $data['total_berths'] ?? 0;
+        $cabinSpec->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
+        $cabinSpec->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
+        $cabinSpec->upper_berths = $data['upper_berths'] ?? null;
+
+        $cabinSpec->accessible = $data['accessible'] ?? false;
+        $cabinSpec->balcony = $data['balcony'] ?? false;
+        $cabinSpec->obstructed_view = $data['obstructed_view'] ?? false;
+      }
+
+      $cabinSpec->save();
+      $cabin->cabin_spec_id = $cabinSpec->id;
+      $cabin->save();
+
+      DB::commit();
+      return $cabin;
+    } catch (\Exception $e) {
+      DB::rollBack();
+      $this->logException($e);
+      return null;
+    }
   }
-  
+
   function update(array $data, $id)
   {
-      DB::beginTransaction();
-  
-      try {
-          $cabin = $this->find($id);
-          if (!$cabin) {
-              throw new \Exception("Cabin not found");
-          }
-  
-          $cabinSpec = CabinSpec::find($cabin->cabin_spec_id);
-          if (!$cabinSpec) {
-              throw new \Exception("CabinSpec not found");
-          }
-  
-          $cabin->notes = $data['notes'] ?? null;
-          $cabin->internal_notes = $data['internal_notes'] ?? null;
-          $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
-  
-          if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
-  
-              if (isset($data['cabin_type']) && $data['cabin_type'] != $cabin->cabin_type_id) {
-                  if ($cabin->cabin_type_id === 1 && in_array($data['cabin_type'], ["2", "3"])) {
-                      $cabin->inventory = $cabin->category->capacity;
-                  } elseif (in_array($cabin->cabin_type_id, [2, 3]) && $data['cabin_type'] === "1") {
-                      $cabin->inventory = 1;
-                  }
-                  $cabin->cabin_type_id = $data['cabin_type'];
-              }
-  
-              $cabin->status = $data['cabin_status'];
-              $cabin->cabin_category_id = $data['cabin_category'];
-              $cabinSpec->cabin_number = $data['cabin_number'];
-              $cabinSpec->deck = $data['deck'];
-              $cabinSpec->location = $data['location'];
-              $cabinSpec->connects_with = $data['connects_with'] ?? null;
-              $cabinSpec->total_berths = $data['total_berths'] ?? 0;
-              $cabinSpec->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
-              $cabinSpec->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
-              $cabinSpec->upper_berths = $data['upper_berths'] ?? null;
-  
-              // Updating features
-              $cabinSpec->accessible = $data['features']['accessible'] ?? false;
-              $cabinSpec->balcony = $data['features']['balcony'] ?? false;
-              $cabinSpec->obstructed_view = $data['features']['obstructed_view'] ?? false;
-          }
-  
-          $cabin->save();
-          $cabinSpec->save();
-  
-          DB::commit();
-      } catch (\Exception $e) {
-          DB::rollBack();
-          $this->logException($e);
+    DB::beginTransaction();
+
+    try {
+      $cabin = $this->find($id);
+      if (!$cabin) {
+        throw new \Exception("Cabin not found");
       }
+
+      $cabinSpec = CabinSpec::find($cabin->cabin_spec_id);
+      if (!$cabinSpec) {
+        throw new \Exception("CabinSpec not found");
+      }
+
+      $cabin->notes = $data['notes'] ?? null;
+      $cabin->internal_notes = $data['internal_notes'] ?? null;
+      $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
+
+      if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
+
+        if (isset($data['cabin_type']) && $data['cabin_type'] != $cabin->cabin_type_id) {
+          if ($cabin->cabin_type_id === 1 && in_array($data['cabin_type'], ["2", "3"])) {
+            $cabin->inventory = $cabin->category->capacity;
+          } elseif (in_array($cabin->cabin_type_id, [2, 3]) && $data['cabin_type'] === "1") {
+            $cabin->inventory = 1;
+          }
+          $cabin->cabin_type_id = $data['cabin_type'];
+        }
+
+        $cabin->status = $data['cabin_status'];
+        $cabin->cabin_category_id = $data['cabin_category'];
+        $cabinSpec->cabin_number = $data['cabin_number'];
+        $cabinSpec->deck = $data['deck'];
+        $cabinSpec->location = $data['location'];
+        $cabinSpec->connects_with = $data['connects_with'] ?? null;
+        $cabinSpec->total_berths = $data['total_berths'] ?? 0;
+        $cabinSpec->lower_bed_type_1 = $data['lower_bed_type_1'] ?? null;
+        $cabinSpec->lower_bed_type_2 = $data['lower_bed_type_2'] ?? null;
+        $cabinSpec->upper_berths = $data['upper_berths'] ?? null;
+
+        // Updating features
+        $cabinSpec->accessible = $data['features']['accessible'] ?? false;
+        $cabinSpec->balcony = $data['features']['balcony'] ?? false;
+        $cabinSpec->obstructed_view = $data['features']['obstructed_view'] ?? false;
+      }
+
+      $cabin->save();
+      $cabinSpec->save();
+
+      DB::commit();
+    } catch (\Exception $e) {
+      DB::rollBack();
+      $this->logException($e);
+    }
   }
-  
+
   function delete($id) {}
   function getCategoriesAndCabins($event_id)
   {
@@ -148,6 +196,7 @@ class CabinRepository implements CabinInterface
                 ? "{$cabin->inventory} / {$category->capacity}"
                 : $cabin->inventory,
               'cabin_type'       => $cabin->cabinType->cabin_type,
+              'is_shared_cabin_number'    => $cabin->cabinSpec->is_shared_cabin_number,
               'cabin_tags'       => $cabin->tags,
             ];
           })
@@ -160,7 +209,60 @@ class CabinRepository implements CabinInterface
 
   function addTags(array $tags, array $cabins) {}
 
-  function getTypes(){
+  function getTypes()
+  {
     return CabinType::all();
+  }
+
+  function getSharedCabins($eventId, $cabinSpecId)
+  {
+    $cabins = Cabin::with(['category', 'cabinType'])
+      ->where('cabin_spec_id', $cabinSpecId)
+      ->get();
+    if ($cabins->isNotEmpty()) {
+      $firstCabin = $cabins->shift();
+    }
+
+    $formattedCabins = $cabins->map(function ($cabin) {
+      if ($cabin->created_at instanceof Carbon) {
+        $cabin->formatted_created_at = $cabin->created_at->format('Y-m-d H:i:s');
+      }
+      return $cabin;
+    });
+
+    //dd($formattedCabins);
+
+    return $formattedCabins;
+  }
+
+  function createShared(int $cabinId, int $categoryId)
+  {
+    DB::beginTransaction();
+
+    try {
+
+      $cabin = Cabin::find($cabinId);
+      if (!$cabin) {
+        throw new \Exception("Cabin not found");
+      }
+      $sharedCabin = $cabin->replicate();
+      $sharedCabin->cabin_category_id = $categoryId;
+      $currentTags = $sharedCabin->tags;
+      if (!is_array($currentTags)) {
+        $currentTags = [];
+      }
+      if (!in_array("SHARED", $currentTags)) {
+        $currentTags[] = "SHARED";
+      }
+      $sharedCabin->tags = $currentTags;
+      $sharedCabin->save();
+      DB::commit();
+      //dd($sharedCabin);
+      return $sharedCabin;
+    } catch (\Exception $e) {
+      DB::rollBack();
+      $this->logException($e);
+      return null;
+    }
   }
 }

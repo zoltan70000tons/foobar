@@ -32,6 +32,7 @@ class CabinSpec extends Model
         'balcony' => 'boolean',
         'obstructed_view' => 'boolean',
     ];
+    protected $appends = ['is_shared_cabin_number'];
 
     // Relations
     public function cabins()
@@ -42,5 +43,14 @@ class CabinSpec extends Model
     public function connectingCabin()
     {
         return $this->belongsTo(CabinSpec::class, 'connects_with');
+    }
+
+    /**
+     * Get the 'is_shared_cabin_number' attribute.
+     * @return bool
+     */
+    public function getIsSharedCabinNumberAttribute(): bool
+    {
+       return $this->cabins()->count() > 1;
     }
 }
