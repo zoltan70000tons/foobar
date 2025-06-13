@@ -9,6 +9,7 @@ use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Models\TemporaryReservation;
 use App\Traits\CabinFilter;
+use App\Traits\DecksFilter;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReservationService;
 use Illuminate\Support\Facades\Auth;
@@ -19,34 +20,68 @@ use Log;
 
 class CabinController extends Controller
 {
-  use CabinFilter;
-
-  /**
-   * Show cabins filtered by type, category, and deck.
+  use CabinFilter, DecksFilter;
+  /** 
+   * Show all cabins for a specific cabin type based on filters.
+   *
+   * @param Request $request
+   * @return \Illuminate\Http\JsonResponse
    */
-  public function show($cabinTypeId, $cabinCategoryCode, $cabinCapacity, $cabinDeck)
+  public function show(Request $request)
   {
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
+
     // Convert parameters to the correct type
-    $cabinTypeId = intval($cabinTypeId);
+    $cabinTypeId = intval($request->input('cabin_type_id', 1));
+
     if ($cabinTypeId !== 1) {
-      return response()->json(
-        [
-          'message' => 'Option avaialble only for private cabins.',
-        ],
-        404
-      );
+      return response()->json(['message' => 'Option available only for private cabins.'], 404);
     }
 
-    $cabinCapacity = $cabinCapacity !== null ? intval($cabinCapacity) : null;
-    $cabinDeck = $cabinDeck !== null ? intval($cabinDeck) : null;
+    $cabinCategoryCode = $request->input('category_code', null);
+    $cabinCapacity = $request->input('capacity', null);
+    $cabinDeck = $request->input('deck', null);
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity, true);
+    // if all requests parameters are null, try get from cart 
+    if (is_null($cabinCategoryCode) && is_null($cabinCapacity)) {
+      $cart = Auth::user() ? Cart::where('user_id', Auth::id())->first()?->cart_data ?? [] : [];
+      $cart = (array) $cart;
+      
+      Log::info('Cart data:', ['cart' => $cart]);
+      
+      $cabinCategoryCode = $cart['cabin_code'] ?? null;
+      $cabinCapacity = $cart['cabin_capacity'] ?? null;
+    }
+
+    // if still all requests parameters are null, return error
+    if (is_null($cabinCategoryCode) && is_null($cabinCapacity) && is_null($cabinDeck)) {
+      return response()->json(['message' => 'Cabin category code, capacity.'], 400);
+    }
+
+    // decks with cabins only
+    $decks = $this->filterDecks($cabinTypeId, $cabinCategoryCode, true, $cabinCapacity);
+
+
+    // first deck with lowest number
+    $cabinDeck = $cabinDeck ?? collect($decks)->first();
+
+    // if cabinDeck is not in decks, return error
+    if(!$cabinDeck) {
+      return response()->json(['message' => 'No decks found for the given parameters.'], 404);
+    }
+
+    // Filter cabins based on the provided parameters
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, $cabinDeck, false, $cabinCategoryCode, $cabinCapacity);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
     }
 
-    return response()->json($filteredCabins['cabins'], 200);
+    return response()->json([
+      'decks' => $decks,
+      'cabins' => $filteredCabins['cabins']
+    ], 200);
   }
 
   /**
