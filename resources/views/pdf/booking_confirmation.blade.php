@@ -157,9 +157,13 @@
                         <td style="width: 100px;"></td>
                         <th style="width: 100px; text-align: left;">Form of Payment</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
-                        <td colspan="3" rowspan="4" width="100%" style="vertical-align: top;">
+                        {{-- This cell contains the price breakdown --}}
+                        <td colspan="3" style="vertical-align: top;margin:0; padding:0; ">
                             <table width="100%" style="border-collapse: collapse; margin: 0 auto;">
+                                {{-- All 4 rows of the price breakdown go here --}}
                                 <tr>
                                     <td style="width: 100px;"></td>
                                     <td style="width: 100px;">{{ $paxPaymentData['total_discounts_percentage'] }}% Discount</td>
@@ -174,7 +178,6 @@
                                     <td></td>
                                     <td>Taxes & Fees</td>
                                     <td>{{ formatCurrency($paxPaymentData['total_addons']) }}</td>
-
                                 </tr>
                                 <tr>
                                     <td></td>
@@ -183,7 +186,8 @@
                                 </tr>
                             </table>
                         </td>
-                        <td colspan="4" rowspan="5" style="vertical-align: top;">
+                        {{-- This cell contains the payment installments --}}
+                        <td colspan="4" style="vertical-align: top;">
                             <table width="100%" style="border-collapse: collapse; margin: 0 auto;" class="nested-payments-table">
                                 <tbody>
                                     <tr>
@@ -258,8 +262,13 @@
 
                         </td>
                     </tr>
-                </thead>
+                </tbody>
             </table>
+
+
+
+
+
             @if($index + 1 == count($paymentInfo['passengers']))
             <table role="doc-pagebreak" width="100%" style="border-collapse: collapse;text-align:left;margin-top:0px;font-size:10px;" class="payments-table">
                 <tr>
