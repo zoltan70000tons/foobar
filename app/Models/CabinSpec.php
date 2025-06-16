@@ -51,6 +51,11 @@ class CabinSpec extends Model
      */
     public function getIsSharedCabinNumberAttribute(): bool
     {
-       return $this->cabins()->count() > 1;
+        if ($this->relationLoaded('cabins')) {
+            return $this->cabins->count() > 1;
+        }
+
+        // Fallback if not eager loaded (avoids surprise N+1 when not loaded)
+        return $this->cabins()->count() > 1;
     }
 }
