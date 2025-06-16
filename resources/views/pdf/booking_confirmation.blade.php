@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 {{ $booking = $data['booking'] }}
-{{ $lastUpdated = $data['last_updated']}}
-{{ $dateIssued = $data['date_issued']}}
 {{ $event =$booking->event }}
 {{ $cabin = $booking->cabin }}
-{{ $category = $cabin->category }}
-{{ $categorySpec = $cabin->cabinSpecs }}
 
 
 <head>
@@ -15,7 +11,7 @@
     <title>{{$booking->booking_code}}</title>
     <style>
         @page {
-            margin-top: 10px;
+            margin-top: 0px;
             margin-bottom: 80px;
             margin-left: 0px;
             margin-right: 0px;
@@ -24,7 +20,7 @@
 
         body {
             font-family: Verdana, Geneva, sans-serif;
-            font-size: 0.6rem;
+            font-size: 10px;
         }
 
         header {
@@ -35,552 +31,441 @@
             text-align: center;
         }
 
-        .header,
-        .post-header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.6rem;
+        td,
+        th {
+            line-height: 8px;
 
         }
 
-        .table-container {
-            width: 100%;
+        .page-container {
+            width: 780px;
+            margin: 0 auto;
+        }
+
+        .break {
+            height: 250px;
+        }
+
+        .payments-table {
+            width: 700px;
+            margin: 0 auto;
             border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .table-container th {
-            text-align: right;
-        }
-
-        .table-container th,
-        .table-container td {
             font-weight: normal;
-            text-align: right;
+            margin-bottom: 10px;
         }
 
-        .bold {
-            font-weight: bold !important;
+        .table-wrapper {
+            width: 100%;
+            text-align: center;
+            /* opcional: para centrar si hay espacio */
         }
 
-        .text-right {
-            text-align: right;
+        .table-half {
+            display: inline-block;
+            vertical-align: top;
+            width: 325px;
+            border-collapse: collapse;
+            font-size: 10px;
+            /* margin-right: 2%; */
         }
 
-        .page-break {
-            page-break-after: always;
+        .table-half:last-child {
+            margin-right: 0;
         }
 
-        .add-pax,
-        .single-text {
-            margin-top: 1rem;
-            font-size: 0.8rem;
-            color: red;
-        }
-        .add-pax {
-            margin-top: -30px;
+        .table-half td,
+        .table-half th {
+            padding: 5px;
+            vertical-align: top;
         }
 
-        .add-pax a {
-            color: red;
-            text-decoration: none;
+        .passenger-table td {
+            line-height: 10px;
+            padding: 0;
+            margin: 0;
+            font-size: 10px;
         }
 
         .passenger_title {
-            font-size: 0.7rem;
+            font-size: 14px !important;
         }
 
-        .subrow {
-            padding-left: 10px;
-        }
-
-        .align-left {
-            text-align: left !important;
-        }
-
-        body {
-            font-family: sans-serif;
-            margin-top: 100px;
-            margin-bottom: 60px;
-        }
-
-        .credit-charges {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 0.5rem !important;
-            line-height: 0.8rem;
-        }
-
-        .underline {
+        td .underline {
             text-decoration: underline;
         }
 
-        td,
-        th {
-            line-height: 0.7;
-            padding: 2px 5px;
+        .single-text,
+        .credit-charges,
+        .add-pax {
+            font-size: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            color: red;
+            text-align: center
         }
 
-        .booking-code {
-            font-size: 0.7rem;
+        .due-immediately {
+            color: red;
+            font-weight: bold;
         }
 
-        span {
-            line-height: 1.2;
+        .header-1 {
+            text-align: left;
+            width: 100px;
+        }
+
+        .header-2 {
+            text-align: right;
+            width: 100px;
         }
     </style>
 </head>
 
 <body>
 
-    <header class="header">
-        <img src="{{ $data['logo'] }}" width="400px" alt="UMCruises Logo" style="margin-bottom: 1rem;">
+    <header>
+        {!! $header !!}
     </header>
-    <section class="body">
-        <section class="post-header">
-            <div>{{ formatDate($event->start_date, true, true) }} – {{ formatDate($event->end_date, true) }}</div>
-            <div>{{ $data['event']->address }}</div>
-            <div>Freedom Of The Seas</div>
-        </section>
-        <section class="body">
-            <h2 style="text-align: center; margin-top:5px; margin-bottom: 0px;">BOOKING CONFIRMATION</h2>
+    <div class="page-container">
+        <div class="break"></div>
+        <div class="table-wrapper">
+            @foreach($paymentInfo['passengers'] as $index => $item)
+            @php
+            $paxPaymentData = $item;
+            $passenger = $item['passenger'];
+            $payment_method = match ($passenger->payment_method) {
+            'CREDIT_CARD' => 'Credit Card*',
+            'BANK_TRANSFER' => 'Bank Transfer',
+            default => '',
+            };
+            $installments = $passenger->getInstallmentStatus();
+            $fullPaymentStatus = $passenger->getFullPaymentStatus();
+            $fullyPaid = $fullPaymentStatus['fully_paid'];
+            $amount = $fullyPaid ? $fullPaymentStatus['amount'] : $fullPaymentStatus['remaining_amount'];
+            @endphp
 
-            <table class="table-container" width="100%" style="margin-top:0px;">
-                <tr>
-                    <th width="50%">Date Issued:</th>
-                    <td width="50%" class="align-left" style="padding-left: 5px;"> {{$dateIssued}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{$lastUpdated}}</td>
-                </tr>
-                <tr class="booking-code">
-                    <th class="bold">Booking Code:</th>
-                    <td class="bold align-left" style="padding-left: 5px;">{{ $booking->booking_code }}</td>
-                </tr>
-                <tr>
-                    <th>Cabin Number:</th>
-                    <td class="align-left" style="padding-left: 5px;"> {{ $cabin->cabin_number }}</td>
-                </tr>
-                <tr>
-                    <th>Category:</th>
-                    <td class="align-left" style="padding-left: 5px;"> {{ $category->title }}</td>
-                </tr>
-                <tr>
-                    <th>Number of Passengers:</th>
-                    <td class="align-left" style="padding-left: 5px;"> {{ $data['category_specs']->capacity }}</td>
-                </tr>
-                <tr>
-                    <th>Notes:</th>
-                    <td class="align-left" style="padding-left: 5px;"></td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-
-                <tr>
-                    <th class="underline bold">Grand Total Booking Price:</th>
-                    <td class="align-left underline bold" style="padding-left: 5px;"> {{ formatCurrency($booking->getGrandTotal()) }}</td>
-                </tr>
-
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-                <!-- <tr>
-                    <td>&nbsp;</td>
-                </tr> -->
-
-                {{ $booking = $data['booking'] }}
-
-                @foreach ($paymentInfo['passengers'] as $index => $passenger)
-                @php
-                $pass = $passenger['passenger'];
-                $payment_method = match ($pass->payment_method) {
-                'CREDIT_CARD' => 'Credit Card*',
-                'BANK_TRANSFER' => 'Bank Transfer',
-                default => '',
-                };
-                $installments = $pass->getInstallmentStatus();
-                @endphp
-                <tr>
-                    <td colspan="2">
-                        <table width="100%" style="margin-left: -25px;">
-                            <tr>
-                                <td width="50%">
-                                    <table width="100%">
-                                        <tr>
-                                            <td width="40%" class="bold passenger_title">{{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }}
-                                            </td>
-                                            <td width="35%">Official Ticket Price</td>
-                                            <td width="30%">{{ formatCurrency($data['booking']->cabin->category->price) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td width="25%"></td>
-                                            <td width="25%">{{ $passenger['total_discounts_percentage'] }}% Discount</td>
-                                            <td width="25%">{{$paymentInfo['formatted_total_discounts']}}</td>
-
-                                        </tr>
-                                        <tr>
-                                            <td width="25%"></td>
-                                            <td width="25%">Net Ticket Price</td>
-                                            <td width="25%">{{formatCurrency($passenger['net_ticket_price'])}}</td>
-
-                                        </tr>
-                                        <tr>
-                                            <td width="25%"></td>
-                                            <td width="25%">Taxes & Fees</td>
-                                            <td width="25%">{{formatCurrency($pass->paymentInfo['total_fees'])}}</td>
-
-                                        </tr>
-                                        <tr>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td width="25%"></td>
-                                            <td width="25%">Total Ticket Price</td>
-                                            <td width="25%">{{ $passenger['total_ticket_price'] }}</td>
-
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                                <td colspan="4" style="padding: 0; margin: 0; vertical-align: top;" width="50%">
-                                    <table width="100%">
-                                        <tr>
-                                            <td width="33.3%"><span class="bold underline">Payment Plan:</span></td>
-                                            <td width="33.3%"></td>
-                                            <td width="33.3%" ><span class="bold underline">Form Of Payment:</span></td>
-
-
-                                        </tr>
-                                        <tr>
-                                            <td width="33.3%">&nbsp;</td>
-                                            <td width="33.3%">&nbsp;</td>
-                                            <td width="33.3%">&nbsp;</td>
-
-                                        </tr>
-                                        @if($booking->payment_plan == 'INSTALLMENTS')
-                                        @php
-                                        $paidInstallments = $installments['paid_installments'];
-                                        @endphp
-
-                                        @foreach ($paidInstallments as $installment)
-                                        <tr>
-                                            @php
-                                            $isFee = $installment['type'] == 'FEE';
-                                            @endphp
-                                            <td width="33.3%">
-                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
-                                            </td>
-                                            <td width="33.3%">{{ formatCurrency($installment['amount']) }}</td>
-                                            <td width="33.3%">{{$payment_method}}</td>
-                                        </tr>
-                                        @endforeach
-
-                                        @php
-                                        $remainingInstallments = $installments['remaining_installments'];
-                                        @endphp
-                                        @foreach ($remainingInstallments as $installment)
-                                        <tr>
-                                            <td width="33.3%">
-                                                @php
-                                                $isFee = $installment['type'] == 'FEE';
-                                                @endphp
-                                                @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
-                                                    <strong>Due Immediately</strong>
-                                                    @else
-                                                    {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
-                                                    @endif
-                                            </td>
-                                            <td width="33.3%">{{ formatCurrency($installment['amount_due']) }}</td>
-                                            <td width="33.3%">{{ $payment_method }}</td>
-
-                                        </tr>
-                                        @endforeach
-
-                                        @else
-                                        @php
-                                        $fullPaymentStatus = $pass->getFullPaymentStatus();
-                                        $fullyPaid =$fullPaymentStatus['fully_paid'];
-                                        $amount = $fullyPaid ? $fullPaymentStatus['amount'] : $fullPaymentStatus['remaining_amount'];
-                                        @endphp
-                                        <tr>
-                                            <td width="33.3%">
-                                                @if ($fullPaymentStatus['status'] === 'Unpaid')
-                                                <strong class="strong">Due Immediately</strong>
-                                                @else
-                                                {{ $fullPaymentStatus['status'] }}, {{ formatDate($fullPaymentStatus['due_date']) }}
-                                                @endif
-                                            </td>
-                                            <td width="33.3%">{{ formatCurrency($amount) }}</td>
-                                            <td width="33.3%">{{$payment_method}}</td>
-
-
-                                        </tr>
-
-                                        @endif
-
-                                        <tr>
-                                            <td>&nbsp;</td>
-                                        </tr>
-
-                                        <tr>
-                                            <td colspan="2" width="66.6%" class="bold underline">
-                                                <table width="100%">
-                                                    <tr>
-                                                        <td align="left" class="bold underline">
-                                                            Total {{ $pass->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$pass->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid:
-                                                        </td>
-                                                        <td align="right" class="bold underline">
-                                                            {{ $passenger['formatted_balance'] }}
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                            <td width="33.3%">&nbsp;</td>
-                                        </tr>
-
-
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-                @if(($index + 1) % 4 === 0 && ($index + 1) < count($paymentInfo['passengers']))
+            <table role="doc-pagebreak" width="100%" style="border-collapse: collapse;text-align:left;" class="payments-table">
+                <thead>
                     <tr>
-                    <td colspan="2">
-                        <div class="page-break"></div>
-                    </td>
+                        <th style="width: 100px;">
+                            <strong>{{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }}</strong>
+                        </th>
+                        <td style="width: 100px;">Official Ticket Price</td>
+                        <td style="width: 100px;">{{ formatCurrency($booking->cabin->category->price) }}</td>
+                        <th style="width: 130px; text-align: left;">Payment Plan</th>
+                        <td style="width: 70px;"></td>
+                        <td style="width: 100px;"></td>
+                        <th style="width: 100px; text-align: left;">Form of Payment</th>
                     </tr>
-                    @endif
-                    @endforeach
-
+                </thead>
+                <tbody>
                     <tr>
-                        <td colspan="2">
-                            <table width="100%">
+                        {{-- This cell contains the price breakdown --}}
+                        <td colspan="3" style="vertical-align: top;margin:0; padding:0; ">
+                            <table width="100%" style="border-collapse: collapse; margin: 0 auto;">
+                                {{-- All 4 rows of the price breakdown go here --}}
                                 <tr>
-                                    <td width="50%"></td>
-                                    <td colspan="4" style="padding: 0; margin: 0; vertical-align: top;" width="50%">
-                                        <table width="100%">
-                                            <tr>
-                                                <td width="30%" class="bold underline">Grand Total Paid:</td>
-                                                <td width="15%" class="bold underline">{{ formatCurrency($booking->getTotalPaid())}}</td>
-                                                <td width="20%">&nbsp;</td>
-                                                <td width="15%">&nbsp;</td>
-                                            </tr>
-                                        </table>
-                                    </td>
+                                    <td style="width: 100px;"></td>
+                                    <td style="width: 100px;">{{ $paxPaymentData['total_discounts_percentage'] }}% Discount</td>
+                                    <td style="width: 100px;">{{ $paxPaymentData['formatted_total_discounts'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Net Ticket Price</td>
+                                    <td>{{ $paxPaymentData['formatted_net_ticket_price'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Taxes & Fees</td>
+                                    <td>{{ formatCurrency($paxPaymentData['total_addons']) }}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Total Ticket Price</td>
+                                    <td>{{ formatCurrency($paxPaymentData['allocated_cost']) }}</td>
                                 </tr>
                             </table>
                         </td>
+                        {{-- This cell contains the payment installments --}}
+                        <td colspan="4" style="vertical-align: top;">
+                            <table width="100%" style="border-collapse: collapse; margin: 0 auto;" class="nested-payments-table">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:130px">&nbsp;</td>
+                                        <td style="width:70px"></td>
+                                        <td style="width:100px"></td>
+                                        <td style="width:100px"></td>
+                                    </tr>
+                                    @if($booking->payment_plan == 'INSTALLMENTS')
+                                    @foreach ($installments['paid_installments'] as $installment)
+                                    <tr>
+                                        <td>{{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}</td>
+                                        <td>{{ formatCurrency($installment['amount']) }}</td>
+                                        <td></td>
+                                        <td>{{ $payment_method }}</td>
+                                    </tr>
+                                    @endforeach
+
+                                    @foreach ($installments['remaining_installments'] as $installment)
+                                    @php
+                                    $isFee = $installment['type'] == 'FEE';
+                                    $name = $isFee ? $installment['name'] :'Installment';
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
+                                                <span class="due-immediately">Due Immediately</span>
+                                                @else
+                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
+                                                @endif
+                                        </td>
+                                        <td>{{ formatCurrency($installment['amount_due']) }}</td>
+                                        <td>{{ $name }}</td>
+                                        <td>{{ $payment_method }}</td>
+                                    </tr>
+                                    @endforeach
+                                    @else
+                                    <!-- If payment plan is not installments, show full payment status -->
+                                    @foreach ($installments['remaining_installments'] as $installment)
+                                    @php
+                                    $isFee = $installment['type'] == 'FEE';
+                                    $name = $isFee ? $installment['name'] :'Full Payment';
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
+                                                <span class="due-immediately">Due Immediately</span>
+                                                @else
+                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
+                                                @endif
+                                        </td>
+                                        <td>{{ formatCurrency($installment['amount_due']) }}</td>
+                                        <td>{{ $name }}</td>
+                                        <td>{{ $payment_method }}</td>
+                                    </tr>
+                                    @endforeach
+                                    @endif
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 130px;"><strong>Total {{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid<strong></td>
+                                        <td style="width: 70px!important;"><strong>{{formatCurrency($passenger->passenger_balance)}}</strong></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </td>
                     </tr>
+                </tbody>
             </table>
-        </section>
 
 
-        @if ($paymentInfo['cabinType']->id == 2 || $paymentInfo['cabinType']->id == 3 )
-        <section class="single-text" style="text-align: center;">
-            Please note: Bed assignments in Single Ticket cabins are first come first serve on board! <br />
-            You will be sharing your cabin with {{ $data['category_specs']->capacity - 1 }} other passenger(s)
-        </section>
-        @endif
-
-        <section class="credit-charges">
-            *All charges by credit card will be made on behalf of UMCruises UK LLP <br />
-            Lower Ground Floor • 19-20 Berners Street • London • W1T 3NW • UNITED KINGDOM<br />
-            UMCruises International Ltd.
-        </section>
 
 
-        <div class="page-break"></div>
-        <section class="post-header">
-            <div>{{ formatDate($data['event']->start_date, true, true) }} – {{ formatDate($data['event']->end_date, true) }}</div>
-            <div>{{ $data['event']->address }}</div>
-            <div>Freedom of the Seas</div>
-        </section>
-        <section class="body">
-            <h2 style="text-align: center; margin-top:5px; margin-bottom: 0px;">BOOKING CONFIRMATION</h2>
 
-            <table class="table-container" width="100%">
+            @if($index + 1 == count($paymentInfo['passengers']))
+            <table role="doc-pagebreak" width="100%" style="border-collapse: collapse;text-align:left;margin-top:0px;font-size:10px;" class="payments-table">
                 <tr>
-                    <th width="50%">Date Issued:</th>
-                    <td width="50%" class="align-left" style="padding-left: 5px;"> {{$dateIssued}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Updated: {{$lastUpdated}}</td>
-                </tr>
-                <tr class="booking-code">
-                    <th class="bold">Booking Code:</th>
-                    <td class="bold align-left" style="padding-left: 5px;">{{ $data['booking']->booking_code }}</td>
-                </tr>
-                <tr>
-                    <th>Cabin Number:</th>
-                    <td class="align-left" style="padding-left: 5px;"> {{ $data['cabin_specs']->cabin_number }}</td>
-                </tr>
-                <tr>
-                    <th>Category:</th>
-                    <td class="align-left" style="padding-left: 5px;"> {{ $data['cabin_category']->title }}</td>
-                </tr>
-                <tr>
-                    <th>Number of Passengers:</th>
-                    <td class="align-left" style="padding-left: 5px;"> {{ $data['category_specs']->capacity }}</td>
-                </tr>
-                <tr>
-                    <th>Notes:</th>
-                    <td class="align-left" style="padding-left: 5px;"></td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 130px;text-decoration:underline"><strong>Grand Total Paid</strong></td>
+                    <td style="width: 70px;text-decoration:underline"><strong>{{ formatCurrency($booking->getTotalPaid())}}</strong></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
 
-                <tr>
-                    <th class="underline bold">Grand Total Booking Price:</th>
-                    <td class="align-left underline bold" style="padding-left: 5px;"> {{ formatCurrency($booking->getGrandTotal()) }}</td>
-                </tr>
-
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
             </table>
-            <div class="add-pax center" style="text-align: center;">
+            @endif
+
+
+            @php
+            $isLast = ($index + 1) === count($booking->passengers);
+            $shouldBreak = (($index + 1) % 4 === 0) || $isLast;
+            @endphp
+
+            @if($shouldBreak)
+            @if ($paymentInfo['cabinType']->id == 2 || $paymentInfo['cabinType']->id == 3 )
+            <section class="single-text" style="text-align: center;">
+                Please note: Bed assignments in Single Ticket cabins are first come first serve on board!<br />
+                You will be sharing your cabin with {{ $data['category_specs']->capacity - 1 }} other passenger(s)
+            </section>
+            @endif
+
+            <section class="credit-charges" style="text-align: center;">
+                *All charges by credit card will be made on behalf of UMCruises UK LLP<br />
+                Lower Ground Floor • 19-20 Berners Street • London • W1T 3NW • UNITED KINGDOM<br />
+                UMCruises International Ltd.
+            </section>
+
+            <div style="page-break-after: always;"></div>
+            <div class="break"></div>
+            @endif
+
+            @endforeach
+
+        </div>
+
+        <div style="margin-top: 5px;">
+            <div class="add-pax center" style="">
                 To add or correct Passenger Information please visit:
                 <a href="{{ $data['addpax_url'] }}" target="_blank">AddPax.com</a>
                 <br><br>
             </div>
-            <div style="margin-left: 30px; margin-right: 30px;margin-top: 0px;">
-                <table width="100%" cellspacing="0" cellpadding="5">
-                    @foreach ($data['passengers'] as $index => $passenger)
-                    {{-- Check if the index is even or odd to determine the row structure --}}
-                    {{-- If even, start a new row --}}
-                    @if ($index % 2 == 0)
-                    <tr>
-                        @endif
-
-                        <td width="50%" valign="top" style="padding: 10px;">
-                            <table width="100%" cellspacing="0" cellpadding="3" style="table-layout: fixed;">
-                                <tr>
-                                    <td colspan="2" class="passenger_title underline">
-                                        <strong>{{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }}</strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-
-                                <tr>
-                                    <td width="50%"><strong>Gender:</strong></td>
-                                    <td width="50%">{{ $passenger->gender }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>First Name:</strong></td>
-                                    <td width="50%">{{ $passenger->first_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Middle Name:</strong></td>
-                                    <td width="50%">{{ $passenger->middle_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Last Name:</strong></td>
-                                    <td width="50%">{{ $passenger->last_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Survivor Number:</strong></td>
-                                    <td width="50%">{{ $passenger->survivor_number }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Survivor Status:</strong></td>
-                                    <td width="50%">{{ $passenger->getMemberShip() }}</td>
-
-                                <tr>
-                                    <td width="50%"><strong>Date of Birth:</strong></td>
-                                    <td width="50%">{{ formatDate($passenger->dob ) }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Citizenship:</strong></td>
-                                    <td width="50%">{{ $passenger->citizenship }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Address:</strong></td>
-                                    <td width="50%">{{ $passenger->address_first }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>City:</strong></td>
-                                    <td width="50%">{{ $passenger->city }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>State/Province/Region:</strong></td>
-                                    <td width="50%">{{ $passenger->state }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Postal Code:</strong></td>
-                                    <td width="50%">{{ $passenger->postal_code }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Country:</strong></td>
-                                    <td width="50%">{{ $passenger->country }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Email:</strong></td>
-                                    <td width="50%">{{ $passenger->email }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Phone:</strong></td>
-                                    <td width="50%">{{ $passenger->phone }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Emergency Name:</strong></td>
-                                    <td width="50%">{{ $passenger->emergency_c_name }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Emergency Phone:</strong></td>
-                                    <td width="50%">{{ $passenger->emergency_c_phone }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Special Requests:</strong></td>
-                                    <td width="50%">{{ $passenger->special_request }}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                @php
-                                $creditAmount = $passenger->onboardCredits->pluck('amount')->implode(' | ');
-                                $creditReason = $passenger->onboardCredits->pluck('reason')->implode(' | ');
-                                @endphp
-                                <tr>
-                                    <td width="50%"><strong>Onboard Credit:</strong></td>
-                                    <td width="50%">{{ formatCurrency($creditAmount) }}</td>
-                                </tr>
-                                <tr>
-                                    <td width="50%"><strong>Reason For Credit:</strong></td>
-                                    <td width="50%">{{ $creditReason }}</td>
-                                </tr>
-                            </table>
-                        </td>
-
-                        @if ($index % 2 == 1 || $loop->last)
-                        {{-- If the total number of passengers is odd, add an empty cell to complete the row --}}
-                        @if ($index % 2 == 0)
-                        <td width="50%"></td>
-                        @endif
-                    </tr>
+            <table width="700px" cellspacing="0" cellpadding="5" class="passenger-table" style="border-collapse: collapse;margin:0 auto;font-size: 12px!important;">
+                @foreach ($booking->passengers as $index => $passenger)
+                {{-- Check if the index is even or odd to determine the row structure --}}
+                {{-- If even, start a new row --}}
+                @if ($index % 2 == 0)
+                <tr>
                     @endif
-                    @endforeach
-                </table>
-            </div>
-        </section>
+
+                    <td width="50%" valign="top" style="padding-bottom: 30px;">
+                        <table width="100%" cellspacing="0" cellpadding="3">
+                            <tr>
+                                <td colspan="2" class="passenger_title underline">
+                                    <strong>{{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+
+                            <tr>
+                                <td width="50%"><strong>Gender:</strong></td>
+                                <td width="50%">{{ $passenger->gender }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>First Name:</strong></td>
+                                <td width="50%">{{ $passenger->first_name }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Middle Name:</strong></td>
+                                <td width="50%">{{ $passenger->middle_name }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Last Name:</strong></td>
+                                <td width="50%">{{ $passenger->last_name }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Survivor Number:</strong></td>
+                                <td width="50%">{{ $passenger->survivor_number }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Survivor Status:</strong></td>
+                                <td width="50%">{{ $passenger->getMemberShip() }}</td>
+
+                            <tr>
+                                <td width="50%"><strong>Date of Birth:</strong></td>
+                                <td width="50%">{{ formatDate($passenger->dob ) }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Citizenship:</strong></td>
+                                <td width="50%">{{ $passenger->citizenship }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Address:</strong></td>
+                                <td width="50%">{{ $passenger->address_first }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>City:</strong></td>
+                                <td width="50%">{{ $passenger->city }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>State/Province/Region:</strong></td>
+                                <td width="50%">{{ $passenger->state }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Postal Code:</strong></td>
+                                <td width="50%">{{ $passenger->postal_code }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Country:</strong></td>
+                                <td width="50%">{{ $passenger->country }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Email:</strong></td>
+                                <td width="50%">{{ $passenger->email }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Phone:</strong></td>
+                                <td width="50%">{{ $passenger->phone }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Emergency Name:</strong></td>
+                                <td width="50%">{{ $passenger->emergency_c_name }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Emergency Phone:</strong></td>
+                                <td width="50%">{{ $passenger->emergency_c_phone }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Special Requests:</strong></td>
+                                <td width="50%">{{ $passenger->special_request }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                            @php
+                            $creditAmount = $passenger->onboardCredits->pluck('amount')->implode(' | ');
+                            $creditReason = $passenger->onboardCredits->pluck('reason')->implode(' | ');
+                            @endphp
+                            <tr>
+                                <td width="50%"><strong>Onboard Credit:</strong></td>
+                                <td width="50%">{{ formatCurrency($creditAmount) }}</td>
+                            </tr>
+                            <tr>
+                                <td width="50%"><strong>Reason For Credit:</strong></td>
+                                <td width="50%">{{ $creditReason }}</td>
+                            </tr>
+                        </table>
+                    </td>
+
+                    @if ($index % 2 == 1 || $loop->last)
+                    {{-- If the total number of passengers is odd, add an empty cell to complete the row --}}
+                    @if ($index % 2 == 0)
+                    <td width="50%"></td>
+                    @endif
+
+                </tr>
+                @endif
+
+                @if(($index + 1) % 4 === 0 && $index ==3 && $booking->cabin->category->spec->capacity > 4)
+                <div style="page-break-after: always;"></div>
+                <div class="break"></div>
+                <tr>
+                    <td width="100%" colspan="2">
+                        <div class="add-pax">
+                            To add or correct Passenger Information please visit:
+                            <a href="{{ $data['addpax_url'] }}" target="_blank">AddPax.com</a>
+                            <br><br>
+                        </div>
+                    </td>
+                </tr>
+                @endif
+                @endforeach
+            </table>
+        </div>
+
+
+    </div>
 
 </body>
 
