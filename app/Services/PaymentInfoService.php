@@ -131,10 +131,19 @@ class PaymentInfoService
         'code' => $fee->type,
       ];
     }
+    foreach ($passenger->discounts as $discount) {
+      $bookingDiscounts[] = [
+        'type' => '-',
+        'amount' => $discount->amount,
+        'formatted_amount' => $this->formatCurrency($discount->amount),
+        'percentage' => false,
+        'code' => $discount->type,
+      ];
+    }
 
     $totalAddons = array_sum(array_column($bookingAddons, 'amount'));
     $totalDiscounts = array_sum(array_column($bookingDiscounts, 'amount'));
-    $totalDiscountsPercentage = $basePrice > 0 ? round(($totalDiscounts / $basePrice) * 100, 2) : 0;
+    $totalDiscountsPercentage = $basePrice > 0 ? round(($totalDiscounts / $basePrice) * 100, 0) : 0;
     $allocatedCost = $passenger->passenger_allocated_cost;
     $fees = $passenger->fees->sum('amount');
     $netTicketPrice = $basePrice - $totalDiscounts;

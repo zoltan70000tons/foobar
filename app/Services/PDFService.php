@@ -36,7 +36,7 @@ class PDFService
         'cabinCategory' => $booking->cabin->category->title,
         'cabinNumber' => $booking->cabin->cabinSpec->cabin_number,
         'capacity' => $booking->cabin->category->spec->capacity,
-        'event' =>$booking->event,
+        'event' => $booking->event,
         'grandTotal' => $booking->getGrandTotal(),
       ])->render();
 

@@ -129,9 +129,10 @@
     <div class="page-container">
         <div class="break"></div>
         <div class="table-wrapper">
-            @foreach($paymentInfo['passengers'] as $index => $passenger)
+            @foreach($paymentInfo['passengers'] as $index => $item)
             @php
-            $passenger = $passenger['passenger'];
+            $paxPaymentData = $item;
+            $passenger = $item['passenger'];
             $payment_method = match ($passenger->payment_method) {
             'CREDIT_CARD' => 'Credit Card*',
             'BANK_TRANSFER' => 'Bank Transfer',
@@ -161,24 +162,24 @@
                             <table width="100%" style="border-collapse: collapse; margin: 0 auto;">
                                 <tr>
                                     <td style="width: 100px;"></td>
-                                    <td style="width: 100px;">{{ $passenger['total_discounts_percentage'] }}% Discount</td>
-                                    <td style="width: 100px;">{{ $paymentInfo['formatted_total_discounts'] }}</td>
+                                    <td style="width: 100px;">{{ $paxPaymentData['total_discounts_percentage'] }}% Discount</td>
+                                    <td style="width: 100px;">{{ $paxPaymentData['formatted_total_discounts'] }}</td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Net Ticket Price</td>
-                                    <td>{{ $paymentInfo['formatted_net_ticket_price'] }}</td>
+                                    <td>{{ $paxPaymentData['formatted_net_ticket_price'] }}</td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Taxes & Fees</td>
-                                    <td>{{ formatCurrency($passenger->paymentInfo['total_fees']) }}</td>
+                                    <td>{{ formatCurrency($paxPaymentData['total_addons']) }}</td>
 
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Total Ticket Price</td>
-                                    <td>{{ formatCurrency($passenger->passenger_allocated_cost) }}</td>
+                                    <td>{{ formatCurrency($paxPaymentData['allocated_cost']) }}</td>
                                 </tr>
                             </table>
                         </td>
@@ -262,17 +263,17 @@
             @if($index + 1 == count($paymentInfo['passengers']))
             <table role="doc-pagebreak" width="100%" style="border-collapse: collapse;text-align:left;margin-top:0px;font-size:10px;" class="payments-table">
                 <tr>
-                        <td style="width: 100px;"></td>
-                        <td style="width: 100px;"></td>
-                        <td style="width: 100px;"></td>
-                        <td style="width: 130px;text-decoration:underline"><strong>Grand Total Paid</strong></td>
-                        <td style="width: 70px;text-decoration:underline"><strong>{{ formatCurrency($booking->getTotalPaid())}}</strong></td>
-                        <td style="width: 100px;"></td>
-                        <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 130px;text-decoration:underline"><strong>Grand Total Paid</strong></td>
+                    <td style="width: 70px;text-decoration:underline"><strong>{{ formatCurrency($booking->getTotalPaid())}}</strong></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
 
             </table>
             @endif
-            
+
 
             @php
             $isLast = ($index + 1) === count($booking->passengers);
