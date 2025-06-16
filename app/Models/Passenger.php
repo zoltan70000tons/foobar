@@ -410,12 +410,16 @@ class Passenger extends Model
         ? (round($installment->fee->amount, 2) ?? 0)
         : round($installmentAmount, 2);
 
+      $name = $installment->type === 'FEE'
+        ? $installment->fee->type : null;
+
       // Prepare base response object
       $installmentData = [
         'installment_id' => $installment->id,
         'type' => $installment->type,
         'original_amount_due' => $amount,
         'due_date' => $installment->due_date,
+        'name' => ucwords($name)
       ];
 
       // 🔹 Fully paid with available balance
