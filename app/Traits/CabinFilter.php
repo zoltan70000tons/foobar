@@ -80,7 +80,7 @@ trait CabinFilter
       }
       return [
         'error' => 'No cabins found or already reserved',
-        'status' => 404,
+        'status' => 422,
       ];
     }
 
@@ -160,7 +160,7 @@ trait CabinFilter
     if ($formattedCabins->isEmpty()) {
       return [
         'error' => __('feedback.cabin_not_available'),
-        'status' => 404,
+        'status' => 422,
       ];
     }
 

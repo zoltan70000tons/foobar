@@ -141,25 +141,26 @@ class CabinRepository implements CabinInterface
   function delete($id) {}
   function getCategoriesAndCabins($event_id)
   {
-    // Fetch all categories and cabins with necessary relationships
     $categoriesWithCabins = CabinCategory::where('event_id', $event_id)
       ->with([
         'cabins' => function ($query) {
           $query->with([
             'cabinType:id,cabin_type',
-            'cabinSpec:id,cabin_number,deck,balcony,obstructed_view,location,accessible'
-          ])
-            ->leftJoin('temporary_reservations as tr', 'tr.cabin_id', '=', 'cabins.id')
-            ->select([
-              'cabins.id',
-              'cabins.cabin_category_id',
-              'cabins.cabin_spec_id',
-              'cabins.inventory',
-              'cabins.status',
-              'cabins.cabin_type_id',
-              'cabins.tags',
-              DB::raw('CASE WHEN tr.id IS NOT NULL THEN true ELSE false END as is_reserved')
-            ]);
+            'cabinSpec' => function ($q) {
+              $q->select(
+                'id',
+                'cabin_number',
+                'deck',
+                'balcony',
+                'obstructed_view',
+                'location',
+                'accessible'
+              )->with('cabins:id,cabin_spec_id'); // Avoid N+1 on is_shared_cabin_number
+            },
+            'temporaryReservations' => function ($q) {
+              $q->where('expires_at', '>', now());
+            }
+          ]);
         }
       ])
       ->withCount([
@@ -191,15 +192,15 @@ class CabinRepository implements CabinInterface
               'location'         => $cabin->cabinSpec?->location,
               'accessible'       => $cabin->cabinSpec?->accessible,
               'cabin_status'     => $cabin->status,
-              'is_reserved'      => (bool) $cabin->is_reserved,
+              'is_reserved'      => $cabin->temporaryReservations->isNotEmpty(),
               'ticket_inventory' => $cabin->cabinType->id !== 1
                 ? "{$cabin->inventory} / {$category->capacity}"
                 : $cabin->inventory,
               'cabin_type'       => $cabin->cabinType->cabin_type,
-              'is_shared_cabin_number'    => $cabin->cabinSpec->is_shared_cabin_number,
+              'is_shared_cabin_number' => $cabin->cabinSpec?->is_shared_cabin_number,
               'cabin_tags'       => $cabin->tags,
             ];
-          })
+          }),
         ];
       });
 

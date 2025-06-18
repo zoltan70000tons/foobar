@@ -10,7 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Log;
 use Str;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @property \Illuminate\Database\Eloquent\Collection|\App\Models\OnboardCredit[] $onboardCredits
@@ -136,6 +135,11 @@ class Passenger extends Model
   public function onboardCredits()
   {
     return $this->hasMany(OnboardCredit::class);
+  }
+  
+  public function passengerTokens()
+  {
+    return $this->hasMany(PassengerToken::class);
   }
 
   public function getInstallmentStatusAttribute()
@@ -410,12 +414,16 @@ class Passenger extends Model
         ? (round($installment->fee->amount, 2) ?? 0)
         : round($installmentAmount, 2);
 
+      $name = $installment->type === 'FEE'
+        ? $installment->fee->type : null;
+
       // Prepare base response object
       $installmentData = [
         'installment_id' => $installment->id,
         'type' => $installment->type,
         'original_amount_due' => $amount,
         'due_date' => $installment->due_date,
+        'name' => ucwords($name)
       ];
 
       // 🔹 Fully paid with available balance
