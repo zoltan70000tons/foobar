@@ -21,7 +21,7 @@ createInertiaApp({
 
     root.render(
       <SnackbarProvider>
-        <EnvironmentBar environment={appEnv} />
+        {/* <EnvironmentBar environment={appEnv} /> */}
         <PermissionsProvider auth={auth}>
           <App {...props} />
         </PermissionsProvider>
