@@ -207,4 +207,151 @@ class PassengerRepositoryTest extends TestCase
                 ->count()
         );
     }
+
+    public function test_fill_one_passenger_seat_with_installments()
+    {
+        $org = Organization::factory()->create();
+        $event = Event::factory([
+            'organization_id' => $org->id,
+        ])->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
+
+        $cabinCategorySpec = CabinCategorySpec::factory([
+            'capacity' => 2,
+        ])->create();
+        $cabinCategory = CabinCategory::factory([
+            'cabin_category_spec_id' => $cabinCategorySpec->id,
+        ])->create();
+        $cabinType = CabinType::find(1) ?? CabinType::factory([
+            'id' => 1,
+            'cabin_type' => 'Private Cabin',
+        ])->create();
+
+        $cabin = Cabin::factory([
+            'cabin_category_id' => $cabinCategory->id,
+            'cabin_type_id' => $cabinType->id,
+        ])->create();
+
+        Auth::login($user);
+
+        $booking = Booking::factory([
+            'event_id' => $event->id,
+            'booking_code' => 'MOCK_BOOKING_CODE',
+            'customer_id' => $user->id,
+            'cabin_id' => $cabin->id,
+        ])->create();
+
+        $this->paymentService
+            ->shouldReceive('createInstallments')
+            ->times(1);
+
+        $this->passengerRepository->fillAditionalSeats(1, $booking->id, 4000, 4, 'CREDIT_CARD');
+
+        $this->assertEquals(
+            1,
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count()
+        );
+    }
+
+    public function test_fill_one_passenger_seat_with_paid_in_full()
+    {
+        $org = Organization::factory()->create();
+        $event = Event::factory([
+            'organization_id' => $org->id,
+        ])->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
+
+        $cabinCategorySpec = CabinCategorySpec::factory([
+            'capacity' => 2,
+        ])->create();
+        $cabinCategory = CabinCategory::factory([
+            'cabin_category_spec_id' => $cabinCategorySpec->id,
+        ])->create();
+        $cabinType = CabinType::find(1) ?? CabinType::factory([
+            'id' => 1,
+            'cabin_type' => 'Private Cabin',
+        ])->create();
+
+        $cabin = Cabin::factory([
+            'cabin_category_id' => $cabinCategory->id,
+            'cabin_type_id' => $cabinType->id,
+        ])->create();
+
+        Auth::login($user);
+
+        $booking = Booking::factory([
+            'event_id' => $event->id,
+            'booking_code' => 'MOCK_BOOKING_CODE',
+            'customer_id' => $user->id,
+            'cabin_id' => $cabin->id,
+        ])->create();
+
+        $this->paymentService
+            ->shouldReceive('createInstallments')
+            ->times(0);
+
+        $this->passengerRepository->fillAditionalSeats(1, $booking->id, 4000, false, 'CREDIT_CARD');
+
+        $this->assertEquals(
+            1,
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count()
+        );
+    }
+
+    public function test_fill_three_passenger_seat_with_paid_in_full()
+    {
+        $org = Organization::factory()->create();
+        $event = Event::factory([
+            'organization_id' => $org->id,
+        ])->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
+
+        $cabinCategorySpec = CabinCategorySpec::factory([
+            'capacity' => 4,
+        ])->create();
+        $cabinCategory = CabinCategory::factory([
+            'cabin_category_spec_id' => $cabinCategorySpec->id,
+        ])->create();
+        $cabinType = CabinType::find(1) ?? CabinType::factory([
+            'id' => 1,
+            'cabin_type' => 'Private Cabin',
+        ])->create();
+
+        $cabin = Cabin::factory([
+            'cabin_category_id' => $cabinCategory->id,
+            'cabin_type_id' => $cabinType->id,
+        ])->create();
+
+        Auth::login($user);
+
+        $booking = Booking::factory([
+            'event_id' => $event->id,
+            'booking_code' => 'MOCK_BOOKING_CODE',
+            'customer_id' => $user->id,
+            'cabin_id' => $cabin->id,
+        ])->create();
+
+        $this->paymentService
+            ->shouldReceive('createInstallments')
+            ->times(3);
+
+        $this->passengerRepository->fillAditionalSeats(3, $booking->id, 4000, 4, 'CREDIT_CARD');
+
+        $this->assertEquals(
+            3,
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count()
+        );
+    }
 }

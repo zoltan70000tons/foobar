@@ -144,7 +144,7 @@ class PassengerRepository implements PassengerInterface
     }
   }
 
-  private function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false, $paymentMethod): bool
+  public function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false, $paymentMethod): bool
   {
     try {
       $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 1;
