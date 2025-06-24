@@ -29,10 +29,10 @@ class BookingRepository implements BookingInterface
     use BookingLogTrait;
     use CabinFilter;
 
-    protected PassengerInterface $passengerRepository;
-    protected AdjustmentsRepository $adjustmentsRepository;
-    protected PaymentService $paymentService;
-    protected PaymentInfoService $paymentInfoService;
+    public PassengerInterface $passengerRepository;
+    public AdjustmentsRepository $adjustmentsRepository;
+    public PaymentService $paymentService;
+    public PaymentInfoService $paymentInfoService;
 
     public function __construct(
         PassengerRepository $passengerRepository,
@@ -481,7 +481,6 @@ class BookingRepository implements BookingInterface
             } else {
                 $selectedCabin = $cabin;
             }
-
             if (!$selectedCabin) {
                 throw new \Exception('Cabin not found.');
                 // CC: JG Do we need the logic below?

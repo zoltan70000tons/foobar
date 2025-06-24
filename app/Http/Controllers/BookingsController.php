@@ -234,7 +234,6 @@ class BookingsController extends Controller
       $number_of_installments = $validated['number_of_installments'] ?? 1;
       $payment_plan = $validated['payment_plan'];
       $carbonOffset = $validated['carbon_offset'];
-
       return $this->withPermission(
         [Permissions::CreateBookings],
         function (
@@ -342,6 +341,7 @@ class BookingsController extends Controller
       ]);
     } catch (\Exception $e) {
       $this->logException($e);
+      dd($e->getMessage());
       return redirect()->back()->with('flash', [
         'message' => 'Error creating booking.',
         'success' => false,
