@@ -1,0 +1,19 @@
+export interface Passenger {
+  id: number;
+  lead_passenger: boolean;
+  passenger_order: number;
+  booking_id: number;
+  full_name: string;
+  email: string;
+  passenger_balance: number;
+  passenger_allocated_cost: number;
+  installment_status: InstallmentStatus;
+}
+
+interface InstallmentStatus{
+    fully_paid: boolean;
+    next_installment: {
+        amount: number;
+        due_date: string;
+    }
+}

@@ -4,15 +4,12 @@ import { PageProps } from "@/types";
 import { Head, router, useForm } from "@inertiajs/react";
 import {
   Accordion,
-  AccordionActions,
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
   Container,
   Grid,
   IconButton,
-  SelectChangeEvent,
   TextField,
   Toolbar,
   Tooltip,
@@ -20,14 +17,26 @@ import {
 } from "@mui/material";
 import FormatInput from "@/Components/FormatInput";
 import CategoryTypeSelect from "@/Components/CategoryTypeSelect";
-import { CategoryTypes } from "@/enums/CategoryTypeEnum";
-import DropZoneField from "@/Components/DropZoneField";
 import UMSelect from "@/Components/UMSelect";
 import ImageGallery from "@/Components/ImageGallery";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
 import { Permissions } from "@/enums/PermissionEnum";
+import { Errors } from "@inertiajs/core";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Cruiser, Cruisers } from "@/interfaces/Cruiser";
+import { Event } from "@/interfaces/Event";
+import { CategoryTypes } from "@/enums/CategoryTypeEnum";
+
+
+type Props = PageProps & {
+  auth: AuthProps;
+  event: Event;
+  cruisers: Cruisers;
+  cabin_category: CabinCategory;
+  errors: Errors;
+};
 
 const View = ({
   auth,
@@ -35,7 +44,7 @@ const View = ({
   cruisers,
   cabin_category,
   errors,
-}: PageProps & { tab: string; data: any }) => {
+}: Props) => {
   const { data, setData, post, processing } = useForm({
     category_name: cabin_category.category_name,
     category_code: cabin_category.category_code,
@@ -45,8 +54,11 @@ const View = ({
     category_type: cabin_category.category_type,
     display_order: cabin_category.display_order,
     event_id: event.id,
-    cruise: cabin_category.cruise_id,
+    cruise: cabin_category.spec.cruise_id,
   });
+
+  const category = (Object.entries(CategoryTypes).find(([_, v]) => v === data.category_type)?.[1] ?? CategoryTypes.INTERIOR);
+
 
   interface Image {
     name: string;
@@ -54,14 +66,16 @@ const View = ({
     path: string;
     date: string;
   }
-  
-  const { hasPermission } = usePermissions();
-  const [images, setImages] = useState<Image[]>(cabin_category.images || []);
 
-  const handleInputChange = () => {}
-  const handleCategoryTypeChange = () => {}
-  const handleCruiserChange = () => {}
-  const onDelete = () => {}
+  const { hasPermission } = usePermissions();
+  const [images, setImages] = useState<Image[]>(
+    Array.isArray(cabin_category.images) ? cabin_category.images : []
+  );
+
+  const handleInputChange = () => { }
+  const handleCategoryTypeChange = () => { }
+  const handleCruiserChange = () => { }
+  const onDelete = () => { }
   const handleBack = () => {
     window.history.back();
   }
@@ -189,7 +203,7 @@ const View = ({
                     <CategoryTypeSelect
                       onChange={handleCategoryTypeChange}
                       error={errors}
-                      value={data.category_type}
+                      value={category}
                       disabled={true}
                     />
                   </Box>
@@ -213,11 +227,11 @@ const View = ({
                     <UMSelect
                       name="cruise"
                       id="cruise"
-                      value={data.cruise}
+                      value={String(data.cruise)}
                       options={cruisers.data}
                       disabled
                       onChange={handleCruiserChange}
-                      error={errors.cruise}
+                      error={errors.cruise ? { cruise: errors.cruise as string } : undefined}
                       label="Cruiser"
                     />
                   </Box>
@@ -270,7 +284,7 @@ const View = ({
                   </Grid>
                 </Grid>
               </Box> */}
-                            <Box sx={{ mt: 4 }}>
+              <Box sx={{ mt: 4 }}>
                 <div
                   style={{
                     display: "flex",
@@ -283,7 +297,7 @@ const View = ({
                       <ArrowBack />
                     </IconButton>
                   </Tooltip>
-                  {hasPermission(Permissions.EditCabinCategories) && (<Tooltip title="Edit"> 
+                  {hasPermission(Permissions.EditCabinCategories) && (<Tooltip title="Edit">
                     <IconButton color="primary" onClick={handleEdit}>
                       <Edit />
                     </IconButton>
@@ -292,8 +306,8 @@ const View = ({
                     <IconButton color="error" onClick={handleDelete}>
                       <Delete />
                     </IconButton>
-                  </Tooltip>) }
-                  
+                  </Tooltip>)}
+
                 </div>
               </Box>
             </form>

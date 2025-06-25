@@ -13,15 +13,18 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ViewMember from "./ViewMember";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
+import { User } from "@/interfaces/User";
 
 interface ActionMenuProps {
-  params: any;
+  params:{
+    row: User;
+  };
 }
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openViewModal, setOpenViewModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User>(params.row);
   const { hasPermission } = usePermissions();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
