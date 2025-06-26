@@ -11,6 +11,7 @@ import {
   SelectChangeEvent,
   Button,
   Grid,
+  Theme,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import LoadingButton from "@mui/lab/LoadingButton";
@@ -44,7 +45,7 @@ const MenuProps = {
   },
 };
 
-function getStyles(name: string, permissionName: readonly string[], theme: any) {
+function getStyles(name: string, permissionName: readonly string[], theme: Theme) {
   return {
     fontWeight:
       permissionName.indexOf(name) === -1

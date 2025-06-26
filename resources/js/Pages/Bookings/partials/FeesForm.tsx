@@ -30,7 +30,7 @@ import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 import { getOrdinalName } from "@/Helpers/stringUtils";
-import { Installment } from "@/interfaces/Installments";
+import { Installment } from "@/interfaces/Installment";
 
 type FeesFormProps = {
   passenger: Passenger;

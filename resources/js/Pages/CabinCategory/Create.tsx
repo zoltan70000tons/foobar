@@ -81,7 +81,10 @@ const Create = ({
     e.preventDefault();
     const formData = new FormData();
     for (const key in data) {
-      formData.append(key, data[key as keyof typeof data] as any);
+      const value = data[key as keyof typeof data];
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
     }
     uploadedFiles.forEach((file) => {
       formData.append("files[]", file);

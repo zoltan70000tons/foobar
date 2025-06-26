@@ -19,6 +19,7 @@ import {
   MenuItem,
   Chip,
   OutlinedInput,
+  SelectChangeEvent,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
@@ -30,15 +31,15 @@ interface ColumnProps<T> {
   draw?: (row: T) => React.ReactNode;
   filterType?: "text" | "select";
   filterOptions?: string[];
-  filterFunction?: (cellValue: any, filterValue: string) => boolean;
+  filterFunction?: (cellValue: T[keyof T], filterValue: string) => boolean;
   width?: string;
 }
 
-interface RowProps<T> {
-  row: T;
-  columns: ColumnProps<T>[];
-  subRows?: any[];
-  subColumns?: ColumnProps<any>[];
+interface RowProps<TRow, TSub = unknown> {
+  row: TRow;
+  columns: ColumnProps<TRow>[];
+  subRows?: TSub[];
+  subColumns?: ColumnProps<TSub>[];
   isOpen: boolean;
   onToggle: () => void;
   isSelected: boolean;
@@ -55,37 +56,39 @@ interface RowProps<T> {
   perPageOptions?: number[];
 }
 
-const Row: FC<RowProps<any>> = ({
-  row,
-  columns,
-  subRows,
-  subColumns,
-  isOpen,
-  onToggle,
-  isSelected,
-  onSelectRow,
-  showCheckBox,
-  showSubCheckBox = true,
-  onSelectSubRow,
-  selectedSubRows = [],
-  showSubTableFilters,
-  onEditTags,
-  onChangeStatus,
-  tagOptions = [],
-  statusOptions = [],
-  perPageOptions = [8],
-}) => {
+function Row<TRow, TSub = unknown>(props: RowProps<TRow, TSub>) {
+  const {
+    row,
+    columns,
+    subRows,
+    subColumns,
+    isOpen,
+    onToggle,
+    isSelected,
+    onSelectRow,
+    showCheckBox,
+    showSubCheckBox = true,
+    onSelectSubRow,
+    selectedSubRows = [],
+    showSubTableFilters,
+    onEditTags,
+    onChangeStatus,
+    tagOptions = [],
+    statusOptions = [],
+    perPageOptions = [8],
+  } = props;
+
+
   const [subPage, setSubPage] = useState(0);
   const [subRowsPerPage, setSubRowsPerPage] = useState(8);
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
   const [subSort, setSubSort] = useState<{
-    key: keyof any | string;
+    key: keyof TSub | string;
     direction: "asc" | "desc";
   }>({
-    key: subColumns && subColumns[0]?.accessor,
+    key: (subColumns && subColumns[0]?.accessor) || "",
     direction: "asc",
   });
-
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
 
@@ -107,12 +110,13 @@ const Row: FC<RowProps<any>> = ({
     setSubPage(0);
   };
 
-  const handleSubSort = (key: keyof any | string) => {
+  const handleSubSort = (key: keyof TSub | string) => {
     setSubSort((prevSort) => ({
       key,
       direction: prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
     }));
   };
+
 
   const filteredSubRows =
     subRows?.filter((subRow) => {
@@ -182,14 +186,14 @@ const Row: FC<RowProps<any>> = ({
     }
   };
 
-  const handleTagChange = (event: any) => {
+  const handleTagChange = (event: SelectChangeEvent<string[]>) => {
     const {
       target: { value },
     } = event;
     setSelectedTags(typeof value === "string" ? value.split(",") : value);
   };
 
-  const handleStatusChange = (event: any) => {
+  const handleStatusChange = (event: SelectChangeEvent<string>) => {
     setSelectedStatus(event.target.value);
   };
 
