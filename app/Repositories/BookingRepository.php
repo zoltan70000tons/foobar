@@ -456,10 +456,11 @@ class BookingRepository implements BookingInterface
         ?Cabin $cabin = null,
         ?int $temporaryBookingId = null
     ): array {
+        dd('asdsadsa');
         if (is_null($cabin) && is_null($temporaryBookingId)) {
             throw new InvalidArgumentException('You must provide a Cabin object or a Temporary Booking ID.');
         }
-
+dd('asdsadsa');
         FacadesDB::beginTransaction();
         try {
             if ($temporaryBookingId) {
@@ -565,6 +566,7 @@ class BookingRepository implements BookingInterface
             throw new \Exception('Error creating booking.');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+            dd($e->getMessage());
             FacadesDB::rollBack();
             return [
                 'error' => true,

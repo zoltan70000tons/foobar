@@ -215,6 +215,7 @@ class BookingController extends Controller
         201
       );
     } catch (\Exception $e) {
+        dd($e->getMessage());
       return response()->json(
         [
           'message' => 'An error occurred while creating the booking.',
