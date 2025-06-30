@@ -4,11 +4,19 @@ namespace Tests\Unit;
 
 use App\Enums\Permissions;
 use App\Models\Booking;
+use App\Models\Cabin;
+use App\Models\CabinCategory;
+use App\Models\CabinCategorySpec;
 use App\Models\CabinSpec;
+use App\Models\CabinType;
+use App\Models\Cruise;
 use App\Models\Event;
+use App\Models\Organization;
 use App\Models\SurvivorNumber;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 use App\Http\Controllers\BookingsController;
 use Mockery;
@@ -16,9 +24,13 @@ use Spatie\Permission\PermissionRegistrar;
 
 class BookingsControllerTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->seed(\Database\Seeders\CabinTypeSeeder::class);
 
         $this->eventRepository = Mockery::mock('App\Repositories\EventRepository');
         $this->bookingRepository = Mockery::mock('App\Repositories\BookingRepository');
@@ -377,11 +389,17 @@ class BookingsControllerTest extends TestCase
 
     private function getValidRequestData()
     {
-        $cabin = CabinSpec::query()->first();
-        $user = User::query()->first();
+        $cabinSpec = CabinSpec::query()->first();
+        if (!$cabinSpec) {
+            $cabinSpec = CabinSpec::factory()->create();
+        }
+        $org = Organization::factory()->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
 
         return [
-            'cabin_number' => $cabin->cabin_number,
+            'cabin_number' => $cabinSpec->cabin_number,
             'payment_plan' => 'INSTALLMENTS',
             'carbon_offset' => false,
             'number_of_installments' => 4,
@@ -421,13 +439,69 @@ class BookingsControllerTest extends TestCase
 
     public function test_store_succeeds_on_valid_input_with_installments()
     {
-        $event = Event::factory()->create();
-        $user = User::factory()->create();
+        $cruise = Cruise::factory()->create();
+        $org = Organization::factory()->create();
+        $event = Event::factory(['organization_id' => $org->id])->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
         $survivorNumber = SurvivorNumber::factory()->create([
             'user_id' => $user->id,
         ]);
 
+        $cabinType = CabinType::query()->where('cabin_type', 'Private Cabin')->first();
+        $cabinTypeId = $cabinType->id;
+
+        do {
+            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+        } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
+
+        $cabinSpec = CabinSpec::factory([
+            'cabin_number' => $cabinNumber,
+            'deck' => 9,
+            'total_berths' => 4,
+            'lower_bed_type_1' => '2C',
+            'lower_bed_type_2' => '4B',
+            'upper_berths' => 2,
+            'accessible' => false,
+            'connects_with' => 1808,
+            'location' => 'AF',
+            'balcony' => true,
+            'obstructed_view' => false,
+        ])->create();
+
+        $cabinCategorySpec = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 4,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 69,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+
+        $cabinCategory = CabinCategory::factory([
+            'price' => 3333,
+            'cabin_category_spec_id' => $cabinCategorySpec->id,
+            'event_id' => $event->id,
+        ])->create();
+
+        Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+
         app(PermissionRegistrar::class)->setPermissionsTeamId(1);
+        Permission::findOrCreate(Permissions::CreateBookings->value, 'web'); // Ensure it exists
         $user->givePermissionTo(Permissions::CreateBookings);
         $this->actingAs($user);
 
@@ -489,13 +563,69 @@ class BookingsControllerTest extends TestCase
 
     public function test_store_succeeds_on_valid_input_with_paid_in_full()
     {
-        $event = Event::factory()->create();
-        $user = User::factory()->create();
+        $cruise = Cruise::factory()->create();
+        $org = Organization::factory()->create();
+        $event = Event::factory(['organization_id' => $org->id])->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
         $survivorNumber = SurvivorNumber::factory()->create([
             'user_id' => $user->id,
         ]);
 
+        $cabinType = CabinType::query()->where('cabin_type', 'Private Cabin')->first();
+        $cabinTypeId = $cabinType->id;
+
+        do {
+            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+        } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
+
+        $cabinSpec = CabinSpec::factory([
+            'cabin_number' => $cabinNumber,
+            'deck' => 9,
+            'total_berths' => 4,
+            'lower_bed_type_1' => '2C',
+            'lower_bed_type_2' => '4B',
+            'upper_berths' => 2,
+            'accessible' => false,
+            'connects_with' => 1808,
+            'location' => 'AF',
+            'balcony' => true,
+            'obstructed_view' => false,
+        ])->create();
+
+        $cabinCategorySpec = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 4,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 69,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+
+        $cabinCategory = CabinCategory::factory([
+            'price' => 3333,
+            'cabin_category_spec_id' => $cabinCategorySpec->id,
+            'event_id' => $event->id,
+        ])->create();
+
+        Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+
         app(PermissionRegistrar::class)->setPermissionsTeamId(1);
+        Permission::findOrCreate(Permissions::CreateBookings->value, 'web'); // Ensure it exists
         $user->givePermissionTo(Permissions::CreateBookings);
         $this->actingAs($user);
 
@@ -504,6 +634,240 @@ class BookingsControllerTest extends TestCase
         $requestData['number_of_installments'] = 1;
         $requestData['passenger']['id'] = $user->id;
         $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
+        $requestData['cabin_number'] = $cabinNumber;
+        //$requestData['passenger']['single_t_agreement'] = true;
+
+        // Create a real request instance
+        $this->post("/events/{$event->id}/bookings/createManual", $requestData);
+
+        // Assert DB side-effect
+        $this->assertDatabaseHas('bookings', [
+            'customer_id' => $user->id,
+            'event_id' => $event->id,
+            'payment_plan' => 'PAY_IN_FULL',
+            'cabin_id' => $cabinSpec->id,
+            'is_single_occupancy' => false,
+            'bed_config' => 'SEPARATED',
+            'tags' => json_encode(['NEW']),
+            'status' => 'NEW',
+        ]);
+
+        $booking = Booking::where('customer_id', $user->id)
+            ->where('event_id', $event->id)
+            ->firstOrFail();
+
+        $this->assertDatabaseHas('passengers', [
+            'booking_id' => $booking->id,
+            'lead_passenger' => true,
+            'survivor_number' => (string)$survivorNumber->survivor_number,
+            'payment_method' => $requestData['passenger']['payment_method'],
+            'gender' => $requestData['passenger']['gender'],
+            'first_name' => strtoupper($requestData['passenger']['first_name']),
+            'last_name' => strtoupper($requestData['passenger']['last_name']),
+            'dob' => $requestData['passenger']['dob'],
+            'citizenship' => $requestData['passenger']['citizenship'],
+            'address_first' => $requestData['passenger']['address_first'],
+            'address_second' => $requestData['passenger']['address_second'],
+            'city' => $requestData['passenger']['city'],
+            'state' => $requestData['passenger']['state'],
+            'postal_code' => $requestData['passenger']['postal_code'],
+            'country' => $requestData['passenger']['country'],
+            'email' => $requestData['passenger']['email'],
+            'phone' => $requestData['passenger']['phone'],
+            'emergency_c_name' => $requestData['passenger']['emergency_c_name'],
+            'emergency_c_phone' => $requestData['passenger']['emergency_c_phone'],
+            'special_request' => $requestData['passenger']['special_request'],
+            'newsletter' => $requestData['passenger']['newsletter'],
+            'travel_info' => $requestData['passenger']['travel_info'],
+            'empty_seat' => false,
+            'single_t_agreement' => $requestData['passenger']['single_t_agreement'],
+            'was_on_board' => $requestData['passenger']['was_on_board'],
+            'language' => $requestData['passenger']['language'],
+        ]);
+    }
+
+    public function test_store_books_the_correct_capacity_cabin_when_shared_exists()
+    {
+        $cruise = Cruise::factory()->create();
+        $org = Organization::factory()->create();
+        $event = Event::factory(['organization_id' => $org->id])->create();
+        $user = User::factory([
+            'organization_id' => $org->id,
+        ])->create();
+        $survivorNumber = SurvivorNumber::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $cabinType = CabinType::query()->where('cabin_type', 'Private Cabin')->first();
+        $cabinTypeId = $cabinType->id;
+
+        do {
+            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+        } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId(1);
+        Permission::findOrCreate(Permissions::CreateBookings->value, 'web'); // Ensure it exists
+        $user->givePermissionTo(Permissions::CreateBookings);
+        $this->actingAs($user);
+
+        $cabinSpec = CabinSpec::factory([
+            'cabin_number' => $cabinNumber,
+            'deck' => 9,
+            'total_berths' => 4,
+            'lower_bed_type_1' => '2C',
+            'lower_bed_type_2' => '4B',
+            'upper_berths' => 2,
+            'accessible' => false,
+            'connects_with' => 1808,
+            'location' => 'AF',
+            'balcony' => true,
+            'obstructed_view' => false,
+        ])->create();
+
+        $cabinCategorySpec4 = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 4,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 69,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+        $cabinCategorySpec5 = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 5,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 70,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+        $cabinCategorySpec6 = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 6,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 71,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+        $cabinCategorySpec7 = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 7,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 72,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+        $cabinCategorySpec8 = CabinCategorySpec::factory([
+            'category_type' => 'Suite',
+            'category_code' => 'GT',
+            'category_name' => 'Grand Suite - 2 Bedroom',
+            'capacity' => 8,
+            'description' => '{"MOCK"}',
+            'iframe' => 'MOCK_IFRAME',
+            'images' => ["MOCK.gif"],
+            'decks' => '8, 9',
+            'display_order' => 73,
+            'cruise_id' => $cruise->id,
+            'category_number' => 4,
+        ])->create();
+
+        $cabinCategory4 = CabinCategory::factory([
+            'price' => 3333,
+            'cabin_category_spec_id' => $cabinCategorySpec4->id,
+            'event_id' => $event->id,
+        ])->create();
+        $cabinCategory5 = CabinCategory::factory([
+            'price' => 3066,
+            'cabin_category_spec_id' => $cabinCategorySpec5->id,
+            'event_id' => $event->id,
+        ])->create();
+        $cabinCategory6 = CabinCategory::factory([
+            'price' => 2799,
+            'cabin_category_spec_id' => $cabinCategorySpec6->id,
+            'event_id' => $event->id,
+        ])->create();
+        $cabinCategory7 = CabinCategory::factory([
+            'price' => 2533,
+            'cabin_category_spec_id' => $cabinCategorySpec7->id,
+            'event_id' => $event->id,
+        ])->create();
+        $cabinCategory8 = CabinCategory::factory([
+            'price' => 2266,
+            'cabin_category_spec_id' => $cabinCategorySpec8->id,
+            'event_id' => $event->id,
+        ])->create();
+
+        $cabin4 = Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory4->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+        $cabin5 = Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory5->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+        $cabin6 = Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory6->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+        $cabin7 = Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory7->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+        $cabin8 = Cabin::factory([
+            'cabin_type_id' => $cabinTypeId,
+            'cabin_category_id' => $cabinCategory8->id,
+            'cabin_spec_id' => $cabinSpec->id,
+            'inventory' => 0,
+            'notes' => 'MOCK_NOTES',
+            'tags' => '[""]',
+            'status' => 'AVAILABLE',
+        ])->create();
+
+        $requestData = $this->getValidRequestData();
+        $requestData['payment_plan'] = 'PAY_IN_FULL';
+        $requestData['number_of_installments'] = 1;
+        $requestData['passenger']['id'] = $user->id;
+        $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
+        $requestData['cabin_number'] = $cabinNumber;
 
         // Create a real request instance
         $this->post("/events/{$event->id}/bookings/createManual", $requestData);
@@ -516,7 +880,7 @@ class BookingsControllerTest extends TestCase
             'customer_id' => $user->id,
             'event_id' => $event->id,
             'payment_plan' => 'PAY_IN_FULL',
-            'cabin_id' => $cabinSpec->id,
+            'cabin_id' => $cabin8->id,
             'is_single_occupancy' => false,
             'bed_config' => 'SEPARATED',
             'tags' => json_encode(['NEW']),

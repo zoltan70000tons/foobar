@@ -17,7 +17,7 @@ use Mockery;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class PassengerRepositoryTest extends TestCase
+class PaymentRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 

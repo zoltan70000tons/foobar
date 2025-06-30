@@ -111,8 +111,8 @@ class PassengerRepository implements PassengerInterface
           $availableSeats,
           $booking->id,
           $allocatedCost,
+          $paymentMethod,
           $installments,
-          $paymentMethod
         );
         if (!$result) {
           throw new \Exception('Error creating seats.');
@@ -144,7 +144,7 @@ class PassengerRepository implements PassengerInterface
     }
   }
 
-  public function fillAditionalSeats($seats, $bookingId, $allocatedCost, $installments = false, $paymentMethod): bool
+  public function fillAditionalSeats($seats, $bookingId, $allocatedCost, $paymentMethod, $installments = false): bool
   {
     try {
       $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 1;
