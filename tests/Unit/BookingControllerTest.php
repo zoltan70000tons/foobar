@@ -247,7 +247,7 @@ describe('store', function () {
             'postal_code' => '',
         ];
 
-        $booking = Booking::factory([
+        Booking::factory([
             'booking_code' => $mockBooking['booking_code'],
             'event_id' => $event->id,
             'customer_id' => $user->id,

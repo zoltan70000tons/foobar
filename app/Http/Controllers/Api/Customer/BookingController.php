@@ -65,7 +65,6 @@ class BookingController extends Controller
 
     // Get authenticated user
     $user = Auth::user();
-    //$cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$cart || empty($cart)) {
@@ -153,7 +152,7 @@ class BookingController extends Controller
       $cabinTitle = $validated['cart']['cabin_title'];
 
       // Delete current sesion
-      $request->session()->forget('reservation_id');
+      //$request->session()->forget('reservation_id');
 
       // delete cart from db
       Cart::where('user_id', $user->id)->delete();
