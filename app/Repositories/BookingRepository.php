@@ -565,7 +565,6 @@ class BookingRepository implements BookingInterface
             throw new \Exception('Error creating booking.');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
-            dd($e->getMessage());
             FacadesDB::rollBack();
             return [
                 'error' => true,

@@ -167,7 +167,7 @@ describe('store', function () {
             'event_id' => (string) $event->id,
         ];
 
-        $validData = getBaseValidData($overrides);
+        $validData = getBaseBookingControllerIntegValidData($overrides);
 
         $response = $this->withSession(['reserved_cabin_id' => $tempReservation->id])
             ->postJson('/api/booking-init', $validData);
@@ -193,7 +193,7 @@ describe('store', function () {
         expect($lastPassenger->city)->toBe($validData['city']);
     });
 
-    function getBaseValidData($params = []): array
+    function getBaseBookingControllerIntegValidData($params = []): array
     {
         $base = [
             'language' => 'en',
