@@ -104,6 +104,16 @@ class BookingsControllerTest extends TestCase
             'cabin_number = true' => ['cabin_number', true],
             'cabin_number = empty array' => ['cabin_number', []],
 
+            //cabin_category_id
+            'cabin_category_id = null' => ['cabin_category_id', null],
+            'cabin_category_id = invalid string' => ['cabin_category_id', 'string'],
+            'cabin_category_id = empty string' => ['cabin_category_id', ''],
+            'cabin_category_id = negative number' => ['cabin_category_id', -5],
+            'cabin_category_id = zero' => ['cabin_category_id', 0],
+            'cabin_category_id = false' => ['cabin_category_id', false],
+            'cabin_category_id = true' => ['cabin_category_id', true],
+            'cabin_category_id = empty array' => ['cabin_category_id', []],
+
             //payment_plan
             'payment_plan = null' => ['payment_plan', null],
             'payment_plan = invalid string' => ['payment_plan', 'string'],
@@ -490,7 +500,7 @@ class BookingsControllerTest extends TestCase
             'event_id' => $event->id,
         ])->create();
 
-        Cabin::factory([
+        $cabin = Cabin::factory([
             'cabin_type_id' => $cabinTypeId,
             'cabin_category_id' => $cabinCategory->id,
             'cabin_spec_id' => $cabinSpec->id,
@@ -508,6 +518,8 @@ class BookingsControllerTest extends TestCase
         $requestData = $this->getValidRequestData();
         $requestData['passenger']['id'] = $user->id;
         $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
+        $requestData['cabin_number'] = $cabinNumber;
+        $requestData['cabin_category_id'] = $cabinCategory->id;
 
         // Create a real request instance
         $this->post("/events/{$event->id}/bookings/createManual", $requestData);
@@ -520,7 +532,7 @@ class BookingsControllerTest extends TestCase
             'customer_id' => $user->id,
             'event_id' => $event->id,
             'payment_plan' => $requestData['payment_plan'],
-            'cabin_id' => $cabinSpec->id,
+            'cabin_id' => $cabin->id,
             'is_single_occupancy' => false,
             'bed_config' => 'SEPARATED',
             'tags' => json_encode(['NEW']),
@@ -614,7 +626,7 @@ class BookingsControllerTest extends TestCase
             'event_id' => $event->id,
         ])->create();
 
-        Cabin::factory([
+        $cabin = Cabin::factory([
             'cabin_type_id' => $cabinTypeId,
             'cabin_category_id' => $cabinCategory->id,
             'cabin_spec_id' => $cabinSpec->id,
@@ -635,6 +647,7 @@ class BookingsControllerTest extends TestCase
         $requestData['passenger']['id'] = $user->id;
         $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
         $requestData['cabin_number'] = $cabinNumber;
+        $requestData['cabin_category_id'] = $cabinCategory->id;
         //$requestData['passenger']['single_t_agreement'] = true;
 
         // Create a real request instance
@@ -645,7 +658,7 @@ class BookingsControllerTest extends TestCase
             'customer_id' => $user->id,
             'event_id' => $event->id,
             'payment_plan' => 'PAY_IN_FULL',
-            'cabin_id' => $cabinSpec->id,
+            'cabin_id' => $cabin->id,
             'is_single_occupancy' => false,
             'bed_config' => 'SEPARATED',
             'tags' => json_encode(['NEW']),
@@ -868,6 +881,7 @@ class BookingsControllerTest extends TestCase
         $requestData['passenger']['id'] = $user->id;
         $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
         $requestData['cabin_number'] = $cabinNumber;
+        $requestData['cabin_category_id'] = $cabinCategory8->id;
 
         // Create a real request instance
         $this->post("/events/{$event->id}/bookings/createManual", $requestData);
