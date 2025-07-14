@@ -28,11 +28,12 @@ Route::post('/password-email', [CustomerPasswordResetController::class, 'request
 Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
 
 // --- LOGIN ---
-Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
+// Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
+Route::post('/login-customer', [CustomerLoginController::class, 'store']);
 
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
-  'auth:sanctum',
+  'auth:api',
   'throttle:10,1',
 ]);
 
@@ -48,7 +49,7 @@ Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 
 );
 
 // --- LOGOUT ---
-Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(['auth:sanctum']);
+Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(['auth:api']);
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);
@@ -101,7 +102,7 @@ Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCatego
 Route::get('/events/{id}', [EventController::class, 'showOne']);
 
 Route::middleware([
-  'auth:sanctum',
+  'auth:api',
   'verified',
   'booking_status',
   'one_booking_per_user',
