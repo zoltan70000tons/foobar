@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
+    //Passport::routes(null, ['middleware' => ['api']]);
 
     Passport::tokensExpireIn(now()->addDays(15));
     Passport::refreshTokensExpireIn(now()->addDays(30));

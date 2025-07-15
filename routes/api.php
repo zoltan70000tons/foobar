@@ -19,9 +19,11 @@ use App\Http\Controllers\Api\Customer\InvitationController;
 use App\Http\Controllers\Api\Customer\CheckBookingController;
 use App\Http\Controllers\NotificationController;
 
+
 // middleware
 use App\Http\Middleware\ApiRedirectHttp;
 use App\Http\Middleware\EnsureUserIsNotCustomer;
+
 
 // --- PASSWORD RESET ---
 Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
@@ -29,7 +31,7 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 
 // --- LOGIN ---
 // Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
-Route::post('/login-customer', [CustomerLoginController::class, 'store']);
+Route::post('/auth/login', [CustomerLoginController::class, 'store']);
 
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([

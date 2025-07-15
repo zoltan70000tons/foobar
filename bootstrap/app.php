@@ -14,8 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     health: '/up'
   )
   ->withMiddleware(function (Middleware $middleware) {
-    $middleware->statefulApi();
-    $middleware->authenticateSessions();
+    // $middleware->statefulApi();
+     $middleware->authenticateSessions();
     $middleware->encryptCookies(except: ['email_verified']);
 
     $middleware->alias([
@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
     $middleware->web(
       append: [
+        // authenticateSessions
         \App\Http\Middleware\TeamContext::class,
         \App\Http\Middleware\HandleInertiaRequests::class,
         \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
@@ -44,7 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
       prepend: [
         //\App\Http\Middleware\RestoreCartMiddleware::class,
         //\App\Http\Middleware\TeamsPermission::class,
-        \App\Http\Middleware\ApiRedirectHttp::class,
+        //\App\Http\Middleware\ApiRedirectHttp::class,
         \App\Http\Middleware\TeamContext::class,
         //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         // \App\Http\Middleware\EnsureUserIsNotWeb::class,

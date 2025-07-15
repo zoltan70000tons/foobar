@@ -39,7 +39,7 @@ class User extends Authenticatable implements CanResetPassword
   protected $keyType = 'string';
   public $incrementing = false;
 
-  protected $guard_name = 'web';
+  //protected $guard_name = 'web';
 
   /**
    * The attributes that are mass assignable.
