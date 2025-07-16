@@ -40,7 +40,7 @@ class PaymentLegacyEngineTokenController extends Controller
             'token'              => $token,
         ]);
 
-      return redirect()->away("https://70000tons.com/checkout/?{$query}");
+      return redirect()->away("https://70000tons.com/checkout?{$query}");
 
     }
 
