@@ -16,6 +16,18 @@ class ApiRedirectHttp
    */
   public function handle(Request $request, Closure $next): Response
   {
+
+    $publicRoutes = [
+        'api/payment-middleware-initiate',
+        'api/payment-middleware-verify-token',
+    ];
+
+    // Allow access to whitelisted routes
+    if (in_array($request->path(), $publicRoutes)) {
+        return $next($request);
+    }
+
+
     // Allow guests to access the application normally
     if (Auth::check() || $request->expectsJson()) {
       return $next($request);
