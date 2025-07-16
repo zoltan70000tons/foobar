@@ -20,7 +20,7 @@ class PaymentLegacyEngineTokenController extends Controller
           'lang'               => 'nullable|string|in:en,de,es',
         ]);
 
-        $token = Str::uuid();
+        $token = (string) Str::uuid();
 
         PaymentLegacyEngineToken::create([
             'token' => $token,
@@ -36,7 +36,7 @@ class PaymentLegacyEngineTokenController extends Controller
             'bookingCode'        => $validated['bookingCode'],
             'amount'             => $validated['amount'],
             'MySubmitButton'     => 'Proceed to pay',
-            'lang'               => $validated['lang'] ?? null,
+            'lang'               => $validated['lang'] ?? 'en',
             'token'              => $token,
         ]);
 
