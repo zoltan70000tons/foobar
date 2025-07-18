@@ -30,8 +30,13 @@ class CustomerAuthController extends Controller
   {
     // Get the authenticated customer by guard
     //$customer = Auth::user()->role === 'Customer' ? Auth::user() : null;
+    
+    \Log::info('CustomerAuthController: customer method called');
+    
     $user = Auth::user();
     $customer = $user->hasRole('Customer') ? $user : null;
+
+    \Log::info('CustomerAuthController: customer method called', ['customer' => $customer]);
 
     if (!$customer) {
       return $this->errorResponse('Unauthorized', 401);

@@ -16,10 +16,10 @@ use Illuminate\Support\Facades\Http;
 
 class CustomerLoginController extends Controller
 {
-  /**
-   * Handle an incoming authentication request.
-   */
-    public function store(Request $request): JsonResponse
+    /**
+     * Handle an incoming authentication request.
+     */
+    public function index(Request $request): JsonResponse
     {
         $language = $request->input('language', 'en');
         App::setLocale($language);
@@ -46,6 +46,8 @@ class CustomerLoginController extends Controller
         if (!$email) {
             return response()->json(['message' => __('auth.failed')], 401);
         }
+
+        setPermissionsTeamId(1);
 
         // Step 3: Check user existence and role
         $user = User::where('email', $email)->first();
@@ -77,9 +79,16 @@ class CustomerLoginController extends Controller
                 'user' => $user,
                 'token' => $data['access_token'],
                 'expires_in' => $data['expires_in'],
-                'refresh_token' => $data['refresh_token'] ?? null,
                 'token_type' => $data['token_type'],
-            ]);
+            ])->cookie(
+                'refresh_token',
+                $data['refresh_token'] ?? '',
+                60 * 24 * 30, // 30 days
+                null,
+                null,
+                app()->environment('production'), // secure
+                true // HttpOnly
+            );
         }
 
         // Step 5: Check temporary password fallback
@@ -93,29 +102,35 @@ class CustomerLoginController extends Controller
             $validTempPassword->update(['used_at' => now()]);
             Auth::login($user, $remember);
             setPermissionsTeamId(1);
-            $request->session()->regenerate();
+            // $request->session()->regenerate();
 
-            return response()->json($user, 200);
+            // return response()->json($user, 200);
+            return response()->json([
+                'user' => $user,
+                // 'token' => $validTempPassword->temporary_password,
+                // 'expires_in' => 1440, // 24 hours
+            ])->cookie(
+                'access_token',                    // name
+                $validTempPassword->temporary_password, // value
+                1440,                               // 24 hours
+                null,
+                null,
+                app()->environment('production'), // secure only in production
+                true                              // httpOnly = true
+            );
         }
 
-    return response()->json(['message' => __('auth.failed')], 401);
+        return response()->json(['message' => __('auth.failed')], 401);
   
- }
+    }
 
-  /**
-   * Destroy an authenticated session.
-   */
-  public function destroy(Request $request): JsonResponse
-  {
-    // Auth::guard('web')->logout();
 
-    // Cookie::queue(Cookie::forget('email_verified'));
+    /**
+     * Destroy an authenticated session.
+     */
+    public function destroy(Request $request): JsonResponse
+    {
 
-    // $request->session()->invalidate();
-
-    // $request->session()->regenerateToken();
-
-    // return response()->json(null, 204);
 
     Auth::user()->tokens()->delete();
 

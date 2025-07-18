@@ -31,7 +31,7 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 
 // --- LOGIN ---
 // Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
-Route::post('/auth/login', [CustomerLoginController::class, 'store']);
+Route::post('/auth/login', [CustomerLoginController::class, 'index']);
 
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
@@ -103,12 +103,14 @@ Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCatego
 
 Route::get('/events/{id}', [EventController::class, 'showOne']);
 
+
+
 Route::middleware([
   'auth:api',
   'verified',
   'booking_status',
   'one_booking_per_user',
-  'clear_expired_reservation',
+  // 'clear_expired_reservation',
 ])->group(function () {
   // --- CART (with membership_sales) ---
   Route::middleware(['membership_sales'])->group(function () {
