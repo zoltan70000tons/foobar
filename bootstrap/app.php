@@ -45,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //\App\Http\Middleware\TeamsPermission::class,
         //\App\Http\Middleware\ApiRedirectHttp::class,
         \App\Http\Middleware\TeamContext::class,
+        \Illuminate\Session\Middleware\StartSession::class,
         //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]

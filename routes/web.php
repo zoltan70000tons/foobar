@@ -32,6 +32,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardCreditController;
 use App\Http\Controllers\TemporaryPasswordController;
 
+
 Route::get('/', function () {
   return Inertia::render('Welcome', [
     'canLogin' => Route::has('login'),
@@ -289,5 +290,81 @@ Route::get('/customer-tags/{userTag}/edit', [CustomerTagController::class, 'edit
 Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'update'])->name('customer-tags.update');
 Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
+
+
+// --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
+Route::middleware(['web'])->group(function () {
+  Route::group([
+      'as' => 'passport.',
+      'prefix' => config('passport.path', 'oauth'),
+      'namespace' => '\Laravel\Passport\Http\Controllers',
+  ], function () {
+      Route::post('/token/refresh', [
+          'uses' => 'TransientTokenController@refresh',
+          'as' => 'token.refresh',
+      ]);
+
+      Route::post('/authorize', [
+          'uses' => 'ApproveAuthorizationController@approve',
+          'as' => 'authorizations.approve',
+      ]);
+
+      Route::delete('/authorize', [
+          'uses' => 'DenyAuthorizationController@deny',
+          'as' => 'authorizations.deny',
+      ]);
+
+      Route::get('/tokens', [
+          'uses' => 'AuthorizedAccessTokenController@forUser',
+          'as' => 'tokens.index',
+      ]);
+
+      Route::delete('/tokens/{token_id}', [
+          'uses' => 'AuthorizedAccessTokenController@destroy',
+          'as' => 'tokens.destroy',
+      ]);
+
+      Route::get('/clients', [
+          'uses' => 'ClientController@forUser',
+          'as' => 'clients.index',
+      ]);
+
+      Route::post('/clients', [
+          'uses' => 'ClientController@store',
+          'as' => 'clients.store',
+      ]);
+
+      Route::put('/clients/{client_id}', [
+          'uses' => 'ClientController@update',
+          'as' => 'clients.update',
+      ]);
+
+      Route::delete('/clients/{client_id}', [
+          'uses' => 'ClientController@destroy',
+          'as' => 'clients.destroy',
+      ]);
+
+      Route::get('/scopes', [
+          'uses' => 'ScopeController@all',
+          'as' => 'scopes.index',
+      ]);
+
+      Route::get('/personal-access-tokens', [
+          'uses' => 'PersonalAccessTokenController@forUser',
+          'as' => 'personal.tokens.index',
+      ]);
+
+      Route::post('/personal-access-tokens', [
+          'uses' => 'PersonalAccessTokenController@store',
+          'as' => 'personal.tokens.store',
+      ]);
+
+      Route::delete('/personal-access-tokens/{token_id}', [
+          'uses' => 'PersonalAccessTokenController@destroy',
+          'as' => 'personal.tokens.destroy',
+      ]);
+  });
+});
+// END --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 
 require __DIR__ . '/auth.php';
