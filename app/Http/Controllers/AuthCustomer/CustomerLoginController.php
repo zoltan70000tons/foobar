@@ -171,12 +171,13 @@ class CustomerLoginController extends Controller
     public function destroy(Request $request): JsonResponse
     {
 
-    Auth::user()->tokens()->delete();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-      return response()->json([
-          'success' => true,
-          'statusCode' => 204,
-          'message' => 'Logged out successfully.',
-      ], 204);
+        // Clear the PKCE session data
+        $request->session()->forget(['code_challenge', 'code_challenge_method', 'state']);
+
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }

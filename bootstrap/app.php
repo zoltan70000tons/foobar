@@ -35,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \App\Http\Middleware\HandleInertiaRequests::class,
         \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         \App\Http\Middleware\TeamsPermission::class,
-        \App\Http\Middleware\EnsureUserIsNotCustomer::class,
+        //\App\Http\Middleware\EnsureUserIsNotCustomer::class,
       ]
     );
 
@@ -50,6 +50,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]
     );
+
+    $middleware->validateCsrfTokens(except: [
+      '/api/auth/login',
+      '/api/auth/logout',
+    ]);
   })
   ->withExceptions(function (Exceptions $exceptions) {
     //

@@ -292,79 +292,142 @@ Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destro
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 
 
-// --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
-Route::middleware(['web'])->group(function () {
-  Route::group([
-      'as' => 'passport.',
-      'prefix' => config('passport.path', 'oauth'),
-      'namespace' => '\Laravel\Passport\Http\Controllers',
-  ], function () {
-      Route::post('/token/refresh', [
-          'uses' => 'TransientTokenController@refresh',
-          'as' => 'token.refresh',
-      ]);
 
-      Route::post('/authorize', [
-          'uses' => 'ApproveAuthorizationController@approve',
-          'as' => 'authorizations.approve',
-      ]);
 
-      Route::delete('/authorize', [
-          'uses' => 'DenyAuthorizationController@deny',
-          'as' => 'authorizations.deny',
-      ]);
 
-      Route::get('/tokens', [
-          'uses' => 'AuthorizedAccessTokenController@forUser',
-          'as' => 'tokens.index',
-      ]);
 
-      Route::delete('/tokens/{token_id}', [
-          'uses' => 'AuthorizedAccessTokenController@destroy',
-          'as' => 'tokens.destroy',
-      ]);
 
-      Route::get('/clients', [
-          'uses' => 'ClientController@forUser',
-          'as' => 'clients.index',
-      ]);
+Route::get('/redirect', function (Request $request) {
+    $request->session()->put('state', $state = Str::random(40));
+ 
+    $request->session()->put(
+        'code_verifier', $codeVerifier = Str::random(128)
+    );
+ 
+    $codeChallenge = strtr(rtrim(
+        base64_encode(hash('sha256', $codeVerifier, true))
+    , '='), '+/', '-_');
 
-      Route::post('/clients', [
-          'uses' => 'ClientController@store',
-          'as' => 'clients.store',
-      ]);
+    $clientId = $request->input('client_id') ?? null;
+    if (!$clientId) {
+        return response()->json(['error' => 'Client ID is required'], 400);
+    }
 
-      Route::put('/clients/{client_id}', [
-          'uses' => 'ClientController@update',
-          'as' => 'clients.update',
-      ]);
-
-      Route::delete('/clients/{client_id}', [
-          'uses' => 'ClientController@destroy',
-          'as' => 'clients.destroy',
-      ]);
-
-      Route::get('/scopes', [
-          'uses' => 'ScopeController@all',
-          'as' => 'scopes.index',
-      ]);
-
-      Route::get('/personal-access-tokens', [
-          'uses' => 'PersonalAccessTokenController@forUser',
-          'as' => 'personal.tokens.index',
-      ]);
-
-      Route::post('/personal-access-tokens', [
-          'uses' => 'PersonalAccessTokenController@store',
-          'as' => 'personal.tokens.store',
-      ]);
-
-      Route::delete('/personal-access-tokens/{token_id}', [
-          'uses' => 'PersonalAccessTokenController@destroy',
-          'as' => 'personal.tokens.destroy',
-      ]);
-  });
+ 
+    $query = http_build_query([
+        'client_id' => $clientId,
+        'redirect_uri' => $request->input('redirect_uri'),
+        'response_type' => 'code',
+        'scope' => '',
+        'state' => $state,
+        'code_challenge' => $codeChallenge,
+        'code_challenge_method' => 'S256',
+        // 'prompt' => '', // "none", "consent", or "login"
+    ]);
+ 
+    return redirect('http://localhost:8000/oauth/authorize?'.$query);
 });
+
+
+
+Route::get('/callback', function (Request $request) {
+    $state = $request->session()->pull('state');
+ 
+    $codeVerifier = $request->session()->pull('code_verifier');
+ 
+    throw_unless(
+        strlen($state) > 0 && $state === $request->input('state'),
+        InvalidArgumentException::class
+    );
+
+    $clientId = $request->session()->get('client_id');
+
+
+    $response = Http::asForm()->post('http://localhost:8000/oauth/token', [
+        'grant_type' => 'authorization_code',
+        'client_id' => $clientId,
+        'redirect_uri' => 'http://localhost:3000/callback',
+        'code_verifier' => $codeVerifier,
+        'code' => $request->code,
+    ]);
+ 
+    return redirect('http://localhost:3000/oauth-success?token=' . $response['access_token']);
+});
+
+
+
+// --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
+Route::group([
+    'as' => 'passport.',
+    'prefix' => config('passport.path', 'oauth'),
+    'namespace' => '\Laravel\Passport\Http\Controllers',
+], function () {
+    Route::post('/token/refresh', [
+        'uses' => 'TransientTokenController@refresh',
+        'as' => 'token.refresh',
+    ]);
+
+    Route::post('/authorize', [
+        'uses' => 'ApproveAuthorizationController@approve',
+        'as' => 'authorizations.approve',
+    ]);
+
+    Route::delete('/authorize', [
+        'uses' => 'DenyAuthorizationController@deny',
+        'as' => 'authorizations.deny',
+    ]);
+
+    Route::get('/tokens', [
+        'uses' => 'AuthorizedAccessTokenController@forUser',
+        'as' => 'tokens.index',
+    ]);
+
+    Route::delete('/tokens/{token_id}', [
+        'uses' => 'AuthorizedAccessTokenController@destroy',
+        'as' => 'tokens.destroy',
+    ]);
+
+    Route::get('/clients', [
+        'uses' => 'ClientController@forUser',
+        'as' => 'clients.index',
+    ]);
+
+    Route::post('/clients', [
+        'uses' => 'ClientController@store',
+        'as' => 'clients.store',
+    ]);
+
+    Route::put('/clients/{client_id}', [
+        'uses' => 'ClientController@update',
+        'as' => 'clients.update',
+    ]);
+
+    Route::delete('/clients/{client_id}', [
+        'uses' => 'ClientController@destroy',
+        'as' => 'clients.destroy',
+    ]);
+
+    Route::get('/scopes', [
+        'uses' => 'ScopeController@all',
+        'as' => 'scopes.index',
+    ]);
+
+    Route::get('/personal-access-tokens', [
+        'uses' => 'PersonalAccessTokenController@forUser',
+        'as' => 'personal.tokens.index',
+    ]);
+
+    Route::post('/personal-access-tokens', [
+        'uses' => 'PersonalAccessTokenController@store',
+        'as' => 'personal.tokens.store',
+    ]);
+
+    Route::delete('/personal-access-tokens/{token_id}', [
+        'uses' => 'PersonalAccessTokenController@destroy',
+        'as' => 'personal.tokens.destroy',
+    ]);
+});
+
 // END --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 
 require __DIR__ . '/auth.php';
