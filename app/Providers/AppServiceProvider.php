@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    Passport::ignoreRoutes();
+    // Passport::ignoreRoutes();
 
     Passport::useClientModel(Client::class);
     Passport::authorizationView('auth.oauth.authorize');

@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
       'one_booking_per_user' => \App\Http\Middleware\OneBookingPerUser::class,
       'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
       'allowed_domains' => \App\Http\Middleware\CheckAllowedDomains::class,
+      'custom.auth.redirect' => \App\Http\Middleware\RedirectIfUnauthenticatedToOAuthLogin::class,
       // 'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
     ]);
 
@@ -45,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //\App\Http\Middleware\TeamsPermission::class,
         //\App\Http\Middleware\ApiRedirectHttp::class,
         \App\Http\Middleware\TeamContext::class,
-        \Illuminate\Session\Middleware\StartSession::class,
+       // \Illuminate\Session\Middleware\StartSession::class,
         //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]

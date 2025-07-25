@@ -10,8 +10,7 @@ class Client extends PassportClient
 {
     public function skipsAuthorization(Authenticatable $user, array $scopes): bool
     {
-        return in_array($this->redirect, [
-            'http://localhost:3000/auth/callback',
-        ]);
+        // first party clients can skip authorization
+        return $this->firstParty();
     }
 }
