@@ -1,8 +1,9 @@
 import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
-import { TextField, Button, Box, Container } from '@mui/material';
+import { TextField, Button, Box, Container, Typography } from '@mui/material';
 import OAuthLayout from '@/Layouts/OAuthLayout';
 import Axios from 'axios';
+import SurvivorLogin from '@/Pages/OAuth/components/SurvivorLogin';
 
 export default function Login() {
   const { data, setData, post, processing, errors } = useForm({
@@ -29,7 +30,6 @@ export default function Login() {
   return (
     <>
       <Head title="Login" />
- 
         <Box
           sx={{
             width: "100%",
@@ -41,6 +41,17 @@ export default function Login() {
           }}
         >
           <Container maxWidth="sm" sx={{ mt: 8 }}>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ marginBottom: 2, fontWeight: "bold" }}
+          >              
+            Sign In
+            </Typography>
+          <SurvivorLogin/>
+          <Typography variant="body1" gutterBottom>
+            Please use your eMail or Survivor Number to access your account.
+          </Typography>
           <form onSubmit={handleSubmit} noValidate>
             <TextField
               label="Email"
@@ -66,6 +77,7 @@ export default function Login() {
               Sign In
             </Button>
           </form>
+          
           </Container>
         </Box>
     </>

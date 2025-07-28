@@ -147,6 +147,9 @@ class CustomerLoginController extends Controller
         $request->session()->put('code_challenge_method', 'S256');
         $request->session()->put('state', $request->input('state'));
 
+        // APP_LOCAL_DEV_URL
+        $appUrl = env('APP_LOCAL_DEV_URL', 'http://localhost:8000');
+
         // Redirect back to /oauth/authorize manually
         $query = http_build_query([
             'client_id' => $request->input('client_id'),
@@ -159,7 +162,7 @@ class CustomerLoginController extends Controller
         ]);
 
         return response()->json([
-            'redirect_to' => 'http://localhost:8000' . '/oauth/authorize?' . $query,
+            'redirect_to' => $appUrl . '/oauth/authorize?' . $query,
         ]);
 
     }
