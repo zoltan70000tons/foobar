@@ -107,8 +107,8 @@ class CustomerLoginController extends Controller
   
     // }
 
-    /// USE login with PKCE credential flow
-    public function index(Request $request)
+    // USE login with PKCE credential flow
+    public function login(Request $request)
     {
         $request->validate([
             'identifier' => 'required|string',
@@ -168,16 +168,14 @@ class CustomerLoginController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
+        // Revoke the current access token
+        $request->user()?->token()?->revoke();
 
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        // Clear the PKCE session data
-        $request->session()->forget(['code_challenge', 'code_challenge_method', 'state']);
-
-        return response()->json(['message' => 'Logged out successfully']);
+        // Clear secure cookies (optional if you're using cookies for access_token)
+        return response()->json(['message' => 'Logged out successfully'])
+            ->withoutCookie('access_token') 
+            ->withoutCookie('refresh_token');
     }
 }

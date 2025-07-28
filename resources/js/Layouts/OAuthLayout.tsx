@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Toolbar, Stack } from '@mui/material';
+import Logo from '../Components/Logo';
 
 interface Props {
   children: React.ReactNode;
@@ -7,6 +8,20 @@ interface Props {
 
 const OAuthLayout: React.FC<Props> = ({ children }) => {
   return (
+    <>
+    <Toolbar
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        zIndex: 1002,
+      }}
+    >
+      <Stack direction="row" spacing={5} alignItems="center">
+        <Logo />
+        Menu items
+      </Stack>
+    </Toolbar>
     <Box
       sx={{
         display: 'flex',
@@ -22,6 +37,7 @@ const OAuthLayout: React.FC<Props> = ({ children }) => {
       </Typography>
       {children}
     </Box>
+    </>
   );
 };
 

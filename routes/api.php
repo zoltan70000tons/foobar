@@ -32,7 +32,11 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 
 // --- LOGIN ---
 // Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
-Route::post('/auth/login', [CustomerLoginController::class, 'index']);
+Route::post('/auth/login', [CustomerLoginController::class, 'login']);
+// --- LOGOUT ---
+Route::post('/auth/logout', [CustomerLoginController::class, 'logout']);
+
+
 
 // --- EMAIL VERIFICATION ---
 Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
@@ -51,8 +55,6 @@ Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 
   'throttle:10,1'
 );
 
-// --- LOGOUT ---
-Route::post('/logout', [CustomerLoginController::class, 'destroy'])->middleware(['auth:api']);
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);

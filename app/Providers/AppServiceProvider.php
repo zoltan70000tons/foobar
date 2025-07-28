@@ -23,11 +23,10 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    // Passport::ignoreRoutes();
 
     Passport::useClientModel(Client::class);
     Passport::authorizationView('auth.oauth.authorize');
-    Passport::tokensExpireIn(now()->addMinutes(10));
+    Passport::tokensExpireIn(now()->addMinutes(1));
     Passport::refreshTokensExpireIn(now()->addDays(30));
     
     // Define a gate to authorize access to the Pulse dashboard
