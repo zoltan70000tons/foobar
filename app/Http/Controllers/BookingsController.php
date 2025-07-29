@@ -13,6 +13,8 @@ use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Passenger;
+use App\Models\User;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
@@ -448,33 +450,33 @@ class BookingsController extends Controller
   // Reassign booking to another agent
   public function reAssign(Request $request)
   {
-      $bookingId = $request->input('booking_id');
-      $user = Auth::user();
+    $bookingId = $request->input('booking_id');
+    $user = Auth::user();
 
-      // is user have permissio EditBookings
-      if (!$user->hasAnyPermission([Permissions::InterceptBookings])) {
-        // return back with error message
-        return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
-      }
+    // is user have permissio EditBookings
+    if (!$user->hasAnyPermission([Permissions::InterceptBookings])) {
+      // return back with error message
+      return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
+    }
 
-      DB::table('booking_agent_sessions')
-        ->where('booking_id', $bookingId)
-        ->delete();
+    DB::table('booking_agent_sessions')
+      ->where('booking_id', $bookingId)
+      ->delete();
 
 
-      DB::table('booking_agent_sessions')->insert([
-          'booking_id' => $bookingId,
-          'agent_id' => $user->id,
-          'time' => now(),
-      ]);
- 
-      broadcast(new \App\Events\BookingAgentSession(
-        agentId: $user->id,
-        bookingId: $bookingId,
-        username: $user->username
-      ));
+    DB::table('booking_agent_sessions')->insert([
+      'booking_id' => $bookingId,
+      'agent_id' => $user->id,
+      'time' => now(),
+    ]);
 
-      return Inertia::location(url()->previous());
+    broadcast(new \App\Events\BookingAgentSession(
+      agentId: $user->id,
+      bookingId: $bookingId,
+      username: $user->username
+    ));
+
+    return Inertia::location(url()->previous());
   }
 
   // edit mode
@@ -487,29 +489,29 @@ class BookingsController extends Controller
     $user = Auth::user();
 
     if ($lock) {
-        DB::table('booking_agent_sessions')->updateOrInsert(
-            [
-              'booking_id' => $bookingId, 
-              'agent_id' => $user->id
-            ],
-            [
-                'time' => now()
-            ]
-        );
+      DB::table('booking_agent_sessions')->updateOrInsert(
+        [
+          'booking_id' => $bookingId,
+          'agent_id' => $user->id
+        ],
+        [
+          'time' => now()
+        ]
+      );
     } else {
-        DB::table('booking_agent_sessions')
-            ->where('booking_id', $bookingId)
-            ->where('agent_id', $user->id)
-            ->delete();
+      DB::table('booking_agent_sessions')
+        ->where('booking_id', $bookingId)
+        ->where('agent_id', $user->id)
+        ->delete();
     }
 
     broadcast(new \App\Events\BookingAgentSession(
-        agentId: $user->id,
-        bookingId: $bookingId,
-        username: $lock ? $user->username : null
+      agentId: $user->id,
+      bookingId: $bookingId,
+      username: $lock ? $user->username : null
     ));
 
-    
+
     // // return inertia
     return $this->withPermission([Permissions::EditBookings], fn() => Inertia::location(url()->previous()));
 
@@ -782,32 +784,99 @@ class BookingsController extends Controller
 
   public function getData(Request $request)
   {
-   try {
+    try {
+      $eventId = $request->route('id');
+      $status = match ((int) $request->get('tab', 1)) {
+        0 => 'NEW',
+        1 => 'ON HOLD',
+        2 => 'UPLOADED',
+        3 => 'CANCELLED',
+        default => 'ON HOLD',
+      };
+
+      $keyword = $request->input('keyword');
+      $perPage = $request->input('per_page', 10);
+      $sortKey = $request->input('sort_key', 'created_at');
+      $sortDirection = $request->input('sort_direction', 'desc');
+      $tags = array_filter(explode(',', $request->input('tags', '')));
+      $user_ids = $request->input('user_ids', []);
+      $dateRange = $request->input('date_range', null);
+      $bookings = $this->bookingRepository->getByStatus(
+        $eventId,
+        $status,
+        $keyword,
+        $perPage,
+        $sortKey,
+        $sortDirection,
+        $tags,
+        $user_ids,
+        $dateRange
+      );
+
+      return response()->json([
+        'data' => $bookings->items(),
+        'total' => $bookings->total(),
+      ]);
+    } catch (Exception $e) {
+      $this->logException($e);
+    }
+  }
+  public function switchLeadPassenger(Request $request)
+  {
+    $newLeadId = $request->input('new_lead_passenger_id');
     $eventId = $request->route('id');
-    $status = match ((int) $request->get('tab', 1)) {
-      0 => 'NEW',
-      1 => 'ON HOLD',
-      2 => 'UPLOADED',
-      3 => 'CANCELLED',
-      default => 'ON HOLD',
-    };
+    $bookingId = $request->route('booking_id');
 
-    $keyword = $request->input('keyword');
-    $perPage = $request->input('per_page', 10);
-    $sortKey = $request->input('sort_key', 'created_at');
-    $sortDirection = $request->input('sort_direction', 'desc');
-    $tags = array_filter(explode(',', $request->input('tags', '')));
-    $user_ids = $request->input('user_ids', []);
-    $dateRange = $request->input('date_range', null);
-    $bookings = $this->bookingRepository->getByStatus($eventId, $status, $keyword, $perPage, $sortKey,
-        $sortDirection, $tags, $user_ids, $dateRange);
+    try {
+      return $this->withPermission(
+        [Permissions::EditBookings],
+        function () use ($bookingId, $newLeadId, $eventId, $request) {
+          $booking = Booking::findOrFail($bookingId);
+          $user = User::findOrFail($newLeadId);
 
-    return response()->json([
-      'data' => $bookings->items(),
-      'total' => $bookings->total(),
-    ]);
-   } catch (Exception $e) {
-    $this->logException($e);
-   }
+          if (!$user->hasRole('Customer')) {
+            return response()->json(['error' => 'The selected user is not a valid lead passenger.'], 422);
+          }
+          $leadPassengerSlot = Passenger::where('booking_id', $bookingId)
+            ->where('lead_passenger', true)
+            ->firstOrFail();
+          $oldCost = $leadPassengerSlot->passenger_allocated_cost;
+          $oldBalance = $leadPassengerSlot->passenger_balance;
+
+          $passengerData = $request->except(['new_lead_passenger_id']);
+
+          $booleanFields = [
+            'confirmed_booking_email',
+            'newsletter',
+            'travel_info',
+            'terms_n_cons',
+            'cabin_conf_accp',
+            'single_t_agreement',
+            'was_on_board'
+          ];
+
+          foreach ($booleanFields as $field) {
+            $passengerData[$field] = $request->has($field)
+              ? filter_var($request->input($field), FILTER_VALIDATE_BOOLEAN)
+              : false;
+          }
+
+          $leadPassengerSlot->fill($passengerData);
+          $leadPassengerSlot->lead_passenger = true;
+          $leadPassengerSlot->passenger_allocated_cost = $oldCost;
+          $leadPassengerSlot->passenger_balance = $oldBalance;
+          $leadPassengerSlot->save();
+
+          $passengers = $booking->passengers()->orderBy('passenger_order')->get();
+
+          return response()->json([
+            'passengers' => $passengers
+          ]);
+        }
+      );
+    } catch (Exception $e) {
+      $this->logException($e);
+      return response()->json(['error' => 'Error switching lead passenger.'], 500);
+    }
   }
 }
