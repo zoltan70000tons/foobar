@@ -18,7 +18,7 @@
 @endsection
 
 @section('content')
-    <p>{{ __('confirmationBooking.cbe_hello') }} {{ $bookingResult->passenger->first_name  }},</p>
+    <p>{{ __('confirmationBooking.cbe_hello') }} {{ $bookingResult->passenger->first_name  }} {{ $bookingResult->passenger->last_name  }},</p>
     <p>{{ __('confirmationBooking.cbe_thank_you') }}</p>
 
     <p>{{ __('confirmationBooking.cbe_please_note') }}</p>
