@@ -4,6 +4,7 @@ import Logo from '../Components/Logo';
 import Footer from '@/Pages/OAuth/components/Footer';
 import themeClient from '@/Theme/themeClient';
 import { styled, ThemeProvider } from "@mui/material/styles";
+import TopNavigation from '@/Pages/OAuth/components/TopNavigation';
 
 interface Props {
   children: React.ReactNode;
@@ -32,7 +33,7 @@ const OAuthLayout: React.FC<Props> = ({ children }) => {
           >
             <Stack direction="row" spacing={5} alignItems="center">
               <Logo />
-              Menu items
+              <TopNavigation />
             </Stack>
           </Toolbar>
         </AppBar>

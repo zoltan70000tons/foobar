@@ -5,27 +5,37 @@ import { Info } from "@mui/icons-material";
 
 export default function SurvivorLogin() {
 
+    const frontURL = import.meta.env.VITE_FRONTEND_URL;
+
+
     const AnimatedBorder = styled("svg")({
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    pointerEvents: "none",
-    "& .line": {
-      strokeDasharray: "1300",
-      strokeDashoffset: "1300",
-      strokeWidth: "4px",
-      fill: "transparent",
-      stroke: "url(#gradient)",
-      animation: "svgAnimation 2.5s linear infinite",
-    },
-    "@keyframes svgAnimation": {
-      "0%": { strokeDashoffset: "1300", opacity: 0.5 },
-      "80%": { opacity: 1 },
-      "100%": { strokeDashoffset: "0", opacity: 0 },
-    },
-  });
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      "& .line": {
+        strokeDasharray: "1300",
+        strokeDashoffset: "1300",
+        strokeWidth: "4px",
+        fill: "transparent",
+        stroke: "url(#gradient)",
+        animation: "svgAnimation 2.5s linear infinite",
+      },
+      "@keyframes svgAnimation": {
+        "0%": { strokeDashoffset: "1300", opacity: 0.5 },
+        "80%": { opacity: 1 },
+        "100%": { strokeDashoffset: "0", opacity: 0 },
+      },
+    });
+
+
+  // handle click event
+  const handleClick = () => {
+    // push user to the survivor activation page
+    window.location.href = `${frontURL}/en/activate-survivor-account`;
+  }
 
   return (
       <Box
@@ -71,7 +81,7 @@ export default function SurvivorLogin() {
           color="primary"
           sx={{ minWidth: "100px", py: "5px" }}
           size="small"
-          // onClick={() => router.push("/activate-survivor-account")}
+          onClick={handleClick}
         >
           Click here
         </Button>

@@ -8,16 +8,20 @@ use App\Traits\HttpResponses;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
 class PublicAuthController extends Controller
 {
     use HttpResponses;
 
-
     // showLoginForm
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
+        $frontURL = config('app.frontend_url');
+
+        if (! $request->has(['client_id', 'code_challenge', 'code_challenge_method'])) {
+            return redirect($frontURL);
+        }
+
         // Return the login view
        return Inertia::render('OAuth/Login');
     }
@@ -51,35 +55,16 @@ class PublicAuthController extends Controller
             'scope',
         ]);
 
-        \Log::debug('Redirecting to /oauth/authorize with params', $params);
-
         return response()->json([
             'redirect' => '/oauth/authorize?' . http_build_query($params)
         ]);
-        //return redirect('/oauth/authorize?' . http_build_query($params));
+ 
     }
 
     // logout
-    public function logout(Request $request)
+    public function logout()
     {
-        // Handle the OAuth logout logic here
-        // This is a placeholder for the actual implementation
         return $this->successResponse(['message' => 'Logout successful']);
     }
 
-    // showRegistrationForm
-    public function showRegistrationForm()
-    {
-        // Return the registration view
-        return Inertia::render('OAuth/Register');
-
-    }
-
-    // register
-    public function register(Request $request)
-    {
-        // Handle the OAuth registration logic here
-        // This is a placeholder for the actual implementation
-        return $this->successResponse(['message' => 'Registration successful']);
-    }
 }
