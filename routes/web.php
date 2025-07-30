@@ -289,5 +289,7 @@ Route::get('/customer-tags/{userTag}/edit', [CustomerTagController::class, 'edit
 Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'update'])->name('customer-tags.update');
 Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
+Route::get('/customers-search', [CustomerController::class, 'search'])->name('switch.lead.search');
 Route::post('/events/{event_id}/booking/{booking_id}/switch-lead-passenger', [BookingsController::class, 'switchLeadPassenger'])->name('lead.passenger.switch');
+
 require __DIR__ . '/auth.php';

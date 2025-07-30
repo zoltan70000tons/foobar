@@ -24,6 +24,7 @@ import {
   Tooltip,
   FormHelperText,
   MenuItem,
+  Alert,
 } from "@mui/material";
 import axios from "axios";
 import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, blueGrey, teal, green } from '@mui/material/colors';
@@ -115,7 +116,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       }
       try {
         setSearchLoading(true)
-        const response = await axios.get('/passengers/search', {
+        const response = await axios.get(route('switch.lead.search'), {
           params: { query: query, bookingId: booking.id, eventId: booking.event_id },
         });
         setSuggestions(response.data);
@@ -434,15 +435,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     if (passenger.lead_passenger) {
       return (
         <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSwitchLeadPassenger(passenger);
-            }}
-          >
-            <SwapHoriz fontSize="small" />
-          </IconButton>
           <Chip label="Lead Passenger" size="small" color="warning" />
         </Box>
       );
@@ -461,6 +453,21 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     }
     setSwitchPassengerData((prev) => ({ ...prev, [field]: value }))
   }
+
+  const validateSwitchPassengerData = () => {
+    const requiredFields = ['first_name', 'last_name', 'dob', 'gender', 'citizenship', 'email', 'phone', 'address_first', 'city', 'country', 'postal_code', 'emergency_c_name', 'emergency_c_phone', 'payment_method'];
+    const newErrors = {};
+
+    requiredFields.forEach((field) => {
+      if (!switchPassengerData[field]) {
+        newErrors[field] = 'This field is required';
+      }
+    });
+
+    setErrors({ response: { data: { errors: newErrors } } });
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   return (
     <Box>
@@ -488,6 +495,23 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     : handleEditPassenger(passenger)
                 }
               >
+                {passenger.lead_passenger && (<Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                  <IconButton
+                    size="small"
+                    disabled={!editMode}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSwitchLeadPassenger(passenger);
+                    }}
+                    sx={{
+                      borderRadius: 1,
+                      padding: '6px',
+                    }}
+                  >
+                    <SwapHoriz fontSize="small" />
+                  </IconButton>
+
+                </Box>)}
                 {getAvatar(passenger)}
                 <Box>
                   <Typography>
@@ -541,6 +565,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         }
         errors={errors}
       />
+
 
       <Dialog open={openConfirm} onClose={handleCancel}>
         <DialogTitle>Confirm Action</DialogTitle>
@@ -613,9 +638,12 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         <DialogContent>
           {switchStep === "search" && (
             <>
-              <DialogContentText>
-                Select a customer to switch lead passenger.
+              <DialogContentText sx={{ mb: 2 }}>
+                Select a customer to switch lead passenger.<br />
               </DialogContentText>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Note: You cannot switch to a customer who is already registered in another booking or has a lower-tier membership.
+              </Alert>
               <Autocomplete
                 options={suggestions}
                 getOptionLabel={(option) =>
@@ -624,19 +652,11 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     : `${option.full_name} (${option.email})`
                 }
                 filterOptions={(x) => x}
-                getOptionDisabled={(option) => option.has_booking}
+                getOptionDisabled={(option) => option.has_booking || option.lower_tier}
                 inputValue={searchQuery}
                 onInputChange={(e, value) => setSearchQuery(value)}
                 value={selectedUser}
                 loading={searchLoading}
-                // onChange={(e, value) => {
-                //   setSelectedUser(value);
-                //   if (value) {
-                //     setSwitchPassengerData({ ...value });
-                //     setSwitchStep("confirm");
-                //   }
-                // }}
-
                 onChange={(e, value) => {
                   if (!value) return;
                   setSelectedUser(value);
@@ -674,6 +694,13 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                           style={{ marginLeft: '20px' }}
                         />
                       )}
+                      {option.lower_tier && (
+                        <Chip
+                          label="LOWER TIER"
+                          color="error"
+                          style={{ marginLeft: '20px' }}
+                        />
+                      )}
                     </div>
                   </li>
                 )}
@@ -696,7 +723,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         value={switchPassengerData?.first_name || ""}
                         onChange={(e) => onChangeLeadPassenger("first_name", e.target.value)}
                         error={!!validation?.first_name}
-                        helperText={validation?.first_name?.[0]}
+                        helperText={validation?.first_name}
                         required
                       />
                     </Grid>
@@ -709,7 +736,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("middle_name", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.middle_name}
-                        helperText={validation?.middle_name?.[0]}
+                        helperText={validation?.middle_name}
                       />
                     </Grid>
                     <Grid item xs={12} md={3}>
@@ -721,7 +748,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("last_name", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.last_name}
-                        helperText={validation?.last_name?.[0]}
+                        helperText={validation?.last_name}
                         required
                       />
                     </Grid>
@@ -736,7 +763,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         InputLabelProps={{ shrink: true }}
                         disabled={isDisabled}
                         error={!!validation?.dob}
-                        helperText={validation?.dob?.[0]}
+                        helperText={validation?.dob}
                         required
                       />
                     </Grid>
@@ -749,7 +776,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                           disabled={isDisabled}
                           label={'Gender'}
                           error={!!validation?.gender}
-                          helperText={validation?.gender?.[0]}
+                          helperText={validation?.gender}
                           required
                         >
                           <MenuItem value="M">Male</MenuItem>
@@ -769,7 +796,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger('citizenship', e)}
                         disabled={isDisabled}
                         error={!!validation?.citizenship}
-                        helperText={validation?.citizenship?.[0]}
+                        helperText={validation?.citizenship}
                         required
                       />
                     </Grid>
@@ -784,7 +811,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("survivor_number", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.survivor_number}
-                        helperText={validation?.survivor_number?.[0]}
+                        helperText={validation?.survivor_number}
                       />
                     </Grid>
                   </Grid>
@@ -801,7 +828,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("email", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.email}
-                        helperText={validation?.email?.[0]}
+                        helperText={validation?.email}
                         required
                       />
                     </Grid>
@@ -816,7 +843,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("phone", e)}
                         disabled={isDisabled}
                         error={!!validation?.phone}
-                        helperText={validation?.phone?.[0]}
+                        helperText={validation?.phone}
                         required
                       />
                     </Grid>
@@ -835,7 +862,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("address_first", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.address_first}
-                        helperText={validation?.address_first?.[0]}
+                        helperText={validation?.address_first}
                         required
                       />
                     </Grid>
@@ -848,7 +875,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("address_second", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.address_second}
-                        helperText={validation?.citizenship?.[0]}
+                        helperText={validation?.citizenship}
                       />
                     </Grid>
                     <Grid item xs={12} md={2}>
@@ -860,7 +887,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("city", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.city}
-                        helperText={validation?.city?.[0]}
+                        helperText={validation?.city}
                         required
                       />
                     </Grid>
@@ -876,7 +903,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         //onChange={onChangeCountry}
                         disabled={isDisabled}
                         error={!!validation?.country}
-                        helperText={validation?.country?.[0]}
+                        helperText={validation?.country}
                         required
                       />
                     </Grid>
@@ -895,7 +922,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                             label="State"
                             variant="outlined"
                             error={!!validation?.state}
-                            helperText={validation?.state?.[0]}
+                            helperText={validation?.state}
                           />
                         )} />
                     </Grid>) : (
@@ -908,7 +935,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("state", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.state}
-                        helperText={validation?.state?.[0]}
+                        helperText={validation?.state}
                       /></Grid>)}
                     <Grid item xs={12} md={3}>
                       <TextField
@@ -919,7 +946,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("postal_code", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.postal_code}
-                        helperText={validation?.postal_code?.[0]}
+                        helperText={validation?.postal_code}
                         required
                       />
                     </Grid>
@@ -937,7 +964,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("emergency_c_name", e.target.value)}
                         disabled={isDisabled}
                         error={!!validation?.emergency_c_name}
-                        helperText={validation?.emergency_c_name?.[0]}
+                        helperText={validation?.emergency_c_name}
                         required
                       />
                     </Grid>
@@ -952,7 +979,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         onChange={(e) => onChangeLeadPassenger("emergency_c_phone", e)}
                         disabled={isDisabled}
                         error={!!validation?.emergency_c_phone}
-                        helperText={validation?.emergency_c_phone?.[0]}
+                        helperText={validation?.emergency_c_phone}
                         required
                       />
                     </Grid>
@@ -972,14 +999,14 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                           label={'Payment Method'}
                           required
                           error={!!validation?.payment_method}
-                          helperText={validation?.payment_method?.[0]}
+                          helperText={validation?.payment_method}
                         >
                           {booking.payment_plan === 'PAY_IN_FULL' && (<MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>)}
                           <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
 
                         </Select>
-                        {validation?.payment_method?.[0] && (
-                          <FormHelperText>{validation.payment_method[0]}</FormHelperText>
+                        {validation?.payment_method && (
+                          <FormHelperText>{validation.payment_method}</FormHelperText>
                         )}
                       </FormControl>
                     </Grid>
@@ -1183,7 +1210,17 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
           {switchStep === "edit" && (
             <>
               <Button onClick={() => setSwitchStep("search")} color="secondary">Back</Button>
-              <Button onClick={() => setSwitchStep("review")} variant="contained" color="primary">Review</Button>
+              <Button
+                onClick={() => {
+                  if (validateSwitchPassengerData()) {
+                    setSwitchStep("review");
+                  }
+                }}
+                variant="contained"
+                color="primary"
+              >
+                Review
+              </Button>
             </>
           )}
           {switchStep === "review" && (

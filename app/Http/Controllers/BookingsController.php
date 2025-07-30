@@ -842,6 +842,7 @@ class BookingsController extends Controller
             ->firstOrFail();
           $oldCost = $leadPassengerSlot->passenger_allocated_cost;
           $oldBalance = $leadPassengerSlot->passenger_balance;
+          $oldSurvivorNumber = $leadPassengerSlot->survivor_number;
 
           $passengerData = $request->except(['new_lead_passenger_id']);
 
@@ -867,8 +868,16 @@ class BookingsController extends Controller
           $leadPassengerSlot->passenger_balance = $oldBalance;
           $leadPassengerSlot->save();
 
-          $passengers = $booking->passengers()->orderBy('passenger_order')->get();
+          $booking->customer_id = $newLeadId;
+          $booking->save();
 
+          $passengers = $booking->passengers()->orderBy('passenger_order')->get();
+          $this->logRepository->writeOnBooking(
+            $booking->id,
+            'Lead passenger switched from Survivor Number: ' .
+            $oldSurvivorNumber . ' to :' .$leadPassengerSlot->survivor_number,    
+            $request->user()
+          );
           return response()->json([
             'passengers' => $passengers
           ]);
