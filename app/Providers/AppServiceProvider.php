@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
 
     Passport::useClientModel(Client::class);
     Passport::authorizationView('auth.oauth.authorize');
-    Passport::tokensExpireIn(now()->addMinutes(1));
+    Passport::tokensExpireIn(now()->addMinutes(20));
     Passport::refreshTokensExpireIn(now()->addDays(30));
     
     // Define a gate to authorize access to the Pulse dashboard

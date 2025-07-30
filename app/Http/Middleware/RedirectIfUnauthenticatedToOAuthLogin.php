@@ -9,17 +9,10 @@ class RedirectIfUnauthenticatedToOAuthLogin
 {
     public function handle($request, Closure $next)
     {
+        // If the user is not authenticated, redirect to the OAuth login page
         if (!Auth::check()) {
-            $query = http_build_query([
-                'client_id' => $request->client_id,
-                'redirect_uri' => $request->redirect_uri,
-              'response_type' => $request->response_type,
-                'state' => $request->state,
-                'code_challenge' => $request->code_challenge,
-                'code_challenge_method' => $request->code_challenge_method,
-            ]);
-
-            return redirect("/oauth/login?$query");
+            $frontURL = config('app.frontend_url');
+            return redirect()->to($frontURL);
         }
 
         return $next($request);

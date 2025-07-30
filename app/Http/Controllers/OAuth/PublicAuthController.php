@@ -13,8 +13,15 @@ class PublicAuthController extends Controller
 {
     use HttpResponses;
 
-    // showLoginForm
-    public function showLoginForm(Request $request)
+    /*
+    |--------------------------------------------------------------------------
+    | Index login
+    |--------------------------------------------------------------------------
+    |
+    |  Show the login form for the customer.
+    |
+    */
+    public function index(Request $request)
     {
         $frontURL = config('app.frontend_url');
 
@@ -26,7 +33,15 @@ class PublicAuthController extends Controller
        return Inertia::render('OAuth/Login');
     }
 
-    // login
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    |
+    |  Login the customer. This method handles the OAuth login logic.
+    |  If the user is not verified, it redirects to the email verification page.
+    |
+    */
     public function login(Request $request)
     {
         // Handle the OAuth login logic here
@@ -39,6 +54,14 @@ class PublicAuthController extends Controller
         if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
+            ]);
+        }
+
+                // if the user is not verified, redirect to the email verification page
+        if (! Auth::user()->hasVerifiedEmail()) {
+            return response()->json([
+                'redirect' => '/oauth/verify-email',
+                'message' => __('auth.email_not_verified'),
             ]);
         }
 
@@ -58,12 +81,25 @@ class PublicAuthController extends Controller
         return response()->json([
             'redirect' => '/oauth/authorize?' . http_build_query($params)
         ]);
- 
     }
 
-    // logout
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    |
+    |  Logout the customer.
+    |
+    */
     public function logout()
     {
+        // Handle the OAuth logout logic here
+        Auth::logout();
+
+        // Clear the session
+        session()->invalidate();
+        session()->regenerateToken();
+
         return $this->successResponse(['message' => 'Logout successful']);
     }
 

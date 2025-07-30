@@ -33,9 +33,7 @@ use App\Http\Controllers\OnboardCreditController;
 use App\Http\Controllers\TemporaryPasswordController;
 use Laravel\Passport\Passport;
 use App\Http\Controllers\OAuth\PublicAuthController;
-use App\Http\Controllers\OAuth\PublicAccountRecoveryController;
-use App\Http\Controllers\OAuth\PublicEmailVerificationController;
-use App\Http\Controllers\OAuth\PublicPasswordResetController;
+use App\Http\Controllers\OAuth\VerifyEmailController;
 
 
 Route::get('/', function () {
@@ -300,30 +298,9 @@ Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('cus
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 
-// Route::get('/callback', function (Request $request) {
-//     $state = $request->session()->pull('state');
- 
-//     $codeVerifier = $request->session()->pull('code_verifier');
- 
-//     throw_unless(
-//         strlen($state) > 0 && $state === $request->state,
-//         InvalidArgumentException::class
-//     );
- 
-//     $response = Http::asForm()->post('https://passport-app.test/oauth/token', [
-//         'grant_type' => 'authorization_code',
-//         'client_id' => 'your-client-id',
-//         'redirect_uri' => 'https://third-party-app.com/callback',
-//         'code_verifier' => $codeVerifier,
-//         'code' => $request->code,
-//     ]);
- 
-//     return $response->json();
-// });
-
 Route::prefix('oauth')->group(function () {
     // Login/Logout
-    Route::get('/login', [PublicAuthController::class, 'showLoginForm'])->name('oauth.login');
+    Route::get('/login', [PublicAuthController::class, 'index'])->name('oauth.login');
     Route::post('/login', [PublicAuthController::class, 'login'])->name('oauth.login.submit');
     Route::post('/logout', [PublicAuthController::class, 'logout'])->name('oauth.logout');
 
@@ -332,19 +309,19 @@ Route::prefix('oauth')->group(function () {
     Route::post('/register', [PublicAuthController::class, 'register'])->name('oauth.register');
 
     // Password Reset
-    Route::get('/forgot-password', [PublicPasswordResetController::class, 'showLinkRequestForm'])->name('oauth.password.forgot.form');
-    Route::post('/forgot-password', [PublicPasswordResetController::class, 'sendResetLink'])->name('oauth.password.forgot');
-    Route::get('/reset-password/{token}', [PublicPasswordResetController::class, 'showResetForm'])->name('oauth.password.reset.form');
-    Route::post('/reset-password', [PublicPasswordResetController::class, 'reset'])->name('oauth.password.reset');
+    // Route::get('/forgot-password', [PublicPasswordResetController::class, 'showLinkRequestForm'])->name('oauth.password.forgot.form');
+    // Route::post('/forgot-password', [PublicPasswordResetController::class, 'sendResetLink'])->name('oauth.password.forgot');
+    // Route::get('/reset-password/{token}', [PublicPasswordResetController::class, 'showResetForm'])->name('oauth.password.reset.form');
+    // Route::post('/reset-password', [PublicPasswordResetController::class, 'reset'])->name('oauth.password.reset');
 
     // Email Verification
-    Route::get('/verify-email', [PublicEmailVerificationController::class, 'notice'])->name('oauth.email.verify.notice');
-    Route::post('/email/verification-notification', [PublicEmailVerificationController::class, 'resend'])->name('oauth.email.verify.resend');
-    Route::get('/verify-email/{id}/{hash}', [PublicEmailVerificationController::class, 'verify'])->middleware('signed')->name('oauth.email.verify.link');
+    Route::get('/verify-email', [VerifyEmailController::class, 'index'])->name('oauth.email.verify.notice')->middleware('custom.auth.redirect');
+    Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])->name('oauth.email.verify.resend');
+    Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed')->name('oauth.email.verify.link');
 
     // Account Recovery
-    Route::get('/recover-account', [PublicAccountRecoveryController::class, 'showForm'])->name('oauth.recover.form');
-    Route::post('/recover-account', [PublicAccountRecoveryController::class, 'submit'])->name('oauth.recover');
+    // Route::get('/recover-account', [PublicAccountRecoveryController::class, 'showForm'])->name('oauth.recover.form');
+    // Route::post('/recover-account', [PublicAccountRecoveryController::class, 'submit'])->name('oauth.recover');
 });
 
 
@@ -361,76 +338,6 @@ Route::get('/authorize', [
 ]);
 
 $guard = config('passport.guard', null);
-
-Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth'])->group(function () {
-    Route::post('/token/refresh', [
-        'uses' => 'TransientTokenController@refresh',
-        'as' => 'token.refresh',
-    ]);
-
-    Route::post('/authorize', [
-        'uses' => 'ApproveAuthorizationController@approve',
-        'as' => 'authorizations.approve',
-    ]);
-
-    Route::delete('/authorize', [
-        'uses' => 'DenyAuthorizationController@deny',
-        'as' => 'authorizations.deny',
-    ]);
-
-
-    if (Passport::$registersJsonApiRoutes) {
-        Route::get('/tokens', [
-            'uses' => 'AuthorizedAccessTokenController@forUser',
-            'as' => 'tokens.index',
-        ]);
-
-        Route::delete('/tokens/{token_id}', [
-            'uses' => 'AuthorizedAccessTokenController@destroy',
-            'as' => 'tokens.destroy',
-        ]);
-
-        Route::get('/clients', [
-            'uses' => 'ClientController@forUser',
-            'as' => 'clients.index',
-        ]);
-
-        Route::post('/clients', [
-            'uses' => 'ClientController@store',
-            'as' => 'clients.store',
-        ]);
-
-        Route::put('/clients/{client_id}', [
-            'uses' => 'ClientController@update',
-            'as' => 'clients.update',
-        ]);
-
-        Route::delete('/clients/{client_id}', [
-            'uses' => 'ClientController@destroy',
-            'as' => 'clients.destroy',
-        ]);
-
-        Route::get('/scopes', [
-            'uses' => 'ScopeController@all',
-            'as' => 'scopes.index',
-        ]);
-
-        Route::get('/personal-access-tokens', [
-            'uses' => 'PersonalAccessTokenController@forUser',
-            'as' => 'personal.tokens.index',
-        ]);
-
-        Route::post('/personal-access-tokens', [
-            'uses' => 'PersonalAccessTokenController@store',
-            'as' => 'personal.tokens.store',
-        ]);
-
-        Route::delete('/personal-access-tokens/{token_id}', [
-            'uses' => 'PersonalAccessTokenController@destroy',
-            'as' => 'personal.tokens.destroy',
-        ]);
-    }
-});
 
 // END --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 

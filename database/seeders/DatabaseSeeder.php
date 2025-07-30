@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             EmailTemplatesSeeder::class,  
             CustomerBookingSeeder::class,
             UserTagsSeeder::class,
+            OauthClientSeeder::class,
         ]);
     }
 }

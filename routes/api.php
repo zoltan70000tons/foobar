@@ -34,20 +34,22 @@ Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPa
 // Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
 Route::post('/auth/login', [CustomerLoginController::class, 'login']);
 // --- LOGOUT ---
-Route::post('/auth/logout', [CustomerLoginController::class, 'logout']);
-
+Route::post('/auth/logout', [CustomerLoginController::class, 'logout'])->name('oauth.logout')
+  ->middleware(['auth:api', 'custom.auth.redirect']);
 
 
 // --- EMAIL VERIFICATION ---
-Route::post('/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])->middleware([
-  'auth:api',
-  'throttle:10,1',
-]);
+// Route::post('/auth/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])
+//   ->middleware([
+//     'auth:api',
+//     'throttle:10,1',
+//   ])
+//   ->name('verificationApi.resend');
 
-Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
-  ->middleware(['web', 'signed'])
-  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
-  ->name('verificationApi.verify');
+// Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
+//   ->middleware(['web', 'signed'])
+//   ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
+//   ->name('verificationApi.verify');
 
 // --- REGISTER ---
 Route::post('/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:10,1');
@@ -110,7 +112,6 @@ Route::get('/events/{id}', [EventController::class, 'showOne']);
 
 Route::middleware([
   'auth:api',
-  'verified',
   'booking_status',
   'one_booking_per_user',
   // 'clear_expired_reservation',
