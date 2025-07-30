@@ -57,7 +57,7 @@ class PublicAuthController extends Controller
             ]);
         }
 
-                // if the user is not verified, redirect to the email verification page
+        // if the user is not verified, redirect to the email verification page
         if (! Auth::user()->hasVerifiedEmail()) {
             return response()->json([
                 'redirect' => '/oauth/verify-email',
