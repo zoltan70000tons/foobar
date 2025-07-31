@@ -10,7 +10,7 @@ class ElectronAuth
   public function handle($request, Closure $next)
   {
     // if environmt is local, skip the middleware
-    if (App::environment('local')) {
+    if (App::environment('local') || App::environment('development')) {
       return $next($request);
     }
 
