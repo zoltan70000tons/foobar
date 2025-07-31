@@ -20,7 +20,7 @@ const MenuItems = React.memo(() => {
     {
       id: 2,
       name: 'Booking',
-      href: "/",
+      href: EXTERNAL_URL,
       external: false,
     },
     {
@@ -44,13 +44,13 @@ const MenuItems = React.memo(() => {
     {
       id: 8,
       name: 'Check Booking',
-      href: "/check-booking",
+      href: EXTERNAL_URL + "/check-booking",
       external: false,
     },
     {
       id: 9,
       name: 'Make Payment',
-      href: "/make-a-payment",
+      href: EXTERNAL_URL + "/make-a-payment",
       external: false,
     },
   ];
