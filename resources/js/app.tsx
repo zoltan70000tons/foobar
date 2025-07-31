@@ -8,7 +8,9 @@ import "@fontsource/roboto";
 
 import { PermissionsProvider } from "../js/Providers/PermissionContext";
 import { SnackbarProvider } from "./Providers/SnackBarAlertProvider";
+import EnvironmentBar from "./Components/EnvironmentBar";
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
+const appEnv = import.meta.env.VITE_APP_ENV || "prod";
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
@@ -19,6 +21,7 @@ createInertiaApp({
 
     root.render(
       <SnackbarProvider>
+        {/* <EnvironmentBar environment={appEnv} /> */}
         <PermissionsProvider auth={auth}>
           <App {...props} />
         </PermissionsProvider>

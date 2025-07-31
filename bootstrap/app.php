@@ -26,7 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
       'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
       'allowed_domains' => \App\Http\Middleware\CheckAllowedDomains::class,
       'custom.auth.redirect' => \App\Http\Middleware\RedirectIfUnauthenticatedToOAuthLogin::class,
-      // 'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
+      //'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
+      'electron_auth' => \App\Http\Middleware\ElectronAuth::class,
     ]);
 
     $middleware->web(
