@@ -15,6 +15,8 @@ import AddIcon from "@mui/icons-material/Add";
 import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
+import { Event } from "@/interfaces/Event";
+import { Booking } from "@/types/booking";
 
 
 
@@ -23,7 +25,7 @@ const availableTags = Object.values(TagEnum).map((tag) => ({
     value: tag,
 }));
 
-const Tags: React.FC<{ editable: boolean; event: any; booking: any }> = ({ editable, event, booking }) => {
+const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({ editable, event, booking }) => {
     const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);

@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
+import Typography, { TypographyProps } from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
@@ -24,7 +24,7 @@ import { guestListItems, guestAccountListItems } from './GuestListItems';
 // import Deposits from './Deposits';
 // import Orders from './Orders';
 
-function Copyright(props: any) {
+function Copyright(props: TypographyProps) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}

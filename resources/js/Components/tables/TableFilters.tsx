@@ -9,23 +9,23 @@ interface ColumnProps<T> {
   filterOptions?: string[];
 }
 
-interface TableFiltersProps {
-  columns: ColumnProps<any>[];
+interface TableFiltersProps<T, TSub = unknown> {
+  columns: ColumnProps<T>[];
   filters: { [key: string]: string };
   onFilterChange: (name: string, value: string) => void;
-  subColumns?: ColumnProps<any>[]; // Añade subColumns como opcional
+  subColumns?: ColumnProps<TSub>[];
   subFilters?: { [key: string]: string };
   onSubFilterChange?: (name: string, value: string) => void;
 }
 
-const TableFilters: FC<TableFiltersProps> = ({
+const TableFilters = <T, TSub = unknown>({
   columns,
   filters,
   onFilterChange,
   subColumns,
   subFilters = {},
   onSubFilterChange,
-}) => {
+}: TableFiltersProps<T, TSub>) => {
   const handleFilterChange = (event: ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = event.target;
     onFilterChange(name as string, value as string);
@@ -80,7 +80,7 @@ const TableFilters: FC<TableFiltersProps> = ({
           </TableCell>
         ))}
       </TableRow>
-      
+
       {subColumns && onSubFilterChange && (
         <TableRow>
           <TableCell colSpan={columns.length + 2}>

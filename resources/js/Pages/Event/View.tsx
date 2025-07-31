@@ -174,7 +174,7 @@ const View = ({ auth, event }: PropsWithEvent) => {
               </Box>
               {(event.presale_periods && event.presale_periods.length > 0) && (
                 <>
-                  <Typography fullWidth variant="body2" sx={{mt: 4}}>
+                  <Typography variant="body2" sx={{mt: 4}}>
                     Pre-Sale Periods
                   </Typography>
                   <Grid container item xs={12} spacing={2} sx={{mt: 0}}>

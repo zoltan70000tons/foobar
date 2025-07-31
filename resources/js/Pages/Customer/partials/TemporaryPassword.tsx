@@ -12,9 +12,10 @@ import {
 import axios from "axios";
 import { green } from '@mui/material/colors';
 import { router } from '@inertiajs/react';
+import { Customer } from '@/interfaces/Customer';
 
 type Props = {
-  customer: any;
+  customer: Customer;
   isTemporaryPassword: boolean;
 }
 
