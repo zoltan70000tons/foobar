@@ -17,46 +17,20 @@ use App\Http\Controllers\Api\Customer\CartController;
 use App\Http\Controllers\Api\Customer\AddPaxController;
 use App\Http\Controllers\Api\Customer\InvitationController;
 use App\Http\Controllers\Api\Customer\CheckBookingController;
-use App\Http\Controllers\NotificationController;
-
-
-// middleware
-use App\Http\Middleware\ApiRedirectHttp;
-use App\Http\Middleware\EnsureUserIsNotCustomer;
-
-
 
 // --- PASSWORD RESET ---
-Route::post('/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
-Route::post('/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
+Route::post('/auth/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
+Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
 
-// --- LOGIN ---
-// Route::post('/login-customer', [CustomerLoginController::class, 'store'])->middleware(['throttle:20,1', 'verified']);
-Route::post('/auth/login', [CustomerLoginController::class, 'login']);
 // --- LOGOUT ---
 Route::post('/auth/logout', [CustomerLoginController::class, 'logout'])->name('oauth.logout')
   ->middleware(['auth:api', 'custom.auth.redirect']);
 
-
-// --- EMAIL VERIFICATION ---
-// Route::post('/auth/email/verification-notification', [CustomerEmailVerificationController::class, 'reSend'])
-//   ->middleware([
-//     'auth:api',
-//     'throttle:10,1',
-//   ])
-//   ->name('verificationApi.resend');
-
-// Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
-//   ->middleware(['web', 'signed'])
-//   ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
-//   ->name('verificationApi.verify');
-
 // --- REGISTER ---
-Route::post('/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:10,1');
-Route::post('/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor'])->middleware(
+Route::post('/auth/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:10,1');
+Route::post('/auth/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor'])->middleware(
   'throttle:10,1'
 );
-
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);

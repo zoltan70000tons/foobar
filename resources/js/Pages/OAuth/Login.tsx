@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import { TextField, Button, Box, Container, Typography } from '@mui/material';
+import { Head } from '@inertiajs/react';
+import { TextField, Button, Box, Container, Typography, Alert } from '@mui/material';
 import OAuthLayout from '@/Layouts/OAuthLayout';
 import Axios from 'axios';
 import SurvivorLogin from '@/Pages/OAuth/components/SurvivorLogin';
@@ -11,8 +11,15 @@ import { styled } from '@mui/material/styles';
 export default function Login() {
  const frontURL = import.meta.env.VITE_FRONTEND_URL;
 
+  // Parse URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const verified = urlParams.get('verified');
+  const reset = urlParams.get('reset');
+  const registered = urlParams.get('registered');
+  const activated = urlParams.get('activated');
+
   const [form, setForm] = useState({
-    email: '',
+    identifier: '',
     password: '',
     ...Object.fromEntries(new URLSearchParams(window.location.search)),
   });
@@ -24,6 +31,7 @@ export default function Login() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -33,20 +41,20 @@ export default function Login() {
       const res = await Axios.post(route('oauth.login.submit'), form);
       if (res.data?.redirect) {
         window.location.href = res.data.redirect;
+        return;
       }
     } catch (error: any) {
+      setLoading(false); // only on error
       if (error.response?.status === 422) {
         setErrors(error.response.data.errors);
       } else {
         alert('Unexpected error occurred. Please try again.');
         console.error(error);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
-    // styled link
+  // styled link
   const StyledLink = styled("span")({
     display: "block",
     " > a": {
@@ -58,12 +66,10 @@ export default function Login() {
     },
   });
 
-
-
   return (
     <>
       <Head title="Login" />
-              <Box sx={{ width: "100%", py: 6, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <Box sx={{ width: "100%", py: 6, display: "flex", justifyContent: "center", alignItems: "center" }}>
         <Container maxWidth="sm" sx={{ mt: 8 }}>
           <Typography component="h1" variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
             Sign In
@@ -72,16 +78,66 @@ export default function Login() {
           <Typography variant="body1" gutterBottom>
             Please use your eMail or Survivor Number to access your account.
           </Typography>
+          {verified === "1" && (
+            <Alert
+              severity="success"
+              sx={{
+                marginBottom: 2,
+              }}
+            >
+              SUCCESS.EMAIL_VERIFIED
+            </Alert>
+          )}
+          {verified === "errorSignature" && (
+            <Alert
+              severity="error"
+              sx={{
+                marginBottom: 2,
+              }}
+            >
+              ERROR.EMAIL_NOT_VERIFIED
+            </Alert>
+          )}
+          {reset === "true" && (
+            <Alert
+              severity="success"
+              sx={{
+                marginBottom: 2,
+              }}
+            >
+              SUCCESS.RESET_PASSWORD
+            </Alert>
+          )}
+          {registered === "true" && (
+            <Alert
+              severity="success"
+              sx={{
+                marginBottom: 2,
+              }}
+            >
+              CHECK.EMAIL
+            </Alert>
+          )}
+          {activated === "true" && (
+            <Alert
+              severity="success"
+              sx={{
+                marginBottom: 2,
+              }}
+            >
+              ACCOUNT.RECOVERED
+            </Alert>
+          )}
           <form onSubmit={handleSubmit} noValidate>
             <TextField
               label="Email"
               type="email"
               fullWidth
               margin="normal"
-              value={form.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              error={!!errors.email}
-              helperText={errors.email}
+              value={form.identifier}
+              onChange={(e) => handleChange('identifier', e.target.value)}
+              error={!!errors.identifier}
+              helperText={errors.identifier}
             />
             <TextField
               label="Password"

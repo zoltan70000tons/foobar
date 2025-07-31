@@ -22,7 +22,6 @@ type EmailVerifyProps = {
 
 export default function EmailVerify({ language, user }: EmailVerifyProps) {
 
-
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,8 +42,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
 
   const handleLogout = async () => {
     // Logout user
-    await Axios.post(route('oauth.logout'));
-
+    await Axios.post(route('oauth.web.logout'));
     // refresh the page
     window.location.href = import.meta.env.VITE_FRONTEND_URL;
   }
