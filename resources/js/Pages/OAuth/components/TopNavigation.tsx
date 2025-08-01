@@ -1,26 +1,20 @@
-import { Link } from "@inertiajs/react";
 import { Stack } from "@mui/material";
 import { red } from "@mui/material/colors";
 import { useTheme } from "@mui/material/styles";
 import React from "react";
 
 const EXTERNAL_URL = "https://70000tons.com";
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 const MenuItems = React.memo(() => {
 
   const theme = useTheme();
 
   const menu =  [
-    // {
-    //   id: 1,
-    //   name: tMenu("home"),
-    //   href: "https://70000tons.com/home/",
-    //   external: true,
-    // },
     {
       id: 2,
       name: 'Booking',
-      href: EXTERNAL_URL,
+      href: FRONTEND_URL,
       external: false,
     },
     {
@@ -44,13 +38,13 @@ const MenuItems = React.memo(() => {
     {
       id: 8,
       name: 'Check Booking',
-      href: EXTERNAL_URL + "/check-booking",
+      href: FRONTEND_URL + "/check-booking",
       external: false,
     },
     {
       id: 9,
       name: 'Make Payment',
-      href: EXTERNAL_URL + "/make-a-payment",
+      href: FRONTEND_URL + "/make-a-payment",
       external: false,
     },
   ];
@@ -97,9 +91,9 @@ const MenuItems = React.memo(() => {
             {item.name}
           </a>
         ) : (
-          <Link key={item.id} href={item.href} replace={true}>
+          <a key={item.id} href={item.href}>
             {item.name}
-          </Link>
+          </a>
         );
       })}
     </Stack>
