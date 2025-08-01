@@ -33,7 +33,7 @@ class VerifyEmailController extends Controller
 
         // if user is authenticated and has verified email, redirect to login
         if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
-            return redirect()->to($frontURL . '/en?verified=1');
+            return redirect()->to($frontURL . '/en/login?verified=1');
         }
 
         // Return the email verification view
@@ -100,16 +100,16 @@ class VerifyEmailController extends Controller
         $user = User::findOrFail($id);
 
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect()->to(config('app.frontend_url') . '/en?verified=0');
+            return redirect()->to(config('app.frontend_url') . '/en/login?verified=0');
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect()->to(config('app.frontend_url') . '/en?verified=1');
+            return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
         }
 
         $user->markEmailAsVerified();
 
-        return redirect()->to(config('app.frontend_url') . '/en?verified=1');
+        return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
     }
    
 }
