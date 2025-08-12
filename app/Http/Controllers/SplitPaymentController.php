@@ -44,7 +44,7 @@ class SplitPaymentController extends Controller
             DB::beginTransaction();
 
             try {
-                $formData = $request->get('formData');
+                $formData = $request->get('sanitizedFormData');
                 $passengerData = array_filter(
                     $formData,
                     fn($value, $key) => str_starts_with($key, 'passenger_'),

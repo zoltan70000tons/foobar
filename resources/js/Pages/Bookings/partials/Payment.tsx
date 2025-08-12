@@ -256,7 +256,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             </TableBody>
           </Table>
         </Box>
-        <Box>
+        <Box sx={{gap: 2, display: "flex"}}>
           <Button
             variant="outlined"
             color="secondary"
@@ -275,7 +275,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             sx={{ mt: 2 }}
             disabled={!editMode || !canCreatePayment}
           >
-            Add Split Payment2
+            Add Auto Split Payment
           </Button>
         </Box>
       </Paper>

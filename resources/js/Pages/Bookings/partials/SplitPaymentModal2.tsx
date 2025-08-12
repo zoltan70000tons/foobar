@@ -193,12 +193,11 @@ const SplitPaymentModal2: React.FC<SplitPaymentModalProps> = ({
             </Grid>
             <Grid container spacing={2} mt={1} ml={0}>
               {passengers.length && passengers.map((pax) => {
-                //const amountLeftToPay = formData[`passenger_${pax.id}`]?.passengerLeftToPay;
                 const fullName = formData[`passenger_${pax.id}`]?.passengerName ?? 'Error';
                 const amount = formData[`passenger_${pax.id}`]?.amount ?? 0;
 
                 return (
-                  <Grid container spacing={2} mt={1}>
+                  <Grid container spacing={2} mt={1} key={pax.id}>
                     <Grid item xs={12} md={6}>
                       <TextField
                         label="Full Name"
