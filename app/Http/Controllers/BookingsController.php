@@ -23,6 +23,7 @@ use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
@@ -784,6 +785,74 @@ class BookingsController extends Controller
     }
   }
 
+    public function getCabinsToUpgradeTo(Request $request)
+    {
+        try {
+            $categoryId = $request->get('category_id');
+            $typeId = $request->get('type_id');
+            $cabinNumber = $request->get('cabin_number');
+            $deck = $request->get('deck');
+            $balcony = $request->boolean('balcony');
+            $location = $request->get('location');
+            $accessible = $request->boolean('accessible');
+
+            $currentCabin = Cabin::with([
+                'category.spec',
+                'cabinSpec',
+                'cabinType'
+            ])
+                ->where('cabin_category_id', 5)
+                ->whereHas('cabinType', function ($q) {
+                    $q->where('id', 1);
+                })
+                ->whereHas('cabinSpec', function ($q) {
+                    $q->where('cabin_number', '6223');
+                })
+                ->firstOrFail();
+
+
+            $currentPrice = $currentCabin->category->price;
+            $currentCapacity = $currentCabin->category->spec->capacity;
+            $currentCabinNumber = $currentCabin->cabinSpec->cabin_number;
+
+            $upgradeCabins = Cabin::with([
+                'category.spec',
+                'cabinSpec',
+                'cabinType'
+            ])
+                ->whereHas('category.spec', function ($q) use ($currentCapacity) {
+                    $q->where('capacity', $currentCapacity);
+                })
+                ->whereHas('cabinSpec', function ($q) use ($currentCabinNumber) {
+                    $q->where('cabin_number', '!=', $currentCabinNumber);
+                })
+                ->whereHas('category', function ($q) use ($currentPrice) {
+                    $q->where('price', '>', $currentPrice);
+                })
+                ->whereIn('status', ['AVAILABLE', 'PARTIALLY_BOOKED', 'RESERVED'])
+                ->whereDoesntHave('temporaryReservations', function ($q) {
+                    $q->where('expires_at', '>', now());
+                })
+                ->get()
+                ->sortBy('cabinSpec.cabin_number', SORT_ASC);
+
+            if ($upgradeCabins->count() < 1) {
+                return response()->json(
+                    [
+                        'error' => 'No cabin found',
+                    ],
+                    404
+                );
+            }
+
+            return response()->json([
+                'cabins' => $upgradeCabins->values(),
+            ]);
+        } catch (\Exception $e) {
+            //throw $th;
+        }
+    }
+
 
   public function getData(Request $request)
   {
@@ -815,4 +884,31 @@ class BookingsController extends Controller
     $this->logException($e);
    }
   }
+
+    public function cabinUpgrade(Request $request)
+    {
+        try {
+            $event_id = request()->route('id');
+
+            $booking_id = $request->input('booking_id');
+            $cabin_number = $request->input('cabin_number');
+
+            return $this->withPermission(
+                [Permissions::EditBookings],
+                function ($event_id, $booking_id, $cabin_number) {
+                    $booking = Booking::find($booking_id);
+                    $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+
+                    return redirect()
+                        ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                        ->with('success', 'Cabin upgraded successfully.');
+                },
+                $event_id,
+                $booking_id,
+                $cabin_number
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
 }

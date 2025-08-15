@@ -48,6 +48,7 @@ import { formatDate } from "@/Helpers/stringUtils";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
+  const [upgradeCabinModalOpen, setUpgradeCabinModalOpen] = useState(false);
   const [cabinType, setCabinType] = useState(null);
   const [cabinCategory, setCabinCategory] = useState(null);
   const [availableCabins, setAvailableCabins] = useState([]);
@@ -58,9 +59,13 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [onlyAccessible, setOnlyAccessible] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmUpgradeOpen, setConfirmUpgradeOpen] = useState(false);
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
+
+  const [cabinsToUpgradeTo, setCabinsToUpgradeTo] = useState([]);
+  const [upgradeCabin, setUpgradeCabin] = useState(null);
 
 
   useEffect(() => {
@@ -123,12 +128,60 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     }
   };
 
+  const fetchCabinsToUpgradeTo = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(route("cabins.upgrade-list"), {
+        params: {
+          type_id: cabinType?.id,
+          category_id: cabinCategory?.id,
+          cabin_number: cabinNumber,
+          deck: selectedDeck,
+          balcony: onlyBalcony,
+          location: selectedLocation,
+          accessible: onlyAccessible,
+        },
+      });
+      //setCabinNumber(null);
+      if (response?.data?.error) {
+        showSnackbar(response.data.error, 'error');
+      }
+      /*const decks = Array.isArray(response?.data?.cabins)
+        ? [...new Set(response.data.cabins.map(cabin => cabin.deck))]
+        : [];
+      setAvailableCabins(response?.data?.cabins);
+      setAvailableDecks(decks);*/
+
+      setCabinsToUpgradeTo(response?.data?.cabins);
+      console.log('Reszponzdata', response.data)
+
+    } catch (error) {
+      if (error.response?.data?.error) {
+        showSnackbar(error.response.data.error, 'error');
+      }
+      //showSnackbar("Error fetching available cabins!", "error");
+      console.error("Error fetching available cabins:", error);
+      //setAvailableCabins([]);
+      //setAvailableDecks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditClick = () => {
     setOpen(true);
     if (cabinType && cabinCategory) {
       fetchAvailableCabins();
     }
   };
+
+  const handleUpgradeCabin = () => {
+    setUpgradeCabinModalOpen(true);
+
+    if (cabinType && cabinCategory) {
+      fetchCabinsToUpgradeTo().then(r => console.log('hehehehehe', r));
+    }
+  }
 
   const handleClose = () => {
     setOpen(false);
@@ -164,6 +217,38 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
         onError: (errors) => {
 
           showSnackbar("Error updating cabin!", "error");
+          console.error(errors);
+        },
+        onFinish: () => {
+          setLoading(false);
+        }
+      }
+    );
+  };
+
+  const handleUpgrade = () => {
+    setConfirmUpgradeOpen(false);
+    setLoading(true);
+    router.post(
+      route("bookings.upgradeCabin", { id: event.id }),
+      {
+        cabin_type_id: cabinType?.id,
+        cabin_category_id: cabinCategory?.id,
+        cabin_number: upgradeCabin,
+        deck: selectedDeck,
+        balcony: onlyBalcony,
+        location: selectedLocation,
+        accessible: onlyAccessible,
+        booking_id: booking.id,
+      },
+      {
+        onSuccess: () => {
+          setUpgradeCabinModalOpen(false);
+          showSnackbar("Cabin upgraded successfully!", "success");
+        },
+        onError: (errors) => {
+
+          showSnackbar("Error upgrading cabin!", "error");
           console.error(errors);
         },
         onFinish: () => {
@@ -483,6 +568,96 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             Cancel
           </Button>
           <Button onClick={handleSave} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={upgradeCabinModalOpen} onClose={()=>setUpgradeCabinModalOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Upgrade Cabin</DialogTitle>
+        <DialogContent sx={{ paddingTop: '1rem !important' }}>
+          {loading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                // bgcolor: "rgba(255,255,255,0.7)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+
+          <Typography>Current cabin type: {cabinType?.cabin_type}</Typography>
+          <Typography>Current cabin category: {cabinCategory?.title}</Typography>
+          <Box>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              Select a new cabin for this booking. The current cabin is {`${booking.cabin.cabin_number}`}.
+            </Typography>
+            <Autocomplete
+              fullWidth
+              options={[...cabinsToUpgradeTo].sort(
+                (a, b) => statusPriority[a.status] - statusPriority[b.status]
+              )}
+              getOptionLabel={(option) => `${option.cabin_number} ${option.status}`}
+              value={cabinsToUpgradeTo?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
+              onChange={(event, newValue) => setUpgradeCabin(newValue?.cabin_number || null)}
+              renderOption={(props, option) => (
+                <li {...props} key={option.cabin_number}>
+                  {option.cabin_number}
+                  <Chip
+                    label={option.status}
+                    size="small"
+                    sx={{ ml: 1 ,color:'white'}}
+                    color={
+                      option.status === 'AVAILABLE'
+                        ? 'success'
+                        : option.status === 'PARTIALLY_BOOKED'
+                          ? 'warning'
+                          : 'default'
+                    }
+                  />
+                  - Price: {option.category.price}
+                  - Name: {option.category.category_name}
+                  - Capacity: {option.category.spec.capacity}
+                </li>
+              )}
+              renderInput={(params) => <TextField {...params} label="Available Cabins" />}
+              disabled={loading}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={()=>setUpgradeCabinModalOpen(false)} color="secondary" variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={() => setConfirmUpgradeOpen(true)} color="primary" variant="outlined" disabled={!cabinNumber || loading}>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmUpgradeOpen} onClose={() => setConfirmUpgradeOpen(false)}>
+        <DialogTitle>Confirm Upgrade</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <AlertTitle>Warning</AlertTitle>
+            Are you sure you want to save? This action will permanently release the current cabin,
+            update the booking code, and associate the selected cabin with this booking.
+            The change will be recorded in the system.
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmUpgradeOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleUpgrade} color="primary">
             Confirm
           </Button>
         </DialogActions>

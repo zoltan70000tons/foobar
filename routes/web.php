@@ -146,6 +146,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::post('/events/{id}/bookings/update-cabin', [BookingsController::class, 'cabinUpdate'])->name(
     'bookings.updateCabin'
   );
+    Route::post('/events/{id}/bookings/upgrade-cabin', [BookingsController::class, 'cabinUpgrade'])->name(
+        'bookings.upgradeCabin'
+    );
   Route::post('/events/{id}/bookings/update-code', [BookingsController::class, 'codeUpdate'])->name(
     'bookings.updateCode'
   );
@@ -168,6 +171,7 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
 
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
+  Route::get('/cabins/upgrade-list', [BookingsController::class, 'getCabinsToUpgradeTo'])->name('cabins.upgrade-list');
 
   Route::get('/customers/paginated', [CustomerController::class, 'getPaginated'])->name('customers.paginated');
   Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
