@@ -84,6 +84,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
   });
   const [cabinType, setCabinType] = useState(null);
   const [cabinCategory, setCabinCategory] = useState(null);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [availableCabins, setAvailableCabins] = useState([]);
   const [cabinNumber, setCabinNumber] = useState(null);
   const [advancedFilters, setAdvancedFilters] = useState(false);
@@ -132,6 +133,31 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     //console.log('Category', cabinCategory, 'CabinNumber', cabinNumber, 'PASSENGER', passenger, 'PAYMENT PLAN',
     // paymentPlan);
   }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
+
+  useEffect(() => {
+    if (!cabinType) return;
+
+    console.log('CabinType: ', cabinType.id);
+    console.log('LocalCategories: ', cabinCategories);
+
+    const filteredCategories = cabinCategories.filter(category =>
+      category.cabins.some(cabin => {
+        const matchesType = cabin.cabin_type?.id === cabinType.id;
+        const status = cabin.status;
+
+        const isValidStatus =
+          status === 'AVAILABLE' ||
+          status === 'RESERVED' ||
+          (cabinType.id !== 1 && status === 'PARTIALLY_BOOKED');
+
+        return matchesType && isValidStatus;
+      })
+    );
+
+    console.log('Filtered Categories: ', filteredCategories);
+
+    setFilteredCategories(filteredCategories);
+  }, [cabinType, cabinCategories]);
 
   const { showSnackbar } = useSnackbar();
 
@@ -360,6 +386,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
       console.error('Error fetching available cabins:', error);
       setAvailableCabins([]);
       setIsFetching(false);
+
+      setCabinCategory(null);
     }
   };
 
@@ -395,7 +423,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <Autocomplete
                     fullWidth
-                    options={cabinCategories}
+                    options={filteredCategories}
                     getOptionLabel={(option) => `${option.title} - ${option.capacity_description}`}
                     value={cabinCategory}
                     onChange={(event, newValue) => {
