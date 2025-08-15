@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Avatar,
   Box,
   Button,
   Grid,
@@ -27,7 +26,6 @@ import {
   Alert,
 } from "@mui/material";
 import axios from "axios";
-import { deepOrange, deepPurple, red, pink, purple, yellow, lime, brown, grey, blueGrey, teal, green } from '@mui/material/colors';
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import EditPassengerModal from "./EditPassengerModal";
 import { router } from "@inertiajs/react";
@@ -36,11 +34,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import Person2Icon from '@mui/icons-material/Person2';
 import SwapHoriz from '@mui/icons-material/SwapHoriz';
 import { Passenger } from "./Payment";
-import { set } from "lodash";
 import debounce from 'lodash/debounce';
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
-import CloseIcon from '@mui/icons-material/Close';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
@@ -76,15 +72,10 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const [passengers, setPassengers] = useState(
     [...booking.passengers].sort((a, b) => a.passenger_order - b.passenger_order)
   );
-  const [customerOptions, setCustomerOptions] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [customerSearchText, setCustomerSearchText] = useState('');
-
   const [searchLoading, setSearchLoading] = useState(false);
   const [editingPassenger, setEditingPassenger] = useState(null);
   const [editedPassengerData, setEditedPassengerData] = useState({});
   const [errors, setErrors] = useState({});
-  const colors = [blueGrey, deepPurple, red, yellow];
   const { showSnackbar } = useSnackbar();
   const [savinLoading, setSavingLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
@@ -445,14 +436,30 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     return <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />;
   }
 
+  // const onChangeLeadPassenger = (field, value) => {
+  //   console.log("onChangeLeadPassenger", field, value);
+  //   if (field === "state") {
+  //     if (value?.value) {
+  //       value = value.value;
+  //     }
+  //   }
+  //   // if (field === "cabin_conf_accp" || field === "terms_n_cons") {
+  //   //   value = true; // Always set to true for these fields
+  //   // }
+  //   setSwitchPassengerData((prev) => ({ ...prev, [field]: value }));
+  // }
+
   const onChangeLeadPassenger = (field, value) => {
-    if (field === "state") {
-      if (value?.value) {
-        value = value.value;
-      }
+    if (field === "state" && value?.value) {
+      value = value.value;
     }
-    setSwitchPassengerData((prev) => ({ ...prev, [field]: value }))
-  }
+
+    if (field === "cabin_conf_accp" || field === "terms_n_cons") {
+      value = true;
+    }
+
+    setSwitchPassengerData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const validateSwitchPassengerData = () => {
     const requiredFields = ['first_name', 'last_name', 'dob', 'gender', 'citizenship', 'email', 'phone', 'address_first', 'city', 'country', 'postal_code', 'emergency_c_name', 'emergency_c_phone', 'payment_method'];
@@ -468,6 +475,16 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
 
     return Object.keys(newErrors).length === 0;
   };
+  const handleCloseSwitchModal = () => {
+    setOpenSwitchPassengerModal(false);
+    setSwitchStep("search");
+    setSelectedUser(null);
+    setSearchQuery("");
+    setSwitchPassengerData({});
+    setSuggestions([]);
+    setErrors({});
+  };
+
 
   return (
     <Box>
@@ -620,7 +637,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       </Dialog>
 
       <Dialog open={openSwithPassengerModal} fullWidth
-        maxWidth={false} onClose={() => setOpenSwitchPassengerModal(false)}
+        maxWidth={false} onClose={handleCloseSwitchModal}
         PaperProps={{
           sx: {
             width: {
@@ -657,10 +674,22 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                 onInputChange={(e, value) => setSearchQuery(value)}
                 value={selectedUser}
                 loading={searchLoading}
+                //onChange={(e, value) => {
+                //   if (!value) return;
+                //   setSelectedUser(value);
+                //   setSwitchPassengerData({ ...value });
+                //   setLeadPassengerCurrent(passengers.find(p => p.lead_passenger) || null);
+                //   setSwitchStep("edit");
+
+                // }}
                 onChange={(e, value) => {
                   if (!value) return;
                   setSelectedUser(value);
-                  setSwitchPassengerData({ ...value });
+                  setSwitchPassengerData({
+                    ...value,
+                    terms_n_cons: true,
+                    cabin_conf_accp: true,
+                  });
                   setLeadPassengerCurrent(passengers.find(p => p.lead_passenger) || null);
                   setSwitchStep("edit");
                 }}
@@ -698,6 +727,13 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         <Chip
                           label="LOWER TIER"
                           color="error"
+                          style={{ marginLeft: '20px' }}
+                        />
+                      )}
+                      {option.is_same_booking && (
+                        <Chip
+                          label="SAME BOOKING"
+                          color="info"
                           style={{ marginLeft: '20px' }}
                         />
                       )}
@@ -1035,9 +1071,12 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         control={
                           <Checkbox
                             size="small"
-                            checked={switchPassengerData?.terms_n_cons || isLeadPassenger === false}
-                            onChange={(e) => onChangeLeadPassenger("terms_n_cons", e.target.checked)}
-                            disabled={isDisabled}
+                            checked={
+                              switchPassengerData?.terms_n_cons ??
+                              (isLeadPassenger === false)
+                            }
+                            onChange={(e, checked) => onChangeLeadPassenger("terms_n_cons", checked)}
+                            disabled={true}
                           />
                         }
                         label="Terms"
@@ -1105,9 +1144,11 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         control={
                           <Checkbox
                             size="small"
-                            checked={switchPassengerData?.cabin_conf_accp || isLeadPassenger === false}
-                            onChange={(e) => onChangeLeadPassenger("cabin_conf_accp", e.target.checked)}
-                            disabled={isDisabled}
+                            checked={switchPassengerData?.cabin_conf_accp ??
+                              (isLeadPassenger === false)
+                            }
+                            onChange={(e, checked) => onChangeLeadPassenger("cabin_conf_accp", checked)}
+                            disabled={true}
                           />
                         }
                         label="CCA"
@@ -1163,7 +1204,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                   <Typography><strong>Special Request:</strong> {leadPassengerCurrent.special_request}</Typography>
                   <Typography><strong>Newsletter:</strong> {leadPassengerCurrent.newsletter ? "Yes" : "No"}</Typography>
                   <Typography><strong>Travel Info:</strong> {leadPassengerCurrent.travel_info ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Terms & Conditions:</strong> {leadPassengerCurrent.term_n_cons ? "Yes" : "No"}</Typography>
+                  <Typography><strong>Terms & Conditions:</strong> {leadPassengerCurrent.terms_n_cons ? "Yes" : "No"}</Typography>
                   <Typography><strong>Cabin Conf Acceptance:</strong> {leadPassengerCurrent.cabin_conf_accp ? "Yes" : "No"}</Typography>
                   <Typography><strong>Single Ticket Agreement:</strong> {leadPassengerCurrent.single_t_agreement ? "Yes" : "No"}</Typography>
                   <Typography><strong>Was On Board:</strong> {leadPassengerCurrent.was_on_board ? "Yes" : "No"}</Typography>
@@ -1196,7 +1237,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                 <Typography><strong>Special Request:</strong> {switchPassengerData.special_request}</Typography>
                 <Typography><strong>Newsletter:</strong> {switchPassengerData.newsletter ? "Yes" : "No"}</Typography>
                 <Typography><strong>Travel Info:</strong> {switchPassengerData.travel_info ? "Yes" : "No"}</Typography>
-                <Typography><strong>Terms & Conditions:</strong> {switchPassengerData.term_n_cons ? "Yes" : "No"}</Typography>
+                <Typography><strong>Terms & Conditions:</strong> {switchPassengerData.terms_n_cons ? "Yes" : "No"}</Typography>
                 <Typography><strong>Cabin Conf Acceptance:</strong> {switchPassengerData.cabin_conf_accp ? "Yes" : "No"}</Typography>
                 <Typography><strong>Single Ticket Agreement:</strong> {switchPassengerData.single_t_agreement ? "Yes" : "No"}</Typography>
                 <Typography><strong>Was On Board:</strong> {switchPassengerData.was_on_board ? "Yes" : "No"}</Typography>
@@ -1230,7 +1271,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
             </>
           )}
           {switchStep === "search" && (
-            <Button onClick={() => setOpenSwitchPassengerModal(false)} color="secondary">Cancel</Button>
+            <Button onClick={handleCloseSwitchModal} color="secondary">Cancel</Button>
           )}
         </DialogActions>
       </Dialog>

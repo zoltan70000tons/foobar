@@ -288,98 +288,112 @@ class CustomerController extends Controller
    * @return \Illuminate\Http\JsonResponse
    */
   public function search(Request $request)
-{
+  {
     $request->validate([
-        'query' => 'required|string|min:3',
-        'eventId' => 'nullable|integer|min:1',
-        'bookingId' => 'nullable|integer|min:1',
+      'query' => 'required|string|min:3',
+      'eventId' => 'nullable|integer|min:1',
+      'bookingId' => 'nullable|integer|min:1',
     ]);
 
     $searchQuery = $request->get('query');
 
     try {
-        $booking = Booking::with('passengers')->findOrFail($request->bookingId);
-        $currentLead = $booking->passengers->firstWhere('lead_passenger', true);
+      $booking = Booking::with('passengers')->findOrFail($request->bookingId);
+      $currentLead = $booking->passengers->firstWhere('lead_passenger', true);
+      $currentSurvivor = SurvivorNumber::where('survivor_number', $currentLead->survivor_number)->first();
+      $currentLeadUser = $currentSurvivor
+        ? User::with('membershipTypes')->find($currentSurvivor->user_id)
+        : null;
 
-        $currentSurvivor = SurvivorNumber::where('survivor_number', $currentLead->survivor_number)->firstOrFail();
-        $currentLeadUser = User::with('membershipTypes')->findOrFail($currentSurvivor->user_id);
+      $currentMaxMembership = $currentLeadUser?->membershipTypes
+        ->sortByDesc('booking_number_requirement')
+        ->first()?->booking_number_requirement;
+      $sameBookingBySN = $booking->passengers->keyBy('survivor_number');
+      $users = User::with(['detail', 'survivorNumber', 'customerAddress', 'membershipTypes'])
+        ->where(function ($query) use ($searchQuery) {
+          $query->where('email', 'LIKE', "%{$searchQuery}%")
+            ->orWhereHas('detail', function ($q) use ($searchQuery) {
+               $q->where('first_name', 'ilike', "%{$searchQuery}%")
+                  ->orWhere('last_name', 'ilike', "%{$searchQuery}%");
+            });
+        })
+        ->get();
 
-        $currentMaxMembership = $currentLeadUser->membershipTypes
-            ->sortByDesc('booking_number_requirement')
-            ->first()?->booking_number_requirement;
+      $results = $users->map(function ($user) use ($request, $currentMaxMembership, $booking, $sameBookingBySN) {
 
-        $users = User::with(['detail', 'survivorNumber', 'customerAddress', 'membershipTypes'])
-            ->where(function ($query) use ($request, $searchQuery) {
-                $query->where('email', 'LIKE', "%{$searchQuery}%")
-                    ->orWhereHas('detail', function ($q) use ($request, $searchQuery) {
-                        $q->where('first_name', 'LIKE', "%{$searchQuery}%")
-                          ->orWhere('last_name', 'LIKE', "%{$searchQuery}%");
-                    });
+        $survivorNumber = $user->survivorNumber?->survivor_number;
+        $passengerInSame = $survivorNumber ? $sameBookingBySN->get($survivorNumber) : null;
+        $inSameBooking   = (bool) $passengerInSame;
+        $isCurrentLead   = (bool) ($passengerInSame?->lead_passenger);
+        $hasBooking = false;
+        if ($request->eventId && $survivorNumber) {
+          $hasBooking = Booking::where('event_id', $request->eventId)
+            ->where('status', '!=', 'CANCELLED')
+            ->when($inSameBooking, fn($q) => $q->where('id', '!=', $booking->id))
+            ->whereHas('passengers', function ($q) use ($survivorNumber) {
+              $q->where('survivor_number', $survivorNumber);
             })
-            ->get();
+            ->exists();
+        }
+        if ($isCurrentLead) {
+          $hasBooking = true;
+        }
 
-        $results = $users->map(function ($user) use ($request, $currentMaxMembership) {
-            $hasBooking = false;
-            if ($request->eventId) {
-                $hasBooking = Booking::where('event_id', $request->eventId)
-                    ->where('status', '!=', 'CANCELLED')
-                    ->whereHas('passengers', function ($query) use ($user) {
-                        $query->where('survivor_number', $user->survivorNumber?->survivor_number);
-                    })
-                    ->exists();
-            }
+        $userMax = $user->membershipTypes
+          ->sortByDesc('booking_number_requirement')
+          ->first()?->booking_number_requirement ?? null;
 
-            $userMax = $user->membershipTypes->sortByDesc('booking_number_requirement')->first()?->booking_number_requirement ?? null;
-            $isLowerTier = $userMax && $currentMaxMembership
-                ? $userMax < $currentMaxMembership
-                : false;
+        $isLowerTier = $userMax && $currentMaxMembership
+          ? $userMax < $currentMaxMembership
+          : false;
 
-            $detail = $user->detail;
-            $address = $user->customerAddress;
+        $detail  = $user->detail;
+        $address = $user->customerAddress;
 
-            return [
-                'id' => $user->id,
-                'email' => $user->email,
-                'first_name' => $detail->first_name ?? null,
-                'last_name' => $detail->last_name ?? null,
-                'middle_name' => $detail->middle_name ?? null,
-                'survivor_number' => $user->survivorNumber->survivor_number ?? null,
-                'confirmed_booking_email' => $detail->confirmed_booking_email ?? null,
-                'lead_passenger' => $detail->lead_passenger ?? null,
-                'payment_method' => $detail->payment_method ?? null,
-                'phone' => $detail->phone ?? null,
-                'address_first' => $address->address_first ?? null,
-                'address_second' => $address->address_second ?? null,
-                'city' => $address->city ?? null,
-                'state' => $address->state ?? null,
-                'postal_code' => $address->postal_code ?? null,
-                'country' => $address->country ?? null,
-                'citizenship' => $detail->citizenship ?? null,
-                'gender' => $detail->gender ?? null,
-                'dob' => $detail->dob ?? null,
-                'full_name' => trim(($detail->first_name ?? '') . ' ' . ($detail->last_name ?? '')),
-                'emergency_c_name' => $detail->emergency_c_name ?? null,
-                'emergency_c_phone' => $detail->emergency_c_phone ?? null,
-                'special_request' => $detail->special_request ?? null,
-                'hear_about' => $detail->hear_about ?? null,
-                'newsletter' => $detail->newsletter ?? null,
-                'travel_info' => $detail->travel_info ?? null,
-                'term_n_cons' => $detail->term_n_cons ?? null,
-                'cabin_conf_accp' => $detail->cabin_conf_accp ?? null,
-                'single_t_agreement' => $detail->single_t_agreement ?? null,
-                'passenger_allocated_cost' => $detail->passenger_allocated_cost ?? null,
-                'passenger_balance' => $detail->passenger_balance ?? null,
-                'was_on_board' => $detail->was_on_board ?? null,
-                'has_booking' => $hasBooking,
-                'lower_tier' => $isLowerTier,
-            ];
-        });
+        return [
+          'id' => $user->id,
+          'email' => $user->email,
+          'first_name' => $detail->first_name ?? null,
+          'last_name' => $detail->last_name ?? null,
+          'middle_name' => $detail->middle_name ?? null,
+          'survivor_number' => $survivorNumber ?? null,
+          'confirmed_booking_email' => $detail->confirmed_booking_email ?? null,
+          'lead_passenger' => $detail->lead_passenger ?? null,
+          'payment_method' => $detail->payment_method ?? null,
+          'phone' => $detail->phone ?? null,
+          'address_first' => $address->address_first ?? null,
+          'address_second' => $address->address_second ?? null,
+          'city' => $address->city ?? null,
+          'state' => $address->state ?? null,
+          'postal_code' => $address->postal_code ?? null,
+          'country' => $address->country ?? null,
+          'citizenship' => $detail->citizenship ?? null,
+          'gender' => $detail->gender ?? null,
+          'dob' => $detail->dob ?? null,
+          'full_name' => trim(($detail->first_name ?? '') . ' ' . ($detail->last_name ?? '')),
+          'emergency_c_name' => $detail->emergency_c_name ?? null,
+          'emergency_c_phone' => $detail->emergency_c_phone ?? null,
+          'special_request' => $detail->special_request ?? null,
+          'hear_about' => $detail->hear_about ?? null,
+          'newsletter' => $detail->newsletter ?? null,
+          'travel_info' => $detail->travel_info ?? null,
+          'terms_n_cons' => $detail->terms_n_cons ?? ($detail->term_n_cons ?? null),
+          'cabin_conf_accp' => $detail->cabin_conf_accp ?? null,
+          'single_t_agreement' => $detail->single_t_agreement ?? null,
+          'passenger_allocated_cost' => $detail->passenger_allocated_cost ?? null,
+          'passenger_balance' => $detail->passenger_balance ?? null,
+          'was_on_board' => $detail->was_on_board ?? null,
+          'has_booking' => $hasBooking,    
+          'lower_tier'  => $isLowerTier,
+          'in_same_booking' => $inSameBooking,
+          'is_current_lead' => $isCurrentLead,
+        ];
+      });
 
-        return response()->json($results);
+      return response()->json($results);
     } catch (\Exception $e) {
-        Log::error('Search error: ' . $e->getMessage());
-        return response()->json(['error' => 'Internal error'], 500);
+      Log::error('Search error: ' . $e->getMessage());
+      return response()->json(['error' => 'Internal error'], 500);
     }
-}
-
+  }
 }
