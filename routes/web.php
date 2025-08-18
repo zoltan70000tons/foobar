@@ -302,7 +302,7 @@ Route::prefix('oauth')->group(function () {
     // Login/Logout
     Route::get('/login', [PublicAuthController::class, 'index'])->name('oauth.login');
     Route::post('/login', [PublicAuthController::class, 'login'])->name('oauth.login.submit');
-    Route::post('/logout', [PublicAuthController::class, 'logout'])->name('oauth.web.logout');
+    Route::get('/logout', [PublicAuthController::class, 'logout'])->name('oauth.web.logout');
 
     // Registration
     Route::get('/register', [PublicAuthController::class, 'showRegistrationForm'])->name('oauth.register.form');

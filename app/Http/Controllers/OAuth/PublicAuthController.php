@@ -30,6 +30,20 @@ class PublicAuthController extends Controller
     {
         $frontURL = config('app.frontend_url');
 
+
+        if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
+            return response()->json([
+                'redirect' => '/oauth/verify-email',
+                'message' => __('auth.email_not_verified'),
+            ]);
+        }
+
+        // check if user is already authenticated
+        // if (Auth::check() && Auth::user()->hasRole('Customer') && Auth::user()->hasVerifiedEmail()) {
+        //     // If authenticated, redirect to the frontend
+        //     return redirect($frontURL);
+        // }
+
         if (! $request->has(['client_id', 'code_challenge', 'code_challenge_method'])) {
             return redirect($frontURL);
         }
@@ -132,13 +146,17 @@ class PublicAuthController extends Controller
     public function logout()
     {
         // Handle the OAuth logout logic here
-        Auth::logout();
+        Auth::guard('web')->logout();
 
         // Clear the session
         session()->invalidate();
         session()->regenerateToken();
 
-        return $this->successResponse(['message' => 'Logout successful']);
+        $frontURL = config('app.frontend_url');
+
+        // Redirect to the frontend
+        return redirect($frontURL)->with('message', __('auth.logout_successful'));
+
     }
 
 }
