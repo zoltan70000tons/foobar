@@ -26,9 +26,10 @@ import { Delete } from "@mui/icons-material";
 import { sanitizeInput } from "@/Helpers/inputSanitizer";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { formatCurrency } from "@/Helpers/stringUtils";
+import { Passenger } from "@/interfaces/Passenger";
 
 type PaymentModalProps = {
-  passenger: any;
+  passenger: Passenger;
   booking_id: number;
   event_id: number;
   editMode: boolean;

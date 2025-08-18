@@ -1,14 +1,8 @@
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  email_verified_at: string;
-  username: string;
-}
+import { Agent } from "@/interfaces/User";
 
-export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
+export type PageProps<T = {}> = T & {
   auth: {
-    user: User;
+    user: Agent;
     permissions: string[];
     roles: string[];
   };
@@ -19,7 +13,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   };
   errors: Record<string, string[]>;
   menu?: {
-    events: any;
+    events: EventType[];
   };
 };
 

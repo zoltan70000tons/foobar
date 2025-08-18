@@ -6,6 +6,13 @@
         "jsx": "react-jsx",
         "strict": true,
         "isolatedModules": true,
+        //compiler options
+        "noImplicitAny": true,
+        "strictFunctionTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        //end compiler options
         "target": "ESNext",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,

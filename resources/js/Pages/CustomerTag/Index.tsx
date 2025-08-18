@@ -9,6 +9,13 @@ import { Permissions } from '@/enums/PermissionEnum';
 import MuiTable from '@/Components/tables/MuiTable';
 import { Visibility } from '@mui/icons-material';
 import axios from 'axios';
+import { CustomerTag } from '@/interfaces/CustomerTag';
+import { Customer } from '@/interfaces/Customer';
+
+type FetchCustomerTagsResult = {
+  data: CustomerTag[];
+  total: number;
+};
 
 const Index = ({ auth, tags }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -36,7 +43,7 @@ const Index = ({ auth, tags }: PageProps) => {
         filterable: false,
         sortable: false,
         //width: '17%',
-        draw: (row) => (
+        draw: (row: CustomerTag) => (
           <Chip
             label={row.name}
             size="small"
@@ -54,7 +61,7 @@ const Index = ({ auth, tags }: PageProps) => {
         accessor: 'id',
         disableFilter: true,
         //width: '13%',
-        draw: (row) => (
+        draw: (row: CustomerTag) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {hasPermission(Permissions.ViewCustomerTags) && (
               <Visibility
@@ -80,7 +87,7 @@ const Index = ({ auth, tags }: PageProps) => {
     rowsPerPage: number,
     filters: { [key: string]: string },
     sort: { key: string; direction: 'asc' | 'desc' },
-  ): Promise<{ data: any[]; total: number }> => {
+  ): Promise<FetchCustomerTagsResult> => {
     try {
       const response = await axios.get('/customer-tags/paginated', {
         params: {
@@ -90,9 +97,8 @@ const Index = ({ auth, tags }: PageProps) => {
           sort_direction: sort.direction,
           filters: JSON.stringify(filters),
         },
-        paramsSerializer: (params) => {
-          return new URLSearchParams(params as any).toString();
-        },
+        paramsSerializer: (params) =>
+          new URLSearchParams(params as Record<string, string>).toString(),
       });
 
       return {
@@ -100,7 +106,7 @@ const Index = ({ auth, tags }: PageProps) => {
         total: response.data?.total ?? 0,
       };
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error('Error fetching customer tags:', error);
       return { data: [], total: 0 };
     }
   };
@@ -123,8 +129,8 @@ const Index = ({ auth, tags }: PageProps) => {
                     columns={columns}
                     data={tags}
                     showCheckBox={false}
-                    //serverSidePagination={true}
-                    //fetchData={fetchCustomerTags}
+                  //serverSidePagination={true}
+                  //fetchData={fetchCustomerTags}
                   />
                 ) : (
                   <></>

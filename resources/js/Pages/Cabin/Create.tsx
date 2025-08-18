@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { TagEnum } from "@/enums/TagEnum";
 import {
     CabinStatus,
     CabinStatusReduced,
@@ -40,16 +39,15 @@ import {
     Cabin,
 } from "@mui/icons-material";
 import { Permissions } from "@/enums/PermissionEnum";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Event } from "@/interfaces/Event";
 
 
 
 type Props = PageProps & {
-    auth: any;
-    cabin: any;
-    event: any;
-    categories: any[];
-    tab: string;
-    data: any;
+    auth: AuthProps;
+    event: Event;
+    categories: CabinCategory[];
 };
 
 const statusOptions = CabinStatusReduced;
@@ -113,14 +111,14 @@ const Create = ({
 
     useEffect(() => {
         if (!data.cabin_type_id) return;
-        
-        if (data.cabin_type_id === CabinTypeIds["PRIVATE CABIN"]) {
+
+        if (Number(data.cabin_type_id) === CabinTypeIds["PRIVATE CABIN"]) {
             setInventory(1);
         } else if (
-            [CabinTypeIds["SINGLE TICKET MALE"], CabinTypeIds["SINGLE TICKET FEMALE"]].includes(data.cabin_type_id)
+            [CabinTypeIds["SINGLE TICKET MALE"], CabinTypeIds["SINGLE TICKET FEMALE"]].includes(Number(data.cabin_type_id))
         ) {
-            const category = categories.find(cat => cat.id === data.cabin_category_id);
-            setInventory(category?.spec.capacity);
+            const category = categories.find(cat => cat.id === Number(data.cabin_category_id));
+            setInventory(category?.spec.capacity ?? 0);
         }
     }, [data.cabin_type_id, data.cabin_category_id, categories]);
 
@@ -135,12 +133,12 @@ const Create = ({
         });
     };
 
-    const handleTagsChange = (event: any, newValue: string[]) => {
+    const handleTagsChange = (event: SyntheticEvent, newValue: string[]) => {
         setSelectedTags(newValue);
         setData('tags', newValue);
     };
 
-    const handleFeatureChange = (event: any) => {
+    const handleFeatureChange = (event: ChangeEvent<HTMLInputElement>) => {
         setData({ ...data, [event.target.name]: event.target.checked });
     };
 
@@ -378,7 +376,7 @@ const Create = ({
                                             label="Connects With"
                                             variant="outlined"
                                             fullWidth
-                                            value={data.connectWith}
+                                            value={data.connects_with}
                                             onChange={(e) => setData('connects_with', e.target.value)}
                                         // error={Boolean(errors.connects_with)}
                                         //helperText={errors.connects_with}

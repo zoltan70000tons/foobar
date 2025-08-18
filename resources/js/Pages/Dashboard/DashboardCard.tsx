@@ -1,3 +1,4 @@
+import { SVGProps } from 'react';
 import { Paper, Typography, Box, IconButton, Badge, Grid } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../Theme/theme";
@@ -7,7 +8,7 @@ import LoadingOverlay from "@/Components/LoadingOverlay";
 type DashboardCardProps = {
   title: string;
   description: string;
-  Icon: any;
+  Icon: React.ComponentType<SVGProps<SVGSVGElement>>;
   link: string;
   badgeContent?: number;
   onBadgeClick?: () => void;

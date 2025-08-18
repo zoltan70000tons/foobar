@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect, ChangeEvent, MouseEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, MouseEvent } from "react";
 import {
   Table,
   TableBody,
@@ -18,6 +18,9 @@ import {
 } from "@mui/material";
 import Row from "./Row";
 import { DateRange, HeaderDateRange } from "@/Components/HeaderDateRange";
+import { Passenger } from "@/interfaces/Passenger";
+import { Booking } from "@/types/booking";
+import { Cabin } from "@/interfaces/Cabin";
 
 interface ColumnProps<T> {
   dateRange?: string;
@@ -31,16 +34,22 @@ interface ColumnProps<T> {
   width?: string;
 }
 
+interface BaseRow<T> {
+  id: string | number;
+  subRows?: T[];
+}
+
 interface DataGridProps<T> {
   columns: ColumnProps<T>[];
   data: T[];
-  subColumns?: ColumnProps<any>[];
+  subColumns?: ColumnProps<Passenger | Booking | Cabin>[];
   serverSidePagination?: boolean;
   fetchData?: (
     page: number,
     rowsPerPage: number,
     filters: { [key: string]: string },
     sort: { key: keyof T | string; direction: "asc" | "desc" },
+    dateRangeState: Record<string, DateRange>
   ) => Promise<{ data: T[]; total: number | null | undefined }>;
   showCheckBox?: boolean;
   showSubCheckBox?: boolean;
@@ -53,22 +62,24 @@ interface DataGridProps<T> {
   showCustomFilter?: boolean;
 }
 
-const MuiTable: FC<DataGridProps<any>> = ({
-  columns,
-  data,
-  subColumns,
-  serverSidePagination = false,
-  fetchData,
-  showCheckBox,
-  showSubCheckBox = true,
-  onApplyTags,
-  onApplyState,
-  onCustomFilter,
-  showSubTableFilters = false,
-  tagOptions = [],
-  statusOptions = [],
-  showCustomFilter = false,
-}) => {
+function MuiTable<T>(props: DataGridProps<T>) {
+  const {
+    columns,
+    data,
+    subColumns,
+    serverSidePagination = false,
+    fetchData,
+    showCheckBox,
+    showSubCheckBox = true,
+    onApplyTags,
+    onApplyState,
+    onCustomFilter,
+    showSubTableFilters = false,
+    tagOptions = [],
+    statusOptions = [],
+    showCustomFilter = false,
+  } = props;
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
@@ -77,14 +88,15 @@ const MuiTable: FC<DataGridProps<any>> = ({
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
   const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
   const [sort, setSort] = useState<{
-    key: keyof any | string;
+    key: keyof T | string;
     direction: "asc" | "desc";
   }>({
-    key: columns[0]?.accessor,
+    key: columns[0]?.accessor ?? "",
     direction: "asc",
   });
+
   const [loading, setLoading] = useState(false);
-  const [paginatedData, setPaginatedData] = useState<any[]>([]);
+  const [paginatedData, setPaginatedData] = useState<T[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [customFilter, setCustomFilter] = useState("");
   const [dateRangeState, setDateRangeState] = useState<Record<string, DateRange>>({});
@@ -96,7 +108,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
         try {
           const response = await fetchData(page, rowsPerPage, filters, sort, dateRangeState);
           setPaginatedData(response.data);
-          setTotalCount(response.total);
+          setTotalCount(response.total ?? 0);
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
@@ -108,15 +120,21 @@ const MuiTable: FC<DataGridProps<any>> = ({
     }
   }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData, dateRangeState]);
 
-  const dataArray = Array.isArray(data) ? data : data ? Object.values(data) : [];
+  const dataArray: T[] = Array.isArray(data) ? data : data ? Object.values(data) as T[] : [];
 
-  const filteredData = dataArray.filter((row) => {
+  const filteredData = dataArray.filter((row: T) => {
     return Object.keys(filters).every((key) => {
       const filterValue = filters[key]?.toLowerCase() || "";
-      const rowValue = (row && row[key] ? row[key] : "").toString().toLowerCase();
-      return rowValue.includes(filterValue);
+
+      const rowKey = key as keyof T;
+      const rowValue = row[rowKey];
+
+      const rowString = rowValue != null ? rowValue.toString().toLowerCase() : "";
+
+      return rowString.includes(filterValue);
     });
   });
+
 
   const sortedData = [...filteredData].sort((a, b) => {
     const key = sort.key as keyof typeof a;
@@ -186,12 +204,13 @@ const MuiTable: FC<DataGridProps<any>> = ({
     }
   };
 
-  const handleSort = (key: keyof any | string) => {
+  const handleSort = (key: keyof T | string) => {
     setSort((prevSort) => ({
       key,
       direction: prevSort.key === key && prevSort.direction === "asc" ? "desc" : "asc",
     }));
   };
+
 
   const handlePageChange = (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -202,10 +221,11 @@ const MuiTable: FC<DataGridProps<any>> = ({
     setPage(0);
   };
 
-  const handleFilterSearchChange = (e) => {
-    setCustomFilter(e.target.value);
+  const handleFilterSearchChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setCustomFilter(value);
     if (onCustomFilter) {
-      onCustomFilter(e);
+      onCustomFilter(value);
     }
   };
 
@@ -245,7 +265,7 @@ const MuiTable: FC<DataGridProps<any>> = ({
                   sx={column.width ? { width: column.width } : { textAlign: 'center', verticalAlign: 'middle' }}
                 >
                   {column?.dateRange ? (
-                    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap'}}>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                       {column.sortable ? (
                         <TableSortLabel
                           active={sort.key === column.accessor}
@@ -328,15 +348,14 @@ const MuiTable: FC<DataGridProps<any>> = ({
                   <CircularProgress />
                 </TableCell>
               </TableRow>
-            ) : displayedData?.length > 0 ? (
-              displayedData.map((row) => (
+            ) : (displayedData as BaseRow<T>[])?.length > 0 ? (
+              (displayedData as BaseRow<T>[]).map((row) => (
                 <Row
                   key={row.id}
                   row={row}
                   columns={columns}
                   subRows={row.subRows}
                   subColumns={subColumns}
-                  subFilters={subFilters}
                   isOpen={expandedRowId === row.id}
                   onToggle={() => setExpandedRowId(expandedRowId === row.id ? null : row.id)}
                   isSelected={selectedRows.includes(row.id)}
