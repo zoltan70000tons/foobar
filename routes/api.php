@@ -24,7 +24,7 @@ Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 're
 
 // --- LOGOUT ---
 Route::post('/auth/logout', [CustomerLoginController::class, 'logout'])->name('oauth.logout')
-  ->middleware(['auth:api', 'custom.auth.redirect']);
+  ->middleware(['auth:api']);
 
 // --- REGISTER ---
 Route::post('/auth/register', [CustomerRegisteredController::class, 'store'])->middleware('throttle:10,1');

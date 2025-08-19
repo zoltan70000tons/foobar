@@ -30,12 +30,17 @@ class PublicAuthController extends Controller
     {
         $frontURL = config('app.frontend_url');
 
+        // \Log::info('check', [
+        //     'check' => Auth::check(),
+        //     'id' => optional(Auth::user())->id,
+        //     'roles' => optional(Auth::user())->getRoleNames(),
+        //     'verified' => optional(Auth::user())->hasVerifiedEmail(),
+        //     'query' => $request->query()
+        // ]);
+
 
         if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
-            return response()->json([
-                'redirect' => '/oauth/verify-email',
-                'message' => __('auth.email_not_verified'),
-            ]);
+            return Inertia::render('OAuth/EmailVerify');
         }
 
         // check if user is already authenticated
@@ -135,15 +140,37 @@ class PublicAuthController extends Controller
         ]);
     }
 
+
     /*
     |--------------------------------------------------------------------------
     | Logout from OAuth WEB
     |--------------------------------------------------------------------------
     |  Sometimes used in web context to logout the customer. example: Email verification
-    |  This will clear the session and redirect the user to the frontend.
+    |  We use there POST method 
     |
     */
-    public function logout()
+    public function logoutWeb()
+    {
+        // Handle the OAuth logout logic here
+        Auth::guard('web')->logout();
+
+        // Clear the session
+        session()->invalidate();
+        session()->regenerateToken();
+
+        // Redirect to the frontend
+        return response()->json(['message' => __('auth.logout_successful')]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logout from OAuth SPA
+    |--------------------------------------------------------------------------
+    |  This method is reverved for GET request and SPA context.
+    |  
+    |
+    */
+    public function logoutSPA()
     {
         // Handle the OAuth logout logic here
         Auth::guard('web')->logout();
@@ -156,7 +183,6 @@ class PublicAuthController extends Controller
 
         // Redirect to the frontend
         return redirect($frontURL)->with('message', __('auth.logout_successful'));
-
     }
 
 }

@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use League\OAuth2\Server\Exception\OAuthServerException;
+
 
 return Application::configure(basePath: dirname(__DIR__))
   ->withRouting(
@@ -43,13 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
     $middleware->api(
       prepend: [
-        //\App\Http\Middleware\RestoreCartMiddleware::class,
-        //\App\Http\Middleware\TeamsPermission::class,
-        //\App\Http\Middleware\ApiRedirectHttp::class,
         \App\Http\Middleware\TeamContext::class,
-       // \Illuminate\Session\Middleware\StartSession::class,
-        //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]
     );
 
@@ -59,6 +55,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ]);
   })
   ->withExceptions(function (Exceptions $exceptions) {
-    //
+    // Normalize revoked/invalid token errors
+      $exceptions->report(function (OAuthServerException $e) {
+          if ($e->getCode() === 401) {
+              return response()->json(['message' => 'Unauthorized'], 401);
+          }
+      })->stop();
   })
   ->create();

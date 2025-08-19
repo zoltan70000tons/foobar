@@ -42,7 +42,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
 
   const handleLogout = async () => {
     // Logout user
-    await Axios.get(route('oauth.web.logout'));
+    await Axios.post(route('oauth.web.logout'));
     // refresh the page
     window.location.href = import.meta.env.VITE_FRONTEND_URL;
   }
