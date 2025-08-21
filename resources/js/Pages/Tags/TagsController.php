@@ -2,18 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\EventRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TagsController extends Controller
 {
-    protected EventRepository $eventRepository;
-
-    public function __construct(EventRepository $eventRepository)
-    {
-        $this->eventRepository = $eventRepository;
-    }
     public function index()
     {
         return Inertia::render('Tags/Index', [
@@ -30,10 +23,8 @@ class TagsController extends Controller
 
     public function create()
     {
-        $events = $this->eventRepository->getAll();
-        $tagTypes = ['Type1', 'Type2', 'Type3']; // Example tag types
         return Inertia::render('Tags/Create', [
-            'events' => $events,
+            'tab' => 'TAGS',
         ]);
     }
 

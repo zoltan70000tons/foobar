@@ -290,4 +290,15 @@ Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'up
 Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 
+Route::resource('/tags', TagsController::class)
+    ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+    ->names([
+        'index' => 'tags.index',
+        'create' => 'tags.create',
+        'store' => 'tags.store',
+        'edit' => 'tags.edit',
+        'update' => 'tags.update',
+        'destroy' => 'tags.destroy'
+    ]);
+
 require __DIR__ . '/auth.php';
