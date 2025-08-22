@@ -8,9 +8,11 @@ import {
   DialogActions,
   Grid,
   Box,
+  Divider, IconButton, Tooltip,
 } from "@mui/material";
 import { router } from "@inertiajs/react";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { InfoOutlined } from "@mui/icons-material";
 
 type SplitPaymentModalProps = {
   passengers: any;
@@ -30,6 +32,22 @@ enum PaymentType {
   PAYMENT = "Payment",
 }
 
+export type PassengerFormEntry = {
+  passengerId: number;
+  passengerName: string;
+  passengerAllocatedCost: string;
+  passengerBalance: string;
+  passengerLeftToPay: number;
+  amount: number | string;
+  parsedAmount?: number;
+}
+
+export type FormData = {
+  [key: `passenger_${number}`]: PassengerFormEntry;
+  totalLeftToPay: number;
+  totalPaymentAdded: number;
+}
+
 const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
   passengers,
   booking_id,
@@ -38,8 +56,13 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
   open,
   onClose,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
+    totalLeftToPay: 0,
+    totalPaymentAdded: 0,
+  });
+
+  const [transactionId, setTransactionId] = useState<string>("");
 
   useEffect(() => {
     if (!passengers || passengers.length === 0) return;
@@ -66,8 +89,8 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
 
   const { showSnackbar } = useSnackbar();
 
-  const handleChange = (passengerId, rawValue) => {
-    setFormData((prevData) => {
+  const handleChange = (passengerId: number, rawValue: string) => {
+    setFormData((prevData: FormData): FormData => {
       const key = `passenger_${passengerId}`;
       const passenger = passengers.find((p) => p.id === passengerId);
       if (!passenger) return prevData;
@@ -75,17 +98,19 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
       const maxAmount =
         passenger.passenger_allocated_cost - passenger.passenger_balance;
 
-      // Convert to number but allow partial typing
-      let numericValue = parseFloat(rawValue);
-      if (isNaN(numericValue)) numericValue = 0;
+      // Allow only digits, commas, dots
+      const cleaned = rawValue.replace(/[^0-9.,]/g, "");
 
-      // Cap live typing between 0 and maxAmount
-      if (numericValue < 0) numericValue = 0;
-      if (numericValue > maxAmount) numericValue = maxAmount;
+      // Parse to number
+      const numericValue = parseFloat(cleaned.replace(/,/g, "")) || 0;
+
+      // Clamp value
+      const cappedValue = Math.min(Math.max(numericValue, 0), maxAmount);
 
       const updatedPassenger = {
         ...prevData[key],
-        amount: rawValue // store raw string so typing isn't disrupted
+        amount: cleaned,          // use cleaned string, so letters never appear
+        parsedAmount: cappedValue // numeric representation
       };
 
       return { ...prevData, [key]: updatedPassenger };
@@ -97,8 +122,8 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
     maximumFractionDigits: 2,
   });
 
-  const handleBlur = (passengerId) => {
-    setFormData((prevData) => {
+  const handleBlur = (passengerId: number) => {
+    setFormData((prevData: FormData): FormData => {
       const key = `passenger_${passengerId}`;
       const passenger = passengers.find((p) => p.id === passengerId);
       if (!passenger) return prevData;
@@ -106,16 +131,18 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
       const maxAmount =
         passenger.passenger_allocated_cost - passenger.passenger_balance;
 
-      let numericValue = parseFloat(prevData[key]?.amount) || 0;
+      // Strip commas before parsing
+      let numericValue = parseFloat(
+        (prevData[key]?.amount || "").replace(/,/g, "")
+      ) || 0;
 
-      // Clamp on blur
+      // Clamp
       if (numericValue < 0) numericValue = 0;
       if (numericValue > maxAmount) numericValue = maxAmount;
-      if (numericValue < 0) numericValue = 0;
 
       const updatedPassenger = {
         ...prevData[key],
-        amount: usNumberFormatter.format(numericValue) // formatted number
+        amount: usNumberFormatter.format(numericValue) // e.g. 1,234.23
       };
 
       // Build updated formData
@@ -127,10 +154,11 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
 
       passengers.forEach((p) => {
         const passengerKey = `passenger_${p.id}`;
-        const leftToPay =
-          p.passenger_allocated_cost - p.passenger_balance;
-        const enteredAmount =
-          parseFloat(newFormData[passengerKey]?.amount) || 0;
+        const leftToPay = p.passenger_allocated_cost - p.passenger_balance;
+
+        const enteredAmount = parseFloat(
+          (newFormData[passengerKey]?.amount || "").replace(/,/g, "")
+        ) || 0;
 
         totalLeftToPay += leftToPay - enteredAmount;
         totalPaymentAdded += enteredAmount;
@@ -142,53 +170,6 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
       return newFormData;
     });
   };
-
-  /*const handleChange = (passengerId, newAmount) => {
-    setFormData((prevData) => {
-      const key = `passenger_${passengerId}`;
-
-      // Get the correct passenger from props
-      const passenger = passengers.find((p) => p.id === passengerId);
-      if (!passenger) return prevData;
-
-      const maxAmount = passenger.passenger_allocated_cost - passenger.passenger_balance;
-
-      // Clamp the amount
-      const clampedAmount = (Math.min(Math.max(newAmount, 0), maxAmount) < 0 ? 0 : Math.min(Math.max(newAmount, 0), maxAmount));
-      console.log('clamped', clampedAmount)
-
-      // Update passenger
-      const updatedPassenger = {
-        ...prevData[key],
-        amount: clampedAmount.toFixed(2),
-      };
-
-      // Create updated formData
-      const newFormData = {
-        ...prevData,
-        [key]: updatedPassenger
-      };
-
-      // Recalculate totals
-      let totalLeftToPay = 0;
-      let totalPaymentAdded = 0;
-
-      passengers.forEach((passenger) => {
-        const passengerKey = `passenger_${passenger.id}`;
-        const leftToPay = passenger.passenger_allocated_cost - passenger.passenger_balance;
-        const enteredAmount = (newFormData[passengerKey]?.amount < 0) ? 0 : newFormData[passengerKey]?.amount;
-        console.log(enteredAmount)
-
-        totalLeftToPay += (leftToPay - enteredAmount);
-        totalPaymentAdded += enteredAmount;
-      });
-
-      newFormData.totalLeftToPay = +totalLeftToPay?.toFixed(2);
-      newFormData.totalPaymentAdded = +totalPaymentAdded;
-
-      return newFormData;
-    });
-  };*/
 
   const sanitizeFormData = (data) => {
     const sanitized = {};
@@ -220,16 +201,22 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
       return;
     }
 
+    if (formData.totalPaymentAdded === 0) {
+      showSnackbar("No payment was added.", "warning");
+      return;
+    }
+
     setLoading(true);
     router.post(
       route("manual.split-payment", { event_id, booking_id }),
       {
-        sanitizedFormData
+        sanitizedFormData,
+        transactionId,
       },
       {
         onSuccess: () => {
           showSnackbar(`All payments were created successfully`, "success");
-          setFormData({totalLeftToPay:0, totalPaymentAdded:0});
+          setFormData({ totalLeftToPay: 0, totalPaymentAdded: 0 });
           onClose();
         },
         onError: (err) => {
@@ -249,17 +236,18 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
         <DialogTitle>Split Payment</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={2} mt={1}>
+            <Grid container spacing={2} mt={1} rowGap={2}>
               {passengers.length && passengers.map((pax, idx) => {
-                const amountLeftToPay = formData[`passenger_${pax.id}`]?.passengerLeftToPay;
                 const fullName = formData[`passenger_${pax.id}`]?.passengerName ?? 'Error';
                 const amount = formData[`passenger_${pax.id}`]?.amount ?? 0;
 
                 const index = idx + 1;
 
+                console.log(parseFloat(pax.passenger_allocated_cost) <= parseFloat(pax.passenger_balance), pax.passenger_allocated_cost, pax.passenger_balance)
+
                 return (
-                  <Grid container spacing={2} mt={1}>
-                    <Grid item xs={5} md={5}>
+                  <Grid container spacing={2} mt={1} ml={2} justifyContent={"flex-start"} alignItems={"center"} gap={2}>
+                    <Grid xs={4} md={4}>
                       <TextField
                         label={index === 1 ? 'Lead Passenger' : `Passenger #${index}`}
                         name="full_name"
@@ -268,34 +256,75 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
                         fullWidth
                       />
                     </Grid>
-                    <Grid item xs={3} md={3}>
+                    <Grid xs={3} md={3}>
                       <TextField
                         label="Amount"
                         name="amount"
                         type="text"
                         value={amount}
-                        onChange={(e) => handleChange(pax.id, Number(e.target.value))}
+                        onChange={(e) => handleChange(pax.id, e.target.value)}
                         onBlur={() => handleBlur(pax.id)}
                         fullWidth
+                        disabled={parseFloat(pax.passenger_allocated_cost) <= parseFloat(pax.passenger_balance)}
                       />
                     </Grid>
-                    <Grid item xs={2} md={2}>
-                      Cost: {pax.passenger_allocated_cost}
+                    <Grid xs={2} md={2}>
+                      <TextField
+                        label="Cost"
+                        name="cost"
+                        type="text"
+                        value={pax.passenger_allocated_cost}
+                        fullWidth
+                        disabled
+                      />
                     </Grid>
-                    <Grid item xs={2} md={2}>
-                      Balance: {pax.passenger_balance}
+                    <Grid xs={2} md={2}>
+                      <TextField
+                        label="Balance"
+                        name="balance"
+                        type="text"
+                        value={pax.passenger_balance}
+                        fullWidth
+                        disabled
+                      />
                     </Grid>
                   </Grid>
                 );
               })}
-              <Box mt={2}>
-                <Box>
-                  Total left to pay: {formData?.totalLeftToPay?.toFixed(2)}
-                </Box>
-                <Box>
-                  Total payment added: {formData?.totalPaymentAdded?.toFixed(2)}
-                </Box>
-              </Box>
+              <Grid xs={4} md={4} ml={2} display={"flex"}>
+                <TextField
+                  label="Transaction identifier"
+                  name="transaction_id"
+                  type="text"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  fullWidth
+                />
+                <Tooltip title="If not provided, we will autogenerate one for you">
+                  <IconButton>
+                    <InfoOutlined />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+              <Divider sx={{ my: 3, ml: 2, width: "calc(100% - 16px)" }} />
+              <Grid mt={0} ml={2} width={"100%"}>
+                <Grid display={"flex"} width={"100%"}>
+                  <Grid xs={3} sx={{fontWeight: 700}} mb={1}>
+                    Total left to pay:
+                  </Grid>
+                  <Grid>
+                    {formData?.totalLeftToPay?.toFixed(2)}
+                  </Grid>
+                </Grid>
+                <Grid display={"flex"} width={"100%"}>
+                  <Grid xs={3} sx={{fontWeight: 700}}>
+                    Total payment added:
+                  </Grid>
+                  <Grid>
+                    {formData?.totalPaymentAdded?.toFixed(2)}
+                  </Grid>
+                </Grid>
+              </Grid>
             </Grid>
 
             <DialogActions>

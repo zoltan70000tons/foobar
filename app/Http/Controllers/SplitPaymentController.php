@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\PaymentInfoService;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class SplitPaymentController extends Controller
 {
@@ -45,6 +46,12 @@ class SplitPaymentController extends Controller
 
             try {
                 $formData = $request->get('sanitizedFormData');
+
+                $transactionId = $request->get('transactionId');
+                if (!$transactionId) {
+                    $transactionId = Str::uuid()->toString();
+                }
+
                 $passengerData = array_filter(
                     $formData,
                     fn($value, $key) => str_starts_with($key, 'passenger_'),
@@ -77,13 +84,23 @@ class SplitPaymentController extends Controller
 
                 $booking = Booking::find($booking_id);
 
+                $countSaved = 0;
+
                 foreach ($validPassengers as $passenger) {
-                    $this->splitPaymentService->registerSplitPayment($passenger);
+                    if ($passenger["amount"] === 0) {
+                        continue;
+                    }
+
+                    $this->splitPaymentService->registerSplitPayment($passenger, $transactionId);
 
                     $this->paymentInfoService->syncBalance($passenger["passengerId"], $booking->id, $booking->event_id);
+
+                    ++$countSaved;
                 }
 
-
+                if ($countSaved === 0) {
+                    return redirect()->back()->with('warning', 'No payment to split!');
+                }
 
                 $this->saveBookingLog(
                     $booking_id,
@@ -97,7 +114,6 @@ class SplitPaymentController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
                 $this->logException($e);
-                dd($e->getMessage());
 
                 return redirect()->back()->with('error', 'Error creating split payment!');
             }

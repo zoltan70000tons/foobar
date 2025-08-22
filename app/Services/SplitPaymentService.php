@@ -23,19 +23,20 @@ class SplitPaymentService
         $this->paymentRepository = $paymentRepository;
     }
 
-    public function registerSplitPayment($payload)
+    public function registerSplitPayment($payload, $transactionId)
     {
         $user = Auth::user();
 
-        $fromPayment = new Payment();
-        $fromPayment->passenger_id = $payload["passengerId"];
-        $fromPayment->BIP_ID = Str::uuid()->toString();
-        $fromPayment->type = "PAYMENT";
-        $fromPayment->transaction_date = Carbon::now();
-        $fromPayment->amount = $payload["amount"];
-        $fromPayment->source = "MANUAL";
-        $fromPayment->notes = "Split payment added by " . $user->username;
+        $payment = new Payment();
+        $payment->passenger_id = $payload["passengerId"];
+        $payment->BIP_ID = $transactionId;
+        $payment->type = "PAYMENT";
+        $payment->transaction_date = Carbon::now();
+        $payment->amount = $payload["amount"];
+        $payment->source = "MANUAL";
+        $payment->notes = "Split payment added by " . $user->username;
+        $payment->splitAmount = true;
 
-        $fromPayment->save();
+        $payment->save();
     }
 }
