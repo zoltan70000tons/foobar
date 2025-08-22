@@ -43,6 +43,11 @@ class CabinController extends Controller
     $cabinCapacity = $request->input('capacity', null);
     $cabinDeck = $request->input('deck', null);
 
+
+    // FIRST DECK FROM CART !IMPORTANT
+    // IF DECK IS NOT SELECTED FOR EXAMPLE. FIRST INIT OF PAGE
+    // OR 
+
     // if all requests parameters are null, try get from cart 
     if (is_null($cabinCategoryCode) && is_null($cabinCapacity)) {
       $cart = Auth::user() ? Cart::where('user_id', Auth::id())->first()?->cart_data ?? [] : [];
@@ -216,9 +221,9 @@ class CabinController extends Controller
     $language = $request->input('language', 'en');
     App::setLocale($language);
 
-    if ($request->session()->has('reserved_cabin_id')) {
-      return response()->json(['message' => __('feedback.double_booking')], 403);
-    }
+    // if ($request->session()->has('reserved_cabin_id')) {
+    //   return response()->json(['message' => __('feedback.double_booking')], 403);
+    // }
 
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCategoryCode = $request->input('category_code');
@@ -337,11 +342,14 @@ class CabinController extends Controller
         'inventory' => 1,
       ]);
 
-      $request->session()->put('reserved_cabin_id', $reserved->id);
+      //$request->session()->put('reserved_cabin_id', $reserved->id);
 
-      $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
+      // $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
 
+      // Get prev timestamp from cart not session
       $cart = $user->cart_data;
+      $prevTimestamp = $keepOldTimeStamp ? $cart['reservationTimestamp'] : null;
+
 
       $cart['cabinSelection'] = $selectionType;
       $cart['reservationId'] = $reserved->id;
