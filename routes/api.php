@@ -41,8 +41,6 @@ Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
 // ---- PRICING MATRIX ----
 Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show']);
 
-// ---- CART PER EVENT ----
-Route::get('/cart/{eventId}', [CartController::class, 'index']);
 
 // --- ADD PAX validate page with form
 Route::get('/add-pax', [AddPaxController::class, 'validate'])
@@ -78,6 +76,8 @@ Route::middleware([
 ])->group(function () {
   // --- CART (with membership_sales) ---
   Route::middleware(['membership_sales'])->group(function () {
+    // ---- CART PER EVENT ----
+    Route::get('/cart/{eventId}', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::put('/cart', [CartController::class, 'update']);
     Route::delete('/cart', [CartController::class, 'destroy']);

@@ -162,13 +162,14 @@ class CabinController extends Controller
       return response()->json(['message' => 'Option available only for private cabin'], 400);
     }
 
+
     // ------- If user have a reservation, and he want to create new.
     if ($cart && $reservationId) {
       // get from Temporary reservation table, and set expires_at to keepOldTimeStamp
       $keepOldTimeStamp = TemporaryReservation::where('id', $reservationId)->value('expires_at');
 
       // release the current reservation
-      $reservationService->releaseCabin($request);
+      $reservationService->releaseCabin($user);
 
       $cart['cabin_number'] = null;
       $cart['reservation_id'] = null;
@@ -177,11 +178,16 @@ class CabinController extends Controller
     }
 
     // ------- If user id is in tepmorary reservation table, thriow error
-
     $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
 
     // if user have a reservation throw error
-    if ($tempReservationId->isNotEmpty()) {
+    // we checking there, if temporary reservation instance exist
+    // if reservationID is not null
+    // *and temporary reservation ID is not equal to current reservation ID
+    if ($tempReservationId->isNotEmpty() 
+        && $reservationId 
+        && $tempReservationId->first()->id !== $reservationId
+    ) {
       return response()->json(['message' => __('feedback.double_booking')], 403);
     }
 
@@ -204,7 +210,7 @@ class CabinController extends Controller
       return response()->json(['message' => __('feedback.cabin_not_available')], 404);
     }
 
-    return $this->createTemporaryReservation($cabin, $request, 'clientSelect', $keepOldTimeStamp);
+    return $this->createTemporaryReservation($cabin, $user, $cart, 'clientSelect', $keepOldTimeStamp);
   }
 
   /*
@@ -221,15 +227,13 @@ class CabinController extends Controller
     $language = $request->input('language', 'en');
     App::setLocale($language);
 
-    // if ($request->session()->has('reserved_cabin_id')) {
-    //   return response()->json(['message' => __('feedback.double_booking')], 403);
-    // }
 
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCategoryCode = $request->input('category_code');
     $cabinCapacity = $request->input('capacity');
 
     $user = Auth::user();
+    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$user) {
       return response()->json(['message' => 'User not authenticated'], 401);
@@ -284,7 +288,7 @@ class CabinController extends Controller
       return response()->json(['message' => 'There are no available cabins at the moment. Please try again later'], 404);
     }
 
-    return $this->createTemporaryReservation($cabin, $request, false);
+    return $this->createTemporaryReservation($cabin, $user, $cart, 'serviceSelect', false);
   }
 
   /*
@@ -295,9 +299,15 @@ class CabinController extends Controller
   |  Relase logic as service, to use as separate endpoint or in CartController
   |
   */
-  public function release(Request $request, ReservationService $reservationService)
+  public function release(ReservationService $reservationService)
   {
-    $response = $reservationService->releaseCabin($request);
+    $user = Auth::user();
+
+    if (!$user) {
+      return ['status' => 404, 'message' => 'No cabin reserved'];
+    }
+
+    $response = $reservationService->releaseCabin($user);
 
     return response()->json(['message' => $response['message']], $response['status']);
   }
@@ -305,16 +315,14 @@ class CabinController extends Controller
   /**
    * Helper method to create a temporary reservation.
    */
-  protected function createTemporaryReservation($cabin, Request $request, $selectionType, $keepOldTimeStamp = null)
+  protected function createTemporaryReservation($cabin, $user, $cart, $selectionType, $keepOldTimeStamp = null)
   {
     $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME');
-    $user = Auth::user();
 
-    Log::info('Creating temporary reservation', [
-      'cabin' => $cabin,
-      'selectionType' => $selectionType,
-      'keepOldTimeStamp' => $keepOldTimeStamp,
-    ]);
+    if(!$user) {
+      return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
 
     try {
       DB::beginTransaction();
@@ -335,21 +343,14 @@ class CabinController extends Controller
       }
 
       $reserved = TemporaryReservation::create([
-        'user_id' => $request->user()->id ?? null,
+        'user_id' => $user->id,
         'cabin_id' => $cabin['id'],
         'cabin_number' => $cabin['cabin_number'],
         'expires_at' => $keepOldTimeStamp ? $keepOldTimeStamp : now()->addMinutes($reservationTime),
         'inventory' => 1,
       ]);
 
-      //$request->session()->put('reserved_cabin_id', $reserved->id);
-
-      // $prevTimestamp = $keepOldTimeStamp ? $request->session()->get('cart.reservationTimestamp') : null;
-
-      // Get prev timestamp from cart not session
-      $cart = $user->cart_data;
-      $prevTimestamp = $keepOldTimeStamp ? $cart['reservationTimestamp'] : null;
-
+      $prevTimestamp = $keepOldTimeStamp ? $cart['reservation_timestamp'] : null;
 
       $cart['cabinSelection'] = $selectionType;
       $cart['reservationId'] = $reserved->id;
@@ -376,6 +377,10 @@ class CabinController extends Controller
       );
     } catch (\Exception $e) {
       DB::rollBack();
+      Log::error('Reservation error', [
+        'error' => $e->getMessage(),
+        'USER' => $user,
+      ]);
       return response()->json(['message' => 'Reservation failed'], 500);
     }
   }
