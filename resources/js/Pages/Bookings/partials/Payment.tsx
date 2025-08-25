@@ -12,6 +12,7 @@ import {
   Grid,
   Avatar, Tooltip, IconButton,
 } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
 import InfoIcon from '@mui/icons-material/Info';
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
@@ -22,12 +23,13 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import { Payment as PaymentIcon } from "@mui/icons-material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { router } from "@inertiajs/react";
 import DiscountForm, { Discount } from "./DiscountForm";
 import OnboardCreditForm from "./OnboardCreditForm";
 
 import { formatCurrency } from "@/Helpers/stringUtils";
 import PaymentTransferForm, { PaymentTransfer } from "@/Pages/Bookings/partials/PaymentTransferForm";
+import SplitPaymentModal from "@/Pages/Bookings/partials/SplitPaymentModal";
+import SplitPaymentModal2 from "@/Pages/Bookings/partials/SplitPaymentModal2";
 
 const getOrdinalSuffix = (n: number): string => {
   if (n === 1) return "st";
@@ -150,6 +152,9 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
     setOpenPaymentModal(true);
   };
 
+  const [openSplitPaymentModal, setOpenSplitPaymentModal] = useState(false);
+  const [openSplitPaymentModal2, setOpenSplitPaymentModal2] = useState(false);
+
   const calculateAdjustments = (pricePerPerson: number) => {
     const grouped = booking.adjustments.reduce(
       (acc, adj) => {
@@ -223,6 +228,10 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const paymentHistory = currentPassenger?.payments;
 
+  const handleOpenSplitPaymentModal = () => {
+    setOpenSplitPaymentModal(true);
+  }
+
   return (
     <Grid>
       <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
@@ -246,6 +255,28 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
               </TableRow>
             </TableBody>
           </Table>
+        </Box>
+        <Box>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={handleOpenSplitPaymentModal}
+            sx={{ mt: 2 }}
+            disabled={!editMode || !canCreatePayment}
+          >
+            Add Split Payment
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenSplitPaymentModal2(true)}
+            sx={{ mt: 2 }}
+            disabled={!editMode || !canCreatePayment}
+          >
+            Add Split Payment2
+          </Button>
         </Box>
       </Paper>
       {passengers.map((pax, index) => {
@@ -524,6 +555,24 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <SplitPaymentModal
+          passengers={passengers}
+          booking_id={booking.id}
+          event_id={booking.event_id}
+          editMode={editMode}
+          open={openSplitPaymentModal}
+          onClose={() => setOpenSplitPaymentModal(false)}
+        />
+
+        <SplitPaymentModal2
+          passengers={passengers}
+          booking_id={booking.id}
+          event_id={booking.event_id}
+          editMode={editMode}
+          open={openSplitPaymentModal2}
+          onClose={() => setOpenSplitPaymentModal2(false)}
+        />
+
         <PaymentModal
           passenger={currentPassenger}
           booking_id={booking.id}

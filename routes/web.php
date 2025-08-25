@@ -277,6 +277,11 @@ Route::prefix('payment-transfer')->group(function () {
     Route::post('{event_id}/{booking_id}/delete', [\App\Http\Controllers\PaymentTransferController::class, 'delete'])->name('delete.payment-transfer');
 });
 
+Route::prefix('split-payment')->group(function () {
+    Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\SplitPaymentController::class, 'store'])
+        ->name('manual.split-payment');
+});
+
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
 
 Route::get('/customer-tags/paginated', [CustomerTagController::class, 'getPaginated'])->name('customer-tags.paginated');
