@@ -71,11 +71,10 @@ Route::get('/events/{id}', [EventController::class, 'showOne']);
 Route::middleware([
   'auth:api',
   'booking_status',
-  'one_booking_per_user',
   // 'clear_expired_reservation',
 ])->group(function () {
   // --- CART (with membership_sales) ---
-  Route::middleware(['membership_sales'])->group(function () {
+  Route::middleware(['membership_sales', 'one_booking_per_user'])->group(function () {
     // ---- CART PER EVENT ----
     Route::get('/cart/{eventId}', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);

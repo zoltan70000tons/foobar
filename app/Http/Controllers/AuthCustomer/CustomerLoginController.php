@@ -20,7 +20,6 @@ class CustomerLoginController extends Controller
     */
     public function logout(Request $request): JsonResponse
     {
-
         if ($user = $request->user()) {
             // revoke just current token
             $token = $user->token();
