@@ -18,11 +18,12 @@ import {
   IconButton,
   Paper,
   Divider,
+  Tooltip,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { router } from "@inertiajs/react";
 import dayjs, { Dayjs } from "dayjs";
-import { Delete } from "@mui/icons-material";
+import { Warning, Delete } from "@mui/icons-material";
 import { sanitizeInput } from "@/Helpers/inputSanitizer";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { formatCurrency } from "@/Helpers/stringUtils";
@@ -33,14 +34,15 @@ type PaymentModalProps = {
   booking_id: number;
   event_id: number;
   editMode: boolean;
-  paymentHistory: Array<{
+  paymentHistory: {
     id: number;
     type: string;
     amount: number;
     transaction_date: string;
     BIP_ID: string;
     source: string;
-  }>;
+    splitAmount: boolean;
+  }[];
   open: boolean;
   onClose: () => void;
 };
@@ -71,7 +73,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [localPaymentHistory, setLocalPaymentHistory] = useState(paymentHistory);
-
+console.log(paymentHistory)
   useEffect(() => {
     setLocalPaymentHistory(paymentHistory);
   }, [paymentHistory])
@@ -294,6 +296,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                             <Delete fontSize="small" />
                           </IconButton>
                         )}
+                        {payment.splitAmount && (
+                          <Tooltip title="Split Payment!">
+                            <IconButton color="warning">
+                              <Warning />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -310,6 +319,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
         <DialogTitle>Delete Payment</DialogTitle>
         <DialogContent>
+          <Typography>Are you sure you want to delete this payment?</Typography>
           <Typography>Are you sure you want to delete this payment?</Typography>
         </DialogContent>
         <DialogActions>
