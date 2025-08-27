@@ -125,8 +125,13 @@ class PaymentController extends Controller
                         ->where("BIP_ID", "=", $transactionId)
                         ->get();
 
+                    $totalAmount = 0;
+
                     foreach ($payments as $payment) {
                         $passengerId = $payment->passenger_id;
+                        $amount = $payment->amount;
+
+                        $totalAmount += $amount;
 
                         $payment->delete();
                         $this->paymentInfoService->syncBalance($passengerId, $booking_id, $event_id);
@@ -137,7 +142,7 @@ class PaymentController extends Controller
                     $this->saveBookingLog(
                         $booking_id,
                         'Deleted split payment',
-                        "Transaction ID: {$transactionId} was deleted"
+                        "Transaction ID: {$transactionId}, and total amount: {$totalAmount} was deleted"
                     );
                 } else {
                     $payment->delete();
