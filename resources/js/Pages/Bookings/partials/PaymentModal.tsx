@@ -19,6 +19,7 @@ import {
   Paper,
   Divider,
   Tooltip,
+  Box,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { router } from "@inertiajs/react";
@@ -48,11 +49,13 @@ type PaymentModalProps = {
 };
 
 type Payment = {
+  id: number;
   BIP_ID: string;
   amount: number;
   type: "PAYMENT" | "REFUND";
   notes?: string;
   transaction_date: Dayjs | null;
+  splitAmount: boolean;
 };
 
 enum PaymentType {
@@ -71,9 +74,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [selectedPaymentSplitAmount, setSelectedPaymentSplitAmount] = useState<boolean>(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [localPaymentHistory, setLocalPaymentHistory] = useState(paymentHistory);
-console.log(paymentHistory)
+
   useEffect(() => {
     setLocalPaymentHistory(paymentHistory);
   }, [paymentHistory])
@@ -144,8 +148,11 @@ console.log(paymentHistory)
     );
   };
 
-  const handleOpenDelete = (paymentId: number) => {
-    setSelectedPaymentId(paymentId);
+  const handleOpenDelete = (payment: Payment) => {
+    const { id, splitAmount } = payment;
+
+    setSelectedPaymentId(id);
+    setSelectedPaymentSplitAmount(splitAmount);
     setConfirmDeleteOpen(true);
   };
 
@@ -291,7 +298,7 @@ console.log(paymentHistory)
                             color="error"
                             size="small"
                             disabled={!editMode}
-                            onClick={() => handleOpenDelete(payment.id)}
+                            onClick={() => handleOpenDelete(payment)}
                           >
                             <Delete fontSize="small" />
                           </IconButton>
@@ -320,7 +327,16 @@ console.log(paymentHistory)
         <DialogTitle>Delete Payment</DialogTitle>
         <DialogContent>
           <Typography>Are you sure you want to delete this payment?</Typography>
-          <Typography>Are you sure you want to delete this payment?</Typography>
+          {selectedPaymentSplitAmount && (
+            <Box display="flex" justifyContent="center" alignItems="center" mt={2}>
+              <IconButton color="warning">
+                <Warning />
+              </IconButton>
+              <Typography>
+                The payment you are about to delete is part of a split payment. Deleting this payment will result in deleting all that share the same Transaction ID!
+              </Typography>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteOpen(false)} color="secondary">

@@ -112,21 +112,45 @@ class PaymentController extends Controller
                     ->where('passenger_id', $validated['passenger_id'])
                     ->first();
                 if (!$payment) {
-                    return redirect()->back()->with('error', 'Fee not found.');
+                    return redirect()->back()->with('error', 'Payment not found.');
                 }
                 $amount = $payment->amount;
                 $type = $payment->type;
 
-                $payment->delete();
-                $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
+                $splitAmount = $payment->splitAmount;
+                if ($splitAmount) {
+                    $transactionId = $payment->BIP_ID;
 
-                DB::commit();
+                    $payments = Payment::query()
+                        ->where("BIP_ID", "=", $transactionId)
+                        ->get();
 
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Deleted payment',
-                    "Payment: {$type} value: \${$amount} was deleted"
-                );
+                    foreach ($payments as $payment) {
+                        $passengerId = $payment->passenger_id;
+
+                        $payment->delete();
+                        $this->paymentInfoService->syncBalance($passengerId, $booking_id, $event_id);
+                    }
+
+                    DB::commit();
+
+                    $this->saveBookingLog(
+                        $booking_id,
+                        'Deleted split payment',
+                        "Transaction ID: {$transactionId} was deleted"
+                    );
+                } else {
+                    $payment->delete();
+                    $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
+
+                    DB::commit();
+
+                    $this->saveBookingLog(
+                        $booking_id,
+                        'Deleted payment',
+                        "Payment: {$type} value: \${$amount} was deleted"
+                    );
+                }
 
                 return redirect()->back()->with('success', 'Payment deleted successfully!');
             } catch (\Exception $e) {
