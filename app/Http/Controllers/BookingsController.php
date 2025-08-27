@@ -13,6 +13,8 @@ use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Passenger;
+use App\Models\Payment;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
@@ -426,6 +428,15 @@ class BookingsController extends Controller
           $cabinTypes = $this->cabinRepository->getTypes();
           $adjustments = $this->adjustmentsRepository->listAdjustments();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+          $bookingId = $booking->id;
+
+          $deletedPayments = Payment::onlyTrashed() // only soft deleted payments
+            ->where('splitAmount', true)
+            ->whereHas('passenger', function ($query) use ($bookingId) {
+              $query->where('booking_id', $bookingId);
+            })
+            ->get();
+
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
@@ -434,6 +445,7 @@ class BookingsController extends Controller
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
             'adjustments' => $adjustments,
+            'deletedPayments' => $deletedPayments,
           ]);
         },
         $event_id,
