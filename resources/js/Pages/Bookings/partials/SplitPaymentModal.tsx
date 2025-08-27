@@ -208,8 +208,9 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
         const leftToPay = p.passenger_allocated_cost - p.passenger_balance;
 
         const enteredAmount = parseFloat(
-          (newFormData[passengerKey]?.amount || "").replace(/,/g, "")
+          String(newFormData[passengerKey]?.amount ?? "").replace(/,/g, "")
         ) || 0;
+
 
         totalLeftToPay += leftToPay - enteredAmount;
         totalPaymentAdded += enteredAmount;

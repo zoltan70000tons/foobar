@@ -430,8 +430,16 @@ class BookingsController extends Controller
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
           $bookingId = $booking->id;
 
-          $deletedPayments = Payment::onlyTrashed() // only soft deleted payments
+          $latestBipId = Payment::onlyTrashed()
             ->where('splitAmount', true)
+            ->whereHas('passenger', function ($query) use ($bookingId) {
+              $query->where('booking_id', $bookingId);
+            })
+            ->orderBy('deleted_at', 'desc')
+            ->value('BIP_ID');
+          $deletedPayments = Payment::onlyTrashed()
+            ->where('splitAmount', true)
+            ->where('BIP_ID', $latestBipId)
             ->whereHas('passenger', function ($query) use ($bookingId) {
               $query->where('booking_id', $bookingId);
             })
