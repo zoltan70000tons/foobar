@@ -129,6 +129,13 @@ export type Booking = {
   cabin: Cabin;
 };
 
+export type DeletedPayments = {
+  id: number;
+  BIP_ID: string;
+  amount: string;
+  passenger_id: number
+}
+
 const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean }) => {
   const passengers = booking.passengers;
   const totalPassengers = passengers.length;
@@ -144,6 +151,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const [selectedPassengerId, setSelectedPassengerId] = useState<number | null>(null);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
   const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(null);
+
+  const [deletedPayments, setDeletedPayments] = useState<DeletedPayments[]>(null);
 
   // Payment Model States
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
@@ -230,6 +239,11 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const handleOpenSplitPaymentModal = () => {
     setOpenSplitPaymentModal(true);
+  }
+
+  const handleSplitPaymentDeleted = () => {
+    handleOpenSplitPaymentModal();
+    setOpenPaymentModal(false);
   }
 
   return (
@@ -562,6 +576,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           editMode={editMode}
           open={openSplitPaymentModal}
           onClose={() => setOpenSplitPaymentModal(false)}
+          deletedPayments={deletedPayments}
         />
 
         <SplitPaymentModal2
@@ -581,6 +596,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           paymentHistory={paymentHistory || []}
           open={openPaymentModal}
           onClose={() => setOpenPaymentModal(false)}
+          handleSplitPaymentDeleted={handleSplitPaymentDeleted}
+          setDeletedPayments={setDeletedPayments}
         />
       </LocalizationProvider>
     </Grid>

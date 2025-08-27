@@ -335,48 +335,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                   )}
                 </Box>
               )}
-              {deletedPayments && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  <AlertTitle>Deleted Split Payments</AlertTitle>
-                  <Grid item xs={12} sx={{ mb: 2 }}>
-                    <Accordion>
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1-content"
-                        id="panel1-header"
-                      >
-                        Show the list
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <TableContainer component={Paper}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Transaction ID</TableCell>
-                                <TableCell>Amount</TableCell>
-                                <TableCell>Transaction Date</TableCell>
-                                <TableCell>Deleted at</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {deletedPayments.map((payment) => (
-                                <TableRow key={payment.id}>
-                                  <TableCell>{payment.BIP_ID}</TableCell>
-                                  <TableCell>
-                                    {formatCurrency(payment.amount)}
-                                  </TableCell>
-                                  <TableCell>{new Date(payment.transaction_date).toLocaleDateString()}</TableCell>
-                                  <TableCell>{new Date(payment.deleted_at).toLocaleDateString()}</TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </AccordionDetails>
-                    </Accordion>
-                  </Grid>
-                </Alert>
-              )}
             </FormGroup>
           </Grid>
 

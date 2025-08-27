@@ -13,6 +13,7 @@ import {
 import { router } from "@inertiajs/react";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { InfoOutlined } from "@mui/icons-material";
+import { DeletedPayments } from "@/Pages/Bookings/partials/Payment";
 
 type SplitPaymentModalProps = {
   passengers: any;
@@ -21,6 +22,7 @@ type SplitPaymentModalProps = {
   editMode: boolean;
   open: boolean;
   onClose: () => void;
+  deletedPayments: DeletedPayments[];
 };
 
 type SplitPayment = {
@@ -55,6 +57,7 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
   editMode,
   open,
   onClose,
+  deletedPayments,
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
@@ -64,7 +67,7 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
 
   const [transactionId, setTransactionId] = useState<string>("");
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (!passengers || passengers.length === 0) return;
 
     let totalLeftToPay = 0;
@@ -85,7 +88,55 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
 
     updatedFormData.totalLeftToPay = totalLeftToPay;
     setFormData(updatedFormData);
-  }, [passengers]);
+  }, [passengers]);*/
+
+  useEffect(() => {
+    if (!passengers || passengers.length === 0) return;
+
+    let totalLeftToPay = 0;
+    let totalPaymentAdded = 0;
+
+    const updatedFormData: FormData = {
+      totalLeftToPay: 0,
+      totalPaymentAdded: 0,
+    };
+
+    passengers.forEach((passenger) => {
+      const passengerLeftToPay =
+        passenger.passenger_allocated_cost - passenger.passenger_balance;
+
+      // Base entry
+      const entry = {
+        passengerId: passenger.id,
+        passengerName: passenger.full_name,
+        passengerAllocatedCost: passenger.passenger_allocated_cost,
+        passengerBalance: passenger.passenger_balance,
+        amount: 0,
+        passengerLeftToPay,
+      };
+
+      // 🔎 if we have deleted payments, adjust the amount
+      if (deletedPayments && deletedPayments.length > 0) {
+        const deleted = deletedPayments.find(
+          (p) => p.passenger_id === passenger.id
+        );
+        if (deleted) {
+          entry.amount = parseFloat(deleted.amount) || 0;
+        }
+      }
+
+      totalLeftToPay += passengerLeftToPay - (entry.amount || 0);
+      totalPaymentAdded += entry.amount || 0;
+
+      updatedFormData[`passenger_${passenger.id}`] = entry;
+    });
+
+    updatedFormData.totalLeftToPay = +totalLeftToPay.toFixed(2);
+    updatedFormData.totalPaymentAdded = +totalPaymentAdded.toFixed(2);
+
+    setFormData(updatedFormData);
+  }, [passengers, deletedPayments]);
+
 
   const { showSnackbar } = useSnackbar();
 

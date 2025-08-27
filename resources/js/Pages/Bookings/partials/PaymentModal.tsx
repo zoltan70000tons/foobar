@@ -71,6 +71,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   paymentHistory,
   open,
   onClose,
+  handleSplitPaymentDeleted,
+  setDeletedPayments,
 }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
@@ -167,12 +169,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         payment_id: selectedPaymentId,
       },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
           setLocalPaymentHistory(prevHistory =>
             prevHistory.filter(payment => payment.id !== selectedPaymentId)
           );
 
+          console.log('ASJDKSADSADJSAHJDHSAJDHSAJDHJASHDJSA', res)
+
+          setDeletedPayments(res?.props?.deletedPayments);
+
           showSnackbar("Payment deleted successfully.", "success");
+
+          handleSplitPaymentDeleted();
         },
         onError: () => {
           showSnackbar("Could not delete payment.", "error");
