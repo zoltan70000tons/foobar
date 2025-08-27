@@ -18,6 +18,10 @@ use App\Http\Controllers\Api\Customer\AddPaxController;
 use App\Http\Controllers\Api\Customer\InvitationController;
 use App\Http\Controllers\Api\Customer\CheckBookingController;
 
+// middleware
+use App\Http\Middleware\ApiRedirectHttp;
+use App\Http\Middleware\EnsureUserIsNotCustomer;
+
 // --- PASSWORD RESET ---
 Route::post('/auth/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
 Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
@@ -31,6 +35,11 @@ Route::post('/auth/register', [CustomerRegisteredController::class, 'store'])->m
 Route::post('/auth/activate-survivor-account', [CustomerRegisteredController::class, 'storeUserSurvivor'])->middleware(
   'throttle:10,1'
 );
+
+Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
+  ->middleware(['web', 'signed'])
+  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
+  ->name('verificationApi.verify');
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);
@@ -94,7 +103,7 @@ Route::middleware([
   Route::get('/cabins', [CabinController::class, 'show']);
 
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
-  Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
+  Route::put('/reset-password-inside', [CustomerAuthController::class, 'update']);
   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
   Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
   Route::get('/customer/can-delete-account', [CustomerAuthController::class, 'canDeleteAccount']);
