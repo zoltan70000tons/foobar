@@ -179,7 +179,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     setUpgradeCabinModalOpen(true);
 
     if (cabinType && cabinCategory) {
-      fetchCabinsToUpgradeTo().then(r => console.log('hehehehehe', r));
+      fetchCabinsToUpgradeTo();
     }
   }
 

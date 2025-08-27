@@ -801,15 +801,14 @@ class BookingsController extends Controller
                 'cabinSpec',
                 'cabinType'
             ])
-                ->where('cabin_category_id', 5)
-                ->whereHas('cabinType', function ($q) {
-                    $q->where('id', 1);
+                ->where('cabin_category_id', $categoryId)
+                ->whereHas('cabinType', function ($q) use ($typeId) {
+                    $q->where('id', $typeId);
                 })
-                ->whereHas('cabinSpec', function ($q) {
-                    $q->where('cabin_number', '6223');
+                ->whereHas('cabinSpec', function ($q) use ($cabinNumber) {
+                    $q->where('cabin_number', $cabinNumber);
                 })
                 ->firstOrFail();
-
 
             $currentPrice = $currentCabin->category->price;
             $currentCapacity = $currentCabin->category->spec->capacity;
@@ -898,6 +897,8 @@ class BookingsController extends Controller
                 function ($event_id, $booking_id, $cabin_number) {
                     $booking = Booking::find($booking_id);
                     $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+
+                    $this->paymentInfoService->syncAllocatedCost($booking);
 
                     return redirect()
                         ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
