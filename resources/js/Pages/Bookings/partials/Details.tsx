@@ -289,10 +289,18 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
               </Grid>
 
               {editMode && (
-                <Box mt={3} textAlign="right">
-                  <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleEditClick}>
-                    Swap Cabin
-                  </Button>
+                <Box sx={{display: "flex", gap: "16px", justifyContent: "flex-end"}}>
+                  <Box mt={3} textAlign="right">
+                    <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleEditClick}>
+                      Swap Cabin
+                    </Button>
+                  </Box>
+
+                  <Box mt={3} textAlign="right">
+                    <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleUpgradeCabin}>
+                      Upgrade Cabin
+                    </Button>
+                  </Box>
                 </Box>
               )}
             </Grid>
