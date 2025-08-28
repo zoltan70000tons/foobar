@@ -1,3 +1,6 @@
+@php
+use Carbon\Carbon;
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 {{ $booking = $data['booking'] }}
@@ -109,6 +112,11 @@
             font-weight: bold;
         }
 
+        .next-payment-date {
+            color: #000;
+            font-weight: bold;
+        }
+
         .header-1 {
             text-align: left;
             width: 100px;
@@ -197,72 +205,80 @@
                                         <td style="width:100px"></td>
                                     </tr>
                                     @if($booking->payment_plan == 'INSTALLMENTS')
-                                    @foreach ($installments['paid_installments'] as $installment)
-                                    <tr>
-                                        <td>{{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}</td>
-                                        <td>{{ formatCurrency($installment['amount']) }}</td>
-                                        <td></td>
-                                        <td>{{ $payment_method }}</td>
-                                    </tr>
-                                    @endforeach
+                                    @php
+                                    $firstNonUnpaidHighlighted = false;
+                                    @endphp
 
                                     @foreach ($installments['remaining_installments'] as $installment)
                                     @php
                                     $isFee = $installment['type'] == 'FEE';
-                                    $name = $isFee ? $installment['name'] :'Installment';
-                                    @endphp
-                                    <tr>
+                                    $name = $isFee ? $installment['name'] : 'Installment';
+                                    $dueDate = Carbon::parse($installment['due_date']);
+                                    $daysLeft = $dueDate->diffInDays(Carbon::now(), false);
+                                    $color = '#000000';
+
+                                    if ($daysLeft >= 0 && $daysLeft <= 7) {
+                                        $color='#FF9800' ;
+                                        }
+                                        @endphp
+                                        <tr>
                                         <td>
                                             @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
                                                 <span class="due-immediately">Due Immediately</span>
                                                 @else
-                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
+                                                <span style="color:{{ $color }}; {{ !$firstNonUnpaidHighlighted ? 'font-weight:bold;' : '' }}">
+                                                    Upcoming, {{ formatDate($installment['due_date']) }}
+                                                </span>
+                                                @php
+                                                $firstNonUnpaidHighlighted = true;
+                                                @endphp
                                                 @endif
                                         </td>
                                         <td>{{ formatCurrency($installment['amount_due']) }}</td>
                                         <td>{{ $name }}</td>
                                         <td>{{ $payment_method }}</td>
-                                    </tr>
-                                    @endforeach
-                                    @else
-                                    <!-- If payment plan is not installments, show full payment status -->
-                                    @foreach ($installments['remaining_installments'] as $installment)
-                                    @php
-                                    $isFee = $installment['type'] == 'FEE';
-                                    $name = $isFee ? $installment['name'] :'Full Payment';
-                                    @endphp
-                                    <tr>
-                                        <td>
-                                            @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
-                                                <span class="due-immediately">Due Immediately</span>
-                                                @else
-                                                {{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}
-                                                @endif
-                                        </td>
-                                        <td>{{ formatCurrency($installment['amount_due']) }}</td>
-                                        <td>{{ $name }}</td>
-                                        <td>{{ $payment_method }}</td>
-                                    </tr>
-                                    @endforeach
-                                    @endif
-                                    <tr>
-                                        <td>&nbsp;</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 130px;"><strong>Total {{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid<strong></td>
-                                        <td style="width: 70px!important;"><strong>{{formatCurrency($passenger->passenger_balance)}}</strong></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    </tr>
+                    @endforeach
 
+                    @else
+                    <!-- If payment plan is not installments, show full payment status -->
+                    @foreach ($installments['remaining_installments'] as $installment)
+                    @php
+                    $isFee = $installment['type'] == 'FEE';
+                    $name = $isFee ? $installment['name'] :'Full Payment';
+                    @endphp
+                    <tr>
+                        <td>
+                            @if ($installment['status'] === 'Unpaid' && $installment['due_date'] <= now())
+                                <span class="due-immediately">Due Immediately</span>
+                                @else
+                                <span class="next-payment-date">{{ $installment['status'] }}, {{ formatDate($installment['due_date']) }}</span>
+                                @endif
                         </td>
+                        <td>{{ formatCurrency($installment['amount_due']) }}</td>
+                        <td>{{ $name }}</td>
+                        <td>{{ $payment_method }}</td>
+                    </tr>
+                    @endforeach
+                    @endif
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 130px;"><strong>Total {{ $passenger->lead_passenger ? 'Lead Passenger' : (['2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][$passenger->passenger_order - 2] ?? '8th') . ' Passenger' }} Paid<strong></td>
+                        <td style="width: 70px!important;"><strong>{{formatCurrency($passenger->passenger_balance)}}</strong></td>
+                        <td></td>
+                        <td></td>
                     </tr>
                 </tbody>
+            </table>
+
+            </td>
+            </tr>
+            </tbody>
             </table>
 
 

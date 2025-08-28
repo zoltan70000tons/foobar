@@ -244,8 +244,13 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
   }, [searchQuery]);
 
   const handleSubmit = () => {
+    const {capacity, cabin_category_spec_id, id: cabinCategoryId} = cabinCategory;
+
     const payload = {
       cabin_number: cabinNumber,
+      cabin_capacity: capacity,
+      cabin_category_id: cabinCategoryId,
+      cabin_category_spec_id: cabin_category_spec_id,
       payment_plan: paymentPlan.value,
       number_of_installments: numberOfInstallments?.value,
       carbon_offset: carbonOffset,

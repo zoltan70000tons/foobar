@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import {
   Box,
   FormControl,
@@ -71,12 +71,11 @@ const Country: React.FC<Props> = ({
   });
 
   // Handle change country
-  const handleChangeCountry = (e: any) => {
-    const selectedCountry = e.target.value as string;
+  const handleChangeCountry = (e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedCountry = e.target.value;
     onChange(selectedCountry);
     setMarginTop("0");
   };
-
   return (
     <Box
       sx={{
@@ -84,7 +83,7 @@ const Country: React.FC<Props> = ({
       }}
     >
       <FormControl fullWidth error={error}>
-        <InputLabel id="country-label" sx={size === 'small' ? {marginTop} : {}}>{label ? label : "Country"}</InputLabel>
+        <InputLabel id="country-label" sx={size === 'small' ? { marginTop } : {}}>{label ? label : "Country"}</InputLabel>
         {/* <InputLabel>Country</InputLabel> */}
         <Select
           name={nameOfField}
@@ -110,7 +109,7 @@ const Country: React.FC<Props> = ({
               </Box>
             );
           }}
-          
+
         >
           {CountryList}
         </Select>

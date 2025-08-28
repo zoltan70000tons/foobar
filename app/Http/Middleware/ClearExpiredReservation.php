@@ -17,6 +17,10 @@ class ClearExpiredReservation
    */
   public function handle(Request $request, Closure $next): Response
   {
+      if ($request->expectsJson()) {
+          return $next($request);
+      }
+
     // Check if the session has a 'reserved_cabin_id'
     if ($request->session()->has('reserved_cabin_id')) {
       $reservationId = $request->session()->get('reserved_cabin_id');

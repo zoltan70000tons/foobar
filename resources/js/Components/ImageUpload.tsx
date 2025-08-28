@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, BoxProps, Button, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-const StyledImageBox = styled(Box)(({ imageUrl }) => ({
+
+
+const UploadButton = styled(Button)({
+  marginTop: 16,
+});
+
+const StyledImageBox = styled(({ imageUrl, ...other }: { imageUrl?: string } & BoxProps) => (
+  <Box {...other} />
+))(({ imageUrl }) => ({
   width: 100,
   height: 100,
   border: '1px solid #ddd',
@@ -17,23 +25,28 @@ const StyledImageBox = styled(Box)(({ imageUrl }) => ({
   backgroundPosition: 'center',
 }));
 
-const UploadButton = styled(Button)({
-  marginTop: 16,
-});
 
-const ImageUpload = ({ onChange, initialImageUrl, error }) => {
+interface ImageUploadProps {
+  onChange: (file: File) => void;
+  initialImageUrl?: string | null;
+  error?: string;
+}
+
+const ImageUpload: React.FC<ImageUploadProps> = ({ onChange, initialImageUrl, error }) => {
   const [imageUrl, setImageUrl] = useState(initialImageUrl || null);
 
   useEffect(() => {
     setImageUrl(initialImageUrl);
   }, [initialImageUrl]);
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {}
+
+  const handleFileChange = (event: FileChangeEvent) => {
+    const file: File | undefined = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
+      const reader: FileReader = new FileReader();
       reader.onloadend = () => {
-        setImageUrl(reader.result); // Set image URL
+        setImageUrl(reader.result as string); // Set image URL
         onChange(file); // Pass file to parent component
       };
       reader.readAsDataURL(file);
@@ -55,7 +68,7 @@ const ImageUpload = ({ onChange, initialImageUrl, error }) => {
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
-        
+
         <label htmlFor="upload-button">
           <UploadButton variant="contained" component="span">
             Choose File

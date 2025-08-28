@@ -18,7 +18,7 @@ const CategoryTypeSelect = ({
   value: CategoryTypes;
   onChange: (event: SelectChangeEvent<CategoryTypes>) => void;
   error: { category_type?: string };
-  disabled?: Boolean
+  disabled?: boolean
 }) => {
   return (
     <FormControl fullWidth error={Boolean(error.category_type)}>

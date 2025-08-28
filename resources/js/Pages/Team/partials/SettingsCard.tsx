@@ -10,31 +10,7 @@ import CustomSelect from "./CustomSelect";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
-
-interface UserDetail {
-  phone: string;
-  first_name: string;
-  last_name: string;
-  middle_name: string;
-  gender: string;
-}
-
-interface User {
-  detail: UserDetail;
-  id: number;
-  email: string;
-  status: string;
-  roles: string[];
-  organization_id: number;
-  organization_name: string;
-  survivor_number?: string;
-  lastname?: string;
-  middlename?: string;
-  username?: string;
-  firstname?: string;
-  phone_number?: string;
-  gender?: string;
-}
+import { User } from "@/interfaces/User";
 
 interface SettingsCardProps {
   user: User;

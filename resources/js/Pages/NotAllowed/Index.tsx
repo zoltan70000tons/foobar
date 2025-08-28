@@ -14,7 +14,7 @@ import {
   Alert, // Import the Alert component from MUI
 } from "@mui/material";
 
-const Index = ({ auth }: PageProps & { tab: string; data: any }) => {
+const Index = ({ auth }: PageProps) => {
   return (
     <AuthenticatedLayout user={auth.user} header="Not Allowed">
       <Head title="Not Allowed" />
