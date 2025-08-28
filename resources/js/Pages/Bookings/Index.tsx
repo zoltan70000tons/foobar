@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 import { Person } from "@mui/icons-material";
 import MuiTable from "@/Components/tables/MuiTable";
-import { CabinStatus, CabinStatusColor, CabinStatusReduced } from "@/enums/CabinStatus";
 import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import SnackbarAlert from "@/Components/SnackbarAlert";
@@ -28,8 +27,6 @@ import UserSelectorModal from "@/Components/UserSelectorModal";
 import NewBookingModal from "./NewBookingModal";
 import { PageProps } from "@/types";
 // import LoadingOverlay from "@/Components/LoadingOverlay";
-import debounce from "lodash/debounce";
-import axios from "axios";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -44,23 +41,45 @@ import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 
 // reverb
 import '@/echo';
-import { ta } from "date-fns/locale";
+import { User } from "@/interfaces/User";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Errors } from "@inertiajs/core";
+import axios from "axios";
+import { Event } from "@/interfaces/Event";
+import { Booking } from "@/types/booking";
+import { Passenger } from "@/interfaces/Passenger";
+
+type Filters = Record<string, string | number | boolean>;
+
+type DateRangeState = Record<
+  string,
+  {
+    startDate?: string;
+    endDate?: string;
+  }
+>;
+
+type Props = PageProps & {
+  auth: AuthProps;
+  event: Event;
+  users: User[];
+  cabinTypes: { id: string; name: string }[];
+  cabinCategories: CabinCategory[];
+  errors: Errors;
+  tabIndex: number;
+  tab: string;
+};
+
 
 const Index = ({
   auth,
   event,
-  // bookings,
-  // newBookings,
-  // inProgressBookings,
-  // uploadedBookings,
-  // cancelledBookings,
   users,
   cabinTypes,
   cabinCategories,
-  //errors,
-  tags,
+  errors,
   tabIndex,
-}: PageProps & { tab: string; data: any; event: any; tabIndex: number }) => {
+}: Props) => {
   const { hasPermission } = usePermissions();
   // const [selectedTab, setSelectedTab] = useState<number>(1);
 
@@ -163,7 +182,7 @@ const Index = ({
     setOpenDialog(false);
   };
 
-  const handleViewClick = (row: any) => {
+  const handleViewClick = (row: Booking) => {
     if (!eventId || !row?.booking_code) {
       console.error("Missing parameters: eventId or bookingCode is undefined.");
       return;
@@ -208,7 +227,7 @@ const Index = ({
         header: "Booking Date",
         accessor: "created_at",
         sortable: true,
-        draw: (row: any) => (
+        draw: (row: Booking) => (
           <>
             {formatDate(row.created_at)}
           </>
@@ -272,17 +291,17 @@ const Index = ({
         header: "Type",
         accessor: "cabinType",
         sortable: true,
-        draw: (row: any) => <>{row.cabin?.cabin_type?.cabin_type}</>,
+        draw: (row: Booking) => <>{row.cabin?.cabin_type?.cabin_type}</>,
       },
       {
         header: "Balance",
         accessor: "balance",
-        draw: (row: any) => <>{row.balance != null && row.cost != null && <>{formatCurrency(row.balance, false, false) + " / " + formatCurrency(row.cost, false, false)}</>}</>,
+        draw: (row: Booking) => <>{row.balance != null && row.cost != null && <>{formatCurrency(row.balance, false, false) + " / " + formatCurrency(row.cost, false, false)}</>}</>,
       },
       {
         header: "Tags",
         accessor: "Tags",
-        draw: (row: any) => (
+        draw: (row: Booking) => (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
               row.tags.map((tag: string, index: number) => {
@@ -313,7 +332,7 @@ const Index = ({
         header: "Assigned To",
         accessor: "agent_id",
         sortable: true,
-        draw: (row: any) => {
+        draw: (row: Booking) => {
           const agent = row?.agent;
           const label = agent?.username ? agent.username : <em>Not Assigned</em>;
           const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>N</Avatar>;
@@ -324,7 +343,7 @@ const Index = ({
                 key={row.id}
                 label={label}
                 avatar={avatar}
-                onClick={() => handleClick(agent?.id, row.booking_code)}
+                onClick={() => handleClick(agent?.id.toString() || '', row.booking_code)}
                 size="small"
                 color={agent?.username ? "primary" : "default"}
                 sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
@@ -337,7 +356,7 @@ const Index = ({
         header: "Actions",
         accessor: "",
         disableFilter: true,
-        draw: (row: any) => {
+        draw: (row: Booking) => {
 
 
           return (
@@ -384,7 +403,7 @@ const Index = ({
         header: "Passenger",
         accessor: "lead_passenger",
         width: "25%",
-        draw: (row: any) => (
+        draw: (row: Passenger) => (
           <Box display="flex" alignItems="center" gap={1} key={row.passenger_order}>
             <Person
               titleAccess={row.lead_passenger ? "Lead Passenger" : "Passenger"}
@@ -412,7 +431,7 @@ const Index = ({
       {
         header: "Balance",
         accesor: "passenger_allocated_cost",
-        draw: (row: any) => (
+        draw: (row: Passenger) => (
           <div style={{ display: "flex", gap: "10px" }}>
             {formatCurrency(row.passenger_balance, false, false) + " / " + formatCurrency(row.passenger_allocated_cost, false, false)}
           </div>
@@ -421,7 +440,7 @@ const Index = ({
       {
         header: "Next Payment",
         accesor: "installment_status",
-        draw: (row: any) => (
+        draw: (row: Passenger) => (
           <div style={{ display: "flex", gap: "10px" }}>
             <Chip
               label={row.installment_status.fully_paid ? "Paid" : formatDate(row.installment_status.next_installment?.due_date)}
@@ -457,28 +476,36 @@ const Index = ({
 
   const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => { };
 
-  const fetchData = useCallback(async (page, rowsPerPage, filters, sort, dateRangeState) => {
-    try {
-      console.log(selectedTags, 'selected tags');
-      const res = await axios.get(route("bookings.data", { id: event.id }), {
-        params: {
-          page: page + 1,
-          per_page: rowsPerPage,
-          sort_key: sort?.key ?? "created_at",
-          sort_direction: sort?.direction ?? "asc",
-          keyword: searchTerm,
-          tab: selectedTab ?? 0,
-          tags: selectedTags.map((tag) => tag.id).join(','),
-          user_ids: selectedUsers.map((user) => user.id),
-          date_range: dateRangeState,
-          ...filters,
-        },
-      });
-      return res.data;
-    } catch (err) {
-      throw err;
-    }
-  }, [event.id, searchTerm, selectedTab, selectedTags, selectedUsers, tableKey]);
+  const fetchData = useCallback(
+    async (
+      page: number,
+      rowsPerPage: number,
+      filters: Filters,
+      sort: { key?: string; direction?: string } | undefined,
+      dateRangeState: DateRangeState
+    ) => {
+      try {
+        const res = await axios.get(route("bookings.data", { id: event.id }), {
+          params: {
+            page: page + 1,
+            per_page: rowsPerPage,
+            sort_key: sort?.key ?? "created_at",
+            sort_direction: sort?.direction ?? "asc",
+            keyword: searchTerm,
+            tab: selectedTab ?? 0,
+            tags: selectedTags.join(','),
+            user_ids: selectedUsers.map((user) => user.id),
+            date_range: dateRangeState,
+            ...filters,
+          },
+        });
+        return res.data;
+      } catch (err) {
+        throw err;
+      }
+    },
+    [event.id, searchTerm, selectedTab, selectedTags, selectedUsers, tableKey]
+  );
 
 
 

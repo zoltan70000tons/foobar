@@ -9,18 +9,20 @@ import type { InstallmentItem, InstallmentStatus, Fee, Installment } from "@/typ
 
 // Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
+import { Passenger } from "@/interfaces/Passenger";
+import { Booking } from "@/types/booking";
 
 
 // Define types
 type Props = {
-  passenger: any;
-  booking: any;
-  installments: any;
+  passenger: Passenger;
+  booking: Booking;
+  installments: Installment[];
 };
 
 type InstallmentPaymentProps = {
   order: number;
-  installment: any;
+  installment: Installment;
   status: "paid" | "unpaid";
   isOverdue: boolean;
   fillPerc: number;
@@ -110,7 +112,7 @@ const Installments = ({
   installment_plan,
 }: {
   perc: number;
-  installments: any[];
+  installments: Installment[];
   passengerAllocatedCost: number;
   installment_plan: InstallmentStatus;
 }) => {
@@ -148,7 +150,7 @@ const Installments = ({
         gap: 1,
       }}
     >
-      {installments.map((installment: any, index: number) => {
+      {installments.map((installment: Installment, index: number) => {
         const fillPerc = installmentFillPercentages[index] || 0;
         const dueDate = dayjs(installment?.due_date, "YYYY-MM-DD").add(2, "day");
 
@@ -192,21 +194,21 @@ const Installments = ({
 export default function SectionPercentage({ passenger, booking, installments }: Props) {
   const paymentInstallments = installments
     .filter((inst: Installment) => inst.type === "PAYMENT")
-    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+    .sort((a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
   const feeInstallments = installments
     .filter((inst: Installment) => inst.type === "FEE")
-    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+    .sort((a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
   // Get the total fees and calculate total fees
   const passengerFees = (passenger?.fees as Fee[]) || [];
-  const totalFees = passengerFees.reduce((acc: number, fee: any) => acc + Number(fee.amount || 0), 0);
+  const totalFees = passengerFees.reduce((acc: number, fee: Fee) => acc + Number(fee.amount || 0), 0);
 
   // Get the installment status
   const installment_status = passenger?.installment_status;
 
   // Get the paid installments and calculate the total paid fees
-  const paidFeeIds = installment_status?.paid_installments?.filter((i: any) => i.type === "FEE") ?? [];
-  const passengerPaidFees = paidFeeIds.reduce((acc: number, fee: any) => acc + Number(fee.amount || 0), 0);
+  const paidFeeIds = installment_status?.paid_installments?.filter((i: InstallmentItem) => i.type === "FEE") ?? [];
+  const passengerPaidFees = paidFeeIds.reduce((acc: number, fee: InstallmentItem) => acc + Number(fee.amount || 0), 0);
 
   const passengerAllocatedCost = Number(passenger?.passenger_allocated_cost - totalFees); // We do not want to include fees to not affect installments. This are counted separately
   const passengerBalance = Number(passenger?.passenger_balance) - Number(passengerPaidFees) || 0;

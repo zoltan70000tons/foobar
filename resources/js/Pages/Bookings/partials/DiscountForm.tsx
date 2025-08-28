@@ -23,21 +23,13 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { Delete } from "@mui/icons-material";
+import { Discount } from "@/types/discount";
 
 type DiscountFormProps = {
   passenger: Passenger;
   event_id: number;
   booking_id: number;
   editMode: boolean;
-};
-
-export type Discount = {
-  type: string;
-  amount: number;
-  operation: string;
-  id: number;
-  created_at: string;
-  notes?: string;
 };
 
 const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, booking_id, editMode }) => {

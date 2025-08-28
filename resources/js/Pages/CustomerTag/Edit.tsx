@@ -40,7 +40,7 @@ const Edit = ({ auth, errors }: PageProps) => {
 
   const [color, setColor] = useColor(data.color);
 
-  const handleChange = <TForm extends Record<string, any>>(
+  const handleChange = <TForm extends Record<string, unknown>>(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
@@ -77,7 +77,7 @@ const Edit = ({ auth, errors }: PageProps) => {
           message: `Error editing customer tag\n${errorMessages}`,
         });
       },
-      onFinish: () => {},
+      onFinish: () => { },
     });
   };
 
@@ -140,12 +140,12 @@ const Edit = ({ auth, errors }: PageProps) => {
                         disabled
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <ColorPicker width={456} height={228}
-                                   color={color} onChange={setColor} hideHSV dark />
+                        color={color} onChange={setColor} hideHSV dark />
                     </Grid>
-                    <Grid item xs={ 6 }>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                    <Grid item xs={6}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <span>Preview:</span>
                         <Chip
                           label={data.name}

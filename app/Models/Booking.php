@@ -380,23 +380,30 @@ class Booking extends Model
       }
 
       $previousStatus = $booking->getOriginal('status');
-      $newStatus = $booking->status;
-      if ($newStatus === 'CANCELLED') {
-        $cabin = $booking->cabin;
-        $cabinTypeId = $cabin->cabinType->id;
-        $cabin->inventory += 1;
-        if ($cabinTypeId === 1) {
-          $cabin->status = 'AVAILABLE';
-        } else {
-          $capacity = $cabin->category->capacity;
-          $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
+      $cabin = $booking->cabin;
+      if ($previousStatus === 'RESERVED') {
+        $newStatus = $booking->status;
+        if ($newStatus === 'CANCELLED') {
+          $cabinTypeId = $cabin->cabinType->id;
+          $cabin->inventory += 1;
+          if ($cabinTypeId === 1) {
+            $cabin->status = 'AVAILABLE';
+          } else {
+            $capacity = $cabin->category->capacity;
+            $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
+          }
+        } 
+      }else {
+          $cabin->status = 'RESERVED';
+          $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
+          $booking->saveQuietly(); 
         }
+
         $cabin->save();
         //deleting booking from locks table
         DB::table('booking_agent_sessions')
           ->where('booking_id', $booking->id)
           ->delete();
-      }
     });
 
     static::deleted(function ($booking) {

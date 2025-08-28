@@ -24,6 +24,19 @@ import UMSelect from "@/Components/UMSelect";
 import ImageGallery from "@/Components/ImageGallery";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { Errors } from "@inertiajs/core";
+import { Cruisers } from "@/interfaces/Cruiser";
+import { Event } from "@/interfaces/Event";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+
+
+type Props = PageProps & {
+  auth: AuthProps;
+  event: Event;
+  cruisers: Cruisers;
+  cabin_category: CabinCategory;
+  errors: Errors;
+};
 
 
 const Edit = ({
@@ -32,9 +45,9 @@ const Edit = ({
   cruisers,
   cabin_category,
   errors,
-}: PageProps & { tab: string; data: any }) => {
+}: Props & { tab: string;}) => {
   
-  const { flash } = usePage().props;
+  const { flash } = usePage().props as { message?: string; success?: boolean; error?: boolean };
 
   const { data, setData, post, processing } = useForm({
     category_name: cabin_category.category_name,
@@ -56,7 +69,9 @@ const Edit = ({
   }
   
   const { showSnackbar } = useSnackbar();
-  const [images, setImages] = useState<Image[]>(cabin_category.images || []);
+  const [images, setImages] = useState<Image[]>(
+    Array.isArray(cabin_category.images) ? cabin_category.images : []
+  );
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   useEffect(() => {

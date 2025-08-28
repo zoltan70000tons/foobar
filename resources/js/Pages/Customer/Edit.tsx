@@ -121,15 +121,15 @@ const Edit = ({ auth, errors }: PageProps) => {
     const seen = new Set<string>();
 
     return Object.entries(subdivisions)
-    .map(([fullCode, { name }]) => ({ label: name, value: name }))
-    .filter(({ label }) => {
-      if (seen.has(label)) {
-        return false;
-      }
-      seen.add(label);
-      return true;
-    })
-    .sort((a, b) => a.label.localeCompare(b.label));
+      .map(([fullCode, { name }]) => ({ label: name, value: name }))
+      .filter(({ label }) => {
+        if (seen.has(label)) {
+          return false;
+        }
+        seen.add(label);
+        return true;
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
 
   const stateOptions = getStateOptions(selectedCountry);
@@ -144,13 +144,13 @@ const Edit = ({ auth, errors }: PageProps) => {
     setData("state", "");
   }, [selectedCountry]);
 
-  const handleChange = <TForm extends Record<string, any>>(
+  const handleChange = <TForm extends Record<string, unknown>>(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-
     setData(name as keyof TForm, value as TForm[keyof TForm]);
   };
+
 
   const handleSelectChange = (
     e: React.ChangeEvent<{ name?: string; value: unknown }>
@@ -161,9 +161,13 @@ const Edit = ({ auth, errors }: PageProps) => {
     setData("state", value as string);
   };
 
-  const handleStringChange = <TForm extends Record<string, any>>(value: string, name: string) => {
-    setData(name as keyof TForm, value as TForm[keyof TForm]);
+  const handleStringChange = <TForm extends Record<string, unknown>>(
+    value: string,
+    name: keyof TForm
+  ) => {
+    setData(name, value as TForm[keyof TForm]);
   };
+
 
   const handleBack = () => {
     window.history.back();

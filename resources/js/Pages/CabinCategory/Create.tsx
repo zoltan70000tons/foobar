@@ -16,18 +16,29 @@ import {
 import FormatInput from "@/Components/FormatInput";
 import CategoryTypeSelect from "@/Components/CategoryTypeSelect";
 import { CategoryTypes } from "@/enums/CategoryTypeEnum";
-import { GridMenuIcon } from "@mui/x-data-grid";
 import DropZoneField from "@/Components/DropZoneField";
-import CustomNumericFormat from "@/Components/CustomNumericFormat";
-import { NumericFormat } from "react-number-format";
+
 import UMSelect from "@/Components/UMSelect";
+import { Errors } from "@inertiajs/core";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Event } from "@/interfaces/Event";
+import { Cruisers } from "@/interfaces/Cruiser";
+
+
+type Props = PageProps & {
+  auth: AuthProps;
+  event: Event;
+  categories: CabinCategory[];
+  cruisers: Cruisers;
+  errors: Errors;
+};
 
 const Create = ({
   auth,
   event,
   cruisers,
   errors,
-}: PageProps & { tab: string; data: any }) => {
+}: Props) => {
   const { data, setData, post, processing } = useForm({
     category_name: "",
     category_code: "",
@@ -40,26 +51,17 @@ const Create = ({
     cruise: ""
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  const handleFilesChange = (files: string[]) => {
+  const handleFilesChange = (files: File[]) => {
     setUploadedFiles(files);
   };
 
   const handleInputChange = (
-    e: React.FormEvent<HTMLFormElement> | string,
-    value?: string
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    let name: string;
-
-    if (typeof e === "string") {
-      name = e;
-      setData(name, value || "");
-    } else {
-      const target = e.target as HTMLInputElement;
-      name = target.name;
-      setData(name, value || target.value);
-    }
+    const { name, value } = e.target;
+    setData(name as keyof typeof data, value);
   };
 
   const handleCategoryTypeChange = (
@@ -71,14 +73,18 @@ const Create = ({
   const handleCruiserChange = (
     event: SelectChangeEvent<{ value: string }>
   ) => {
-    setData("cruise", event.target.value);
+    const value = event.target.value;
+    setData("cruise", typeof value === "string" ? value : value.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData();
     for (const key in data) {
-      formData.append(key, data[key]);
+      const value = data[key as keyof typeof data];
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
     }
     uploadedFiles.forEach((file) => {
       formData.append("files[]", file);
@@ -164,9 +170,9 @@ const Create = ({
                       format="#,##0.00"
                       prefix="$"
                       decimalScale={2}
-                      onChange={handleInputChange}
+                      onChange={(name: string, value: string) => setData(name as keyof typeof data, value)}
                       error={errors}
-                     
+                      disabled={false}
                     />
                   </Box>
                 </Grid>
@@ -201,18 +207,16 @@ const Create = ({
                       value={data.description}
                       onChange={handleInputChange}
                       error={Boolean(errors.description)}
-                      helpeText={errors.description}
+                      helperText={errors.description}
                     />
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-
                     <CategoryTypeSelect
                       onChange={handleCategoryTypeChange}
                       error={errors}
-                      value={data.category_type}
-
+                      value={data.category_type as CategoryTypes}
                     />
                   </Box>
                   <Box sx={{ mb: 2 }}>
@@ -229,7 +233,6 @@ const Create = ({
                       helperText={errors.display_order}
                     />
                   </Box>
-
                   <Box sx={{ mb: 2 }}>
                     <UMSelect
                       name="cruise"
@@ -237,7 +240,7 @@ const Create = ({
                       value={data.cruise}
                       options={cruisers.data}
                       onChange={handleCruiserChange}
-                      error={errors.cruise}
+                      error={typeof errors.cruise === "string" ? { cruise: errors.cruise } : undefined}
                       label="Cruiser"
                     />
                   </Box>
@@ -247,7 +250,7 @@ const Create = ({
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6">Media</Typography>
-                  <DropZoneField onFilesChange={handleFilesChange} />
+                  <DropZoneField onFilesChange={handleFilesChange} errors={errors} />
                 </Grid>
                 <Grid item xs={12}>
                   <Box sx={{ mb: 2 }}>

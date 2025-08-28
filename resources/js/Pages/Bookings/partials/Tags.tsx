@@ -13,10 +13,18 @@ import {
 import { Autocomplete } from "@mui/lab";
 import AddIcon from "@mui/icons-material/Add";
 import { router } from "@inertiajs/react";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import { Event } from "@/interfaces/Event";
+import { Booking } from "@/types/booking";
 
 
 
-const Tags: React.FC<{ editable: boolean; event: any; booking: any, availableTags: any }> = ({ editable, event, booking, availableTags }) => {
+const availableTags = Object.values(TagEnum).map((tag) => ({
+    label: tag,
+    value: tag,
+}));
+
+const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({ editable, event, booking }) => {
     const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);

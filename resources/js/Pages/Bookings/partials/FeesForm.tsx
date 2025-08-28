@@ -30,6 +30,7 @@ import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 import { getOrdinalName } from "@/Helpers/stringUtils";
+import { Installment } from "@/interfaces/Installment";
 
 type FeesFormProps = {
   passenger: Passenger;
@@ -61,7 +62,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [feeIdToDelete, setFeeIdToDelete] = useState(null);
+  const [feeIdToDelete, setFeeIdToDelete] = useState<number | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -74,7 +75,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleOpenDelete = (feeId: any) => {
+  const handleOpenDelete = (feeId: number) => {
     setFeeIdToDelete(feeId);
     setConfirmDeleteOpen(true);
   };
@@ -211,7 +212,7 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
               >
                 {passenger.installments
                   .filter((install) => install.type === "PAYMENT")
-                  .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                  .sort((a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
                   .map((inst, index) => (
                     <MenuItem key={inst.id} value={inst.id} sx={{ textTransform: "capitalize" }}>
                       {`${getOrdinalName(index + 1)} Installment - Due: ${formatDate(inst.due_date)}`}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { TagEnum } from "@/enums/TagEnum";
 import {
@@ -9,7 +9,6 @@ import {
 import { CabinType } from "@/enums/CabinType";
 import { PageProps } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
-import { LocationEnum } from "@/enums/LocationEnum";
 import {
   Box,
   Container,
@@ -48,44 +47,43 @@ import {
 } from "@mui/icons-material";
 
 import NoAccessAlert from "@/Components/NoAccessAlert";
-import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import MuiTable from "@/Components/tables/MuiTable";
+import { Cabin } from "@/interfaces/Cabin";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Errors } from "@inertiajs/core";
+import { Event } from "@/interfaces/Event";
 
 type Props = PageProps & {
-  auth: any;
-  cabin: any;
-  event: any;
-  categories: any[];
-  shared: any[];
-  errors: any[];
-  availableTags: any[];
+  auth: AuthProps;
+  cabin: Cabin;
+  event: Event;
+  categories: CabinCategory[];
+  tab: string;
+  errors: Errors;
+  shared: boolean;
 };
 
-type Tag = { id: string; name: string; color?: string };
-
-const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }: Props) => {
-
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+const Edit = ({ auth, cabin, event, categories, errors, shared }: Props) => {
+  const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
-  const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_number);
-  const [cabinCategory, setCabinCategory] = useState<string>(
+  const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_spec.cabin_number);
+  const [cabinCategory, setCabinCategory] = useState<number>(
     cabin.cabin_category_id
   );
   const [cabinType, setCabinType] = useState<number | string>(
     cabin.cabin_type_id
   );
-  const [deck, setDeck] = useState<string>(cabin.cabin_spec.deck);
+  const [deck, setDeck] = useState<number>(cabin.cabin_spec.deck);
   const [location, setLocation] = useState<string>(cabin.cabin_spec.location);
   const [connectWith, setConnectWith] = useState<string>(
     cabin.cabin_spec.connects_with
   );
-  const [ticketInventory, setTicketInventory] = useState<string>(
+  const [ticketInventory, setTicketInventory] = useState<number>(
     cabin.inventory
   );
-  const [totalBerths, setTotalBerths] = useState<string>(
+  const [totalBerths, setTotalBerths] = useState<number>(
     cabin.cabin_spec.total_berths
   );
   const [lowerBedType1, setLowerBedType1] = useState<string>(
@@ -94,7 +92,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
   const [lowerBedType2, setLowerBedType2] = useState<string>(
     cabin.cabin_spec.lower_bed_type_2
   );
-  const [upperBerths, setUpperBerths] = useState<string>(cabin.upper_berths);
+  const [upperBerths, setUpperBerths] = useState<string>(cabin.cabin_spec.upper_berths);
   const [notes, setNotes] = useState<string>(cabin.notes);
   const [internalNotes, setInternalNotes] = useState<string>(
     cabin.internal_notes
@@ -188,13 +186,25 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
     ),
   };
 
-  const handleTagsChange = (_: any, value: Tag[]) => setSelectedTags(value);
-
-  const handleFeatureChange = (event: any) => {
-    setFeatures({ ...features, [event.target.name]: event.target.checked });
+  const handleTagsChange = (
+    event: SyntheticEvent<Element, Event>,
+    newValue: string[]
+  ) => {
+    setSelectedTags(newValue);
   };
 
-  const handleCabinStatusChange = (event: any) => {
+  const handleFeatureChange = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    setFeatures({
+      ...features,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const handleCabinStatusChange = (
+    event: ChangeEvent<{ value: unknown }>
+  ) => {
     setCabinStatus(event.target.value as CabinStatus);
   };
 
@@ -691,7 +701,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
     </form>
   );
 
-  const handleViewClick = (row: any) => {
+  const handleViewClick = (row: Cabin) => {
     const url = `/events/${event.id}/cabins/${row.id}/edit`;
     router.visit(url);
   };
@@ -702,7 +712,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
         header: "Cabin ID",
         accessor: "id",
         sortable: true,
-        draw: (row) => (
+        draw: (row: Cabin) => (
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="body2">{row.id}</Typography>
           </Box>
@@ -717,9 +727,9 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
         header: "Cabin Category",
         accessor: "category",
         sortable: true,
-        draw: (row) => (
+        draw: (row: Cabin) => (
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="body2">{row.category.title}</Typography>
+            <Typography variant="body2">{row.cabin_category.title}</Typography>
           </Box>
         ),
       },
@@ -727,7 +737,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
         header: "Cabin Type",
         accessor: "cabin_type",
         sortable: true,
-        draw: (row) => (
+        draw: (row: Cabin) => (
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Typography variant="body2">
               {row.cabin_type.cabin_type}
@@ -740,7 +750,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
         header: "Status",
         accessor: "status",
         sortable: true,
-        draw: (row) => (
+        draw: (row: Cabin) => (
           <Box
             sx={{
               display: "flex",
@@ -756,7 +766,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
       {
         header: "Tags",
         accessor: "tags",
-        draw: (row) => (
+        draw: (row: Cabin) => (
           <Box
             sx={{
               display: 'flex',
@@ -785,7 +795,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
         header: "Actions",
         accessor: "",
         disableFilter: true,
-        draw: (row: any) => {
+        draw: (row: Cabin) => {
 
 
           return (
@@ -862,7 +872,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
         </Button>)}
       <MuiTable
         columns={cabinColumns}
-        data={shared}
+        data={Array.isArray(shared) ? shared : []}
         showCheckBox={false}
         showSubCheckBox={false}
       />
@@ -882,7 +892,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
                 disabled={!canEditFull}
                 options={categories}
                 getOptionLabel={(option) =>
-                  `${option.title} - ${option.capacity_description}`
+                  `${option.title} - ${option.capacity}`
                 }
                 value={
                   categories.find((cat) => cat.id === selectedCategoryForSharedCabin) || null
@@ -942,7 +952,7 @@ const Edit = ({ auth, cabin, event, categories, shared, errors, availableTags }:
             {hasAnyPermission ? (
               <>
                 <Typography variant="h5" sx={{ mb: 3 }}>
-                  Cabins / {cabin.cabin_number}
+                  Cabins / {cabin.cabin_spec.cabin_number}
                 </Typography>
 
                 {/* Tabs for Form and List */}

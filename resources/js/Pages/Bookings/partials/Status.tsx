@@ -18,7 +18,6 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import WarningIcon from '@mui/icons-material/Warning';
 import { router } from '@inertiajs/react';
 import { usePermissions } from '@/Providers/PermissionContext';
@@ -215,7 +214,7 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
                       color="warning"
                       onClick={handleUpdateStatus}
                       disabled={!canEdit || !editMode}
-                      endIcon={<SaveIcon />}
+                      startIcon={<SaveIcon />}
                       sx={{
                         height: '100%',
                         color: '#fff',

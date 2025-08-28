@@ -10,10 +10,15 @@ import MuiTable from '@/Components/tables/MuiTable';
 // import LoadingOverlay from '@/Components/LoadingOverlay';
 import { Visibility } from '@mui/icons-material';
 import axios from 'axios';
-import NewBookingModal from "@/Pages/Bookings/NewBookingModal";
-import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
+import { Customer } from '@/interfaces/Customer';
 
-const Index = ({ auth, customers, userTags }: PageProps) => {
+type Props = PageProps & {
+  auth: AuthProps;
+  customers: Customer[];
+  userTags: { label: string; color: string }[];
+};
+
+const Index = ({ auth, customers, userTags }: Props) => {
   const { hasPermission } = usePermissions();
   const { get } = useForm();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -72,7 +77,7 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
       {
         header: "Tags",
         accessor: "Tags",
-        draw: (row: any) => (
+        draw: (row: Customer) => (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
               row.tags.map((tag: {label: string; color: string}, index: number) => {
@@ -108,7 +113,7 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
         accessor: 'id',
         disableFilter: true,
         width: '13%',
-        draw: (row) => (
+        draw: (row: Customer) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {hasPermission(Permissions.ViewCustomers) && (
               <Visibility
@@ -138,7 +143,7 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
     rowsPerPage: number,
     filters: { [key: string]: string },
     sort: { key: string; direction: 'asc' | 'desc' },
-  ): Promise<{ data: any[]; total: number }> => {
+  ): Promise<{ data: Customer[]; total: number }> => {
     console.log({selectedTags})
     try {
       const response = await axios.get('/customers/paginated', {
@@ -151,7 +156,7 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
           tags: JSON.stringify(selectedTags),
         },
         paramsSerializer: (params) => {
-          return new URLSearchParams(params as any).toString();
+          return new URLSearchParams(params as Record<string, string>).toString();
         },
       });
 

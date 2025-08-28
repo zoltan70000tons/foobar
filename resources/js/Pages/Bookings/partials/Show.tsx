@@ -31,6 +31,7 @@ import AdjustmentForm from "./AdjustmentForm";
 import { BookingSessionTimer } from "./BookingSessionTimer";
 import FaceIcon from '@mui/icons-material/Face';
 import '@/echo';
+import { ReverbLockBookingEvent } from "@/interfaces/ReverbLockBookingEvent";
 
 const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags }: PageProps) => {
 
@@ -58,7 +59,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   useEffect(() => {
     const channel = window.Echo.channel('reverb-lock-booking');
   
-    channel.listen('.ReverbLockBooking', ({ agentId, bookingId, username }: any) => {
+    channel.listen('.ReverbLockBooking', ({ agentId, bookingId, username }: ReverbLockBookingEvent) => {
       if (
         bookingId === bookingId && 
         username !== null &&
