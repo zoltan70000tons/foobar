@@ -41,6 +41,7 @@ type Props = PageProps & {
   cabins: Cabin[];
   errors: Errors;
   tab: string;
+  tags: { id: string; name: string; color: string }[];
 };
 
 const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {

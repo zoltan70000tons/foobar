@@ -19,12 +19,12 @@ import { Booking } from "@/types/booking";
 
 
 
-const availableTags = Object.values(TagEnum).map((tag) => ({
-    label: tag,
-    value: tag,
-}));
+// const availableTags = Object.values(TagEnum).map((tag) => ({
+//     label: tag,
+//     value: tag,
+// }));
 
-const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({ editable, event, booking }) => {
+const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking, availableTags}> = ({ editable, event, booking,availableTags}) => {
     const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);

@@ -63,9 +63,11 @@ type Props = PageProps & {
   tab: string;
   errors: Errors;
   shared: boolean;
+  availableTags: { id: string; name: string; color: string }[];
 };
 
-const Edit = ({ auth, cabin, event, categories, errors, shared }: Props) => {
+const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }: Props) => {
+  const [tags, setTags] = useState<any[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
   const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_spec.cabin_number);

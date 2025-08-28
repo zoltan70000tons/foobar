@@ -68,6 +68,7 @@ type Props = PageProps & {
   errors: Errors;
   tabIndex: number;
   tab: string;
+  tags: { id: string; name: string; color: string }[];
 };
 
 
@@ -79,6 +80,7 @@ const Index = ({
   cabinCategories,
   errors,
   tabIndex,
+  tags
 }: Props) => {
   const { hasPermission } = usePermissions();
   // const [selectedTab, setSelectedTab] = useState<number>(1);
