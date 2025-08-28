@@ -7,6 +7,7 @@ use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
 use App\Models\Booking;
+use App\Models\Passenger;
 use App\Models\SurvivorNumber;
 use App\Models\User;
 use App\Models\UserTag;
@@ -325,16 +326,7 @@ class CustomerController extends Controller
         $passengerInSame = $survivorNumber ? $sameBookingBySN->get($survivorNumber) : null;
         $inSameBooking   = (bool) $passengerInSame;
         $isCurrentLead   = (bool) ($passengerInSame?->lead_passenger);
-        $hasBooking = false;
-        if ($request->eventId && $survivorNumber) {
-          $hasBooking = Booking::where('event_id', $request->eventId)
-            ->where('status', '!=', 'CANCELLED')
-            ->when($inSameBooking, fn($q) => $q->where('id', '!=', $booking->id))
-            ->whereHas('passengers', function ($q) use ($survivorNumber) {
-              $q->where('survivor_number', $survivorNumber);
-            })
-            ->exists();
-        }
+        $hasBooking = Passenger::checkSurvivorInActiveBookings($survivorNumber, $request->eventId, excludeBookingId: $booking->id);
         if ($isCurrentLead) {
           $hasBooking = true;
         }
