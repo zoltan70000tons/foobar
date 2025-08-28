@@ -8,11 +8,11 @@ use App\Models\Cabin;
 use App\Models\CabinCategory;
 use App\Models\CabinSpec;
 use App\Models\CabinType;
+use App\Models\Tag;
 use App\Traits\ExceptionLogger;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-
-
+use Str;
 
 class CabinRepository implements CabinInterface
 {
@@ -26,7 +26,7 @@ class CabinRepository implements CabinInterface
 
   function find($id)
   {
-    return Cabin::find($id);
+    return Cabin::with('tags')->find($id);
   }
 
   function save(array $data): ?Cabin
@@ -39,7 +39,7 @@ class CabinRepository implements CabinInterface
 
       $cabin->notes = $data['notes'] ?? null;
       $cabin->internal_notes = $data['internal_notes'] ?? null;
-      $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
+      // $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
 
       if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
 
@@ -98,7 +98,12 @@ class CabinRepository implements CabinInterface
 
       $cabin->notes = $data['notes'] ?? null;
       $cabin->internal_notes = $data['internal_notes'] ?? null;
-      $cabin->tags = !empty($data['tags']) && is_array($data['tags']) ? array_values($data['tags']) : [];
+      $tagIds = collect($data['tags'] ?? [])
+        ->map(fn($t) => is_array($t) ? ($t['id'] ?? null) : $t) 
+        ->filter(fn($id) => is_string($id) && Str::isUuid($id))
+        ->values()
+        ->all();
+       $cabin->tags()->sync($tagIds);
 
       if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
 
@@ -154,7 +159,7 @@ class CabinRepository implements CabinInterface
                 'balcony',
                 'obstructed_view',
                 'location',
-                'accessible'
+                'accessible',
               )->with('cabins:id,cabin_spec_id'); // Avoid N+1 on is_shared_cabin_number
             },
             'temporaryReservations' => function ($q) {

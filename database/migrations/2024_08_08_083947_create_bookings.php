@@ -20,7 +20,6 @@ return new class extends Migration {
       $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
       $table->boolean('is_single_occupancy')->default(false); // Indicates if booking is for single occupancy
       $table->enum('bed_config', ['SEPARATED', 'JOINED'])->default('SEPARATED'); // Enum for bed configuration
-      $table->jsonb('tags')->default(json_encode(['NEW'])); // JSONB field for tags
       $table->uuid('agent_id')->nullable()->references('id')->on('users'); // References users table for agent tracking
       $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'])->default('NEW');
       $table->timestamps(); // created_at and updated_at timestamps

@@ -16,6 +16,7 @@ use InvalidArgumentException;
 use App\Models\BookingLog;
 use App\Models\Cabin;
 use App\Models\Comment;
+use App\Models\Tag;
 use App\Models\TemporaryReservation;
 use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
@@ -133,14 +134,14 @@ class BookingRepository implements BookingInterface
             'agent',
             'agent.detail',
         ])
-        ->withSum('passengers as balance', 'passenger_balance')
-        ->withSum('passengers as cost', 'passenger_allocated_cost')
-        ->where('event_id', $eventId)
-        ->where('status', $status);
-    
+            ->withSum('passengers as balance', 'passenger_balance')
+            ->withSum('passengers as cost', 'passenger_allocated_cost')
+            ->where('event_id', $eventId)
+            ->where('status', $status);
+
         if (!empty($keyword)) {
             $keyword = strtolower($keyword);
-    
+
             $query->where(function ($query) use ($keyword) {
                 $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
                     ->orWhereHas('customer.detail', function ($query) use ($keyword) {
@@ -167,27 +168,29 @@ class BookingRepository implements BookingInterface
                     });
             });
         }
-    
+
         if (!empty($tags)) {
-            $query->where(function ($q) use ($tags) {
-                foreach ($tags as $tag) {
-                    $q->orWhereJsonContains('tags', $tag);
-                }
+            $query->whereExists(function ($sub) use ($tags) {
+                $sub->select(DB::raw(1))
+                    ->from('taggings as tg')
+                    ->whereColumn('tg.entity_id', DB::raw('bookings.id::text'))
+                    ->where('tg.entity_type', 'booking')
+                    ->whereIn('tg.tag_id', $tags);
             });
         }
-    
+
         if (!empty($user_ids)) {
             $query->whereIn('agent_id', $user_ids);
         }
-    
+
         $advancedSorts = ['longestDueDateInstallment', 'cabinType', 'fullName'];
-    
+
         if (!empty($sortKey) && !in_array($sortKey, $advancedSorts)) {
             $query->orderBy($sortKey, $sortDirection ?? 'desc');
         }
-    
+
         $results = $query->paginate($perPage, ['*'], 'page', request()->get('page', 1));
-    
+
         if (in_array($sortKey, $advancedSorts) && $results instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $collection = $results->getCollection()->sortBy(function ($booking) use ($sortKey) {
                 return match ($sortKey) {
@@ -198,28 +201,28 @@ class BookingRepository implements BookingInterface
                     'fullName' => $booking->passengers->firstWhere('passenger_order', 1)?->first_name ?? '',
                 };
             });
-    
+
             if ($sortDirection === 'desc') {
                 $collection = $collection->reverse();
             }
-    
+
             $results->setCollection($collection->values());
         }
-    
+
         if ($dateRange && isset($dateRange['longestDueDateInstallment'])) {
             $startDate = Carbon::parse($dateRange['longestDueDateInstallment']['startDate']);
             $endDate = isset($dateRange['longestDueDateInstallment']['endDate'])
                 ? Carbon::parse($dateRange['longestDueDateInstallment']['endDate'])
                 : null;
-    
+
             $filtered = $results->getCollection()->filter(function ($booking) use ($startDate, $endDate) {
                 $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
                 if (!$dueDate) return false;
-    
+
                 $dueDate = Carbon::parse($dueDate);
                 return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
             })->values();
-    
+
             $results = new \Illuminate\Pagination\LengthAwarePaginator(
                 $filtered,
                 $filtered->count(),
@@ -231,24 +234,24 @@ class BookingRepository implements BookingInterface
                 ]
             );
         }
-    
+
         $results->getCollection()->each(function ($booking) {
             $booking->fullName = $booking->customer->detail->full_name ?? null;
             $booking->cabinType = $booking->cabin->cabinType->cabin_type ?? null;
             $booking->longestDueDateInstallment = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
-    
+
             $booking->passengers->each(function ($passenger) {
                 $passenger->setAttribute('installment_status', $passenger->installment_status);
             });
-    
+
             $booking->editingUsername = DB::table('booking_agent_sessions')
                 ->where('booking_id', $booking->id)
                 ->join('users', 'booking_agent_sessions.agent_id', '=', 'users.id')
                 ->value('username');
-    
+
             $booking->subRows = $booking->passengers ?? [];
         });
-    
+
         return $results;
     }
 
@@ -282,10 +285,10 @@ class BookingRepository implements BookingInterface
             'comments',
             'comments.user',
             'agent',
+            'tags'
         ])
             ->where('booking_code', '=', $code)
             ->first();
-
         $booking->passengers->each(function ($passenger) {
             $passenger->setAttribute('installment_status', $passenger->installment_status);
         });
@@ -317,28 +320,33 @@ class BookingRepository implements BookingInterface
 
     function addTags($booking, $tags)
     {
+
         try {
-            if (!is_array($tags)) {
-                throw new InvalidArgumentException('Tags must be an array.');
-            }
-            $uniqueTags = array_unique($tags);
-            $originalTags = $booking->tags;
+            $tag = Tag::type('booking')->whereIn('id', $tags)->get();
+            $booking->tags()->sync($tag);
+            // if (!is_array($tags)) {
+            //     throw new InvalidArgumentException('Tags must be an array.');
+            // }
+            // $uniqueTags = array_unique($tags);
+            // $originalTags = $booking->tags;
 
-            $booking->update([
-                'tags' => $uniqueTags,
-            ]);
+            // $booking->update([
+            //     'tags' => $uniqueTags,
+            // ]);
 
-            if ($originalTags !== $uniqueTags) {
-                $this->saveBookingLog(
-                    $booking->id,
-                    'Changed booking tags',
-                    sprintf(
-                        'Booking tags changed from [%s] to [%s].',
-                        implode(', ', is_array($originalTags) ? $originalTags : []),
-                        implode(', ', is_array($uniqueTags) ? $uniqueTags : [])
-                    )
-                );
-            }
+            // if ($originalTags !== $uniqueTags) {
+            //     $this->saveBookingLog(
+            //         $booking->id,
+            //         'Changed booking tags',
+            //         sprintf(
+            //             'Booking tags changed from [%s] to [%s].',
+            //             implode(', ', is_array($originalTags) ? $originalTags : []),
+            //             implode(', ', is_array($uniqueTags) ? $uniqueTags : [])
+            //         )
+            //     );
+            // }
+
+
 
             return $booking;
         } catch (\Throwable $e) {

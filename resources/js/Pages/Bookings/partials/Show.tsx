@@ -32,11 +32,12 @@ import { BookingSessionTimer } from "./BookingSessionTimer";
 import FaceIcon from '@mui/icons-material/Face';
 import '@/echo';
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments }: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags }: PageProps) => {
 
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
+  console.log('Available Tags:', availableTags);
 
   const propsIsLockedBy: boolean = booking.locked_by !== null;
   const propsIsLockedByMe: boolean = propsIsLockedBy && booking.locked_by?.agent_id === auth.user.id;
@@ -359,7 +360,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
             </Button>
           </Alert>
         )}
-        <Status event={event} editMode={editMode} booking={booking} users={users} />
+        <Status event={event} editMode={editMode} booking={booking} users={users} availableTags={availableTags} />
         <Detail
           event={event}
           booking={booking}

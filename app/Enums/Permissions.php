@@ -105,4 +105,10 @@ enum Permissions: string
     case CreateCustomerTags = 'Create Customer Tags';
     case EditCustomerTags = 'Edit Customer Tags';
     case DeleteCustomerTags = 'Delete Customer Tags';
+
+    // Manage Tags
+    case ViewTags = 'View Tags';
+    case CreateTags = 'Create Tags';
+    case EditTags = 'Edit Tags';
+    case DeleteTags = 'Delete Tags';
 }

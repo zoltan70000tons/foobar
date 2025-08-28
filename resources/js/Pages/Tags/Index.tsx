@@ -50,6 +50,13 @@ const Index = ({ auth, tags }: PageProps) => {
                 ),
             },
             {
+                header: 'Type',
+                accessor: 'type',
+                filterable: true,
+                sortable: true,
+                //width: '17%',
+            },  
+            {
                 header: 'Actions',
                 accessor: 'id',
                 disableFilter: true,
@@ -59,7 +66,7 @@ const Index = ({ auth, tags }: PageProps) => {
                         {hasPermission(Permissions.ViewCustomerTags) && (
                             <Visibility
                                 onClick={() => {
-                                    router.get(route('tags.show', { userTag: row.id }));
+                                    router.get(route('tags.show', { tag: row.id }));
                                 }}
                                 style={{ cursor: 'pointer' }}
                             />

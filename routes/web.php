@@ -291,9 +291,10 @@ Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destro
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 
 Route::resource('/tags', TagsController::class)
-    ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+    ->only(['index', 'show','create', 'store', 'edit', 'update', 'destroy'])
     ->names([
         'index' => 'tags.index',
+        'show' => 'tags.show',
         'create' => 'tags.create',
         'store' => 'tags.store',
         'edit' => 'tags.edit',

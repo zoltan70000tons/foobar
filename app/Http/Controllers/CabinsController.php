@@ -9,6 +9,7 @@ use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Tag;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
@@ -54,10 +55,12 @@ class CabinsController extends Controller
                     $event = $this->eventRepository->find($event_id);
                     $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
                     $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
+                    $tags = Tag::type('cabin')->get();
                     return Inertia::render('Cabin/Index', [
                         'cabins' => $cabins,
                         'categories' => $categories,
-                        'event' => $event
+                        'event' => $event,
+                        'tags' => $tags
 
                     ]);
                 }
@@ -170,15 +173,17 @@ class CabinsController extends Controller
             $cabin = $this->cabinRepository->find($request->cabin_id);
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
-            return $this->withPermission([Permissions::EditCabins, Permissions::ViewCabins], function ($event, $cabin, $cabinCategories) {
+            $availableTags = Tag::type('cabin')->get();
+            return $this->withPermission([Permissions::EditCabins, Permissions::ViewCabins], function ($event, $cabin, $cabinCategories,$availableTags) {
                 $shared = $this->cabinRepository->getSharedCabins($event->id, $cabin->cabin_spec_id);
                 return Inertia::render('Cabin/Edit', [
                     'cabin' => $cabin,
                     'event' => $event,
                     'categories' => $cabinCategories,
-                    'shared' => $shared
+                    'shared' => $shared,
+                    'availableTags' => $availableTags
                 ]);
-            }, $event, $cabin, $cabinCategories);
+            }, $event, $cabin, $cabinCategories,$availableTags);
         } catch (\Exception $e) {
             $this->logException($e);
         }
@@ -280,9 +285,13 @@ class CabinsController extends Controller
                 // $updatedTags = array_values($updatedTags); 
                 // $cabin->tags = $updatedTags;
                 // $cabin->save();
+                $tag = Tag::type('cabin')
+                    ->whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $tags))
+                    ->get();
+                $cabin->tags()->sync($tag);
 
-                $cabin->tags = array_values($tags);
-                $cabin->save();
+                // $cabin->tags = array_values($tags);
+                // $cabin->save();
             }
 
             return redirect()->back()->with([

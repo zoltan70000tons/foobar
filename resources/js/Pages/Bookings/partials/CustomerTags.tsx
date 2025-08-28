@@ -31,6 +31,7 @@ const Tags: React.FC<{ customer: Customer; availableTags: Tag[] }> = ({ customer
     const [tags, setTags] = useState<Tag[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    console.log(customer.tags)
 
     useEffect(() => {
         if (Array.isArray(customer.tags)) {
@@ -65,18 +66,18 @@ const Tags: React.FC<{ customer: Customer; availableTags: Tag[] }> = ({ customer
         );
         setDialogOpen(false);
     };
-
+   console.log(customer);
 
     return (
         <Box>
             <Box display="flex" alignItems="center" gap={1}>
                 <span>Tags:</span>
-                {tags && tags.length > 0 && tags.map((tag, index) => {
+                {customer.tags.map((tag, index) => {
                     return (
                         <Chip
                             key={index}
                             label={tag.name}
-                            style={{ backgroundColor: tag?.color ?? "#e0e0e0", color: "#fff" }}
+                            style={{ backgroundColor: tag.color ?? "#e0e0e0", color: "#fff" }}
                         />
                     );
                 })}
@@ -87,7 +88,7 @@ const Tags: React.FC<{ customer: Customer; availableTags: Tag[] }> = ({ customer
             <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="md">
                 <DialogTitle>Select or Remove Tags</DialogTitle>
                 <DialogContent>
-                    <Autocomplete
+                    {/* <Autocomplete
                         multiple
                         options={availableTags}
                         getOptionLabel={(option) => option.name}
@@ -127,6 +128,47 @@ const Tags: React.FC<{ customer: Customer; availableTags: Tag[] }> = ({ customer
                                 );
                             })
                         }
+                    /> */}
+
+                    <Autocomplete
+                        multiple
+                        options={availableTags.filter(
+                            (tag) => !(tags || []).some((t) => t.id === tag.id)
+                        )}
+                        getOptionLabel={(option) => option.name}
+                        value={availableTags.filter((tag) =>
+                            (tags || []).some((t) => t.id === tag.id)
+                        )}
+                        onChange={(_, value) => {
+                            const newTags = value.map((item) => item.id);
+                            handleSaveTags(newTags);
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} label="Tags" placeholder="Select or remove tags" />
+                        )}
+                        renderOption={(props, option) => (
+                            <li {...props}>
+                                <Chip
+                                    label={option.name}
+                                    style={{
+                                        backgroundColor: option.color,
+                                        color: "#fff",
+                                        marginRight: 8,
+                                    }}
+                                    size="small"
+                                />
+                            </li>
+                        )}
+                        renderTags={(tagValue, getTagProps) =>
+                            tagValue.map((option, index) => (
+                                <Chip
+                                    key={option.id}
+                                    label={option.name}
+                                    {...getTagProps({ index })}
+                                    style={{ backgroundColor: option.color, color: "#fff" }}
+                                />
+                            ))
+                        }
                     />
                 </DialogContent>
                 <DialogActions>
@@ -135,7 +177,7 @@ const Tags: React.FC<{ customer: Customer; availableTags: Tag[] }> = ({ customer
                     </Button>
                 </DialogActions>
             </Dialog>
-            <LoadingOverlay open={loading}/>
+            <LoadingOverlay open={loading} />
         </Box>
     );
 };

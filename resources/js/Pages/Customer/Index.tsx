@@ -130,7 +130,7 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
   };
 
   const handleViewTags = () => {
-    get(route('customer-tags.index', {}));
+    get(route('tags.index', {}));
   }
 
   const fetchCustomers = async (
@@ -174,7 +174,7 @@ const Index = ({ auth, customers, userTags }: PageProps) => {
         </Button>
         {canViewCustomerTags && (
           <Button variant="outlined" color="primary" onClick={handleViewTags}>
-            Customer Tags
+            Manage Tags
           </Button>
         )}
       </Toolbar>

@@ -13,12 +13,14 @@ use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Tag;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\LogRepository;
+use App\Repositories\TagRepository;
 use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
 use App\Traits\CabinFilter;
@@ -48,6 +50,9 @@ class BookingsController extends Controller
   protected AdjustmentsRepository $adjustmentsRepository;
   protected PaymentInfoService $paymentInfoService;
 
+  protected TagRepository $tagRepository;
+  
+
   public function __construct(
     EventRepository $eventRepository,
     BookingRepository $bookingRepository,
@@ -56,7 +61,8 @@ class BookingsController extends Controller
     CabinRepository $cabinRepository,
     CabinCategoryRepository $cabinCategoryRepository,
     AdjustmentsRepository $adjustmentsRepository,
-    PaymentInfoService $paymentInfoService
+    PaymentInfoService $paymentInfoService, 
+    TagRepository $tagRepository
   ) {
     $this->eventRepository = $eventRepository;
     $this->bookingRepository = $bookingRepository;
@@ -66,6 +72,7 @@ class BookingsController extends Controller
     $this->cabinCategoryRepository = $cabinCategoryRepository;
     $this->adjustmentsRepository = $adjustmentsRepository;
     $this->paymentInfoService = $paymentInfoService;
+    $this->tagRepository = $tagRepository;
   }
   public function index(Request $request)
   {
@@ -133,6 +140,7 @@ class BookingsController extends Controller
           $event = $this->eventRepository->find($event_id);
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
+          $tags = $this->tagRepository->getAll();
 
           // THIS IS SLOW - FIXED
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
@@ -152,6 +160,7 @@ class BookingsController extends Controller
             'cabinCategories' => $cabinCategories,
             'tabIndex' => (int) $tab,
             'keyword' => $keyword,
+            'tags' => $tags,
           ]);
         },
         $event_id,
@@ -421,6 +430,7 @@ class BookingsController extends Controller
           $cabinTypes = $this->cabinRepository->getTypes();
           $adjustments = $this->adjustmentsRepository->listAdjustments();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+          $availableTags = Tag::type('booking')->orderBy('name')->get();
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
@@ -429,6 +439,7 @@ class BookingsController extends Controller
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
             'adjustments' => $adjustments,
+            'availableTags' => $availableTags,
           ]);
         },
         $event_id,

@@ -107,7 +107,7 @@ class CabinSeeder extends Seeder
         'inventory' => $record['Inventory'],
         'notes' => $record['Notes'],
         'internal_notes' => $record['Internal Notes'] ?? "",
-        'tags' => array_map('trim', explode(',', $record['Tags'])),
+        //'tags' => array_map('trim', explode(',', $record['Tags'])),
         'status' => $record['Status'],
       ];
 

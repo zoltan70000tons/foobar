@@ -17,7 +17,6 @@ return new class extends Migration {
       $table->foreignId("cabin_spec_id")->constrained("cabin_specs"); // Link to cabin_specs table
       $table->integer("inventory")->default(1);
       $table->string("notes", 255)->nullable();
-      $table->jsonb("tags")->default(json_encode(["NOT ASSIGNED"]));
       $table->enum("status", ["AVAILABLE", "RESERVED", "BOOKED", "PARTIALLY_BOOKED", "CLOSED"])->default("RESERVED");
       $table->timestamps();
     });

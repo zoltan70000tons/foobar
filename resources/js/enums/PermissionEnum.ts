@@ -101,4 +101,11 @@ export enum Permissions {
     CreateCustomerTags = "Create Customer Tags",
     EditCustomerTags = "Edit Customer Tags",
     DeleteCustomerTags = "Delete Customer Tags",
+
+    //Tags
+
+    ViewTags = "View Tags",
+    CreateTags = "Create Tags",
+    EditTags = "Edit Tags",
+    DeleteTags = "Delete Tags",
 }

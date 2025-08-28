@@ -29,7 +29,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $username
  * @property string $id
  *
- * @property UserTag[] $tags
  */
 class User extends Authenticatable implements CanResetPassword
 {
@@ -110,7 +109,7 @@ class User extends Authenticatable implements CanResetPassword
   // survivor number
   public function survivorNumber()
   {
-    return $this->hasOne(SurvivorNumber::class);
+    return $this->hasOne(SurvivorNumber::class, 'user_id');
   }
 
   // Customer address
@@ -134,12 +133,12 @@ class User extends Authenticatable implements CanResetPassword
     return $this->hasMany(UserLog::class, 'customer_id');
   }
 
-  public function tags(): belongsToMany
-  {
-      return $this->belongsToMany(UserTag::class, 'user_has_tags', 'user_id', 'tag_id');
-          //->withTimestamps() // Include created_at and updated_at from the pivot table
-          //->withTrashed();  // Include soft deleted tags if necessary
-  }
+  // public function tags(): belongsToMany
+  // {
+  //     return $this->belongsToMany(UserTag::class, 'user_has_tags', 'user_id', 'tag_id');
+  //         //->withTimestamps() // Include created_at and updated_at from the pivot table
+  //         //->withTrashed();  // Include soft deleted tags if necessary
+  // }
 
   // send password
   public function sendPasswordResetNotification($token)
@@ -158,7 +157,13 @@ class User extends Authenticatable implements CanResetPassword
     if ($this->hasRole('Customer')) {
       Mail::to($this->email)->queue(new CustomerResetPassword($this, $tokenToSend));
     } else {
-        Mail::to($this->email)->queue(new RegularResetPassword($this, $adminTokenToSend));
+      Mail::to($this->email)->queue(new RegularResetPassword($this, $adminTokenToSend));
     }
+  }
+
+  public function tags()
+  {
+    return $this->morphToMany(Tag::class, 'entity', 'taggings', 'entity_id', 'tag_id')
+      ->withPivot('created_at');
   }
 }

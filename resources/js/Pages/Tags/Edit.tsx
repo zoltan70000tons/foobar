@@ -21,21 +21,22 @@ type Tag = {
   name: string;
   description: string;
   color: string;
+  type: string;
 }
 
 type PageProps = {
-  userTag: Tag;
+  tag: Tag;
 };
 
 const Edit = ({ auth, errors }: PageProps) => {
-  const { userTag }: PageProps = usePage().props;
+  const { tag }: PageProps = usePage().props;
   const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const { hasPermission } = usePermissions();
 
   const { data, setData, head, processing } = useForm({
-    name: userTag.name || '',
-    description: userTag.description || '',
-    color: userTag.color || '',
+    name: tag.name || '',
+    description: tag.description || '',
+    color: tag.color || '',
   });
 
   const [color, setColor] = useColor(data.color);
@@ -49,8 +50,8 @@ const Edit = ({ auth, errors }: PageProps) => {
   };
 
   const handleBack = () => {
-    router.visit(route("customer-tags.show", userTag.id), {
-      only: ['userTag'],
+    router.visit(route("customer-tags.show", tag.id), {
+      only: ['tag'],
     })
   };
 
@@ -64,17 +65,17 @@ const Edit = ({ auth, errors }: PageProps) => {
     formData.append('_method', 'PUT');
     formData.append('color', color.hex);
 
-    router.post(`/customer-tags/${userTag.id}/update`, formData, {
+    router.post(`/tags/${tag.id}`, formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        setSnackbar({ open: true, severity: 'success', message: 'Customer tag edited successfully' });
+        setSnackbar({ open: true, severity: 'success', message: 'tag edited successfully' });
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join('\n');
         setSnackbar({
           open: true,
           severity: 'error',
-          message: `Error editing customer tag\n${errorMessages}`,
+          message: `Error editing tag\n${errorMessages}`,
         });
       },
       onFinish: () => {},
@@ -86,8 +87,8 @@ const Edit = ({ auth, errors }: PageProps) => {
   };
 
   return (
-    <AuthenticatedLayout user={auth.user} header={'Customer Tags'}>
-      <Head title="Edit Customer Tag" />
+    <AuthenticatedLayout user={auth.user} header={'Tags'}>
+      <Head title="Edit Tag" />
       <Toolbar sx={{ mt: 8, mb: 4 }}>
         <Button variant="outlined" color="secondary" onClick={handleBack}>
           Back

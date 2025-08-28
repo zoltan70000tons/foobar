@@ -7,7 +7,8 @@
   use App\Interfaces\CustomerInterface;
   use App\Models\Booking;
   use App\Models\Comment;
-  use App\Models\CustomerAddress;
+use App\Models\Customer;
+use App\Models\CustomerAddress;
   use App\Models\SurvivorNumber;
   use App\Models\User;
   use App\Models\UserComment;
@@ -454,7 +455,7 @@
           }
       }
 
-      function addTags(User $customer, array $tags)
+      function addTags(Customer $customer, array $tags)
       {
           try {
               if (!is_array($tags)) {

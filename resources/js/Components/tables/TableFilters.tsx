@@ -13,7 +13,7 @@ interface TableFiltersProps {
   columns: ColumnProps<any>[];
   filters: { [key: string]: string };
   onFilterChange: (name: string, value: string) => void;
-  subColumns?: ColumnProps<any>[]; // Añade subColumns como opcional
+  subColumns?: ColumnProps<any>[];
   subFilters?: { [key: string]: string };
   onSubFilterChange?: (name: string, value: string) => void;
 }

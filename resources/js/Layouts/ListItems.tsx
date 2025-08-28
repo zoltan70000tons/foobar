@@ -10,6 +10,8 @@ import {
   DirectionsBoat as EventIcon
 } from "@mui/icons-material";
 
+import SellIcon from '@mui/icons-material/Sell';
+
 import { Link, router, usePage } from "@inertiajs/react";
 import axios from "axios";
 import { Permissions } from "@/enums/PermissionEnum";
@@ -188,6 +190,19 @@ const MenuItems: React.FC = () => {
                 }}
               >
                 <EventIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission(Permissions.ViewTags) && (
+            <Tooltip title="Events" placement="right">
+              <IconButton
+                component={Link}
+                href={route("tags.index")}
+                style={{
+                  backgroundColor: isEventsRoute ? "#2f4f4f" : "transparent",
+                }}
+              >
+                <SellIcon />
               </IconButton>
             </Tooltip>
           )}

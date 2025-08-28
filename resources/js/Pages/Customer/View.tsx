@@ -40,6 +40,7 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
   const { showSnackbar } = useSnackbar();
+  console.log(customer);
 
   const [selectedTab, setSelectedTab] = useState(0);
 

@@ -19,7 +19,7 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import { ColorPicker, useColor } from "react-color-palette";
 import "react-color-palette/dist/css/rcp.css";
 
-const Create = ({ auth, errors, events }: PageProps) => {
+const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
   console.log('Events:', events);
   const { hasPermission } = usePermissions();
   const { data, setData, post, processing } = useForm({
@@ -113,6 +113,7 @@ const Create = ({ auth, errors, events }: PageProps) => {
                         options={ events }
                         getOptionLabel={ (option) => option.name }
                         onChange={ (event, value) => {
+                          console.log('Selected event:', value);
                           setData("event_id", value ? value.id : "");
                         } }
                         renderInput={ (params) => (
@@ -127,7 +128,26 @@ const Create = ({ auth, errors, events }: PageProps) => {
                         ) }
                       />
                     </Grid>
-                    <Grid item xs={ 6 }></Grid>
+                    <Grid item xs={ 6 }>
+                    <Autocomplete
+                        disablePortal
+                        options={ tagTypes }
+                        getOptionLabel={ (option) => option.name }
+                        onChange={ (event, value) => {
+                          console.log('Selected tag type:', value);
+                          setData("entity", value ? value.value: "");
+                        } }
+                        renderInput={ (params) => (
+                          <TextField
+                            { ...params }
+                            label="Tag for"
+                            variant="outlined"
+                            name={ "entity" }
+                            //value={ data.event_id }
+                            //onChange={ handleChange }
+                          />
+                        ) }
+                      /></Grid>
                     <Grid item xs={ 6 }>
                       <TextField
                         fullWidth
