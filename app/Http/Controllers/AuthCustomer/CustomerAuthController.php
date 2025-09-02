@@ -262,15 +262,8 @@ class CustomerAuthController extends Controller
       ]);
     }
 
-    // kill session
-    Auth::guard('web')->logout();
-
-    $request->session()->invalidate();
-
-    $request->session()->regenerateToken();
-
-    return $this->successResponse([
-      'message' => 'Account deleted successfully.',
-    ]);
+  
+    // return success
+    return response()->json(['message' => 'Account deleted successfully.']);
   }
 }

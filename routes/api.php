@@ -18,6 +18,10 @@ use App\Http\Controllers\Api\Customer\AddPaxController;
 use App\Http\Controllers\Api\Customer\InvitationController;
 use App\Http\Controllers\Api\Customer\CheckBookingController;
 
+// middleware
+use App\Http\Middleware\ApiRedirectHttp;
+use App\Http\Middleware\EnsureUserIsNotCustomer;
+
 // --- PASSWORD RESET ---
 Route::post('/auth/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
 Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
@@ -32,6 +36,11 @@ Route::post('/auth/activate-survivor-account', [CustomerRegisteredController::cl
   'throttle:10,1'
 );
 
+Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
+  ->middleware(['web', 'signed'])
+  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
+  ->name('verificationApi.verify');
+
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);
 
@@ -41,8 +50,6 @@ Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
 // ---- PRICING MATRIX ----
 Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show']);
 
-// ---- CART PER EVENT ----
-Route::get('/cart/{eventId}', [CartController::class, 'index']);
 
 // --- ADD PAX validate page with form
 Route::get('/add-pax', [AddPaxController::class, 'validate'])
@@ -73,11 +80,12 @@ Route::get('/events/{id}', [EventController::class, 'showOne']);
 Route::middleware([
   'auth:api',
   'booking_status',
-  'one_booking_per_user',
   // 'clear_expired_reservation',
 ])->group(function () {
   // --- CART (with membership_sales) ---
-  Route::middleware(['membership_sales'])->group(function () {
+  Route::middleware(['membership_sales', 'one_booking_per_user'])->group(function () {
+    // ---- CART PER EVENT ----
+    Route::get('/cart/{eventId}', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::put('/cart', [CartController::class, 'update']);
     Route::delete('/cart', [CartController::class, 'destroy']);
@@ -95,7 +103,7 @@ Route::middleware([
   Route::get('/cabins', [CabinController::class, 'show']);
 
   Route::get('/customer', [CustomerAuthController::class, 'customer']);
-  Route::post('/reset-password-inside', [CustomerAuthController::class, 'update']);
+  Route::put('/reset-password-inside', [CustomerAuthController::class, 'update']);
   Route::put('/update-profile', [CustomerAuthController::class, 'updateProfile']);
   Route::put('/update-email', [CustomerAuthController::class, 'updateEmail']);
   Route::get('/customer/can-delete-account', [CustomerAuthController::class, 'canDeleteAccount']);
