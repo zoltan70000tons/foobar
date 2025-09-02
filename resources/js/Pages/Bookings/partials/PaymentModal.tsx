@@ -18,11 +18,13 @@ import {
   IconButton,
   Paper,
   Divider,
+  Tooltip,
+  Box,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { router } from "@inertiajs/react";
 import dayjs, { Dayjs } from "dayjs";
-import { Delete } from "@mui/icons-material";
+import { Warning, Delete } from "@mui/icons-material";
 import { sanitizeInput } from "@/Helpers/inputSanitizer";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { formatCurrency } from "@/Helpers/stringUtils";
@@ -33,24 +35,27 @@ type PaymentModalProps = {
   booking_id: number;
   event_id: number;
   editMode: boolean;
-  paymentHistory: Array<{
+  paymentHistory: {
     id: number;
     type: string;
     amount: number;
     transaction_date: string;
     BIP_ID: string;
     source: string;
-  }>;
+    splitAmount: boolean;
+  }[];
   open: boolean;
   onClose: () => void;
 };
 
 type Payment = {
+  id: number;
   BIP_ID: string;
   amount: number;
   type: "PAYMENT" | "REFUND";
   notes?: string;
   transaction_date: Dayjs | null;
+  splitAmount: boolean;
 };
 
 enum PaymentType {
@@ -66,9 +71,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   paymentHistory,
   open,
   onClose,
+  handleSplitPaymentDeleted,
+  setDeletedPayments,
 }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [selectedPaymentSplitAmount, setSelectedPaymentSplitAmount] = useState<boolean>(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [localPaymentHistory, setLocalPaymentHistory] = useState(paymentHistory);
 
@@ -142,8 +150,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     );
   };
 
-  const handleOpenDelete = (paymentId: number) => {
-    setSelectedPaymentId(paymentId);
+  const handleOpenDelete = (payment: Payment) => {
+    const { id, splitAmount } = payment;
+
+    setSelectedPaymentId(id);
+    setSelectedPaymentSplitAmount(splitAmount);
     setConfirmDeleteOpen(true);
   };
 
@@ -158,12 +169,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         payment_id: selectedPaymentId,
       },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
           setLocalPaymentHistory(prevHistory =>
             prevHistory.filter(payment => payment.id !== selectedPaymentId)
           );
 
+          console.log('ASJDKSADSADJSAHJDHSAJDHSAJDHJASHDJSA', res)
+
+          setDeletedPayments(res?.props?.deletedPayments);
+
           showSnackbar("Payment deleted successfully.", "success");
+
+          handleSplitPaymentDeleted();
         },
         onError: () => {
           showSnackbar("Could not delete payment.", "error");
@@ -289,10 +306,17 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                             color="error"
                             size="small"
                             disabled={!editMode}
-                            onClick={() => handleOpenDelete(payment.id)}
+                            onClick={() => handleOpenDelete(payment)}
                           >
                             <Delete fontSize="small" />
                           </IconButton>
+                        )}
+                        {payment.splitAmount && (
+                          <Tooltip title="Split Payment!">
+                            <IconButton color="warning">
+                              <Warning />
+                            </IconButton>
+                          </Tooltip>
                         )}
                       </TableCell>
                     </TableRow>
@@ -311,6 +335,16 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         <DialogTitle>Delete Payment</DialogTitle>
         <DialogContent>
           <Typography>Are you sure you want to delete this payment?</Typography>
+          {selectedPaymentSplitAmount && (
+            <Box display="flex" justifyContent="center" alignItems="center" mt={2}>
+              <IconButton color="warning">
+                <Warning />
+              </IconButton>
+              <Typography>
+                The payment you are about to delete is part of a split payment. Deleting this payment will result in deleting all that share the same Transaction ID!
+              </Typography>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteOpen(false)} color="secondary">
