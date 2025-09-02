@@ -238,31 +238,4 @@ class UserSeeder extends Seeder
   }
 
 
-
-
-  private function create70000tonsUsers($email, $role,$gender,$firstname,$lastName){
-
-    $username = Str::before($email, '@');
-    $user = User::create([
-      'username' => $username,
-      'email' => $email,
-      'password' => env('DEFAULT_PASSWORD') ?? throw new \Exception('DEFAULT_PASSWORD not set in .env'),
-      'created_at' => $this->faker->dateTime($max = 'now'),
-      'updated_at' => $this->faker->dateTime($max = 'now'),
-      'organization_id' => env('ORGANIZATION_ID', 1),
-      'email_verified_at' => null,
-      'user_activated_at' => null,
-    ]);
-
-    UserDetail::create([
-        'user_id' => $user->id,
-        'gender' => $gender,
-        'first_name' => strtoupper($firstname),
-        'last_name' => strtoupper($lastName),
-        'citizenship' => $this->faker->countryISOAlpha3(),
-        'language' => 'en', // Only ESP, DEU, or ENG
-      ]);
-    $user->assignRole($role->value);
-
-  }
 }

@@ -40,9 +40,9 @@ return [
       'driver' => 'session',
       'provider' => 'users',
     ],
-    'passenger' => [
-      'driver' => 'sanctum',
-      'provider' => 'passengers',
+    'api' => [
+      'driver' => 'passport',
+      'provider' => 'users',
     ],
   ],
 
@@ -68,10 +68,10 @@ return [
       'driver' => 'eloquent',
       'model' => env('AUTH_MODEL', App\Models\User::class),
     ],
-    'passengers' => [
-      'driver' => 'eloquent',
-      'model' => env('AUTH_PASSENGER_MODEL', App\Models\Passenger::class),
-    ],
+    // 'passengers' => [
+    //   'driver' => 'eloquent',
+    //   'model' => env('AUTH_PASSENGER_MODEL', App\Models\Passenger::class),
+    // ],
   ],
 
   /*
