@@ -28,7 +28,13 @@ class CabinCategoryRepository implements CabinCategoryInterface
 
     function getCategoriesByEvent($event_id)
     {
-        return CabinCategory::with('spec')->where('event_id', '=', $event_id)->get()->toArray();
+        return CabinCategory::with(['spec', 'cabins.cabinType'])
+            ->where('event_id', '=', $event_id)
+            ->whereHas('cabins', function ($query) {
+                $query->whereIn('status', ['AVAILABLE', 'PARTIALLY_BOOKED', 'RESERVED']);
+            })
+            ->get()
+            ->toArray();
     }
 
     function save(array $data): ?CabinCategory

@@ -171,6 +171,7 @@ class BookingsController extends Controller
 
     $validated = $request->validate([
       'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
+      'cabin_category_id' => ['required', 'integer', 'exists:cabin_categories,id'],
       'payment_plan' => ['required', Rule::in(['INSTALLMENTS', 'PAY_IN_FULL'])],
       'carbon_offset' => ['required', 'boolean'],
       'number_of_installments' => ['nullable', 'integer', 'min:1', 'required_if:payment_plan,INSTALLMENTS'],
@@ -229,6 +230,7 @@ class BookingsController extends Controller
     try {
       $user = $request->user();
       $cabin_number = $validated['cabin_number'];
+      $cabinCategoryId = $validated['cabin_category_id'];
       $passenger_data = $validated['passenger'];
       $passenger_data['cabin_conf_accp'] = true; //CCA is a required field, thus should go set as true by default - Nic
       $number_of_installments = $validated['number_of_installments'] ?? 1;
@@ -240,14 +242,16 @@ class BookingsController extends Controller
         function (
           $event_id,
           $cabin_number,
+          $cabinCategoryId,
           $user,
           $passenger_data,
           $payment_plan,
           $number_of_installments,
           $carbonOffset
         ) {
-          $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number) {
+          $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number, $cabinCategoryId) {
             $query->where('cabin_number', $cabin_number);
+            $query->where('cabin_category_id', $cabinCategoryId);
           })->first();
 
           if ($cabin) {
@@ -330,6 +334,7 @@ class BookingsController extends Controller
         },
         $event_id,
         $cabin_number,
+        $cabinCategoryId,
         $user,
         $passenger_data,
         $payment_plan,
@@ -712,7 +717,7 @@ class BookingsController extends Controller
       $location = $request->get('location');
       $accessible = $request->boolean('accessible');
 
-      $cabinsData = $this->filterCabins($typeId, $categoryId);
+      $cabinsData = $this->filterCabins($typeId, $categoryId, null, true, null, null, false, true);
 
       if (isset($cabinsData['error'])) {
         return response()->json(

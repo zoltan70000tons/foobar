@@ -127,7 +127,6 @@ class PaymentService
       }
       return ['success' => false, 'message' => 'Invalid payment plan'];
     } catch (Exception $e) {
-      dd($e->getMessage());
       Log::error("Error processing payment: " . $e->getMessage());
       return ['success' => false, 'message' => 'Failed to process payment'];
     }

@@ -52,6 +52,9 @@ Schedule::call(function () {
   PassengerToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
 })->everyOddHour();
 
+// Clean up expired payment legacy engine tokens
+Schedule::command('app:clean-expired-payment-legacy-engine-tokens')->dailyAt('00:00')->timezone('America/Los_Angeles');
+
 // Autotag bookings with OVERDUE and MISSING_INFO tags
 Schedule::command('bookings:dispatch-tags')->dailyAt('00:00')->timezone('America/Los_Angeles');
 Schedule::command('app:clean-temporary-files')->dailyAt('00:00')->timezone('America/Los_Angeles');
