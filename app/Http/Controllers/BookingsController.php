@@ -717,7 +717,7 @@ class BookingsController extends Controller
       $location = $request->get('location');
       $accessible = $request->boolean('accessible');
 
-      $cabinsData = $this->filterCabins($typeId, $categoryId);
+      $cabinsData = $this->filterCabins($typeId, $categoryId, null, true, null, null, false, true);
 
       if (isset($cabinsData['error'])) {
         return response()->json(
