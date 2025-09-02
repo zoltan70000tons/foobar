@@ -138,7 +138,7 @@ class CartController extends Controller
 
     if ($validated['force_clear'] === true) {
       // Attempt to release the cabin
-      $reservationService->releaseCabin($request);
+      $reservationService->releaseCabin($user);
 
       // Always clear the cart regardless of the reservation status
       //$request->session()->forget('cart');
@@ -148,7 +148,6 @@ class CartController extends Controller
       // if ($user) {
       //   Cart::where('user_id', $user->id)->delete();
       // }
-
       Cart::where('user_id', $user->id)->delete();
     }
 
@@ -304,7 +303,7 @@ class CartController extends Controller
 
     Cart::where('user_id', $user->id)->delete();
 
-    $reservationService->releaseCabin($request);
+    $reservationService->releaseCabin($user);
 
     return response()->json(['message' => 'Cart cleared successfully'], 200);
   }

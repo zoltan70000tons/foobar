@@ -58,3 +58,6 @@ Schedule::command('app:clean-expired-payment-legacy-engine-tokens')->dailyAt('00
 // Autotag bookings with OVERDUE and MISSING_INFO tags
 Schedule::command('bookings:dispatch-tags')->dailyAt('00:00')->timezone('America/Los_Angeles');
 Schedule::command('app:clean-temporary-files')->dailyAt('00:00')->timezone('America/Los_Angeles');
+
+// Delete access tand refresh tokens which expired daily
+Schedule::command('passport:purge-expired-tokens')->dailyAt('00:00')->timezone('America/Los_Angeles');

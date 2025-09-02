@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
@@ -16,6 +16,16 @@ import {
   Switch,
   AlertTitle,
   Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
 import CommentIcon from "@mui/icons-material/Comment";
 import dayjs from "dayjs";
@@ -32,13 +42,14 @@ import { BookingSessionTimer } from "./BookingSessionTimer";
 import FaceIcon from '@mui/icons-material/Face';
 import '@/echo';
 import { ReverbLockBookingEvent } from "@/interfaces/ReverbLockBookingEvent";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { formatCurrency } from "@/Helpers/stringUtils";
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags }: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments }: PageProps) => {
 
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
-  console.log('Available Tags:', availableTags);
 
   const propsIsLockedBy: boolean = booking.locked_by !== null;
   const propsIsLockedByMe: boolean = propsIsLockedBy && booking.locked_by?.agent_id === auth.user.id;

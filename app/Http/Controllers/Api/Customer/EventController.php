@@ -86,7 +86,8 @@ class EventController extends Controller
     // $accessMessage = $request->get('access_message', '');
 
     // check if the Auth
-    $user = Auth::check() ? Auth::user() : null;
+    $user = $request->user('api');
+    // check if user is auth
     $customer = $user && $user->hasRole('Customer') ? $user : null;
 
     $membership = null;

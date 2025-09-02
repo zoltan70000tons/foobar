@@ -14,6 +14,8 @@ use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
 use App\Models\Tag;
+use App\Models\Passenger;
+use App\Models\Payment;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\CabinCategoryRepository;
@@ -436,6 +438,23 @@ class BookingsController extends Controller
           $adjustments = $this->adjustmentsRepository->listAdjustments();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
           $availableTags = Tag::type('booking')->orderBy('name')->get();
+          $bookingId = $booking->id;
+
+          $latestBipId = Payment::onlyTrashed()
+            ->where('splitAmount', true)
+            ->whereHas('passenger', function ($query) use ($bookingId) {
+              $query->where('booking_id', $bookingId);
+            })
+            ->orderBy('deleted_at', 'desc')
+            ->value('BIP_ID');
+          $deletedPayments = Payment::onlyTrashed()
+            ->where('splitAmount', true)
+            ->where('BIP_ID', $latestBipId)
+            ->whereHas('passenger', function ($query) use ($bookingId) {
+              $query->where('booking_id', $bookingId);
+            })
+            ->get();
+
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
@@ -445,12 +464,13 @@ class BookingsController extends Controller
             'cabinCategories' => $cabinCategories,
             'adjustments' => $adjustments,
             'availableTags' => $availableTags,
+            'deletedPayments' => $deletedPayments,
           ]);
         },
         $event_id,
         $booking_code
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -713,7 +733,7 @@ class BookingsController extends Controller
         $booking_id,
         $tags
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -728,7 +748,7 @@ class BookingsController extends Controller
       $location = $request->get('location');
       $accessible = $request->boolean('accessible');
 
-      $cabinsData = $this->filterCabins($typeId, $categoryId);
+      $cabinsData = $this->filterCabins($typeId, $categoryId, null, true, null, null, false, true);
 
       if (isset($cabinsData['error'])) {
         return response()->json(

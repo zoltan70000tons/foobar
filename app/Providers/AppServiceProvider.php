@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\Booking;
 use App\Models\Cabin;
 use App\Models\Customer;
+use Laravel\Passport\Passport;
+use App\Models\Passport\Client;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
+
+    Passport::useClientModel(Client::class);
+    Passport::authorizationView('auth.oauth.authorize');
+    Passport::tokensExpireIn(now()->addMinutes(20));
+    Passport::refreshTokensExpireIn(now()->addDays(30));
+    
     // Define a gate to authorize access to the Pulse dashboard
     Gate::define('viewPulse', function (User $user): bool {
       return $user->hasRole('SuperAdmin');

@@ -19,7 +19,8 @@ use Illuminate\Notifications\Notification;
 use App\Mail\CustomerResetPassword;
 use App\Mail\RegularResetPassword;
 
-use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 /**
  * @property UserDetail|null $detail
@@ -32,12 +33,12 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable implements CanResetPassword
 {
-  use CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, HasApiTokens, UUID;
+  use HasApiTokens, CanResetPasswordTrait, HasFactory, HasRoles, Notifiable, UUID;
 
   protected $keyType = 'string';
   public $incrementing = false;
 
-  protected $guard_name = 'web';
+  //protected $guard_name = 'web';
 
   /**
    * The attributes that are mass assignable.

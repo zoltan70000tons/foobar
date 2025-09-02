@@ -13,9 +13,36 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
+use Inertia\Inertia;
 
 class CustomerEmailVerificationController extends Controller
 {
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Index email verification
+  |--------------------------------------------------------------------------
+  |
+  |  Return Inertia view for email verification.
+  |
+  */
+  public function index(Request $request)
+  {
+    $language = $request->language;
+    App::setLocale($language);
+
+    if ($request->user()->hasVerifiedEmail()) {
+      return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
+    }
+
+    // Render the Inertia view for email verification
+    return Inertia::render('OAuth/EmailVerify', [
+      'language' => $language,
+      'user' => $request->user(),
+    ]);
+  }
+
   /*
   |--------------------------------------------------------------------------
   | Resend email verification
