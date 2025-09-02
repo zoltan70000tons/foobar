@@ -129,17 +129,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
 
   useEffect(() => {
     setIsNextDisabled(!validateStep());
-    //console.log(isNextDisabled);
-    //console.log('Category', cabinCategory, 'CabinNumber', cabinNumber, 'PASSENGER', passenger, 'PAYMENT PLAN',
-    // paymentPlan);
   }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
 
   useEffect(() => {
     if (!cabinType) return;
-
-    console.log('CabinType: ', cabinType.id);
-    console.log('LocalCategories: ', cabinCategories);
-
     const filteredCategories = cabinCategories.filter(category =>
       category.cabins.some(cabin => {
         const matchesType = cabin.cabin_type?.id === cabinType.id;
@@ -153,8 +146,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
         return matchesType && isValidStatus;
       })
     );
-
-    console.log('Filtered Categories: ', filteredCategories);
 
     setFilteredCategories(filteredCategories);
   }, [cabinType, cabinCategories]);
@@ -527,16 +518,35 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   <Autocomplete
                     fullWidth
                     options={availableCabins}
-                    getOptionLabel={(option) => option.cabin_number}
-                    value={availableCabins.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-                    onChange={(event, newValue) => {
+                    getOptionLabel={(option: { cabin_number: string; status: string }) => option.cabin_number}
+                    renderOption={(props, option: { cabin_number: string; status: string }) => {
+                      const { key, ...optionProps } = props;
+                      return (
+                        <Box component="li" {...optionProps} key={key}>
+                          {option.cabin_number}{" "}
+                          {option.status === "RESERVED" && (
+                            <Chip sx={{ ml: 1 }} label={"EXCLUDED"} color="warning" size="small" />
+                          )}
+                        </Box>
+                      );
+                    }}
+                    value={
+                      availableCabins.find((cabin: { cabin_number: string }) => cabin.cabin_number === cabinNumber) ||
+                      null
+                    }
+                    onChange={(event, newValue: any) => {
                       setIsSingleRoom(newValue?.cabin_type_id !== 1);
                       setCabinNumber(newValue?.cabin_number || null);
                     }}
-                    renderInput={(params) => <TextField {...params} label="Available Cabins" disabled={!cabinType || !cabinCategory || !availableCabins?.length} />}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Available Cabins"
+                        disabled={!cabinType || !cabinCategory || !availableCabins?.length}
+                      />
+                    )}
                     loading={fetching}
                     loadingText="Loading cabins..."
-                    disabled={!cabinType || !cabinCategory || !availableCabins?.length}
                   />
                 </FormControl>
               </Grid>
