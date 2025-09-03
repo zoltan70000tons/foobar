@@ -384,6 +384,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       setOpenSwitchPassengerModal(false);
       setSelectedUser(null);
       setSwitchStep("search");
+      router.reload({ only: ['booking'] });
     } catch (error) {
       console.error("Error switching lead passenger:", error);
       showSnackbar("Error switching lead passenger", "error");
