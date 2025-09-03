@@ -324,8 +324,22 @@ class BookingRepository implements BookingInterface
     {
 
         try {
-            $tag = Tag::type('booking')->whereIn('id', $tags)->get();
+            $originalTags = $booking->tags()->pluck('name')->toArray();
+            $tag          = Tag::type('booking')->whereIn('id', $tags)->get();
             $booking->tags()->sync($tag);
+            $newTags      = $booking->tags()->pluck('name')->toArray();
+
+            $this->saveBookingLog(
+                $booking->id,
+                'Changed booking tags',
+                sprintf(
+                    'Booking tags changed from [%s] to [%s].',
+                    implode(', ', $originalTags),
+                    implode(', ', $newTags)
+                )
+            );
+
+
             // if (!is_array($tags)) {
             //     throw new InvalidArgumentException('Tags must be an array.');
             // }
