@@ -165,6 +165,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       showSnackbar('Invitation successfully cancelled!', 'success');
 
       setErrors({});
+      router.reload({ only: ['booking'] });
     } catch (error) {
       console.error("Error cancelling invitation:", error.response?.data || error);
       showSnackbar("Failed to cancel invitation", "error");
@@ -248,6 +249,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       setEditPassengerOpen(false);
       setEditingPassenger(null);
       setErrors({});
+      router.reload({ only: ['booking'] });
     } catch (error) {
       console.error("Error releasing seat:", error.response?.data || error);
       showSnackbar("Failed to release seat", "error");
