@@ -49,7 +49,7 @@ const View = ({ auth, tag }: PageProps) => {
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.ViewCustomerTags) && (
+          { hasPermission(Permissions.ViewTags) && (
             <>
               <Paper
                 sx={ {
@@ -111,12 +111,12 @@ const View = ({ auth, tag }: PageProps) => {
                         <ArrowBack/>
                       </IconButton>
                     </Tooltip>
-                    { hasPermission(Permissions.EditCustomers) && (<Tooltip title="Edit">
+                    { hasPermission(Permissions.EditTags) && (<Tooltip title="Edit">
                       <IconButton color="primary" onClick={ handleEdit }>
                         <Edit/>
                       </IconButton>
                     </Tooltip>) }
-                    { hasPermission(Permissions.DeleteCustomers) && (<Tooltip title="Delete">
+                    { hasPermission(Permissions.DeleteTags) && (<Tooltip title="Delete">
                       <IconButton color="error" onClick={ handleDelete }>
                         <Delete/>
                       </IconButton>

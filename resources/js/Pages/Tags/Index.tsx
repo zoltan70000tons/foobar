@@ -63,7 +63,7 @@ const Index = ({ auth, tags }: PageProps) => {
                 //width: '13%',
                 draw: (row) => (
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        {hasPermission(Permissions.ViewCustomerTags) && (
+                        {hasPermission(Permissions.ViewTags) && (
                             <Visibility
                                 onClick={() => {
                                     router.get(route('tags.show', { tag: row.id }));

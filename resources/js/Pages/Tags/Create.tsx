@@ -94,7 +94,7 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
       </Toolbar>
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.CreateCustomers) && (<Paper
+          { hasPermission(Permissions.CreateTags) && (<Paper
               sx={ {
                 p: 2,
                 display: "flex",

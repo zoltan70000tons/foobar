@@ -16,19 +16,17 @@ import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { Event } from "@/interfaces/Event";
 import { Booking } from "@/types/booking";
+import { usePermissions } from '@/Providers/PermissionContext';
+import { Permissions } from "@/enums/PermissionEnum";
 
 
-
-// const availableTags = Object.values(TagEnum).map((tag) => ({
-//     label: tag,
-//     value: tag,
-// }));
 
 const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking, availableTags}> = ({ editable, event, booking,availableTags}) => {
     const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    console.log(booking.tags);
+    const { hasPermission } = usePermissions();
+
     useEffect(() => {
         if (Array.isArray(booking?.tags)) {
             setTags(booking.tags);
@@ -87,6 +85,7 @@ const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking, availa
                 <DialogContent>
                     <Autocomplete
                         multiple
+                        disabled={!editable || !hasPermission(Permissions.EditBookings)}
                         options={availableTags.filter(
                             (tag) => !(tags || []).some((t) => t.id === tag.id)
                         )}

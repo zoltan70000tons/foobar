@@ -194,7 +194,7 @@ const MenuItems: React.FC = () => {
             </Tooltip>
           )}
           {hasPermission(Permissions.ViewTags) && (
-            <Tooltip title="Events" placement="right">
+            <Tooltip title="Tags" placement="right">
               <IconButton
                 component={Link}
                 href={route("tags.index")}

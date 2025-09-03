@@ -60,6 +60,7 @@ class RolesSeeder extends Seeder
         $superAdminRole = Role::where('name', 'SuperAdmin')->first();
         $adminRole = Role::where('name', 'Admin')->first();
         $permissionNames = DB::table('permissions')->pluck('name')->toArray();
+       // dd($permissionNames);
         
         // Assign *all permissions* to SuperAdmin using syncPermissions
         $superAdminRole->syncPermissions($permissionNames);
@@ -168,10 +169,10 @@ class RolesSeeder extends Seeder
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
             Permissions::DeletePassengerOnboardCredit,
-            Permissions::ViewCustomerTags,
-            Permissions::EditCustomerTags,
-            Permissions::DeleteCustomerTags,
-            Permissions::CreateCustomerTags,
+            Permissions::ViewTags,
+            Permissions::EditTags,
+            Permissions::DeleteTags,
+            Permissions::CreateTags,
         ]);
         $this->assignToRole(Roles::Agent, [
             Permissions::ViewDashboard,
@@ -232,7 +233,8 @@ class RolesSeeder extends Seeder
             Permissions::CreatePassengerDiscounts,
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
-            Permissions::DeletePassengerOnboardCredit
+            Permissions::DeletePassengerOnboardCredit,
+            Permissions::ViewTags
         ]);
 
         $this->assignToRole(Roles::Admin, [ //Superadmin
@@ -297,10 +299,10 @@ class RolesSeeder extends Seeder
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
             Permissions::DeletePassengerOnboardCredit,
-            Permissions::ViewCustomerTags,
-            Permissions::EditCustomerTags,
-            Permissions::DeleteCustomerTags,
-            Permissions::CreateCustomerTags,
+            Permissions::ViewTags,
+            Permissions::EditTags,
+            Permissions::DeleteTags,
+            Permissions::CreateTags,
         ]);
 
         $this->assignToRole(Roles::Owner, [ // Superadmin
@@ -363,10 +365,10 @@ class RolesSeeder extends Seeder
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
             Permissions::DeletePassengerOnboardCredit,
-            Permissions::ViewCustomerTags,
-            Permissions::EditCustomerTags,
-            Permissions::DeleteCustomerTags,
-            Permissions::CreateCustomerTags,
+            Permissions::ViewTags,
+            Permissions::EditTags,
+            Permissions::DeleteTags,
+            Permissions::CreateTags,
         ]);
 
         $this->assignToRole(Roles::Trainee, [  // Only View Access
@@ -429,6 +431,7 @@ class RolesSeeder extends Seeder
             // Permissions::DeletePassengerDiscounts,
             // Permissions::CreatePassengerOnboardCredit,
             // Permissions::DeletePassengerOnboardCredit
+            Permissions::ViewTags
         ]);
     }
 

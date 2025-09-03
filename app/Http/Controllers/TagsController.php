@@ -2,66 +2,92 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permissions;
 use App\Models\Tag;
 use App\Repositories\EventRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Traits\HandlePermissions;
 
 class TagsController extends Controller
 {
+    use HandlePermissions;
     protected EventRepository $eventRepository;
 
     public function __construct(EventRepository $eventRepository)
     {
         $this->eventRepository = $eventRepository;
     }
-    public function index()
+    public function index(Request $request)
     {
-        $tags = Tag::orderBy('type')->orderBy('name')->get();
-        return Inertia::render('Tags/Index', [
-            'tags' => $tags,
-        ]);
+        return $this->withPermission(
+            [Permissions::ViewTags],
+            function () use ($request) {
+                $tags = Tag::orderBy('type')->orderBy('name')->get();
+                return Inertia::render('Tags/Index', [
+                    'tags' => $tags,
+                ]);
+            },
+            $request
+        );
     }
 
     public function show(Tag $tag)
     {
-        return Inertia::render('Tags/View', [
-            'tag' => $tag,
-        ]);
+        return $this->withPermission(
+            [Permissions::ViewTags],
+            function () use ($tag) {
+                return Inertia::render('Tags/View', [
+                    'tag' => $tag,
+                ]);
+            },
+            $tag
+        );
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $events = $this->eventRepository->getAll();
-        $tagTypes = ['Booking' => 'booking', 'Cabin' => 'cabin', 'Customer' => 'customer']; // Example tag types
-        $tagTypesTransformed = array_map(
-            fn($name, $value) => ['name' => $name, 'value' => $value],
-            array_keys($tagTypes),
-            $tagTypes
+        return $this->withPermission(
+            [Permissions::ViewTags],
+            function () use ($request) {
+                $events = $this->eventRepository->getAll();
+                $tagTypes = ['Booking' => 'booking', 'Cabin' => 'cabin', 'Customer' => 'customer']; // Example tag types
+                $tagTypesTransformed = array_map(
+                    fn($name, $value) => ['name' => $name, 'value' => $value],
+                    array_keys($tagTypes),
+                    $tagTypes
+                );
+                return Inertia::render('Tags/Create', [
+                    'events' => $events,
+                    'tagTypes' => $tagTypesTransformed,
+                ]);
+            },
+            $request
         );
-        return Inertia::render('Tags/Create', [
-            'events' => $events,
-            'tagTypes' => $tagTypesTransformed,
-        ]);
     }
 
     public function store(Request $request)
     {
 
         try {
-            $newTag  = Tag::create(['name'=> $request->name,'color'=> $request->color,'type'=>$request->entity,'description' => $request->description]);
+            $newTag  = Tag::create(['name' => $request->name, 'color' => $request->color, 'type' => $request->entity, 'description' => $request->description]);
             return redirect()->route('tags.index')->with('flash', 'Tag created successfully.');
         } catch (\Throwable $th) {
             return redirect()->route('tags.index')->with('flash', 'Error creating tag: ' . $th->getMessage());
         }
-        
-    }   
+    }
 
     public function edit(Tag $tag)
     {
-        return Inertia::render('Tags/Edit', [
-            'tag' => $tag,
-        ]);
+        return $this->withPermission(
+            [Permissions::EditTags],
+            function () use ($tag) {
+                return Inertia::render('Tags/Edit', [
+                    'tag' => $tag,
+                ]);
+            },
+            $tag
+        );
     }
 
     public function update(Tag $tag)

@@ -169,7 +169,7 @@ class BookingsController extends Controller
         $keyword,
         $tag
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }

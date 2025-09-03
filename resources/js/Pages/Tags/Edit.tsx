@@ -96,7 +96,7 @@ const Edit = ({ auth, errors }: PageProps) => {
       </Toolbar>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          {hasPermission(Permissions.EditCustomers) && (
+          {hasPermission(Permissions.EditTags) && (
             <Paper
               sx={{
                 p: 2,
