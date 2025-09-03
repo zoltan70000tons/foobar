@@ -303,29 +303,29 @@ const Index = ({
       {
         header: "Tags",
         accessor: "Tags",
-        draw: (row: Booking) => (
+        draw: (row: Booking) =>
+        (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
-            {Array.isArray(row.tags) && row.tags.length > 0 ? (
-              row.tags.map((tag: string, index: number) => {
-                const tagStyle = getTagStyle(tag);
-
-                return (
-                  <Chip
-                    key={index}
-                    label={tagStyle.label}
-                    size="small"
-                    sx={{
-                      fontSize: "0.7rem",
-                      fontWeight: 500,
-                      backgroundColor: tagStyle.color,
-                      color: "#fff",
-                    }}
-                  />
-                );
-              })
-            ) : (
-              <em>No Tags</em>
-            )}
+            {
+              Array.isArray(row.tags) && row.tags.length > 0 ? (
+                row.tags.map((tag: {name: string, color: string}, index: number) => {
+                  return (
+                    <Chip
+                      key={index}
+                      label={tag.name}
+                      size="small"
+                      sx={{
+                        fontSize: "0.7rem",
+                        fontWeight: 500,
+                        backgroundColor: tag.color,
+                        color: "#fff",
+                      }}
+                    />
+                  );
+                })
+              ) : (
+                <em>No Tags</em>
+              )}
           </Box>
         ),
       },
@@ -487,6 +487,11 @@ const Index = ({
       dateRangeState: DateRangeState
     ) => {
       try {
+        console.log(selectedTags, 'selectedTags');
+        let tags = selectedTags
+          ? selectedTags.map(tag => tag.id).join(',')
+          : null;
+        console.log(tags, 'tags');
         const res = await axios.get(route("bookings.data", { id: event.id }), {
           params: {
             page: page + 1,
@@ -495,7 +500,7 @@ const Index = ({
             sort_direction: sort?.direction ?? "asc",
             keyword: searchTerm,
             tab: selectedTab ?? 0,
-            tags: selectedTags.join(','),
+            tags: tags,
             user_ids: selectedUsers.map((user) => user.id),
             date_range: dateRangeState,
             ...filters,

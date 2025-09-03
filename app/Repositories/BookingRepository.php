@@ -133,11 +133,13 @@ class BookingRepository implements BookingInterface
             'passengers.payments',
             'agent',
             'agent.detail',
+            'tags',
         ])
             ->withSum('passengers as balance', 'passenger_balance')
             ->withSum('passengers as cost', 'passenger_allocated_cost')
             ->where('event_id', $eventId)
             ->where('status', $status);
+
 
         if (!empty($keyword)) {
             $keyword = strtolower($keyword);
