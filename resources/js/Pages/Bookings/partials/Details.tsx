@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Grid,
   Typography,
- 
   Paper,
   Box,
   Dialog,
@@ -15,13 +14,13 @@ import {
   ToggleButton,
   Switch,
   FormControlLabel,
-
   Alert,
   AlertTitle,
   Chip,
   CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import UpgradeIcon from '@mui/icons-material/Upgrade';
 import FilterListIcon from "@mui/icons-material/FilterList";
 import axios from "axios";
 import { router } from "@inertiajs/react";
@@ -131,6 +130,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const fetchCabinsToUpgradeTo = async () => {
     try {
       setLoading(true);
+      setCabinsToUpgradeTo([]);
       const response = await axios.get(route("cabins.upgrade-list"), {
         params: {
           type_id: cabinType?.id,
@@ -142,7 +142,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           accessible: onlyAccessible,
         },
       });
-      //setCabinNumber(null);
+
       if (response?.data?.error) {
         showSnackbar(response.data.error, 'error');
       }
@@ -153,8 +153,6 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
       setAvailableDecks(decks);*/
 
       setCabinsToUpgradeTo(response?.data?.cabins);
-      console.log('Reszponzdata', response.data)
-
     } catch (error) {
       if (error.response?.data?.error) {
         showSnackbar(error.response.data.error, 'error');
@@ -377,12 +375,12 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                 <Box sx={{display: "flex", gap: "16px", justifyContent: "flex-end"}}>
                   <Box mt={3} textAlign="right">
                     <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleEditClick}>
-                      Swap Cabin
+                      Swap Cabins
                     </Button>
                   </Box>
 
                   <Box mt={3} textAlign="right">
-                    <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleUpgradeCabin}>
+                    <Button variant="contained" color="primary" startIcon={<UpgradeIcon />} onClick={handleUpgradeCabin}>
                       Upgrade Cabin
                     </Button>
                   </Box>
@@ -629,7 +627,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                 </li>
               )}
               renderInput={(params) => <TextField {...params} label="Available Cabins" />}
-              disabled={loading}
+              disabled={loading || cabinsToUpgradeTo.length === 0}
             />
           </Box>
         </DialogContent>

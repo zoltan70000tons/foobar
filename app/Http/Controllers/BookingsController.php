@@ -21,6 +21,7 @@ use App\Repositories\EventRepository;
 use App\Repositories\LogRepository;
 use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
+use App\Traits\BookingLogTrait;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -39,6 +40,7 @@ class BookingsController extends Controller
   use HandlePermissions;
   use ExceptionLogger;
   use CabinFilter;
+  use BookingLogTrait;
 
   protected EventRepositoryInterface $eventRepository;
   protected BookingInterface $bookingRepository;
@@ -832,6 +834,7 @@ class BookingsController extends Controller
                 ->whereDoesntHave('temporaryReservations', function ($q) {
                     $q->where('expires_at', '>', now());
                 })
+                ->where('cabin_type_id', $typeId)
                 ->get()
                 ->sortBy('cabinSpec.cabin_number', SORT_ASC);
 
@@ -896,9 +899,31 @@ class BookingsController extends Controller
                 [Permissions::EditBookings],
                 function ($event_id, $booking_id, $cabin_number) {
                     $booking = Booking::find($booking_id);
-                    $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+                    $oldBooking = clone $booking;
+                    $result = null;
+                    DB::transaction(function () use ($cabin_number, $booking, &$result, $oldBooking) {
+                        $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+
+                        $booking->refresh()->load([
+                            'cabin',
+                            'cabin.cabinSpec',
+                            'cabin.category',
+                            'cabin.cabinType',
+                            'adjustments',
+                            'passengers.discounts',
+                            'passengers.fees',
+                        ]);
+
+                        $this->paymentInfoService->syncAllocatedCost($booking);
+                    });
 
                     $this->paymentInfoService->syncAllocatedCost($booking);
+
+                    $this->saveBookingLog(
+                        $booking->id,
+                        'Cabin Upgrade',
+                        "Upgrade from {$oldBooking->booking_code} to {$result->booking_code}"
+                    );
 
                     return redirect()
                         ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
@@ -909,6 +934,7 @@ class BookingsController extends Controller
                 $cabin_number
             );
         } catch (\Exception $e) {
+            //dd('Transaction failed', $e->getMessage(), $e->getTraceAsString());
             $this->logException($e);
         }
     }
