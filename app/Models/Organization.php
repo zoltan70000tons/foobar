@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Organization extends Model
 {
-    //use HasFactory;
+    use HasFactory;
+
     protected $table = 'organizations';
     protected $fillable = ['name','terms'];
 

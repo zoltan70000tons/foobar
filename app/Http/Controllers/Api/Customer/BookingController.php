@@ -65,7 +65,6 @@ class BookingController extends Controller
 
     // Get authenticated user
     $user = Auth::user();
-    //$cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$cart || empty($cart)) {
@@ -153,7 +152,7 @@ class BookingController extends Controller
       $cabinTitle = $validated['cart']['cabin_title'];
 
       // Delete current sesion
-      $request->session()->forget('reservation_id');
+      //$request->session()->forget('reservation_id');
 
       // delete cart from db
       Cart::where('user_id', $user->id)->delete();
@@ -215,6 +214,7 @@ class BookingController extends Controller
         201
       );
     } catch (\Exception $e) {
+        dd($e->getMessage());
       return response()->json(
         [
           'message' => 'An error occurred while creating the booking.',
@@ -726,11 +726,11 @@ class BookingController extends Controller
     }
 
     // passenger_id: passengerId,
-    // passenger_inivtation_id: invitationId,
-    // passenger_inivtation_token: token,
+    // passenger_invitation_id: invitationId,
+    // passenger_invitation_token: token,
     $passengerId = $request->input('passenger_id');
-    $invitationId = $request->input('passenger_inivtation_id');
-    $token = $request->input('passenger_inivtation_token');
+    $invitationId = $request->input('passenger_invitation_id');
+    $token = $request->input('passenger_invitation_token');
 
     if (!$passengerId || !$invitationId || !$token) {
       return response()->json(['message' => 'Passenger ID, Invitation ID, and Token are required'], 400);

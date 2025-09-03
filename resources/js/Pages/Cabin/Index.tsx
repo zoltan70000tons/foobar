@@ -26,18 +26,21 @@ import { Visibility, Edit, Delete } from '@mui/icons-material';
 import { Permissions } from '@/enums/PermissionEnum';
 import { usePermissions } from '@/Providers/PermissionContext';
 import apiRoutes from '@/Helpers/ApiRoutes';
-import type { PageProps } from '@inertiajs/core';
+import type { Errors} from '@inertiajs/core';
 import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 import AddIcon from '@mui/icons-material/Add';
+import { Event } from '@/interfaces/Event';
+import { Cabin } from '@/interfaces/Cabin';
+import type { PageProps } from '@/types';
+import { CabinSubRow } from '@/interfaces/CabinSubRow';
 
 type Props = PageProps & {
-  auth: any;
-  event: any;
+  auth: AuthProps;
+  event: Event;
   categories: CabinCategory[];
-  cabins: any[];
-  errors: any;
+  cabins: Cabin[];
+  errors: Errors;
   tab: string;
-  data: any;
 };
 
 const Index = ({ auth, event, categories, cabins, errors }: Props) => {
@@ -55,7 +58,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
 
   const { showSnackbar } = useSnackbar();
 
-  const { flash } = usePage().props as any;
+  const { flash } = usePage<PageProps>().props;
 
   useEffect(() => {
     if (flash.message) {
@@ -76,8 +79,6 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
   };
-
-  console.log('Cabin Index Page', event, categories, cabins);
 
   const columns = useMemo(
     () => [
@@ -116,7 +117,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
         header: 'Number',
         filterable: true,
         sortable: true,
-        draw: (row: any) => (
+        draw: (row: Cabin) => (
           <Typography variant="body2" sx={{ fontWeight: '500' }}>
             {row.cabin_number}
             {row && row.is_shared_cabin_number && (
@@ -156,7 +157,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
         width: '150px',
         filterType: 'select',
         filterOptions: Object.values(CabinStatus),
-        draw: (row: any) => (
+        draw: (row: CabinSubRow) => (
           <>
             <Chip
               size="small"
@@ -197,7 +198,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
           }
           return cellValue.some((tag) => tag.toLowerCase().includes(filterValue.toLowerCase()));
         },
-        draw: (subRow: any) => {
+        draw: (subRow: CabinSubRow) => {
           return (
             <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
               {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
@@ -220,7 +221,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
         header: 'Actions',
         accessor: 'category_code',
         disableFilter: true,
-        draw: (row: any) => (
+        draw: (row: Cabin) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {auth.permissions.includes(Permissions.ViewCabins) && (
               <Visibility
@@ -292,7 +293,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
         header: 'Actions',
         accessor: '',
         disableFilter: true,
-        draw: (row: any) => (
+        draw: (row: CabinCategory) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {auth.permissions.includes(Permissions.ViewCabinCategories) && (
               <Visibility onClick={() => handleViewClick(row)} style={{ cursor: 'pointer' }} />
@@ -310,7 +311,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
     [],
   );
 
-  const manageTags = async (rows: any[], tags: string[]) => {
+  const manageTags = async (rows: Cabin[], tags: string[]) => {
     const url = apiRoutes.addCabinTags(event.id);
     setLoading(true);
     try {
@@ -326,16 +327,16 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
   };
 
 
-  const manageStatus = (rows: any, status: string) => {
+  const manageStatus = (rows: Cabin, status: string) => {
     const hasInvalidStatus = rows.some(
-      (row: any) => row.status === CabinStatus.BOOKED || row.status === CabinStatus.PARTIALLY_BOOKED,
+      (row: Cabin) => row.status === CabinStatus.BOOKED || row.status === CabinStatus.PARTIALLY_BOOKED,
     );
     if (hasInvalidStatus) {
       setOpenDialog(true);
       return;
     }
     const url = apiRoutes.updateCabinStatus(event.id);
-    const rowIds = rows.map((row: any) => row.id);
+    const rowIds = rows.map((row: Cabin) => row.id);
     setLoading(true);
     router.post(route('cabins.updateStatus', { id: event.id }), { status, rows: rowIds });
     // axios

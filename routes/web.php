@@ -31,6 +31,10 @@ use App\Http\Controllers\DiscountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardCreditController;
 use App\Http\Controllers\TemporaryPasswordController;
+use Laravel\Passport\Passport;
+use App\Http\Controllers\OAuth\PublicAuthController;
+use App\Http\Controllers\OAuth\VerifyEmailController;
+
 
 Route::get('/', function () {
   return Inertia::render('Welcome', [
@@ -39,7 +43,7 @@ Route::get('/', function () {
     'laravelVersion' => Application::VERSION,
     'phpVersion' => PHP_VERSION,
   ]);
-});
+})->middleware(['auth', 'verified', 'electron_auth']);
 
 Route::get('/token', function () {
   return csrf_token();
@@ -50,10 +54,10 @@ Route::post('/contact/submit', [ContactFormController::class, 'submit']);
 Route::get('/dashboard', function () {
   return Inertia::render('Dashboard');
 })
-  ->middleware(['auth', 'verified'])
+  ->middleware(['auth', 'verified', 'electron_auth'])
   ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
   Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
   Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -277,6 +281,11 @@ Route::prefix('payment-transfer')->group(function () {
     Route::post('{event_id}/{booking_id}/delete', [\App\Http\Controllers\PaymentTransferController::class, 'delete'])->name('delete.payment-transfer');
 });
 
+Route::prefix('split-payment')->group(function () {
+    Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\SplitPaymentController::class, 'store'])
+        ->name('manual.split-payment');
+});
+
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
 
 Route::get('/customer-tags/paginated', [CustomerTagController::class, 'getPaginated'])->name('customer-tags.paginated');
@@ -291,5 +300,55 @@ Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destro
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 Route::get('/customers-search', [CustomerController::class, 'search'])->name('switch.lead.search');
 Route::post('/events/{event_id}/booking/{booking_id}/switch-lead-passenger', [BookingsController::class, 'switchLeadPassenger'])->name('lead.passenger.switch');
+
+
+
+// --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
+
+Route::prefix('oauth')->group(function () {
+    // Login/Logout
+    Route::get('/login', [PublicAuthController::class, 'index'])->name('oauth.login');
+    Route::post('/login', [PublicAuthController::class, 'login'])->name('oauth.login.submit');
+    // this is for web and admin context
+    Route::post('/logout', [PublicAuthController::class, 'logoutWeb'])->name('oauth.web.logout');
+    // this is for SPA context
+    Route::get('/logout', [PublicAuthController::class, 'logoutSPA']);
+
+    // Registration
+    Route::get('/register', [PublicAuthController::class, 'showRegistrationForm'])->name('oauth.register.form');
+    Route::post('/register', [PublicAuthController::class, 'register'])->name('oauth.register');
+
+    // Password Reset
+    // Route::get('/forgot-password', [PublicPasswordResetController::class, 'showLinkRequestForm'])->name('oauth.password.forgot.form');
+    // Route::post('/forgot-password', [PublicPasswordResetController::class, 'sendResetLink'])->name('oauth.password.forgot');
+    // Route::get('/reset-password/{token}', [PublicPasswordResetController::class, 'showResetForm'])->name('oauth.password.reset.form');
+    // Route::post('/reset-password', [PublicPasswordResetController::class, 'reset'])->name('oauth.password.reset');
+
+    // Email Verification
+    Route::get('/verify-email', [VerifyEmailController::class, 'index'])->name('oauth.email.verify.notice')->middleware('custom.auth.redirect');
+    Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])->name('oauth.email.verify.resend');
+    Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed')->name('oauth.email.verify.link');
+
+    // Account Recovery
+    // Route::get('/recover-account', [PublicAccountRecoveryController::class, 'showForm'])->name('oauth.recover.form');
+    // Route::post('/recover-account', [PublicAccountRecoveryController::class, 'submit'])->name('oauth.recover');
+});
+
+
+Route::post('/token', [
+    'uses' => 'AccessTokenController@issueToken',
+    'as' => 'token',
+    'middleware' => 'throttle',
+]);
+
+Route::get('/authorize', [
+    'uses' => 'AuthorizationController@authorize',
+    'as' => 'authorizations.authorize',
+    'middleware' => 'web',
+]);
+
+$guard = config('passport.guard', null);
+
+// END --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 
 require __DIR__ . '/auth.php';

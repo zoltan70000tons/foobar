@@ -18,18 +18,14 @@ class MembershipSales
   public function handle(Request $request, Closure $next): Response
   {
     $language = $request->query('language', 'en');
-    $id = $request->route('id') ?? ($request->get('event_id') ?? ($request->query('event_id') ?? null));
-
-    // log cookies sended
-    // Log::info("--- Incoming Request ---");
-    // Log::info("Request URL: " . $request->fullUrl());
-    // Log::info("Request Method: " . $request->method());
-    // Log::info("Request IP Address: " . $request->ip());
-    // Log::info("Request Headers: " . json_encode($request->headers->all()));
-    // Log::info("Request Cookies: " . json_encode($request->cookies->all()));
-    // Log::info("Request Query Parameters: " . json_encode($request->query()));
-    // Log::info("Request Payload: " . json_encode($request->all()));
-
+    $eventId = $request->route('eventId') 
+      ?? $request->route('event_id')
+      ?? $request->get('eventId') 
+      ?? $request->get('event_id') 
+      ?? $request->query('eventId')
+      ?? $request->query('event_id')
+      ?? null;
+   
     App::setLocale($language);
 
     // check if the Auth
@@ -44,7 +40,7 @@ class MembershipSales
       $membership = $customer->membershipTypes->first() ?? null;
     }
 
-    $access = $this->checkMembershipAccess($membership, null, $id);
+    $access = $this->checkMembershipAccess($membership, null, $eventId);
 
     if ($access['status'] === false) {
       return response()->json(

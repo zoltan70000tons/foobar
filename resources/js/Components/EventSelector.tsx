@@ -5,17 +5,14 @@ import dayjs from "dayjs";
 import "dayjs/locale/en";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { router } from "@inertiajs/react";
-// import LoadingOverlay from "./LoadingOverlay";
+import { Event } from "@/interfaces/Event";
 
-interface Event {
-  id: string;
-  name: string;
-  image: string;
-  start_date: string;
-  description?: string;
-}
+type Props = PageProps & {
+  events: Event[];
+  url: string;
+};
 
-const EventSelector = ({ events, url }: PageProps & { events: Event[] }) => {
+const EventSelector = ({ events, url }: Props) => {
   dayjs.extend(localizedFormat);
 
   const handleClick = (eventId: string) => {
@@ -29,7 +26,7 @@ const EventSelector = ({ events, url }: PageProps & { events: Event[] }) => {
         events.map((event: Event) => (
           <Grid item xs={12} sm={6} md={4} key={event.id}>
             <Box
-              onClick={() => handleClick(event.id)}
+              onClick={() => handleClick(event.id.toString())}
               sx={{
                 display: "flex",
                 flexDirection: "row",

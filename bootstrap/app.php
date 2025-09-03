@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Middleware\ValidateOrganization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Session\Middleware\StartSession;
+use League\OAuth2\Server\Exception\OAuthServerException;
+
 
 return Application::configure(basePath: dirname(__DIR__))
   ->withRouting(
@@ -14,8 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     health: '/up'
   )
   ->withMiddleware(function (Middleware $middleware) {
-    $middleware->statefulApi();
-    $middleware->authenticateSessions();
+    // $middleware->statefulApi();
+     $middleware->authenticateSessions();
     $middleware->encryptCookies(except: ['email_verified']);
 
     $middleware->alias([
@@ -27,31 +27,39 @@ return Application::configure(basePath: dirname(__DIR__))
       'one_booking_per_user' => \App\Http\Middleware\OneBookingPerUser::class,
       'booking_status' => \App\Http\Middleware\BookingStatusMiddleware::class,
       'allowed_domains' => \App\Http\Middleware\CheckAllowedDomains::class,
-      // 'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
+      'custom.auth.redirect' => \App\Http\Middleware\RedirectIfUnauthenticatedToOAuthLogin::class,
+      //'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
+      'electron_auth' => \App\Http\Middleware\ElectronAuth::class,
     ]);
 
     $middleware->web(
       append: [
+        // authenticateSessions
         \App\Http\Middleware\TeamContext::class,
         \App\Http\Middleware\HandleInertiaRequests::class,
         \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         \App\Http\Middleware\TeamsPermission::class,
-        \App\Http\Middleware\EnsureUserIsNotCustomer::class,
+        //\App\Http\Middleware\EnsureUserIsNotCustomer::class,
       ]
     );
 
     $middleware->api(
       prepend: [
-        //\App\Http\Middleware\RestoreCartMiddleware::class,
-        //\App\Http\Middleware\TeamsPermission::class,
-        \App\Http\Middleware\ApiRedirectHttp::class,
         \App\Http\Middleware\TeamContext::class,
-        //\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        // \App\Http\Middleware\EnsureUserIsNotWeb::class,
       ]
     );
+
+    $middleware->validateCsrfTokens(except: [
+      '/api/auth/login',
+      '/api/auth/logout',
+    ]);
   })
   ->withExceptions(function (Exceptions $exceptions) {
-    //
+    // Normalize revoked/invalid token errors
+      $exceptions->report(function (OAuthServerException $e) {
+          if ($e->getCode() === 401) {
+              return response()->json(['message' => 'Unauthorized'], 401);
+          }
+      })->stop();
   })
   ->create();

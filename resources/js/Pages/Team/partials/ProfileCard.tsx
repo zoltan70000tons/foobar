@@ -1,10 +1,6 @@
-// IMPORTS
-import Card from "@mui/material/Card";
-import Typography from "@mui/material/Typography";
-import { Chip, Grid } from "@mui/material";
-import Avatar from "@mui/material/Avatar";
+import { Avatar,Card, Badge, Chip, Grid,Typography } from "@mui/material";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-import Badge from "@mui/material/Badge";
+import { User } from "@/interfaces/User";
 
 const styles = {
   details: {
@@ -18,19 +14,10 @@ const styles = {
   }
 };
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  status: string;
-  roles: string[];
-  organization_id: number;
-  organization_name: string;
-  survivor_number: number;
-}
+
 
 interface ProfileCardProps {
-  user: User | null;
+  user: User;
 }
 
 export default function ProfileCard({ user }: ProfileCardProps) {
@@ -79,7 +66,7 @@ export default function ProfileCard({ user }: ProfileCardProps) {
           </Badge>
 
           <Typography variant="h6">
-            {user.name}
+            {user.detail?.first_name} {user.detail?.last_name }
           </Typography>
           <Typography color="text.secondary">{user.email}</Typography>
         </Grid>

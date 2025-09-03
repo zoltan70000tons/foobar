@@ -26,18 +26,25 @@ trait CabinFilter
     $onlyAvailable = true,
     $cabinCategoryCode = null,
     $cabinCapacity = null,
-    $returnInProgress = false // Used to show in progress cabins as not available
+    $returnInProgress = false, // Used to show in progress cabins as not available
+    $fromAdmin = false,
   ) {
     $currentTime = Carbon::now();
 
     $cabinsQuery = Cabin::with(['category.spec']) // Eager load spec for deck filtering: https://laravel.com/docs/11.x/pennant#eager-loading
       ->where('cabin_type_id', $cabinTypeId)
-      ->when($onlyAvailable, function ($query) use ($cabinTypeId) {
-        // Only return cabins that are available or PARTIALLY_BOOKED
-        if ($cabinTypeId == 1) {
-          $query->where('status', StatusCabin::AVAILABLE->value);
+      ->when($onlyAvailable, function ($query) use ($cabinTypeId, $fromAdmin) {
+        if ($fromAdmin) {
+            $query->whereIn('status', [StatusCabin::AVAILABLE->value, StatusCabin::PARTIALLY_BOOKED->value,
+                StatusCabin::RESERVED->value]);
         } else {
-          $query->whereIn('status', [StatusCabin::AVAILABLE->value, StatusCabin::PARTIALLY_BOOKED->value]);
+            // Only return cabins that are available or PARTIALLY_BOOKED
+            if ($cabinTypeId == 1) {
+                $query->where('status', StatusCabin::AVAILABLE->value);
+            } else {
+                $query->whereIn('status', [StatusCabin::AVAILABLE->value, StatusCabin::PARTIALLY_BOOKED->value,
+                    StatusCabin::RESERVED->value]);
+            }
         }
       })
       ->withCount([

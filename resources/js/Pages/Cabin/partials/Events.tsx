@@ -3,11 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
-  Avatar,
-  Box,
   Container,
-  Grid,
-  Typography,
   Toolbar,
   useTheme,
   Alert,
@@ -18,9 +14,14 @@ import "dayjs/locale/en";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Permissions } from "@/enums/PermissionEnum";
 import EventSelector from "@/Components/EventSelector";
+import { Event } from "@/interfaces/Event";
 
+type Props = PageProps & {
+  auth: AuthProps;
+  events: Event[];
+};
 
-const Events = ({ auth, events }: PageProps) => {
+const Events = ({ auth, events }: Props) => {
   const { hasPermission } = usePermissions();
   const theme = useTheme(); 
   dayjs.extend(localizedFormat);

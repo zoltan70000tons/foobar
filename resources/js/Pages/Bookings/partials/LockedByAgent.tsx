@@ -3,10 +3,11 @@ import { useEffect, useState } from'react';
 import { Box, Typography } from '@mui/material';
 // reverb
 import '@/echo';
+import { ReverbLockBookingEvent } from '@/interfaces/ReverbLockBookingEvent';
 
 type Props = {
-  bookingId: any;
-  currentEditingUser: any;
+  bookingId: number;
+  currentEditingUser: string | null;
 };
 
 export default function LockedByAgent({bookingId, currentEditingUser}: Props) {
@@ -17,7 +18,7 @@ export default function LockedByAgent({bookingId, currentEditingUser}: Props) {
     
     const channel = window.Echo.channel('reverb-lock-booking');
   
-    channel.listen('.ReverbLockBooking', ({ bookingId: incominBookingId, username }: any) => {
+    channel.listen('.ReverbLockBooking', ({ bookingId: incominBookingId, username }: ReverbLockBookingEvent) => {
       // console.log('BookingEditStatusUpdated event received:', bookingId, username);
       if (incominBookingId === bookingId) {
         setUserName(username);

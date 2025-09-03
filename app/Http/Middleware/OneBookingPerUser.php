@@ -40,7 +40,7 @@ class OneBookingPerUser
       
         if ($cart) {
           $cart->delete();
-          $reservationService->releaseCabin($request);
+          $reservationService->releaseCabin($user);
         }
 
         return response()->json(

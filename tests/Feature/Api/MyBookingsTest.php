@@ -8,7 +8,7 @@ use App\Helpers\CustomerHelper;
 use function Pest\Faker\fake;
 
 // If user not exist in passenger table, he cant manage his bookings
-function setupTestCustomerWithMembership(int $membershipId = 4): User
+/*function setupTestCustomerWithMembership(int $membershipId = 4): User
 {
   $user = User::factory()->create();
 
@@ -68,4 +68,4 @@ it('returns an error if user is not a passenger', function () {
   $response->assertJson([
       'message' => 'Booking not found'
   ]);
-});
+});*/

@@ -4,18 +4,11 @@ import {
 } from "@mui/material";
 import ProfileCard from "./ProfileCard";
 import SettingsCard from "./SettingsCard";
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  status: string;
-  roles: string[];
-  organization_id: number;
-  organization_name: string;
-}
+import { User } from "@/interfaces/User";
+
 
 interface ViewMemberProps {
-  selectedUser: User | null;
+  selectedUser: User;
 }
 
 export default function ViewMember({ selectedUser }: ViewMemberProps) {
