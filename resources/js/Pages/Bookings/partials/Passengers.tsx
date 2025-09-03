@@ -504,7 +504,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                   borderRadius: '5px',
                   border: '1px solid grey',
                   cursor: 'pointer',
-                  minHeight: '120px',
+                  minHeight: '140px',
                 }}
                 onClick={() =>
                   passenger?.passenger_invitation?.length
@@ -523,9 +523,14 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     sx={{
                       borderRadius: 1,
                       padding: '6px',
+                      fontSize: '0.75rem',
+                      '&:hover': {
+                        backgroundColor: '#424242',
+                        cursor: 'pointer',
+                      },
                     }}
                   >
-                    <SwapHoriz fontSize="small" />
+                    Switch Lead Passenger&nbsp;<SwapHoriz fontSize="small" />
                   </IconButton>
 
                 </Box>)}

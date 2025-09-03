@@ -14,6 +14,7 @@ use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
 use App\Models\Passenger;
+use App\Models\SurvivorNumber;
 use App\Models\User;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
@@ -833,13 +834,31 @@ class BookingsController extends Controller
         [Permissions::EditBookings],
         function () use ($bookingId, $newLeadId, $eventId, $request) {
 
-          return DB::transaction(function () use ($bookingId, $newLeadId, $request) {
+          return DB::transaction(function () use ($bookingId, $newLeadId, $request,$eventId) {
 
             $booking = Booking::with('passengers')->findOrFail($bookingId);
+            $currentLead = $booking->passengers->firstWhere('lead_passenger', true);
+            $currentSurvivor = SurvivorNumber::where('survivor_number', $currentLead->survivor_number)->first();
+            $currentLeadUser = $currentSurvivor ? User::with('membershipTypes')->find($currentSurvivor->user_id) : null;
             $user    = User::with('survivorNumber')->findOrFail($newLeadId);
+            $sn = $user->survivorNumber?->survivor_number;
+            if (!$sn) {
+              return response()->json(['error' => 'Selected user has no Survivor Number.'], 422);
+            }
+            
+            $hasBooking = Passenger::checkSurvivorInActiveBookings($sn, $booking->event_id, $bookingId);
+            if ($hasBooking) {
+              return response()->json(['error' => 'Selected user is already in another active booking for this event.'], 422);
+            } 
 
             if (!$user->hasRole('Customer')) {
               return response()->json(['error' => 'The selected user is not a valid lead passenger.'], 422);
+            }
+            $currentMaxMembership = $currentLeadUser?->membershipTypes->sortByDesc('booking_number_requirement')->first()?->booking_number_requirement;
+            $userMax = $user->membershipTypes->sortByDesc('booking_number_requirement')->first()?->booking_number_requirement ?? null;
+            $isLowerTier = $userMax && $currentMaxMembership ? $userMax < $currentMaxMembership : false;
+            if ($isLowerTier) {
+              return response()->json(['error' => 'The selected user has a lower membership tier than the current lead passenger.'], 422);
             }
 
             $leadPassengerSlot = Passenger::where('booking_id', $bookingId)
@@ -867,10 +886,6 @@ class BookingsController extends Controller
             $passengerData['terms_n_cons']   = true;
             $passengerData['cabin_conf_accp'] = true;
 
-            $sn = $user->survivorNumber?->survivor_number;
-            if (!$sn) {
-              return response()->json(['error' => 'Selected user has no Survivor Number.'], 422);
-            }
 
             // new in the same booking?
             $existingSame = Passenger::where('booking_id', $bookingId)
