@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             CustomerBookingSeeder::class,
             UserTagsSeeder::class,
             OauthClientSeeder::class,
+            PassengerPersonalAccessClientSeeder::class,
         ]);
     }
 }
