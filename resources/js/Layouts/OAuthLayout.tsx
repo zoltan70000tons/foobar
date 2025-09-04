@@ -31,7 +31,7 @@ const OAuthLayout: React.FC<Props> = ({ children }) => {
               zIndex: 1002,
             }}
           >
-            <Stack direction="row" spacing={5} alignItems="center">
+            <Stack direction="row" spacing={5} alignItems="center" sx={{ width: '100%', justifyContent: 'space-between' }}>
               <Logo />
               <TopNavigation />
             </Stack>
