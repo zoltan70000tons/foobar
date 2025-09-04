@@ -14,6 +14,8 @@ use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
 use App\Models\Passenger;
+use App\Models\SurvivorNumber;
+use App\Models\User;
 use App\Models\Payment;
 use App\Repositories\AdjustmentsRepository;
 use App\Repositories\BookingRepository;
@@ -473,33 +475,33 @@ class BookingsController extends Controller
   // Reassign booking to another agent
   public function reAssign(Request $request)
   {
-      $bookingId = $request->input('booking_id');
-      $user = Auth::user();
+    $bookingId = $request->input('booking_id');
+    $user = Auth::user();
 
-      // is user have permissio EditBookings
-      if (!$user->hasAnyPermission([Permissions::InterceptBookings])) {
-        // return back with error message
-        return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
-      }
+    // is user have permissio EditBookings
+    if (!$user->hasAnyPermission([Permissions::InterceptBookings])) {
+      // return back with error message
+      return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
+    }
 
-      DB::table('booking_agent_sessions')
-        ->where('booking_id', $bookingId)
-        ->delete();
+    DB::table('booking_agent_sessions')
+      ->where('booking_id', $bookingId)
+      ->delete();
 
 
-      DB::table('booking_agent_sessions')->insert([
-          'booking_id' => $bookingId,
-          'agent_id' => $user->id,
-          'time' => now(),
-      ]);
- 
-      broadcast(new \App\Events\BookingAgentSession(
-        agentId: $user->id,
-        bookingId: $bookingId,
-        username: $user->username
-      ));
+    DB::table('booking_agent_sessions')->insert([
+      'booking_id' => $bookingId,
+      'agent_id' => $user->id,
+      'time' => now(),
+    ]);
 
-      return Inertia::location(url()->previous());
+    broadcast(new \App\Events\BookingAgentSession(
+      agentId: $user->id,
+      bookingId: $bookingId,
+      username: $user->username
+    ));
+
+    return Inertia::location(url()->previous());
   }
 
   // edit mode
@@ -512,29 +514,29 @@ class BookingsController extends Controller
     $user = Auth::user();
 
     if ($lock) {
-        DB::table('booking_agent_sessions')->updateOrInsert(
-            [
-              'booking_id' => $bookingId, 
-              'agent_id' => $user->id
-            ],
-            [
-                'time' => now()
-            ]
-        );
+      DB::table('booking_agent_sessions')->updateOrInsert(
+        [
+          'booking_id' => $bookingId,
+          'agent_id' => $user->id
+        ],
+        [
+          'time' => now()
+        ]
+      );
     } else {
-        DB::table('booking_agent_sessions')
-            ->where('booking_id', $bookingId)
-            ->where('agent_id', $user->id)
-            ->delete();
+      DB::table('booking_agent_sessions')
+        ->where('booking_id', $bookingId)
+        ->where('agent_id', $user->id)
+        ->delete();
     }
 
     broadcast(new \App\Events\BookingAgentSession(
-        agentId: $user->id,
-        bookingId: $bookingId,
-        username: $lock ? $user->username : null
+      agentId: $user->id,
+      bookingId: $bookingId,
+      username: $lock ? $user->username : null
     ));
 
-    
+
     // // return inertia
     return $this->withPermission([Permissions::EditBookings], fn() => Inertia::location(url()->previous()));
 
@@ -807,32 +809,163 @@ class BookingsController extends Controller
 
   public function getData(Request $request)
   {
-   try {
-    $eventId = $request->route('id');
-    $status = match ((int) $request->get('tab', 1)) {
-      0 => 'NEW',
-      1 => 'ON HOLD',
-      2 => 'UPLOADED',
-      3 => 'CANCELLED',
-      default => 'ON HOLD',
-    };
+    try {
+      $eventId = $request->route('id');
+      $status = match ((int) $request->get('tab', 1)) {
+        0 => 'NEW',
+        1 => 'ON HOLD',
+        2 => 'UPLOADED',
+        3 => 'CANCELLED',
+        default => 'ON HOLD',
+      };
 
-    $keyword = $request->input('keyword');
-    $perPage = $request->input('per_page', 10);
-    $sortKey = $request->input('sort_key', 'created_at');
-    $sortDirection = $request->input('sort_direction', 'desc');
-    $tags = array_filter(explode(',', $request->input('tags', '')));
-    $user_ids = $request->input('user_ids', []);
-    $dateRange = $request->input('date_range', null);
-    $bookings = $this->bookingRepository->getByStatus($eventId, $status, $keyword, $perPage, $sortKey,
-        $sortDirection, $tags, $user_ids, $dateRange);
+      $keyword = $request->input('keyword');
+      $perPage = $request->input('per_page', 10);
+      $sortKey = $request->input('sort_key', 'created_at');
+      $sortDirection = $request->input('sort_direction', 'desc');
+      $tags = array_filter(explode(',', $request->input('tags', '')));
+      $user_ids = $request->input('user_ids', []);
+      $dateRange = $request->input('date_range', null);
+      $bookings = $this->bookingRepository->getByStatus(
+        $eventId,
+        $status,
+        $keyword,
+        $perPage,
+        $sortKey,
+        $sortDirection,
+        $tags,
+        $user_ids,
+        $dateRange
+      );
 
-    return response()->json([
-      'data' => $bookings->items(),
-      'total' => $bookings->total(),
-    ]);
-   } catch (Exception $e) {
-    $this->logException($e);
-   }
+      return response()->json([
+        'data' => $bookings->items(),
+        'total' => $bookings->total(),
+      ]);
+    } catch (Exception $e) {
+      $this->logException($e);
+    }
+  }
+
+  public function switchLeadPassenger(Request $request)
+  {
+    $newLeadId = $request->input('new_lead_passenger_id');
+    $eventId   = $request->route('id');
+    $bookingId = $request->route('booking_id');
+
+    try {
+      return $this->withPermission(
+        [Permissions::EditBookings],
+        function () use ($bookingId, $newLeadId, $eventId, $request) {
+
+          return DB::transaction(function () use ($bookingId, $newLeadId, $request,$eventId) {
+
+            $booking = Booking::with('passengers')->findOrFail($bookingId);
+            $currentLead = $booking->passengers->firstWhere('lead_passenger', true);
+            $currentSurvivor = SurvivorNumber::where('survivor_number', $currentLead->survivor_number)->first();
+            $currentLeadUser = $currentSurvivor ? User::with('membershipTypes')->find($currentSurvivor->user_id) : null;
+            $user    = User::with('survivorNumber')->findOrFail($newLeadId);
+            $sn = $user->survivorNumber?->survivor_number;
+            if (!$sn) {
+              return response()->json(['error' => 'Selected user has no Survivor Number.'], 422);
+            }
+            
+            $hasBooking = Passenger::checkSurvivorInActiveBookings($sn, $booking->event_id, $bookingId);
+            if ($hasBooking) {
+              return response()->json(['error' => 'Selected user is already in another active booking for this event.'], 422);
+            } 
+
+            if (!$user->hasRole('Customer')) {
+              return response()->json(['error' => 'The selected user is not a valid lead passenger.'], 422);
+            }
+            $currentMaxMembership = $currentLeadUser?->membershipTypes->sortByDesc('booking_number_requirement')->first()?->booking_number_requirement;
+            $userMax = $user->membershipTypes->sortByDesc('booking_number_requirement')->first()?->booking_number_requirement ?? null;
+            $isLowerTier = $userMax && $currentMaxMembership ? $userMax < $currentMaxMembership : false;
+            if ($isLowerTier) {
+              return response()->json(['error' => 'The selected user has a lower membership tier than the current lead passenger.'], 422);
+            }
+
+            $leadPassengerSlot = Passenger::where('booking_id', $bookingId)
+              ->where('lead_passenger', true)
+              ->firstOrFail();
+
+            $oldSurvivorNumber = $leadPassengerSlot->survivor_number;
+
+            $passengerData = $request->except(['new_lead_passenger_id']);
+            foreach (
+              [
+                'confirmed_booking_email',
+                'newsletter',
+                'travel_info',
+                'terms_n_cons',
+                'cabin_conf_accp',
+                'single_t_agreement',
+                'was_on_board'
+              ] as $field
+            ) {
+              $passengerData[$field] = $request->has($field)
+                ? filter_var($request->input($field), FILTER_VALIDATE_BOOLEAN)
+                : false;
+            }
+            $passengerData['terms_n_cons']   = true;
+            $passengerData['cabin_conf_accp'] = true;
+
+
+            // new in the same booking?
+            $existingSame = Passenger::where('booking_id', $bookingId)
+              ->where('survivor_number', $sn)
+              ->first();
+
+            if ($existingSame && $existingSame->id !== $leadPassengerSlot->id) {
+              $otherOrder   = $existingSame->passenger_order;
+              $oldLeadOrder = $leadPassengerSlot->passenger_order;
+              $existingSame->lead_passenger   = true;
+              $existingSame->passenger_order  = 1;
+              $existingSame->save();
+              $leadPassengerSlot->lead_passenger  = false;
+              $leadPassengerSlot->passenger_order = $otherOrder;
+              $leadPassengerSlot->save();
+              $booking->customer_id = $newLeadId;
+              $booking->save();
+
+              $this->logRepository->writeOnBooking(
+                $booking->id,
+                'Lead passenger switched (same booking): from SN ' . $oldSurvivorNumber . ' to SN ' . $sn,
+                $request->user()
+              );
+
+              $passengers = $booking->passengers()->orderBy('passenger_order')->get();
+              return response()->json(['passengers' => $passengers]);
+            }
+            $oldCost    = $leadPassengerSlot->passenger_allocated_cost;
+            $oldBalance = $leadPassengerSlot->passenger_balance;
+
+            $leadPassengerSlot->fill(array_merge($passengerData, [
+              'survivor_number' => $sn,
+              'email'           => $request->input('email', $leadPassengerSlot->email ?? $user->email),
+              'lead_passenger'  => true,
+              'passenger_allocated_cost' => $oldCost,
+              'passenger_balance'        => $oldBalance,
+            ]));
+            $leadPassengerSlot->save();
+
+            $booking->customer_id = $newLeadId;
+            $booking->save();
+
+            $this->logRepository->writeOnBooking(
+              $booking->id,
+              'Lead passenger switched from SN ' . $oldSurvivorNumber . ' to SN ' . $sn,
+              $request->user()
+            );
+
+            $passengers = $booking->passengers()->orderBy('passenger_order')->get();
+            return response()->json(['passengers' => $passengers]);
+          });
+        }
+      );
+    } catch (Exception $e) {
+      $this->logException($e);
+      return response()->json(['error' => 'Error switching lead passenger.'], 500);
+    }
   }
 }

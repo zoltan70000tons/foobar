@@ -389,14 +389,15 @@ class Passenger extends Authenticatable
   /**
    * This method checks if a survivor number is already associated with an active booking in the same event.
    */
-  public static function checkSurvivorInActiveBookings(string $survivorNumber, int $eventId): bool
+  public static function checkSurvivorInActiveBookings(string $survivorNumber, int $eventId, ?int $excludeBookingId = null): bool
   {
-    return self::where('survivor_number', $survivorNumber)
-      ->whereHas('booking', function ($query) use ($eventId) {
-        $query->where('status', '!=', 'CANCELLED')
-          ->where('event_id', $eventId);
-      })
-      ->exists();
+   return self::where('survivor_number', $survivorNumber)
+        ->whereHas('booking', function ($query) use ($eventId, $excludeBookingId) {
+            $query->where('status', '!=', 'CANCELLED')
+                  ->where('event_id', $eventId)
+                  ->when($excludeBookingId, fn($q) => $q->where('id', '!=', $excludeBookingId));
+        })
+        ->exists();
   }
 
   /**
