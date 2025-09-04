@@ -5,7 +5,7 @@ namespace App\Models;
 use DB;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\HasApiTokens;
 use Carbon\Carbon;
 use Log;
@@ -14,11 +14,14 @@ use Str;
 /**
  * @property \Illuminate\Database\Eloquent\Collection|\App\Models\OnboardCredit[] $onboardCredits
  */
-class Passenger extends Model
+class Passenger extends Authenticatable
 {
   use HasApiTokens, HasFactory;
 
   protected $table = 'passengers';
+  protected $primaryKey = 'id';
+  public $incrementing = true;
+  protected $keyType = 'int';
 
   /**
    * The attributes that are mass assignable.
@@ -69,6 +72,26 @@ class Passenger extends Model
   protected $casts = [
     'special_options' => 'array',
   ];
+
+  protected static function booted()
+  {
+    static::creating(function (self $model) {
+      if (empty($model->uuid)) {
+        $model->uuid = (string) Str::uuid();
+      }
+    });
+  }
+
+  public function getAuthIdentifierName(): string
+  {
+    // Use UUID for Passport tokens to match oauth_access_tokens.user_id (uuid)
+    return 'uuid';
+  }
+
+  public function getAuthIdentifier()
+  {
+    return $this->uuid;
+  }
 
   /**
    * Mutator: Set Personal Details to Uppercase.
