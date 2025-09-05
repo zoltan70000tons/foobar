@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { TextField, Button, Box, Container, Typography, Alert } from '@mui/material';
 import OAuthLayout from '@/Layouts/OAuthLayout';
 import Axios from 'axios';
@@ -8,8 +8,14 @@ import { blue } from '@mui/material/colors';
 import { styled } from '@mui/material/styles';
 
 
+type OAuthLoginProps = {
+  t: any;
+  language: 'en' | 'de' | 'es' | string;
+};
+
 export default function Login() {
  const frontURL = import.meta.env.VITE_FRONTEND_URL;
+  const { t, language } = usePage<OAuthLoginProps>().props;
 
   // Parse URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -68,15 +74,15 @@ export default function Login() {
 
   return (
     <>
-      <Head title="Login" />
+      <Head title={t?.login_title ?? 'Login'} />
         <Box sx={{ width: "100%", py: 6, display: "flex", justifyContent: "center", alignItems: "center" }}>
         <Container maxWidth="sm" sx={{ mt: 8 }}>
           <Typography component="h1" variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-            Sign In
+            {t?.login_title ?? 'Sign In'}
           </Typography>
           <SurvivorLogin />
           <Typography variant="body1" gutterBottom>
-            Please use your eMail or Survivor Number to access your account.
+            {t?.login_to_your ?? 'Please use your eMail or Survivor Number to access your account.'}
           </Typography>
           {verified === "1" && (
             <Alert
@@ -85,7 +91,7 @@ export default function Login() {
                 marginBottom: 2,
               }}
             >
-              SUCCESS.EMAIL_VERIFIED
+              {t?.Success?.email_verified ?? 'Your eMail has been verified!'}
             </Alert>
           )}
           {verified === "errorSignature" && (
@@ -95,7 +101,7 @@ export default function Login() {
                 marginBottom: 2,
               }}
             >
-              ERROR.EMAIL_NOT_VERIFIED
+              {t?.Error?.invalid_session_request ?? 'Invalid request or time expired, please refresh the page and try again.'}
             </Alert>
           )}
           {reset === "true" && (
@@ -105,7 +111,7 @@ export default function Login() {
                 marginBottom: 2,
               }}
             >
-              SUCCESS.RESET_PASSWORD
+              {t?.Success?.password_reset_success ?? 'Your password has been reset!'}
             </Alert>
           )}
           {registered === "true" && (
@@ -115,7 +121,7 @@ export default function Login() {
                 marginBottom: 2,
               }}
             >
-              CHECK.EMAIL
+              {t?.check_email ?? 'Please check your email for a verification link.'}
             </Alert>
           )}
           {activated === "true" && (
@@ -125,12 +131,12 @@ export default function Login() {
                 marginBottom: 2,
               }}
             >
-              ACCOUNT.RECOVERED
+              {t?.link_sent ?? 'Link sent successfully'}
             </Alert>
           )}
           <form onSubmit={handleSubmit} noValidate>
             <TextField
-              label="Email"
+              label={t?.identifier ?? 'eMail or Survivor Number'}
               type="email"
               fullWidth
               margin="normal"
@@ -140,7 +146,7 @@ export default function Login() {
               helperText={errors.identifier}
             />
             <TextField
-              label="Password"
+              label={t?.password ?? 'Password'}
               type="password"
               fullWidth
               margin="normal"
@@ -150,15 +156,15 @@ export default function Login() {
               helperText={errors.password}
             />
             <Button type="submit" fullWidth variant="contained" disabled={loading} sx={{ mt: 2 }}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (t?.login ?? 'Sign In') : (t?.login ?? 'Sign In')}
             </Button>
           </form>
           <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: "8px", textAlign: "center" }}>
             <StyledLink>
-              Don't have an account? <a href={`${frontURL}/en/register`}>Register</a>
+              {(t?.dont_have_account ?? "Don't have an account?") + ' '}<a href={`${frontURL}/${language}/register`}>{t?.register ?? 'Register'}</a>
             </StyledLink>
             <StyledLink>
-              Forgot your password? <a href={`${frontURL}/en/forgot-password`}>Reset Password</a>
+              {(t?.forgot_password ?? 'Forgot your password?') + ' '}<a href={`${frontURL}/${language}/forgot-password`}>{t?.reset_password ?? 'Reset password'}</a>
             </StyledLink>
           </Box>
         </Container>

@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import Copyright from "./Copyright";
 import CustomLink from "./CustomLink";
+import NewsletterContainer from "./NewsletterContainer";
 
 export default function Footer() {
 
@@ -283,6 +284,7 @@ export default function Footer() {
             >
               Forum
             </Button>
+            <NewsletterContainer />
           </Stack>
         </Box>
         <Divider
@@ -301,7 +303,12 @@ export default function Footer() {
           <Grid container justifyContent="space-between" spacing={2}>
             {sections.map((section, index) => (
               <Grid item xs={12} sm={6} md={3} key={index}>
-                <Accordion sx={{ display: { xs: "block", md: "none" } }}>
+                <Accordion 
+                    sx={{ 
+                      display: { xs: "block", md: "none" },
+                      width: "100%",
+                    }}
+                  >
                   <AccordionSummary
                     expandIcon={<ExpandMore />}
                     aria-controls={`panel${index}-content`}

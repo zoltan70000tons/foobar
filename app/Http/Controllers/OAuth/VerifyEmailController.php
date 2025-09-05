@@ -31,13 +31,27 @@ class VerifyEmailController extends Controller
     {
         $frontURL = config('app.frontend_url');
 
+        // Set locale from query early
+        $language = $request->query('language');
+        if (in_array($language, ['en', 'de', 'es'])) {
+            App::setLocale($language);
+        }
+
         // if user is authenticated and has verified email, redirect to login
         if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
             return redirect()->to($frontURL . '/en/login?verified=1');
         }
 
-        // Return the email verification view
-        return Inertia::render('OAuth/EmailVerify');
+        // Return the email verification view with translations
+        return Inertia::render('OAuth/EmailVerify', [
+            't' => \Illuminate\Support\Facades\Lang::get('oauth.Auth'),
+            'language' => App::getLocale(),
+            'user' => \Illuminate\Support\Facades\Auth::user() ? [
+                'id' => \Illuminate\Support\Facades\Auth::user()->id,
+                'email' => \Illuminate\Support\Facades\Auth::user()->email,
+                'name' => \Illuminate\Support\Facades\Auth::user()->name,
+            ] : null,
+        ]);
     }
 
 
