@@ -16,7 +16,6 @@ return new class extends Migration {
       // should be ->unique but we have to test it first
       // $table->string('email')->unique();
       $table->string('email')->nullable()->unique();
-      $table->timestamp('user_activated_at')->nullable();
       $table->timestamp('email_verified_at')->nullable();
       $table->string('password');
       $table->rememberToken();

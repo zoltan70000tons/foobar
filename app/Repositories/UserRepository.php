@@ -40,7 +40,7 @@ class UserRepository
   public function countActivatedUsersByEmail(string $email): int
   {
     return User::where('email', $email)
-      ->whereNotNull('user_activated_at') // Only activated users
+      ->whereNotNull('email_verified_at') // Only activated users
       ->count();
   }
 
