@@ -25,8 +25,10 @@ use App\Repositories\EventRepository;
 use App\Repositories\LogRepository;
 use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
+use App\Traits\BookingLogTrait;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
@@ -42,6 +44,7 @@ class BookingsController extends Controller
   use HandlePermissions;
   use ExceptionLogger;
   use CabinFilter;
+  use BookingLogTrait;
 
   protected EventRepositoryInterface $eventRepository;
   protected BookingInterface $bookingRepository;
@@ -806,6 +809,74 @@ class BookingsController extends Controller
     }
   }
 
+    public function getCabinsToUpgradeTo(Request $request)
+    {
+        try {
+            $categoryId = $request->get('category_id');
+            $typeId = $request->get('type_id');
+            $cabinNumber = $request->get('cabin_number');
+            $deck = $request->get('deck');
+            $balcony = $request->boolean('balcony');
+            $location = $request->get('location');
+            $accessible = $request->boolean('accessible');
+
+            $currentCabin = Cabin::with([
+                'category.spec',
+                'cabinSpec',
+                'cabinType'
+            ])
+                ->where('cabin_category_id', $categoryId)
+                ->whereHas('cabinType', function ($q) use ($typeId) {
+                    $q->where('id', $typeId);
+                })
+                ->whereHas('cabinSpec', function ($q) use ($cabinNumber) {
+                    $q->where('cabin_number', $cabinNumber);
+                })
+                ->firstOrFail();
+
+            $currentPrice = $currentCabin->category->price;
+            $currentCapacity = $currentCabin->category->spec->capacity;
+            $currentCabinNumber = $currentCabin->cabinSpec->cabin_number;
+
+            $upgradeCabins = Cabin::with([
+                'category.spec',
+                'cabinSpec',
+                'cabinType'
+            ])
+                ->whereHas('category.spec', function ($q) use ($currentCapacity) {
+                    $q->where('capacity', $currentCapacity);
+                })
+                ->whereHas('cabinSpec', function ($q) use ($currentCabinNumber) {
+                    $q->where('cabin_number', '!=', $currentCabinNumber);
+                })
+                ->whereHas('category', function ($q) use ($currentPrice) {
+                    $q->where('price', '>', $currentPrice);
+                })
+                ->whereIn('status', ['AVAILABLE', 'PARTIALLY_BOOKED', 'RESERVED'])
+                ->whereDoesntHave('temporaryReservations', function ($q) {
+                    $q->where('expires_at', '>', now());
+                })
+                ->where('cabin_type_id', $typeId)
+                ->get()
+                ->sortBy('cabinSpec.cabin_number', SORT_ASC);
+
+            if ($upgradeCabins->count() < 1) {
+                return response()->json(
+                    [
+                        'error' => 'No cabin found',
+                    ],
+                    404
+                );
+            }
+
+            return response()->json([
+                'cabins' => $upgradeCabins->values(),
+            ]);
+        } catch (\Exception $e) {
+            //throw $th;
+        }
+    }
+
 
   public function getData(Request $request)
   {
@@ -968,4 +1039,56 @@ class BookingsController extends Controller
       return response()->json(['error' => 'Error switching lead passenger.'], 500);
     }
   }
+
+    public function cabinUpgrade(Request $request)
+    {
+        try {
+            $event_id = request()->route('id');
+
+            $booking_id = $request->input('booking_id');
+            $cabin_number = $request->input('cabin_number');
+
+            return $this->withPermission(
+                [Permissions::EditBookings],
+                function ($event_id, $booking_id, $cabin_number) {
+                    $booking = Booking::find($booking_id);
+                    $oldBooking = clone $booking;
+                    $result = null;
+                    DB::transaction(function () use ($cabin_number, $booking, &$result, $oldBooking) {
+                        $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+
+                        $booking->refresh()->load([
+                            'cabin',
+                            'cabin.cabinSpec',
+                            'cabin.category',
+                            'cabin.cabinType',
+                            'adjustments',
+                            'passengers.discounts',
+                            'passengers.fees',
+                        ]);
+
+                        $this->paymentInfoService->syncAllocatedCost($booking);
+                    });
+
+                    $this->paymentInfoService->syncAllocatedCost($booking);
+
+                    $this->saveBookingLog(
+                        $booking->id,
+                        'Cabin Upgrade',
+                        "Upgrade from {$oldBooking->booking_code} to {$result->booking_code}"
+                    );
+
+                    return redirect()
+                        ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
+                        ->with('success', 'Cabin upgraded successfully.');
+                },
+                $event_id,
+                $booking_id,
+                $cabin_number
+            );
+        } catch (\Exception $e) {
+            //dd('Transaction failed', $e->getMessage(), $e->getTraceAsString());
+            $this->logException($e);
+        }
+    }
 }
