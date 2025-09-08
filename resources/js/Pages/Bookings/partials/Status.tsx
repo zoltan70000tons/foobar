@@ -31,7 +31,7 @@ import { LoadingButton } from '@mui/lab';
 import SaveIcon from '@mui/icons-material/Save';
 import LoadingOverlay from '@/Components/LoadingOverlay';
 
-const Status = ({ event, booking, editMode, users }) => {
+const Status = ({ event, booking, editMode, users, availableTags }) => {
   const [selectedStatus, setSelectedStatus] = useState<StatusEnum[]>(booking.status ? booking.status : []);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [updatedBookingCode, setUpdatedBookingCode] = useState(booking.booking_code);
@@ -226,7 +226,7 @@ const Status = ({ event, booking, editMode, users }) => {
                   </Grid>
                 </Grid>
                 <Grid container mt={2}>
-                  <Tags editable={editMode} event={event} booking={booking} />
+                  <Tags editable={editMode} event={event} booking={booking} availableTags={availableTags}/>
                 </Grid>
               </Grid>
             </Grid>

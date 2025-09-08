@@ -3,6 +3,7 @@
 namespace App\Interfaces;
 
 use App\Http\Requests\CustomerRequest;
+use App\Models\Customer;
 use App\Models\User;
 
 interface CustomerInterface
@@ -27,7 +28,7 @@ interface CustomerInterface
 
     function addComment(User $customer, string $comment);
 
-    function addTags(User $customer, array $tags);
+    function addTags(Customer $customer, array $tags);
 
     function deleteComment(User $customer, int $commentId);
 }

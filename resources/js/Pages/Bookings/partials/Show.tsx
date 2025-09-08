@@ -45,7 +45,7 @@ import { ReverbLockBookingEvent } from "@/interfaces/ReverbLockBookingEvent";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { formatCurrency } from "@/Helpers/stringUtils";
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, deletedPayments }: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments }: PageProps) => {
 
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
@@ -372,7 +372,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
             </Button>
           </Alert>
         )}
-        <Status event={event} editMode={editMode} booking={booking} users={users} />
+        <Status event={event} editMode={editMode} booking={booking} users={users} availableTags={availableTags} />
         <Detail
           event={event}
           booking={booking}

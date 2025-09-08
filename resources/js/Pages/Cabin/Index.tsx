@@ -41,9 +41,10 @@ type Props = PageProps & {
   cabins: Cabin[];
   errors: Errors;
   tab: string;
+  tags: { id: string; name: string; color: string }[];
 };
 
-const Index = ({ auth, event, categories, cabins, errors }: Props) => {
+const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   const { hasPermission } = usePermissions();
 
   // TEST
@@ -126,10 +127,10 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
                 size="small"
                 color="warning"
                 sx={{
-                  ml: 1, 
+                  ml: 1,
                   bgcolor: '#ff9800',
-                  color: '#fff', 
-                  fontSize: '0.75em', 
+                  color: '#fff',
+                  fontSize: '0.75em',
                   height: '20px',
                 }}
               />
@@ -187,16 +188,15 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
         ),
       },
       {
-        accessor: 'tags',
+        accessor: 'cabin_tags',
         header: 'Tags',
         filterable: true,
         filterType: 'select',
-        filterOptions: Object.values(TagEnum),
-        filterFunction: (cellValue: string[] | undefined, filterValue: string) => {
-          if (!Array.isArray(cellValue) || cellValue.length === 0) {
-            return filterValue === '';
-          }
-          return cellValue.some((tag) => tag.toLowerCase().includes(filterValue.toLowerCase()));
+        filterOptions: tags ? tags.map((tag: any) => tag.name) : [],
+        filterFunction: (cellValue: any, filterValue: string) => {
+          const norm = (v: unknown) => String(v ?? "").toLowerCase().trim();
+          const names = Array.isArray(cellValue) ? cellValue.map(t => norm(t?.name)) : [];
+          return names.includes(norm(filterValue));
         },
         draw: (subRow: CabinSubRow) => {
           return (
@@ -204,8 +204,8 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
               {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
                 subRow.cabin_tags.map((tag: string) => (
                   <Chip
-                    key={tag}
-                    label={tag}
+                    key={tag.id}
+                    label={tag.name}
                     size="small"
                     sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
                   />
@@ -396,7 +396,7 @@ const Index = ({ auth, event, categories, cabins, errors }: Props) => {
                       showCheckBox={false}
                       showTableFilters={true}
                       showSubTableFilters={true}
-                      tagOptions={Object.values(TagEnum)}
+                      tagOptions={tags ? tags.map((tag: any) => tag.name) : []}
                       statusOptions={Object.values(CabinStatusReduced)}
                       onApplyTags={manageTags}
                       onApplyState={manageStatus}

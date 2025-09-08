@@ -16,11 +16,10 @@ class Cabin extends Model
 
   protected $primaryKey = 'id';
 
-  protected $fillable = ['cabin_type_id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'notes', 'internal_notes', 'tags', 'status'];
+  protected $fillable = ['cabin_type_id', 'cabin_category_id', 'cabin_spec_id', 'inventory', 'notes', 'internal_notes', 'status'];
 
   // Cast attributes to specific types
   protected $casts = [
-    'tags' => 'json', // Tags stored as a JSON array
     'inventory' => 'integer', // Inventory stored as an integer
   ];
 
@@ -162,7 +161,6 @@ class Cabin extends Model
     }
 
     $this->save();
-
   }
 
   /**
@@ -192,27 +190,44 @@ class Cabin extends Model
 
   protected static function booted()
   {
-    static::saving(function (Cabin $cabin) {
-      if (is_array($cabin->tags) && in_array('RCCL', $cabin->tags) && $cabin->status !== StatusCabin::CLOSED->value) {
-        // Force status to "RESERVED" if 'RCCL' tag is present
-        $cabin->status = StatusCabin::RESERVED->value;
-      }
-    });
+    // @todo refactor/remove when tags are fully implemented
+    // static::saving(function (Cabin $cabin) {
+    //   if (is_array($cabin->tags) && in_array('RCCL', $cabin->tags) && $cabin->status !== StatusCabin::CLOSED->value) {
+    //     // Force status to "RESERVED" if 'RCCL' tag is present
+    //     $cabin->status = StatusCabin::RESERVED->value;
+    //   }
+    // });
   }
 
   protected static function boot()
   {
     parent::boot();
-     static::updated(function ($cabin) {
-       static::where('cabin_spec_id', $cabin->cabin_spec_id)
-      ->where('id', '!=', $cabin->id)
-      ->update([
-        'cabin_type_id' => $cabin->cabin_type_id,
-        'inventory' => $cabin->inventory,
-        'status' => $cabin->status,
-      ]);
-   
+    static::updated(function ($cabin) {
+      static::where('cabin_spec_id', $cabin->cabin_spec_id)
+        ->where('id', '!=', $cabin->id)
+        ->update([
+          'cabin_type_id' => $cabin->cabin_type_id,
+          'inventory' => $cabin->inventory,
+          'status' => $cabin->status,
+        ]);
     });
+  }
 
+  public function getTaggingKeyAttribute(): string
+  {
+    return (string) $this->getAttribute($this->getKeyName());
+  }
+
+  public function tags()
+  {
+    return $this->morphToMany(
+      Tag::class,
+      'entity',
+      table: 'taggings',
+      foreignPivotKey: 'entity_id',
+      relatedPivotKey: 'tag_id',
+      parentKey: 'tagging_key',
+      relatedKey: 'id'
+    )->withPivot('created_at');
   }
 }

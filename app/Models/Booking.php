@@ -12,6 +12,8 @@ use Hidehalo\Nanoid\Client;
 use Illuminate\Support\Facades\DB;
 use Log;
 use Storage;
+use App\Models\Tag;
+use Str;
 
 class Booking extends Model
 {
@@ -29,11 +31,6 @@ class Booking extends Model
     'bed_config',
     'agent_id',
     'status',
-    'tags',
-  ];
-
-  protected $casts = [
-    'tags' => 'json',
   ];
 
   /**
@@ -316,6 +313,23 @@ class Booking extends Model
     return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$categoryNumber}{$categoryLetter}";
   }
 
+  public function addNewTag()
+  {
+    $tag = Tag::where('name', 'new')->where('type', 'booking')->first();
+    Log::info('Tag found: ' . ($tag ? $tag->id : 'none'));
+    if (!$tag) {
+      $tag = Tag::create([
+        'id' => Str::uuid(),
+        'name' => 'new',
+        'type' => 'booking',
+        'color' => '#ff9800',
+        'description' => 'System generated tag for new bookings',
+      ]);
+    }
+    $this->attachTags([$tag->id]);
+    return $tag;
+  }
+
   protected static function boot()
   {
     parent::boot();
@@ -336,12 +350,29 @@ class Booking extends Model
       }
     });
 
-    static::created(function ($booking) {
+    static::created(function (Booking $booking) {
+      if (app()->runningInConsole()) return;
+
       $booking->saveBookingLog($booking->id, 'Created', 'The booking was created');
-      if ($booking->cabin && $booking->cabin->id) {
+
+      $tag = Tag::firstOrCreate(
+        ['type' => 'booking', 'name' => 'NEW'],
+        ['color' => '#ff9800']
+      );
+
+      $id = (string) $tag->getKey();
+      if (!\Illuminate\Support\Str::isUuid($id)) {
+        Log::warning('invalid tag key', ['id' => $id, 'attrs' => $tag->getAttributes()]);
+        return;
+      }
+      $booking->tags()->sync($tag);
+     // $booking->tags()->syncWithoutDetaching([$id]);
+
+      if ($booking->relationLoaded('cabin') ? $booking->cabin : $booking->cabin()->exists()) {
         $booking->cabin->updateInventoryOnBooking();
       }
     });
+
 
     static::updated(function ($booking) {
       if (!$booking->isDirty('status')) {
@@ -388,5 +419,39 @@ class Booking extends Model
   public function getGrandTotal()
   {
     return $this->passengers->sum('passenger_allocated_cost');
+  }
+
+  public function getTaggingKeyAttribute(): string
+  {
+    return (string) $this->getAttribute($this->getKeyName());
+  }
+
+  public function tags()
+  {
+    return $this->morphToMany(
+      Tag::class,
+      'entity',
+      table: 'taggings',
+      foreignPivotKey: 'entity_id',
+      relatedPivotKey: 'tag_id',
+      parentKey: 'tagging_key',
+      relatedKey: 'id'
+    )->withPivot('created_at');
+  }
+
+
+  public function attachTags(array $tagIds): void
+  {
+    $this->tags()->syncWithoutDetaching($tagIds);
+  }
+
+  public function syncTags(array $tagIds): void
+  {
+    $this->tags()->sync($tagIds);
+  }
+
+  public function detachTag(string $tagId): void
+  {
+    $this->tags()->detach($tagId);
   }
 }

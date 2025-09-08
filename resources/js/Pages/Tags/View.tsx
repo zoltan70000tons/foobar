@@ -17,30 +17,30 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
 import { Permissions } from "@/enums/PermissionEnum";
 
-const View = ({ auth, uz}: PageProps) => {
+const View = ({ auth, tag }: PageProps) => {
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
 
   const handleEdit = () => {
-    get(route('customer-tags.edit', { userTag: userTag.id }));
+    get(route('tags.edit', { tag: tag.id }));
   }
 
   const handleBack = () => {
-    router.visit(route("customer-tags.index"), {
-      only: ['userTag'],
+    router.visit(route("tags.index"), {
+      only: ['tag'],
     })
   }
 
   const handleDelete = () => {
     const confirmed = window.confirm('Are you sure you want to delete this tag?');
     if (confirmed) {
-      destroy(route('customer-tags.destroy', { userTag: userTag.id }));
+      destroy(route('tags.destroy', { tag: tag.id }));
     }
   };
 
   return (
-    <AuthenticatedLayout user={ auth.user } header={ "Customer Tags" }>
-      <Head title="View Customer Tag"/>
+    <AuthenticatedLayout user={ auth.user } header={ "Tags" }>
+      <Head title="View Tag"/>
       <Toolbar sx={ { mt: 8 } }>
         <Button variant="outlined" color="secondary" onClick={ handleBack }>
           Back
@@ -49,7 +49,7 @@ const View = ({ auth, uz}: PageProps) => {
 
       <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
         <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.ViewCustomerTags) && (
+          { hasPermission(Permissions.ViewTags) && (
             <>
               <Paper
                 sx={ {
@@ -67,7 +67,7 @@ const View = ({ auth, uz}: PageProps) => {
                         fullWidth
                         label="Name"
                         variant="outlined"
-                        value={ userTag.name }
+                        value={ tag.name }
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
@@ -76,7 +76,7 @@ const View = ({ auth, uz}: PageProps) => {
                         fullWidth
                         label="Description"
                         variant="outlined"
-                        value={ userTag.description }
+                        value={ tag.description }
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
@@ -84,12 +84,12 @@ const View = ({ auth, uz}: PageProps) => {
                       <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
                         <span>Preview:</span>
                         <Chip
-                          label={userTag.name}
+                          label={tag.name}
                           size="small"
                           sx={{
                             fontSize: "0.7rem",
                             fontWeight: 500,
-                            backgroundColor: userTag.color,
+                            backgroundColor: tag.color,
                             color: "#fff",
                           }}
                         />
@@ -111,12 +111,12 @@ const View = ({ auth, uz}: PageProps) => {
                         <ArrowBack/>
                       </IconButton>
                     </Tooltip>
-                    { hasPermission(Permissions.EditCustomers) && (<Tooltip title="Edit">
+                    { hasPermission(Permissions.EditTags) && (<Tooltip title="Edit">
                       <IconButton color="primary" onClick={ handleEdit }>
                         <Edit/>
                       </IconButton>
                     </Tooltip>) }
-                    { hasPermission(Permissions.DeleteCustomers) && (<Tooltip title="Delete">
+                    { hasPermission(Permissions.DeleteTags) && (<Tooltip title="Delete">
                       <IconButton color="error" onClick={ handleDelete }>
                         <Delete/>
                       </IconButton>

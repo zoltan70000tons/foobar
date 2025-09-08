@@ -178,7 +178,6 @@ class CustomerBookingSeeder extends Seeder
                 'cabin_id' => null,
                 'payment_plan' => 'PAY_IN_FULL',
                 'is_single_occupancy' => false,
-                'tags' => json_encode(["legacy"]),
                 'agent_id' => null,
                 'status' => 'UPLOADED',
               ]);

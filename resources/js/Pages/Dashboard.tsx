@@ -82,11 +82,11 @@ export default function Dashboard({ auth }: PageProps) {
       permission: Permissions.ViewRoles,
     },
     {
-      title: "Customer Tags",
-      description: "Manage customer tags",
+      title: "Tags",
+      description: "Manage tags",
       icon: TagIcon,
-      link: "/customer-tags",
-      permission: Permissions.ViewCustomerTags,
+      link: "/tags",
+      permission: Permissions.ViewTags,
     },
   ];
 

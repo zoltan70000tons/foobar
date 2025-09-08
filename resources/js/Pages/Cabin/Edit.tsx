@@ -63,9 +63,11 @@ type Props = PageProps & {
   tab: string;
   errors: Errors;
   shared: boolean;
+  availableTags: { id: string; name: string; color: string }[];
 };
 
-const Edit = ({ auth, cabin, event, categories, errors, shared }: Props) => {
+const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }: Props) => {
+  const [tags, setTags] = useState<any[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
   const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_spec.cabin_number);
@@ -122,6 +124,27 @@ const Edit = ({ auth, cabin, event, categories, errors, shared }: Props) => {
       }
     }
   }, [flash]);
+
+
+  useEffect(() => {
+    const src = Array.isArray(cabin?.tags) ? cabin.tags : [];
+    setTags(src);
+    console.log(cabin.tags)
+    console.log(src);
+    const initial: Tag[] = src
+      .map((t: any) => {
+        if (typeof t === 'string') {
+          return (availableTags ?? []).find((a: Tag) => a.id === t || a.name === t);
+        }
+        if (t && typeof t === 'object') {
+          return (availableTags ?? []).find((a: Tag) => a.id === t.id);
+        }
+        return undefined;
+      })
+      .filter(Boolean) as Tag[];
+
+    setSelectedTags(initial);
+  }, [availableTags, cabin?.tags]);
 
   const handleBack = () => {
     window.history.back();
@@ -205,7 +228,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared }: Props) => {
       upper_berths: upperBerths,
       notes: notes,
       internal_notes: internalNotes,
-      tags: selectedTags,
+      tags: selectedTags.map(t => t.id),
       features: {
         accessible: features.accessible,
         balcony: features.balcony,
@@ -334,27 +357,37 @@ const Edit = ({ auth, cabin, event, categories, errors, shared }: Props) => {
         {/* Tags Select with Chips */}
         <Grid item xs={12} md={6}>
           <Box sx={{ mb: 2 }}>
-            <Autocomplete
+            <Autocomplete<Tag, true, false, false>
               multiple
-              options={Object.values(TagEnum)}
-              value={selectedTags}
-              onChange={handleTagsChange}
-              renderTags={(value: string[], getTagProps) =>
-                value.map((option: string, index: number) => (
+              disableCloseOnSelect
+              options={availableTags ?? []}                
+              value={selectedTags}                         
+              onChange={(_, value) => setSelectedTags(value)}
+              getOptionLabel={(o) => o.name}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              filterSelectedOptions                         
+              renderOption={(props, option, { selected }) => (
+                <li {...props}>
                   <Chip
-                    variant="outlined"
-                    label={option}
+                    label={option.name}
+                    size="small"
+                    style={{ backgroundColor: option.color, color: '#fff' }}
+                  />
+                </li>
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    key={option.id}
+                    label={option.name}
                     {...getTagProps({ index })}
+                    size="small"
+                    style={{ backgroundColor: option.color, color: '#fff' }}
                   />
                 ))
               }
               renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  label="Tags"
-                  placeholder="Add tags"
-                />
+                <TextField {...params} label="Tags" placeholder="Add tags" />
               )}
               fullWidth
             />

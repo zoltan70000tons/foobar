@@ -305,6 +305,17 @@ Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('cus
 Route::get('/customers-search', [CustomerController::class, 'search'])->name('switch.lead.search');
 Route::post('/events/{event_id}/booking/{booking_id}/switch-lead-passenger', [BookingsController::class, 'switchLeadPassenger'])->name('lead.passenger.switch');
 
+Route::resource('/tags', TagsController::class)
+    ->only(['index', 'show','create', 'store', 'edit', 'update', 'destroy'])
+    ->names([
+        'index' => 'tags.index',
+        'show' => 'tags.show',
+        'create' => 'tags.create',
+        'store' => 'tags.store',
+        'edit' => 'tags.edit',
+        'update' => 'tags.update',
+        'destroy' => 'tags.destroy'
+    ]);
 
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---

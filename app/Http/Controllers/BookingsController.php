@@ -13,6 +13,7 @@ use App\Models\Booking;
 use App\Models\BookingAgentSessions;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Tag;
 use App\Models\Passenger;
 use App\Models\SurvivorNumber;
 use App\Models\User;
@@ -23,6 +24,7 @@ use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\LogRepository;
+use App\Repositories\TagRepository;
 use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
 use App\Traits\BookingLogTrait;
@@ -55,6 +57,9 @@ class BookingsController extends Controller
   protected AdjustmentsRepository $adjustmentsRepository;
   protected PaymentInfoService $paymentInfoService;
 
+  protected TagRepository $tagRepository;
+  
+
   public function __construct(
     EventRepository $eventRepository,
     BookingRepository $bookingRepository,
@@ -63,7 +68,8 @@ class BookingsController extends Controller
     CabinRepository $cabinRepository,
     CabinCategoryRepository $cabinCategoryRepository,
     AdjustmentsRepository $adjustmentsRepository,
-    PaymentInfoService $paymentInfoService
+    PaymentInfoService $paymentInfoService, 
+    TagRepository $tagRepository
   ) {
     $this->eventRepository = $eventRepository;
     $this->bookingRepository = $bookingRepository;
@@ -73,6 +79,7 @@ class BookingsController extends Controller
     $this->cabinCategoryRepository = $cabinCategoryRepository;
     $this->adjustmentsRepository = $adjustmentsRepository;
     $this->paymentInfoService = $paymentInfoService;
+    $this->tagRepository = $tagRepository;
   }
   public function index(Request $request)
   {
@@ -140,6 +147,7 @@ class BookingsController extends Controller
           $event = $this->eventRepository->find($event_id);
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
+          $tags = $this->tagRepository->getAll();
 
           // THIS IS SLOW - FIXED
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
@@ -159,13 +167,14 @@ class BookingsController extends Controller
             'cabinCategories' => $cabinCategories,
             'tabIndex' => (int) $tab,
             'keyword' => $keyword,
+            'tags' => $tags,
           ]);
         },
         $event_id,
         $keyword,
         $tag
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -433,6 +442,7 @@ class BookingsController extends Controller
           $cabinTypes = $this->cabinRepository->getTypes();
           $adjustments = $this->adjustmentsRepository->listAdjustments();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+          $availableTags = Tag::type('booking')->orderBy('name')->get();
           $bookingId = $booking->id;
 
           $latestBipId = Payment::onlyTrashed()
@@ -458,13 +468,14 @@ class BookingsController extends Controller
             'cabinTypes' => $cabinTypes,
             'cabinCategories' => $cabinCategories,
             'adjustments' => $adjustments,
+            'availableTags' => $availableTags,
             'deletedPayments' => $deletedPayments,
           ]);
         },
         $event_id,
         $booking_code
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -727,7 +738,7 @@ class BookingsController extends Controller
         $booking_id,
         $tags
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }

@@ -68,6 +68,7 @@ type Props = PageProps & {
   errors: Errors;
   tabIndex: number;
   tab: string;
+  tags: { id: string; name: string; color: string }[];
 };
 
 
@@ -79,6 +80,7 @@ const Index = ({
   cabinCategories,
   errors,
   tabIndex,
+  tags
 }: Props) => {
   const { hasPermission } = usePermissions();
   // const [selectedTab, setSelectedTab] = useState<number>(1);
@@ -97,6 +99,8 @@ const Index = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const eventId = event.id;
   const [shouldReload, setShouldReload] = useState(false);
+
+  console.log(tags)
 
 
   useEffect(() => {
@@ -299,29 +303,29 @@ const Index = ({
       {
         header: "Tags",
         accessor: "Tags",
-        draw: (row: Booking) => (
+        draw: (row: Booking) =>
+        (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
-            {Array.isArray(row.tags) && row.tags.length > 0 ? (
-              row.tags.map((tag: string, index: number) => {
-                const tagStyle = getTagStyle(tag);
-
-                return (
-                  <Chip
-                    key={index}
-                    label={tagStyle.label}
-                    size="small"
-                    sx={{
-                      fontSize: "0.7rem",
-                      fontWeight: 500,
-                      backgroundColor: tagStyle.color,
-                      color: "#fff",
-                    }}
-                  />
-                );
-              })
-            ) : (
-              <em>No Tags</em>
-            )}
+            {
+              Array.isArray(row.tags) && row.tags.length > 0 ? (
+                row.tags.map((tag: {name: string, color: string}, index: number) => {
+                  return (
+                    <Chip
+                      key={index}
+                      label={tag.name}
+                      size="small"
+                      sx={{
+                        fontSize: "0.7rem",
+                        fontWeight: 500,
+                        backgroundColor: tag.color,
+                        color: "#fff",
+                      }}
+                    />
+                  );
+                })
+              ) : (
+                <em>No Tags</em>
+              )}
           </Box>
         ),
       },
@@ -356,7 +360,7 @@ const Index = ({
         disableFilter: true,
         draw: (row: Booking) => {
 
-      
+
           return (
             <Box
               sx={{
@@ -366,18 +370,18 @@ const Index = ({
                 gap: 1,
               }}
             >
-                {hasPermission(Permissions.ViewCabins) && (
-                <Button 
-                  variant="outlined" 
+              {hasPermission(Permissions.ViewCabins) && (
+                <Button
+                  variant="outlined"
                   onClick={() => handleViewClick(row)}
                   color="primary"
-                  >
-                    <Visibility />
+                >
+                  <Visibility />
                 </Button>
-                )}
-          
-              <LockedByAgent 
-                bookingId={row?.id} 
+              )}
+
+              <LockedByAgent
+                bookingId={row?.id}
                 currentEditingUser={row?.editingUsername}
               />
               {/* <IconButton onClick={() => handleClick(row.agent_id, row.booking_code)} size="small" color="primary">
@@ -472,7 +476,7 @@ const Index = ({
     setSearchTerm(inputValue);
   };
 
-  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => {};
+  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => { };
 
   const fetchData = useCallback(
     async (
@@ -483,6 +487,11 @@ const Index = ({
       dateRangeState: DateRangeState
     ) => {
       try {
+        console.log(selectedTags, 'selectedTags');
+        let tags = selectedTags
+          ? selectedTags.map(tag => tag.id).join(',')
+          : null;
+        console.log(tags, 'tags');
         const res = await axios.get(route("bookings.data", { id: event.id }), {
           params: {
             page: page + 1,
@@ -491,7 +500,7 @@ const Index = ({
             sort_direction: sort?.direction ?? "asc",
             keyword: searchTerm,
             tab: selectedTab ?? 0,
-            tags: selectedTags.join(','),
+            tags: tags,
             user_ids: selectedUsers.map((user) => user.id),
             date_range: dateRangeState,
             ...filters,
@@ -559,7 +568,7 @@ const Index = ({
                 }}
               >
                 <Box sx={{ minHeight: "40px", display: "flex", alignItems: "center" }}>
-                  <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories}  onBookingCreated={() => setShouldReload(true)}/>
+                  <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} onBookingCreated={() => setShouldReload(true)} />
                 </Box>
                 <TextField
                   size="small"
@@ -589,20 +598,20 @@ const Index = ({
                 <Autocomplete
                   multiple
                   size="small"
-                  options={Object.values(TagEnum)}
-                  getOptionLabel={(option) => TagEnumStyles[option]?.label ?? option}
+                  options={tags}
+                  getOptionLabel={(option) => option.name}
                   value={selectedTags}
                   onChange={(event, newValue) => setSelectedTags(newValue)}
-                  renderTags={(value: string[], getTagProps) =>
+                  renderTags={(value, getTagProps) =>
                     value.map((option, index) => {
-                      const tag = TagEnumStyles[option as TagEnum] ?? { label: option, color: "#9e9e9e" };
                       return (
                         <Chip
+                          key={option.id}
                           variant="outlined"
-                          label={tag.label}
+                          label={option.name}
                           {...getTagProps({ index })}
                           sx={{
-                            backgroundColor: tag.color,
+                            backgroundColor: option.color,
                             color: "#fff",
                             fontWeight: 500,
                             fontSize: "0.75rem",
@@ -611,15 +620,15 @@ const Index = ({
                       );
                     })
                   }
+
                   renderOption={(props, option) => {
-                    const tag = TagEnumStyles[option as TagEnum] ?? { label: option, color: "#9e9e9e" };
                     return (
                       <Box component="li" {...props}>
                         <Chip
-                          label={tag.label}
+                          label={option.name}
                           size="small"
                           sx={{
-                            backgroundColor: tag.color,
+                            backgroundColor: option.color,
                             color: "#fff",
                             fontWeight: 500,
                             mr: 1,
@@ -628,6 +637,7 @@ const Index = ({
                       </Box>
                     );
                   }}
+
                   renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Tags" />}
                   sx={{ minWidth: 250 }}
                 />

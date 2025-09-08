@@ -7,8 +7,10 @@ use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
 use App\Models\Booking;
-use App\Models\Passenger;
+use App\Models\Customer;
 use App\Models\SurvivorNumber;
+use App\Models\Tag;
+use App\Models\Passenger;
 use App\Models\User;
 use App\Models\UserTag;
 use App\Models\TemporaryPassword;
@@ -19,10 +21,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
-use DB;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
 use Inertia\Response as InertiaResponse;
+use DB;
+use Illuminate\Http\Response;
 use Log;
 
 class CustomerController extends Controller
@@ -113,24 +115,17 @@ class CustomerController extends Controller
 
   public function show(User $user): RedirectResponse|Response|InertiaResponse
   {
+
     try {
       return $this->withPermission([Permissions::ViewCustomers], function ($user) {
-        $user->load([
-          'detail',
-          'survivorNumber',
-          'customerAddress',
-          'bookings',
-          'comments.author',
-          'logs.author',
-          'tags'
-        ]);
+        //$user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings', 'comments.author', 'logs.author');
+        // @todo check why tags are not loaded
+        $user = Customer::with([ 'tags','detail', 'survivorNumber', 'customerAddress', 'bookings', 'comments.author', 'logs.author'])->find($user->id);
         $bookings = $this->customerRepository->getBookingDataForCustomer($user);
-        $availableTags = UserTag::all();
-
+        $availableTags = Tag::type('customer')->get();
         // check if user have generated temporary password
         $isTemporaryPassword = TemporaryPassword::where('customer_id', $user->id)
           ->exists();
-
         return Inertia::render('Customer/View', [
           'customer' => $user,
           'bookings' => $bookings,
@@ -226,7 +221,7 @@ class CustomerController extends Controller
       return $this->withPermission(
         [Permissions::EditCustomers],
         function ($customerId, $tags) {
-          $customer = User::find($customerId);
+          $customer = Customer::find($customerId);
           $result = $this->customerRepository->addTags($customer, $tags);
           if ($result) {
             return redirect()

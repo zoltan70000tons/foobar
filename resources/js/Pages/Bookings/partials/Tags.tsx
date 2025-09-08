@@ -12,24 +12,20 @@ import {
 } from "@mui/material";
 import { Autocomplete } from "@mui/lab";
 import AddIcon from "@mui/icons-material/Add";
-import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
 import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { Event } from "@/interfaces/Event";
 import { Booking } from "@/types/booking";
+import { usePermissions } from '@/Providers/PermissionContext';
+import { Permissions } from "@/enums/PermissionEnum";
 
 
 
-const availableTags = Object.values(TagEnum).map((tag) => ({
-    label: tag,
-    value: tag,
-}));
-
-const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({ editable, event, booking }) => {
+const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking, availableTags}> = ({ editable, event, booking,availableTags}) => {
     const [tags, setTags] = useState<string[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-
+    const { hasPermission } = usePermissions();
 
     useEffect(() => {
         if (Array.isArray(booking?.tags)) {
@@ -71,13 +67,12 @@ const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({
         <Box>
             <Box display="flex" alignItems="center" gap={1}>
                 <span>Tags:</span>
-                {tags && tags.length > 0 && tags.map((tag, index) => {
-                    const tagStyle = TagEnumStyles[tag as TagEnum]; 
+                {booking.tags.map((tag, index) => {
                     return (
                         <Chip
                             key={index}
-                            label={tag}
-                            style={{ backgroundColor: tagStyle?.color ?? "#e0e0e0", color: "#fff" }}
+                            label={tag.name}
+                            style={{ backgroundColor: tag.color ?? "#e0e0e0", color: "#fff" }}
                         />
                     );
                 })}
@@ -90,46 +85,48 @@ const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({
                 <DialogContent>
                     <Autocomplete
                         multiple
-                        options={availableTags}
-                        getOptionLabel={(option) => option.label}
-                        value={tags.map((tag) => ({ label: tag, value: tag }))}
+                        disabled={!editable || !hasPermission(Permissions.EditBookings)}
+                        options={availableTags.filter(
+                            (tag) => !(tags || []).some((t) => t.id === tag.id)
+                        )}
+                        getOptionLabel={(option) => option.name}
+                        value={availableTags.filter((tag) =>
+                            (tags || []).some((t) => t.id === tag.id)
+                        )} 
                         onChange={(_, value) => {
-                            const newTags = value.map((item) => item.value);
+                            const newTags = value.map((item) => item.id);
                             handleSaveTags(newTags);
                         }}
                         renderInput={(params) => (
                             <TextField {...params} label="Tags" placeholder="Select or remove tags" />
                         )}
-                        renderOption={(props, option) => {
-                            const tagStyle = TagEnumStyles[option.value as TagEnum];
-                            return (
-                                <li {...props}>
-                                    <Chip
-                                        label={option.label}
-                                        style={{
-                                            backgroundColor: tagStyle?.color ?? "#e0e0e0",
-                                            color: "#fff",
-                                            marginRight: 8,
-                                        }}
-                                        size="small"
-                                    />
-                                </li>
-                            );
-                        }}
+                        renderOption={(props, option) => (
+                            <li {...props}>
+                                <Chip
+                                    label={option.name}
+                                    style={{
+                                        backgroundColor: option.color,
+                                        color: "#fff",
+                                        marginRight: 8,
+                                    }}
+                                    size="small"
+                                />
+                            </li>
+                        )}
                         renderTags={(tagValue, getTagProps) =>
-                            tagValue.map((option, index) => {
-                                const tagStyle = TagEnumStyles[option.value as TagEnum];
-                                return (
-                                    <Chip
-                                        key={index}
-                                        label={option.label}
-                                        {...getTagProps({ index })}
-                                        style={{ backgroundColor: tagStyle?.color ?? "#e0e0e0", color: "#fff" }}
-                                    />
-                                );
-                            })
+                            tagValue.map((option, index) => (
+                                <Chip
+                                    key={option.id}
+                                    label={option.name}
+                                    {...getTagProps({ index })}
+                                    style={{ backgroundColor: option.color, color: "#fff" }}
+                                />
+                            ))
                         }
                     />
+
+
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog} color="secondary">
@@ -137,7 +134,6 @@ const Tags: React.FC<{ editable: boolean; event: Event; booking: Booking }> = ({
                     </Button>
                 </DialogActions>
             </Dialog>
-            {/* <LoadingOverlay open={loading}/> */}
 
         </Box>
     );
