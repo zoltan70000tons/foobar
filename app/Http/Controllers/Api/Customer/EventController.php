@@ -50,8 +50,8 @@ class EventController extends Controller
   {
     App::setLocale($language);
 
-    // Retrieve the event with adjustments
-    $event = Event::with('adjustments')->find($id);
+    // Retrieve the event with adjustments and presale periods
+    $event = Event::with(['adjustments', 'presalePeriods.membershipType'])->find($id);
 
     if (!$event) {
       return response()->json([

@@ -1,7 +1,17 @@
-import { Stack } from "@mui/material";
 import { red } from "@mui/material/colors";
 import { useTheme } from "@mui/material/styles";
-import React from "react";
+import React, { useState } from "react";
+import { Close, Menu as Hamburger } from "@mui/icons-material";
+import { 
+  IconButton, 
+  Box, 
+  Stack, 
+  alpha,
+  useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent, 
+} from "@mui/material";
 
 const EXTERNAL_URL = "https://70000tons.com";
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
@@ -9,7 +19,116 @@ const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 const MenuItems = React.memo(() => {
 
   const theme = useTheme();
+  const isMobile = useMediaQuery(
+    `(max-width:${theme.breakpoints.values.md}px)`
+  );
 
+
+ const [open, setOpen] = useState<boolean>(false);
+
+  return (
+    <Stack
+      direction={{
+        xs: "column",
+        md: "row",
+      }}
+      spacing={{
+        xs: 4,
+        md: 2,
+        lg: 3,
+      }}
+      alignItems={{ xs: "flex-end", md: "center" }}
+      sx={{
+        width: "100%",
+        md: "flex",
+        textDecoration: "none",
+        color: "white",
+        textTransform: "uppercase",
+        marginBottom: {
+          xs: "30px",
+          md: "0px",
+        },
+        "& a": {
+          color: "white",
+          textDecoration: "none",
+          textTransform: "uppercase",
+          fontFamily: theme.typography.fontFamily,
+          fontWeight: 500,
+          fontSize: "0.8rem",
+          transition: "color 0.3s",
+          "&:hover": {
+            color: red[600],
+          },
+        },
+      }}
+    >
+    {isMobile ? (
+      <IconButton
+        sx={{
+          marginLeft: "10px",
+        }}
+        onClick={() => setOpen(!open)}
+      >
+        <Hamburger
+          sx={{
+            color: "white",
+          }}
+        />
+      </IconButton>
+    ) : (
+      <MenuElements />
+    )}
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullScreen
+        scroll={'paper'}
+        sx={{
+          "& .MuiDialog-paper": {
+            backgroundColor: "#000",
+          },
+        }}
+      >
+        <DialogTitle 
+          sx={{
+            display: "flex",
+            width: "100%",
+            gap: 4,
+            justifyContent: "flex-end",
+            pt: 2,
+            px: 1,
+          }}
+        >
+
+          <Box sx={{ width: "60px", height: "40px", display: 'flex', justifyContent: 'flex-end'}}>
+            <IconButton
+              onClick={() => setOpen(false)}
+              sx={{
+                backgroundColor: alpha("#fff", 0.1),
+              }}
+            >
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle >
+        <DialogContent
+          sx={{
+            padding: "10px",
+          }}
+        >
+          <MenuElements />
+        </DialogContent>
+      </Dialog>
+    </Stack>
+  );
+});
+
+MenuItems.displayName = "MenuItems";
+
+export default MenuItems;
+
+
+const MenuElements = () => {
   const menu =  [
     {
       id: 2,
@@ -60,7 +179,7 @@ const MenuItems = React.memo(() => {
         md: 2,
         lg: 3,
       }}
-      alignItems="center"
+      // alignItems="center"
       sx={{
         width: "100%",
         md: "flex",
@@ -75,9 +194,8 @@ const MenuItems = React.memo(() => {
           color: "white",
           textDecoration: "none",
           textTransform: "uppercase",
-          fontFamily: theme.typography.fontFamily,
           fontWeight: 500,
-          fontSize: "0.8rem",
+          fontSize: { xs: '18px', md: "0.8rem"},
           transition: "color 0.3s",
           "&:hover": {
             color: red[600],
@@ -97,9 +215,5 @@ const MenuItems = React.memo(() => {
         );
       })}
     </Stack>
-  );
-});
-
-MenuItems.displayName = "MenuItems";
-
-export default MenuItems;
+  )
+}

@@ -62,12 +62,9 @@ Route::post('/add-pax/{eventId}/{bookingCode}/{token}', [AddPaxController::class
 ]);
 
 // --- CHECK BOOKING ---
-Route::post('/check-booking-login', [CheckBookingController::class, 'login'])->middleware(['throttle:15,1']);
-
-Route::middleware(['auth:passenger'])->group(function () {
-  Route::get('/check-booking', [CheckBookingController::class, 'getBooking']);
-  Route::post('/check-booking-logout', [CheckBookingController::class, 'logout']);
-});
+Route::get('/check-booking', [CheckBookingController::class, 'getBooking'])->middleware(['auth:passenger']);
+Route::post('/check-booking/login', [CheckBookingController::class, 'login'])->middleware(['throttle:15,1']);
+Route::post('/check-booking/logout', [CheckBookingController::class, 'logout'])->middleware(['auth:passenger']);
 
 // --- GET CABINS ---
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);

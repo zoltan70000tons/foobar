@@ -150,6 +150,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::post('/events/{id}/bookings/update-cabin', [BookingsController::class, 'cabinUpdate'])->name(
     'bookings.updateCabin'
   );
+    Route::post('/events/{id}/bookings/upgrade-cabin', [BookingsController::class, 'cabinUpgrade'])->name(
+        'bookings.upgradeCabin'
+    );
   Route::post('/events/{id}/bookings/update-code', [BookingsController::class, 'codeUpdate'])->name(
     'bookings.updateCode'
   );
@@ -172,6 +175,7 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
 
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
+  Route::get('/cabins/upgrade-list', [BookingsController::class, 'getCabinsToUpgradeTo'])->name('cabins.upgrade-list');
 
   Route::get('/customers/paginated', [CustomerController::class, 'getPaginated'])->name('customers.paginated');
   Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
@@ -298,6 +302,8 @@ Route::get('/customer-tags/{userTag}/edit', [CustomerTagController::class, 'edit
 Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'update'])->name('customer-tags.update');
 Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
+Route::get('/customers-search', [CustomerController::class, 'search'])->name('switch.lead.search');
+Route::post('/events/{event_id}/booking/{booking_id}/switch-lead-passenger', [BookingsController::class, 'switchLeadPassenger'])->name('lead.passenger.switch');
 
 Route::resource('/tags', TagsController::class)
     ->only(['index', 'show','create', 'store', 'edit', 'update', 'destroy'])

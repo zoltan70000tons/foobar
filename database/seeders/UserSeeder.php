@@ -164,8 +164,7 @@ class UserSeeder extends Seeder
         'created_at' => $this->faker->dateTime($max = 'now'),
         'updated_at' => $this->faker->dateTime($max = 'now'),
         'organization_id' => env('ORGANIZATION_ID', 1),
-        'email_verified_at' => null,
-        'user_activated_at' => null,
+        'email_verified_at' => null
       ]);
 
       // Assign 'Customer' role

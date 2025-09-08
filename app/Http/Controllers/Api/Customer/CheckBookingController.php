@@ -12,7 +12,9 @@ use Illuminate\Support\Str;
 use App\Traits\StringNormalization;
 use Illuminate\Support\Facades\Session;
 use App\Models\PassengerToken;
-use Laravel\Sanctum\PersonalAccessToken;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Laravel\Passport\Token as PassportToken;
 
 
 class CheckBookingController extends Controller
@@ -118,21 +120,33 @@ class CheckBookingController extends Controller
       return response()->json(['message' => 'Passenger not found'], 404);
     }
 
-    // Create Sanctum token (valid for 24 hours)
-    $token = $matchedPassenger->createToken('guest-booking', ['view-booking']);
-    $expiresAt = now()->addHours(24);
+    // Create a short-lived personal access token scoped to view booking (15 minutes)
+    try {
+      $tokenResult = $matchedPassenger->createToken('check-booking', ['view-booking']);
+      $tokenModel = $tokenResult->token; // Laravel Passport Token model
+      $expiresAt = Carbon::now()->addMinutes(15);
+      $tokenModel->expires_at = $expiresAt;
+      $tokenModel->save();
 
-    // Track token (optional, for cleanup or auditing)
-    PassengerToken::create([
+      // Track token (optional, for cleanup or auditing)
+      PassengerToken::create([
         'passenger_id' => $matchedPassenger->id,
-        'token_id' => $token->accessToken->id,
+        'token_id' => $tokenModel->id,
         'expires_at' => $expiresAt,
-    ]);
+      ]);
 
-    return response()->json([
-      'token' => $token->plainTextToken,
-      'expires_at' => $expiresAt,
-    ]);
+      return response()->json([
+        'token' => $tokenResult->accessToken,
+        'expires_at' => $expiresAt,
+        'scope' => ['view-booking'],
+      ]);
+    } catch (\Throwable $e) {
+      // Surface a JSON error instead of HTML exception page
+      return response()->json([
+        'message' => 'Unable to issue access token',
+        'error' => $e->getMessage(),
+      ], 500);
+    }
 
   }
 
@@ -149,28 +163,35 @@ class CheckBookingController extends Controller
       $language = $request->input('language', 'en');
       App::setLocale($language);
 
-      $accessToken = $request->bearerToken(); 
-
-      if (!$accessToken) {
-        return response()->json(['message' => 'Missing token'], 401);
+      // Requires auth:passenger middleware; retrieves authenticated passenger and current token
+      $passenger = $request->user();
+      if (!$passenger) {
+        return response()->json(['message' => 'Unauthorized'], 401);
       }
 
-      // Parse token to get token record
-      $tokenId = explode('|', $accessToken)[0];
-      $token = PersonalAccessToken::find($tokenId);
+      // Revoke all tokens for this passenger (scoped to this provider)
+      $provider = $passenger->getProviderName();
 
-      if (!$token || $token->abilities === null || !in_array('view-booking', $token->abilities)) {
-          return response()->json(['message' => 'Unauthorized'], 403);
+      $tokens = PassportToken::where('user_id', $passenger->getAuthIdentifier())
+        ->whereHas('client', function (Builder $query) use ($provider) {
+          $query->where(function (Builder $query) use ($provider) {
+            if ($provider === config('auth.guards.api.provider')) {
+              $query->orWhereNull('provider');
+            }
+            $query->orWhere('provider', $provider);
+          });
+        })
+        ->with('refreshToken')
+        ->get();
+
+      foreach ($tokens as $token) {
+        $token->refreshToken?->revoke();
+        $token->revoke();
       }
 
-      $passenger = $token->tokenable;
-
-      // Delete all tokens for this passenger
-      $passenger->tokens()->delete();
-
-      // clean up custom token tracking table
+      // Clean up custom token tracking table for this passenger
       PassengerToken::where('passenger_id', $passenger->id)->delete();
 
-      return response()->json(['message' => 'Logged out'], 200);
+      return response()->json(['message' => 'Logged out from all sessions'], 200);
   }
 }
