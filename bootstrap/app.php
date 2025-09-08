@@ -43,6 +43,13 @@ return Application::configure(basePath: dirname(__DIR__))
       ]
     );
 
+    // Ensure session cookie is customized before the session starts for specific paths
+    $middleware->web(
+      prepend: [
+        \App\Http\Middleware\CustomizeSessionCookie::class,
+      ]
+    );
+
     $middleware->api(
       prepend: [
         \App\Http\Middleware\TeamContext::class,
