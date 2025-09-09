@@ -13,7 +13,7 @@ type SurvivorLoginProps = {
 export default function SurvivorLogin() {
 
     const frontURL = import.meta.env.VITE_FRONTEND_URL;
-    const { tAuth, tGeneral } = usePage<SurvivorLoginProps>().props;
+    const { tAuth, tGeneral, language } = usePage<SurvivorLoginProps>().props;
 
 
     const AnimatedBorder = styled("svg")({
@@ -42,7 +42,7 @@ export default function SurvivorLogin() {
   // handle click event
   const handleClick = () => {
     // push user to the survivor activation page
-    window.location.href = `${frontURL}/en/activate-survivor-account`;
+    window.location.href = `${frontURL}/${language}/activate-survivor-account`;
   }
 
   return (

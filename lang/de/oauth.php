@@ -23,6 +23,7 @@ return [
         'signIn' => "Anmelden",
         'identifier' => "eMailadresse oder Survivornummer",
         'recover_account_instructions' => "Bist Du schon mit uns gereist? Verlinke Deine eMailadresse oder Survivornummer!",
+        'account_recovered' => "Deine Survivornummer wurde erfolgreich mit Deiner eMailadresse verknüpft. Bitte überprüfe Deinen Posteingang, um den Vorgang abzuschließen.",
         'logout' => "Abmelden",
         'register' => "Registrieren",
         'survivor_number' => "Survivornummer",
