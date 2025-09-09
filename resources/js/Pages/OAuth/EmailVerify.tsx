@@ -13,7 +13,8 @@ import OAuthLayout from "@/Layouts/OAuthLayout";
 import Axios from "axios";
 
 type PageProps = {
-  t: any;
+  tAuth: any;
+  tGeneral: any;
   language: 'en' | 'de' | 'es' | string;
   user?: {
     id: number;
@@ -23,7 +24,7 @@ type PageProps = {
 };
 
 export default function EmailVerify() {
-  const { t, language, user } = usePage<PageProps>().props;
+  const { tAuth, tGeneral, language, user } = usePage<PageProps>().props;
 
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export default function EmailVerify() {
       setSuccess(true);
       setErrors(null);
     } catch (error) {
-      setErrors(t?.Error?.invalid_session_request ?? "Failed to resend email verification link.");
+      setErrors(tAuth?.Error?.invalid_session_request ?? "Failed to resend email verification link.");
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +68,7 @@ export default function EmailVerify() {
             marginBottom: "20px",
           }}
         >
-          {t?.Auth?.verify_email_title ?? 'Verify your eMail'}
+          {tAuth?.verify_email_title ?? 'Verify your eMail'}
         </Typography>
         {success && (
           <Alert
@@ -76,7 +77,7 @@ export default function EmailVerify() {
               marginBottom: "20px",
             }}
           >
-            {t?.Auth?.verify_email_sent ?? 'A verification link has been sent to your email.'}
+            {tAuth?.verify_email_sent ?? 'A verification link has been sent to your email.'}
           </Alert>
         )}
         {errors && (
@@ -103,7 +104,7 @@ export default function EmailVerify() {
               flex: 1,
             }}
           >
-            <Typography variant="body1">{t?.Auth?.check_email ?? 'Please check your email for a verification link.'}</Typography>
+            <Typography variant="body1">{tAuth?.check_email ?? 'Please check your email for a verification link.'}</Typography>
             <Button
               onClick={handleLogout}
               variant="contained"
@@ -111,7 +112,7 @@ export default function EmailVerify() {
                 marginTop: "20px",
               }}
             >
-              {t?.Auth?.logout ?? 'Log Out'}
+              {tAuth?.logout ?? 'Log Out'}
             </Button>
           </Box>
           <Box
@@ -130,7 +131,7 @@ export default function EmailVerify() {
               },
             }}
           >
-            <Typography variant="body1">{t?.Auth?.receive_email ?? 'If you did not receive the email, click here to request another.'}</Typography>
+            <Typography variant="body1">{tAuth?.receive_email ?? 'If you did not receive the email, click here to request another.'}</Typography>
             <Button
               onClick={handleResendEmail}
               variant="contained"
@@ -141,7 +142,7 @@ export default function EmailVerify() {
                 marginTop: "20px",
               }}
             >
-              {t?.Auth?.send_email ?? 'Send eMail'}
+              {tAuth?.send_email ?? 'Send eMail'}
             </Button>
           </Box>
         </Stack>

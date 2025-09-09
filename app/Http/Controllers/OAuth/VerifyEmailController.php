@@ -14,6 +14,7 @@ use App\Mail\CustomerVerificationEmail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Lang;
 
 class VerifyEmailController extends Controller
 {
@@ -44,12 +45,13 @@ class VerifyEmailController extends Controller
 
         // Return the email verification view with translations
         return Inertia::render('OAuth/EmailVerify', [
-            't' => \Illuminate\Support\Facades\Lang::get('oauth.Auth'),
+            'tAuth' => Lang::get('oauth.Auth'),
+            'tGeneral' => Lang::get('general.General'), 
             'language' => App::getLocale(),
-            'user' => \Illuminate\Support\Facades\Auth::user() ? [
-                'id' => \Illuminate\Support\Facades\Auth::user()->id,
-                'email' => \Illuminate\Support\Facades\Auth::user()->email,
-                'name' => \Illuminate\Support\Facades\Auth::user()->name,
+            'user' => Auth::user() ? [
+                'id' => Auth::user()->id,
+                'email' => Auth::user()->email,
+                'name' => Auth::user()->name,
             ] : null,
         ]);
     }
