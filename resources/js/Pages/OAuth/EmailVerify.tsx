@@ -67,7 +67,7 @@ export default function EmailVerify() {
             marginBottom: "20px",
           }}
         >
-          {t?.verify_email_title ?? 'Verify your eMail'}
+          {t?.Auth?.verify_email_title ?? 'Verify your eMail'}
         </Typography>
         {success && (
           <Alert
@@ -76,7 +76,7 @@ export default function EmailVerify() {
               marginBottom: "20px",
             }}
           >
-            {t?.verify_email_sent ?? 'A verification link has been sent to your email.'}
+            {t?.Auth?.verify_email_sent ?? 'A verification link has been sent to your email.'}
           </Alert>
         )}
         {errors && (
@@ -103,7 +103,7 @@ export default function EmailVerify() {
               flex: 1,
             }}
           >
-            <Typography variant="body1">{t?.check_email ?? 'Please check your email for a verification link.'}</Typography>
+            <Typography variant="body1">{t?.Auth?.check_email ?? 'Please check your email for a verification link.'}</Typography>
             <Button
               onClick={handleLogout}
               variant="contained"
@@ -111,7 +111,7 @@ export default function EmailVerify() {
                 marginTop: "20px",
               }}
             >
-              {t?.logout ?? 'Log Out'}
+              {t?.Auth?.logout ?? 'Log Out'}
             </Button>
           </Box>
           <Box
@@ -130,7 +130,7 @@ export default function EmailVerify() {
               },
             }}
           >
-            <Typography variant="body1">{t?.receive_email ?? 'If you did not receive the email, click here to request another.'}</Typography>
+            <Typography variant="body1">{t?.Auth?.receive_email ?? 'If you did not receive the email, click here to request another.'}</Typography>
             <Button
               onClick={handleResendEmail}
               variant="contained"
@@ -141,7 +141,7 @@ export default function EmailVerify() {
                 marginTop: "20px",
               }}
             >
-              {t?.send_email ?? 'Send eMail'}
+              {t?.Auth?.send_email ?? 'Send eMail'}
             </Button>
           </Box>
         </Stack>

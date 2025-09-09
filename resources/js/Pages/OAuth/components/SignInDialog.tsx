@@ -1,16 +1,20 @@
 import {
   Button,
 } from "@mui/material";
+import { usePage } from '@inertiajs/react';
 
 //import { useTranslations } from "next-intl";
 
 type SignInDialogProps = {
   isFull?: boolean;
+  tAuth: any;
+  language: 'en' | 'de' | 'es' | string;
 };
 
 export default function SignInDialog({ isFull }: SignInDialogProps) {
 
-  //const tNavigation = useTranslations("Navigation");
+  const { tAuth } = usePage<SignInDialogProps>().props;
+
 
   return (
     <Button 
@@ -18,7 +22,7 @@ export default function SignInDialog({ isFull }: SignInDialogProps) {
       color="primary"
       fullWidth={isFull}
     >
-      {/* {tNavigation("signIn")} */} Sign In
+      {tAuth?.signIn ?? 'Sign In'}
     </Button>
   );
 }

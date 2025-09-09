@@ -48,7 +48,8 @@ class PublicAuthController extends Controller
 
         if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
             return Inertia::render('OAuth/EmailVerify', [
-                't' => Lang::get('oauth.Auth'),
+                'tAuth' => Lang::get('oauth.Auth'),
+                'tGeneral' => Lang::get('general.General'),
                 'language' => App::getLocale(),
                 'user' => Auth::user() ? [
                     'id' => Auth::user()->id,
@@ -73,7 +74,8 @@ class PublicAuthController extends Controller
 
         // Return the login view with translations for the page
         return Inertia::render('OAuth/Login', [
-            't' => Lang::get('oauth.Auth'),
+            'tAuth' => Lang::get('oauth.Auth'),
+            'tGeneral' => Lang::get('general.General'),
             'language' => App::getLocale(),
         ]);
     }
@@ -91,10 +93,16 @@ class PublicAuthController extends Controller
     {
         // Step 1: Validate inputs
         $data = $request->validate([
+            'lang' => ['required', 'string', 'max:5'],
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
+        // set language
+        $language = $data['lang'];
+        if (in_array($language, ['en', 'de', 'es'])) {
+            App::setLocale($language);
+        }
         $identifier = $data['identifier'];
         $password = $data['password'];
 
