@@ -12,6 +12,8 @@ use App\Models\SurvivorNumber;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Models\TemporaryPassword;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Lang;
 
 
 class PublicAuthController extends Controller
@@ -29,6 +31,11 @@ class PublicAuthController extends Controller
     public function index(Request $request)
     {
         $frontURL = config('app.frontend_url');
+        // Set locale from query as early as possible for both views
+        $language = $request->query('language');
+        if (in_array($language, ['en', 'de', 'es'])) {
+            App::setLocale($language);
+        }
 
         // \Log::info('check', [
         //     'check' => Auth::check(),
@@ -40,7 +47,16 @@ class PublicAuthController extends Controller
 
 
         if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
-            return Inertia::render('OAuth/EmailVerify');
+            return Inertia::render('OAuth/EmailVerify', [
+                'tAuth' => Lang::get('oauth.Auth'),
+                'tGeneral' => Lang::get('general.General'),
+                'language' => App::getLocale(),
+                'user' => Auth::user() ? [
+                    'id' => Auth::user()->id,
+                    'email' => Auth::user()->email,
+                    'name' => Auth::user()->name,
+                ] : null,
+            ]);
         }
 
         // check if user is already authenticated
@@ -49,12 +65,19 @@ class PublicAuthController extends Controller
         //     return redirect($frontURL);
         // }
 
-        if (! $request->has(['client_id', 'code_challenge', 'code_challenge_method'])) {
-            return redirect($frontURL);
-        }
 
-        // Return the login view
-       return Inertia::render('OAuth/Login');
+        // TEMPORARY DISABLED - we allow access to login page even if no params provided
+
+        // if (! $request->has(['client_id', 'code_challenge', 'code_challenge_method'])) {
+        //     return redirect($frontURL);
+        // }
+
+        // Return the login view with translations for the page
+        return Inertia::render('OAuth/Login', [
+            'tAuth' => Lang::get('oauth.Auth'),
+            'tGeneral' => Lang::get('general.General'),
+            'language' => App::getLocale(),
+        ]);
     }
 
     /*
@@ -70,10 +93,16 @@ class PublicAuthController extends Controller
     {
         // Step 1: Validate inputs
         $data = $request->validate([
+            'lang' => ['required', 'string', 'max:5'],
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
+        // set language
+        $language = $data['lang'];
+        if (in_array($language, ['en', 'de', 'es'])) {
+            App::setLocale($language);
+        }
         $identifier = $data['identifier'];
         $password = $data['password'];
 

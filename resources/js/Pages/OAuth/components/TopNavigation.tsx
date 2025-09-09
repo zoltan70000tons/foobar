@@ -11,7 +11,10 @@ import {
   Dialog,
   DialogTitle,
   DialogContent, 
+  DialogActions
 } from "@mui/material";
+import LangSwitcher from "./LangSwitcher";
+import SignInDialog from "./SignInDialog";
 
 const EXTERNAL_URL = "https://70000tons.com";
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
@@ -75,8 +78,30 @@ const MenuItems = React.memo(() => {
           }}
         />
       </IconButton>
+      
     ) : (
-      <MenuElements />
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
+        <MenuElements />
+        <Box
+          sx={{
+            display: "flex",
+            minWidth: "120px",
+            alignItems: "center",
+            gap: 1
+          }}
+        >
+          <SignInDialog />
+          <LangSwitcher />
+        </Box>
+      </Box>
     )}
       <Dialog
         open={open}
@@ -118,6 +143,16 @@ const MenuItems = React.memo(() => {
         >
           <MenuElements />
         </DialogContent>
+        <DialogActions
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "10px",
+          }}
+        >
+          <SignInDialog isFull={true}/>
+          <LangSwitcher/>
+        </DialogActions>
       </Dialog>
     </Stack>
   );
@@ -181,7 +216,7 @@ const MenuElements = () => {
       }}
       // alignItems="center"
       sx={{
-        width: "100%",
+      
         md: "flex",
         textDecoration: "none",
         color: "white",
