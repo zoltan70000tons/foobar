@@ -8,7 +8,7 @@ This is Booking Engine Admin.
 #### Boilerplate - boilerplate-70k-back
 [boilerplate-70k-back](https://github.com/70000TONS-IT/boilerplate-70k-back)
 
-#### Requirements
+## Requirements
 
 ```bash
 PHP >= 8.2
@@ -17,9 +17,7 @@ Node >= 20.x
 NPM >= 6.x
 ```
 
-
-
-#### Installation
+## Installation
 
 Clone the repository:
 
@@ -44,9 +42,14 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-### Env file - IMPORTANT
+#### Env file - IMPORTANT
 We are using ENV file from keepass. 
 Always use latest version, while copying **do not copy APP_KEY** keep APP_KEY as it is generated on your local environment
+
+Run the following command to verify all variables:
+```bash
+php artisan env:check
+```
 
 #### Set up the database in the .env file and run the migrations:
 
@@ -59,10 +62,10 @@ php artisan migrate
 php artisan db:seed
 ```
 
-#### Start the server:
+## Start the App:
 
 ```bash
-php artisan serve
+npm run single
 ```
 
 > To handle error message with no existing file manifest.json in public folder. You have to create manifest file first.
@@ -72,7 +75,7 @@ Run:
 npm run build
 ```
 
-#### Testing
+## Testing
 To run the tests, use the following command:
 ```bash
 npm run test
