@@ -46,7 +46,7 @@ class ActivateSurvivor extends Mailable implements ShouldQueue
     // use MAIL_FROM_ADDRESS in .env
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: 'Please verify your eMail address');
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.email_verification_subject'));
   }
 
   /**

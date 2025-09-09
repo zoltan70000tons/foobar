@@ -16,6 +16,7 @@ return [
   'email_not_send' => 'Correo no enviado.',
   'email_verified_already' => 'Correo electrónico ya verificado.',
   'email_verification_link_sent' => 'Se envió el enlace de verificación.',
+  'email_verification_subject' => 'Por favor verifica tu dirección de correo electrónico',
   'email_hi' => 'Hola',
   'email_thanks' => 'Saludos,',
   'email_regards' => 'Tu equipo de 70000TONS OF METAL',

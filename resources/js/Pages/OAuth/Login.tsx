@@ -134,7 +134,7 @@ export default function Login() {
                 marginBottom: 2,
               }}
             >
-              {tAuth?.link_sent ?? 'Link sent successfully'}
+              {tAuth?.account_recovered ?? 'Link sent successfully'}
             </Alert>
           )}
           {error && (

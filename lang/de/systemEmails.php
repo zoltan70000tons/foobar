@@ -17,6 +17,7 @@ return [
   'email_not_send' => 'eMail konnte nicht gesendet werden.',
   'email_verified_already' => 'eMailadresse wurde bereits bestätigt.',
   'email_verification_link_sent' => 'Bestätigungslink wurde versendet.',
+  'email_verification_subject' => 'Bitte verifiziere Deine eMailadresse',
   'email_hi' => 'Hi',
   'email_thanks' => 'Cheers,',
   'email_regards' => 'Deine 70000TONS OF METAL Crew',

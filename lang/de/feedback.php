@@ -20,4 +20,10 @@ return [
   'booking_not_found' => 'Buchung nicht gefunden. Bitte überprüfe die Angaben und versuche es erneut.',
   'cannot_delete_account' => 'Du kannst dein Konto nicht löschen, solange du eine aktive Buchung hast.',
   'proceed_delete_account' => 'Fortfahren, um dein Konto zu löschen.',
+
+  // ACTIVE SURVIVOR ACCOUNT,
+  'survivor_number_not_found' => 'Survivornummer nicht gefunden. Bitte überprüfe deine Nummer und versuche es erneut.',
+  'not_matching_info' => 'Die angegebenen Informationen stimmen nicht mit unseren Unterlagen überein. Bitte überprüfe deine Angaben und versuche es erneut.',
+  'account_already_activated' => 'Dieses Konto wurde bereits aktiviert. Bitte melde dich an oder setze dein Passwort zurück.',
+  'account_activation_success' => 'Konto erfolgreich verknüpft. Überprüfe deine eMails für den Bestätigungslink.',
 ];

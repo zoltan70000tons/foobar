@@ -23,6 +23,7 @@ return [
         'signIn' => "Sign in",
         'identifier' => "eMail or Survivor Number",
         'recover_account_instructions' => "Have you sailed with us before? Link your eMail to your Survivor Number!",
+        'account_recovered' =>  "Your Survivor Number has been successfully linked to your eMail. Please check your eMail to complete the process.",
         'logout' => "Log Out",
         'register' => "Sign Up",
         'survivor_number' => "Survivor number",
