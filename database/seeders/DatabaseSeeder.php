@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             CabinCategorySeeder::class,
             CabinTypeSeeder::class,
             CabinSeeder::class,
+            TagSeeder::class,
             //BookingSeeder::class,
             //PassengersSeeder::class,
             AdjustmentsSeeder::class,
