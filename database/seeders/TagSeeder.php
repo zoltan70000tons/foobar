@@ -1,0 +1,127 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Tag;
+
+class TagSeeder extends Seeder
+{
+    public function run()
+    {
+        $tags = [
+            [
+                'name' => 'NEW',
+                'type' => 'booking',
+                'color' => '#FF981A',
+                'description' => 'Booking is new and unprocessed',
+            ],
+            [
+                'name' => 'OVERDUE',
+                'type' => 'booking',
+                'color' => '#FF0000',
+                'description' => 'Booking has overdue payments',
+            ],
+            [
+                'name' => 'MISSING INFO',
+                'type' => 'booking',
+                'color' => '#FFA500',
+                'description' => 'Booking is missing required information',
+            ],
+            [
+                'name' => 'ASSIGNED',
+                'type' => 'booking',
+                'color' => '#AC322A',
+                'description' => 'Booking is assigned to an agent',
+            ],
+            [
+                'name' => 'ASSIGNED',
+                'type' => 'booking',
+                'color' => '#AC322A',
+                'description' => 'Booking is assigned to an agent',
+            ],
+
+            [
+                'name' => 'NEW',
+                'type' => 'cabin',
+                'color' => '#66bb6a',
+                'description' => 'cabin is new and unprocessed',
+            ],
+            [
+                'name' => 'STAFF',
+                'type' => 'cabin',
+                'color' => '#1976d2',
+                'description' => 'cabin is assigned to staff',
+            ],
+            [
+                'name' => 'ARTIST',
+                'type' => 'cabin',
+                'color' => '#9c27b0',
+                'description' => 'cabin is assigned to artist',
+            ],
+            [
+                'name' => 'PRESS',
+                'type' => 'cabin',
+                'color' => '#00bcd4',
+                'description' => '',
+            ],
+            [
+                'name' => 'PAID',
+                'type' => 'booking',
+                'color' => '#2196f3',
+                'description' => 'booking is fully paid',
+            ],
+            [
+                'name' => 'IN MANIFEST',
+                'type' => 'booking',
+                'color' => '#673ab7',
+                'description' => 'booking is in the manifest file',
+            ],
+            [
+                'name' => 'NON-REV',
+                'type' => 'cabin',
+                'color' => '#607d8b',
+                'description' => 'cabin is assigned to non-revenue guest',
+            ],
+            [
+                'name' => 'POTENTIAL NOISE',
+                'type' => 'cabin',
+                'color' => '#ff9800',
+                'description' => 'potential noise issue',
+            ],
+            [
+                'name' => 'NOT ASSIGNED',
+                'type' => 'cabin',
+                'color' => '#9e9e9e',
+                'description' => 'cabin is assigned to non-revenue guest',
+            ],
+            [
+                'name' => 'ASSIGNED',
+                'type' => 'cabin',
+                'color' => '#4caf50',
+                'description' => 'cabin is assigned to a guest',
+            ],
+            [
+                'name' => 'RCCL',
+                'type' => 'cabin',
+                'color' => '#3f51b5',
+                'description' => '',
+            ],
+
+        ];
+
+        foreach ($tags as $tag) {
+            Tag::firstOrCreate(
+                [
+                    'name' => $tag['name'],
+                    'type' => $tag['type']
+                ],
+                [
+                    'color' => $tag['color'],
+                    'description' => $tag['description'],
+                    'is_system' => true,
+                ]
+            );
+        }
+    }
+}

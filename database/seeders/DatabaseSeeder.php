@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\Cabin;
+use App\Models\Tag;
 use Illuminate\Database\Seeder;
 use Mockery\Generator\StringManipulation\Pass\Pass;
 
@@ -27,6 +28,7 @@ class DatabaseSeeder extends Seeder
             CabinCategorySeeder::class,
             CabinTypeSeeder::class,
             CabinSeeder::class,
+            TagSeeder::class,
             //BookingSeeder::class,
             //PassengersSeeder::class,
             AdjustmentsSeeder::class,

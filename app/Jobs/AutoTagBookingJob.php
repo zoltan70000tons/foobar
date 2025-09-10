@@ -18,7 +18,6 @@ class AutoTagBookingJob implements ShouldQueue
     protected $booking;
     protected $now;
 
-    public $queue = 'default';
 
 
     /**
@@ -61,16 +60,12 @@ class AutoTagBookingJob implements ShouldQueue
             }
         }
 
+        $overdueTag = createTag('OVERDUE', 'BOOKING', '#FF0000', 'Indicates that the booking has overdue payments.');
+
         if ($isOverdue) {
-            if (!$tags->contains('OVERDUE')) {
-                $tags->push('OVERDUE');
-                $this->booking->update(['tags' => $tags->unique()->values()->all()]);
-            }
+            $this->booking->attachTags([$overdueTag->id]);
         } else {
-            if ($tags->contains('OVERDUE')) {
-                $tags = $tags->reject(fn($tag) => $tag === 'OVERDUE');
-                $this->booking->update(['tags' => $tags->values()->all()]);
-            }
+            $this->booking->detachTags([$overdueTag->id]);
         }
     }
 
@@ -95,15 +90,9 @@ class AutoTagBookingJob implements ShouldQueue
         }
 
         if ($missingInfo) {
-            if (!$tags->contains('MISSING INFO')) {
-                $tags->push('MISSING INFO');
-                $this->booking->update(['tags' => $tags->unique()->values()->all()]);
-            }
+            attachTag($this->booking, 'MISSING INFO', 'BOOKING', '#FFA500', 'Indicates that the booking has passengers with missing information.');
         } else {
-            if ($tags->contains('MISSING INFO')) {
-                $tags = $tags->reject(fn($tag) => $tag === 'MISSING INFO');
-                $this->booking->update(['tags' => $tags->values()->all()]);
-            }
+            removeTag($this->booking, 'MISSING INFO', 'BOOKING');
         }
     }
 }

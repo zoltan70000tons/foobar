@@ -315,17 +315,7 @@ class Booking extends Model
 
   public function addNewTag()
   {
-    $tag = Tag::where('name', 'new')->where('type', 'booking')->first();
-    Log::info('Tag found: ' . ($tag ? $tag->id : 'none'));
-    if (!$tag) {
-      $tag = Tag::create([
-        'id' => Str::uuid(),
-        'name' => 'new',
-        'type' => 'booking',
-        'color' => '#ff9800',
-        'description' => 'System generated tag for new bookings',
-      ]);
-    }
+    $tag = createTag('NEW', 'booking', '#ff9800', 'System generated tag for new bookings');
     $this->attachTags([$tag->id]);
     return $tag;
   }
@@ -366,7 +356,7 @@ class Booking extends Model
         return;
       }
       $booking->tags()->sync($tag);
-     // $booking->tags()->syncWithoutDetaching([$id]);
+      // $booking->tags()->syncWithoutDetaching([$id]);
 
       if ($booking->relationLoaded('cabin') ? $booking->cabin : $booking->cabin()->exists()) {
         $booking->cabin->updateInventoryOnBooking();
@@ -392,18 +382,18 @@ class Booking extends Model
             $capacity = $cabin->category->capacity;
             $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
           }
-        } 
-      }else {
-          $cabin->status = 'RESERVED';
-          $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
-          $booking->saveQuietly(); 
         }
+      } else {
+        $cabin->status = 'RESERVED';
+        $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
+        $booking->saveQuietly();
+      }
 
-        $cabin->save();
-        //deleting booking from locks table
-        DB::table('booking_agent_sessions')
-          ->where('booking_id', $booking->id)
-          ->delete();
+      $cabin->save();
+      //deleting booking from locks table
+      DB::table('booking_agent_sessions')
+        ->where('booking_id', $booking->id)
+        ->delete();
     });
 
     static::deleted(function ($booking) {
