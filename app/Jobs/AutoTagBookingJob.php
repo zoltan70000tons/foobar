@@ -9,20 +9,16 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-
+use App\Helpers\TagHelper;
+use App\Traits\BookingLogTrait;
 
 class AutoTagBookingJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, BookingLogTrait;
 
-    protected $booking;
-    protected $now;
+    protected Booking $booking;
+    protected Carbon $now;
 
-
-
-    /**
-     * Create a new job instance.
-     */
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
@@ -30,23 +26,19 @@ class AutoTagBookingJob implements ShouldQueue
         $this->onQueue('auto-tagging');
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         $this->handleOverdueTag();
         $this->handleMissingInfoTag();
     }
 
-    protected function handleOverdueTag()
+    protected function handleOverdueTag(): void
     {
-        $tags = collect($this->booking->tags ?? []);
         $isOverdue = false;
 
         foreach ($this->booking->passengers as $passenger) {
             $installmentStatus = $passenger->getInstallmentStatus();
-            $nextInstallment = $installmentStatus['next_installment'] ?? null;
+            $nextInstallment   = $installmentStatus['next_installment'] ?? null;
 
             if (!$nextInstallment || empty($nextInstallment['due_date'])) {
                 continue;
@@ -60,24 +52,39 @@ class AutoTagBookingJob implements ShouldQueue
             }
         }
 
-        $overdueTag = createTag('OVERDUE', 'BOOKING', '#FF0000', 'Indicates that the booking has overdue payments.');
-
         if ($isOverdue) {
-            $this->booking->attachTags([$overdueTag->id]);
+            if (!TagHelper::isTagged($this->booking, 'OVERDUE', 'BOOKING')) {
+                TagHelper::attachTag(
+                    $this->booking,
+                    'OVERDUE',
+                    'BOOKING',
+                    '#FF0000',
+                    'Overdue installments > 48h past due'
+                );
+                $this->saveBookingLog(
+                    $this->booking->id,
+                    'Added OVERDUE TAG by system',
+                    'Added Tag: OVERDUE on ' . now()
+                );
+            }
         } else {
-            $this->booking->detachTags([$overdueTag->id]);
+            if (TagHelper::removeTag($this->booking, 'OVERDUE', 'BOOKING')) {
+                $this->saveBookingLog(
+                    $this->booking->id,
+                    'Removed OVERDUE TAG by system',
+                    'Removed Tag: OVERDUE on ' . now()
+                );
+            }
         }
     }
 
-
-    protected function handleMissingInfoTag()
+    protected function handleMissingInfoTag(): void
     {
-        $tags = collect($this->booking->tags ?? []);
         $missingInfo = false;
 
         foreach ($this->booking->passengers as $passenger) {
-            $isPrivateCabin = $this->booking->cabin->cabinType->id == 1;
-            $isSeatOccupied = $passenger->empty_seat === false;
+            $isPrivateCabin = (int) $this->booking->cabin->cabinType->id === 1;
+            $isSeatOccupied = ($passenger->empty_seat === false);
 
             if (
                 (empty($passenger->first_name) || empty($passenger->last_name) || empty($passenger->dob)) &&
@@ -90,9 +97,28 @@ class AutoTagBookingJob implements ShouldQueue
         }
 
         if ($missingInfo) {
-            attachTag($this->booking, 'MISSING INFO', 'BOOKING', '#FFA500', 'Indicates that the booking has passengers with missing information.');
+            if (!TagHelper::isTagged($this->booking, 'MISSING PAX', 'BOOKING')) {
+                TagHelper::attachTag(
+                    $this->booking,
+                    'MISSING PAX',
+                    'BOOKING',
+                    '#FFA500',
+                    'Indicates passengers with missing information.'
+                );
+                $this->saveBookingLog(
+                    $this->booking->id,
+                    'Added MISSING PAX TAG by system',
+                    'Added Tag: MISSING PAX on ' . now()
+                );
+            }
         } else {
-            removeTag($this->booking, 'MISSING INFO', 'BOOKING');
+            if (TagHelper::removeTag($this->booking, 'MISSING PAX', 'BOOKING')) {
+                $this->saveBookingLog(
+                    $this->booking->id,
+                    'Removed MISSING PAX Tag by system',
+                    'Removed Tag: MISSING PAX on ' . now()
+                );
+            }
         }
     }
 }
