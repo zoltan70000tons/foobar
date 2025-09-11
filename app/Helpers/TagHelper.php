@@ -5,8 +5,6 @@ declare(strict_types=1);
 use App\Models\Tag;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use PhpParser\Node\Expr\AssignOp\Mod;
-
 if (! function_exists('createOrGetTag')) {
     /**
      * get or create a Tag by name and type.
@@ -84,7 +82,7 @@ if (! function_exists('attachTag')) {
          *
          * @param  Model  $model   Eloquent model instance (e.g., Booking, User)
          * @param  string $name    Tag name (ej: 'OVERDUE')
-         * @param  string $type    Type/area of the tag (e.g., 'BOOKING', 'USER')   
+         * @param  string $type    Type/area of the tag (e.g., 'BOOKING', 'USER')
          * @return bool            True if the tag was removed, false if the tag did not exist on the model.
          */
         function removeTag(Model $model, string $name, string $type): bool
