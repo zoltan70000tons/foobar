@@ -20,4 +20,10 @@ return [
   'booking_not_found' => 'Booking not found. Please check the information and try again.',
   'cannot_delete_account' => 'You cannot delete your account while you have an active booking.',
   'proceed_delete_account' => 'Proceed to delete your account.',
+  
+  // ACTIVE SURVIVOR ACCOUNT,
+  'survivor_number_not_found' => 'Survivor Number not found. Please check the number and try again.',
+  'not_matching_info' => 'The provided information does not match our records. Please verify and try again.',
+  'account_already_activated'=>'This account has already been activated. Please log in or reset your password.',
+  'account_activation_success'=>'Account successfully linked. Check your email for the verification link.',
 ];

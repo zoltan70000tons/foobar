@@ -132,6 +132,10 @@ class CustomerRegisteredController extends Controller
   */
   public function storeUserSurvivor(Request $request): JsonResponse
   {
+    // Set language
+    $language = $request->language;
+    App::setLocale($language);
+
     $request->validate([
       'survivor_number' => ['required', 'string', 'max:9'],
       'name' => ['required', 'string', 'max:255'],
@@ -140,10 +144,6 @@ class CustomerRegisteredController extends Controller
       'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
     ]);
-
-    // Set language
-    $language = $request->language;
-    App::setLocale($language);
 
     // Normalize inputs
     $survivorNumber = $request->survivor_number;
@@ -155,7 +155,7 @@ class CustomerRegisteredController extends Controller
     $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
 
     if (!$survivor) {
-      return response()->json(['message' => 'Survivor Number not found.'], 404);
+      return response()->json(['message' => __('feedback.survivor_number_not_found')], 404);
     }
 
     // Fetch user details
@@ -178,7 +178,7 @@ class CustomerRegisteredController extends Controller
       return response()->json(
         [
           'message' =>
-            'The information provided does not match our records, please make sure you are entering the correct information.',
+          __('feedback.not_matching_info')
         ],
         404
       );
@@ -188,7 +188,7 @@ class CustomerRegisteredController extends Controller
     $user = User::find($survivor->user_id);
 
     if ($user->email !== null) {
-      return response()->json(['message' => 'Account already activated.'], 400);
+      return response()->json(['message' => __("feedback.account_already_activated")], 400);
     }
 
     $user->update([
@@ -209,7 +209,7 @@ class CustomerRegisteredController extends Controller
     // Send welcome email
     $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);
 
-    return response()->json(['message' => 'Account updated successfully.'], 200);
+    return response()->json(['message' => __("feedback.account_activation_success")], 200);
   }
 
   /*
@@ -225,7 +225,7 @@ class CustomerRegisteredController extends Controller
     try {
       $user->load('detail');
       $email = $user->email;
-      Mail::to($email)->queue(new CustomerRegistered($user, $language, $survivorNumber));
+      Mail::to($email)->locale($language)->queue(new CustomerRegistered($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
@@ -245,7 +245,7 @@ class CustomerRegisteredController extends Controller
       $email = $user->email;
       $user->load('detail');
 
-      Mail::to($email)->queue(new ActivateSurvivor($user, $language, $survivorNumber));
+      Mail::to($email)->locale($language)->queue(new ActivateSurvivor($user, $language, $survivorNumber));
     } catch (\Exception $e) {
       Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());
     }

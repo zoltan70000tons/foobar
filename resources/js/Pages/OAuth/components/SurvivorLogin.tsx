@@ -2,10 +2,18 @@ import { Typography, Link, Box, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { blue, grey } from "@mui/material/colors";
 import { Info } from "@mui/icons-material";
+import { usePage } from '@inertiajs/react';
+
+type SurvivorLoginProps = {
+  tAuth: any;
+  tGeneral: any;
+  language: 'en' | 'de' | 'es' | string;
+}
 
 export default function SurvivorLogin() {
 
     const frontURL = import.meta.env.VITE_FRONTEND_URL;
+    const { tAuth, tGeneral, language } = usePage<SurvivorLoginProps>().props;
 
 
     const AnimatedBorder = styled("svg")({
@@ -34,7 +42,7 @@ export default function SurvivorLogin() {
   // handle click event
   const handleClick = () => {
     // push user to the survivor activation page
-    window.location.href = `${frontURL}/en/activate-survivor-account`;
+    window.location.href = `${frontURL}/${language}/activate-survivor-account`;
   }
 
   return (
@@ -73,7 +81,7 @@ export default function SurvivorLogin() {
         <Info sx={{ color: "text.primary" }} />
 
         <Typography variant="body1">
-          Have you sailed with us before? Link your eMail to your Survivor Number!
+          {tAuth?.recover_account_instructions ?? 'Have you sailed with us before? Link your eMail to your Survivor Number!'}
         </Typography>
 
         <Button
@@ -83,7 +91,7 @@ export default function SurvivorLogin() {
           size="small"
           onClick={handleClick}
         >
-          Click here
+          {tGeneral.click_here ?? 'Click Here'}
         </Button>
       </Box>
   );

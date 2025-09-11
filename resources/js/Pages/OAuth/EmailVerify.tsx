@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePage } from "@inertiajs/react";
 import {
   Container,
   Typography,
@@ -11,16 +12,19 @@ import {
 import OAuthLayout from "@/Layouts/OAuthLayout";
 import Axios from "axios";
 
-type EmailVerifyProps = {
-  language: string;
-  user: {
+type PageProps = {
+  tAuth: any;
+  tGeneral: any;
+  language: 'en' | 'de' | 'es' | string;
+  user?: {
     id: number;
     email: string;
     name: string;
-  };
+  } | null;
 };
 
-export default function EmailVerify({ language, user }: EmailVerifyProps) {
+export default function EmailVerify() {
+  const { tAuth, tGeneral, language, user } = usePage<PageProps>().props;
 
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
@@ -30,11 +34,11 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
     // Resend email verification link
     setIsLoading(true);
     try {
-      await Axios.post(route('oauth.email.verify.resend'));
+      await Axios.post(route('oauth.email.verify.resend'), { language });
       setSuccess(true);
       setErrors(null);
     } catch (error) {
-      setErrors("Failed to resend email verification link.");
+      setErrors(tAuth?.Error?.invalid_session_request ?? "Failed to resend email verification link.");
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +68,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
             marginBottom: "20px",
           }}
         >
-          Verify your email
+          {tAuth?.verify_email_title ?? 'Verify your eMail'}
         </Typography>
         {success && (
           <Alert
@@ -73,7 +77,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
               marginBottom: "20px",
             }}
           >
-            Link sent
+            {tAuth?.verify_email_sent ?? 'A verification link has been sent to your email.'}
           </Alert>
         )}
         {errors && (
@@ -100,7 +104,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
               flex: 1,
             }}
           >
-            <Typography variant="body1">Check email</Typography>
+            <Typography variant="body1">{tAuth?.check_email ?? 'Please check your email for a verification link.'}</Typography>
             <Button
               onClick={handleLogout}
               variant="contained"
@@ -108,7 +112,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
                 marginTop: "20px",
               }}
             >
-              Logout
+              {tAuth?.logout ?? 'Log Out'}
             </Button>
           </Box>
           <Box
@@ -127,7 +131,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
               },
             }}
           >
-            <Typography variant="body1">Receive email</Typography>
+            <Typography variant="body1">{tAuth?.receive_email ?? 'If you did not receive the email, click here to request another.'}</Typography>
             <Button
               onClick={handleResendEmail}
               variant="contained"
@@ -138,7 +142,7 @@ export default function EmailVerify({ language, user }: EmailVerifyProps) {
                 marginTop: "20px",
               }}
             >
-              Send email
+              {tAuth?.send_email ?? 'Send eMail'}
             </Button>
           </Box>
         </Stack>

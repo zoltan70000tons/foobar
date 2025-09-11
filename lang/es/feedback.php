@@ -20,4 +20,10 @@ return [
   'booking_not_found' => 'Reserva no encontrada. Por favor verifica la información e inténtalo de nuevo.',
   'cannot_delete_account' => 'No puedes eliminar tu cuenta mientras tengas una reserva activa.',
   'proceed_delete_account' => 'Proceder a eliminar tu cuenta.',
+
+  // ACTIVE SURVIVOR ACCOUNT,
+  'survivor_number_not_found' => 'Número de Survivor no encontrado. Por favor verifica el número e inténtalo de nuevo.',
+  'not_matching_info' => 'La información proporcionada no coincide con nuestros registros. Por favor verifica e inténtalo de nuevo.',
+  'account_already_activated'=>'Esta cuenta ya ha sido activada. Por favor inicia sesión o restablece tu contraseña.',
+  'account_activation_success'=>'Cuenta vinculada con éxito. Revisa tu correo electrónico para el enlace de verificación.',
 ];
