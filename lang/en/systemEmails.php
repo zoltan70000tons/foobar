@@ -16,6 +16,7 @@ return [
   'email_not_send' => 'eMail not sent.',
   'email_verified_already' => 'eMail already verified.',
   'email_verification_link_sent' => 'Verification link sent.',
+  'email_verification_subject' => 'Please verify your eMail address',
   'email_hi' => 'Hi',
   'email_thanks' => 'Cheers,',
   'email_regards' => 'your 70000TONS OF METAL crew',
