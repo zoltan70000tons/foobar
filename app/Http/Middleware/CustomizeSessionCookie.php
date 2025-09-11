@@ -16,15 +16,15 @@ class CustomizeSessionCookie
         $defaultCookie = config('session.cookie');
 
         // OAuth pages under /oauth use a separate cookie
-        if ($request->is('oauth') || $request->is('oauth/*')) {
-            $cookieName = env('SESSION_COOKIE_OAUTH', $defaultCookie.'_oauth');
+          if ($request->is(['oauth', 'oauth/*'])) {
+            $cookieName = config('session.cookie_oauth', $defaultCookie.'_oauth');
             config(['session.cookie' => $cookieName]);
 
             // Optionally scope to path and/or domain if provided
-            if ($path = env('SESSION_PATH_OAUTH')) {
+            if ($path = config('session.path_oauth')) {
                 config(['session.path' => $path]);
             }
-            if ($domain = env('SESSION_DOMAIN_OAUTH')) {
+            if ($domain = config('session.domain_oauth')) {
                 config(['session.domain' => $domain]);
             }
         }
