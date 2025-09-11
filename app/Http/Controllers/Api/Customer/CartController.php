@@ -25,11 +25,10 @@ class CartController extends Controller
   |  Private function for re-use the cart data
   |
   */
-  private function getCartData(Request $request, $eventId)
+  private function getCartData($eventId)
   {
     // Fetch cart from session
     $user = Auth::user();
-    // $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : $request->session()->get('cart', []);
 
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
@@ -81,7 +80,7 @@ class CartController extends Controller
   | Index
   |--------------------------------------------------------------------------
   |
-  |  Fetch the cart data from session
+  |  Fetch the cart data from db 
   |
   */
   public function index(Request $request, $eventId)
@@ -97,7 +96,7 @@ class CartController extends Controller
   | Store
   |--------------------------------------------------------------------------
   |
-  | Store the cart data in session
+  | Store the cart data in db
   |
   */
   public function store(Request $request, ReservationService $reservationService)
@@ -139,26 +138,24 @@ class CartController extends Controller
     if ($validated['force_clear'] === true) {
       // Attempt to release the cabin
       $reservationService->releaseCabin($user);
-
-      // Always clear the cart regardless of the reservation status
-      //$request->session()->forget('cart');
-      // Clear the cart from the database
-      // $user = Auth::user();
-
-      // if ($user) {
-      //   Cart::where('user_id', $user->id)->delete();
-      // }
+      // Clear the cart
       Cart::where('user_id', $user->id)->delete();
     }
 
     // if user is male ( M ) he cant book cabin type single-female ( single-female )
     if ($validated['cabin_type'] === 'single-female' && $user->detail->gender === 'M') {
-      return response()->json(['message' => __('feedback.cabin_type_not_allowed')], 400);
+      return response()->json([
+        'message' => __('feedback.cabin_type_not_allowed'),
+        'code' => 'CABIN_TYPE_NOT_ALLOWED',
+      ], 400);
     }
 
     // if user is female ( F ) she cant book cabin type single male ( single-male ) 
     if ($validated['cabin_type'] === 'single-male' && $user->detail->gender === 'F') {
-      return response()->json(['message' => __('feedback.cabin_type_not_allowed')], 400);
+      return response()->json([
+        'message' => __('feedback.cabin_type_not_allowed'),
+        'code' => 'CABIN_TYPE_NOT_ALLOWED',
+      ], 400);
     }
 
     $defaultCart = [
@@ -186,30 +183,21 @@ class CartController extends Controller
         return response()->json([
           'message' => __('feedback.age_restriction'),
           'code' => 'AGE_RESTRICTION',
-        ], 406);
+        ], 422);
       }
     } else {
       return response()->json([
         'message' => 'Date of birth is required',
         'code' => 'DOB_REQUIRED',
-      ], 406);
+      ], 422);
     }
-
-    // if ($user) {
-    //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
-    // } else {
-    //   session(['cart' => $mergedCart]);
-    // }
 
     Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
 
-    return response()->json(
-      [
+    return response()->json([
         'message' => 'Cart updated successfully',
         'cart' => $this->getCartData($request, $validated['event_id']),
-      ],
-      200
-    );
+      ], 200);
   }
 
   /*
@@ -253,7 +241,10 @@ class CartController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(['message' => 'User not authenticated'], 401);
+      return response()->json([
+        'message' => 'User not authenticated',
+        'code' => 'UNAUTHORIZED',
+      ], 401);
     }
 
     // Age verification
@@ -262,27 +253,24 @@ class CartController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json(['message' => __('feedback.age_restriction')], 400);
+        return response()->json([
+          'message' => __('feedback.age_restriction'),
+          'code' => 'AGE_RESTRICTION',
+        ], 422);
       }
     } else {
-      return response()->json(['message' => 'Date of birth is required'], 400);
+      return response()->json([
+        'message' => 'Date of birth is required',
+        'code' => 'DOB_REQUIRED',
+      ], 422);
     }
-
-    // if ($user) {
-    //   Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
-    // } else {
-    //   session(['cart' => $validated]);
-    // }
 
     Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
 
-    return response()->json(
-      [
-        'message' => 'Cart updated successfully',
-        'cart' => $this->getCartData($request, $validated['event_id']),
-      ],
-      200
-    );
+    return response()->json([
+      'message' => 'Cart updated successfully',
+      'cart' => $this->getCartData($request, $validated['event_id']),
+    ], 200);
   }
 
   /*
@@ -290,23 +278,16 @@ class CartController extends Controller
   | Destroy
   |--------------------------------------------------------------------------
   |
-  |  Clear the cart data from session
+  |  Clear the cart data from db
   |
   */
-  public function destroy(Request $request, ReservationService $reservationService)
+  public function destroy(ReservationService $reservationService)
   {
     $user = Auth::user();
 
     if (!$user) {
       return response()->json(['message' => 'User not authenticated'], 401);
     }
-
-    // if ($user) {
-    //   Cart::where('user_id', $user->id)->delete();
-    // } else {
-    //   $request->session()->forget('cart');
-    // }
-
     Cart::where('user_id', $user->id)->delete();
 
     $reservationService->releaseCabin($user);
