@@ -156,11 +156,8 @@ export default function AuthenticatedLayout({
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav" sx={{ mt: 0, pt: 0, height: "100%" }}>
+          <List component="nav" sx={{ height: "100%" }}>
             <ListItems />
-            {/* <ListItems mainDrawerToggle={setOpen} sx={{ mt: 0, pt: 0 }} /> */}
-            {/* <Divider sx={{ my: 1 }} /> */}
-            {/* {accountListItems} */}
           </List>
         </Drawer>
         <Box

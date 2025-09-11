@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Box, Drawer, IconButton, Tooltip, ListSubheader, ListItemButton, ListItemText, List } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
@@ -7,205 +7,147 @@ import {
   Logout as LogoutIcon,
   RoomPreferences as RoomPreferenceIcon,
   Person as PersonIcon,
-  DirectionsBoat as EventIcon
+  DirectionsBoat as EventIcon,
 } from "@mui/icons-material";
-
-import SellIcon from '@mui/icons-material/Sell';
-
+import SellIcon from "@mui/icons-material/Sell";
 import { Link, router, usePage } from "@inertiajs/react";
-import axios from "axios";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 
-type Event = {
+type AppEvent = {
   id: number;
   name: string;
   code: string;
-}
+};
+
+const SIDE_ICON_WIDTH = 75;
+const SIDE_ICON_WIDTH_MOBILE = 60;
+const SIDE_MENU_WIDTH = 240;
 
 const MenuItems: React.FC = () => {
   const { hasPermission } = usePermissions();
 
-  const { props } = usePage<{ menu?: { events: Event[] } }>();
-  const events: Event[] = props.menu?.events || [];
+  const { url, props } = usePage<{ menu?: { events: AppEvent[] } }>();
+  const events: AppEvent[] = props.menu?.events ?? [];
 
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-  //const [events, setEvents] = useState<any[]>([]);
-  const [isBookingsOpen, setIsBookingsOpen] = useState(false);
-  const currentPath = window.location.pathname;
-  const pathParts = window.location.pathname.split("/");
-  const routeEventId = pathParts[2];
-  const isBookingsRoute = currentPath.includes("bookings");
-  const isDashboardRoute = currentPath.includes("dashboard");
-  const isTeamRoute = currentPath.includes("team");
-  const isCabinsRoute = currentPath.includes("cabins");
-  const isCustomersRoute = currentPath.includes("customer");
-  const isEventsRoute = currentPath.includes("event") && !currentPath.includes("bookings");
+  // Parse path once
+  const { currentPath, pathParts, routeEventId } = useMemo(() => {
+    const currentPath = url || "/";
+    const pathParts = currentPath.split("/").filter(Boolean); // removes leading empty string
+    const routeEventId = Number(pathParts[1]); // e.g. /bookings/123 -> ["bookings","123",...]
+    return { currentPath, pathParts, routeEventId };
+  }, [url]);
 
-  // useEffect(() => {
-  //   const fetchEvents = async () => {
-  //     if (isBookingsOpen) {
-  //       try {
-  //         const response = await axios.get("/menu/bookings");
-  //         setEvents(response.data);
-  //       } catch (error) {
-  //         console.error("Error fetching events:", error);
-  //       }
-  //     }
-  //   };
+  // Route flags (cheap + memoized)
+  const flags = useMemo(() => {
+    const is = (segment: string) => currentPath.includes(`/${segment}`);
+    return {
+      isDashboardRoute: is("dashboard"),
+      isBookingsRoute: is("bookings"),
+      isTeamRoute: is("teams") || is("team") || is("roles") || is("permissions"),
+      isCabinsRoute: is("cabins"),
+      isCustomersRoute: is("customers") || is("customer"),
+      isEventsRoute: is("events") && !is("bookings") && !is("cabins"),
+      isTagsRoute: is("tags"),
+    };
+  }, [currentPath]);
 
-  //   fetchEvents();
-  // }, [isBookingsOpen]);
+  const truncate = (text: string | null | undefined, max: number) =>
+    !text ? "" : text.length > max ? `${text.slice(0, max)}…` : text;
 
-  // useEffect(() => {
-  //   const fetchEvents = async () => {
-  //     if (isBookingsRoute || isCabinsRoute) {
-  //       try {
-  //         const response = await axios.get("/menu/bookings");
-  //         setEvents(response.data);
-  //         setIsBookingsOpen(true);
-  //       } catch (error) {
-  //         console.error("Error fetching events:", error);
-  //       }
-  //     }
-  //   };
+  const isActiveBg = (active: boolean) => ({
+    backgroundColor: active ? "#2f4f4f" : "transparent",
+  });
 
-  //   fetchEvents();
-  // }, [isBookingsRoute, isCabinsRoute]);
-
-  const handleBookingsClick = async () => {
-    setIsBookingsOpen(true);
-  };
-
-  const handleEventClick = (eventId: number): void => {
-    setSelectedEventId(eventId);
-    router.visit(route("bookings.index", eventId));
-  };
-
-  const truncateText = (text: string | null | undefined, maxLength: number) => {
-    if (!text) return "";
-    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-  };
+  // Primary sidebar config
+  const primaryItems = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: <DashboardIcon />,
+      href: route("dashboard"),
+      can: Permissions.ViewDashboard,
+      active: flags.isDashboardRoute,
+    },
+    {
+      key: "bookings",
+      label: "Bookings",
+      icon: <LocalActivityIcon />,
+      href: route("bookings.index", "all"),
+      can: Permissions.ViewEvents,
+      active: flags.isBookingsRoute,
+    },
+    {
+      key: "cabins",
+      label: "Cabins",
+      icon: <RoomPreferenceIcon />,
+      href: route("cabins.index", "all"),
+      can: Permissions.ViewCabins,
+      active: flags.isCabinsRoute,
+    },
+    {
+      key: "team",
+      label: "Team",
+      icon: <WorkspacesIcon />,
+      href: route("teams"),
+      can: Permissions.ViewUsers,
+      active: flags.isTeamRoute,
+    },
+    {
+      key: "customers",
+      label: "Customers",
+      icon: <PersonIcon />,
+      href: route("customers.index"),
+      can: Permissions.ViewCustomers,
+      active: flags.isCustomersRoute,
+    },
+    {
+      key: "events",
+      label: "Events",
+      icon: <EventIcon />,
+      href: route("events.index"),
+      can: Permissions.ViewEvents,
+      active: flags.isEventsRoute,
+    },
+    {
+      key: "tags",
+      label: "Tags",
+      icon: <SellIcon />,
+      href: route("tags.index"),
+      can: Permissions.ViewTags,
+      active: flags.isTagsRoute, // fixed: was isEventsRoute
+    },
+  ] as const;
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        height: "100%",
-      }}
-    >
-      {/* Main Side bar - Icons Only */}
+    <Box sx={{ display: "flex", height: "100%" }}>
       <Drawer
         variant="permanent"
         sx={{
-          width: 60,
+          width: { xs: SIDE_ICON_WIDTH_MOBILE, md: SIDE_ICON_WIDTH },
           flexShrink: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          [`& .MuiDrawer-paper`]: { width: 60, boxSizing: "border-box" },
+          [`& .MuiDrawer-paper`]: { width: SIDE_ICON_WIDTH, boxSizing: "border-box" },
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            paddingTop: 1,
-          }}
-        >
-          {hasPermission(Permissions.ViewDashboard) && (
-            <Tooltip title="Dashboard" placement="right">
-              <IconButton
-                component={Link}
-                href={route("dashboard")}
-                style={{
-                  backgroundColor: isDashboardRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <DashboardIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {hasPermission(Permissions.ViewEvents) && (
-            <Tooltip title="Bookings" placement="right">
-              <IconButton
-                component={Link}
-                href={route("bookings.index", "all")}
-                style={{
-                  backgroundColor: isBookingsRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <LocalActivityIcon />
-              </IconButton>
-            </Tooltip>
-          )}
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", pt: 1, gap: 0.5 }}>
+          {primaryItems
+            .filter((item) => hasPermission(item.can))
+            .map((item) => (
+              <Tooltip key={item.key} title={item.label} placement="right">
+                <IconButton
+                  component={Link as any}
+                  href={item.href}
+                  aria-current={item.active ? "page" : undefined}
+                  style={isActiveBg(item.active)}
+                >
+                  {item.icon}
+                </IconButton>
+              </Tooltip>
+            ))}
 
-          {hasPermission(Permissions.ViewCabins) && (
-            <Tooltip title="Cabins" placement="right">
-              <IconButton
-                component={Link}
-                href={route("cabins.index", "all")}
-                style={{
-                  backgroundColor: isCabinsRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <RoomPreferenceIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {hasPermission(Permissions.ViewUsers) && (
-            <Tooltip title="Team" placement="right">
-              <IconButton
-                component={Link}
-                href={route("teams")}
-                style={{
-                  backgroundColor: isTeamRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <WorkspacesIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {hasPermission(Permissions.ViewCustomers) && (
-            <Tooltip title="Customers" placement="right">
-              <IconButton
-                component={Link}
-                href={route("customers.index")}
-                style={{
-                  backgroundColor: isCustomersRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <PersonIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {hasPermission(Permissions.ViewEvents) && (
-            <Tooltip title="Events" placement="right">
-              <IconButton
-                component={Link}
-                href={route("events.index")}
-                style={{
-                  backgroundColor: isEventsRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <EventIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          {hasPermission(Permissions.ViewTags) && (
-            <Tooltip title="Tags" placement="right">
-              <IconButton
-                component={Link}
-                href={route("tags.index")}
-                style={{
-                  backgroundColor: isEventsRoute ? "#2f4f4f" : "transparent",
-                }}
-              >
-                <SellIcon />
-              </IconButton>
-            </Tooltip>
-          )}
           <Tooltip title="Logout" placement="right">
             <IconButton onClick={() => router.post(route("logout"))}>
               <LogoutIcon />
@@ -213,65 +155,66 @@ const MenuItems: React.FC = () => {
           </Tooltip>
         </Box>
       </Drawer>
+
+      {/* Secondary rail (contextual menu) */}
       <Drawer
         variant="permanent"
         sx={{
-          width: 240,
+          width: SIDE_MENU_WIDTH,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: 240, boxSizing: "border-box" },
+          [`& .MuiDrawer-paper`]: { width: SIDE_MENU_WIDTH, boxSizing: "border-box" },
         }}
       >
         <List
           sx={{ width: "100%", bgcolor: "background.paper", mt: 0, pt: 0 }}
-          subheader={currentPath === null && <ListSubheader component="div">Select a Menu option</ListSubheader>}
+          subheader={
+            !flags.isDashboardRoute &&
+            !flags.isTagsRoute &&
+            !flags.isCustomersRoute &&
+            !flags.isEventsRoute && <ListSubheader component="div">Select a menu option</ListSubheader>
+          }
         >
-          {isDashboardRoute && !isBookingsOpen && (
-            <ListItemButton component={Link} href={route("dashboard")} method="get" selected={isDashboardRoute}>
+          {flags.isDashboardRoute && (
+            <ListItemButton component={Link as any} href={route("dashboard")} selected={flags.isDashboardRoute}>
               <ListItemText primary="Dashboard" />
             </ListItemButton>
           )}
 
-          {isTeamRoute && !isBookingsOpen && (
+          {flags.isTeamRoute && (
             <>
-              <ListItemButton key="team" component={Link} href={route("teams")} selected={currentPath === "/team"}>
+              <ListItemButton component={Link as any} href={route("teams")} selected={currentPath === "/teams"}>
                 <ListItemText primary="Team Members" />
               </ListItemButton>
-              <ListItemButton
-                key="roles"
-                component={Link}
-                href={route("roles")}
-                selected={currentPath.includes("roles")}
-              >
+              <ListItemButton component={Link as any} href={route("roles")} selected={currentPath.includes("/roles")}>
                 <ListItemText primary="Team Roles" />
               </ListItemButton>
               <ListItemButton
-                key="permissions"
-                component={Link}
+                component={Link as any}
                 href={route("permissions")}
-                selected={currentPath.includes("permissions")}
+                selected={currentPath.includes("/permissions")}
               >
                 <ListItemText primary="Team Permissions" />
               </ListItemButton>
             </>
           )}
 
-          {(isBookingsOpen || isBookingsRoute) && (
+          {(flags.isBookingsRoute || flags.isCabinsRoute) && (
             <List disablePadding>
-              {events.length > 0 ? (
+              {events.length ? (
                 events.map((event) => (
                   <ListItemButton
                     key={event.id}
-                    component={Link}
-                    href={route(isBookingsRoute ? "bookings.index" : "cabins.index", event.id)}
-                    selected={parseInt(routeEventId) === event.id}
+                    component={Link as any}
+                    href={route(flags.isBookingsRoute ? "bookings.index" : "cabins.index", event.id)}
+                    selected={routeEventId === event.id}
                   >
                     <Tooltip title={event.name}>
-                      <ListItemText primary={truncateText(event.code, 15)} />
+                      <ListItemText primary={truncate(event.code, 15)} />
                     </Tooltip>
                   </ListItemButton>
                 ))
               ) : (
-                <ListItemText primary="No events available" />
+                <ListItemText sx={{ px: 2, py: 1.5 }} primary="No events available" />
               )}
             </List>
           )}

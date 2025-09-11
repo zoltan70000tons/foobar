@@ -23,29 +23,10 @@ class TagSeeder extends Seeder
                 'description' => 'Booking has overdue payments',
             ],
             [
-                'name' => 'MISSING INFO',
+                'name' => 'MISSING PAX',
                 'type' => 'booking',
                 'color' => '#FFA500',
                 'description' => 'Booking is missing required information',
-            ],
-            [
-                'name' => 'ASSIGNED',
-                'type' => 'booking',
-                'color' => '#AC322A',
-                'description' => 'Booking is assigned to an agent',
-            ],
-            [
-                'name' => 'ASSIGNED',
-                'type' => 'booking',
-                'color' => '#AC322A',
-                'description' => 'Booking is assigned to an agent',
-            ],
-
-            [
-                'name' => 'NEW',
-                'type' => 'cabin',
-                'color' => '#66bb6a',
-                'description' => 'cabin is new and unprocessed',
             ],
             [
                 'name' => 'STAFF',
@@ -90,22 +71,10 @@ class TagSeeder extends Seeder
                 'description' => 'potential noise issue',
             ],
             [
-                'name' => 'NOT ASSIGNED',
-                'type' => 'cabin',
-                'color' => '#9e9e9e',
-                'description' => 'cabin is assigned to non-revenue guest',
-            ],
-            [
-                'name' => 'ASSIGNED',
-                'type' => 'cabin',
-                'color' => '#4caf50',
-                'description' => 'cabin is assigned to a guest',
-            ],
-            [
                 'name' => 'RCCL',
                 'type' => 'cabin',
                 'color' => '#3f51b5',
-                'description' => '',
+                'description' => 'For RCCL use only',
             ],
 
         ];

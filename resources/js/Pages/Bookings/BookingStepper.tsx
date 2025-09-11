@@ -26,7 +26,9 @@ import {
   Tab,
   Tabs,
   ToggleButton,
-  Tooltip, Chip,
+  Tooltip,
+  Chip,
+  Alert,
 } from "@mui/material";
 
 import axios from "axios";
@@ -39,7 +41,7 @@ import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import ClearIcon from '@mui/icons-material/Clear'
+import ClearIcon from "@mui/icons-material/Clear";
 import { LoadingButton } from "@mui/lab";
 
 const TabPanel = ({ children, value, index }) => {
@@ -50,7 +52,13 @@ const TabPanel = ({ children, value, index }) => {
   );
 };
 
-const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCreateCustomerVisible,onBookingCreated }) => {
+const BookingStepper: React.FC = ({
+  cabinTypes,
+  cabinCategories,
+  close,
+  setIsCreateCustomerVisible,
+  onBookingCreated,
+}) => {
   const [activeStep, setActiveStep] = useState(0);
   const [cabin, setCabin] = useState("");
   const [passenger, setPassenger] = useState({
@@ -103,11 +111,16 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
   const [isSingleRoom, setIsSingleRoom] = useState(false);
   const [fetching, setIsFetching] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
-  const paymentPlanOptions = [{
-    id: 'INSTALLMENTS', value: 'INSTALLMENTS'
-  }, {
-    id: 'PAY_IN_FULL', value: 'PAY_IN_FULL'
-  }];
+  const paymentPlanOptions = [
+    {
+      id: "INSTALLMENTS",
+      value: "INSTALLMENTS",
+    },
+    {
+      id: "PAY_IN_FULL",
+      value: "PAY_IN_FULL",
+    },
+  ];
   const [tabValue, setTabValue] = useState(0);
   const [createLoader, setCreateLoader] = useState(false);
   const eventId = cabinCategory?.event_id;
@@ -133,18 +146,16 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
 
   useEffect(() => {
     if (!cabinType) return;
-    const filteredCategories = cabinCategories.filter(category =>
-      category.cabins.some(cabin => {
+    const filteredCategories = cabinCategories.filter((category) =>
+      category.cabins.some((cabin) => {
         const matchesType = cabin.cabin_type?.id === cabinType.id;
         const status = cabin.status;
 
         const isValidStatus =
-          status === 'AVAILABLE' ||
-          status === 'RESERVED' ||
-          (cabinType.id !== 1 && status === 'PARTIALLY_BOOKED');
+          status === "AVAILABLE" || status === "RESERVED" || (cabinType.id !== 1 && status === "PARTIALLY_BOOKED");
 
         return matchesType && isValidStatus;
-      })
+      }),
     );
 
     setFilteredCategories(filteredCategories);
@@ -152,7 +163,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
 
   const { showSnackbar } = useSnackbar();
 
-  const steps = ['Select Cabin', 'Passenger Details', 'Special Request', 'Discounts/Addons', 'Confirm & Submit'];
+  const steps = ["Select Cabin", "Passenger Details", "Special Request", "Discounts/Addons", "Confirm & Submit"];
 
   const onChange = (field, value) => {
     setPassenger((prev) => ({ ...prev, [field]: value }));
@@ -162,7 +173,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     switch (activeStep) {
       case 0:
         let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber && !fetching;
-        if (paymentPlan?.value === 'INSTALLMENTS') {
+        if (paymentPlan?.value === "INSTALLMENTS") {
           rule = rule && numberOfInstallments;
         }
         return !!rule;
@@ -219,12 +230,12 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
       country: selectedUser.country || "",
       emergency_c_name: selectedUser.emergency_c_name || "",
       emergency_c_phone: selectedUser.emergency_c_phone || "",
-      payment_method: (paymentPlan?.id === 'INSTALLMENTS' ? 'CREDIT_CARD' : selectedUser.payment_method || ''),
+      payment_method: paymentPlan?.id === "INSTALLMENTS" ? "CREDIT_CARD" : selectedUser.payment_method || "",
       special_request: selectedUser.special_request || "",
       lead_passenger: selectedUser.lead_passenger || true,
       travel_info: selectedUser.travel_info || false,
       terms_n_cons: true,
-      single_t_agreement: (isSingleRoom ? true : (selectedUser.single_t_agreement || false)),
+      single_t_agreement: isSingleRoom ? true : selectedUser.single_t_agreement || false,
       newsletter: selectedUser.newsletter || false,
       passenger_allocated_cost: selectedUser.passenger_allocated_cost || "",
       passenger_balance: selectedUser.passenger_balance || "",
@@ -247,10 +258,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     const fetchSuggestions = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/passengers/search', { params: { query: searchQuery, eventId } });
+        const response = await axios.get("/passengers/search", { params: { query: searchQuery, eventId } });
         setSuggestions(response.data);
       } catch (error) {
-        console.error('Error fetching suggestions:', error);
+        console.error("Error fetching suggestions:", error);
         setSuggestions([]);
       } finally {
         setLoading(false);
@@ -261,7 +272,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
   }, [searchQuery]);
 
   const handleSubmit = () => {
-    const {capacity, cabin_category_spec_id, id: cabinCategoryId} = cabinCategory;
+    const { capacity, cabin_category_spec_id, id: cabinCategoryId } = cabinCategory;
 
     const payload = {
       cabin_number: cabinNumber,
@@ -303,35 +314,34 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     };
 
     if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
-      showSnackbar('Please fill all required fields!', 'error');
+      showSnackbar("Please fill all required fields!", "error");
       return;
     }
 
     setCreateLoader(true);
 
-    router.post(route('bookings.createManual', { id: 1 }), payload, {
-
+    router.post(route("bookings.createManual", { id: 1 }), payload, {
       onSuccess: () => {
-        showSnackbar('Booking created successfully!', 'success');
+        showSnackbar("Booking created successfully!", "success");
         setActiveStep(0);
         if (onBookingCreated) onBookingCreated();
         close();
       },
       onError: (errors) => {
-        console.error('Error creating booking:', errors);
+        console.error("Error creating booking:", errors);
 
         // Extract meaningful error messages
         const errorMessages = Object.values(errors)
           .flat()
           .filter((msg) => msg?.trim()); // Remove empty values
-        const errorMessage = errorMessages.length ? errorMessages[0] : '';
+        const errorMessage = errorMessages.length ? errorMessages[0] : "";
 
         // Conditionally add line breaks only if there's a meaningful error
         const message = errorMessage
           ? `Failed to create booking. Please try again.\n\n${errorMessage}`
-          : 'Failed to create booking. Please try again.';
+          : "Failed to create booking. Please try again.";
 
-        showSnackbar(message, 'error');
+        showSnackbar(message, "error");
       },
       onFinish: () => {
         setCreateLoader(false);
@@ -345,7 +355,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
     }
     try {
       setIsFetching(true);
-      const response = await axios.get(route('cabins.available'), {
+      const response = await axios.get(route("cabins.available"), {
         params: {
           type_id: cabinType?.id,
           category_id: cabinCategory?.id,
@@ -357,24 +367,21 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
       });
       setIsFetching(false);
       if (response?.data?.error) {
-        showSnackbar(response.data.error, 'error');
+        showSnackbar(response.data.error, "error");
       }
       if (response?.data?.cabins.length === 0) {
-        showSnackbar('Unavailable cabins for this category or filters', 'error');
+        showSnackbar("Unavailable cabins for this category or filters", "error");
       }
       const decks = Array.isArray(response?.data?.cabins)
-        ? [...new Set(response.data.cabins.map(cabin => cabin.deck))]
-          .map(Number)
-          .sort((a, b) => a - b)
+        ? [...new Set(response.data.cabins.map((cabin) => cabin.deck))].map(Number).sort((a, b) => a - b)
         : [];
-
 
       setCabinNumber(null);
       setAvailableCabins(response?.data?.cabins || []);
       setAvailableDecks(decks);
     } catch (error) {
-      showSnackbar(error.response.data.error, 'error');
-      console.error('Error fetching available cabins:', error);
+      showSnackbar(error.response.data.error, "error");
+      console.error("Error fetching available cabins:", error);
       setAvailableCabins([]);
       setIsFetching(false);
 
@@ -383,7 +390,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
   };
 
   return (
-    <Box sx={{ width: '100%', margin: '0 auto', mt: 4 }}>
+    <Box sx={{ width: "100%", margin: "0 auto", mt: 4 }}>
       <Stepper activeStep={activeStep}>
         {steps.map((label, index) => (
           <Step key={index}>
@@ -450,12 +457,12 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                     }}
                     disabled={loading}
                     sx={{
-                      color: advancedFilters ? 'error.main' : 'inherit',
-                      borderColor: advancedFilters ? 'error.main' : 'default',
+                      color: advancedFilters ? "error.main" : "inherit",
+                      borderColor: advancedFilters ? "error.main" : "default",
                     }}
                   >
                     {advancedFilters ? <ClearIcon /> : <FilterListIcon />}
-                    {advancedFilters ? 'Clear Filters' : 'Advanced Filters'}
+                    {advancedFilters ? "Clear Filters" : "Advanced Filters"}
                   </ToggleButton>
                 </FormControl>
               </Grid>
@@ -466,10 +473,12 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                       <Autocomplete
                         fullWidth
                         options={availableDecks}
-                        getOptionLabel={(option) => option ? `Deck ${option}` : ''}
+                        getOptionLabel={(option) => (option ? `Deck ${option}` : "")}
                         value={selectedDeck}
                         onChange={(event, newValue) => setSelectedDeck(newValue)}
-                        renderInput={(params) => <TextField {...params} label="Cabin Deck" disabled={!cabinType || !cabinCategory} />}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Cabin Deck" disabled={!cabinType || !cabinCategory} />
+                        )}
                         sx={{ mb: 2 }}
                         disabled={!cabinType || !cabinCategory}
                       />
@@ -498,14 +507,24 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   </Grid>
                   <Grid item xs={12} md={3}>
                     <FormControlLabel
-                      control={<Switch checked={onlyBalcony} onChange={(e) => setOnlyBalcony(e.target.checked)} disabled={!cabinType || !cabinCategory} />}
+                      control={
+                        <Switch
+                          checked={onlyBalcony}
+                          onChange={(e) => setOnlyBalcony(e.target.checked)}
+                          disabled={!cabinType || !cabinCategory}
+                        />
+                      }
                       label="Only Balcony"
                     />
                   </Grid>
                   <Grid item xs={12} md={3}>
                     <FormControlLabel
                       control={
-                        <Switch checked={onlyAccessible} onChange={(e) => setOnlyAccessible(e.target.checked)} disabled={!cabinType || !cabinCategory} />
+                        <Switch
+                          checked={onlyAccessible}
+                          onChange={(e) => setOnlyAccessible(e.target.checked)}
+                          disabled={!cabinType || !cabinCategory}
+                        />
                       }
                       label="Only Accessible"
                     />
@@ -567,7 +586,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
               </Grid>
 
               {/* Number of Installments */}
-              {paymentPlan?.value === 'INSTALLMENTS' && (
+              {paymentPlan?.value === "INSTALLMENTS" && (
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth>
                     <Autocomplete
@@ -598,7 +617,6 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs>
                   <Autocomplete
-                    size="small"
                     options={suggestions}
                     getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email})`}
                     loading={loading}
@@ -624,12 +642,10 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                     )}
                     renderOption={(props, option) => (
                       <li {...props}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <span>
-                            {`${option.first_name} ${option.last_name} (${option.email})`}
-                          </span>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <span>{`${option.first_name} ${option.last_name} (${option.email})`}</span>
                           {option.has_booking && (
-                            <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: '20px' }} />
+                            <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: "20px" }} />
                           )}
                         </div>
                       </li>
@@ -637,16 +653,26 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   />
                 </Grid>
                 <Grid item>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handlePrefill}
-                  >
+                  <Button variant="outlined" color="secondary" onClick={handlePrefill}>
                     PREFILL
                   </Button>
                 </Grid>
               </Grid>
             </Box>
+
+            {passenger?.id && (
+              <Alert
+                severity="warning"
+                sx={{ my: 2 }}
+                action={
+                  <Button color="inherit" size="small" target="_blank" href={`/customers/${passenger?.id}`}>
+                    Edit Customer
+                  </Button>
+                }
+              >
+                If you need to update any passenger information, please do so in the Customers admin panel.
+              </Alert>
+            )}
 
             <Grid container spacing={2}>
               {/* First Column */}
@@ -655,9 +681,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="First Name"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.first_name || ''}
-                  onChange={(e) => onChange('first_name', e.target.value)}
+                  value={passenger?.first_name || ""}
+                  onChange={(e) => onChange("first_name", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -666,9 +691,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Middle Name"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.middle_name || ''}
-                  onChange={(e) => onChange('middle_name', e.target.value)}
+                  value={passenger?.middle_name || ""}
+                  onChange={(e) => onChange("middle_name", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -677,9 +701,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Last Name"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.last_name || ''}
-                  onChange={(e) => onChange('last_name', e.target.value)}
+                  value={passenger?.last_name || ""}
+                  onChange={(e) => onChange("last_name", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -689,22 +712,22 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   variant="outlined"
                   fullWidth
                   type="date"
-                  size="small"
-                  value={passenger?.dob || ''}
-                  onChange={(e) => onChange('dob', e.target.value)}
+                  value={passenger?.dob || ""}
+                  onChange={(e) => onChange("dob", e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   disabled
                 />
               </Grid>
               <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth>
                   <InputLabel>Gender</InputLabel>
                   <Select
-                    value={passenger?.gender || ''}
-                    onChange={(e) => onChange('gender', e.target.value)}
+                    label="Gender"
+                    value={passenger?.gender || ""}
+                    onChange={(e) => onChange("gender", e.target.value)}
                     disabled
                   >
-                    {' '}
+                    {" "}
                     <MenuItem value=""></MenuItem>
                     <MenuItem value="M">Male</MenuItem>
                     <MenuItem value="F">Female</MenuItem>
@@ -716,10 +739,9 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   fullWidth
                   label="Citizenship"
                   variant="outlined"
-                  value={passenger?.citizenship || ''}
-                  size="small"
-                  name={'citizenship'}
-                  onChange={(e) => onChange('citizenship', e)}
+                  value={passenger?.citizenship || ""}
+                  name={"citizenship"}
+                  onChange={(e) => onChange("citizenship", e)}
                   disabled
                 />
               </Grid>
@@ -728,9 +750,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Survivor Number"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.survivor_number || ''}
-                  onChange={(e) => onChange('survivor_number', e.target.value)}
+                  value={passenger?.survivor_number || ""}
+                  onChange={(e) => onChange("survivor_number", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -739,18 +760,17 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Email"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.email || ''}
-                  onChange={(e) => onChange('email', e.target.value)}
+                  value={passenger?.email || ""}
+                  onChange={(e) => onChange("email", e.target.value)}
                   disabled
                 />
               </Grid>
               <Grid item xs={12} md={3}>
                 <PhoneNumber
-                  value={passenger?.phone || ''}
+                  value={passenger?.phone || ""}
                   forceDialCode={true}
-                  name={'phone'}
-                  onChange={(e) => onChange('phone', e)}
+                  name={"phone"}
+                  onChange={(e) => onChange("phone", e)}
                   disabled
                 />
               </Grid>
@@ -759,9 +779,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Address Line 1"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.address_first || ''}
-                  onChange={(e) => onChange('address_first', e.target.value)}
+                  value={passenger?.address_first || ""}
+                  onChange={(e) => onChange("address_first", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -770,9 +789,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Address Line 2"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.address_second || ''}
-                  onChange={(e) => onChange('address_second', e.target.value)}
+                  value={passenger?.address_second || ""}
+                  onChange={(e) => onChange("address_second", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -781,9 +799,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="City"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.city || ''}
-                  onChange={(e) => onChange('city', e.target.value)}
+                  value={passenger?.city || ""}
+                  onChange={(e) => onChange("city", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -792,9 +809,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="State"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.state || ''}
-                  onChange={(e) => onChange('state', e.target.value)}
+                  value={passenger?.state || ""}
+                  onChange={(e) => onChange("state", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -803,9 +819,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   label="Postal Code"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.postal_code || ''}
-                  onChange={(e) => onChange('postal_code', e.target.value)}
+                  value={passenger?.postal_code || ""}
+                  onChange={(e) => onChange("postal_code", e.target.value)}
                   disabled
                 />
               </Grid>
@@ -814,47 +829,48 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                   fullWidth
                   label="Country"
                   variant="outlined"
-                  value={passenger?.country || ''}
-                  size="small"
-                  name={'country'}
-                  onChange={(e) => onChange('country', e)}
+                  value={passenger?.country || ""}
+                  name={"country"}
+                  onChange={(e) => onChange("country", e)}
                   disabled
                 />
               </Grid>
-              <Grid item xs={12} md={3}>
+            </Grid>
+
+            <Typography variant="h6" sx={{ my: 2 }}>
+              Booking Related Information
+            </Typography>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   label="Emergency Contact Name"
                   variant="outlined"
                   fullWidth
-                  size="small"
-                  value={passenger?.emergency_c_name || ''}
-                  onChange={(e) => onChange('emergency_c_name', e.target.value)}
-                  disabled
+                  value={passenger?.emergency_c_name || ""}
+                  onChange={(e) => onChange("emergency_c_name", e.target.value)}
                 />
               </Grid>
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={6}>
                 <PhoneNumber
                   label="Emergency Contact Phone"
-                  value={passenger?.emergency_c_phone || ''}
+                  value={passenger?.emergency_c_phone || ""}
                   forceDialCode={true}
-                  name={'emergency_c_phone'}
-                  onChange={(e) => onChange('emergency_c_phone', e)}
-                  disabled
+                  name={"emergency_c_phone"}
+                  onChange={(e) => onChange("emergency_c_phone", e)}
                 />
               </Grid>
               <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth>
                   <InputLabel>Payment Method</InputLabel>
                   <Select
-                    value={paymentPlan?.id === 'INSTALLMENTS' ? 'CREDIT_CARD' : passenger?.payment_method || ''}
-                    onChange={(e) => onChange('payment_method', e.target.value)}
+                    label="Payment Method"
+                    value={paymentPlan?.id === "INSTALLMENTS" ? "CREDIT_CARD" : passenger?.payment_method || ""}
+                    onChange={(e) => onChange("payment_method", e.target.value)}
                   >
                     <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
-                    {paymentPlan?.id !== 'INSTALLMENTS' && (<MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>)}
+                    {paymentPlan?.id !== "INSTALLMENTS" && <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>}
                   </Select>
-                  {/* {validation?.payment_method?.[0] && (
-                                            <FormHelperText>{validation.payment_method[0]}</FormHelperText>
-                                        )} */ }
                 </FormControl>
               </Grid>
               <Grid item xs={12} md={2}>
@@ -863,7 +879,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                     <Checkbox
                       size="small"
                       checked={passenger?.newsletter || false}
-                      onChange={(e) => onChange('newsletter', e.target.checked)}
+                      onChange={(e) => onChange("newsletter", e.target.checked)}
                     />
                   }
                   label="Newsletter"
@@ -875,7 +891,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                     <Checkbox
                       size="small"
                       checked={passenger?.travel_info || false}
-                      onChange={(e) => onChange('travel_info', e.target.checked)}
+                      onChange={(e) => onChange("travel_info", e.target.checked)}
                     />
                   }
                   label="Travel Info"
@@ -884,15 +900,7 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
               {isSingleRoom && (
                 <Grid item xs={12} md={2}>
                   <Tooltip title="Single Ticket Agreement">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          size="small"
-                          checked={true}
-                        />
-                      }
-                      label="STA"
-                    />
+                    <FormControlLabel control={<Checkbox size="small" checked={true} />} label="STA" />
                   </Tooltip>
                 </Grid>
               )}
@@ -909,8 +917,8 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
                 multiline
                 rows={3}
                 size="small"
-                value={passenger?.special_request || ''}
-                onChange={(e) => onChange('special_request', e.target.value)}
+                value={passenger?.special_request || ""}
+                onChange={(e) => onChange("special_request", e.target.value)}
               />
             </Grid>
           </Box>
@@ -1072,13 +1080,18 @@ const BookingStepper: React.FC = ({ cabinTypes, cabinCategories, close, setIsCre
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
           <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">
             Back
           </Button>
           {activeStep === steps.length - 1 ? (
-            <LoadingButton onClick={handleSubmit} variant="outlined" color="success" loading={createLoader}
-            loadingPosition="start">
+            <LoadingButton
+              onClick={handleSubmit}
+              variant="outlined"
+              color="success"
+              loading={createLoader}
+              loadingPosition="start"
+            >
               Create Booking
             </LoadingButton>
           ) : (

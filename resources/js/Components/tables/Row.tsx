@@ -275,7 +275,7 @@ function Row<TRow, TSub = unknown>(props: RowProps<TRow, TSub>) {
                       style={{ marginRight: 8 }}
                       disabled={selectedTags.length === 0}
                     >
-                      Edit Tags ({selectedSubRows.length})
+                      Update Tags ({selectedSubRows.length})
                     </Button>
                     <FormControl variant="outlined" size="small" style={{ minWidth: 200, marginRight: 8 }}>
                       <InputLabel>Status</InputLabel>
