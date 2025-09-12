@@ -319,7 +319,6 @@ Route::resource('/tags', TagsController::class)
 
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
-
 Route::prefix('oauth')->group(function () {
     // Login/Logout
     Route::get('/login', [PublicAuthController::class, 'index'])->name('oauth.login');
@@ -329,41 +328,13 @@ Route::prefix('oauth')->group(function () {
     // this is for SPA context
     Route::get('/logout', [PublicAuthController::class, 'logoutSPA']);
 
-    // Registration
-    Route::get('/register', [PublicAuthController::class, 'showRegistrationForm'])->name('oauth.register.form');
-    Route::post('/register', [PublicAuthController::class, 'register'])->name('oauth.register');
-
-    // Password Reset
-    // Route::get('/forgot-password', [PublicPasswordResetController::class, 'showLinkRequestForm'])->name('oauth.password.forgot.form');
-    // Route::post('/forgot-password', [PublicPasswordResetController::class, 'sendResetLink'])->name('oauth.password.forgot');
-    // Route::get('/reset-password/{token}', [PublicPasswordResetController::class, 'showResetForm'])->name('oauth.password.reset.form');
-    // Route::post('/reset-password', [PublicPasswordResetController::class, 'reset'])->name('oauth.password.reset');
-
     // Email Verification
     Route::get('/verify-email', [VerifyEmailController::class, 'index'])->name('oauth.email.verify.notice')->middleware('custom.auth.redirect');
     Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])->name('oauth.email.verify.resend');
     Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed')->name('oauth.email.verify.link');
-
-    // Account Recovery
-    // Route::get('/recover-account', [PublicAccountRecoveryController::class, 'showForm'])->name('oauth.recover.form');
-    // Route::post('/recover-account', [PublicAccountRecoveryController::class, 'submit'])->name('oauth.recover');
 });
 
-
-Route::post('/token', [
-    'uses' => 'AccessTokenController@issueToken',
-    'as' => 'token',
-    'middleware' => 'throttle',
-]);
-
-Route::get('/authorize', [
-    'uses' => 'AuthorizationController@authorize',
-    'as' => 'authorizations.authorize',
-    'middleware' => 'web',
-]);
-
 $guard = config('passport.guard', null);
-
 // END --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 
 require __DIR__ . '/auth.php';
