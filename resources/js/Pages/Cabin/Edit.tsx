@@ -731,7 +731,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }:
         sortable: true,
         draw: (row: Cabin) => (
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="body2">{row.cabin_category.title}</Typography>
+            <Typography variant="body2">{row.category.title}</Typography>
           </Box>
         ),
       },
