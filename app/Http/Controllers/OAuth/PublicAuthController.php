@@ -30,21 +30,11 @@ class PublicAuthController extends Controller
     */
     public function index(Request $request)
     {
-        $frontURL = config('app.frontend_url');
         // Set locale from query as early as possible for both views
         $language = $request->query('language');
         if (in_array($language, ['en', 'de', 'es'])) {
             App::setLocale($language);
         }
-
-        // \Log::info('check', [
-        //     'check' => Auth::check(),
-        //     'id' => optional(Auth::user())->id,
-        //     'roles' => optional(Auth::user())->getRoleNames(),
-        //     'verified' => optional(Auth::user())->hasVerifiedEmail(),
-        //     'query' => $request->query()
-        // ]);
-
 
         if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
             return Inertia::render('OAuth/EmailVerify', [
@@ -58,19 +48,6 @@ class PublicAuthController extends Controller
                 ] : null,
             ]);
         }
-
-        // check if user is already authenticated
-        // if (Auth::check() && Auth::user()->hasRole('Customer') && Auth::user()->hasVerifiedEmail()) {
-        //     // If authenticated, redirect to the frontend
-        //     return redirect($frontURL);
-        // }
-
-
-        // TEMPORARY DISABLED - we allow access to login page even if no params provided
-
-        // if (! $request->has(['client_id', 'code_challenge', 'code_challenge_method'])) {
-        //     return redirect($frontURL);
-        // }
 
         // Return the login view with translations for the page
         return Inertia::render('OAuth/Login', [
@@ -146,7 +123,7 @@ class PublicAuthController extends Controller
         // Step 5: Check email verification
         if (!Auth::user()->hasVerifiedEmail()) {
             return response()->json([
-                'redirect' => '/oauth/verify-email',
+                'redirect' => '/oauth/verify-email?language=' . $language,
                 'message' => __('auth.email_not_verified'),
             ]);
         }
@@ -201,6 +178,9 @@ class PublicAuthController extends Controller
     */
     public function logoutSPA()
     {
+        // Get param langauge from url
+        $language = request()->query('language', 'en');
+
         // Handle the OAuth logout logic here
         Auth::guard('web')->logout();
 
@@ -208,7 +188,7 @@ class PublicAuthController extends Controller
         session()->invalidate();
         session()->regenerateToken();
 
-        $frontURL = config('app.frontend_url');
+        $frontURL = config('app.frontend_url') . '/' . $language;
 
         // Redirect to the frontend
         return redirect($frontURL)->with('message', __('auth.logout_successful'));

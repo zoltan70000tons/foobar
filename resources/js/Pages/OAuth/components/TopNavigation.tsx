@@ -19,15 +19,14 @@ import SignInDialog from "./SignInDialog";
 const EXTERNAL_URL = "https://70000tons.com";
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
-const MenuItems = React.memo(() => {
+const TopNavigation = React.memo(({ language }: { language: string }) => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(
     `(max-width:${theme.breakpoints.values.md}px)`
   );
 
-
- const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   return (
     <Stack
@@ -89,7 +88,7 @@ const MenuItems = React.memo(() => {
           width: "100%",
         }}
       >
-        <MenuElements />
+        <MenuElements language={language} />
         <Box
           sx={{
             display: "flex",
@@ -98,7 +97,9 @@ const MenuItems = React.memo(() => {
             gap: 1
           }}
         >
-          <SignInDialog />
+          <SignInDialog
+            isFull={false} 
+          />
           <LangSwitcher />
         </Box>
       </Box>
@@ -141,7 +142,7 @@ const MenuItems = React.memo(() => {
             padding: "10px",
           }}
         >
-          <MenuElements />
+          <MenuElements language={language} />
         </DialogContent>
         <DialogActions
           sx={{
@@ -158,47 +159,47 @@ const MenuItems = React.memo(() => {
   );
 });
 
-MenuItems.displayName = "MenuItems";
+TopNavigation.displayName = "TopNavigation";
 
-export default MenuItems;
+export default TopNavigation;
 
+const MenuElements = ({ language }: { language: string }) => {
 
-const MenuElements = () => {
   const menu =  [
     {
       id: 2,
       name: 'Booking',
-      href: FRONTEND_URL,
+      href: FRONTEND_URL + "/" + language,
       external: false,
     },
     {
       id: 3,
       name: 'Artists',
-      href: EXTERNAL_URL + "/artists/?lang=" + 'en',
+      href: EXTERNAL_URL + "/artists/?lang=" + language,
       external: true,
     },
     {
       id: 5,
       name: 'Event',
-      href: EXTERNAL_URL + "/voyage?lang=" + 'en',
+      href: EXTERNAL_URL + "/voyage?lang=" + language,
       external: true,
     },
     {
       id: 6,
       name: 'FAQ',
-      href: EXTERNAL_URL + "/faq?lang=" + 'en',
+      href: EXTERNAL_URL + "/faq?lang=" + language,
       external: true,
     },
     {
       id: 8,
       name: 'Check Booking',
-      href: FRONTEND_URL + "/check-booking",
+      href: FRONTEND_URL + "/check-booking" + language,
       external: false,
     },
     {
       id: 9,
       name: 'Make Payment',
-      href: FRONTEND_URL + "/make-a-payment",
+      href: FRONTEND_URL + "/make-a-payment" + language,
       external: false,
     },
   ];

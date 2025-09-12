@@ -6,15 +6,14 @@ import { usePage } from '@inertiajs/react';
 //import { useTranslations } from "next-intl";
 
 type SignInDialogProps = {
-  isFull?: boolean;
-  tAuth: any;
-  language: 'en' | 'de' | 'es' | string;
+  tAuth: {
+    signIn: string;
+  }
 };
 
-export default function SignInDialog({ isFull }: SignInDialogProps) {
+export default function SignInDialog({ isFull }: { isFull: boolean }) {
 
   const { tAuth } = usePage<SignInDialogProps>().props;
-
 
   return (
     <Button 

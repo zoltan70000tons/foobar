@@ -114,18 +114,19 @@ class VerifyEmailController extends Controller
     public function verify(Request $request, $id, $hash)
     {
         $user = User::findOrFail($id);
+        $language = request()->query('language', 'en');
 
         if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return redirect()->to(config('app.frontend_url') . '/en/login?verified=0');
+            return redirect()->to(config('app.frontend_url') . '/' . $language . '/login?verified=0');
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
+            return redirect()->to(config('app.frontend_url') . '/' . $language . '/login?verified=1');
         }
 
         $user->markEmailAsVerified();
 
-        return redirect()->to(config('app.frontend_url') . '/en/login?verified=1');
+        return redirect()->to(config('app.frontend_url') . '/' . $language . '/login?verified=1');
     }
    
 }

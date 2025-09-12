@@ -13,44 +13,49 @@ interface Props {
 const defaultTheme = themeClient;
 
 const OAuthLayout: React.FC<Props> = ({ children }) => {
+
+  // get language param from url
+  const urlParams = new URLSearchParams(window.location.search);
+  const language = urlParams.get("language") || "en";
+
   return (
-      <ThemeProvider theme={defaultTheme}>
-        <CssBaseline />
-        <AppBar
-          position="static"
+    <ThemeProvider theme={defaultTheme}>
+      <CssBaseline />
+      <AppBar
+        position="static"
+        sx={{
+          position: "relative",
+          zIndex: 1001,
+        }}
+      >
+        <Toolbar
           sx={{
-            position: "relative",
-            zIndex: 1001,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            zIndex: 1002,
           }}
         >
-          <Toolbar
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              zIndex: 1002,
-            }}
-          >
-            <Stack direction="row" spacing={5} alignItems="center" sx={{ width: '100%', justifyContent: 'space-between' }}>
-              <Logo />
-              <TopNavigation />
-            </Stack>
-          </Toolbar>
-        </AppBar>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            backgroundColor: '#121212',
-          }}
-        >
-          {children}
-        </Box>
-        <Footer />
-      </ThemeProvider>
+          <Stack direction="row" spacing={5} alignItems="center" sx={{ width: '100%', justifyContent: 'space-between' }}>
+            <Logo language={language} />
+            <TopNavigation language={language} />
+          </Stack>
+        </Toolbar>
+      </AppBar>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#121212',
+        }}
+      >
+        {children}
+      </Box>
+      <Footer />
+    </ThemeProvider>
   );
 };
 

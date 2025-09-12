@@ -1,10 +1,10 @@
-export default function Logo() {
+export default function Logo({ language }: { language: string }) {
 
   const frontURL = import.meta.env.VITE_FRONTEND_URL;
 
   return (
     <a
-      href={frontURL}
+      href={frontURL + "/" + language}
       style={{
         paddingTop: "5px",
       }}
