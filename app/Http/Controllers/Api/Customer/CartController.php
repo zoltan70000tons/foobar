@@ -228,7 +228,7 @@ class CartController extends Controller
       'addons' => 'nullable|array',
       'step' => 'required|integer',
       'payment_plan' => 'nullable|string',
-      'number_of_installments' => 'nullable|string',
+      'number_of_installments' => 'nullable|integer',
       'choose_your_cabin' => 'nullable|boolean',
       'cabin_conf_accp' => 'nullable|boolean',
       'cabin_number' => 'nullable|integer',
