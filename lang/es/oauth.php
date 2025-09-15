@@ -145,4 +145,66 @@ return [
             'email_verified' => "¡Tu correo electrónico se ha verificado!",
         ],
     ],
+    "Navigation" => [
+        "home" => "Inicio",
+        "login" => "Login",
+        "signIn" => "Iniciar Sesión",
+        "register" => "Registrarse",
+        "reset_password" => "Resetear Password",
+        "verify_email" => "Verificar eMail",
+        "profile" => "Perfil",
+        "settings" => "Configuración",
+        "logout" => "Cerrar Sesión",
+        "my_account" => "Mi Cuenta",
+        "edit_profile" => "Editar Perfil",
+        "back" => "Atrás",
+        "no_bookings" => "No se encontraron reservas",
+        "my_bookings" => "Mis Reservas",
+        "welcome" => "Hola"
+    ],
+    "Menu" => [
+        "home" => "Página Principal",
+        "booking" => "Reserva",
+        "artist" => "Artistas",
+        "ship" => "El Barco",
+        "event" => "El Evento",
+        "faq" => "Preguntas Frecuentes",
+        "more" => "Más",
+        "check_booking" => "Ver Reserva",
+        "make_payment" => "Realizar un Pago"
+    ],
+    "Footer" => [
+        "slogan" => "¡FORMA PARTE DE NUESTRA FAMILIA INTERNACIONAL METALERA!",
+        "forum" => "Foro Oficial",
+        "newsletter" => "Boletín Informativo",
+        "newsletter_subscribe" => "Suscríbete a nuestro boletín informativo",
+        "newsletter_thanks" => "¡Gracias por suscribirte a nuestro boletín informativo!",
+        "Event" => [
+        "event" => "EL EVENTO",
+        "artist" => "Artistas",
+        "destination" => "Nuestro Destino",
+        "miami" => "Miami",
+        "ship" => "El Barco",
+        "arrival" => "Llegada & Salida"
+        ],
+        "Support" => [
+        "support" => "SOPORTE",
+        "make_payment" => "Realizar un Pago",
+        "faq" => "Preguntas frecuentes",
+        "payment_schedule" => "Calendario de Pagos",
+        "travel_partners" => "Socios de Viaje"
+        ],
+        "Legal" => [
+        "legal" => "LEGAL",
+        "terms_cons" => "Términos y Condiciones",
+        "age_require" => "Requerimientos de Edad",
+        "privacy_pol" => "Política de Privacidad"
+        ],
+        "Contact" => [
+        "contact" => "CONTÁCTANOS",
+        "mail" => "info@70000tons.com",
+        "toll_free" => "Línea Gratuita en Norteamérica: 1-888-70K TONS (1-888-705-8667)",
+        "other_areas" => "Todas las demás áreas: +1 305 777 4878"
+        ]
+    ],
 ];

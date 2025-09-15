@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Event;
+use Illuminate\Support\Facades\Lang;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -51,6 +52,11 @@ class HandleInertiaRequests extends Middleware
       ],
       'menu' => [
         'events' => fn() => $request->user() ? $events : [],
+      ],
+      'oauthTranslations' => fn() => [
+        'Navigation' => Lang::get('oauth.Navigation'),
+        'Menu' => Lang::get('oauth.Menu'),
+        'Footer' => Lang::get('oauth.Footer'),
       ],
     ];
   }

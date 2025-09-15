@@ -1,5 +1,4 @@
 import {
-  Grid,
   Stack,
   Typography,
   Box,
@@ -20,75 +19,81 @@ import {
 } from "@mui/icons-material";
 import Copyright from "./Copyright";
 import CustomLink from "./CustomLink";
-import NewsletterContainer from "./NewsletterContainer";
+import { usePage } from "@inertiajs/react";
+import { OAuthTranslations } from "../../../types/inertia";
+import Grid from '@mui/material/Unstable_Grid2';
 
-export default function Footer() {
+export default function Footer({ language }: { language: string }) {
 
+  const locale = language || "en";
+  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
-  const locale = "en";
-
+  const { oauthTranslations } = usePage().props as { oauthTranslations?: OAuthTranslations };
+  const tFooter = oauthTranslations?.Footer;
 
   const sections = [
     {
-      title: "Event",
+      title: tFooter?.Event?.event || "Event",
       links: [
-        { href: `https://70000tons.com/artists/?lang=${locale}`, text: "Artists" },
+        { href: `https://70000tons.com/artists/?lang=${locale}`, 
+          text: tFooter?.Event?.artists || "Artists" },
         {
           href: `https://70000tons.com/voyage/our-destination/?lang=${locale}`,
-          text: "Destination",
+          text: tFooter?.Event?.destination || "Destination",
         },
         {
           href: `https://70000tons.com/voyage/miami-ft-lauderdale/?lang=${locale}`,
-          text: "Miami",
+          text: tFooter?.Event?.miami || "Miami",
         },
-        { href: `https://70000tons.com/ship-facts/?lang=${locale}`, text: "Ship" },
+        { href: `https://70000tons.com/ship-facts/?lang=${locale}`, text: tFooter?.Event?.ship || "Ship" },
         {
           href: `https://70000tons.com/voyage/arrival-departure/?lang=${locale}`,
-          text: "Arrival",
+          text: tFooter?.Event?.arrival || "Arrival",
         },
       ],
     },
     {
-      title: "Support",
+      title: tFooter?.Support?.support || "Support",
       links: [
         {
           href: `https://70000tons.com/make-a-payment/?lang=${locale}`,
-          text: "Make a Payment",
+          text: tFooter?.Support?.make_payment || "Make a Payment",
         },
-        { href: `https://70000tons.com/faq/?lang=${locale}`, text: "FAQ" },
+        { href: `https://70000tons.com/faq/?lang=${locale}`, 
+          text: tFooter?.Support?.faq || "FAQ" },
         {
           href: `https://70000tons.com/payment-schedule/?lang=${locale}`,
-          text: "Payment Schedule",
+          text: tFooter?.Support?.payment_schedule || "Payment Schedule",
         },
         {
           href: `https://70000tons.com/travel-partners/?lang=${locale}`,
-          text: "Travel Partners",
+          text: tFooter?.Support?.travel_partners || "Travel Partners",
         },
       ],
     },
     {
-      title: "Legal",
+      title: tFooter?.Legal?.legal || "Legal",
       links: [
         {
           href: `https://70000tons.com/terms-conditions/?lang=${locale}`,
-          text: "Terms and Conditions",
+          text: tFooter?.Legal?.terms_cons || "Terms and Conditions",
         },
         {
           href: `https://70000tons.com/age-requirements/?lang=${locale}`,
-          text: "Age Requirements",
+          text: tFooter?.Legal?.age_require || "Age Requirements",
         },
         {
           href: `https://70000tons.com/contact-us/privacy-policy/?lang=${locale}`,
-          text: "Privacy Policy",
+          text: tFooter?.Legal?.privacy_pol || "Privacy Policy",
         },
       ],
     },
     {
-      title: "Contact",
+      title: tFooter?.Contact?.contact || "Contact",
       content: [
         { text: "--" },
-        { text: "Toll Free" },
-        { text: "Other Areas" },
+        { text: tFooter?.Contact?.toll_free || "Toll Free" },
+        { text: tFooter?.Contact?.other_areas || "Other Areas" },
       ],
     },
   ];
@@ -263,7 +268,7 @@ export default function Footer() {
               },
             }}
           >
-            BECOME PART OF OUR INTERNATIONAL HEAVY METAL FAMILY!
+            {tFooter?.slogan}
           </Typography>
           <Stack
             direction="row"
@@ -274,7 +279,6 @@ export default function Footer() {
               justifyContent: "center",
             }}
           >
-            {/* <NewsletterContainer /> */}
             <Button
               href="https://70000tons.com/forum/"
               type="button"
@@ -282,9 +286,17 @@ export default function Footer() {
               color="secondary"
               sx={{ fontSize: {xs: "0.75em", sm: "1em", textAlign: "center"} }}
             >
-              Forum
+              {tFooter?.forum || "Official Forum"}
             </Button>
-            <NewsletterContainer />
+            <Button 
+              href={`${FRONTEND_URL}/${locale}/?newsletter=true`}       
+              type="button"
+              variant="modern"
+              color="secondary"
+              sx={{ fontSize: {xs: "0.75em", sm: "1em", textAlign: "center"} }}
+            >
+             {tFooter?.newsletter || "Newsletter"}
+            </Button>
           </Stack>
         </Box>
         <Divider
@@ -300,9 +312,14 @@ export default function Footer() {
             mx: "auto",
           }}
         >
-          <Grid container justifyContent="space-between" spacing={2}>
+          <Grid 
+            container 
+            justifyContent="space-between"
+            alignItems={"flex-start"}
+            spacing={2}
+          >
             {sections.map((section, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
+              <Grid xs={12} sm={6} md={3} key={index}>
                 <Accordion 
                     sx={{ 
                       display: { xs: "block", md: "none" },

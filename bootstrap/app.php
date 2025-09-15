@@ -34,6 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
     $middleware->web(
       append: [
+        // Ensure locale is set before Inertia shares translations
+        \App\Http\Middleware\SetLocaleFromRequest::class,
         // authenticateSessions
         \App\Http\Middleware\TeamContext::class,
         \App\Http\Middleware\HandleInertiaRequests::class,
