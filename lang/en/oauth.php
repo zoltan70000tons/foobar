@@ -145,4 +145,66 @@ return [
             'email_verified' => "Your eMail has been verified!",
         ],
     ],
+    "Navigation" => [
+        "home" => "Home",
+        "login" => "Login",
+        "signIn" => "Sign in",
+        "register" => "Register",
+        "reset_password" => "Reset password",
+        "verify_email" => "Verify eMail",
+        "profile" => "Profile",
+        "settings" => "Settings",
+        "logout" => "Sign Out",
+        "my_account" => "My Account",
+        "edit_profile" => "Edit Profile",
+        "back" => "Back",
+        "no_bookings" => "No bookings found",
+        "my_bookings" => "My Bookings",
+        "welcome" => "Welcome"
+    ],
+    "Menu" => [
+        "home" => "Home",
+        "booking" => "Booking",
+        "artist" => "Artists",
+        "ship" => "The ship",
+        "event" => "The Event",
+        "faq" => "Faq",
+        "more" => "More",
+        "check_booking" => "Review Booking",
+        "make_payment" => "Make a Payment"
+    ],
+    "Footer" => [
+        "slogan" => "BECOME PART OF OUR INTERNATIONAL HEAVY METAL FAMILY!",
+        "forum" => "Official Forum",
+        "newsletter" => "Newsletter",
+        "newsletter_subscribe" => "Subscribe to our newsletter",
+        "newsletter_thanks" => "Thank you for subscribing to our newsletter!",
+        "Event" => [
+            "event" => "THE EVENT",
+            "artist" => "Artists",
+            "destination" => "Our Destination",
+            "miami" => "Miami",
+            "ship" => "The Ship",
+            "arrival" => "Arrival & Departure"
+        ],
+        "Support" => [
+            "support" => "SUPPORT",
+            "make_payment" => "Make a Payment",
+            "faq" => "FAQ",
+            "payment_schedule" => "Payment Schedules",
+            "travel_partners" => "Travel Partners"
+        ],
+        "Legal" => [
+            "legal" => "LEGAL",
+            "terms_cons" => "Terms and Conditions",
+            "age_require" => "Age Requirements",
+            "privacy_pol" => "Privacy Policy"
+        ],
+        "Contact" => [
+            "contact" => "CONTACT US",
+            "mail" => "info@70000tons.com",
+            "toll_free" => "North America Toll-Free: 1-888-70K TONS (1-888-705-8667)",
+            "other_areas" => "All other areas: +1 305 777 4878"
+        ]
+    ],
 ];

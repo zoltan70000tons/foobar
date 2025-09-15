@@ -145,4 +145,66 @@ return [
             'email_verified' => "Deine eMailadresse wurde bestätigt!",
         ],
     ],
+    "Navigation" => [
+        "home" => "Start",
+        "login" => "Log-In",
+        "signIn" => "Anmelden",
+        "register" => "Registrieren",
+        "reset_password" => "Passwort zurücksetzen",
+        "verify_email" => "eMailadresse bestätigen",
+        "profile" => "Profil",
+        "settings" => "Einstellungen",
+        "logout" => "Abmelden",
+        "my_account" => "Mein Benutzerkonto",
+        "edit_profile" => "Benutzerkonto bearbeiten",
+        "back" => "Zurück",
+        "no_bookings" => "Keine Buchungen gefunden",
+        "my_bookings" => "Meine Buchungen",
+        "welcome" => "Willkommen"
+    ],
+    "Menu" => [
+        "home" => "Startseite",
+        "booking" => "Buchung",
+        "artist" => "BANDS",
+        "ship" => "Das Schiff",
+        "event" => "Das Event",
+        "faq" => "FAQ",
+        "more" => "Mehr",
+        "check_booking" => "Buchung prüfen",
+        "make_payment" => "Bezahlen"
+    ],
+    "Footer" => [
+        "slogan" => "WERDE TEIL UNSERER INTERNATIONALEN HEAVY-METAL-FAMILIE!",
+        "forum" => "Offizielles Forum",
+        "newsletter" => "Newsletter",
+        "newsletter_subscribe" => "Abonniere unseren Newsletter",
+        "newsletter_thanks" => "Danke, dass Du unseren Newsletter abonniert hast!",
+        "Event" => [
+        "event" => "DAS EVENT",
+        "artist" => "Künstler",
+        "destination" => "Unser Ziel",
+        "miami" => "Miami",
+        "ship" => "Das Schiff",
+        "arrival" => "Ankunft und Abreise"
+        ],
+        "Support" => [
+        "support" => "SUPPORT",
+        "make_payment" => "Eine Zahlung machen",
+        "faq" => "Fragen und Antworten",
+        "payment_schedule" => "Zeitplan für Ratenzahlung",
+        "travel_partners" => "Reisepartner"
+        ],
+        "Legal" => [
+        "legal" => "RECHTLICHES",
+        "terms_cons" => "Vertragsbedingungen und Konditionen",
+        "age_require" => "Altersvoraussetzungen",
+        "privacy_pol" => "Datenschutzrichtlinie"
+        ],
+        "Contact" => [
+        "contact" => "KONTAKTIERE UNS ",
+        "mail" => "info@70000tons.com",
+        "toll_free" => "Nordamerika gebührenfrei: 1-888-70K TONS (1-888-705-8667)",
+        "other_areas" => "Alle anderen Regionen: +1 305 777 4878"
+        ]
+    ],
 ];

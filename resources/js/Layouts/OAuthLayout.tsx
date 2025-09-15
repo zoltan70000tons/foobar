@@ -54,7 +54,7 @@ const OAuthLayout: React.FC<Props> = ({ children }) => {
       >
         {children}
       </Box>
-      <Footer />
+      <Footer language={language}/>
     </ThemeProvider>
   );
 };

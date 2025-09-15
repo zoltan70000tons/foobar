@@ -13,8 +13,10 @@ import {
   DialogContent, 
   DialogActions
 } from "@mui/material";
+import { usePage } from "@inertiajs/react";
 import LangSwitcher from "./LangSwitcher";
 import SignInDialog from "./SignInDialog";
+import { OAuthTranslations } from "../../../types/inertia";
 
 const EXTERNAL_URL = "https://70000tons.com";
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
@@ -165,40 +167,43 @@ export default TopNavigation;
 
 const MenuElements = ({ language }: { language: string }) => {
 
+  const { oauthTranslations } = usePage().props as { oauthTranslations?: OAuthTranslations };
+  const tMenu = oauthTranslations?.Menu;
+
   const menu =  [
     {
       id: 2,
-      name: 'Booking',
+      name: tMenu?.home || 'Home',
       href: FRONTEND_URL + "/" + language,
       external: false,
     },
     {
       id: 3,
-      name: 'Artists',
+      name: tMenu?.artist || 'Artists',
       href: EXTERNAL_URL + "/artists/?lang=" + language,
       external: true,
     },
     {
       id: 5,
-      name: 'Event',
+      name: tMenu?.event || 'Event',
       href: EXTERNAL_URL + "/voyage?lang=" + language,
       external: true,
     },
     {
       id: 6,
-      name: 'FAQ',
+      name: tMenu?.faq || 'FAQ',
       href: EXTERNAL_URL + "/faq?lang=" + language,
       external: true,
     },
     {
       id: 8,
-      name: 'Check Booking',
+      name: tMenu?.check_booking || 'Check Booking',
       href: FRONTEND_URL + "/check-booking" + language,
       external: false,
     },
     {
       id: 9,
-      name: 'Make Payment',
+      name: tMenu?.make_payment || 'Make Payment',
       href: FRONTEND_URL + "/make-a-payment" + language,
       external: false,
     },
