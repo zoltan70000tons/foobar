@@ -5,6 +5,8 @@ use App\Models\Booking;
 use App\Models\Cart;
 use App\Services\ReservationService;
 use App;
+use App\Enums\ErrorCode;
+use Illuminate\Support\Str;
 
 
 use Closure;
@@ -45,8 +47,9 @@ class OneBookingPerUser
 
         return response()->json(
           [
-            'message' => __('bookings.already_has_booking'),
-            'code' => 'BOOKING_LIMIT_EXCEEDED',
+            'errorLogId' => Str::uuid(),
+            'errorMessage' => __('bookings.already_has_booking'),
+            'errorCode' => ErrorCode::BOOKING_LIMIT_EXCEEDED->value,
           ],
           403
         );
