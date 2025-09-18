@@ -27,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
+    // if local or stage development, allow password grant client to issue tokens
+    if (in_array($this->app->environment(), ['local'])) {
+      Passport::enablePasswordGrant();
+    }
 
     Passport::useClientModel(Client::class);
     Passport::authorizationView('auth.oauth.authorize');
@@ -39,11 +43,10 @@ class AppServiceProvider extends ServiceProvider
     });
 
     Relation::morphMap([
-    'booking'   => Booking::class,
-    'cabin'     => Cabin::class,
-   // 'user'      => User::class,
-    'customer'  => Customer::class,
-]);
-
+      'booking'   => Booking::class,
+      'cabin'     => Cabin::class,
+      // 'user'      => User::class,
+      'customer'  => Customer::class,
+      ]);
   }
 }

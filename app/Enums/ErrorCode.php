@@ -11,4 +11,5 @@ enum ErrorCode: string {
     case DOB_REQUIRED = 'DOB_REQUIRED';
     case CABIN_TYPE_NOT_ALLOWED = 'CABIN_TYPE_NOT_ALLOWED';
     case UNKNOWN_ERROR = 'UNKNOWN_ERROR';
+    case CART_EMPTY = 'CART_EMPTY';
 }

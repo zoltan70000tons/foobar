@@ -15,7 +15,15 @@ return Application::configure(basePath: dirname(__DIR__))
   )
   ->withMiddleware(function (Middleware $middleware) {
     // $middleware->statefulApi();
-     $middleware->authenticateSessions();
+    $middleware->redirectGuestsTo(function ($request) {
+      if ($request->is('oauth/*')) {
+          return '/oauth/login';
+      }
+
+      return '/login'; 
+    }); 
+    
+    $middleware->authenticateSessions();
     $middleware->encryptCookies(except: ['email_verified']);
 
     $middleware->alias([
