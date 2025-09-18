@@ -12,9 +12,25 @@ import { Visibility } from '@mui/icons-material';
 import axios from 'axios';
 import { Customer } from '@/interfaces/Customer';
 
+type Customers = {
+  current_page: number;
+  data: Customer[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: any[];
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
+}
+
 type Props = PageProps & {
   auth: AuthProps;
-  customers: Customer[];
+  customers: Customers;
   userTags: { label: string; color: string }[];
 };
 
@@ -245,7 +261,7 @@ const Index = ({ auth, customers, userTags }: Props) => {
                 {customers ? (
                   <MuiTable
                     columns={columns}
-                    data={customers}
+                    data={customers?.data}
                     showCheckBox={false}
                     serverSidePagination={true}
                     fetchData={fetchCustomers}
