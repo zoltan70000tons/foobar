@@ -17,6 +17,7 @@ return new class extends Migration
       $table->foreignId('passenger_id')->constrained('passengers');
       $table->enum('type', ['PAYMENT', 'FEE'])->default('PAYMENT');
       $table->foreignId('fee_id')->nullable()->constrained('fees')->nullable();
+      $table->timestamp('last_reminder_sent_at')->nullable();
       $table->timestamps();
     });
   }

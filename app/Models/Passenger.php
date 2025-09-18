@@ -447,6 +447,7 @@ class Passenger extends Authenticatable
         'type' => $installment->type,
         'original_amount_due' => $amount,
         'due_date' => $installment->due_date,
+        'last_reminder_sent_at' => $installment->last_reminder_sent_at,
         'name' => ucwords($name)
       ];
 

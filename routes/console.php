@@ -61,3 +61,4 @@ Schedule::command('app:clean-temporary-files')->dailyAt('00:00')->timezone('Amer
 
 // Delete access tand refresh tokens which expired daily
 Schedule::command('passport:purge-expired-tokens')->dailyAt('00:00')->timezone('America/Los_Angeles');
+Schedule::command('bookings:dispatch-reminders')->dailyAt('00:00')->timezone('America/Los_Angeles');
