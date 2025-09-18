@@ -96,7 +96,7 @@ class StoreBookingRequest extends FormRequest
       'cart.event_id' => 'required|string',
       'cart.cabin_type' => 'nullable|string',
       'cart.payment_plan' => 'required|string',
-      'cart.number_of_installments' => 'nullable|string',
+      'cart.number_of_installments' => 'nullable|integer',
       'cart.reservation_id' => 'nullable|numeric|min:1',
       'cart.cabin_capacity' => 'required|numeric|min:0',
       'cart.cabin_category' => 'required|numeric|min:1',

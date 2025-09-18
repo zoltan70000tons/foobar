@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
-use App\Helpers\PriceCalculation;
-use App\Models\Adjustment;
-use App\Models\CabinType;
 use App\Models\Event;
 use App\Models\PassengerInvitation;
 use App\Mail\CustomerConfirmationBooking;
@@ -27,10 +24,10 @@ use App\Traits\BookingLogTrait;
 use App\Traits\StringNormalization;
 use App\Helpers\AgeRestriction;
 use App\Notifications\NewBookingRequest;
-use App\Notifications\NewAddPaxAddedToBooking;
-use App\Notifications\LeadPassRemovesSomeone;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use App\Enums\ErrorCode;
 
 class BookingController extends Controller
 {
@@ -68,7 +65,11 @@ class BookingController extends Controller
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$cart || empty($cart)) {
-      return response()->json(['message' => 'Cart is empty'], 400);
+      return response()->json([
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'Cart is empty',
+        'errorCode' => ErrorCode::CART_EMPTY->value,
+      ], 400);
     }
 
     // Age verification
@@ -77,10 +78,18 @@ class BookingController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json(['message' => __('feedback.age_restriction')], 400);
+        return response()->json([
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => __('feedback.age_restriction'),
+          'errorCode' => ErrorCode::AGE_RESTRICTION->value,
+        ], 400);
       }
     } else {
-      return response()->json(['message' => 'Date of birth is required'], 400);
+      return response()->json([
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'Date of birth is required',
+        'errorCode' => ErrorCode::DOB_REQUIRED->value,
+      ], 400);
     }
 
     try {
@@ -103,7 +112,6 @@ class BookingController extends Controller
         'bed_config' => $bedConfig,
       ];
 
-      $adjustments = Adjustment::where('event_id', $eventId)->first();
       $event = Event::find($eventId);
 
       $totalPassenger = $cart['price_total_passenger'];
@@ -217,8 +225,9 @@ class BookingController extends Controller
         dd($e->getMessage());
       return response()->json(
         [
-          'message' => 'An error occurred while creating the booking.',
-          'error' => $e->getMessage(),
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => $e->getMessage(),
+          'errorCode' => ErrorCode::UNKNOWN_ERROR->value,
         ],
         500
       );
