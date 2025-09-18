@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Adjustment;
 use App\Helpers\PriceCalculation;
 use Illuminate\Support\Facades\Auth;
-use App\Models\TemporaryReservation;
-use App\Models\CabinCategory;
 use App\Models\CabinCategorySpec;
 use App\Services\ReservationService;
 use App\Models\Event;
 use App\Models\Cart;
 use App\Helpers\AgeRestriction;
+use Illuminate\Support\Str;
+use App\Enums\ErrorCode;
 
 class CartController extends Controller
 {
@@ -132,7 +132,11 @@ class CartController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(['message' => 'User not authenticated'], 401);
+      return response()->json([
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'User not authenticated',
+        'errorCode' => ErrorCode::UNAUTHORIZED->value,
+      ], 401);
     }
 
     if ($validated['force_clear'] === true) {
@@ -145,16 +149,18 @@ class CartController extends Controller
     // if user is male ( M ) he cant book cabin type single-female ( single-female )
     if ($validated['cabin_type'] === 'single-female' && $user->detail->gender === 'M') {
       return response()->json([
-        'message' => __('feedback.cabin_type_not_allowed'),
-        'code' => 'CABIN_TYPE_NOT_ALLOWED',
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => __('feedback.cabin_type_not_allowed'),
+        'errorCode' => ErrorCode::CABIN_TYPE_NOT_ALLOWED->value,
       ], 400);
     }
 
     // if user is female ( F ) she cant book cabin type single male ( single-male ) 
     if ($validated['cabin_type'] === 'single-male' && $user->detail->gender === 'F') {
       return response()->json([
-        'message' => __('feedback.cabin_type_not_allowed'),
-        'code' => 'CABIN_TYPE_NOT_ALLOWED',
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => __('feedback.cabin_type_not_allowed'),
+        'errorCode' => ErrorCode::CABIN_TYPE_NOT_ALLOWED->value,
       ], 400);
     }
 
@@ -181,14 +187,16 @@ class CartController extends Controller
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
         return response()->json([
-          'message' => __('feedback.age_restriction'),
-          'code' => 'AGE_RESTRICTION',
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => __('feedback.age_restriction'),
+          'errorCode' => ErrorCode::AGE_RESTRICTION->value,
         ], 422);
       }
     } else {
       return response()->json([
-        'message' => 'Date of birth is required',
-        'code' => 'DOB_REQUIRED',
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'Date of birth is required',
+        'errorCode' => ErrorCode::DOB_REQUIRED->value,
       ], 422);
     }
 
@@ -242,8 +250,9 @@ class CartController extends Controller
 
     if (!$user) {
       return response()->json([
-        'message' => 'User not authenticated',
-        'code' => 'UNAUTHORIZED',
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'User not authenticated',
+        'errorCode' => ErrorCode::UNAUTHORIZED->value,
       ], 401);
     }
 
@@ -254,14 +263,16 @@ class CartController extends Controller
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
         return response()->json([
-          'message' => __('feedback.age_restriction'),
-          'code' => 'AGE_RESTRICTION',
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => __('feedback.age_restriction'),
+          'errorCode' => ErrorCode::AGE_RESTRICTION->value,
         ], 422);
       }
     } else {
       return response()->json([
-        'message' => 'Date of birth is required',
-        'code' => 'DOB_REQUIRED',
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'Date of birth is required',
+        'errorCode' => ErrorCode::DOB_REQUIRED->value,
       ], 422);
     }
 
@@ -286,8 +297,13 @@ class CartController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json(['message' => 'User not authenticated'], 401);
+      return response()->json([
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => 'User not authenticated',
+        'errorCode' => ErrorCode::UNAUTHORIZED->value,
+      ], 401);
     }
+    
     Cart::where('user_id', $user->id)->delete();
 
     $reservationService->releaseCabin($user);
