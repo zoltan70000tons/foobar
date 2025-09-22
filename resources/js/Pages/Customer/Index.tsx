@@ -134,7 +134,7 @@ const Index = ({ auth, customers, userTags }: Props) => {
             {hasPermission(Permissions.ViewCustomers) && (
               <Visibility
                 onClick={() => {
-                  router.get(route('customers.show', { customer: row.id }));
+                  router.get(route('customers.show', { customer: row.user_id }));
                 }}
                 style={{ cursor: 'pointer' }}
               />

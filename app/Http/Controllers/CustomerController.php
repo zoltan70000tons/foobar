@@ -45,7 +45,7 @@ class CustomerController extends Controller
   {
     try {
       return $this->withPermission([Permissions::ViewCustomers], function () {
-        $userTags = UserTag::all();
+        $userTags = Tag::type('customer')->get();
         return Inertia::render('Customer/Index', [
           'customers' => $this->customerRepository->getAllCustomerData(),
           'userTags' => $userTags,
