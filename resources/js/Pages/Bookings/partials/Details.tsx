@@ -65,6 +65,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
 
   const [cabinsToUpgradeTo, setCabinsToUpgradeTo] = useState([]);
   const [upgradeCabin, setUpgradeCabin] = useState(null);
+  const [changeCabin, setChangeCabin] = useState(null);
 
 
   useEffect(() => {
@@ -198,14 +199,15 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     router.post(
       route("bookings.updateCabin", { id: event.id }),
       {
-        cabin_type_id: cabinType?.id,
-        cabin_category_id: cabinCategory?.id,
-        cabin_number: cabinNumber,
+        cabin_type_id: changeCabin?.cabin_type_id,
+        cabin_category_id: changeCabin?.cabin_category_id,
+        cabin_number: changeCabin?.cabin_number,
         deck: selectedDeck,
         balcony: onlyBalcony,
         location: selectedLocation,
         accessible: onlyAccessible,
         booking_id: booking.id,
+        capacity: changeCabin?.capacity,
       },
       {
         onSuccess: () => {
@@ -230,14 +232,15 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     router.post(
       route("bookings.upgradeCabin", { id: event.id }),
       {
-        cabin_type_id: cabinType?.id,
-        cabin_category_id: cabinCategory?.id,
-        cabin_number: upgradeCabin,
+        cabin_type_id: upgradeCabin?.cabin_type.id,
+        cabin_category_id: upgradeCabin?.category.id,
+        cabin_number: upgradeCabin?.cabin_number,
         deck: selectedDeck,
         balcony: onlyBalcony,
         location: selectedLocation,
         accessible: onlyAccessible,
         booking_id: booking.id,
+        capacity: upgradeCabin?.category.capacity,
       },
       {
         onSuccess: () => {
@@ -515,7 +518,10 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
               )}
               getOptionLabel={(option) => option.cabin_number + ' ' + option.status}
               value={availableCabins?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-              onChange={(event, newValue) => setCabinNumber(newValue?.cabin_number || null)}
+              onChange={(event, newValue) => {
+                setChangeCabin(newValue || null);
+                setCabinNumber(newValue?.cabin_number || null);
+              }}
               renderOption={(props, option) => (
                 <li {...props} key={option.cabin_number}>
                   {option.cabin_number} 
@@ -545,7 +551,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           <Button onClick={handleClose} color="secondary" variant="outlined">
             Cancel
           </Button>
-          <Button onClick={() => setConfirmOpen(true)} color="primary" variant="outlined" disabled={!cabinNumber || loading}>
+          <Button onClick={() => setConfirmOpen(true)} color="primary" variant="outlined" disabled={!changeCabin || loading}>
             Save
           </Button>
         </DialogActions>
@@ -605,7 +611,9 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
               )}
               getOptionLabel={(option) => `${option.cabin_number} ${option.status}`}
               value={cabinsToUpgradeTo?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-              onChange={(event, newValue) => setUpgradeCabin(newValue?.cabin_number || null)}
+              onChange={(event, newValue) => {
+                setUpgradeCabin(newValue || null);
+              }}
               renderOption={(props, option) => (
                 <li {...props} key={option.cabin_number}>
                   {option.cabin_number}

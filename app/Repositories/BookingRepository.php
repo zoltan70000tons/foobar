@@ -371,9 +371,9 @@ class BookingRepository implements BookingInterface
         }
     }
 
-    function changeCabin(Booking $booking, $cabin_number)
+    function changeCabin(Booking $booking, Cabin $cabin)
     {
-        $result = $booking->changeCabin($cabin_number);
+        $result = $booking->changeCabin($cabin);
         if (is_array($result) && array_key_exists('error', $result)) {
             return $booking;
         } else {
@@ -595,5 +595,32 @@ class BookingRepository implements BookingInterface
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getBookableCabinByParams(
+        int $currentCapacity,
+        string $cabinNumber,
+        int $cabinTypeId,
+        int $cabinCategoryId
+    ): Cabin | null
+    {
+        return Cabin::with([
+            'category.spec',
+            'cabinSpec',
+            'cabinType'
+        ])
+            ->whereHas('category.spec', function ($q) use ($currentCapacity) {
+                $q->where('capacity', '=', $currentCapacity);
+            })
+            ->whereHas('cabinSpec', function ($q) use ($cabinNumber) {
+                $q->where('cabin_number', '=', $cabinNumber);
+            })
+            ->whereIn('status', ['AVAILABLE', 'PARTIALLY_BOOKED', 'RESERVED'])
+            ->whereDoesntHave('temporaryReservations', function ($q) {
+                $q->where('expires_at', '>', now());
+            })
+            ->where('cabin_type_id', $cabinTypeId)
+            ->where('cabin_category_id', $cabinCategoryId)
+            ->first();
     }
 }

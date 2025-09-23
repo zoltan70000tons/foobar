@@ -134,16 +134,14 @@ class Booking extends Model
     return $this->hasOne(BookingAgentSessions::class, 'booking_id', 'id');
   }
 
-  public function changeCabin($number)
+  public function changeCabin(Cabin $cabin)
   {
     try {
-      // Find the cabin by its number
-      $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($number) {
-        $query->where('cabin_number', $number);
-      })->first();
       // Validate that the cabin exists
       if (!$cabin) {
-        throw new \Exception("Cabin with number {$number} does not exist.");
+        $number = $cabin->cabinSpec->cabin_number ?? null;
+        $message = "Cabin " . ($number === null ? "" : "with number {$number} ") . "does not exist.";
+        throw new \Exception($message);
       }
 
       // Check if the cabin is available

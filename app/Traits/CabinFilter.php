@@ -125,6 +125,7 @@ trait CabinFilter
           'cabin_inventory' => $cabin->inventory,
           'cabin_category_name' => $cabin->category->categoryName,
           'cabin_category_type' => $cabin->category->categoryType,
+          'capacity' => $cabin->category->spec->capacity,
         ];
       });
 

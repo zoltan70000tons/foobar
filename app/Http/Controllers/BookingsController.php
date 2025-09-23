@@ -639,14 +639,24 @@ class BookingsController extends Controller
       $event_id = request()->route('id');
 
       $booking_id = $request->input('booking_id');
-      $cabin_number = $request->input('cabin_number');
+      $cabinNumber = $request->input('cabin_number');
+      $cabinCategoryId = $request->input('cabin_category_id');
+      $typeId = $request->input('cabin_type_id');
+      $currentCapacity = $request->input('capacity');
+
+      $selectedCabin = $this->bookingRepository->getBookableCabinByParams(
+        $currentCapacity,
+        $cabinNumber,
+        $typeId,
+        $cabinCategoryId
+      );
 
       return $this->withPermission(
         [Permissions::EditBookings],
-        function ($event_id, $booking_id, $cabin_number) {
-          $event = $this->eventRepository->find($event_id);
+        function ($event_id, $booking_id, $cabin) {
           $booking = Booking::find($booking_id);
-          $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+
+          $result = $this->bookingRepository->changeCabin($booking, $cabin);
 
           return redirect()
             ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
@@ -654,7 +664,7 @@ class BookingsController extends Controller
         },
         $event_id,
         $booking_id,
-        $cabin_number
+        $selectedCabin
       );
     } catch (\Exception $e) {
       $this->logException($e);
@@ -826,8 +836,6 @@ class BookingsController extends Controller
             $categoryId = $request->get('category_id');
             $typeId = $request->get('type_id');
             $cabinNumber = $request->get('cabin_number');
-            $deck = $request->get('deck');
-            $balcony = $request->boolean('balcony');
             $location = $request->get('location');
             $accessible = $request->boolean('accessible');
 
@@ -1057,16 +1065,27 @@ class BookingsController extends Controller
             $event_id = request()->route('id');
 
             $booking_id = $request->input('booking_id');
-            $cabin_number = $request->input('cabin_number');
+            $cabinNumber = $request->input('cabin_number');
+            $cabinCategoryId = $request->input('cabin_category_id');
+            $typeId = $request->input('cabin_type_id');
+            $currentCapacity = $request->input('capacity');
+
+            $selectedCabin = $this->bookingRepository->getBookableCabinByParams(
+                $currentCapacity,
+                $cabinNumber,
+                $typeId,
+                $cabinCategoryId
+            );
 
             return $this->withPermission(
                 [Permissions::EditBookings],
-                function ($event_id, $booking_id, $cabin_number) {
+                function ($event_id, $booking_id, $selectedCabin) {
                     $booking = Booking::find($booking_id);
                     $oldBooking = clone $booking;
                     $result = null;
-                    DB::transaction(function () use ($cabin_number, $booking, &$result, $oldBooking) {
-                        $result = $this->bookingRepository->changeCabin($booking, $cabin_number);
+
+                    DB::transaction(function () use ($selectedCabin, $booking, &$result, $oldBooking) {
+                        $result = $this->bookingRepository->changeCabin($booking, $selectedCabin);
 
                         $booking->refresh()->load([
                             'cabin',
@@ -1095,7 +1114,7 @@ class BookingsController extends Controller
                 },
                 $event_id,
                 $booking_id,
-                $cabin_number
+                $selectedCabin
             );
         } catch (\Exception $e) {
             //dd('Transaction failed', $e->getMessage(), $e->getTraceAsString());
