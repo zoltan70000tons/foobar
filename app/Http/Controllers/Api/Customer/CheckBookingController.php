@@ -33,37 +33,38 @@ class CheckBookingController extends Controller
   */
   public function getBooking(Request $request)
   {
-      // get passenger from request
-      $passenger = $request->user();
+    // get passenger from request
+    $passenger = $request->user();
 
-      // Check if passenger is authenticated and has the view-booking token
-      if (!$passenger || !$request->user()->tokenCan('view-booking')) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-      }
+    // Check if passenger is authenticated and has the view-booking token
+    if (!$passenger || !$request->user()->tokenCan('view-booking')) {
+      return response()->json(['message' => 'Unauthorized'], 403);
+    }
 
-      // load related data
-      $passenger->load(['fees', 'installments', 'payments']);
+    // load related data
+    $passenger->load(['fees', 'installments', 'payments', 'onboardCredits']);
 
-      // get booking details based on passenger's booking_id
-      $booking = Booking::with(['cabin.category', 'cabin.cabinType', 'adjustments', 'event'])
-        ->where('id', $passenger->booking_id)
-        ->first();
+    // get booking details based on passenger's booking_id
+    $booking = Booking::with(['cabin.category', 'cabin.cabinType', 'adjustments', 'event'])
+      ->where('id', $passenger->booking_id)
+      ->first();
 
-      // Check if booking exists
-      if (!$booking) {
-        return response()->json(['message' => 'somethin went wrong'], 404);
-      }
+    // Check if booking exists
+    if (!$booking) {
+      return response()->json(['message' => 'Booking not found'], 404);
+    }
 
-      // Set installment status attribute
-      $passenger->setAttribute('installment_status', $passenger->installment_status);
+    // Set installment status attribute
+    $passenger->append([
+      'installment_status',
+    ]);
 
-      // return booking details, event details, and passenger details
-      return response()->json([
-        'booking' => $booking,
-        'event' => Event::find($booking->event_id),
-        'passengers' => $passenger,
-      ], 200);
-
+    // return booking details, event details, and passenger details
+    return response()->json([
+      'booking'    => $booking,
+      'event'      => $booking->event,
+      'passengers' => $passenger,
+    ], 200);
   }
 
   /*

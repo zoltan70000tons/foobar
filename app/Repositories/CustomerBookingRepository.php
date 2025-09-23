@@ -43,111 +43,90 @@ class CustomerBookingRepository
    * @param string $bookingCode
    * @return Booking
    */
-  public function getBooking(int $eventId, string | null $bookingCode, $user = null, string | null $requestId = null)
-  {
-    $user_survivor_number = $user->survivorNumber->survivor_number ?? null;
-  
-    $booking = null;
+  public function getBooking(
+    int $eventId,
+    ?string $bookingCode,
+    $user = null,
+    ?string $requestId = null
+  ) {
+    // survivor number of the authenticated user (if any)
+    $userSurvivorNumber = $user->survivorNumber->survivor_number ?? null;
 
-    if($requestId) {
-      $booking = Booking::with([
-        'adjustments',
-        'passengers.fees' => function($query) {
-          $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
-        },
-        'passengers.installments',
-        'passengers.passengerInvitation',
-        'cabin.category',
-        'cabin.cabinType',
-        'passengers.payments',
-        'passengers.discounts' => function($query) {
-          $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
-        },
-        'event'
-      ])
-        ->where('booking_request_id', $requestId)
-        ->where('event_id', $eventId)
-        ->first();
+    // Common eager-loads
+    $with = [
+      'adjustments',
+      'cabin.category',
+      'cabin.cabinType',
+      'event',
+      'passengers.fees' => function ($query) {
+        $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
+      },
+      'passengers.discounts' => function ($query) {
+        $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
+      },
+      'passengers.installments',
+      'passengers.passengerInvitation',
+      'passengers.payments',
+    ];
 
-    } else {
-      $booking = Booking::with([
-        'adjustments',
-          'passengers.fees' => function($query) {
-            $query->select('id', 'passenger_id', 'amount', 'type', 'created_at', 'updated_at');
-        },
-        'passengers.installments',
-        'passengers.passengerInvitation',
-        'cabin.category',
-        'cabin.cabinType',
-        'passengers.payments',
-        'passengers.discounts' => function($query) {
-          $query->select('id', 'passenger_id', 'amount', 'type', 'operation', 'created_at', 'updated_at');
-        },
-        'event'
-      ])
-        ->where('booking_code', $bookingCode)
-        ->where('event_id', $eventId)
-        ->first();
-    }
+
+      $with[] = 'passengers.onboardCredits';
+    
+
+    // Conditional query based on bookingCode or requestId
+    $booking = Booking::with($with)
+      ->where('event_id', $eventId)
+      ->when($requestId, function ($q) use ($requestId) {
+        $q->where('booking_request_id', $requestId);
+      }, function ($q) use ($bookingCode) {
+        $q->where('booking_code', $bookingCode);
+      })
+      ->first();
 
     if (!$booking) {
       return null;
     }
 
-    // check if user is on the passenger list
+    // Check for user-passenger information match
     if ($user) {
-      $firstName = $user->detail->first_name;
-      $lastName = $user->detail->last_name;
-      $dob = $user->detail->dob;
+      $first = $user->detail->first_name ?? null;
+      $last  = $user->detail->last_name ?? null;
+      $dob   = $user->detail->dob ?? null;
 
-      $passenger = $booking->passengers
-        ->where('first_name', $firstName)
-        ->where('last_name', $lastName)
-        ->where('dob', $dob)
-        ->first();
-
-      // Add installment status to each passenger
-      $booking->passengers->each(function ($passenger) {
-        $passenger->setAttribute('installment_status', $passenger->installment_status);
+      $userPassenger = $booking->passengers->first(function ($p) use ($first, $last, $dob) {
+        return $p->first_name === $first
+          && $p->last_name === $last
+          && $p->dob === $dob;
       });
 
-      if (!$passenger) {
+      if (!$userPassenger) {
         return null;
       }
-    } 
-
-    // if booking is_single_occupancy then do not return other passengers
-    if ($booking->is_single_occupancy) {
-      $filteredPassengers = $booking->passengers->filter(function ($passenger) use ($user_survivor_number) {
-        return $passenger->survivor_number === $user_survivor_number;
-      });
-
-      // Use the filtered passengers for returning, instead of modifying the model
-      $booking->setRelation('passengers', $filteredPassengers);
     }
 
-    if (!$booking->is_single_occupancy && $user_survivor_number) {
-      // Get the passenger record for the current user
-      $userPassenger = $booking->passengers->firstWhere('survivor_number', $user_survivor_number);
+    // Append installment_status to each passenger
+    $booking->passengers->each->append('installment_status');
 
-      // If the record exists and is not marked as lead_passenger, filter out others
-      if ($userPassenger && !$userPassenger->lead_passenger) {
-        $filteredPassengers = $booking->passengers
-          ->filter(function ($passenger) use ($user_survivor_number) {
-            return $passenger->survivor_number === $user_survivor_number;
-          })
-          ->values(); // re-index the collection
-        // Set the filtered passengers relation to the booking
-        $booking->setRelation('passengers', $filteredPassengers);
+    // Get all unfiltered passengers data
+    $passengers = $booking->passengers;
+
+    if ($booking->is_single_occupancy) {
+      // Only show the current user's passenger record
+      $passengers = $passengers->where('survivor_number', $userSurvivorNumber)->values();
+    } elseif ($userSurvivorNumber) {
+      // If the user is on the booking and NOT lead_passenger, only show their own record
+      $current = $passengers->firstWhere('survivor_number', $userSurvivorNumber);
+      if ($current && !$current->lead_passenger) {
+        $passengers = $passengers->where('survivor_number', $userSurvivorNumber)->values();
       }
     }
 
-    // if booking payment_plan is INSTALLMENTS get all installments where passenger is lead_passenger
-    if ($booking->payment_plan === 'INSTALLMENTS') {
-      $booking->passengers->each(function ($passenger) {
-        $passenger->setRelation('installments', $passenger->installments);
-      });
-    }
+    $booking->setRelation('passengers', $passengers);
+
+    // Append installments to each passenger
+    $booking->passengers->each(function ($p) {
+      $p->setRelation('installments', $p->installments);
+    });
 
     return $booking;
   }
