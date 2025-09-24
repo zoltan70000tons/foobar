@@ -245,7 +245,13 @@ class Booking extends Model
       $segments[1] = $randomSegment;
       $this->booking_code = implode('-', $segments);
       $this->status = 'CANCELLED';
+      $this->cabin->releaseCabin();
       $this->save();
+
+      //deleting booking from locks table
+      DB::table('booking_agent_sessions')
+        ->where('booking_id', $this->id)
+        ->delete();
 
       return true;
     } catch (\Exception $e) {
@@ -364,49 +370,7 @@ class Booking extends Model
     });
 
 
-    static::updated(function ($booking) {
-      if (!$booking->isDirty('status')) {
-        return;
-      }
 
-      $previousStatus = $booking->getOriginal('status');
-      $cabin = $booking->cabin;
-      if ($previousStatus === 'RESERVED') {
-        $newStatus = $booking->status;
-        if ($newStatus === 'CANCELLED') {
-          $cabinTypeId = $cabin->cabinType->id;
-          $cabin->inventory += 1;
-          if ($cabinTypeId === 1) {
-            $cabin->status = 'AVAILABLE';
-          } else {
-            $capacity = $cabin->category->capacity;
-            $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
-          }
-        }
-      } else {
-        $cabinTypeId = $cabin->cabinType->id;
-        $newStatus = $booking->status;
-
-        if ($cabinTypeId === 1) {
-          $cabin->status = 'RESERVED';
-          $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
-        } else {
-          if ($newStatus === 'CANCELLED') {
-            $cabin->inventory += 1;
-            $capacity = $cabin->category->capacity;
-            $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
-          }
-        }
-
-        $booking->saveQuietly();
-      }
-
-      $cabin->save();
-      //deleting booking from locks table
-      DB::table('booking_agent_sessions')
-        ->where('booking_id', $booking->id)
-        ->delete();
-    });
 
     static::deleted(function ($booking) {
       $booking->saveBookingLog($booking->id, 'Deleted', 'The booking was deleted');
