@@ -384,8 +384,20 @@ class Booking extends Model
           }
         }
       } else {
-        $cabin->status = 'RESERVED';
-        $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
+        $cabinTypeId = $cabin->cabinType->id;
+        $newStatus = $booking->status;
+
+        if ($cabinTypeId === 1) {
+          $cabin->status = 'RESERVED';
+          $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
+        } else {
+          if ($newStatus === 'CANCELLED') {
+            $cabin->inventory += 1;
+            $capacity = $cabin->category->capacity;
+            $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
+          }
+        }
+
         $booking->saveQuietly();
       }
 
