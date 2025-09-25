@@ -43,10 +43,7 @@ class MatrixHelper
         'cabin_category_id' => $firstCategory->spec->id,
         'code' => $firstCategory->spec->category_code,
         'display_order' => $firstCategory->spec->display_order,
-        //'decks' => $decks,
         'decks_static' => $firstCategory->spec->decks, // your static label if needed
-        'iframe' => $firstCategory->iframe,
-        'images' => $firstCategory->images,
         'full_title' => $firstCategory->getTitleAttribute(),
         'description' => $firstCategory->description,
         'price_and_availability' => self::getPriceDetails($categories, $firstCategory->category_code, $ticketType, $reservationsCabinNumbers),
@@ -83,11 +80,6 @@ class MatrixHelper
   public static function getSinglePrice($cabins, $capacity, $ticketType, $reservationsCabinNumbers)
   {
 
-    // \Log::debug('MatrixHelper::getSinglePrice', [
-    //   'capacity' => $capacity,
-    //   'reservationsCabinNumbers' => $reservationsCabinNumbers,
-    // ]);
-
     // Filter cabins by the specific capacity
     $filteredCabins = $cabins->where('capacity', $capacity);
 
@@ -100,6 +92,8 @@ class MatrixHelper
         'is_available' => false,
         'cabin_category_id' => null,
         'full_title' => null,
+        'images' => null,
+        'iframe' => null,
       ];
     }
 
@@ -133,6 +127,9 @@ class MatrixHelper
       'is_available' => $isAvailable,
       'cabin_category_id' => $cabin->id,
       'full_title' => $category_full_title,
+      'images' => $cabin->images,
+      'iframe' => $cabin->iframe,
+      'description' => $cabin->description,
     ];
   }
 
@@ -157,3 +154,4 @@ class MatrixHelper
     }
   }
 }
+
