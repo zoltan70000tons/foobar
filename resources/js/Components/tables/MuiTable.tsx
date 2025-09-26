@@ -323,7 +323,11 @@ function MuiTable<T>(props: DataGridProps<T>) {
                           </MenuItem>
                           {column.filterOptions?.map((option) => (
                             <MenuItem key={option} value={option}>
-                              {option === "RESERVED" ? "EXCLUDED" : option}
+                              {option === "RESERVED"
+                              ? "INTERNALLY AVAILABLE"
+                              : option === "AVAILABLE"
+                              ? "PUBLICLY AVAILABLE"
+                              : option}
                             </MenuItem>
                           ))}
                         </Select>

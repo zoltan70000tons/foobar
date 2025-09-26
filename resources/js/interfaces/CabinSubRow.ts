@@ -1,3 +1,5 @@
+import { CabinStatus } from '@/enums/CabinStatus';
+
 export interface CabinSubRow {
     id: number;
     deck:number;
@@ -6,7 +8,7 @@ export interface CabinSubRow {
     obstructed_view:boolean;
     location:string;
     accesible:boolean;
-    cabin_status:string;
+    cabin_status: CabinStatus;
     is_reserved: boolean;
     ticket_inventory:number;
     cabin_type:string;
