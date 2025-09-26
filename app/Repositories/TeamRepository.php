@@ -55,7 +55,7 @@ class TeamRepository implements TeamRepositoryInterface
                     'name' => $user->name,
                     'user_name' => $user->username,
                     'email' => $user->email,
-                    'status' => $user->user_activated_at ? 'Active' : 'Pending',
+                    'status' => $user->email_verified_at ? 'Active' : 'Pending',
                     'roles' => $user->roles->pluck('name')->toArray(),
                     'organization_id' => $org->id,
                     'organization_name' => $org->name,

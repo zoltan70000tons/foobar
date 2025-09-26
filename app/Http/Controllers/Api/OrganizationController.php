@@ -97,7 +97,7 @@ class OrganizationController extends Controller
                 try {
                     // Set user identity
                     $user->username = $validated['user_nickname'];
-                    $user->user_activated_at = now();
+                    $user->email_verified_at = now();
                     $user->password = Hash::make($validated['password']);
                     $user->save();
 
