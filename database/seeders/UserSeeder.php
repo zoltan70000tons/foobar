@@ -64,7 +64,7 @@ class UserSeeder extends Seeder
 
     //Seed users without 'Customer' role
     foreach (range(1, 20) as $index) {
-      $name = $this->faker->firstname;
+      $name =  'TEST ' . $this->faker->firstname;
       $user = User::updateOrCreate(
         ['email' => Str::lower($name) . '@70000tons.com'],
         [
@@ -78,7 +78,7 @@ class UserSeeder extends Seeder
       UserDetail::create([
         'user_id' => $user->id,
         'gender' => $this->faker->randomElement(['M', 'F']),
-        'first_name' => strtoupper($this->faker->firstname),
+        'first_name' => 'TEST ' . strtoupper($this->faker->firstname),
         'middle_name' => strtoupper($this->faker->firstName),
         'last_name' => strtoupper($this->faker->lastName),
         'dob' => $this->faker->date(),
@@ -118,7 +118,7 @@ class UserSeeder extends Seeder
       UserDetail::create([
         'user_id' => $user->id,
         'gender' => $this->faker->randomElement(['M', 'F']),
-        'first_name' => strtoupper($this->faker->firstname),
+        'first_name' => 'TEST ' . strtoupper($this->faker->firstname),
         'middle_name' => strtoupper($this->faker->firstName),
         'last_name' => strtoupper($this->faker->lastName),
         'dob' => $this->faker->date(),
@@ -183,7 +183,7 @@ class UserSeeder extends Seeder
       UserDetail::create([
         'user_id' => $user->id,
         'gender' => $this->faker->randomElement(['M', 'F']),
-        'first_name' => strtoupper($this->faker->firstName),
+        'first_name' => 'TEST ' . strtoupper($this->faker->firstName),
         'middle_name' => strtoupper($this->faker->firstName),
         'last_name' => strtoupper($this->faker->lastName),
         'dob' => $this->faker->date(),

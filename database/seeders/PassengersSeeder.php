@@ -187,7 +187,7 @@ class PassengersSeeder extends Seeder
               'survivor_number' => $faker->randomNumber(),
               'payment_method' => 'CREDIT_CARD',
               'gender' => $faker->randomElement(['M', 'F']),
-              'first_name' => $faker->firstName,
+              'first_name' => 'TEST ' . $faker->firstName,
               'middle_name' => $faker->firstName,
               'last_name' => $faker->lastName,
               'dob' => $lead_passenger->detail->dob,
