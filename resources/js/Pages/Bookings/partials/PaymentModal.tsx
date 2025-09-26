@@ -174,13 +174,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             prevHistory.filter(payment => payment.id !== selectedPaymentId)
           );
 
-          console.log('ASJDKSADSADJSAHJDHSAJDHSAJDHJASHDJSA', res)
-
           setDeletedPayments(res?.props?.deletedPayments);
 
           showSnackbar("Payment deleted successfully.", "success");
 
-          handleSplitPaymentDeleted();
+          if (selectedPaymentSplitAmount) {
+            handleSplitPaymentDeleted();
+          }
         },
         onError: () => {
           showSnackbar("Could not delete payment.", "error");
