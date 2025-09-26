@@ -1,4 +1,5 @@
 import { CabinCategory } from "./CabinCategory";
+import { CabinStatus } from '@/enums/CabinStatus';
 
 export interface Cabin {
     id: number;
@@ -9,7 +10,7 @@ export interface Cabin {
     inventory:number;
     notes:string;
     tags: string[];
-    status:string;
+    status: CabinStatus;
     created_at:string;
     updated_at:string;
     is_shared_cabin_number: boolean;

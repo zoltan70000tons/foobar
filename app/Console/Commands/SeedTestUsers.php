@@ -66,7 +66,7 @@ class SeedTestUsers extends Command
             $userDetail = UserDetail::create([
                 'user_id' => $user->id,
                 'gender' => $faker->randomElement(['M', 'F']),
-                'first_name' => strtoupper($faker->firstName),
+                'first_name' => 'TEST ' . strtoupper($faker->firstName),
                 'middle_name' => strtoupper($faker->firstName),
                 'last_name' => strtoupper($faker->lastName),
                 'dob' => $faker->date(),

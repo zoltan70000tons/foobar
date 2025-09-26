@@ -17,7 +17,6 @@ interface BookingInterface
     function getByTag($tag, $keyword = null);
     function getByStatus($eventId, $status, $keyword = null, ?int $perPage=10, ?string $sortKey ='created_at', ?string
 $sortDirection ='asc', $dateRange = null, ?array $tags =[]);
-    function assignAgent($code, $user);
     function changeCabin(Booking $booking, Cabin $cabin);
     function changeCode(Booking $booking, $new_code);
     function changeStatus(Booking $booking, $status);

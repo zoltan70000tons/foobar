@@ -39,7 +39,7 @@ export default function LockedByAgent({bookingId, currentEditingUser}: Props) {
       component="small" 
       color="warning.main"
    >
-      Being used by {userName}
+      Being worked by {userName}
     </Box>
   )
 }

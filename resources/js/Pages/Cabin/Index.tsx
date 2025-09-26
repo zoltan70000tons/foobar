@@ -33,6 +33,7 @@ import { Event } from '@/interfaces/Event';
 import { Cabin } from '@/interfaces/Cabin';
 import type { PageProps } from '@/types';
 import { CabinSubRow } from '@/interfaces/CabinSubRow';
+import { StatusTooltip } from '@/Components/StatusToolTip';
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -152,7 +153,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
       },
       {
         accessor: 'cabin_status',
-        header: 'Status',
+        header: 'Filter Status',
         filterable: true,
         sortable: true,
         width: '150px',
@@ -160,17 +161,24 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         filterOptions: Object.values(CabinStatus),
         draw: (row: CabinSubRow) => (
           <>
+          <StatusTooltip status={row.cabin_status}>
             <Chip
               size="small"
-              label={row.cabin_status === "RESERVED" ? "EXCLUDED" : row.cabin_status}
+              label={
+                row.cabin_status === "RESERVED"
+                  ? "INTERNALLY AVAILABLE"
+                  : row.cabin_status === "AVAILABLE"
+                  ? "PUBLICLY AVAILABLE"
+                  : row.cabin_status
+              }
               color={CabinStatusColor[row.cabin_status]}
               sx={{
                 margin: 'auto',
                 fontSize: '0.7rem',
-                fontWeight: '400',
-                color: 'white',
+                fontWeight: '600',
               }}
             />
+          </StatusTooltip>
             {row.is_reserved && (
               <Typography
                 variant="body2"
@@ -189,7 +197,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
       },
       {
         accessor: 'cabin_tags',
-        header: 'Tags',
+        header: 'Filter Tags',
         filterable: true,
         filterType: 'select',
         filterOptions: tags ? tags.map((tag: any) => tag.name) : [],

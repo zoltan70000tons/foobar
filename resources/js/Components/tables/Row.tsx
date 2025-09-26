@@ -281,9 +281,13 @@ function Row<TRow, TSub = unknown>(props: RowProps<TRow, TSub>) {
                       <InputLabel>Status</InputLabel>
                       <Select value={selectedStatus} onChange={handleStatusChange} label="Status">
                         {statusOptions.map((status) => (
-                          <MenuItem key={status} value={status}>
-                            {status === "RESERVED" ? "EXCLUDED" : status}
-                          </MenuItem>
+                            <MenuItem key={status} value={status}>
+                            {status === "RESERVED"
+                              ? "INTERNALLY AVAILABLE"
+                              : status === "AVAILABLE"
+                              ? "PUBLICLY AVAILABLE"
+                              : status}
+                            </MenuItem>
                         ))}
                       </Select>
                     </FormControl>
@@ -344,9 +348,13 @@ function Row<TRow, TSub = unknown>(props: RowProps<TRow, TSub>) {
                                       <em>All</em>
                                     </MenuItem>
                                     {column.filterOptions?.map((option) => (
-                                      <MenuItem key={`filter-option-${option}`} value={option}>
-                                        {option === "RESERVED" ? "EXCLUDED" : option}
-                                      </MenuItem>
+                                        <MenuItem key={`filter-option-${option}`} value={option}>
+                                        {option === "RESERVED"
+                                          ? "INTERNALLY AVAILABLE"
+                                          : option === "AVAILABLE"
+                                          ? "PUBLICLY AVAILABLE"
+                                          : option}
+                                        </MenuItem>
                                     ))}
                                   </Select>
                                 </FormControl>

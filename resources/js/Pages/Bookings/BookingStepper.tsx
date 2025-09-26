@@ -544,7 +544,10 @@ const BookingStepper: React.FC = ({
                         <Box component="li" {...optionProps} key={key}>
                           {option.cabin_number}{" "}
                           {option.status === "RESERVED" && (
-                            <Chip sx={{ ml: 1 }} label={"EXCLUDED"} color="warning" size="small" />
+                          <Chip sx={{ ml: 1 }} label={"INTERNALLY AVAILABLE"} color="warning" size="small" />
+                          )}
+                          {option.status === "AVAILABLE" && (
+                          <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
                           )}
                         </Box>
                       );

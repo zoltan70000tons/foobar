@@ -3,7 +3,7 @@ import { Dialog, DialogActions, Avatar, DialogContent, Box, Chip, DialogTitle, B
 
 interface User {
     id: string;
-    username: string;
+    user_name: string;
 }
 
 interface UserSelectorDialogProps {
@@ -23,7 +23,7 @@ const UserSelectorDialog: React.FC<UserSelectorDialogProps> = ({ open, onClose, 
     }, [initialUserId]);
 
     const handleChipClick = (userId: string) => {
-        setSelectedUserId(userId); 
+      setSelectedUserId(prev => prev === userId ? null : userId);
     };
 
     const handleSave = () => {
@@ -32,7 +32,7 @@ const UserSelectorDialog: React.FC<UserSelectorDialogProps> = ({ open, onClose, 
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Assigned to</DialogTitle>
+            <DialogTitle>Choose the user who will be taking care of this booking:</DialogTitle>
             <DialogContent sx={{ padding: "16px 24px" }}>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                     {users.map((user) => (

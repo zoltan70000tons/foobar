@@ -54,9 +54,9 @@ class UserDetailSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'gender' => $this->faker->randomElement(['male', 'female', 'other']),
-                    'first_name' => $this->faker->firstName,
-                    'middle_name' => $this->faker->optional()->firstName,
-                    'last_name' => $this->faker->lastName,
+                    'first_name' =>  'TEST ' . strtoupper($this->faker->firstName),
+                    'middle_name' => strtoupper($this->faker->optional()->firstName),
+                    'last_name' => strtoupper($this->faker->lastName),
                     'phone' => $this->faker->e164PhoneNumber() ,
                     'avatar' => $this->faker->imageUrl(300, 300, 'people', true, 'Avatar'),
                     'emergency_c_name' => $this->faker->name,
