@@ -233,22 +233,12 @@ class Booking extends Model
       if ($this->status === 'CANCELLED') {
         throw new \Exception('This booking is already cancelled.');
       }
-      $segments = explode('-', $this->booking_code);
 
-      if (count($segments) !== 2) {
-        throw new \Exception('Invalid booking code format.');
-      }
-      $characters = config('whitelist.allowed_characters');
-      do {
-        $randomSegment = substr(str_shuffle($characters), 0, 4);
-      } while ($this->containsBlockedWords($randomSegment));
-      $segments[1] = $randomSegment;
-      $this->booking_code = implode('-', $segments);
       $this->status = 'CANCELLED';
       $this->cabin->releaseCabin();
-      
-      $this->lockedBy()->delete(); 
-      
+
+      $this->lockedBy()->delete();
+
       $this->save();
 
       return true;
