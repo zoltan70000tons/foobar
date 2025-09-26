@@ -57,7 +57,7 @@ class PaymentTransferController extends Controller
                 $this->saveBookingLog(
                     $booking_id,
                     'Added Payment Transfer',
-                    "Added Payment Transfer"
+                    "Added Payment Transfer from passenger with ID: " . $validated["passenger_id"] . " to passenger with ID: " . $validated["transfer_to_passenger"]
                 );
 
                 $booking = Booking::find($booking_id);

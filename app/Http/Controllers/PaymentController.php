@@ -6,6 +6,7 @@ use App\Enums\PaymentType;
 use App\Enums\Permissions;
 use App\Exceptions\InvalidBipIdException;
 use App\Models\Booking;
+use App\Models\PaymentTransfer;
 use App\Repositories\PaymentRepository;
 use App\Services\PaymentService;
 use App\Traits\BookingLogTrait;
@@ -145,16 +146,51 @@ class PaymentController extends Controller
                         "Transaction ID: {$transactionId}, and total amount: {$totalAmount} was deleted"
                     );
                 } else {
-                    $payment->delete();
-                    $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
+                    if ($payment->type === "TRANSFER") {
+                        $paymentTransfer = PaymentTransfer::query()
+                            ->where(function ($query) use ($payment) {
+                                $query->where('payment_id_from', $payment->id)
+                                    ->orWhere('payment_id_to', $payment->id);
+                            })
+                            ->first();
 
-                    DB::commit();
+                        if ($paymentTransfer) {
+                            $otherPaymentId = $paymentTransfer->payment_id_from === $payment->id
+                                ? $paymentTransfer->payment_id_to
+                                : $paymentTransfer->payment_id_from;
 
-                    $this->saveBookingLog(
-                        $booking_id,
-                        'Deleted payment',
-                        "Payment: {$type} value: \${$amount} was deleted"
-                    );
+                            $transferredPayment = Payment::find($otherPaymentId);
+
+                            $passengerIdFrom = $paymentTransfer->passenger_id_from;
+                            $passengerIdTo = $paymentTransfer->passenger_id_to;
+
+                            $payment->delete();
+                            $transferredPayment->delete();
+                            $paymentTransfer->delete();
+
+                            $this->paymentInfoService->syncBalance($passengerIdFrom, $booking_id, $event_id);
+                            $this->paymentInfoService->syncBalance($passengerIdTo, $booking_id, $event_id);
+
+                            DB::commit();
+
+                            $this->saveBookingLog(
+                                $booking_id,
+                                'Deleted transfer payment',
+                                "Transfer payment id {$payment->id} and {$transferredPayment->id} were deleted"
+                            );
+                        }
+                    } else {
+                        $payment->delete();
+                        $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
+
+                        DB::commit();
+
+                        $this->saveBookingLog(
+                            $booking_id,
+                            'Deleted payment',
+                            "Payment: {$type} value: \${$amount} was deleted"
+                        );
+                    }
                 }
 
                 return redirect()->back()->with('success', 'Payment deleted successfully!');
