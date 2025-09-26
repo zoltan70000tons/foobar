@@ -165,10 +165,14 @@ class Cabin extends Model
 
   /**
    * Release a cabin from a booking.
-   * Status is updated based on cabin type and availability of other cabins in the same category.
-   * To avoid opening a sold-out category to the public again.
-   * - For private cabins, if no other cabins are available in the same category, status is set to RESERVED, otherwise goes to AVAILABLE.
-   * - For single ticket cabins, same concept applies, but if inventory is not at capacity, status is set to PARTIALLY_BOOKED.
+   *
+   * Updates the cabin's status and inventory based on its type and the availability of other cabins in the same category:
+   * - For private cabins (cabin_type_id == 1): Sets inventory to 1. If other cabins in the category are available, status is set to AVAILABLE; otherwise, RESERVED.
+   * - For single ticket cabins (cabin_type_id == 2 or 3): Increments inventory. If inventory reaches category capacity, status is set to AVAILABLE or RESERVED depending on other availability; otherwise, PARTIALLY_BOOKED.
+   *
+   * This logic prevents reopening a sold-out category to the public.
+   *
+   * @return void
    */
   public function releaseCabin()
   {

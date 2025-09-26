@@ -246,12 +246,10 @@ class Booking extends Model
       $this->booking_code = implode('-', $segments);
       $this->status = 'CANCELLED';
       $this->cabin->releaseCabin();
+      
+      $this->lockedBy()->delete(); 
+      
       $this->save();
-
-      //deleting booking from locks table
-      DB::table('booking_agent_sessions')
-        ->where('booking_id', $this->id)
-        ->delete();
 
       return true;
     } catch (\Exception $e) {
