@@ -164,37 +164,36 @@ class Cabin extends Model
   }
 
   /**
-   * Release the cabin from a booking.
+   * Release a cabin from a booking.
+   * Status is updated based on cabin type and availability of other cabins in the same category.
+   * To avoid opening a sold-out category to the public again.
+   * - For private cabins, if no other cabins are available in the same category, status is set to RESERVED, otherwise goes to AVAILABLE.
+   * - For single ticket cabins, same concept applies, but if inventory is not at capacity, status is set to PARTIALLY_BOOKED.
    */
   public function releaseCabin()
   {
-    if ($this->cabin_type_id == 1) {
-      // Private cabins, mark as reserved when released
-      $this->status = 'RESERVED';
-      $this->inventory = 1;
-    } elseif (in_array($this->cabin_type_id, [2, 3])) {
-      // Single ticket cabins, increase inventory
-      $this->inventory++;
+    // 
+    $otherAvailable = self::where('cabin_category_id', $this->cabin_category_id)
+      ->where('id', '!=', $this->id)
+      ->where('status', StatusCabin::AVAILABLE)
+      ->exists();
 
+    if ($this->cabin_type_id == 1) {
+      $this->inventory = 1;
+      $this->status = $otherAvailable ? StatusCabin::AVAILABLE : StatusCabin::RESERVED;
+    } elseif (in_array($this->cabin_type_id, [2, 3])) {
+      $this->increment('inventory');
+      $this->refresh();
+
+      // Single ticket cabins, update status based on inventory
       if ($this->inventory == $this->category->capacity) {
-        $this->status = 'RESERVED';
+        $this->status = $otherAvailable ? StatusCabin::AVAILABLE : StatusCabin::RESERVED;
       } else {
-        $this->status = 'PARTIALLY_BOOKED';
+        $this->status = StatusCabin::PARTIALLY_BOOKED;
       }
     }
 
     $this->save();
-  }
-
-  protected static function booted()
-  {
-    // @todo refactor/remove when tags are fully implemented
-    // static::saving(function (Cabin $cabin) {
-    //   if (is_array($cabin->tags) && in_array('RCCL', $cabin->tags) && $cabin->status !== StatusCabin::CLOSED->value) {
-    //     // Force status to "RESERVED" if 'RCCL' tag is present
-    //     $cabin->status = StatusCabin::RESERVED->value;
-    //   }
-    // });
   }
 
   protected static function boot()
