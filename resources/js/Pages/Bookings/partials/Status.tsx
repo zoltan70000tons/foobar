@@ -40,8 +40,8 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission(Permissions.EditBookings);
   const agent = booking?.agent;
-  const label = agent?.username ? agent.username : <em>Not Assigned</em>;
-  const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>N</Avatar>;
+  const label = agent?.username ? agent.username : "";
+  const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>-</Avatar>;
   const { showSnackbar } = useSnackbar();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);

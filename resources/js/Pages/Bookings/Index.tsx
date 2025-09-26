@@ -31,10 +31,13 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CancelIcon from "@mui/icons-material/Cancel";
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { BookingStatusColor, BookingStatusEnum } from "@/enums/StatusEnum";
 import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete } from "@mui/material";
 import LockedByAgent from "./partials/LockedByAgent";
+import { usePage } from '@inertiajs/react'
+import '@inertiajs/core'
 
 //Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
@@ -71,6 +74,13 @@ type Props = PageProps & {
   tags: { id: string; name: string; color: string }[];
 };
 
+declare module '@inertiajs/core' {
+  interface PageProps {
+    flash: {
+      message?: string
+    }
+  }
+}
 
 const Index = ({
   auth,
@@ -83,7 +93,7 @@ const Index = ({
   tags
 }: Props) => {
   const { hasPermission } = usePermissions();
-  // const [selectedTab, setSelectedTab] = useState<number>(1);
+  const { flash } = usePage().props;
 
   const [openDialog, setOpenDialog] = useState(false);
   const [keyword, setKeyword] = useState("");
@@ -99,8 +109,6 @@ const Index = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const eventId = event.id;
   const [shouldReload, setShouldReload] = useState(false);
-
-  console.log(tags)
 
 
   useEffect(() => {
@@ -122,16 +130,16 @@ const Index = ({
   };
 
   const handleSave = (userId: string | null) => {
-    if (!userId) return;
     router.put(
       route("bookings.assignAgent", { id: event.id }),
       { agent_id: userId, booking_code: selectedBookingId },
       {
         onSuccess: () => {
-          setSnackbar({
+          const message = flash?.message || "Updated successfully.";
+          setSnackbar({ 
             open: true,
             severity: "success",
-            message: "User assigned successfully.",
+            message
           });
           setOpenModal(false);
           setShouldReload(true);
@@ -147,23 +155,6 @@ const Index = ({
       },
     );
   };
-
-  // const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-  //   setSelectedTab(newValue);
-  // };
-
-  // const handleTabChange = (e: React.SyntheticEvent, newValue: number) => {
-  //   e.preventDefault();
-
-  //   router.get(
-  //     route("bookings.index", { id: eventId }),
-  //     { tab: newValue },
-  //     {
-  //       preserveScroll: true,
-  //       preserveState: true,
-  //     },
-  //   );
-  // };
 
   const handleTabChange = (e: React.SyntheticEvent, newValue: number) => {
     e.preventDefault();
@@ -331,13 +322,13 @@ const Index = ({
       },
 
       {
-        header: "Assigned To",
+        header: "Being taken care of by",
         accessor: "agent_id",
         sortable: true,
         draw: (row: Booking) => {
           const agent = row?.agent;
-          const label = agent?.username ? agent.username : <em>Not Assigned</em>;
-          const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <Avatar>N</Avatar>;
+          const label = agent?.username ? agent.username : "Click to add";
+          const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <PersonAddIcon />;
 
           return (
             <Box sx={{ display: "inline-flex", gap: 0.5 }}>
@@ -384,13 +375,6 @@ const Index = ({
                 bookingId={row?.id}
                 currentEditingUser={row?.editingUsername}
               />
-              {/* <IconButton onClick={() => handleClick(row.agent_id, row.booking_code)} size="small" color="primary">
-                <Person />
-              {/* {row?.editingUsername && (
-                <Box component="small" sx={{ width: "10px" }} color="warning.main">
-                  Being used by {row.editingUsername}
-                </Box>
-              )} */}
             </Box>
           );
         },

@@ -313,13 +313,6 @@ class BookingRepository implements BookingInterface
 
     function delete($id) {}
 
-    function assignAgent($code, $user)
-    {
-        //Log::info($code);
-        //Log::info($user);
-        //dd('ok');
-    }
-
     function addTags($booking, $tags)
     {
 

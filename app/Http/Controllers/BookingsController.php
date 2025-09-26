@@ -379,16 +379,22 @@ class BookingsController extends Controller
         [Permissions::EditBookings],
         function ($request) {
           $request->validate([
-            'agent_id' => 'required|exists:users,id',
+            'agent_id' => 'nullable|exists:users,id',
             'booking_code' => 'required|exists:bookings,booking_code',
           ]);
           $agent_id = $request->input('agent_id');
           $booking_code = $request->input('booking_code');
           $booking = $this->bookingRepository->findByCode($booking_code);
           if ($booking) {
-            $booking->agent_id = $agent_id;
-            $booking->save();
-            return redirect()->back()->with('message', 'User assigned successfully.');
+            if (is_null($agent_id)) {
+              $booking->agent_id = null;
+              $booking->save();
+              return redirect()->back()->with('message', 'Agent unassigned successfully.');
+            } else {
+              $booking->agent_id = $agent_id;
+              $booking->save();
+              return redirect()->back()->with('message', 'User assigned successfully.');
+            }
           }
         },
         $request
