@@ -231,18 +231,12 @@ class Booking extends Model
       if ($this->status === 'CANCELLED') {
         throw new \Exception('This booking is already cancelled.');
       }
-      $segments = explode('-', $this->booking_code);
 
-      if (count($segments) !== 2) {
-        throw new \Exception('Invalid booking code format.');
-      }
-      $characters = config('whitelist.allowed_characters');
-      do {
-        $randomSegment = substr(str_shuffle($characters), 0, 4);
-      } while ($this->containsBlockedWords($randomSegment));
-      $segments[1] = $randomSegment;
-      $this->booking_code = implode('-', $segments);
       $this->status = 'CANCELLED';
+      $this->cabin->releaseCabin();
+
+      $this->lockedBy()->delete();
+
       $this->save();
 
       return true;
@@ -362,37 +356,7 @@ class Booking extends Model
     });
 
 
-    static::updated(function ($booking) {
-      if (!$booking->isDirty('status')) {
-        return;
-      }
 
-      $previousStatus = $booking->getOriginal('status');
-      $cabin = $booking->cabin;
-      if ($previousStatus === 'RESERVED') {
-        $newStatus = $booking->status;
-        if ($newStatus === 'CANCELLED') {
-          $cabinTypeId = $cabin->cabinType->id;
-          $cabin->inventory += 1;
-          if ($cabinTypeId === 1) {
-            $cabin->status = 'AVAILABLE';
-          } else {
-            $capacity = $cabin->category->capacity;
-            $cabin->status = $cabin->inventory == $capacity ? 'AVAILABLE' : 'PARTIALLY_BOOKED';
-          }
-        }
-      } else {
-        $cabin->status = 'RESERVED';
-        $booking->saveBookingLog($booking->id, 'Set to RESERVED', 'Cabin set to RESERVED for possible reactivation.');
-        $booking->saveQuietly();
-      }
-
-      $cabin->save();
-      //deleting booking from locks table
-      DB::table('booking_agent_sessions')
-        ->where('booking_id', $booking->id)
-        ->delete();
-    });
 
     static::deleted(function ($booking) {
       $booking->saveBookingLog($booking->id, 'Deleted', 'The booking was deleted');
