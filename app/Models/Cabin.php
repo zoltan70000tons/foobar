@@ -176,10 +176,11 @@ class Cabin extends Model
    */
   public function releaseCabin()
   {
-    // Check if there are other available cabins in the same category
+    // Check if there are other available cabins in the same category (excluding this one) and same type
     $otherAvailable = self::where('cabin_category_id', $this->cabin_category_id)
       ->where('id', '!=', $this->id)
-      ->where('status', StatusCabin::AVAILABLE)
+      ->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED])
+      ->where('cabin_type_id', $this->cabin_type_id)
       ->exists();
 
     if ($this->cabin_type_id == 1) {
