@@ -34,6 +34,9 @@ import { Cabin } from '@/interfaces/Cabin';
 import type { PageProps } from '@/types';
 import { CabinSubRow } from '@/interfaces/CabinSubRow';
 import { StatusTooltip } from '@/Components/StatusToolTip';
+import TagToolTip from '@/Components/TagToolTip';
+
+type Tag = { id: string; name: string; color: string, description: string };
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -42,7 +45,7 @@ type Props = PageProps & {
   cabins: Cabin[];
   errors: Errors;
   tab: string;
-  tags: { id: string; name: string; color: string }[];
+  tags: Tag[];
 };
 
 const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
@@ -210,13 +213,16 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
           return (
             <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
               {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
-                subRow.cabin_tags.map((tag: string) => (
+                subRow.cabin_tags.map((tag: Tag) => (
+                  <TagToolTip description={tag.description} title={tag.name} key={tag.id} label={tag.name}>
                   <Chip
                     key={tag.id}
                     label={tag.name}
                     size="small"
+                    style={{ backgroundColor: tag.color, color: '#fff' }}
                     sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
                   />
+                  </TagToolTip>
                 ))
               ) : (
                 <em>No Tags</em>
