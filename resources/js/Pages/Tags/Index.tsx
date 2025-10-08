@@ -55,7 +55,7 @@ const Index = ({ auth, tags }: PageProps) => {
                 filterable: true,
                 sortable: true,
                 //width: '17%',
-            },  
+            },
             {
                 header: 'Actions',
                 accessor: 'id',
@@ -116,9 +116,10 @@ const Index = ({ auth, tags }: PageProps) => {
         <AuthenticatedLayout user={auth.user} header={'Tags'}>
             <Head title="Tags" />
             <Toolbar sx={{ mt: 8 }}>
-                <Button variant="outlined" color="secondary" onClick={handleCreate}>
-                    New Tag
-                </Button>
+                {hasPermission(Permissions.CreateTags) && (
+                    <Button variant="outlined" color="secondary" onClick={handleCreate}>
+                        New Tag
+                    </Button>)}
             </Toolbar>
             <Container maxWidth="lg" sx={{ mb: 4 }}>
                 <Grid container spacing={3}>
