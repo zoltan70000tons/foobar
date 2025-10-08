@@ -21,6 +21,7 @@ import { DateRange, HeaderDateRange } from "@/Components/HeaderDateRange";
 import { Passenger } from "@/interfaces/Passenger";
 import { Booking } from "@/types/booking";
 import { Cabin } from "@/interfaces/Cabin";
+import { useRemember } from '@inertiajs/react';
 
 interface ColumnProps<T> {
   dateRange?: string;
@@ -60,6 +61,7 @@ interface DataGridProps<T> {
   tagOptions?: string[];
   statusOptions?: string[];
   showCustomFilter?: boolean;
+  rememberKey?: string
 }
 
 function MuiTable<T>(props: DataGridProps<T>) {
@@ -78,28 +80,39 @@ function MuiTable<T>(props: DataGridProps<T>) {
     tagOptions = [],
     statusOptions = [],
     showCustomFilter = false,
+    rememberKey = 'MuiTable'
   } = props;
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useRemember<number>(0, `${rememberKey}:page`);
+  const [rowsPerPage, setRowsPerPage] = useRemember<number>(10, `${rememberKey}:rpp`);
   const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
-  const [filters, setFilters] = useState<{ [key: string]: string }>({});
+  const [filters, setFilters] = useRemember<Record<string, string>>({}, `${rememberKey}:filters`);
+  const [sort, setSort] = useRemember<{key: keyof T | string; direction:'asc'|'desc'}>(
+    { key: props.columns[0]?.accessor ?? '', direction: 'asc' },
+    `${rememberKey}:sort`
+  );
+  const [customFilter, setCustomFilter] = useRemember<string>('', `${rememberKey}:q`);
+  const [dateRangeState, setDateRangeState] = useRemember<Record<string, any>>(
+    {}, `${rememberKey}:dr`
+  );
+  
+  
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
   const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
-  const [sort, setSort] = useState<{
-    key: keyof T | string;
-    direction: "asc" | "desc";
-  }>({
-    key: columns[0]?.accessor ?? "",
-    direction: "asc",
-  });
+  // const [sort, setSort] = useState<{
+  //   key: keyof T | string;
+  //   direction: "asc" | "desc";
+  // }>({
+  //   key: columns[0]?.accessor ?? "",
+  //   direction: "asc",
+  // });
 
   const [loading, setLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState<T[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [customFilter, setCustomFilter] = useState("");
-  const [dateRangeState, setDateRangeState] = useState<Record<string, DateRange>>({});
+  // const [customFilter, setCustomFilter] = useState("");
+  // const [dateRangeState, setDateRangeState] = useState<Record<string, DateRange>>({});
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
@@ -324,10 +337,10 @@ function MuiTable<T>(props: DataGridProps<T>) {
                           {column.filterOptions?.map((option) => (
                             <MenuItem key={option} value={option}>
                               {option === "RESERVED"
-                              ? "INTERNALLY AVAILABLE"
-                              : option === "AVAILABLE"
-                              ? "PUBLICLY AVAILABLE"
-                              : option}
+                                ? "INTERNALLY AVAILABLE"
+                                : option === "AVAILABLE"
+                                  ? "PUBLICLY AVAILABLE"
+                                  : option}
                             </MenuItem>
                           ))}
                         </Select>

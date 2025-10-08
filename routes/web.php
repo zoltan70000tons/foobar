@@ -105,6 +105,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/events/{id}/cabins/create', [CabinsController::class, 'create'])->name('cabins.create');
   Route::post('/events/{id}/cabins/store', [CabinsController::class, 'store'])->name('cabins.store');
   Route::post('/events/{id}/cabins/createShared', [CabinsController::class, 'createShared'])->name('cabins.createShared');
+  Route::get('/events/{id}/cabins/getData', [CabinsController::class, 'getData'])->name('cabins.getData');
+  
   //Cabin categories
   Route::get('/events/{id}/cabins/categories/{catId}/show', [CabinCategoriesController::class, 'show'])->name(
     'cabinCategory.show'

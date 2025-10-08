@@ -369,4 +369,21 @@ class CabinsController extends Controller
             $this->logException($e);
         }
     }
+
+
+     public function getData()
+    {
+        try {
+            $eventId = request()->route('id');
+            $perPage = request()->query('per_page', 10);
+            $page = request()->query('page', 1);
+            $code = request()->query('category_code', null);
+            $name = request()->query('title', null);
+            $data = $this->cabinRepository->getCategoriesAndCabins($eventId, $perPage, $page, $code, $name);
+            return response()->json(['data' => $data]);
+        } catch (\Exception $e) {
+            $this->logException($e);
+            return response()->json(['data' => []], 500);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -26,7 +26,7 @@ import { Visibility, Edit, Delete } from '@mui/icons-material';
 import { Permissions } from '@/enums/PermissionEnum';
 import { usePermissions } from '@/Providers/PermissionContext';
 import apiRoutes from '@/Helpers/ApiRoutes';
-import type { Errors} from '@inertiajs/core';
+import type { Errors } from '@inertiajs/core';
 import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 import AddIcon from '@mui/icons-material/Add';
 import { Event } from '@/interfaces/Event';
@@ -35,6 +35,9 @@ import type { PageProps } from '@/types';
 import { CabinSubRow } from '@/interfaces/CabinSubRow';
 import { StatusTooltip } from '@/Components/StatusToolTip';
 import TagToolTip from '@/Components/TagToolTip';
+import axios from 'axios';
+import { Link, useRemember } from '@inertiajs/react';
+
 
 type Tag = { id: string; name: string; color: string, description: string };
 
@@ -164,24 +167,24 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         filterOptions: Object.values(CabinStatus),
         draw: (row: CabinSubRow) => (
           <>
-          <StatusTooltip status={row.cabin_status}>
-            <Chip
-              size="small"
-              label={
-                row.cabin_status === "RESERVED"
-                  ? "INTERNALLY AVAILABLE"
-                  : row.cabin_status === "AVAILABLE"
-                  ? "PUBLICLY AVAILABLE"
-                  : row.cabin_status
-              }
-              color={CabinStatusColor[row.cabin_status]}
-              sx={{
-                margin: 'auto',
-                fontSize: '0.7rem',
-                fontWeight: '600',
-              }}
-            />
-          </StatusTooltip>
+            <StatusTooltip status={row.cabin_status}>
+              <Chip
+                size="small"
+                label={
+                  row.cabin_status === "RESERVED"
+                    ? "INTERNALLY AVAILABLE"
+                    : row.cabin_status === "AVAILABLE"
+                      ? "PUBLICLY AVAILABLE"
+                      : row.cabin_status
+                }
+                color={CabinStatusColor[row.cabin_status]}
+                sx={{
+                  margin: 'auto',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                }}
+              />
+            </StatusTooltip>
             {row.is_reserved && (
               <Typography
                 variant="body2"
@@ -215,13 +218,13 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
               {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
                 subRow.cabin_tags.map((tag: Tag) => (
                   <TagToolTip description={tag.description} title={tag.name} key={tag.id} label={tag.name}>
-                  <Chip
-                    key={tag.id}
-                    label={tag.name}
-                    size="small"
-                    style={{ backgroundColor: tag.color, color: '#fff' }}
-                    sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
-                  />
+                    <Chip
+                      key={tag.id}
+                      label={tag.name}
+                      size="small"
+                      style={{ backgroundColor: tag.color, color: '#fff' }}
+                      sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
+                    />
                   </TagToolTip>
                 ))
               ) : (
@@ -238,12 +241,10 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         draw: (row: Cabin) => (
           <div style={{ display: 'flex', gap: '10px' }}>
             {auth.permissions.includes(Permissions.ViewCabins) && (
-              <Visibility
-                onClick={() => {
-                  router.get(route('cabins.edit', { id: event.id, cabin_id: row.id }));
-                }}
-                style={{ cursor: 'pointer' }}
-              />
+              <Link href={route('cabins.edit', { id: event.id, cabin_id: row.id })}>
+                <Visibility style={{ cursor: 'pointer' , fill:'white'}} />
+              </Link>
+
             )}
           </div>
         ),
@@ -369,6 +370,40 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
     setOpenDialog(false);
   };
 
+  type Filters = Record<string, string | number | boolean>;
+  const fetchData = useCallback(
+    async (
+      page: number,
+      rowsPerPage: number,
+      filters: Filters,
+      sort: { key?: string; direction?: string } | undefined,
+      dateRangeState: null
+    ) => {
+      try {
+
+        const res = await axios.get(route("cabins.getData", { id: event.id }), {
+          params: {
+            page: page + 1,
+            per_page: rowsPerPage,
+            sort_key: sort?.key ?? "created_at",
+            sort_direction: sort?.direction ?? "asc",
+            // keyword: searchTerm,
+            //tab: selectedTab ?? 0,
+            //tags: tags,
+            //user_ids: selectedUsers.map((user) => user.id),
+            //date_range: dateRangeState,
+            ...filters,
+          },
+        });
+        return res.data.data;
+      } catch (err) {
+        throw err;
+      }
+    },
+    [event.id]
+  );
+
+
   return (
     <AuthenticatedLayout user={auth.user} header={'Cabins'}>
       <Head title="Cabins" />
@@ -414,6 +449,9 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                       statusOptions={Object.values(CabinStatusReduced)}
                       onApplyTags={manageTags}
                       onApplyState={manageStatus}
+                      serverSidePagination={true}
+                      fetchData={fetchData}
+                      rememberKey={`cabins:${event.id}:inventory`}
                     />
                   </div>
                 ) : (
