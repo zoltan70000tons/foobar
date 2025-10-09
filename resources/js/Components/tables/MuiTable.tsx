@@ -21,6 +21,7 @@ import { DateRange, HeaderDateRange } from "@/Components/HeaderDateRange";
 import { Passenger } from "@/interfaces/Passenger";
 import { Booking } from "@/types/booking";
 import { Cabin } from "@/interfaces/Cabin";
+import { useRemember } from '@inertiajs/react';
 
 interface ColumnProps<T> {
   dateRange?: string;
@@ -60,6 +61,7 @@ interface DataGridProps<T> {
   tagOptions?: string[];
   statusOptions?: string[];
   showCustomFilter?: boolean;
+  rememberKey?: string
 }
 
 function MuiTable<T>(props: DataGridProps<T>) {
@@ -78,28 +80,39 @@ function MuiTable<T>(props: DataGridProps<T>) {
     tagOptions = [],
     statusOptions = [],
     showCustomFilter = false,
+    rememberKey = 'MuiTable'
   } = props;
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [expandedRowId, setExpandedRowId] = useState<string | number | null>(null);
-  const [filters, setFilters] = useState<{ [key: string]: string }>({});
+  const [page, setPage] = useRemember<number>(0, `${rememberKey}:page`);
+  const [rowsPerPage, setRowsPerPage] = useRemember<number>(10, `${rememberKey}:rpp`);
+  const [expandedRowId, setExpandedRowId] = useRemember<string | number | null>(null, `${rememberKey}:exp`);
+  const [selectedRows, setSelectedRows] = useRemember<(string | number)[]>([], `${rememberKey}:sel`);
+  const [selectedSubRows, setSelectedSubRows] = useRemember<{ id: string | number; status: string }[]>([], `${rememberKey}:subsel`);
+  const [filters, setFilters] = useRemember<Record<string, string>>({}, `${rememberKey}:filters`);
+  const [sort, setSort] = useRemember<{ key: keyof T | string; direction: 'asc' | 'desc' }>(
+    { key: props.columns[0]?.accessor ?? '', direction: 'asc' },
+    `${rememberKey}:sort`
+  );
+  const [customFilter, setCustomFilter] = useRemember<string>('', `${rememberKey}:q`);
+  const [dateRangeState, setDateRangeState] = useRemember<Record<string, any>>(
+    {}, `${rememberKey}:dr`
+  );
+
+
   const [subFilters, setSubFilters] = useState<{ [key: string]: string }>({});
-  const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-  const [selectedSubRows, setSelectedSubRows] = useState<{ id: string | number; status: string }[]>([]);
-  const [sort, setSort] = useState<{
-    key: keyof T | string;
-    direction: "asc" | "desc";
-  }>({
-    key: columns[0]?.accessor ?? "",
-    direction: "asc",
-  });
 
   const [loading, setLoading] = useState(false);
   const [paginatedData, setPaginatedData] = useState<T[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [customFilter, setCustomFilter] = useState("");
-  const [dateRangeState, setDateRangeState] = useState<Record<string, DateRange>>({});
+  // const [customFilter, setCustomFilter] = useState("");
+  // const [dateRangeState, setDateRangeState] = useState<Record<string, DateRange>>({});
+
+
+  const [subPageByRow, setSubPageByRow] = useRemember<Record<string | number, number>>({}, `${rememberKey}:subpage`);
+  const [subRppByRow, setSubRppByRow] = useRemember<Record<string | number, number>>({}, `${rememberKey}:subrpp`);
+
+
+  const dataArray: T[] = Array.isArray(data) ? data : data ? Object.values(data) as T[] : [];
 
   useEffect(() => {
     if (serverSidePagination && fetchData) {
@@ -120,7 +133,22 @@ function MuiTable<T>(props: DataGridProps<T>) {
     }
   }, [page, rowsPerPage, filters, sort, serverSidePagination, fetchData, dateRangeState]);
 
-  const dataArray: T[] = Array.isArray(data) ? data : data ? Object.values(data) as T[] : [];
+
+
+
+  // useEffect(() => {
+  //   const ids = new Set((serverSidePagination ? paginatedData : dataArray).map((r: any) => r.id));
+  //   setSelectedRows(prev => prev.filter(id => ids.has(id)));
+  //   setSelectedSubRows(prev => prev.filter(r => ids.has(r.id)));
+  //   if (expandedRowId != null && !ids.has(expandedRowId)) {
+  //     setExpandedRowId(null);
+  //   }
+  
+  //   //eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [paginatedData]);
+
+
+ 
 
   const filteredData = dataArray.filter((row: T) => {
     return Object.keys(filters).every((key) => {
@@ -324,10 +352,10 @@ function MuiTable<T>(props: DataGridProps<T>) {
                           {column.filterOptions?.map((option) => (
                             <MenuItem key={option} value={option}>
                               {option === "RESERVED"
-                              ? "INTERNALLY AVAILABLE"
-                              : option === "AVAILABLE"
-                              ? "PUBLICLY AVAILABLE"
-                              : option}
+                                ? "INTERNALLY AVAILABLE"
+                                : option === "AVAILABLE"
+                                  ? "PUBLICLY AVAILABLE"
+                                  : option}
                             </MenuItem>
                           ))}
                         </Select>
