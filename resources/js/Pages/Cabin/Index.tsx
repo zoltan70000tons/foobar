@@ -39,6 +39,7 @@ import axios from 'axios';
 import { Link, useRemember } from '@inertiajs/react';
 
 
+
 type Tag = { id: string; name: string; color: string, description: string };
 
 type Props = PageProps & {
@@ -67,6 +68,8 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   const { showSnackbar } = useSnackbar();
 
   const { flash } = usePage<PageProps>().props;
+
+  const [tableTick, setTableTick] = useState(0); // State to force table re-render
 
   useEffect(() => {
     if (flash.message) {
@@ -242,7 +245,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
           <div style={{ display: 'flex', gap: '10px' }}>
             {auth.permissions.includes(Permissions.ViewCabins) && (
               <Link href={route('cabins.edit', { id: event.id, cabin_id: row.id })}>
-                <Visibility style={{ cursor: 'pointer' , fill:'white'}} />
+                <Visibility style={{ cursor: 'pointer', fill: 'white' }} />
               </Link>
 
             )}
@@ -330,9 +333,16 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
     const url = apiRoutes.addCabinTags(event.id);
     setLoading(true);
     try {
-      router.post(route('cabins.addTag', { id: event.id }), { tags, rows });
-      //router.reload({ only: ['cabins'], preserveScroll: true });
-      showSnackbar('Tags edited successfully', 'success');
+      router.post(route('cabins.addTag', { id: event.id }), { tags, rows }, {
+        onSuccess: () => {
+          setTableTick(t => t + 1); 
+          showSnackbar('Tags edited successfully', 'success');
+        },
+        onError: () => showSnackbar('Error updating Tags', 'error'),
+        onFinish: () => setLoading(false),
+        preserveScroll: true,
+      });
+
     } catch (error) {
       console.error('Error adding tags:', error);
       showSnackbar('Error updating tags', 'error');
@@ -353,7 +363,18 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
     const url = apiRoutes.updateCabinStatus(event.id);
     const rowIds = rows.map((row: Cabin) => row.id);
     setLoading(true);
-    router.post(route('cabins.updateStatus', { id: event.id }), { status, rows: rowIds });
+    router.post(route('cabins.updateStatus', { id: event.id }),
+      { status, rows: rowIds },
+      {
+        onSuccess: () => {
+          setTableTick(t => t + 1); 
+          showSnackbar('Status edited successfully', 'success');
+        },
+        onError: () => showSnackbar('Error updating status', 'error'),
+        onFinish: () => setLoading(false),
+        preserveScroll: true,
+      }
+    );
     // axios
     //   .post(url, { status: status, rows: rowIds })
     //   .then((response) => {
@@ -452,6 +473,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                       serverSidePagination={true}
                       fetchData={fetchData}
                       rememberKey={`cabins:${event.id}:inventory`}
+                      key={tableTick}
                     />
                   </div>
                 ) : (
