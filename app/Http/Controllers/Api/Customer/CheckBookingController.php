@@ -34,36 +34,43 @@ class CheckBookingController extends Controller
   public function getBooking(Request $request)
   {
     // get passenger from request
-    $passenger = $request->user();
+    $guestPassenger = $request->user();
 
     // Check if passenger is authenticated and has the view-booking token
-    if (!$passenger || !$request->user()->tokenCan('view-booking')) {
+    if (!$guestPassenger || !$request->user()->tokenCan('view-booking')) {
       return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     // load related data
-    $passenger->load(['fees', 'installments', 'payments', 'onboardCredits']);
+    $guestPassenger->load(['fees', 'installments', 'payments', 'onboardCredits']);
 
     // get booking details based on passenger's booking_id
-    $booking = Booking::with(['cabin.category', 'cabin.cabinType', 'adjustments', 'event'])
-      ->where('id', $passenger->booking_id)
-      ->first();
+    $booking = Booking::with([
+      'cabin.category',
+      'cabin.cabinType',
+      'adjustments',
+      'event',
+      'passengers' => function ($q) {
+        $q->with(['fees', 'installments', 'payments', 'onboardCredits']);
+      },
+    ])->find($guestPassenger->booking_id);
 
     // Check if booking exists
     if (!$booking) {
       return response()->json(['message' => 'Booking not found'], 404);
     }
 
-    // Set installment status attribute
-    $passenger->append([
-      'installment_status',
-    ]);
+    // Append installment status for all passengers in booking
+    $booking->passengers->each->append('installment_status');
+
+    // Find the authenticated passenger inside booking’s passengers
+    $guestPassengerInBooking = $booking->passengers->firstWhere('id', $guestPassenger->id);
 
     // return booking details, event details, and passenger details
     return response()->json([
       'booking'    => $booking,
       'event'      => $booking->event,
-      'passengers' => $passenger,
+      'guest_pax'  => $guestPassengerInBooking,
     ], 200);
   }
 
@@ -148,7 +155,6 @@ class CheckBookingController extends Controller
         'error' => $e->getMessage(),
       ], 500);
     }
-
   }
 
 
@@ -161,38 +167,38 @@ class CheckBookingController extends Controller
   */
   public function logout(Request $request)
   {
-      $language = $request->input('language', 'en');
-      App::setLocale($language);
+    $language = $request->input('language', 'en');
+    App::setLocale($language);
 
-      // Requires auth:passenger middleware; retrieves authenticated passenger and current token
-      $passenger = $request->user();
-      if (!$passenger) {
-        return response()->json(['message' => 'Unauthorized'], 401);
-      }
+    // Requires auth:passenger middleware; retrieves authenticated passenger and current token
+    $passenger = $request->user();
+    if (!$passenger) {
+      return response()->json(['message' => 'Unauthorized'], 401);
+    }
 
-      // Revoke all tokens for this passenger (scoped to this provider)
-      $provider = $passenger->getProviderName();
+    // Revoke all tokens for this passenger (scoped to this provider)
+    $provider = $passenger->getProviderName();
 
-      $tokens = PassportToken::where('user_id', $passenger->getAuthIdentifier())
-        ->whereHas('client', function (Builder $query) use ($provider) {
-          $query->where(function (Builder $query) use ($provider) {
-            if ($provider === config('auth.guards.api.provider')) {
-              $query->orWhereNull('provider');
-            }
-            $query->orWhere('provider', $provider);
-          });
-        })
-        ->with('refreshToken')
-        ->get();
+    $tokens = PassportToken::where('user_id', $passenger->getAuthIdentifier())
+      ->whereHas('client', function (Builder $query) use ($provider) {
+        $query->where(function (Builder $query) use ($provider) {
+          if ($provider === config('auth.guards.api.provider')) {
+            $query->orWhereNull('provider');
+          }
+          $query->orWhere('provider', $provider);
+        });
+      })
+      ->with('refreshToken')
+      ->get();
 
-      foreach ($tokens as $token) {
-        $token->refreshToken?->revoke();
-        $token->revoke();
-      }
+    foreach ($tokens as $token) {
+      $token->refreshToken?->revoke();
+      $token->revoke();
+    }
 
-      // Clean up custom token tracking table for this passenger
-      PassengerToken::where('passenger_id', $passenger->id)->delete();
+    // Clean up custom token tracking table for this passenger
+    PassengerToken::where('passenger_id', $passenger->id)->delete();
 
-      return response()->json(['message' => 'Logged out from all sessions'], 200);
+    return response()->json(['message' => 'Logged out from all sessions'], 200);
   }
 }

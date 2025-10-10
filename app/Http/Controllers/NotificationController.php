@@ -52,13 +52,31 @@ class NotificationController extends Controller
 
     try {
       $validated = $request->validate([
-        'amount' => 'required|numeric|min:0',
-        'passenger_id' => 'required|exists:passengers,id',
         'BIP_ID' => 'required|string|max:50',
+        'amount' => 'required|numeric|min:0',
+        'bookingCode' => 'required|string|max:20',
+
+        'paymentData' => 'required|array|min:1',
+        'paymentData.*.passengerId' => 'required|integer',
+        'paymentData.*.passengerName' => 'nullable|string|max:255',
+        'paymentData.*.passengerOrder' => 'required|integer',
+        'paymentData.*.paymentAmount' => 'required|numeric|min:0',
+        'paymentData.*.amountOwing' => 'nullable|numeric|min:0',
+        'paymentData.*.balance' => 'nullable|numeric',
+
+        'billingData' => 'required|array',
+        'billingData.city' => 'required|string|max:255',
+        'billingData.name' => 'required|string|max:255',
+        'billingData.email' => 'required|email|max:255',
+        'billingData.notes' => 'nullable|string|max:500',
+        'billingData.state' => 'nullable|string|max:100',
+        'billingData.street' => 'required|string|max:255',
+        'billingData.country' => 'required|string|size:2', // ISO country code
+        'billingData.postalCode' => 'nullable|string|max:20',
+
         'type' => 'required|string|in:PAYMENT,REFUND',
         'notes' => 'nullable|string|max:255',
         'transaction_date' => 'required|date',
-        'splitAmount' => 'nullable',
       ]);
 
       // Prevent duplicate BIP_ID processing
@@ -66,102 +84,97 @@ class NotificationController extends Controller
         return response()->json(['error' => 'Duplicate transaction'], 409);
       }
 
-      $validated['source'] = 'SYSTEM';
-      $passenger = Passenger::find($validated['passenger_id']);
-      $booking = $passenger->booking;
-
+      // Load booking by booking_code
+      $booking = Booking::where('booking_code', $validated['bookingCode'])->first();
       if (!$booking) {
-        return response()->json(['error' => 'No booking found for this passenger'], 404);
+        return response()->json(['error' => "{$validated['bookingCode']} Booking not found"], 404);
       }
 
-      $splitAmount = filter_var($validated['splitAmount'], FILTER_VALIDATE_BOOLEAN);
+      $bookingId = $booking->id;
+      $eventId = $booking->event_id;
 
-      // Check if the payment is a split payment
-      if ($splitAmount) {
-        $passengers = $booking->passengers;
-        $splitValue = round($validated['amount'] / $passengers->count(), 2);
-        $totalDistributed = 0;
-
-        foreach ($passengers as $index => $pax) {
-          $individualAmount = ($index === $passengers->count() - 1)
-            ? $validated['amount'] - $totalDistributed // Fix rounding error on last passenger
-            : $splitValue;
-
-          Payment::create([
-            'amount' => $individualAmount,
-            'passenger_id' => $pax->id,
-            'BIP_ID' => $validated['BIP_ID'] . "_SPLIT_{$pax->id}",
-            'type' => $validated['type'],
-            'notes' => $validated['notes'],
-            'transaction_date' => $validated['transaction_date'],
-            'source' => $validated['source'],
-            'splitAmount' => true,
-          ]);
-
-          $this->paymentInfoService->syncBalance($pax->id, $booking->id, $booking->event_id);
-          $totalDistributed += $individualAmount;
-        }
-
-        $this->saveBookingLog(
-          $booking->id,
-          'System Split Payment Received',
-          "System {$validated['type']} of \${$validated['amount']} was split across all passengers"
-        );
-      } else {
-        // Single payment path
-        Payment::create($validated);
-        $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking->id, $booking->event_id);
-
-        $this->saveBookingLog(
-          $booking->id,
-          'System Transaction Received',
-          "System {$validated['type']} of \${$validated['amount']} was added to booking"
-        );
+      // Ensure all paymentData passengers belong to this booking
+      $passengerIds = collect($validated['paymentData'])->pluck('passengerId')->unique()->values();
+      $passengersInBooking = Passenger::whereIn('id', $passengerIds)->where('booking_id', $booking->id)->pluck('id');
+      if ($passengersInBooking->count() !== $passengerIds->count()) {
+        $invalid = $passengerIds->diff($passengersInBooking);
+        return response()->json([
+          'error' => 'One or more passengers do not belong to this booking',
+          'invalidPassengerIds' => $invalid->values(),
+        ], 422);
       }
+
+      $isSplit = $passengerIds->count() > 1;
+
+      foreach ($validated['paymentData'] as $row) {
+        $paxId        = (int) $row['passengerId'];
+        $amountForPax = (float) $row['paymentAmount'];
+
+        Payment::create([
+          'amount'           => $amountForPax,
+          'passenger_id'     => $paxId,
+          'BIP_ID'           => $validated['BIP_ID'],
+          'type'             => $validated['type'],
+          'notes'            => $validated['notes'] ?? null,
+          'transaction_date' => $validated['transaction_date'],
+          'source'           => 'SYSTEM',
+          'splitAmount'      => $isSplit,
+        ]);
+
+        // Sync passenger balance
+        $this->paymentInfoService->syncBalance($paxId, $bookingId, $eventId);
+      }
+
+      // Booking log text that matches your plan and amount
+      $this->saveBookingLog(
+        $booking->id,
+        $isSplit ? 'System Split Payment Received' : 'System Transaction Received',
+        $isSplit
+          ? "System {$validated['type']} of $" . number_format($validated['amount'], 2) .
+          " was split across " . $passengerIds->count() . " passenger(s)."
+          : "System {$validated['type']} of $" . number_format($validated['amount'], 2) . " was added to booking"
+      );
 
       DB::commit();
 
-      // Send Slack notification
+      $leadPassenger = $booking->passengers->firstWhere('lead_passenger', true);
+
+      // Slack notification with lead passenger info
       try {
         Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
-          new PaymentIsReceived($booking, $passenger, $validated['amount'])
+          new PaymentIsReceived($booking, $leadPassenger, $validated['amount'])
         );
       } catch (\Exception $e) {
         Log::warning('Slack notification failed: ' . $e->getMessage());
       }
 
-      // If the type is REFUND, we don't need to send an email or do anything else
+      // If refund, stop here (no email)
       if ($validated['type'] === 'REFUND') {
         return response()->json(['message' => 'Refund processed successfully'], 200);
       }
 
-      // Email template handling
+      // Choose email template by booking->payment_plan
       $template = match ($booking->payment_plan) {
-        'PAY_IN_FULL' => 'thanks_payment_full',
+        'PAY_IN_FULL'  => 'thanks_payment_full',
         'INSTALLMENTS' => 'thanks_payment_inst',
-        default => null,
+        default        => null,
       };
 
       if (!$template) {
         return response()->json(['error' => 'No template found for this payment plan'], 500);
       }
 
-      $lead = $booking->passengers->where('lead_passenger', true)->first();
-      $payingPassenger = $booking->passengers->where('id', $validated['passenger_id'])->first();
-      $user = User::where('email', $lead->email)->first();
-      $detail = $user->detail;
-      $language = $detail->language ?? 'en';
+      // Send email based on lead passenger language preference
+      $language = $leadPassenger->language ?? 'en';
 
       $templateId = $this->emailService->getTemplateId($language, $template);
-
       if (!$templateId) {
         Log::error("No email template found for language: {$language}");
         return response()->json(['error' => 'Email template not found'], 500);
       }
 
       $extraData = ['PAID_AMOUNT' => formatCurrency($validated['amount'])];
-
-      $this->emailService->sendEmail($templateId, $booking, $payingPassenger, [], $extraData, true, true);
+      $this->emailService->sendEmail($templateId, $booking, $leadPassenger, [], $extraData, true, true);
 
       return response()->json(['message' => 'Payment processed, email sent successfully'], 200);
     } catch (\Throwable $e) {
