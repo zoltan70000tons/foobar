@@ -55,11 +55,17 @@ type Props = PageProps & {
 const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   const { hasPermission } = usePermissions();
 
+  const getTabFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    return parseInt(params.get('tab') || '0', 10);
+  };
+
+
   // TEST
   // const isPermissions = auth.permissions.includes(Permissions.ViewCabinCategories);
   // console.log('isPermissions', isPermissions);
 
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState<number>(getTabFromUrl());
 
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -87,8 +93,28 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
     }
   }, [cabins]);
 
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = parseInt(params.get('tab') || '0', 10);
+      setSelectedTab(tabParam);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', newValue.toString());
+
+    window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
   };
 
   const columns = useMemo(
