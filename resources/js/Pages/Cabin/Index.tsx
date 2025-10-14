@@ -38,8 +38,6 @@ import TagToolTip from '@/Components/TagToolTip';
 import axios from 'axios';
 import { Link, useRemember } from '@inertiajs/react';
 
-
-
 type Tag = { id: string; name: string; color: string, description: string };
 
 type Props = PageProps & {
@@ -59,7 +57,13 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   // const isPermissions = auth.permissions.includes(Permissions.ViewCabinCategories);
   // console.log('isPermissions', isPermissions);
 
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useRemember(0, 'cabins:selectedTab');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSelectedTab(parseInt(params.get('tab') || String(selectedTab), 10));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -87,8 +91,22 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
     }
   }, [cabins]);
 
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', String(newValue));
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+
+    router.get(
+      newUrl,
+      {},
+      {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+      }
+    );
   };
 
   const columns = useMemo(
