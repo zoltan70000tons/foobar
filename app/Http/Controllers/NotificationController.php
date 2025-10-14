@@ -51,7 +51,9 @@ class NotificationController extends Controller
     DB::beginTransaction();
 
     try {
-      $validated = $request->validate([
+      $payload = $request->input('bookingEnginePayload', []);
+
+      $validated = $payload->validate([
         'BIP_ID' => 'required|string|max:50',
         'amount' => 'required|numeric|min:0',
         'bookingCode' => 'required|string|max:20',
@@ -182,7 +184,7 @@ class NotificationController extends Controller
         'exception' => $e->getMessage(),
         'request' => $request->all(),
       ]);
-      return response()->json(['error' => 'Unexpected error occurred'], 500);
+      return response()->json(['error' => 'Unexpected error occurred: ' . $e->getMessage()], 500);
     }
   }
 
