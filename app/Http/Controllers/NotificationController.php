@@ -52,7 +52,7 @@ class NotificationController extends Controller
 
     try {
       $request->merge($request->input('bookingEnginePayload', []));
-      $validated = $payload->validate([
+      $validated = $request->validate([
         'BIP_ID' => 'required|string|max:50',
         'amount' => 'required|numeric|min:0',
         'bookingCode' => 'required|string|max:20',
