@@ -51,8 +51,7 @@ class NotificationController extends Controller
     DB::beginTransaction();
 
     try {
-      $payload = $request->input('bookingEnginePayload', []);
-
+      $request->merge($request->input('bookingEnginePayload', []));
       $validated = $payload->validate([
         'BIP_ID' => 'required|string|max:50',
         'amount' => 'required|numeric|min:0',
