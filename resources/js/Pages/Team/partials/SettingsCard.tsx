@@ -84,7 +84,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     setData('gender', value.target.value);
   }
   return (
-    <Card variant="outlined" sx={{ height: "100%", width: "100%",background:"#383838", border:"2px solid grey" }}>
+    <Card variant="outlined" sx={{marginTop:'0.02rem', borderRadius:0, height: "99.9%", width: "100%",background:"#383838", border:"2px solid grey", borderLeft:{ xs: '2px solid grey', md: 'none'}, marginBottom:"1rem" }}>
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
@@ -149,7 +149,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                 </Grid>
 
                 {/* Third row */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={4} sx={{mt:{xs:4, md:0}}}>
                   <CustomInput
                     name="email"
                     value={data?.email || ""}

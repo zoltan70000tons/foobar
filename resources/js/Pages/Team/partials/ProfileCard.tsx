@@ -1,4 +1,4 @@
-import { Avatar,Card, Badge, Chip, Grid,Typography } from "@mui/material";
+import { Avatar, Card, Badge, Chip, Grid, Typography } from "@mui/material";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { User } from "@/interfaces/User";
 
@@ -34,13 +34,17 @@ export default function ProfileCard({ user }: ProfileCardProps) {
   };
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={{borderRadius:0,  background:'#383838'}}>
       <Grid
         container
         direction="column"
         justifyContent="center"
         alignItems="center"
-        sx={{background:"#383838", border:"2px solid grey"}}
+        sx={{
+          background: "#383838",
+          border: "2px solid grey",
+          marginBottom: { xs: "1rem", sm: "1rem", md : 0 },
+        }}
       >
 
         <Grid item sx={{ p: "1.5rem 0rem", textAlign: "center" }}>
@@ -66,7 +70,7 @@ export default function ProfileCard({ user }: ProfileCardProps) {
           </Badge>
 
           <Typography variant="h6">
-            {user.detail?.first_name} {user.detail?.last_name }
+            {user.detail?.first_name} {user.detail?.last_name}
           </Typography>
           <Typography color="text.secondary">{user.email}</Typography>
         </Grid>

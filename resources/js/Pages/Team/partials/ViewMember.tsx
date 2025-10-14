@@ -16,12 +16,12 @@ export default function ViewMember({ selectedUser }: ViewMemberProps) {
     <Grid
       container
       direction={{ xs: "column", md: "row" }}
-      spacing={2}
+      sx={{ width: "100%", margin: '0',mt: 0 }}
     >
-      <Grid item md={3}>
+      <Grid item md={3} sx={{ p:0}}>
         <ProfileCard user={selectedUser}></ProfileCard>
       </Grid>
-      <Grid item md={9} sx={{ width: '100%' }}>
+      <Grid item md={9} sx={{ width: '100%', paddingTop:'0px'}}>
         <SettingsCard user={selectedUser}  ></SettingsCard>
       </Grid>
     </Grid>
