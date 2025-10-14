@@ -122,6 +122,11 @@ function MuiTable<T>(props: DataGridProps<T>) {
           const response = await fetchData(page, rowsPerPage, filters, sort, dateRangeState);
           setPaginatedData(response.data);
           setTotalCount(response.total ?? 0);
+          const totalPages = Math.ceil(response.total / rowsPerPage);
+
+          if (page >= totalPages) {
+            setPage(totalPages > 0 ? totalPages - 1 : 0);
+          }
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
