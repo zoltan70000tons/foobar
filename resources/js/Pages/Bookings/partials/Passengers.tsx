@@ -515,7 +515,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     : handleEditPassenger(passenger)
                 }
               >
-                {passenger.lead_passenger && (<Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                {(passenger.lead_passenger && !isSingleRoom) && (<Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                   <IconButton
                     size="small"
                     disabled={!editMode}
