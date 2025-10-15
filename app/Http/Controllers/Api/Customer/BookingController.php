@@ -766,6 +766,64 @@ class BookingController extends Controller
     return response()->json(['message' => 'Invitation cancelled'], 200);
   }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cancel invitation by passengerOrder
+    |--------------------------------------------------------------------------
+    |
+    |  Delete the invitation row
+    |
+    */
+    public function cancelInvitationByOrder(Request $request, int $eventId, string $bookingCode)
+    {
+        try {
+            $language = $request->input('language', 'en');
+            App::setLocale($language);
+
+            $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
+
+            if (!$booking) {
+                return response()->json(['message' => __('feedback.booking_not_found')], 404);
+            }
+
+            $passengerOrder = $request->input('passenger_order');
+
+            if (!$passengerOrder) {
+                return response()->json(['message' => 'Error with payload'], 400);
+            }
+
+            $passenger = Passenger::query()
+                ->where('booking_id', $booking->id)
+                ->where('passenger_order', $passengerOrder)
+                ->first();
+
+            if (!$passenger) {
+                return response()->json(['message' => 'Passenger not found'], 404);
+            }
+
+            $passengerInvitation = PassengerInvitation::query()
+                ->where('booking_id', $booking->id)
+                ->where('passenger_id', $passenger->id)
+                ->first();
+
+            if (!$passengerInvitation) {
+                return response()->json(['message' => 'Invitation not found'], 404);
+            }
+
+            $passengerInvitation->delete();
+
+            $this->saveBookingLog(
+                $booking->id,
+                'BY USER: Cancelled invitation',
+                'Lead passenger cancelled invitation via email '
+            );
+
+            return response()->json(['message' => 'Invitation cancelled'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 418);
+        }
+    }
+
   /*
   |--------------------------------------------------------------------------
   | Reset passenger seat

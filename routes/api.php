@@ -125,6 +125,7 @@ Route::middleware([
   ]);
   // cancel invitation
   Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation', [BookingController::class, 'cancelInvitation']);
+  Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation-by-order', [BookingController::class, 'cancelInvitationByOrder']);
 
   // --- all bookings
   Route::get('/my-bookings', [BookingController::class, 'allBookings']);
