@@ -43,9 +43,15 @@ return [
   'email_invitation_on_your_account' => 'You have an invitation on your account.',
   'email_invitation_on_your_account_body' => 'You have 72 hours to accept this invitation. If you do not accept this invitation within this time, the invitation will be cancelled. You can check your invitations in your Bookings page on your account. If you have any questions, please contact our Customer Service Crew.',
   'email_not_found' => 'Email not found',
-  
+
   'seat_reset_subject' => 'You have been removed from your booking',
   'seat_reset_notification' => 'We wanted to let you know that you have been removed from your booking.',
   'seat_reset_questions' => 'If you have any questions, please reach out to the Lead Passenger of your cabin for more information.',
-  'booking_code' => 'Booking Code'
+  'booking_code' => 'Booking Code',
+
+  'payment_received_subject' => 'We Have Received Your Payment for 70000TONS OF METAL',
+  'payment_received_greeting' => 'Hello :name,',
+  'payment_received_body' => 'We have received your payment of <strong>:amount</strong> for your booking with the code <strong>:booking_code</strong>.',
+  'payment_received_next_steps' => 'You will receive an updated Booking Confirmation eMail once your payment has been fully processed.',
+  'payment_received_questions' => 'If you have any questions or need further assistance, please do not hesitate to contact us.',
 ];

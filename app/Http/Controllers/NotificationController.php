@@ -19,6 +19,8 @@ use App\Http\Controllers\Controller;
 use App\Traits\HandlePermissions;
 use App\Notifications\PaymentIsReceived;
 use Illuminate\Support\Facades\Notification;
+use App\Mail\PaymentReceived;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationController extends Controller
 {
@@ -154,28 +156,25 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Refund processed successfully'], 200);
       }
 
-      // Choose email template by booking->payment_plan
-      $template = match ($booking->payment_plan) {
-        'PAY_IN_FULL'  => 'thanks_payment_full',
-        'INSTALLMENTS' => 'thanks_payment_inst',
-        default        => null,
-      };
+      // Send payment received email to the payer (This can be someone outside the booking)
+      $payerName = $validated['billingData']['name'];
+      $payerEmail = $validated['billingData']['email'];
+      $language = $leadPassenger->user->detail->language ?? 'en';
+      app()->setLocale($language);
+      $formattedAmount = 'USD ' . number_format($validated['amount'], 2);
 
-      if (!$template) {
-        return response()->json(['error' => 'No template found for this payment plan'], 500);
+      try {
+        Mail::to($payerEmail)->send(
+          new PaymentReceived($payerName, $formattedAmount, $validated['bookingCode'])
+        );
+      } catch (\Exception $e) {
+        Log::error('Failed to send payment received email', [
+          'error' => $e->getMessage(),
+          'booking_code' => $validated['bookingCode'],
+          'email' => $payerEmail
+        ]);
+        return response()->json(['error' => 'Payment processed but email failed to send'], 500);
       }
-
-      // Send email based on lead passenger language preference
-      $language = $leadPassenger->language ?? 'en';
-
-      $templateId = $this->emailService->getTemplateId($language, $template);
-      if (!$templateId) {
-        Log::error("No email template found for language: {$language}");
-        return response()->json(['error' => 'Email template not found'], 500);
-      }
-
-      $extraData = ['PAID_AMOUNT' => formatCurrency($validated['amount'])];
-      $this->emailService->sendEmail($templateId, $booking, $leadPassenger, [], $extraData, true, true);
 
       return response()->json(['message' => 'Payment processed, email sent successfully'], 200);
     } catch (\Throwable $e) {

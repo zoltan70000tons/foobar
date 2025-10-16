@@ -43,9 +43,15 @@ return [
   'email_invitation_on_your_account' => 'Tienes una invitación en tu cuenta.',
   'email_invitation_on_your_account_body' => 'Tienes 72 horas para aceptar esta invitación. Si no la aceptas dentro de este lapso de tiempo, la invitación será cancelada. Puedes ver tus invitaciones en tu página de Reservas en tu cuenta. Si tienes alguna pregunta, por favor contacta a nuestro equipo de Servicio al Cliente.',
   'email_not_found' => 'No se encontró el correo electrónico.',
-  
+
   'seat_reset_subject' => 'Has sido removido de tu reserva',
   'seat_reset_notification' => 'Queremos avisarte que haz sido removido de tu reserva.',
   'seat_reset_questions' => 'Si tienes alguna pregunta, por favor dirígete al Pasajero Líder de tu cabina para más información.',
-  'booking_code' => 'Código de Reserva'
+  'booking_code' => 'Código de Reserva',
+
+  'payment_received_subject' => 'Hemos recibido tu pago para 70000TONS OF METAL',
+  'payment_received_greeting' => 'Hola :name,',
+  'payment_received_body' => 'Hemos recibido tu pago de <strong>:amount</strong> para tu reserva con el código <strong>:booking_code</strong>.',
+  'payment_received_next_steps' => 'Recibirás un correo de Confirmación de Reserva actualizado una vez que tu pago haya sido procesado por completo.',
+  'payment_received_questions' => 'Si tienes alguna pregunta o necesitas ayuda adicional, no dudes en contactarnos.',
 ];
