@@ -9,6 +9,8 @@ class AdjustmentsSeeder extends Seeder
 {
   public function run()
   {
+    DB::statement('TRUNCATE TABLE adjustments RESTART IDENTITY CASCADE;');
+
     DB::table('adjustments')->insert([
       // Discounts
       [
@@ -95,7 +97,30 @@ class AdjustmentsSeeder extends Seeder
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 100.0,
-        'restrictions' => null,
+        'restrictions' => json_encode([
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'cabin',
+              'property' => 'category_name',
+              'operator' => 'equals',
+              'value' => "Owner's Suite",
+            ],
+            [
+              'model' => 'cabin',
+              'property' => 'category_name',
+              'operator' => 'equals',
+              'value' => 'Grand Suite - 1 Bedroom',
+            ],
+            [
+              'model' => 'cabin',
+              'property' => 'category_name',
+              'operator' => 'equals',
+              'value' => 'Grand Suite - 2 Bedroom',
+            ],
+          ],
+          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+        ]),
         'event_id' => 1,
         'created_at' => now(),
         'updated_at' => now(),

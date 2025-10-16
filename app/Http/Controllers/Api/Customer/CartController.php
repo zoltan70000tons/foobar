@@ -39,15 +39,38 @@ class CartController extends Controller
     $eventId = $cart['event_id'] ?? $eventId;
     // Fetch adjustments and tax
     $adjustments = Adjustment::where('event_id', $eventId)->get();
+
+    $category = CabinCategorySpec::find($cart['cabin_category']);
+    $context = [
+      'cabin' => [
+        'category_name' => $category?->category_name,
+        'code' => $cart['cabin_code'] ?? null,
+        'capacity' => $cart['cabin_capacity'] ?? null,
+      ],
+    ];
+
+    $adjustments->transform(function ($adjustment) use ($context) {
+      if (method_exists($adjustment, 'shouldApply') && !$adjustment->shouldApply($context)) {
+        return $adjustment;
+      }
+
+      if ($adjustment->code === 'CHOOSE_YOUR_CABIN' && $adjustment->shouldApply($context)) {
+        $adjustment->value = 0.0;
+      }
+
+      return $adjustment;
+    });
+
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
 
-    $cabinTitle = CabinCategorySpec::where('category_code', $cart['cabin_code'])
-      ->where('capacity', $cart['cabin_capacity'])
-      ->first()
-      ?->cabinCategories()
-      ?->first()
-      ?->getTitleAttribute() ?? null;
-      
+    $cabinTitle =
+      CabinCategorySpec::where('category_code', $cart['cabin_code'])
+        ->where('capacity', $cart['cabin_capacity'])
+        ->first()
+        ?->cabinCategories()
+        ?->first()
+        ?->getTitleAttribute() ?? null;
+
     $eventStatus = Event::find($eventId)->status;
     $errorCode = null;
 
@@ -132,11 +155,14 @@ class CartController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'User not authenticated',
-        'errorCode' => ErrorCode::UNAUTHORIZED->value,
-      ], 401);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'User not authenticated',
+          'errorCode' => ErrorCode::UNAUTHORIZED->value,
+        ],
+        401
+      );
     }
 
     if ($validated['force_clear'] === true) {
@@ -148,20 +174,26 @@ class CartController extends Controller
 
     // if user is male ( M ) he cant book cabin type single-female ( single-female )
     if ($validated['cabin_type'] === 'single-female' && $user->detail->gender === 'M') {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => __('feedback.cabin_type_not_allowed'),
-        'errorCode' => ErrorCode::CABIN_TYPE_NOT_ALLOWED->value,
-      ], 400);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => __('feedback.cabin_type_not_allowed'),
+          'errorCode' => ErrorCode::CABIN_TYPE_NOT_ALLOWED->value,
+        ],
+        400
+      );
     }
 
-    // if user is female ( F ) she cant book cabin type single male ( single-male ) 
+    // if user is female ( F ) she cant book cabin type single male ( single-male )
     if ($validated['cabin_type'] === 'single-male' && $user->detail->gender === 'F') {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => __('feedback.cabin_type_not_allowed'),
-        'errorCode' => ErrorCode::CABIN_TYPE_NOT_ALLOWED->value,
-      ], 400);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => __('feedback.cabin_type_not_allowed'),
+          'errorCode' => ErrorCode::CABIN_TYPE_NOT_ALLOWED->value,
+        ],
+        400
+      );
     }
 
     $defaultCart = [
@@ -186,26 +218,35 @@ class CartController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json([
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => __('feedback.age_restriction'),
-          'errorCode' => ErrorCode::AGE_RESTRICTION->value,
-        ], 422);
+        return response()->json(
+          [
+            'errorLogId' => Str::uuid(),
+            'errorMessage' => __('feedback.age_restriction'),
+            'errorCode' => ErrorCode::AGE_RESTRICTION->value,
+          ],
+          422
+        );
       }
     } else {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'Date of birth is required',
-        'errorCode' => ErrorCode::DOB_REQUIRED->value,
-      ], 422);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'Date of birth is required',
+          'errorCode' => ErrorCode::DOB_REQUIRED->value,
+        ],
+        422
+      );
     }
 
     Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $mergedCart]);
 
-    return response()->json([
+    return response()->json(
+      [
         'message' => 'Cart updated successfully',
         'cart' => $this->getCartData($request, $validated['event_id']),
-      ], 200);
+      ],
+      200
+    );
   }
 
   /*
@@ -249,11 +290,14 @@ class CartController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'User not authenticated',
-        'errorCode' => ErrorCode::UNAUTHORIZED->value,
-      ], 401);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'User not authenticated',
+          'errorCode' => ErrorCode::UNAUTHORIZED->value,
+        ],
+        401
+      );
     }
 
     // Age verification
@@ -262,26 +306,35 @@ class CartController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json([
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => __('feedback.age_restriction'),
-          'errorCode' => ErrorCode::AGE_RESTRICTION->value,
-        ], 422);
+        return response()->json(
+          [
+            'errorLogId' => Str::uuid(),
+            'errorMessage' => __('feedback.age_restriction'),
+            'errorCode' => ErrorCode::AGE_RESTRICTION->value,
+          ],
+          422
+        );
       }
     } else {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'Date of birth is required',
-        'errorCode' => ErrorCode::DOB_REQUIRED->value,
-      ], 422);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'Date of birth is required',
+          'errorCode' => ErrorCode::DOB_REQUIRED->value,
+        ],
+        422
+      );
     }
 
     Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);
 
-    return response()->json([
-      'message' => 'Cart updated successfully',
-      'cart' => $this->getCartData($request, $validated['event_id']),
-    ], 200);
+    return response()->json(
+      [
+        'message' => 'Cart updated successfully',
+        'cart' => $this->getCartData($request, $validated['event_id']),
+      ],
+      200
+    );
   }
 
   /*
@@ -297,13 +350,16 @@ class CartController extends Controller
     $user = Auth::user();
 
     if (!$user) {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'User not authenticated',
-        'errorCode' => ErrorCode::UNAUTHORIZED->value,
-      ], 401);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'User not authenticated',
+          'errorCode' => ErrorCode::UNAUTHORIZED->value,
+        ],
+        401
+      );
     }
-    
+
     Cart::where('user_id', $user->id)->delete();
 
     $reservationService->releaseCabin($user);

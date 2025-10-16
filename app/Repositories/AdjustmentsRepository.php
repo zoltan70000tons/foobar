@@ -29,22 +29,48 @@ class AdjustmentsRepository
   public function attachAdjustments(array $adjustmentIds, Booking $booking): bool
   {
     try {
-      // Get the lead
       $event = $booking->event;
 
-      // Always exclude MEMBERSHIP_ adjustments if event is PUBLIC
-      if ($event && $event->status === 'PUBLIC') {
-          $adjustmentIds = array_filter($adjustmentIds, function ($id) {
-              $adjustment = Adjustment::find($id);
-              return $adjustment && !str_starts_with($adjustment->code, 'MEMBERSHIP_');
-          });
-      }
+      // Fetch all adjustments in one query
+      $adjustments = Adjustment::whereIn('id', $adjustmentIds)->get();
 
-      $booking->adjustments()->sync($adjustmentIds);
+      $selectedCabin = $booking->cabin;
+      $context = [
+        'cabin' => [
+          'category_name' => $selectedCabin?->category?->name,
+          'code' => $selectedCabin?->category?->code,
+          'capacity' => $selectedCabin?->total_berths,
+        ],
+      ];
+
+      $filtered = $adjustments->filter(function ($adjustment) use ($context, $event) {
+        // Skip if restriction exists and doesn’t match
+        if (method_exists($adjustment, 'shouldApply') && !$adjustment->shouldApply($context)) {
+          return false;
+        }
+
+        // Skip MEMBERSHIP adjustments if event is PUBLIC
+        if ($event && $event->status === 'PUBLIC' && str_starts_with($adjustment->code, 'MEMBERSHIP_')) {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Add special handling for CHOOSE_YOUR_CABIN
+      $filtered->transform(function ($adjustment) use ($context) {
+        if ($adjustment->code === 'CHOOSE_YOUR_CABIN' && $adjustment->shouldApply($context)) {
+          $adjustment->value = 0.0;
+        }
+        return $adjustment;
+      });
+
+      // Sync the filtered adjustments
+      $booking->adjustments()->sync($filtered->pluck('id')->toArray());
 
       return true;
     } catch (\Exception $e) {
-      \Log::error("Failed to attach adjustments: " . $e->getMessage());
+      \Log::error('Failed to attach adjustments: ' . $e->getMessage());
       return false;
     }
   }
@@ -56,92 +82,81 @@ class AdjustmentsRepository
   //       if($memberType == $membership->value){
   //         $result = Adjustment::where('code', '=', $membership->name)->get();
   //       }
-        
+
   //     }
   // }
 
   public function getAdjustmentsBySurvivorNumber($survivorNumber): int|null
   {
-      if (!$survivorNumber) {
-          return null;
+    if (!$survivorNumber) {
+      return null;
+    }
+
+    $userUuid = SurvivorNumber::query()->where('survivor_number', $survivorNumber)->value('user_id');
+
+    $user = User::query()->where('id', $userUuid)->first();
+
+    if (!$user->membership) {
+      return null;
+    }
+
+    $memberType = strtoupper($user->membership->memberType->name);
+    $result = null;
+
+    foreach (MemberShip::cases() as $membership) {
+      if ($memberType == $membership->value) {
+        $result = Adjustment::where('code', '=', $membership->name)->first();
       }
+    }
 
-      $userUuid = SurvivorNumber::query()
-          ->where('survivor_number', $survivorNumber)
-          ->value('user_id');
+    if ($result) {
+      $result = $result->id;
+    }
 
-      $user = User::query()->where('id', $userUuid)->first();
-      
-      if (!$user->membership) {
-          return null;
-      }
-
-      $memberType = strtoupper($user->membership->memberType->name);
-      $result = null;
-
-      foreach (MemberShip::cases() as $membership) {
-          if($memberType == $membership->value){
-              $result = Adjustment::where('code', '=', $membership->name)->first();
-          }
-      }
-
-      if ($result) {
-          $result = $result->id;
-      }
-
-      return $result;
+    return $result;
   }
 
-  public function listAdjustments() {
+  public function listAdjustments()
+  {
     //return Adjustment::where('system', true)->get();
     return Adjustment::query()->orderBy('system', 'DESC')->get(); //According to the Manual Adjustments - Adjustments
-      // Delete Functionality, custom adjustments should be up for reuse
+    // Delete Functionality, custom adjustments should be up for reuse
   }
 
   public function getSingleTicketFeeId(): int
   {
-      return Adjustment::query()
-          ->where('code', 'SINGLE_TICKET_FEE')
-          ->value('id');
+    return Adjustment::query()->where('code', 'SINGLE_TICKET_FEE')->value('id');
   }
 
   public function getPaidInFullId(): int
   {
-      return Adjustment::query()
-          ->where('code', 'PAID_IN_FULL')
-          ->value('id');
+    return Adjustment::query()->where('code', 'PAID_IN_FULL')->value('id');
   }
 
-    public function getTaxAdjustmentId(): int
-    {
-        return Adjustment::query()
-            ->where('code', 'TAX')
-            ->value('id');
-    }
+  public function getTaxAdjustmentId(): int
+  {
+    return Adjustment::query()->where('code', 'TAX')->value('id');
+  }
 
-    public function getChooseYourCabinFeeId(): int
-    {
-        return Adjustment::query()
-            ->where('code', 'CHOOSE_YOUR_CABIN')
-            ->value('id');
-    }
+  public function getChooseYourCabinFeeId(): int
+  {
+    return Adjustment::query()->where('code', 'CHOOSE_YOUR_CABIN')->value('id');
+  }
 
-    public function getCarbonOffsetFeeId($code): int
-    {
-        return Adjustment::query()
-            ->where('code', $code)
-            ->value('id');
-    }
+  public function getCarbonOffsetFeeId($code): int
+  {
+    return Adjustment::query()->where('code', $code)->value('id');
+  }
 
   public function getIdByCode(string $code): int|null
   {
-      return match ($code) {
-          'SINGLE_TICKET_FEE' => $this->getSingleTicketFeeId(),
-          'PAID_IN_FULL' => $this->getPaidInFullId(),
-          'TAX' => $this->getTaxAdjustmentId(),
-          'CHOOSE_YOUR_CABIN' => $this->getChooseYourCabinFeeId(),
-          'CARBON_OFFSET_I', 'CARBON_OFFSET_B', 'CARBON_OFFSET_S', 'CARBON_OFFSET_O' => $this->getCarbonOffsetFeeId($code),
-          default => null,
-      };
+    return match ($code) {
+      'SINGLE_TICKET_FEE' => $this->getSingleTicketFeeId(),
+      'PAID_IN_FULL' => $this->getPaidInFullId(),
+      'TAX' => $this->getTaxAdjustmentId(),
+      'CHOOSE_YOUR_CABIN' => $this->getChooseYourCabinFeeId(),
+      'CARBON_OFFSET_I', 'CARBON_OFFSET_B', 'CARBON_OFFSET_S', 'CARBON_OFFSET_O' => $this->getCarbonOffsetFeeId($code),
+      default => null,
+    };
   }
 }

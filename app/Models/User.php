@@ -134,6 +134,12 @@ class User extends Authenticatable implements CanResetPassword
     return $this->hasMany(UserLog::class, 'customer_id');
   }
 
+  // cart
+  public function cart()
+  {
+    return $this->hasOne(Cart::class, 'user_id');
+  }
+
   // public function tags(): belongsToMany
   // {
   //     return $this->belongsToMany(UserTag::class, 'user_has_tags', 'user_id', 'tag_id');
@@ -164,7 +170,6 @@ class User extends Authenticatable implements CanResetPassword
 
   public function tags()
   {
-    return $this->morphToMany(Tag::class, 'entity', 'taggings', 'entity_id', 'tag_id')
-      ->withPivot('created_at');
+    return $this->morphToMany(Tag::class, 'entity', 'taggings', 'entity_id', 'tag_id')->withPivot('created_at');
   }
 }
