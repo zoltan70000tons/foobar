@@ -48,5 +48,11 @@ return [
   'seat_reset_subject' => 'Du wurdest aus Deiner Buchung entfernt',
   'seat_reset_notification' => 'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
   'seat_reset_questions' => 'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
-  'booking_code' => 'Buchungscode'
+  'booking_code' => 'Buchungscode',
+
+  'payment_received_subject' => 'Wir haben deine Zahlung für 70000TONS OF METAL erhalten',
+  'payment_received_greeting' => 'Hallo :name,',
+  'payment_received_body' => 'Wir haben deine Zahlung in Höhe von <strong>:amount</strong> für deine Buchung mit dem Code <strong>:booking_code</strong> erhalten.',
+  'payment_received_next_steps' => 'Du erhältst eine aktualisierte Buchungsbestätigung per E-Mail, sobald deine Zahlung vollständig verarbeitet wurde.',
+  'payment_received_questions' => 'Wenn du Fragen hast oder weitere Hilfe benötigst, zögere nicht, uns zu kontaktieren.',
 ];
