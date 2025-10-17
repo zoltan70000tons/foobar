@@ -111,4 +111,7 @@ enum Permissions: string
     case CreateTags = 'Create Tags';
     case EditTags = 'Edit Tags';
     case DeleteTags = 'Delete Tags';
+
+    //Logs
+    case ViewLogs = "View Logs";
 }

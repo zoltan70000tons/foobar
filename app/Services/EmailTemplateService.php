@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Jobs\SendEmailJob;
 use App\Models\Booking;
 use App\Models\Passenger;
+use App\Support\GlobalLogger;
 use Blade;
 use DB;
 use Exception;
@@ -214,6 +216,23 @@ class EmailTemplateService
             Log::info('sending email to: ' . json_encode($to));
             SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac, $emailContent, $subject, $to)
                 ->onQueue('emails');
+
+            GlobalLogger::log(
+                LogActionBooking::EMAIL_SENT,
+                'booking',
+                $booking->id,
+                sprintf("Email sent to %s", $passenger->email),
+                [
+                    'after' => [
+                        'booking_id' => $booking->id,
+                        'booking_request_id' => $booking->booking_request_id,
+                        'template_id' => $templateId,
+                        'passenger_id' => $passenger->id,
+                        'subject' => $subject,
+                        'content' => $emailContent,
+                    ],
+                ]
+            );
             return true;
         } catch (Exception $e) {
             \Log::error("Error sending email to job: " . $e->getMessage());

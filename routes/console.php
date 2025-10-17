@@ -62,3 +62,9 @@ Schedule::command('app:clean-temporary-files')->dailyAt('00:00')->timezone('Amer
 // Delete access tand refresh tokens which expired daily
 Schedule::command('passport:purge-expired-tokens')->dailyAt('00:00')->timezone('America/Los_Angeles');
 Schedule::command('bookings:dispatch-reminders')->dailyAt('00:00')->timezone('America/Los_Angeles');
+
+// Create log partitions for the next year (e.g. logs_booking_2026, logs_event_2026, etc.)
+Schedule::command('logs:create-year-partitions')
+    ->yearlyOn(12, 15, '03:00') // Run on December 15th at 3:00 AM
+    ->withoutOverlapping()
+    ->runInBackground();

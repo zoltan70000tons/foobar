@@ -6,7 +6,6 @@ use App\Enums\Permissions;
 use App\Models\Booking;
 use App\Models\Fee;
 use App\Models\Installment;
-use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
@@ -19,7 +18,6 @@ class FeeController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
-    use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
@@ -35,7 +33,6 @@ class FeeController extends Controller
         try {
             return $this->withPermission([Permissions::CreateFees], function ($request) {
                 $booking_id = $request->route('booking_id');
-                $event_id = $request->route('event_id');
 
                 $validated = $request->validate([
                     'passenger_id' => 'required|exists:passengers,id',
@@ -55,12 +52,6 @@ class FeeController extends Controller
                         $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
                     });
                 });
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Added Manual Fee',
-                    "Manual {$validated['type']} value: \${$validated['amount']} was added to booking"
-                );
 
                 return redirect()->back()->with('success', 'Fee added successfully!');
             }, $request);
@@ -93,20 +84,13 @@ class FeeController extends Controller
                 if (!$fee) {
                     return redirect()->back()->with('error', 'Fee not found.');
                 }
-                $amount = $fee->amount;
-                $type = $fee->type;
+
                 $installment = Installment::where('fee_id', $fee->id)->first();
                 $installment->delete();
                 $fee->delete();
                 $this->paymentInfoService->syncAllocatedCost($booking);
 
                 DB::commit();
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Deleted Fee',
-                    "Fee: {$type} value: \${$amount} was deleted"
-                );
 
                 return redirect()->back()->with('success', 'Fee deleted successfully!');
             } catch (\Exception $e) {

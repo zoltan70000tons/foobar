@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Enums\GlobalLog;
+
+enum LogActionCustomer: string
+{
+    case CUSTOMER_CREATED = 'CUSTOMER_CREATED';
+    case CUSTOMER_UPDATED = 'CUSTOMER_UPDATED';
+    case CUSTOMER_DELETED = 'CUSTOMER_DELETED';
+    case CUSTOMER_TAGS_CHANGED = 'CUSTOMER_TAGS_CHANGED';
+    case SURVIVOR_ACTIVATED = 'SURVIVOR_ACTIVATED';
+}

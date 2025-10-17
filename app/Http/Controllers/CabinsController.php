@@ -26,6 +26,7 @@ class CabinsController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
+
     protected CabinInterface $cabinRepository;
     protected EventRepositoryInterface $eventRepository;
     protected CabinCategoryInterface $cabinCategoryRepository;
@@ -36,6 +37,7 @@ class CabinsController extends Controller
         $this->eventRepository = $eventRepository;
         $this->cabinCategoryRepository = $cabinCategoryRepository;
     }
+
     public function index()
     {
         try {
@@ -47,7 +49,7 @@ class CabinsController extends Controller
                 if ($event_id == 'all') {
                     $events = $this->eventRepository->getAll();
                     return Inertia::render('Cabin/partials/Events', [
-                        'events' => $events
+                        'events' => $events,
                     ]);
                 }
 
@@ -60,7 +62,7 @@ class CabinsController extends Controller
                         'cabins' => $cabins,
                         'categories' => $categories,
                         'event' => $event,
-                        'tags' => $tags
+                        'tags' => $tags,
 
                     ]);
                 }
@@ -78,7 +80,7 @@ class CabinsController extends Controller
             return $this->withPermission([Permissions::CreateCabins], function ($event, $cabinCategories) {
                 return Inertia::render('Cabin/Create', [
                     'event' => $event,
-                    'categories' => $cabinCategories
+                    'categories' => $cabinCategories,
                 ]);
             }, $event, $cabinCategories);
         } catch (\Exception $e) {
@@ -110,37 +112,35 @@ class CabinsController extends Controller
         }
     }
 
-
     public function store(Request $request)
     {
         $event_id = $request->route('id');
         $rules = [
-            'status'      => 'required|string|max:255',
-            'cabin_number'      => [
+            'status' => 'required|string|max:255',
+            'cabin_number' => [
                 'required',
                 'numeric',
                 new CabinNumberIsAvailable(),
             ],
-            'cabin_category_id'    => 'required|numeric',
-            'cabin_type_id'        => 'required|numeric',
-            'deck'              => 'required|numeric',
-            'location'          => 'required|string',
-            'connects_with'     => 'nullable|numeric',
-            'total_berths'      => 'nullable|numeric',
-            'lower_bed_type_1'  => 'nullable|string',
-            'lower_bed_type_2'  => 'nullable|string',
+            'cabin_category_id' => 'required|numeric',
+            'cabin_type_id' => 'required|numeric',
+            'deck' => 'required|numeric',
+            'location' => 'required|string',
+            'connects_with' => 'nullable|numeric',
+            'total_berths' => 'nullable|numeric',
+            'lower_bed_type_1' => 'nullable|string',
+            'lower_bed_type_2' => 'nullable|string',
             'accessible' => 'required|boolean',
             'balcony' => 'required|boolean',
             'obstructed_view' => 'required|boolean',
             'tags' => 'nullable|array',
             'tags.*' => 'nullable|string',
-            'upper_berths'      => 'nullable|string',
-            'notes'             => 'nullable|string',
+            'upper_berths' => 'nullable|string',
+            'notes' => 'nullable|string',
             'internal_notes' => 'nullable|string',
         ];
         $validated = $request->validate($rules);
         try {
-
 
             return $this->withPermission([Permissions::CreateCabins], function ($event_id, $validated) {
                 //Arr::forget($validated, 'inventory');
@@ -174,16 +174,25 @@ class CabinsController extends Controller
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             $availableTags = Tag::type('cabin')->get();
-            return $this->withPermission([Permissions::EditCabins, Permissions::ViewCabins], function ($event, $cabin, $cabinCategories,$availableTags) {
+            $logs = \App\Models\Log::query()
+                ->where('related_type', '=', 'cabin')
+                ->where('related_id', '=', $cabin->id)
+                ->get();
+
+            return $this->withPermission([
+                Permissions::EditCabins,
+                Permissions::ViewCabins
+            ], function ($event, $cabin, $cabinCategories, $availableTags, $logs) {
                 $shared = $this->cabinRepository->getSharedCabins($event->id, $cabin->cabin_spec_id);
                 return Inertia::render('Cabin/Edit', [
                     'cabin' => $cabin,
                     'event' => $event,
                     'categories' => $cabinCategories,
                     'shared' => $shared,
-                    'availableTags' => $availableTags
+                    'availableTags' => $availableTags,
+                    'logs' => $logs,
                 ]);
-            }, $event, $cabin, $cabinCategories,$availableTags);
+            }, $event, $cabin, $cabinCategories, $availableTags, $logs);
         } catch (\Exception $e) {
             $this->logException($e);
         }
@@ -196,28 +205,28 @@ class CabinsController extends Controller
             $cabin_id = $request->route('cabin_id');
             $event_id = $request->route('id');
             $rules = [
-                'cabin_status'      => 'required|string|max:255',
-                'cabin_number'      => [
+                'cabin_status' => 'required|string|max:255',
+                'cabin_number' => [
                     'required',
                     'numeric',
                     //'unique:cabin_specs,cabin_number,' . $cabin_id . ',id'
                 ],
-                'cabin_category'    => 'required|numeric',
-                'cabin_type'        => 'required|numeric',
-                'deck'              => 'required|numeric',
-                'location'          => 'required|string',
-                'connects_with'     => 'nullable|numeric',
-                'total_berths'      => 'nullable|numeric',
-                'lower_bed_type_1'  => 'nullable|string',
-                'lower_bed_type_2'  => 'nullable|string',
+                'cabin_category' => 'required|numeric',
+                'cabin_type' => 'required|numeric',
+                'deck' => 'required|numeric',
+                'location' => 'required|string',
+                'connects_with' => 'nullable|numeric',
+                'total_berths' => 'nullable|numeric',
+                'lower_bed_type_1' => 'nullable|string',
+                'lower_bed_type_2' => 'nullable|string',
                 'features' => 'required|array',
                 'features.accessible' => 'required|boolean',
                 'features.balcony' => 'required|boolean',
                 'features.obstructed_view' => 'required|boolean',
                 'tags' => 'nullable|array',
                 'tags.*' => 'nullable|string',
-                'upper_berths'      => 'nullable|string',
-                'notes'             => 'nullable|string',
+                'upper_berths' => 'nullable|string',
+                'notes' => 'nullable|string',
                 'internal_notes' => 'nullable|string',
             ];
             $validated = $request->validate($rules);
@@ -336,7 +345,6 @@ class CabinsController extends Controller
             ]);
         }
     }
-
 
     public function createShared(Request $request)
     {

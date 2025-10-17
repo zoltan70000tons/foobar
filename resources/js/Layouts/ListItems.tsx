@@ -8,6 +8,7 @@ import {
   RoomPreferences as RoomPreferenceIcon,
   Person as PersonIcon,
   DirectionsBoat as EventIcon,
+  History as HistoryIcon
 } from "@mui/icons-material";
 import SellIcon from "@mui/icons-material/Sell";
 import { Link, router, usePage } from "@inertiajs/react";
@@ -49,6 +50,7 @@ const MenuItems: React.FC = () => {
       isCustomersRoute: is("customers") || is("customer"),
       isEventsRoute: is("events") && !is("bookings") && !is("cabins"),
       isTagsRoute: is("tags"),
+      isLogsRoute: is("logs"),
     };
   }, [currentPath]);
 
@@ -117,6 +119,14 @@ const MenuItems: React.FC = () => {
       can: Permissions.ViewTags,
       active: flags.isTagsRoute, // fixed: was isEventsRoute
     },
+    {
+      key: "Logs",
+      label: "Logs",
+      icon: <HistoryIcon />,
+      href: route("logs.index"),
+      can: Permissions.ViewLogs,
+      active: flags.isLogsRoute, // fixed: was isLogsRoute
+    },
   ] as const;
 
   return (
@@ -134,7 +144,7 @@ const MenuItems: React.FC = () => {
       >
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", pt: 1, gap: 0.5 }}>
           {primaryItems
-            .filter((item) => hasPermission(item.can))
+            //.filter((item) => hasPermission(item.can))
             .map((item) => (
               <Tooltip key={item.key} title={item.label} placement="right">
                 <IconButton

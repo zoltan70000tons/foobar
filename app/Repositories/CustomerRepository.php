@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\GlobalLog\LogActionCustomer;
 use App\Helpers\CustomerHelper;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
@@ -15,6 +16,7 @@ use App\Models\UserComment;
 use App\Models\UserDetail;
 use App\Models\UserLog;
 use App\Models\UserTag;
+use App\Support\GlobalLogger;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as DBCollection;
@@ -25,7 +27,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Throwable;
-
 
 class CustomerRepository implements CustomerInterface
 {
@@ -169,12 +170,16 @@ class CustomerRepository implements CustomerInterface
       // Only save the logs if there are changes
       if (!empty($logUserDescription)) {
         $description = implode(', ', $logUserDescription); // Join the changes into a single string
-        UserLog::create([
-          'customer_id' => $user->id,
-          'author_id' => Auth::id(),
-          'action' => 'Customer was updated',
-          'description' => $description,
-        ]);
+          GlobalLogger::log(
+              LogActionCustomer::CUSTOMER_UPDATED,
+              'customer',
+              $user->id,
+              $description,
+              [
+                  'before' => ['customerData' => $originalUserData, 'addresData' => $customerAddressData],
+                  'after' => ['customerData' => $logUserDescription, 'addresData' => $originalDetailData],
+              ]
+          );
       }
 
       if (!empty($customerAddressData)) {
@@ -189,6 +194,7 @@ class CustomerRepository implements CustomerInterface
 
       DB::commit();
     } catch (Exception $e) {
+      Log::info($e->getMessage());
       DB::rollBack();
     }
   }
@@ -241,6 +247,49 @@ class CustomerRepository implements CustomerInterface
       setPermissionsTeamId(1);
       $user->assignRole('Customer');
       $user->save();
+
+        $after = [
+            // User fields
+            'email' => $user->email,
+            'username' => $user->username,
+            'id' => $user->id,
+
+            // User Detail
+            'first_name' => $userDetail->first_name ?? null,
+            'middle_name' => $userDetail->middle_name ?? null,
+            'last_name' => $userDetail->last_name ?? null,
+            'gender' => $userDetail->gender ?? null,
+            'citizenship' => $userDetail->citizenship ?? null,
+            'phone' => $userDetail->phone ?? null,
+            'emergency_c_name' => $userDetail->emergency_c_name ?? null,
+            'emergency_c_phone' => $userDetail->emergency_c_phone ?? null,
+            'language' => $userDetail->language ?? null,
+            'dob' => $userDetail->dob ?? null,
+
+            // Customer Address
+            'address_first' => $customerAddress->address_first ?? null,
+            'address_second' => $customerAddress->address_second ?? null,
+            'city' => $customerAddress->city ?? null,
+            'state' => $customerAddress->state ?? null,
+            'postal_code' => $customerAddress->postal_code ?? null,
+            'country' => $customerAddress->country ?? null,
+
+            // Survivor Number
+            'survivor_number' => $user->survivorNumber->survivor_number ?? null,
+
+            // Tags (array of tag names or IDs)
+            'tags' => $user->tags->pluck('name')->toArray() ?? [],
+        ];
+
+        // Log - Cannot do created or saved in observer because relationships are not present when user is saved, but
+        // synced afterwards
+        GlobalLogger::log(
+            LogActionCustomer::CUSTOMER_CREATED,
+            'customer',
+            $user->id,
+            sprintf('Customer created (%s)', $user->email),
+            ['after' => $after]
+        );
 
       UserLog::create([
         'customer_id' => $user->id,
@@ -311,16 +360,14 @@ class CustomerRepository implements CustomerInterface
       });
   }
 
-
-
   function getPaginatedCustomerData($page, $perPage, $sortBy, $sortDir, $filters, $tags): LengthAwarePaginator
   {
     $sortableFields = [
-      'first_name'       => 'detail.first_name',
-      'last_name'        => 'detail.last_name',
-      'dob'              => 'detail.dob',
-      'survivor_number'  => 'sn.survivor_number',
-      'membership_type'  => 'mt.name',
+      'first_name' => 'detail.first_name',
+      'last_name' => 'detail.last_name',
+      'dob' => 'detail.dob',
+      'survivor_number' => 'sn.survivor_number',
+      'membership_type' => 'mt.name',
     ];
     $orderBy = $sortableFields[$sortBy] ?? 'u.email';
     $sortDir = strtolower($sortDir) === 'desc' ? 'desc' : 'asc';
@@ -350,7 +397,6 @@ class CustomerRepository implements CustomerInterface
       ->leftJoin('survivor_numbers as sn', 'u.id', '=', 'sn.user_id')
       ->leftJoin('memberships as m', 'u.id', '=', 'm.user_id')
       ->leftJoin('membership_types as mt', 'm.membership_id', '=', 'mt.id')
-      // Sólo clientes
       ->whereIn('u.id', function ($q) {
         $q->select('model_id')
           ->from('model_has_roles')
@@ -425,8 +471,6 @@ class CustomerRepository implements CustomerInterface
     return $users;
   }
 
-
-
   function getBookingDataForCustomer(User $user): DBCollection|Collection
   {
     return Booking::with(['event', 'cabin.cabinType', 'cabin.category'])
@@ -485,6 +529,17 @@ class CustomerRepository implements CustomerInterface
       $customer->tags()->sync($uniqueTags);
 
       $user = Auth::user();
+
+        GlobalLogger::log(
+            LogActionCustomer::CUSTOMER_TAGS_CHANGED,
+            'customer',
+            $customer->id,
+            sprintf('Customer tags updated (%s)', $customer->email),
+            [
+                'before' => $originalTags,
+                'after' => $uniqueTags,
+            ]
+        );
 
       UserLog::create([
         'customer_id' => $customer->id,

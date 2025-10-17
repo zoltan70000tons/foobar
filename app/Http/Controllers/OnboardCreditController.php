@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\Permissions;
 use App\Models\Booking;
 use App\Models\OnboardCredit;
-use App\Models\PassengerDiscount;
-use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
@@ -18,7 +16,6 @@ class OnboardCreditController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
-    use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
@@ -35,8 +32,6 @@ class OnboardCreditController extends Controller
             DB::beginTransaction();
 
             try {
-                $booking_id = $request->route('booking_id');
-                //$event_id = $request->route('event_id'); //FIXME currently unused
                 $validated = $request->validate([
                     'passenger_id' => 'required|exists:passengers,id',
                     'amount' => 'required|numeric|min:0.01',
@@ -46,12 +41,6 @@ class OnboardCreditController extends Controller
                 OnboardCredit::create($validated);
 
                 DB::commit();
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Added Onboard Credit',
-                    "Manual Onboard Credit was added to booking"
-                );
 
                 return redirect()->back()->with('success', 'Onboard Credit added successfully!');
             } catch (\Exception $e) {
@@ -93,12 +82,6 @@ class OnboardCreditController extends Controller
                 $onboardCredit->delete();
 
                 DB::commit();
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Deleted onboard credit from passenger',
-                    "Id: {$validated['onboard_credit_id']} was deleted"
-                );
 
                 return redirect()->back()->with('success', 'Onboard credit deleted successfully!');
             } catch (\Exception $e) {

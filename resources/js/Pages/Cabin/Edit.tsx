@@ -8,7 +8,7 @@ import {
 } from "@/enums/CabinStatus";
 import { CabinType } from "@/enums/CabinType";
 import { PageProps } from "@/types";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import {
   Box,
   Container,
@@ -34,7 +34,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions, // Import Tab
+  DialogActions, TableCell, TableRow, TableHead, Table, TableContainer, TableBody, Stack, // Import Tab
 } from "@mui/material";
 import {
   CheckCircle,
@@ -54,6 +54,7 @@ import { Cabin } from "@/interfaces/Cabin";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Errors } from "@inertiajs/core";
 import { Event } from "@/interfaces/Event";
+import dayjs from "dayjs";
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -64,9 +65,10 @@ type Props = PageProps & {
   errors: Errors;
   shared: boolean;
   availableTags: { id: string; name: string; color: string }[];
+  logs: any;
 };
 
-const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }: Props) => {
+const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, logs }: Props) => {
   const [tags, setTags] = useState<any[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
@@ -104,7 +106,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }:
     balcony: cabin.cabin_spec.balcony,
     obstructedView: cabin.cabin_spec.obstructed_view,
   });
-
+console.log(logs)
   // State for managing active tab
   const [currentTab, setCurrentTab] = useState(0);
 
@@ -921,6 +923,61 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }:
     </Box>
   );
 
+  const LogsContent = (
+    <TableContainer>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Date</TableCell>
+            <TableCell>Actor</TableCell>
+            <TableCell>Action</TableCell>
+            <TableCell>Description</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {logs.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5}>
+                <Typography variant="body2" color="text.secondary">No results.</Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            logs.map((row) => (
+              <TableRow key={row.id} hover>
+                <TableCell width={240}>
+                  {dayjs(row.created_at).format("LLL")}
+                </TableCell>
+                <TableCell width={160}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip
+                      size="small"
+                      label={row.actor_type === "agent" ? "Agent" : "System"}
+                      color={row.actor_type === "agent" ? "primary" : "default"}
+                      variant="outlined"
+                    />
+                    {row.actor_id && (
+                      <Typography variant="caption" color="text.secondary">
+                        {row.actor_username}
+                      </Typography>
+                    )}
+                  </Stack>
+                </TableCell>
+                <TableCell width={240}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {row.action}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{row.description}</Typography>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
   return (
     <AuthenticatedLayout user={auth.user} header={"Cabins"}>
       <Head title="Cabins" />
@@ -969,6 +1026,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }:
                   >
                     <Tab label="CABIN DETAILS" />
                     <Tab label="SHARED CABINS" />
+                    <Tab label="LOGS" />
                   </Tabs>
                 </Box>
 
@@ -978,6 +1036,9 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags }:
                 )}
                 {currentTab === 1 && (
                   <Box sx={{ p: 0 }}>{ListTabContent}</Box>
+                )}
+                {currentTab === 2 && (
+                  <Box sx={{ p: 0 }}>{LogsContent}</Box>
                 )}
               </>
             ) : (

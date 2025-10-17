@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Enums\Permissions;
 use App\Models\Booking;
-use App\Models\OnboardCredit;
-use App\Models\PassengerDiscount;
-use App\Models\Payment;
-use App\Models\PaymentTransfer;
-use App\Services\PaymentTransferService;
 use App\Services\SplitPaymentService;
-use App\Traits\BookingLogTrait;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\PaymentInfoService;
 use Illuminate\Support\Facades\Validator;
@@ -25,7 +20,6 @@ class SplitPaymentController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
-    use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
@@ -101,12 +95,6 @@ class SplitPaymentController extends Controller
                 if ($countSaved === 0) {
                     return redirect()->back()->with('warning', 'No payment to split!');
                 }
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Added Split Payment',
-                    "Added Split Payment. Total payment added: {$totalPaymentAdded}. Total left to pay: {$totalLeftToPay}"
-                );
 
                 DB::commit();
 

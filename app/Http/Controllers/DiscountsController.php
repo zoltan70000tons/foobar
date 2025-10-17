@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\Permissions;
 use App\Models\Booking;
 use App\Models\PassengerDiscount;
-use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Repositories\CalculationRepository;
 use App\Repositories\PassengerRepository;
@@ -18,7 +17,6 @@ class DiscountsController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
-    use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
@@ -44,11 +42,7 @@ class DiscountsController extends Controller
                 ]);
                 PassengerDiscount::create($validated);
                 $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Added Manual Discount',
-                    "Manual Discount {$validated['type']} value: \${$validated['amount']} was added to booking"
-                );
+
                 return redirect()->back()->with('success', 'Discount added successfully!');
             }, $request);
         } catch (\Exception $e) {
@@ -80,18 +74,11 @@ class DiscountsController extends Controller
                 if (!$discount) {
                     return redirect()->back()->with('error', 'Discount not found.');
                 }
-                $amount = $discount->amount;
-                $type = $discount->type;
+
                 $discount->delete();
                 $this->paymentInfoService->syncAllocatedCost($booking);
 
                 DB::commit();
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Deleted discount from passenger',
-                    "Discount: {$type} value: \${$amount} was deleted"
-                );
 
                 return redirect()->back()->with('success', 'Discount deleted successfully!');
             } catch (\Exception $e) {

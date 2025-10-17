@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\GlobalLog\LogActionUser;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Support\GlobalLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +35,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $email = $request->get('email');
+
+        GlobalLogger::log(
+            LogActionUser::LOGIN,
+            'user',
+            $email,
+            'User logged in',
+            [
+                'before' => [
+                    'email' => $email,
+                ],
+            ]
+        );
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -41,11 +57,22 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $userId = optional(Auth::user())->id;
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
+        GlobalLogger::log(
+            LogActionUser::LOGOUT,
+            'user',
+            $userId,
+            'User logged out',
+            [],
+            $userId,
+        );
 
         return redirect('/');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Enums\Permissions;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\CabinCategoryInterface;
@@ -27,7 +28,7 @@ use App\Repositories\LogRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
-use App\Traits\BookingLogTrait;
+use App\Support\GlobalLogger;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -46,7 +47,6 @@ class BookingsController extends Controller
   use HandlePermissions;
   use ExceptionLogger;
   use CabinFilter;
-  use BookingLogTrait;
 
   protected EventRepositoryInterface $eventRepository;
   protected BookingInterface $bookingRepository;
@@ -466,6 +466,15 @@ class BookingsController extends Controller
             })
             ->get();
 
+            //Spams the logs, might not worth it
+            /*GlobalLogger::log(
+                'BOOKING_OPENED',
+                'booking',
+                $bookingId,
+                'Booking opened',
+                []
+            );*/
+
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
@@ -504,16 +513,13 @@ class BookingsController extends Controller
       return redirect()->back()->with('error', 'You do not have permission to reassign this booking.');
     }
 
-    DB::table('booking_agent_sessions')
-      ->where('booking_id', $bookingId)
-      ->delete();
+      BookingAgentSessions::where('booking_id', $bookingId)->delete();
 
-
-    DB::table('booking_agent_sessions')->insert([
-      'booking_id' => $bookingId,
-      'agent_id' => $user->id,
-      'time' => now(),
-    ]);
+      BookingAgentSessions::create([
+          'booking_id' => $bookingId,
+          'agent_id' => $user->id,
+          'time' => now(),
+      ]);
 
     broadcast(new \App\Events\BookingAgentSession(
       agentId: $user->id,
@@ -527,35 +533,36 @@ class BookingsController extends Controller
   // edit mode
   public function editMode(Request $request)
   {
+      try {
+          $bookingId = $request->input('booking_id');
+          $eventId = $request->input('event_id');
+          $lock = $request->input('lock') === '1';
+          $user = Auth::user();
 
-    $bookingId = $request->input('booking_id');
-    $eventId = $request->input('event_id');
-    $lock = $request->input('lock') === '1';
-    $user = Auth::user();
+          if ($lock) {
+              BookingAgentSessions::updateOrCreate(
+                  [
+                      'booking_id' => $bookingId,
+                      'agent_id' => $user->id,
+                  ],
+                  [
+                      'time' => now(),
+                  ]
+              );
+          } else {
+              BookingAgentSessions::where('booking_id', $bookingId)
+                  ->where('agent_id', $user->id)
+                  ->delete();
+          }
 
-    if ($lock) {
-      DB::table('booking_agent_sessions')->updateOrInsert(
-        [
-          'booking_id' => $bookingId,
-          'agent_id' => $user->id
-        ],
-        [
-          'time' => now()
-        ]
-      );
-    } else {
-      DB::table('booking_agent_sessions')
-        ->where('booking_id', $bookingId)
-        ->where('agent_id', $user->id)
-        ->delete();
-    }
-
-    broadcast(new \App\Events\BookingAgentSession(
-      agentId: $user->id,
-      bookingId: $bookingId,
-      username: $lock ? $user->username : null
-    ));
-
+          broadcast(new \App\Events\BookingAgentSession(
+              agentId: $user->id,
+              bookingId: $bookingId,
+              username: $lock ? $user->username : null
+          ));
+      }catch (Exception $e) {
+          dd($e->getMessage());
+      }
 
     // // return inertia
     return $this->withPermission([Permissions::EditBookings], fn() => Inertia::location(url()->previous()));
@@ -809,7 +816,7 @@ class BookingsController extends Controller
     ]);
 
     $event_id = request()->route('id');
-    $result = null; // <-- aquí
+    $result = null;
 
     try {
       $booking = Booking::findOrFail($request->booking_id);
@@ -1108,10 +1115,19 @@ class BookingsController extends Controller
 
                     $this->paymentInfoService->syncAllocatedCost($booking);
 
-                    $this->saveBookingLog(
+                    GlobalLogger::log(
+                        LogActionBooking::CABIN_UPGRADE,
+                        'booking',
                         $booking->id,
                         'Cabin Upgrade',
-                        "Upgrade from {$oldBooking->booking_code} to {$result->booking_code}"
+                        [
+                            'before' => [
+                                'bookingCode' => $oldBooking->booking_code,
+                            ],
+                            'after' => [
+                                'bookingCode' => $result->booking_code,
+                            ],
+                        ],
                     );
 
                     return redirect()

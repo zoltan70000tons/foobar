@@ -17,12 +17,12 @@ class LogRepository implements LogInterface
 
     public function writeOnBooking($id, $action, $user)
     {
-        BookingLog::create(
-            array(
-                'booking_id' => $id,
-                'action' => $action,
-                'user_id' => $user->id
-            )
-        );
+        // BookingLog::create(
+        //     array(
+        //         'booking_id' => $id,
+        //         'action' => $action,
+        //         'user_id' => $user->id
+        //     )
+        // );
     }
 }

@@ -2,23 +2,22 @@
 
 namespace App\Repositories;
 
-use App\Enums\StatusCabin;
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Helpers\InstallmentHelper;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\PassengerInterface;
 use App\Models\Booking;
 use App\Services\PaymentInfoService;
+use App\Support\GlobalLogger;
 use App\Traits\CabinFilter;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use App\Models\BookingLog;
 use App\Models\Cabin;
 use App\Models\Comment;
 use App\Models\Tag;
 use App\Models\TemporaryReservation;
-use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PassengerRepository;
 use App\Repositories\AdjustmentsRepository;
@@ -27,7 +26,6 @@ use Illuminate\Support\Facades\DB as FacadesDB;
 
 class BookingRepository implements BookingInterface
 {
-  use BookingLogTrait;
   use CabinFilter;
 
   public PassengerInterface $passengerRepository;
@@ -140,12 +138,12 @@ class BookingRepository implements BookingInterface
       ->where('event_id', $eventId)
       ->where('status', $status);
 
+
     if (!empty($keyword)) {
       $keyword = strtolower($keyword);
 
       $query->where(function ($query) use ($keyword) {
-        $query
-          ->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
+        $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
           ->orWhereHas('customer.detail', function ($query) use ($keyword) {
             $query->where(function ($query) use ($keyword) {
               $query
@@ -173,8 +171,7 @@ class BookingRepository implements BookingInterface
 
     if (!empty($tags)) {
       $query->whereExists(function ($sub) use ($tags) {
-        $sub
-          ->select(DB::raw(1))
+        $sub->select(DB::raw(1))
           ->from('taggings as tg')
           ->whereColumn('tg.entity_id', DB::raw('bookings.id::text'))
           ->where('tg.entity_type', 'booking')
@@ -218,18 +215,13 @@ class BookingRepository implements BookingInterface
         ? Carbon::parse($dateRange['longestDueDateInstallment']['endDate'])
         : null;
 
-      $filtered = $results
-        ->getCollection()
-        ->filter(function ($booking) use ($startDate, $endDate) {
-          $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
-          if (!$dueDate) {
-            return false;
-          }
+      $filtered = $results->getCollection()->filter(function ($booking) use ($startDate, $endDate) {
+        $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+        if (!$dueDate) return false;
 
-          $dueDate = Carbon::parse($dueDate);
-          return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
-        })
-        ->values();
+        $dueDate = Carbon::parse($dueDate);
+        return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
+      })->values();
 
       $results = new \Illuminate\Pagination\LengthAwarePaginator(
         $filtered,
@@ -286,20 +278,23 @@ class BookingRepository implements BookingInterface
       'passengers.discounts',
       'passengers.onboardCredits',
       'passengers.passengerInvitation',
-      'logs',
-      'logs.user',
       'lockedBy',
       'lockedBy.agent',
       'comments',
       'comments.user',
       'agent',
-      'tags',
+      'tags'
     ])
       ->where('booking_code', '=', $code)
       ->first();
-    $booking->passengers->each(function ($passenger) {
-      $passenger->setAttribute('installment_status', $passenger->installment_status);
-    });
+
+    if ($booking) {
+      $booking->setRelation('logs', $booking->logsSafe()->get());
+
+      $booking->passengers->each(function ($passenger) {
+        $passenger->setAttribute('installment_status', $passenger->installment_status);
+      });
+    }
 
     return $booking;
   }
@@ -317,45 +312,40 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id)
-  {
-  }
+  function delete($id) {}
 
   function addTags($booking, $tags)
   {
     try {
       $originalTags = $booking->tags()->pluck('name')->toArray();
-      $tag = Tag::type('booking')->whereIn('id', $tags)->get();
+      $tag          = Tag::type('booking')->whereIn('id', $tags)->get();
       $booking->tags()->sync($tag);
-      $newTags = $booking->tags()->pluck('name')->toArray();
+      $newTags      = $booking->tags()->pluck('name')->toArray();
 
-      $this->saveBookingLog(
-        $booking->id,
-        'Changed booking tags',
-        sprintf('Booking tags changed from [%s] to [%s].', implode(', ', $originalTags), implode(', ', $newTags))
-      );
+      $addedTags = array_diff($newTags, $originalTags);
+      $removedTags = array_diff($originalTags, $newTags);
+      $action = null;
 
-      // if (!is_array($tags)) {
-      //     throw new InvalidArgumentException('Tags must be an array.');
-      // }
-      // $uniqueTags = array_unique($tags);
-      // $originalTags = $booking->tags;
+      if (!empty($addedTags)) {
+        $action = LogActionBooking::TAG_ATTACHED;
+      }
 
-      // $booking->update([
-      //     'tags' => $uniqueTags,
-      // ]);
+      if (!empty($removedTags)) {
+        $action = LogActionBooking::TAG_DETACHED;
+      }
 
-      // if ($originalTags !== $uniqueTags) {
-      //     $this->saveBookingLog(
-      //         $booking->id,
-      //         'Changed booking tags',
-      //         sprintf(
-      //             'Booking tags changed from [%s] to [%s].',
-      //             implode(', ', is_array($originalTags) ? $originalTags : []),
-      //             implode(', ', is_array($uniqueTags) ? $uniqueTags : [])
-      //         )
-      //     );
-      // }
+      if ($action) {
+        GlobalLogger::log(
+          $action,
+          'booking',
+          $booking->id,
+          'Booking tags changed',
+          [
+            'before' => ['originalTags' => $originalTags],
+            'after' => ['newTags' => $newTags],
+          ]
+        );
+      }
 
       return $booking;
     } catch (\Throwable $e) {
@@ -387,11 +377,6 @@ class BookingRepository implements BookingInterface
       $originalCode = $booking->booking_code;
       $booking->booking_code = $new_code;
       $booking->save();
-      $this->saveBookingLog(
-        $booking->id,
-        'Changed booking code',
-        "Booking code changed manually from {$originalCode} to {$new_code}."
-      );
 
       return $booking;
     } catch (\Exception $e) {
@@ -408,11 +393,7 @@ class BookingRepository implements BookingInterface
       $originalStatus = $booking->status;
       $booking->status = $status;
       $booking->save();
-      $this->saveBookingLog(
-        $booking->id,
-        'Changed booking status',
-        "Booking status changed from {$originalStatus} to {$status}."
-      );
+
       return $booking;
     } catch (\Exception $e) {
       Log::info($e);
@@ -444,7 +425,7 @@ class BookingRepository implements BookingInterface
   {
     try {
       $booking->cancel();
-      $this->saveBookingLog($booking->id, 'Cancelled', 'The booking was cancelled');
+
       return $booking;
     } catch (\Exception $e) {
       return false;
@@ -595,8 +576,12 @@ class BookingRepository implements BookingInterface
     string $cabinNumber,
     int $cabinTypeId,
     int $cabinCategoryId
-  ): Cabin|null {
-    return Cabin::with(['category.spec', 'cabinSpec', 'cabinType'])
+  ): Cabin | null {
+    return Cabin::with([
+      'category.spec',
+      'cabinSpec',
+      'cabinType'
+    ])
       ->whereHas('category.spec', function ($q) use ($currentCapacity) {
         $q->where('capacity', '=', $currentCapacity);
       })

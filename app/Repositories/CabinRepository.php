@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\GlobalLog\LogActionCabin;
 use App\Enums\StatusCabin;
 use App\Interfaces\CabinInterface;
 use App\Models\Cabin;
@@ -9,6 +10,7 @@ use App\Models\CabinCategory;
 use App\Models\CabinSpec;
 use App\Models\CabinType;
 use App\Models\Tag;
+use App\Support\GlobalLogger;
 use App\Traits\ExceptionLogger;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -100,6 +102,8 @@ class CabinRepository implements CabinInterface
 
       $cabin->notes = $data['notes'] ?? null;
       $cabin->internal_notes = $data['internal_notes'] ?? null;
+      $beforeTagIds = $cabin->tags()->pluck('tags.id')->all();
+
       $tagIds = collect($data['tags'] ?? [])
         ->map(fn($t) => is_array($t) ? ($t['id'] ?? null) : $t)
         ->filter(fn($id) => is_string($id) && Str::isUuid($id))
@@ -107,6 +111,31 @@ class CabinRepository implements CabinInterface
         ->all();
       $cabin->tags()->sync($tagIds);
 
+      $afterTagIds  = $cabin->tags()->pluck('tags.id')->all();
+      $addedIds     = array_values(array_diff($afterTagIds, $beforeTagIds));
+      $removedIds   = array_values(array_diff($beforeTagIds, $afterTagIds));
+
+      if ($addedIds || $removedIds) {
+        $addedNames   = $addedIds   ? Tag::whereIn('id', $addedIds)->pluck('name', 'id')   : collect();
+        $removedNames = $removedIds ? Tag::whereIn('id', $removedIds)->pluck('name', 'id') : collect();
+
+        GlobalLogger::log(
+          LogActionCabin::TAG_UPDATED,
+          'cabin',
+          (string)$cabin->id,
+          trim(sprintf(
+            'Tags updated%s%s',
+            $addedIds   ? ' — added: ' . implode(', ', $addedNames->values()->all()) : '',
+            $removedIds ? ' — removed: ' . implode(', ', $removedNames->values()->all()) : ''
+          )),
+          [
+            'before'  => $beforeTagIds,
+            'after'   => $afterTagIds,
+            'added'   => $addedNames,   // {id:name}
+            'removed' => $removedNames, // {id:name}
+          ]
+        );
+      }
       if (!in_array($cabin->status, [StatusCabin::BOOKED, StatusCabin::PARTIALLY_BOOKED])) {
 
         if (isset($data['cabin_type']) && $data['cabin_type'] != $cabin->cabin_type_id) {
@@ -312,8 +341,6 @@ class CabinRepository implements CabinInterface
       'last_page'    => $paginator->lastPage(),
     ];
   }
-
-
 
   function addTags(array $tags, array $cabins) {}
 

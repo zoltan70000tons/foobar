@@ -28,6 +28,7 @@ use App\Http\Controllers\PassengerController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountsController;
+use App\Http\Controllers\LogsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardCreditController;
 use App\Http\Controllers\TemporaryPasswordController;
@@ -319,6 +320,8 @@ Route::resource('/tags', TagsController::class)
         'destroy' => 'tags.destroy'
     ]);
 
+Route::match(['GET', 'POST'], '/logs', [LogsController::class, 'index'])
+    ->name('logs.index');
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 Route::prefix('oauth')->group(function () {

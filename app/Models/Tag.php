@@ -39,7 +39,6 @@ class Tag extends Model
             ->withPivot('created_at');
     }
 
-    /* Scopes útiles */
     public function scopeType($q, string $type)   { return $q->where('type', $type); }
     public function scopeSearch($q, string $text) { return $q->whereRaw("search_tsv @@ plainto_tsquery('simple', ?)", [$text]); }
 }

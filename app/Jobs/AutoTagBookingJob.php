@@ -2,7 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Models\Booking;
+use App\Support\GlobalLogger;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -10,11 +12,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Helpers\TagHelper;
-use App\Traits\BookingLogTrait;
 
 class AutoTagBookingJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, BookingLogTrait;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected Booking $booking;
     protected Carbon $now;
@@ -61,18 +62,20 @@ class AutoTagBookingJob implements ShouldQueue
                     '#FF0000',
                     'Overdue installments > 48h past due'
                 );
-                $this->saveBookingLog(
+                GlobalLogger::log(
+                    LogActionBooking::SYSTEM_ADDED_OVERDUE_TAG,
+                    'booking',
                     $this->booking->id,
                     'Added OVERDUE TAG by system',
-                    'Added Tag: OVERDUE on ' . now()
                 );
             }
         } else {
             if (TagHelper::removeTag($this->booking, 'OVERDUE', 'BOOKING')) {
-                $this->saveBookingLog(
+                GlobalLogger::log(
+                    LogActionBooking::SYSTEM_REMOVED_OVERDUE_TAG,
+                    'booking',
                     $this->booking->id,
                     'Removed OVERDUE TAG by system',
-                    'Removed Tag: OVERDUE on ' . now()
                 );
             }
         }
@@ -105,18 +108,20 @@ class AutoTagBookingJob implements ShouldQueue
                     '#FFA500',
                     'Indicates passengers with missing information.'
                 );
-                $this->saveBookingLog(
+                GlobalLogger::log(
+                    LogActionBooking::SYSTEM_ADDED_MISSING_PAX_TAG,
+                    'booking',
                     $this->booking->id,
                     'Added MISSING PAX TAG by system',
-                    'Added Tag: MISSING PAX on ' . now()
                 );
             }
         } else {
             if (TagHelper::removeTag($this->booking, 'MISSING PAX', 'BOOKING')) {
-                $this->saveBookingLog(
+                GlobalLogger::log(
+                    LogActionBooking::SYSTEM_REMOVED_MISSING_PAX_TAG,
+                    'booking',
                     $this->booking->id,
                     'Removed MISSING PAX Tag by system',
-                    'Removed Tag: MISSING PAX on ' . now()
                 );
             }
         }

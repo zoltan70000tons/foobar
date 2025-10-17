@@ -2,9 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Models\Booking;
 use App\Models\Installment;
 use App\Models\Passenger;
+use App\Support\GlobalLogger;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Config;
@@ -16,11 +18,10 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Services\PDFService;
-use App\Traits\BookingLogTrait;
 
 class SendPaymentReminderJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, BookingLogTrait;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected int $bookingId;
 
@@ -137,7 +138,7 @@ class SendPaymentReminderJob implements ShouldQueue
                     $pdfBinary = $pdfService->generateInvoicePDF($booking, $passenger->language ?? 'en');
                     $pdfName   = "Invoice_{$booking->booking_code}.pdf";
                 }
-                $result = Mail::send([], [], function ($m) use ($to, $subject, $content, $pdfBinary, $pdfName) {
+                Mail::send([], [], function ($m) use ($to, $subject, $content, $pdfBinary, $pdfName) {
                     $m->to($to)
                         ->bcc(env('MAIL_BCC'))
                         ->subject($subject)
@@ -146,7 +147,20 @@ class SendPaymentReminderJob implements ShouldQueue
                         $m->attachData($pdfBinary->output(), $pdfName, ['mime' => 'application/pdf']);
                     }
                 });
-                $this->saveBookingLog($booking->id, "Reminder sent to {$to} by system on " . now(), "Sent payment reminder, {$booking->payment_plan} #{$installmentId}, due {$dueDate->toDateString()}.");
+
+                GlobalLogger::log(
+                    LogActionBooking::PAYMENT_REMINDER_SENT,
+                    'booking',
+                    $booking->id,
+                    "Reminder sent to {$to} by system",
+                    [
+                        'additional' => [
+                            'paymentPlan' => $booking->payment_plan,
+                            'installmentId' => $installmentId,
+                            'due' => $dueDate->toDateString(),
+                        ],
+                    ],
+                );
 
                 Log::info("Reminder sent to {$to} (booking #{$booking->id}, passenger #{$passenger->id}, tpl {$templateId}).");
             } catch (\Throwable $e) {

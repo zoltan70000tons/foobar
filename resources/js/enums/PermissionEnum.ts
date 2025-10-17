@@ -108,4 +108,7 @@ export enum Permissions {
     CreateTags = "Create Tags",
     EditTags = "Edit Tags",
     DeleteTags = "Delete Tags",
+
+    //Logs
+    ViewLogs = "View Logs",
 }

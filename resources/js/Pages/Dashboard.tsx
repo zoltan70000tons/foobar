@@ -15,6 +15,7 @@ import GroupWorkIcon from "@mui/icons-material/GroupWork";
 import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
 import TagIcon from '@mui/icons-material/Tag';
+import HistoryIcon from '@mui/icons-material/History';
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission } = usePermissions();
@@ -87,6 +88,13 @@ export default function Dashboard({ auth }: PageProps) {
       icon: TagIcon,
       link: "/tags",
       permission: Permissions.ViewTags,
+    },
+    {
+      title: "Logs",
+      description: "Check Logs",
+      icon: HistoryIcon,
+      link: "/logs",
+      permission: Permissions.ViewLogs,
     },
   ];
 

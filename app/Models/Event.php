@@ -5,6 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string|null $name
+ * @property string|null $description
+ * @property string|null $image
+ * @property string|null $address
+ */
 class Event extends Model
 {
   use HasFactory;

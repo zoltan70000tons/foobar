@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\BookingAgentSessions;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class ClearOldBookingSessions implements ShouldQueue
     {
         $expiredTime = now()->subMinutes($this->expirationMinutes);
 
-        $deleted = DB::table('booking_agent_sessions')
+        $deleted = BookingAgentSessions::query()
             ->where('time', '<', $expiredTime)
             ->delete();
 

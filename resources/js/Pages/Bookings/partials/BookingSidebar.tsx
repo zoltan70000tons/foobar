@@ -22,10 +22,25 @@ import PersonIcon from "@mui/icons-material/Person";
 
 import dayjs from "dayjs";
 
-interface BookingSidebarProps {
+type Actor = {
+    username: string;
+    //...
+}
+type Logs = {
+    action: string;
+    actor: Actor;
+    actor_id: string;
+    actor_type: string;
+    created_at: string;
+    description: string;
+    id: string;
+    related_id: string;
+    related_type: string; //should be enum
+}
+type BookingSidebarProps = {
     isOpen: boolean;
     toggleSidebar: () => void;
-    logs: Array<{ date: string; time: string; user: string; action: string; description?: string }>;
+    logs: Logs[];
     comments: Array<{ id: number; user: string; date: string; comment: string }>;
     onAddComment: (comment: string) => void;
 }
@@ -33,6 +48,8 @@ interface BookingSidebarProps {
 const BookingSidebar: React.FC<BookingSidebarProps> = ({ isOpen, toggleSidebar, logs, comments, onAddComment }) => {
     const [newComment, setNewComment] = useState("");
     const [activeTab, setActiveTab] = useState(0);
+
+    console.log(logs)
 
     const handleAddComment = () => {
         if (newComment.trim()) {
@@ -125,7 +142,7 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({ isOpen, toggleSidebar, 
                                         <HistoryIcon color="info" />
                                     </ListItemIcon>
                                     <ListItemText
-                                        primary={`${dayjs(log.created_at).format("DD/MM/YYYY hh:mm A")} - @${log.user.username || "System"}`}
+                                        primary={`${dayjs(log.created_at).format("DD/MM/YYYY hh:mm A")} - @${log.actor.username || "System"}`}
                                         secondary={
                                             <>
                                                 {log.action}

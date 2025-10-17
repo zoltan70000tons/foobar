@@ -9,7 +9,6 @@ use App\Models\Booking;
 use App\Models\PaymentTransfer;
 use App\Repositories\PaymentRepository;
 use App\Services\PaymentService;
-use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Repositories\PassengerRepository;
@@ -26,7 +25,6 @@ class PaymentController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
-    use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
@@ -67,12 +65,6 @@ class PaymentController extends Controller
                 $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
 
                 DB::commit();
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Added Manual Payment',
-                    "Manual {$validated['type']} value: \${$validated['amount']} was added to booking"
-                );
 
                 $type = PaymentType::from($validated['type']);
 
@@ -139,12 +131,6 @@ class PaymentController extends Controller
                     }
 
                     DB::commit();
-
-                    $this->saveBookingLog(
-                        $booking_id,
-                        'Deleted split payment',
-                        "Transaction ID: {$transactionId}, and total amount: {$totalAmount} was deleted"
-                    );
                 } else {
                     if ($payment->type === "TRANSFER") {
                         $paymentTransfer = PaymentTransfer::query()
@@ -184,12 +170,6 @@ class PaymentController extends Controller
                         $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
 
                         DB::commit();
-
-                        $this->saveBookingLog(
-                            $booking_id,
-                            'Deleted payment',
-                            "Payment: {$type} value: \${$amount} was deleted"
-                        );
                     }
                 }
 

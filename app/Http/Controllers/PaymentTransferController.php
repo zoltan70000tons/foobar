@@ -4,17 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
 use App\Models\Booking;
-use App\Models\OnboardCredit;
-use App\Models\PassengerDiscount;
 use App\Models\Payment;
 use App\Models\PaymentTransfer;
 use App\Services\PaymentTransferService;
-use App\Traits\BookingLogTrait;
 use Illuminate\Http\Request;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\PaymentInfoService;
 
@@ -22,7 +18,6 @@ class PaymentTransferController extends Controller
 {
     use HandlePermissions;
     use ExceptionLogger;
-    use BookingLogTrait;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
@@ -54,12 +49,6 @@ class PaymentTransferController extends Controller
 
                 DB::commit();
 
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Added Payment Transfer',
-                    "Added Payment Transfer from passenger with ID: " . $validated["passenger_id"] . " to passenger with ID: " . $validated["transfer_to_passenger"]
-                );
-
                 $booking = Booking::find($booking_id);
 
                 $this->paymentInfoService->syncBalance($validated["passenger_id"], $booking->id, $booking->event_id);
@@ -69,7 +58,6 @@ class PaymentTransferController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
                 $this->logException($e);
-                dd($e->getMessage());
 
                 return redirect()->back()->with('error', 'Error creating payment transfer!');
             }
@@ -111,12 +99,6 @@ class PaymentTransferController extends Controller
                 $paymentTransfer->delete();
 
                 DB::commit();
-
-                $this->saveBookingLog(
-                    $booking_id,
-                    'Deleted payment transfer from passengers',
-                    "Id: {$validated['transfer_id']} was deleted"
-                );
 
                 return redirect()->back()->with('success', 'Payment transfer deleted successfully!');
             } catch (\Exception $e) {

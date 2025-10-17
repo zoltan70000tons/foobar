@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\GlobalLog\LogActionBooking;
+use App\Support\GlobalLogger;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\BookingLog;
-use App\Traits\BookingLogTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Hidehalo\Nanoid\Client;
 use Illuminate\Support\Facades\DB;
@@ -14,11 +15,11 @@ use Log;
 use Storage;
 use App\Models\Tag;
 use Str;
+use App\Models\Log as LogModel;
 
 class Booking extends Model
 {
   use HasFactory;
-  use BookingLogTrait;
 
   protected $fillable = [
     'booking_code',
@@ -32,6 +33,11 @@ class Booking extends Model
     'agent_id',
     'status',
   ];
+
+  public function getMorphableIdAttribute(): string
+  {
+    return (string) $this->id;
+  }
 
   /**
    * Relationship: A booking belongs to many adjustments.
@@ -119,9 +125,11 @@ class Booking extends Model
     }
   }
 
-  public function logs()
+  public function logsSafe()
   {
-    return $this->hasMany(BookingLog::class, 'booking_id', 'id');
+    return LogModel::with('actor')
+      ->where('related_type', 'booking')
+      ->where('related_id', $this->morphable_id);
   }
 
   public function comments()
@@ -140,7 +148,7 @@ class Booking extends Model
       // Validate that the cabin exists
       if (!$cabin) {
         $number = $cabin->cabinSpec->cabin_number ?? null;
-        $message = 'Cabin ' . ($number === null ? '' : "with number {$number} ") . 'does not exist.';
+        $message = "Cabin " . ($number === null ? "" : "with number {$number} ") . "does not exist.";
         throw new \Exception($message);
       }
 
@@ -172,11 +180,21 @@ class Booking extends Model
       $this->booking_code = $this->generateBookingCode($cabin);
       $this->save();
 
-      // Save the booking log
-      $this->saveBookingLog(
+      GlobalLogger::log(
+        LogActionBooking::CABIN_NUMBER_CHANGED,
+        'booking',
         $this->id,
         'Changed Cabin',
-        "Cabin changed from  {$prevCabin->cabin_number} to {$cabin->cabin_number}. /n Booking code changed from {$preBookingCode} to {$this->booking_code}"
+        [
+          'before' => [
+            'cabinNumber' => $prevCabin->cabin_number,
+            'bookingCode' => $preBookingCode,
+          ],
+          'after' => [
+            'cabinNumber' => $cabin->cabin_number,
+            'bookingCode' => $this->booking_code,
+          ],
+        ],
       );
 
       return $this;
@@ -185,11 +203,12 @@ class Booking extends Model
     }
   }
 
+
   /**
    * Check if a given 4-character code is in the blocked words list.
    *
-   * This function loads the blocked words from a JSON file located in
-   * resources/data/not_allowed_words.json. If the file doesn't exist
+   * This function loads the blocked words from a JSON file located in 
+   * resources/data/not_allowed_words.json. If the file doesn't exist 
    * or is malformed, it logs an error and throws an exception.
    *
    * @param  string  $code  The 4-character code to validate.
@@ -206,7 +225,7 @@ class Booking extends Model
 
       if (!file_exists($path)) {
         Log::error("Blocked words file not found: $path");
-        throw new \Exception('Blocked words file is missing.');
+        throw new \Exception("Blocked words file is missing.");
       }
 
       $json = file_get_contents($path);
@@ -214,7 +233,7 @@ class Booking extends Model
 
       if (empty($decoded) || !is_array($decoded)) {
         Log::error("Blocked words file is empty or invalid: $path");
-        throw new \Exception('Blocked words file is empty or malformed.');
+        throw new \Exception("Blocked words file is empty or malformed.");
       }
 
       $blocked_words = array_map('strtoupper', $decoded);
@@ -222,6 +241,7 @@ class Booking extends Model
 
     return in_array(strtoupper($code), $blocked_words);
   }
+
 
   public function cancel()
   {
@@ -287,7 +307,9 @@ class Booking extends Model
     });
 
     // Find the relative position of the cabin's category in the group
-    $index = $categoriesInSameGroup->pluck('id')->search($cabin->category->id);
+    $index = $categoriesInSameGroup
+      ->pluck('id')
+      ->search($cabin->category->id);
 
     // Determine the category letter based on the index
     $categoryLetter = $alphabet[$index % count($alphabet)] ?? '?';
@@ -329,13 +351,12 @@ class Booking extends Model
     });
 
     static::created(function (Booking $booking) {
-      if (app()->runningInConsole()) {
-        return;
-      }
+      if (app()->runningInConsole()) return;
 
-      $booking->saveBookingLog($booking->id, 'Created', 'The booking was created');
-
-      $tag = Tag::firstOrCreate(['type' => 'booking', 'name' => 'NEW'], ['color' => '#ff9800']);
+      $tag = Tag::firstOrCreate(
+        ['type' => 'booking', 'name' => 'NEW'],
+        ['color' => '#ff9800']
+      );
 
       $id = (string) $tag->getKey();
       if (!\Illuminate\Support\Str::isUuid($id)) {
@@ -350,9 +371,10 @@ class Booking extends Model
       }
     });
 
-    static::deleted(function ($booking) {
-      $booking->saveBookingLog($booking->id, 'Deleted', 'The booking was deleted');
-    });
+
+
+
+    static::deleted(function ($booking) {});
   }
 
   public function getTotalpaid()
@@ -382,6 +404,7 @@ class Booking extends Model
       relatedKey: 'id'
     )->withPivot('created_at');
   }
+
 
   public function attachTags(array $tagIds): void
   {

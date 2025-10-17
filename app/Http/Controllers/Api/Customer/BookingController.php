@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App;
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Http\Controllers\Controller;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
@@ -20,7 +22,6 @@ use App\Models\Passenger;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\Cart;
-use App\Traits\BookingLogTrait;
 use App\Traits\StringNormalization;
 use App\Helpers\AgeRestriction;
 use App\Notifications\NewBookingRequest;
@@ -31,7 +32,6 @@ use App\Enums\ErrorCode;
 
 class BookingController extends Controller
 {
-  use BookingLogTrait;
   use StringNormalization;
 
   protected $bookingRepository;
@@ -471,11 +471,18 @@ class BookingController extends Controller
     $passengerOrder = $request->input('passenger_order');
 
     $result = $this->customerBookingRepository->setEmptySeat($eventId, $bookingCode, $passengerOrder);
-    $this->saveBookingLog(
-      $booking->id,
-      'BY USER: Set empty seat',
-      'Lead passenger set empty seat for slot ' . $passengerOrder
-    );
+
+      GlobalLogger::log(
+          LogActionBooking::USER_SET_EMPTY_SEAT,
+          'booking',
+          $booking->id,
+          'BY USER: Set empty seat',
+          [
+              'additional' => [
+                  'passengerOrder' => $passengerOrder,
+              ],
+          ],
+      );
 
     return $result;
   }
@@ -514,11 +521,18 @@ class BookingController extends Controller
     $passengerOrder = $request->input('passenger_order');
 
     $result = $this->customerBookingRepository->removeEmptySeat($eventId, $bookingCode, $passengerOrder);
-    $this->saveBookingLog(
-      $booking->id,
-      'BY USER: Removed empty seat',
-      'Lead passenger removed empty seat for slot ' . $passengerOrder
-    );
+
+      GlobalLogger::log(
+          LogActionBooking::USER_REMOVED_EMPTY_SEAT,
+          'booking',
+          $booking->id,
+          'BY USER: Removed empty seat',
+          [
+              'additional' => [
+                  'passengerOrder' => $passengerOrder,
+              ],
+          ],
+      );
 
     return $result;
   }
@@ -598,11 +612,17 @@ class BookingController extends Controller
     // create passenger with booking id
     $result = $this->customerBookingRepository->addPassengerManually($eventId, $bookingCode, $passenger, $validated);
 
-    $this->saveBookingLog(
-      $booking->id,
-      'BY USER: Add passenger manually',
-      'Lead passenger added passenger manually with email address ' . $validated['email']
-    );
+      GlobalLogger::log(
+          LogActionBooking::USER_ADD_PASSENGER_MANUALLY,
+          'booking',
+          $booking->id,
+          'BY USER: Add passenger manually',
+          [
+              'additional' => [
+                  'email' => $validated['email'],
+              ],
+          ],
+      );
 
     return $result;
   }
@@ -702,15 +722,18 @@ class BookingController extends Controller
       $this->customerBookingService->addPassengerViaEmail($booking, $invitation, $email, $fromWho, $toWho, $event);
     }
 
-    $this->saveBookingLog(
-      $booking->id,
-      'BY USER: Add passenger via email',
-      'Lead passenger invite by email user with email address ' .
-        $toWho .
-        ' ' .
-        'Invited user is our customer: ' .
-        ($customer ? 'Yes' : 'No')
-    );
+      GlobalLogger::log(
+          LogActionBooking::USER_ADD_PASSENGER_VIA_EMAIL,
+          'booking',
+          $booking->id,
+          'BY USER: Add passenger via email',
+          [
+              'additional' => [
+                  'toWho' => $toWho,
+                  'isInvitedCustomer'=> !!$customer,
+              ],
+          ],
+      );
 
     return response()->json(['message' => 'Invitation sent'], 200);
   }
@@ -757,11 +780,12 @@ class BookingController extends Controller
 
     $passengerInvitation->delete();
 
-    $this->saveBookingLog(
-      $booking->id,
-      'BY USER: Cancelled invitation',
-      'Lead passenger cancelled invitation via email '
-    );
+      GlobalLogger::log(
+          LogActionBooking::USER_CANCELLED_INVITATION,
+          'booking',
+          $booking->id,
+          'BY USER: Cancelled invitation',
+      );
 
     return response()->json(['message' => 'Invitation cancelled'], 200);
   }
@@ -871,11 +895,18 @@ class BookingController extends Controller
     }
 
     $result = $this->customerBookingRepository->resetPassengerSeat($eventId, $bookingCode, $passengerOrder);
-    $this->saveBookingLog(
-      $booking->id,
-      'BY USER: Reset passenger seat',
-      'Lead passenger reset passenger seat for slot ' . $passengerOrder
-    );
+
+      GlobalLogger::log(
+          LogActionBooking::USER_RESET_PASSENGER_SEAT,
+          'booking',
+          $booking->id,
+          'BY USER: Reset passenger seat',
+          [
+              'additional' => [
+                  'passengerOrder' => $passengerOrder,
+              ],
+          ],
+      );
 
     return $result;
   }

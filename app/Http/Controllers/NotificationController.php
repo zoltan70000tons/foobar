@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionBooking;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
@@ -11,7 +13,6 @@ use App\Services\EmailTemplateService;
 use App\Services\PaymentService;
 use App\Services\PaymentInfoService;
 use App\Traits\ExceptionLogger;
-use App\Traits\BookingLogTrait;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -26,7 +27,6 @@ class NotificationController extends Controller
 {
   use HandlePermissions;
   use ExceptionLogger;
-  use BookingLogTrait;
 
   protected EmailTemplateService $emailService;
   protected PaymentService $paymentService;
@@ -129,14 +129,12 @@ class NotificationController extends Controller
       }
 
       // Booking log text that matches your plan and amount
-      $this->saveBookingLog(
-        $booking->id,
-        $isSplit ? 'System Split Payment Received' : 'System Transaction Received',
-        $isSplit
-          ? "System {$validated['type']} of $" . number_format($validated['amount'], 2) .
-          " was split across " . $passengerIds->count() . " passenger(s)."
-          : "System {$validated['type']} of $" . number_format($validated['amount'], 2) . " was added to booking"
-      );
+        GlobalLogger::log(
+            LogActionBooking::SYSTEM_TRANSACTION_RECEIVED,
+            'booking',
+            $booking->id,
+            "System {$validated['type']} of \${$validated['amount']} was added to booking",
+        );
 
       DB::commit();
 

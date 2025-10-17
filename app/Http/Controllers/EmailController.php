@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Enums\Permissions;
 
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Services\EmailTemplateService;
 use App\Services\PDFService;
-use App\Traits\BookingLogTrait;
+use App\Support\GlobalLogger;
 use App\Traits\HandlePermissions;
 use DB;
 use Illuminate\Http\Request;
@@ -20,7 +21,6 @@ class EmailController extends Controller
     protected $emailTemplateService;
 
     use HandlePermissions;
-    use BookingLogTrait;
 
     public function __construct(EmailTemplateService $emailTemplateService)
     {
@@ -89,7 +89,18 @@ class EmailController extends Controller
                             $subject
                         );
 
-                        $this->saveBookingLog($booking->id, 'Email Sent to Costumers', $validated['subject']);
+                        GlobalLogger::log(
+                            LogActionBooking::EMAIL_TO_CUSTOMERS,
+                            'booking',
+                            $booking->id,
+                            'Email Sent to Costumers',
+                            [
+                                'additional' => [
+                                    'subject' => $validated['subject'],
+                                ],
+                            ],
+                        );
+
                         return response()->json(['message' => 'Emails sent successfully', 'success' => true], 200);
                     }
                 },
