@@ -18,7 +18,7 @@ This template is used to send information about the reset seat to the customer.
 
 @section('content')
     <p>{{ __('systemEmails.payment_received_greeting', ['name' => $passengerName]) }}</p>
-    <p>{{ __('systemEmails.payment_received_body', ['amount' => $paymentAmount, 'booking_code' => $bookingCode]) }}</p>
+    <p>{!! __('systemEmails.payment_received_body', ['amount' => $paymentAmount, 'booking_code' => $bookingCode]) !!}</p>
     <p>{{ __('systemEmails.payment_received_next_steps') }}</p>
     <p>{{ __('systemEmails.payment_received_questions') }}</p>
 @endsection
