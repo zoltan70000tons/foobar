@@ -78,13 +78,12 @@ class CustomerController extends Controller
   public function store(CustomerRequest $request): RedirectResponse|Response|InertiaResponse
   {
     try {
-      return $this->withPermission([Permissions::CreateUsers], function ($request) {
+      return $this->withPermission([Permissions::CreateCustomers], function ($request) {
         $this->customerRepository->store($request);
 
         return redirect()->route('customers.index')->with('flash', 'Customer created successfully.');
       }, $request);
     } catch (\Exception $e) {
-      dd($e->getMessage());
       $this->logException($e);
       return redirect()->route('customers.index')->with('error', 'Problem creating customer.');
     }

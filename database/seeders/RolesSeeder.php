@@ -59,6 +59,7 @@ class RolesSeeder extends Seeder
 
         $superAdminRole = Role::where('name', 'SuperAdmin')->first();
         $adminRole = Role::where('name', 'Admin')->first();
+        $agentRole = Role::where('name', 'Agent')->first();
         $permissionNames = DB::table('permissions')->pluck('name')->toArray();
        // dd($permissionNames);
         
@@ -91,6 +92,18 @@ class RolesSeeder extends Seeder
             ]
         );
 
+        $agentId = User::firstOrCreate(
+            ['username' => 'agent'],
+            [
+                'id' => $this->faker->uuid,
+                'email' => 'agent@70000tons.com',
+                'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', $password)),
+                'created_at' => now(),
+                'updated_at' => now(),
+                'organization_id' => env('ORGANIZATION_ID', 1)
+            ]
+        );
+
         DB::table('model_has_roles')->updateOrInsert([
             'role_id' => $superAdminRole->id,
             'model_type' => User::class,
@@ -103,6 +116,14 @@ class RolesSeeder extends Seeder
             'role_id' => $adminRole->id,
             'model_type' => User::class,
             'model_id' => $adminId->id,
+        ], [
+            'team_id' => env('ORGANIZATION_ID', 1)
+        ]);
+
+        DB::table('model_has_roles')->updateOrInsert([
+            'role_id' => $agentRole->id,
+            'model_type' => User::class,
+            'model_id' => $agentId->id,
         ], [
             'team_id' => env('ORGANIZATION_ID', 1)
         ]);
