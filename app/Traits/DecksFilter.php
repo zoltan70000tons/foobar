@@ -32,9 +32,9 @@ trait DecksFilter
       ->where('cabin_type_id', $cabinTypeId)
       ->when($onlyAvailable, function ($query) use ($cabinTypeId) {
         if ($cabinTypeId == 1) {
-          $query->where('status', StatusCabin::AVAILABLE->value);
+          $query->where('status', StatusCabin::AVAILABLE);
         } else {
-          $query->whereIn('status', [StatusCabin::AVAILABLE->value, StatusCabin::PARTIALLY_BOOKED->value]);
+          $query->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED]);
         }
       });
 

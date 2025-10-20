@@ -35,15 +35,15 @@ trait CabinFilter
       ->where('cabin_type_id', $cabinTypeId)
       ->when($onlyAvailable, function ($query) use ($cabinTypeId, $fromAdmin) {
         if ($fromAdmin) {
-            $query->whereIn('status', [StatusCabin::AVAILABLE->value, StatusCabin::PARTIALLY_BOOKED->value,
-                StatusCabin::RESERVED->value]);
+            $query->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED,
+                StatusCabin::RESERVED]);
         } else {
             // Only return cabins that are available or PARTIALLY_BOOKED
             if ($cabinTypeId == 1) {
-                $query->where('status', StatusCabin::AVAILABLE->value);
+                $query->where('status', StatusCabin::AVAILABLE);
             } else {
-                $query->whereIn('status', [StatusCabin::AVAILABLE->value, StatusCabin::PARTIALLY_BOOKED->value,
-                    StatusCabin::RESERVED->value]);
+                $query->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED,
+                    StatusCabin::RESERVED]);
             }
         }
       })
@@ -132,7 +132,7 @@ trait CabinFilter
     // Prioritize PARTIALLY_BOOKED cabins first for non-private types
     if ($cabinTypeId !== 1) {
       $formattedCabins = $formattedCabins->sortByDesc(function ($cabin) {
-        return $cabin['status'] === StatusCabin::PARTIALLY_BOOKED->value ? 1 : 0;
+        return $cabin['status'] === StatusCabin::PARTIALLY_BOOKED ? 1 : 0;
       })->values();
     }
 
