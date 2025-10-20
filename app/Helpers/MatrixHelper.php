@@ -99,10 +99,8 @@ class MatrixHelper
 
     // Check if any of the cabins are available
     $isAvailable = $filteredCabins->first()->cabins->contains(function ($cabin) use ($reservationsCabinNumbers, $ticketType) {
-      // return $cabin->status === StatusCabin::AVAILABLE->value ||
-      //   $cabin->status === StatusCabin::PARTIALLY_BOOKED->value;
-      $byStatus = $cabin->status === StatusCabin::AVAILABLE->value ||
-        $cabin->status === StatusCabin::PARTIALLY_BOOKED->value;
+      $byStatus = $cabin->status === StatusCabin::AVAILABLE ||
+        $cabin->status === StatusCabin::PARTIALLY_BOOKED;
 
       // if single cabin number is in array of reservations, then it is not available
       $byReservation = self::isAvailableByReservation($cabin, $reservationsCabinNumbers, $ticketType);
@@ -116,8 +114,6 @@ class MatrixHelper
     // Get first instance just to get category attributes
     // All cabins in the filteredCabins have the same price
     $cabin = $filteredCabins->first();
-    //$category_data = CabinCategory::find($cabin->id);
-    //$category_full_title = $cabin->getTitleAttribute() . ' ' . $category_data->capacityDescription;
     $category_full_title = $cabin->getTitleAttribute() . ' ' . $cabin->capacityDescription;
 
     return [
