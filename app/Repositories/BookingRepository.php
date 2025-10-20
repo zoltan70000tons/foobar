@@ -425,9 +425,9 @@ class BookingRepository implements BookingInterface
   {
     try {
       $booking->cancel();
-
       return $booking;
     } catch (\Exception $e) {
+      Log::info($e->getMessage());
       return false;
     }
   }

@@ -246,11 +246,12 @@ class Booking extends Model
   public function cancel()
   {
     try {
+      Log::info('inside try ok');
       if ($this->status === 'CANCELLED') {
         throw new \Exception('This booking is already cancelled.');
       }
-
       $this->status = 'CANCELLED';
+
       $this->cabin->releaseCabin();
 
       $this->lockedBy()->delete();
@@ -259,7 +260,7 @@ class Booking extends Model
 
       return true;
     } catch (\Exception $e) {
-      \Log::error('Error cancelling booking: ' . $e->getMessage());
+      Log::info('Error cancelling booking: ' . $e->getMessage());
       return false;
     }
   }

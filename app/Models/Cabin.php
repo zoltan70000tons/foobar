@@ -20,7 +20,8 @@ class Cabin extends Model
 
   // Cast attributes to specific types
   protected $casts = [
-    'inventory' => 'integer', // Inventory stored as an integer
+    'inventory' => 'integer',
+    'status'    => StatusCabin::class,
   ];
 
   // Append custom attributes to the serialized output
@@ -198,7 +199,8 @@ class Cabin extends Model
       }
     }
 
-    $this->save();
+    $result = $this->save();
+    Log::info('Cabin released: ' . json_encode($this) . ' Save result: ' . ($result ? 'success' : 'failure'));
   }
 
   protected static function boot()

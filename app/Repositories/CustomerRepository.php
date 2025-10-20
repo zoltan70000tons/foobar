@@ -333,6 +333,7 @@ class CustomerRepository implements CustomerInterface
       'customer_id' => $user->id,
       'author_id' => Auth::id(),
       'action' => 'User deleted',
+      'description' => 'User data anonymized and user deleted',
     ]);
   }
 

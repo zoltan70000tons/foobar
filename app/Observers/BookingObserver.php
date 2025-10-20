@@ -36,6 +36,7 @@ class BookingObserver
 
     public function updated(Booking $booking): void
     {
+
         // booking_code (string)
         if ($booking->wasChanged('booking_code')) {
             GlobalLogger::log(
