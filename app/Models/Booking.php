@@ -101,7 +101,7 @@ class Booking extends Model
       }
 
       // Check if the cabin is already fully booked
-      if (strtoupper($cabin->status) === 'BOOKED') {
+      if ($cabin->status === 'BOOKED') {
         throw new \Exception('This cabin is already fully booked.');
       }
 
@@ -157,7 +157,7 @@ class Booking extends Model
         throw new \Exception('This cabin has no available inventory.');
       }
 
-      if (strtoupper($cabin->status) === 'BOOKED') {
+      if ($cabin->status === 'BOOKED') {
         throw new \Exception('This cabin is already fully booked.');
       }
 

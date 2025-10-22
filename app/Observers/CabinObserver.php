@@ -11,8 +11,8 @@ class CabinObserver
     public function updated(Cabin $cabin): void
     {
         // helpers
-        $statusBefore = $cabin->getRawOriginal('status');           // string antes
-        $statusAfter  = $cabin->status?->value ?? null;             // string después
+        $statusBefore = $cabin->getRawOriginal('status');
+        $statusAfter  = $cabin->status?->value ?? null;
 
         // inventory
         if ($cabin->wasChanged('inventory')) {
