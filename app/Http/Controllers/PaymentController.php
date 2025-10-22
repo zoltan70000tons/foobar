@@ -158,12 +158,6 @@ class PaymentController extends Controller
                             $this->paymentInfoService->syncBalance($passengerIdTo, $booking_id, $event_id);
 
                             DB::commit();
-
-                            $this->saveBookingLog(
-                                $booking_id,
-                                'Deleted transfer payment',
-                                "Transfer payment id {$payment->id} and {$transferredPayment->id} were deleted"
-                            );
                         }
                     } else {
                         $payment->delete();

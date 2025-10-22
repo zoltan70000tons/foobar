@@ -836,12 +836,6 @@ class BookingController extends Controller
 
             $passengerInvitation->delete();
 
-            $this->saveBookingLog(
-                $booking->id,
-                'BY USER: Cancelled invitation',
-                'Lead passenger cancelled invitation via email '
-            );
-
             return response()->json(['message' => 'Invitation cancelled'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 418);
