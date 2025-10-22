@@ -19,9 +19,9 @@ class UserInfoService
         ['user_id' => $user->id],
         [
           'language' => $validated['language'],
-          'phone' => $validated['phoneNumber'],
-          'emergency_c_name' => $validated['emergencyContactName'],
-          'emergency_c_phone' => $validated['emergencyPhoneNumber'],
+          'phone' => $validated['phone_number'],
+          'emergency_c_name' => $validated['emergency_contact_name'],
+          'emergency_c_phone' => $validated['emergency_phone_number'],
         ]
       );
 
@@ -31,10 +31,10 @@ class UserInfoService
         [
           'country' => $validated['country'],
           'state' => $validated['state'],
-          'address_first' => $validated['addressLine1'],
-          'address_second' => $validated['addressLine2'],
+          'address_first' => $validated['address_line_1'],
+          'address_second' => $validated['address_line_2'],
           'city' => $validated['city'],
-          'postal_code' => $validated['zipCode'],
+          'postal_code' => $validated['zip_code'],
         ]
       );
 
@@ -45,17 +45,17 @@ class UserInfoService
         foreach ($booking->passengers->where('survivor_number', $user->survivorNumber->survivor_number) as $passenger) {
           $passenger->update([
             'language' => $validated['language'],
-            'phone' => $validated['phoneNumber'],
-            'emergency_c_name' => $validated['emergencyContactName'],
-            'emergency_c_phone' => $validated['emergencyPhoneNumber'],
+            'phone' => $validated['phone_number'],
+            'emergency_c_name' => $validated['emergency_contact_name'],
+            'emergency_c_phone' => $validated['emergency_phone_number'],
             'country' => $validated['country'],
             'state' => $validated['state'],
-            'address_first' => $validated['addressLine1'],
-            'address_second' => $validated['addressLine2'],
+            'address_first' => $validated['address_line_1'],
+            'address_second' => $validated['address_line_2'],
             'city' => $validated['city'],
-            'postal_code' => $validated['zipCode'],
-            'special_request' => $validated['specialRequest'] ?? null,
-            'special_options' => $validated['specialOptions'] ?? null,
+            'postal_code' => $validated['zip_code'],
+            'special_request' => $validated['special_request'] ?? null,
+            'special_options' => $validated['special_options'] ?? null,
           ]);
         }
       }
