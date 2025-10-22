@@ -107,18 +107,18 @@ class CustomerAuthController extends Controller
     }
 
     $validated = $request->validate([
-      'phoneNumber' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
+      'phone_number' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
       'language' => ['required', 'string', 'max:5', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'country' => ['required', 'string', 'max:50', 'regex:/^[^<>!@#$%^&*+=]*$/'],
       'state' => ['nullable', 'string', 'max:20', 'regex:/^[^<>!@#$%^&*+=]*$/'],
-      'addressLine1' => ['required', 'string', 'max:50', 'regex:/^[^<>!@$%^*+=]*$/'],
-      'addressLine2' => ['nullable', 'string', 'max:50', 'regex:/^[^<>!@$%^*+=]*$/'],
+      'address_line_1' => ['required', 'string', 'max:50', 'regex:/^[^<>!@$%^*+=]*$/'],
+      'address_line_2' => ['nullable', 'string', 'max:50', 'regex:/^[^<>!@$%^*+=]*$/'],
       'city' => ['required', 'string', 'max:30', 'regex:/^[^<>!@$%^*+=]*$/'],
-      'zipCode' => ['required', 'string', 'max:10', 'regex:/^[^<>!@$%^*+=]*$/'],
-      'emergencyContactName' => ['required', 'string', 'max:75'],
-      'emergencyPhoneNumber' => ['required', 'string'],
-      'specialOptions' => ['nullable', 'array'],
-      'specialRequest' => ['nullable', 'string'],
+      'zip_code' => ['required', 'string', 'max:10', 'regex:/^[^<>!@$%^*+=]*$/'],
+      'emergency_contact_name' => ['required', 'string', 'max:75'],
+      'emergency_phone_number' => ['required', 'string'],
+      'special_options' => ['nullable', 'array'],
+      'special_request' => ['nullable', 'string'],
     ]);
 
     $result = $userInfoService->updateUserProfile($user, $validated);
