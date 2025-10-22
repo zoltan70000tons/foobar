@@ -70,8 +70,8 @@ class CustomerBookingRepository
     ];
 
 
-      $with[] = 'passengers.onboardCredits';
-    
+    $with[] = 'passengers.onboardCredits';
+
 
     // Conditional query based on bookingCode or requestId
     $booking = Booking::with($with)
@@ -139,7 +139,8 @@ class CustomerBookingRepository
   }
 
   // get booking by request id
-  public function getBookingByRequestId(int $eventId, string $requestId, $user = null) {
+  public function getBookingByRequestId(int $eventId, string $requestId, $user = null)
+  {
     //
     return $this->getBooking($eventId, null, $user, $requestId);
   }
@@ -154,13 +155,8 @@ class CustomerBookingRepository
   public function getAllBookings($user)
   {
     $user_survivor_number = $user->survivorNumber->survivor_number ?? null;
-    //$customer_id = $user->id ?? null;
 
-    // $bookings = Booking::with('passengers', 'cabin.category', 'cabin.cabinType', 'event')
-    //   ->where('customer_id', $customer_id)
-    //   ->get();
-
-    $bookings = Passenger::with('booking', 'booking.cabin.category', 'booking.cabin.cabinType', 'booking.event')
+    $bookings = Passenger::with('booking', 'booking.cabin.category', 'booking.cabin.cabinType', 'booking.event', 'booking.passengers')
       ->where('survivor_number', $user_survivor_number)
       ->get()
       ->map(function ($passenger) {
