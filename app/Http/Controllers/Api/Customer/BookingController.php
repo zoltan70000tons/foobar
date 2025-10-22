@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
+use App\Services\UserInfoService;
 use App\Models\Event;
 use App\Models\PassengerInvitation;
 use App\Mail\CustomerConfirmationBooking;
@@ -56,7 +57,7 @@ class BookingController extends Controller
   |  Store a new booking
   |
   */
-  public function store(StoreBookingRequest $request)
+  public function store(StoreBookingRequest $request, UserInfoService $userInfoService)
   {
     $validated = $request->validated();
 
@@ -159,14 +160,15 @@ class BookingController extends Controller
       $totalPrice = $validated['cart']['price_total'];
       $cabinTitle = $validated['cart']['cabin_title'];
 
-      // Delete current sesion
-      //$request->session()->forget('reservation_id');
-
       // delete cart from db
       Cart::where('user_id', $user->id)->delete();
-      // \Log::info('Result ----> data: ', ['result' => $result]);
-      // \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);
-      // \Log::info('Cart ----> data: ', ['cart' => $cart]);
+      
+      // Show debug information only in local environment
+      if (app()->environment('local')) {
+        \Log::info('Result ----> data: ', ['result' => $result]);
+        \Log::info('Passenger ----> data: ', ['passenger_data' => $passengerData]);
+        \Log::info('Cart ----> data: ', ['cart' => $cart]);
+      }
 
       $bookingCode = $result['booking']['booking_code'];
       $passengerEmail = $passengerData['email'];
@@ -183,6 +185,11 @@ class BookingController extends Controller
           ],
           201
         );
+      }
+      
+      // Update user profile if requested
+      if ($validated['update_contact_info'] === true) {
+        $result =  $userInfoService->updateUserProfile($user, $validated);
       }
 
       try {
