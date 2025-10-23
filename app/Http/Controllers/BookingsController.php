@@ -217,6 +217,8 @@ class BookingsController extends Controller
       'passenger.emergency_c_phone' => ['nullable', 'string', 'max:20'],
       'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
       'passenger.special_request' => ['nullable', 'string', 'max:1000'],
+      'passenger.special_options' => ['nullable', 'array'],
+      'passenger.dietary_preferences' => ['nullable', 'array'],
       'passenger.lead_passenger' => ['required', 'boolean'],
       'passenger.travel_info' => ['required', 'boolean'],
       'passenger.terms_n_cons' => ['required', 'accepted'],

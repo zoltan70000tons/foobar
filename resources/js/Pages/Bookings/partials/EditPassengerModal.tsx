@@ -39,6 +39,7 @@ import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import iso3166 from 'iso-3166-2';
+import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 
 const EditPassengerModal = ({
     open,
@@ -693,17 +694,10 @@ const EditPassengerModal = ({
                                 />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField
-                                    label="Special Request"
-                                    variant="outlined"
-                                    fullWidth
-                                    multiline
-                                    placeholder="e.g. Allergy to peanuts, prefer cabin near elevator"
-                                    rows={3}
-                                    size="small"
-                                    value={passenger?.special_request || ""}
-                                    onChange={(e) => onChange("special_request", e.target.value)}
-                                    disabled={disabledByDesign}
+                                <SpecialRequest
+                                  disabledByDesign={disabledByDesign}
+                                  onChange={onChange}
+                                  passenger={passenger}
                                 />
                             </Grid>
                             <Grid item xs={12} md={2}>
