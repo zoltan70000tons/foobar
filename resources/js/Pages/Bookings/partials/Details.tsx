@@ -44,6 +44,7 @@ import {
 } from "@mui/icons-material";
 
 import { formatDate } from "@/Helpers/stringUtils";
+import { isArray } from "lodash";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [open, setOpen] = useState(false);
@@ -74,7 +75,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
       setCabinCategory(
         cabinCategories.find((category) => category.id === booking.cabin.cabin_category_id) || null
       );
-      setCabinNumber(booking.cabin.cabin_number || null);
+      setCabinNumber(booking.cabin.cabin_number);
     }
   }, [booking, cabinTypes, cabinCategories]);
 
@@ -89,7 +90,6 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const statusPriority = {
     PARTIALLY_BOOKED: 1,
     AVAILABLE: 2,
-
   };
 
   const fetchAvailableCabins = async () => {
@@ -105,7 +105,6 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           accessible: onlyAccessible,
         },
       });
-      setCabinNumber(null);
       if (response?.data?.error) {
         showSnackbar(response.data.error, 'error');
       }
@@ -190,7 +189,6 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     setOnlyBalcony(false);
     setSelectedLocation("");
     setOnlyAccessible(false);
-    setCabinNumber(null);
   };
 
   const handleSave = () => {
@@ -520,13 +518,13 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
               value={availableCabins?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
               onChange={(event, newValue) => {
                 setChangeCabin(newValue || null);
-                setCabinNumber(newValue?.cabin_number || null);
+                setCabinNumber(newValue?.cabin_number);
               }}
               renderOption={(props, option) => (
                 <li {...props} key={option.cabin_number}>
                   {option.cabin_number} 
                   <Chip
-                    label={option.status}
+                    label={option.status === "RESERVED" ? "INTERNALLY AVAILABLE" : option.status === "AVAILABLE" ? "PUBLICALLY AVAILABLE" : option.status}
                     size="small"
                     sx={{ ml: 1 ,color:'white'}}
                     color={
@@ -604,39 +602,42 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
             <Typography variant="body1" sx={{ mb: 1 }}>
               Select a new cabin for this booking. The current cabin is {`${booking.cabin.cabin_number}`}.
             </Typography>
-            <Autocomplete
-              fullWidth
-              options={[...cabinsToUpgradeTo].sort(
-                (a, b) => statusPriority[a.status] - statusPriority[b.status]
-              )}
-              getOptionLabel={(option) => `${option.cabin_number} ${option.status}`}
-              value={cabinsToUpgradeTo?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
-              onChange={(event, newValue) => {
-                setUpgradeCabin(newValue || null);
-              }}
-              renderOption={(props, option) => (
-                <li {...props} key={option.cabin_number}>
-                  {option.cabin_number}
-                  <Chip
-                    label={option.status}
-                    size="small"
-                    sx={{ ml: 1 ,color:'white'}}
-                    color={
-                      option.status === 'AVAILABLE'
-                        ? 'success'
-                        : option.status === 'PARTIALLY_BOOKED'
-                          ? 'warning'
-                          : 'default'
-                    }
-                  />
-                  - Price: {option.category.price}
-                  - Name: {option.category.category_name}
-                  - Capacity: {option.category.spec.capacity}
-                </li>
-              )}
-              renderInput={(params) => <TextField {...params} label="Available Cabins" />}
-              disabled={loading || cabinsToUpgradeTo.length === 0}
-            />
+
+            {isArray(cabinsToUpgradeTo) && cabinsToUpgradeTo.length !== 0 && (
+              <Autocomplete
+                fullWidth
+                options={[...cabinsToUpgradeTo].sort(
+                  (a, b) => statusPriority[a.status] - statusPriority[b.status]
+                )}
+                getOptionLabel={(option) => `${option.cabin_number} ${option.status}`}
+                value={cabinsToUpgradeTo?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
+                onChange={(event, newValue) => {
+                  setUpgradeCabin(newValue || null);
+                }}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.cabin_number}>
+                    {option.cabin_number}
+                    <Chip
+                      label={option.status === "RESERVED" ? "INTERNALLY AVAILABLE" : option.status === "AVAILABLE" ? "PUBLICALLY AVAILABLE" : option.status}
+                      size="small"
+                      sx={{ ml: 1 ,color:'white'}}
+                      color={
+                        option.status === 'AVAILABLE'
+                          ? 'success'
+                          : option.status === 'PARTIALLY_BOOKED'
+                            ? 'warning'
+                            : 'default'
+                      }
+                    />
+                    - Price: {option.category.price}
+                    - Name: {option.category.category_name}
+                    - Capacity: {option.category.spec.capacity}
+                  </li>
+                )}
+                renderInput={(params) => <TextField {...params} label="Available Cabins" />}
+                disabled={loading || cabinsToUpgradeTo.length === 0}
+              />
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
