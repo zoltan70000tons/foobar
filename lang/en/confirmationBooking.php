@@ -63,6 +63,7 @@ return [
   'cbe_receive_partner_information' => 'Receive Partner Information',
   'cbe_accept_bed_configuration' => 'Accept Bed Configuration',
   'cbe_accept_terms' => 'Accept Terms',
+  'cbe_dietary_preferences' => 'Dietary Preferences',
   'cbe_todays_date' => 'Today\'s Date',
   'cbe_request_id' => 'Booking Request ID',
   'cbe_questions' => 'If you have any questions or concerns please don\'t hesitate to contact us at',

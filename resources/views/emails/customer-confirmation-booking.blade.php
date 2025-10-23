@@ -197,6 +197,10 @@
           <td>{{ $bookingResult->passenger->special_request }}</td>
       </tr>
       <tr>
+          <td class="booking-table__title">{{ __('confirmationBooking.cbe_dietary_preferences') }}:</td>
+          <td>{{ $bookingResult->passenger->dietary_preferences }}</td>
+      </tr>
+      <tr>
           <td class="booking-table__title">{{ __('confirmationBooking.cbe_survivor_referal_number') }}:</td>
           <td>{{ $bookingResult->passenger->survivor_referal_number }}</td>
       </tr>
