@@ -65,7 +65,22 @@ type Props = PageProps & {
   errors: Errors;
   shared: boolean;
   availableTags: { id: string; name: string; color: string }[];
-  logs: any;
+  logs: {
+    action: string;
+    actor_id: string;
+    actor_type: string;
+    description: string;
+    created_at: string;
+    id: string;
+    related_id: string;
+    related_type: string;
+    payload: {
+      added?: unknown;
+      after?: unknown;
+      before?: unknown;
+      removed?: unknown;
+    }
+  }[];
 };
 
 const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, logs }: Props) => {
@@ -106,7 +121,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
     balcony: cabin.cabin_spec.balcony,
     obstructedView: cabin.cabin_spec.obstructed_view,
   });
-console.log(logs)
+
   // State for managing active tab
   const [currentTab, setCurrentTab] = useState(0);
 

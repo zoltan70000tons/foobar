@@ -11,16 +11,24 @@ class CabinObserver
     public function updated(Cabin $cabin): void
     {
         // helpers
-        $statusBefore = $cabin->getRawOriginal('status');           // string antes
-        $statusAfter  = $cabin->status?->value ?? null;             // string después
+        $map = [
+            'AVAILABLE' => 'PUBLICLY AVAILABLE',
+            'RESERVED' => 'INTERNALLY AVAILABLE',
+        ];
+
+        $statusBefore = $map[$cabin->getRawOriginal('status')] ?? $cabin->getRawOriginal('status');
+        $statusAfter  = $map[$cabin->status?->value ?? null] ?? ($cabin->status?->value ?? null);
 
         // inventory
         if ($cabin->wasChanged('inventory')) {
+            $category = $cabin->category;
+            $categorySpec = $category->spec;
             GlobalLogger::log(
                 LogActionCabin::INVENTORY_CHANGED,
                 'cabin',
                 $cabin->id,
-                sprintf('Inventory %s → %s', $cabin->getRawOriginal('inventory'), $cabin->inventory),
+                sprintf('Inventory %s → %s, category code: %s', $cabin->getRawOriginal('inventory'),
+                    $cabin->inventory, $categorySpec->category_code),
                 [
                     'before' => ['inventory' => $cabin->getRawOriginal('inventory')],
                     'after'  => ['inventory'  => (int) $cabin->inventory],

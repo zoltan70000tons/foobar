@@ -14,20 +14,24 @@ class LogsController extends Controller
 
     public function index(Request $request)
     {
-        $type   = $request->filled('type')   ? (string) $request->string('type')   : null; // booking|customer|cabin
+        $type = $request->filled('type') ? (string) $request->string('type')   : null; // booking|customer|cabin
         $action = $request->filled('action') ? (string) $request->string('action') : null; // code - action
-        $from   = $request->date('from'); // Carbon|null
-        $to     = $request->date('to');   // Carbon|null
+        $from = $request->date('from'); // Carbon|null
+        $to = $request->date('to'); // Carbon|null
+        $bookingCode = $request->filled('bookingCode') ? $request->string('bookingCode') : null;
+        $agentName = $request->filled('agentName') ? $request->string('agentName') : null;
 
         $perPage = $request->get('per_page') ?? 30;
         $page = $request->get('page');
 
         $q = LogModel::query()
             ->latest('logs.created_at') 
-            ->when($type,   fn($qb) => $qb->where('logs.related_type', $type)) 
-            ->when($action, fn($qb) => $qb->where('logs.action', $action))   
-            ->when($from,   fn($qb) => $qb->where('logs.created_at', '>=', $from->copy()->startOfDay())) // 👈
-            ->when($to,     fn($qb) => $qb->where('logs.created_at', '<=', $to->copy()->endOfDay()));    // 👈
+            ->when($type, fn($qb) => $qb->where('logs.related_type', $type))
+            ->when($action, fn($qb) => $qb->where('logs.action', $action))
+            ->when($from, fn($qb) => $qb->where('logs.created_at', '>=', $from->copy()->startOfDay())) // 👈
+            ->when($to, fn($qb) => $qb->where('logs.created_at', '<=', $to->copy()->endOfDay())) // 👈
+            ->when($bookingCode, fn($qb) => $qb->where('bookings.booking_code', 'ILIKE', "%{$bookingCode}%"))
+            ->when($agentName, fn($qb) => $qb->where('users.username', 'ILIKE', "%{$agentName}%"));
 
         $logs = $q->select(
             'logs.id',
@@ -39,13 +43,22 @@ class LogsController extends Controller
             'logs.description',
             'logs.related_type',
             'logs.related_id',
+            'logs.payload',
             'bookings.booking_code',
-            'bookings.event_id'
+            'bookings.event_id',
+            'cabin_specs.cabin_number',
         )
             ->leftJoin('users', 'users.id', '=', 'logs.actor_id')
             ->leftJoin('bookings', function ($join) {
                 $join->on('logs.related_id', '=', DB::raw('bookings.id::text'));
                 $join->where('logs.related_type', '=', 'booking');
+            })
+            ->leftJoin('cabins', function ($join) {
+                $join->on('logs.related_id', '=', DB::raw('cabins.id::text'));
+                $join->where('logs.related_type', '=', 'cabin');
+            })
+            ->leftJoin('cabin_specs', function ($join) {
+                $join->on('cabins.cabin_spec_id', '=', 'cabin_specs.id');
             })
             ->paginate($perPage, ['*'], 'page', $page)
             ->withQueryString();

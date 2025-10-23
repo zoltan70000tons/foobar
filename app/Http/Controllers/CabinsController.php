@@ -9,6 +9,7 @@ use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Log as LogModel;
 use App\Models\Tag;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
@@ -174,7 +175,18 @@ class CabinsController extends Controller
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             $availableTags = Tag::type('cabin')->get();
-            $logs = \App\Models\Log::query()
+            $logs = LogModel::query()->select(
+                'logs.id',
+                'logs.created_at',
+                'logs.actor_type',
+                'logs.actor_id',
+                'users.username as actor_username',
+                'logs.action',
+                'logs.description',
+                'logs.related_type',
+                'logs.related_id',
+            )
+                ->leftJoin('users', 'users.id', '=', 'logs.actor_id')
                 ->where('related_type', '=', 'cabin')
                 ->where('related_id', '=', $cabin->id)
                 ->get();
