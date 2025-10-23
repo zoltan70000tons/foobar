@@ -16,16 +16,6 @@ import {
   Switch,
   AlertTitle,
   Chip,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
 } from "@mui/material";
 import CommentIcon from "@mui/icons-material/Comment";
 import dayjs from "dayjs";
@@ -42,14 +32,14 @@ import { BookingSessionTimer } from "./BookingSessionTimer";
 import FaceIcon from '@mui/icons-material/Face';
 import '@/echo';
 import { ReverbLockBookingEvent } from "@/interfaces/ReverbLockBookingEvent";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { formatCurrency } from "@/Helpers/stringUtils";
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments }: PageProps) => {
+
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments, history}: PageProps) => {
 
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
+
 
   const propsIsLockedBy: boolean = booking.locked_by !== null;
   const propsIsLockedByMe: boolean = propsIsLockedBy && booking.locked_by?.agent_id === auth.user.id;
@@ -65,8 +55,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   const [isLockedBy, setIsLockedBy] = useState(propsIsLockedByName || null);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
-
-  // handle dynamic lock booking
   useEffect(() => {
     const channel = window.Echo.channel('reverb-lock-booking');
   
@@ -184,7 +172,10 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
         },
         preserveScroll: true,
         preserveState: true,
-      },
+        onFinish: () => { 
+          router.reload({ only: ['history'] });
+          setLoading(false); },
+      }
     );
   };
 
@@ -299,19 +290,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                         checked={propsIsLockedByMe  && !isLockedByOther}
                         onChange={handleEditChange}
                         disabled={isDynamicLocked || isLockedByOther}
-                        // sx={{
-                        //   width: 68,
-                        //   height: 38,
-                        //   '& .MuiSwitch-thumb': {
-                        //     width: 24,
-                        //     height: 24,
-                        //     marginTop: '-2px',
-                        //     marginLeft: '2px',
-                        //   },
-                        //   '& .MuiSwitch-track': {
-                        //     borderRadius: 8,
-                        //   },
-                        // }}
                       />
                     }
                     label={
@@ -383,16 +361,12 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
         <Passengers booking={booking} editMode={editMode} setLoading={setLoading} />
         <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} list={adjustments} />
         <Payment booking={booking} editMode={editMode} />
-        {/* <Payment booking={booking} passenger={null} number={2} count={capacity} editMode={editMode} /> */}
-        {/* <ActionList editMode={editMode} /> */}
         <BookingSidebar
           isOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
-          logs={booking.logs}
-          comments={comments}
+          history={history}
           onAddComment={handleAddComment}
         />
-        {/* <LoadingOverlay open={loading} /> */}
       </Container>
     </AuthenticatedLayout>
   );

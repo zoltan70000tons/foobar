@@ -3,12 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Booking;
 use App\Models\Cabin;
 use App\Models\User;
 use App\Repositories\BookingRepository;
-use Illuminate\Support\Arr;
-use Spatie\Permission\Models\Role;
 use App\Traits\BookingHandler;
 use Illuminate\Support\Facades\Auth;
 use Hidehalo\Nanoid\Client;
@@ -41,12 +38,6 @@ class BookingSeeder extends Seeder
       $cabinType1 = Cabin::where('cabin_type_id', 1)->where('status', 'AVAILABLE')->inRandomOrder()->limit(2)->get();
       $cabinType2 = Cabin::where('cabin_type_id', 2)->where('status', 'AVAILABLE')->inRandomOrder()->limit(2)->get();
       $cabinType3 = Cabin::where('cabin_type_id', 3)->where('status', 'AVAILABLE')->inRandomOrder()->limit(2)->get();
-
-      // Get enough unique customers (total 6 needed for bookings with cabins)
-      //   $customersForBookings = User::where('organization_id', 1)
-      // ->whereHas('roles', function ($query) {
-      //     $query->where('name', 'Customer');
-      // })->limit(6)->toSql();
       setPermissionsTeamId(1);
 
       $customersForBookings = User::role('Customer')->limit(6)->get();
@@ -93,22 +84,8 @@ class BookingSeeder extends Seeder
         $this->bookingRepository->createBooking($bookingData, $passengerData, $cabin);
         Auth::logout();
       }
-
-      // Ensure no customer is repeated for bookings with cabins
-      // foreach ($selectedCabins as $index => $cabin) {
-      //   $customer = $customersForBookings[$index]; // Select a unique customer for each booking
-      //   // // Create the booking with a unique customer_id
-      //   $booking = Booking::factory()->create([
-      //     "event_id" => 1,
-      //     "payment_plan" => $index % 2 === 0 ? "INSTALLMENTS" : "PAY_IN_FULL",
-      //     "customer_id" => $customer->id,
-      //     "cabin_id" => $cabin->id,
-      //   ]);
-      // }
     } catch (\Exception $e) {
-      //throw $th;
       Log::error($e->getMessage());
-      dd($e->getMessage());
     }
   }
 }

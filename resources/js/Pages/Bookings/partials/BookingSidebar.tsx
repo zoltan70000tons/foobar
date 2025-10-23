@@ -1,168 +1,183 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
-    Drawer,
-    Box,
-    Typography,
-    Divider,
-    IconButton,
-    TextField,
-    Button,
-    Tabs,
-    Tab,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemIcon,
-    Avatar,
+  Drawer,
+  Box,
+  Typography,
+  IconButton,
+  TextField,
+  Button,
+  Badge,
+  Divider,
+  Grid,
+  Stack,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import CommentIcon from "@mui/icons-material/Comment";
-import HistoryIcon from "@mui/icons-material/History";
-import PersonIcon from "@mui/icons-material/Person";
+import HistoryList from "./HistoryList";
 
-import dayjs from "dayjs";
-
-type Actor = {
-    username: string;
-    //...
-}
+type Actor = { username: string; };
 type Logs = {
-    action: string;
-    actor: Actor;
-    actor_id: string;
-    actor_type: string;
-    created_at: string;
-    description: string;
-    id: string;
-    related_id: string;
-    related_type: string; //should be enum
-}
+  action: string; actor: Actor; actor_id: string; actor_type: string, message: string, status: string, payment_plan: string, cabin_number: string, cabin_status: string, bed_config: string, is_single_occupancy: boolean, booking_request_id: string;
+  created_at: string; description: string; id: string; related_id: string; related_type: string, booking_code: string;
+};
 type BookingSidebarProps = {
-    isOpen: boolean;
-    toggleSidebar: () => void;
-    logs: Logs[];
-    comments: Array<{ id: number; user: string; date: string; comment: string }>;
-    onAddComment: (comment: string) => void;
-}
+  isOpen: boolean;
+  toggleSidebar: () => void;
+  history: any[];
+  onAddComment: (comment: string) => void;
+};
 
-const BookingSidebar: React.FC<BookingSidebarProps> = ({ isOpen, toggleSidebar, logs, comments, onAddComment }) => {
-    const [newComment, setNewComment] = useState("");
-    const [activeTab, setActiveTab] = useState(0);
+const BookingSidebar: React.FC<BookingSidebarProps> = ({
+  isOpen, toggleSidebar, history, onAddComment,
+}) => {
+  const [newComment, setNewComment] = useState("");
 
-    console.log(logs)
+  const { comments, logs } = useMemo(() => {
+    const comments = history.filter((it) => it?.type === "comment");
+    const logs = history.filter((it) => it?.type === "log" || it?.type !== "comment");
+    return { comments, logs };
+  }, [history]);
 
-    const handleAddComment = () => {
-        if (newComment.trim()) {
-            onAddComment(newComment);
-            setNewComment("");
-        }
-    };
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    onAddComment(newComment.trim());
+    setNewComment("");
+  };
 
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-        setActiveTab(newValue);
-    };
+  return (
+    <Drawer
+      anchor="right"
+      open={isOpen}
+      onClose={toggleSidebar}
+      PaperProps={{
+        sx: {
+          width: { xs: "100vw", sm: 700 },     
+          maxWidth: 700,
+        },
+      }}
+    >
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
+            bgcolor: "background.paper",
+            borderBottom: (t) => `1px solid ${t.palette.divider}`,
+            px: 2,
+            py: 1.25,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Typography variant="h6" sx={{ m: 0 }}>Booking History</Typography>
+            <IconButton onClick={toggleSidebar} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
 
-    return (
-        <Drawer anchor="right" open={isOpen} onClose={toggleSidebar}>
-            <Box sx={{ width: 350, p: 2, mt: "50px" }}>
-                {/* Header */}
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="h6">Comments & Logs</Typography>
-                    <IconButton onClick={toggleSidebar}>
-                        <CloseIcon />
-                    </IconButton>
+        <Box sx={{ flex: 1, overflow: "hidden", px: 2, py: 2 }}>
+          <Grid container spacing={2} sx={{ height: "100%" }}>
+            <Grid item xs={12} md={6} sx={{ height: "100%" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  borderRadius: 2,
+                  overflow: "hidden", 
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "sticky",
+                    top: 0, 
+                    zIndex: 1,
+                    bgcolor: "grey.900",
+                    color: "common.white",
+                    px: 1.5,
+                    py: 1,
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ pr: 1.3 }}>
+                    <Typography variant="subtitle1" sx={{ m: 0, fontWeight: 700 }}>
+                      Comments
+                    </Typography>
+                    <Badge color="info" badgeContent={comments.length} />
+                  </Stack>
                 </Box>
 
-                <Divider sx={{ mb: 2 }} />
+                {/* Input */}
+                <Box sx={{ p: 1.5 }}>
+                  <TextField
+                    fullWidth
+                    label="Add a comment"
+                    variant="outlined"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    multiline
+                    rows={3}
+                  />
+                  <Button
+                    variant="contained"
+                    sx={{ mt: 1 }}
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim()}
+                  >
+                    Add Comment
+                  </Button>
+                </Box>
 
-                {/* Tabs */}
-                <Tabs value={activeTab} onChange={handleTabChange} centered>
-                    <Tab label="Comments" />
-                    <Tab label="Logs" />
-                </Tabs>
+                <Divider />
 
-                <Divider sx={{ my: 2 }} />
+                <Box sx={{ flex: 1, overflowY: "auto", p: 1.5 }}>
+                  <HistoryList history={comments} />
+                </Box>
+              </Box>
+            </Grid>
 
-                {/* Content for each tab */}
-                {activeTab === 0 && (
-                    <Box>
-                        {/* Comments Section */}
-                        <Box sx={{ mb: 2 }}>
-                            <TextField
-                                fullWidth
-                                label="Add a comment"
-                                variant="outlined"
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                multiline
-                                rows={3}
-                            />
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                sx={{ mt: 1 }}
-                                onClick={handleAddComment}
-                                disabled={!newComment.trim()}
-                            >
-                                Add Comment
-                            </Button>
-                        </Box>
-                        <Divider sx={{ mb: 2 }} />
-                        <List>
-                            {comments.map((comment) => (
-                                <ListItem key={comment.id} alignItems="flex-start">
-                                    <ListItemIcon>
-                                        <Avatar sx={{ bgcolor: "success.main" }}>
-                                            <PersonIcon />
-                                        </Avatar>
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={
-                                            <>
-                                                {`@${comment.user.username}`} {`${dayjs(comment.date).format("DD/MM/YYYY hh:mm A")}`} <br />
-                                            </>
-                                        }
-                                        secondary={comment.comment}
-                                        primaryTypographyProps={{ style: { fontSize: "12px", color: "gray" } }}
-                                        secondaryTypographyProps={{ style: { fontSize: "14px", color: "white" } }}
-                                    />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Box>
-                )}
 
-                {activeTab === 1 && (
-                    <Box>
-                        {/* Logs Section */}
-                        <List>
-                            {logs.map((log, index) => (
-                                <ListItem key={index} alignItems="flex-start">
-                                    <ListItemIcon>
-                                        <HistoryIcon color="info" />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={`${dayjs(log.created_at).format("DD/MM/YYYY hh:mm A")} - @${log.actor.username || "System"}`}
-                                        secondary={
-                                            <>
-                                                {log.action}
-                                                {log.description && (
-                                                    <>
-                                                        <br />
-                                                        {log.description}
-                                                    </>
-                                                )}
-                                            </>
-                                        }
-                                    />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Box>
-                )}
-            </Box>
-        </Drawer>
-    );
+            <Grid item xs={12} md={6} sx={{ height: "100%" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  border: (t) => `1px solid ${t.palette.divider}`,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                    bgcolor: "grey.900",
+                    color: "common.white",
+                    px: 1.5,
+                    py: 1,
+                    mt: { xs: '-16px' }
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ pr: 1.2 }}>
+                    <Typography variant="subtitle1" sx={{ m: 0, fontWeight: 700 }}>
+                      Logs
+                    </Typography>
+                    <Badge color="warning" badgeContent={logs.length}  />
+                  </Stack>
+                </Box>
+
+                <Box sx={{ flex: 1, overflowY: "auto", p: 1.5 }}>
+                  <HistoryList history={logs} />
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
+    </Drawer>
+  );
 };
 
 export default BookingSidebar;
