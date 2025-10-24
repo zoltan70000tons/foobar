@@ -138,7 +138,6 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   // FORMAT DIETARY PREFERENCES
   private function formatDietaryPreferences($dietaryPreferences)
   {
-    \Log::info('Dietary Preferences ----> ' . json_encode($dietaryPreferences));
     if (empty($dietaryPreferences) || !is_array($dietaryPreferences)) {
       return 'N/A';
     }
