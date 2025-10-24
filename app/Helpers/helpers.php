@@ -77,14 +77,47 @@ if (! function_exists('sanitizeInput')) {
     }
 
     if (!function_exists('formatCurrency')) {
-        function formatCurrency($amount, $hideCurrency = false): string
-        {
-            if (!is_numeric($amount)) {
-                return '';
-            }
-
-            return ($hideCurrency ? '' : 'USD ') . number_format((float) $amount, 2, '.', ',');
+      /**
+       * Format currency amount based on language.
+       *
+       * @param float|int|string $amount
+       * @param bool $hideCurrency
+       * @param string $lang
+       * @param bool $hideDecimals
+       * @return string
+       */
+      function formatCurrency($amount, $hideCurrency = false, $lang = 'en', $hideDecimals = false): string
+      {
+        if (!is_numeric($amount)) {
+          return '';
         }
+
+        $amount = (float) $amount;
+
+        // Set locale-specific formatting
+        switch ($lang) {
+          case 'de':
+            $decimal = ',';
+            $thousand = '.';
+            $currency = $hideCurrency ? '' : 'USD ';
+            break;
+          case 'es':
+            $decimal = '.';
+            $thousand = ',';
+            $currency = $hideCurrency ? '' : 'USD ';
+            break;
+          default: // 'en'
+            $decimal = '.';
+            $thousand = ',';
+            $currency = $hideCurrency ? '' : 'USD ';
+            break;
+        }
+
+        $decimals = $hideDecimals ? 0 : 2;
+        $formatted = number_format($amount, $decimals, $decimal, $thousand);
+
+        return $currency . $formatted;
+      }
     }
 
     if (!function_exists('formatDate')) {

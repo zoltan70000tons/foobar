@@ -50,7 +50,7 @@
         </tr>
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_official_ticket_price_per_person') }}:</td>
-            <td>USD {{ $bookingResult->booking->official_ticket_price_per_person }}</td>
+            <td>{{ $bookingResult->booking->official_ticket_price_per_person }}</td>
         </tr>
         <tr>
           <td class="booking-table__title">{{ __('confirmationBooking.cbe_survivor_discount') }}:</td>
@@ -62,31 +62,31 @@
         </tr>
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_net_ticket_price_per_person') }}:</td>
-            <td>USD {{ $bookingResult->booking->net_ticket_price_per_person }}</td>
+            <td>{{ $bookingResult->booking->net_ticket_price_per_person }}</td>
         </tr>
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_taxes_and_fees_per_person') }}:</td>
-            <td>USD {{ $bookingResult->booking->taxes_and_fees_per_person }}</td>
+            <td>{{ $bookingResult->booking->taxes_and_fees_per_person }}</td>
         </tr>
         @if($bookingResult->booking->carbon_offset !== '0')
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_carbon_offset_per_person') }}:</td>
-            <td>USD {{ $bookingResult->booking->carbon_offset }}</td>
+            <td>{{ $bookingResult->booking->carbon_offset }}</td>
         </tr>
         @endif
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_choose_your_cabin_per_person') }}:</td>
-            <td>USD {{ $bookingResult->booking->choose_your_cabin }}</td>
+            <td>{{ $bookingResult->booking->choose_your_cabin }}</td>
         </tr>
         @if($bookingResult->booking->single_traveler_surcharge !== 'N/A')
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_single_traveler_surcharge') }}:</td>
-            <td>USD {{ $bookingResult->booking->single_traveler_surcharge }}</td>
+            <td>{{ $bookingResult->booking->single_traveler_surcharge }}</td>
         </tr>
         @endif
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_total_ticket_price') }}:</td>
-            <td>USD {{ $bookingResult->booking->total_ticket_price }}</td>
+            <td>{{ $bookingResult->booking->total_ticket_price }}</td>
         </tr>
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_number_of_passengers') }}:</td>
@@ -94,7 +94,7 @@
         </tr>
         <tr>
             <td class="booking-table__title">{{ __('confirmationBooking.cbe_grand_total_booking_price') }}:</td>
-            <td>USD {{ $bookingResult->booking->grand_total_booking_price }}</td>
+            <td>{{ $bookingResult->booking->grand_total_booking_price }}</td>
         </tr>
     @if($bookingResult->booking->payment_schedule === 'PAID IN FULL')
         <tr>
@@ -116,7 +116,7 @@
             @foreach($bookingResult->booking->payment_schedule_installments as $installment)
                 <tr>
                     <td class="booking-table__title">{{ $installment['due_date'] }}</td>
-                    <td>USD {{ $installment['amount'] }}</td>
+                    <td>{{ $installment['amount'] }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -178,7 +178,7 @@
       </tr>
       <tr>
           <td class="booking-table__title">{{ __('confirmationBooking.cbe_email') }}:</td>
-          <td style="color: #fff;">{{ $bookingResult->passenger->email }}</td>
+          <td style="color: red; text-decoration: underline;">{{ $bookingResult->passenger->email }}</td>
       </tr>
       <tr>
           <td class="booking-table__title">{{ __('confirmationBooking.cbe_phone_number') }}:</td>
