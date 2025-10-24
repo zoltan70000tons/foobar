@@ -38,14 +38,6 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   // PREPARE DATA FOR TEMPLATE
   private function prepareDataForTemplate()
   {
-    // \Log::info('Result ----> data: ' . json_encode($this->booking));
-    // \Log::info('Passenger ----> data: ' . json_encode($this->booking->passengers));
-    // \Log::info('Cart ----> data: ', ['cart' => $this->cart]);
-
-    // $passenger =
-    //   collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
-    //   collect($this->booking->passengers)->first();
-
     $booking = $this->booking;
     $cabin = $booking->cabin ?? null;
     $category = $cabin->category ?? null;
@@ -78,6 +70,7 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'receive_partner_information' => $passenger->travel_info == true ? 'YES' : 'NO',
         'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
         'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
+        'dietary_preferences' => $this->formatDietaryPreferences($passenger->dietary_preferences ?? []),
       ],
       'booking' => (object) [
         'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
@@ -140,6 +133,35 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
     $netPrice = $cabinPrice - $save;
 
     return number_format($netPrice, 2, '.', '');
+  }
+
+  // FORMAT DIETARY PREFERENCES
+  private function formatDietaryPreferences($dietaryPreferences)
+  {
+    \Log::info('Dietary Preferences ----> ' . json_encode($dietaryPreferences));
+    if (empty($dietaryPreferences) || !is_array($dietaryPreferences)) {
+      return 'N/A';
+    }
+
+    $dietaryLabels = [
+      'vegetarian' => __('dietaryPreferences.vegetarian'),
+      'vegan' => __('dietaryPreferences.vegan'),
+      'gluten_free' => __('dietaryPreferences.gluten_free'),
+      'nut_allergy' => __('dietaryPreferences.nut_allergy'),
+      'kosher' => __('dietaryPreferences.kosher'),
+      'halal' => __('dietaryPreferences.halal'),
+      'lactose_intolerant' => __('dietaryPreferences.lactose_intolerant'),
+      'diabetic' => __('dietaryPreferences.diabetic'),
+    ];
+
+    $formattedPreferences = [];
+    foreach ($dietaryPreferences as $preference) {
+      if (isset($dietaryLabels[$preference])) {
+        $formattedPreferences[] = $dietaryLabels[$preference];
+      }
+    }
+
+    return !empty($formattedPreferences) ? implode(', ', $formattedPreferences) : 'N/A';
   }
 
   // GET LOCALIZED DATE
