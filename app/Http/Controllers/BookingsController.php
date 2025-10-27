@@ -1115,6 +1115,13 @@ class BookingsController extends Controller
 
                     $this->paymentInfoService->syncAllocatedCost($booking);
 
+                    $oldCabin = Cabin::query()->find($oldBooking->cabin_id);
+                    $oldCabinCategory = $oldCabin->category;
+                    $oldCabinCategorySpec = $oldCabinCategory->spec;
+                    $newCabin = Cabin::query()->find($booking->cabin_id);
+                    $newCabinCategory = $newCabin->category;
+                    $newCabinCategorySpec = $newCabinCategory->spec;
+
                     GlobalLogger::log(
                         LogActionBooking::CABIN_UPGRADE,
                         'booking',
@@ -1123,9 +1130,11 @@ class BookingsController extends Controller
                         [
                             'before' => [
                                 'bookingCode' => $oldBooking->booking_code,
+                                'categoryCode' => $oldCabinCategorySpec->category_code,
                             ],
                             'after' => [
                                 'bookingCode' => $result->booking_code,
+                                'categoryCode' => $newCabinCategorySpec->category_code,
                             ],
                         ],
                     );

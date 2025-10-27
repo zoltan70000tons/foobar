@@ -80,28 +80,52 @@ class CabinObserver
 
         // notes
         if ($cabin->wasChanged('notes')) {
+            $originalNotes = $cabin->getRawOriginal('notes');
+            $newNotes = $cabin->notes;
+
+            if (($originalNotes === '' || $originalNotes === null)
+                && ($newNotes === '' || $newNotes === null)) {
+                return;
+            }
+
+            if ($originalNotes === $newNotes) {
+                return;
+            }
+
             GlobalLogger::log(
                 LogActionCabin::NOTES_UPDATED,
                 'cabin',
                 $cabin->id,
                 'Notes updated',
                 [
-                    'before' => ['notes' => $cabin->getRawOriginal('notes')],
-                    'after'  => ['notes' => $cabin->notes],
+                    'before' => ['notes' => $originalNotes],
+                    'after'  => ['notes' => $newNotes],
                 ]
             );
         }
 
         // internal notes
         if ($cabin->wasChanged('internal_notes')) {
+            $originalInternalNotes = $cabin->getRawOriginal('notes');
+            $newInternalNotes = $cabin->notes;
+
+            if (($originalInternalNotes === '' || $originalInternalNotes === null)
+                && ($newInternalNotes === '' || $newInternalNotes === null)) {
+                return;
+            }
+
+            if ($originalInternalNotes === $newInternalNotes) {
+                return;
+            }
+
             GlobalLogger::log(
                 LogActionCabin::INTERNAL_NOTES_UPDATED,
                 'cabin',
                 $cabin->id,
                 'Internal Notes Updated',
                 [
-                    'before' => ['internal_notes' => $cabin->getRawOriginal('internal_notes')],
-                    'after'  => ['internal_notes' => $cabin->internal_notes],
+                    'before' => ['internal_notes' => $originalInternalNotes],
+                    'after'  => ['internal_notes' => $newInternalNotes],
                 ]
             );
         }

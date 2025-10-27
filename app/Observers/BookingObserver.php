@@ -5,6 +5,7 @@ namespace App\Observers;
 
 use App\Enums\GlobalLog\LogActionBooking;
 use App\Models\Booking;
+use App\Models\Cabin;
 use App\Support\GlobalLogger;
 
 class BookingObserver
@@ -123,14 +124,25 @@ class BookingObserver
 
         // cabin_id (int)
         if ($booking->wasChanged('cabin_id')) {
+            $changeLog = self::generateBookingChangeLog($booking);
+
+            $oldCabin = Cabin::query()->find($booking->getOriginal('cabin_id'));
+            $oldCabinCategory = $oldCabin->category;
+            $oldCabinCategorySpec = $oldCabinCategory->spec;
+            $changeLog['before']['categoryCode'] = $oldCabinCategorySpec->category_code;
+            $newCabin = Cabin::query()->find($booking->cabin_id);
+            $newCabinCategory = $newCabin->category;
+            $newCabinCategorySpec = $newCabinCategory->spec;
+            $changeLog['after']['categoryCode'] = $newCabinCategorySpec->category_code;
+
             GlobalLogger::log(
                 LogActionBooking::CABIN_ID_CHANGED,
                 'booking',
                 $booking->id,
-                "Cabin ID {$booking->getOriginal('cabin_id')} → {$booking->cabin_id}",
+                "Cabin ID {$booking->getOriginal('cabin_id')} → {$booking->cabin_id}, category code {$oldCabinCategorySpec->category_code} → {$newCabinCategorySpec->category_code}",
                 [
-                    'before' => ['cabin_id' => $booking->getOriginal('cabin_id')],
-                    'after' => ['cabin_id' => $booking->cabin_id],
+                    'after' => $changeLog['after'],
+                    'before' => $changeLog['before'],
                 ]
             );
         }
@@ -222,5 +234,46 @@ class BookingObserver
                 ],
             ]
         );
+    }
+
+    public static function generateBookingChangeLog(Booking $booking): array
+    {
+        $fieldsToTrack = [
+            'booking_request_id',
+            'booking_code',
+            'event_id',
+            'customer_id',
+            'payment_plan',
+            'cabin_id',
+            'is_single_occupancy',
+            'bed_config',
+            'agent_id',
+            'status',
+        ];
+
+        $changes = [];
+        $before = [];
+        $after = [];
+
+        foreach ($fieldsToTrack as $field) {
+            $old = $booking->getOriginal($field);
+            $new = $booking->$field;
+
+            // Compare JSON fields safely
+            if (is_array($old) || is_array($new)) {
+                $old = json_encode($old);
+                $new = json_encode($new);
+            }
+
+            if ($old != $new) {
+                $before[$field] = $old;
+                $after[$field] = $new;
+            }
+        }
+
+        $changes['before'] = $before;
+        $changes['after'] = $after;
+
+        return $changes;
     }
 }

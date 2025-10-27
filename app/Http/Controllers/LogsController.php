@@ -20,6 +20,13 @@ class LogsController extends Controller
         $to = $request->date('to'); // Carbon|null
         $bookingCode = $request->filled('bookingCode') ? $request->string('bookingCode') : null;
         $agentName = $request->filled('agentName') ? $request->string('agentName') : null;
+        $actorType = $request->input('actorType');
+
+        if (is_string($actorType)) {
+            $actorType = [$actorType];
+        } elseif (!is_array($actorType) || empty($actorType)) {
+            $actorType = ['agent', 'system'];
+        }
 
         $perPage = $request->get('per_page') ?? 30;
         $page = $request->get('page');
@@ -31,7 +38,8 @@ class LogsController extends Controller
             ->when($from, fn($qb) => $qb->where('logs.created_at', '>=', $from->copy()->startOfDay())) // 👈
             ->when($to, fn($qb) => $qb->where('logs.created_at', '<=', $to->copy()->endOfDay())) // 👈
             ->when($bookingCode, fn($qb) => $qb->where('bookings.booking_code', 'ILIKE', "%{$bookingCode}%"))
-            ->when($agentName, fn($qb) => $qb->where('users.username', 'ILIKE', "%{$agentName}%"));
+            ->when($agentName, fn($qb) => $qb->where('users.username', 'ILIKE', "%{$agentName}%"))
+            ->when($actorType, fn($qb) => $qb->whereIn('logs.actor_type', $actorType));
 
         $logs = $q->select(
             'logs.id',

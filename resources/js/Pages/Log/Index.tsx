@@ -76,17 +76,24 @@ type PagePropsEx = {
     to?: string | null;
     bookingCode?: string | null;
     agentName?: string | null
+    actorType?: string[]
   };
   actionsByType: Record<string, string[]>;
 };
 
 const TYPE_OPTIONS = [
-  { value: "", label: "All" },
+  { value: "", label: "" },
   { value: "booking", label: "Booking" },
   { value: "customer", label: "Customer" },
   { value: "cabin", label: "Cabin" },
   { value: "user", label: "User" },
   { value: "event", label: "Event" },
+];
+
+const ACTOR_TYPE_OPTIONS = [
+  { value: "agent", label: "Agent" },
+  { value: "customer", label: "Customer" },
+  { value: "system", label: "System" },
 ];
 
 const Index: React.FC = () => {
@@ -100,8 +107,12 @@ const Index: React.FC = () => {
   const [to, setTo] = useState<string>(filters.to ?? "");
   const [bookingCode, setBookingCode] = useState<string>(filters.bookingCode ?? "");
   const [agentName, setAgentName] = useState<string>(filters.agentName ?? "");
-  const [loading, setLoading] = useState(false);
+  const [actorType, setActorType] = useState<string[]>(
+    filters.actorType ?? ["agent", "system"]
+  );
 
+  const [loading, setLoading] = useState(false);
+console.log(actorType)
   const actionsForSelectedType = useMemo(() => {
     if (!type) return [];
     return actionsByType?.[type] ?? [];
@@ -109,6 +120,11 @@ const Index: React.FC = () => {
 
   const handleTypeChange = (v: string) => {
     setType(v);
+    setAction("");
+  };
+
+  const handleActorTypeChange = (v: string[]) => {
+    setActorType(v);
     setAction("");
   };
 
@@ -121,6 +137,7 @@ const Index: React.FC = () => {
       ...(to ? { to } : {}),
       ...(bookingCode ? { bookingCode } : {}),
       ...(agentName ? { agentName } : {}),
+      ...(actorType ? { actorType } : {}),
       ...(page ? { page } : {}),
     };
 
@@ -153,6 +170,7 @@ const Index: React.FC = () => {
       ...(to ? { to } : {}),
       ...(bookingCode ? { bookingCode } : {}),
       ...(agentName ? { agentName } : {}),
+      ...(actorType ? { actorType } : {}),
       per_page: per,
       page: 1,
     }, {
@@ -263,6 +281,24 @@ const Index: React.FC = () => {
                         placeholder={ "Agent Name" }
                       />
                     </Grid>
+                    <Grid item xs={ 12 } sm={ 6 } md={ 3 }>
+                      <FormControl fullWidth>
+                        <InputLabel id="actor-type-label">Actor Type</InputLabel>
+                        <Select
+                          labelId="actor-type-label"
+                          multiple
+                          value={ actorType ?? [] }
+                          onChange={(e) => handleActorTypeChange(e.target.value as string[])}
+                          label="ActorType"
+                        >
+                          { ACTOR_TYPE_OPTIONS.map((opt) => (
+                            <MenuItem key={ opt.value } value={ opt.value }>
+                              { opt.label }
+                            </MenuItem>
+                          )) }
+                        </Select>
+                      </FormControl>
+                    </Grid>
 
 
                     <Grid item xs={ 12 }>
@@ -327,8 +363,20 @@ const Index: React.FC = () => {
                                 <Stack direction="row" spacing={ 1 } alignItems="center">
                                   <Chip
                                     size="small"
-                                    label={ row.actor_type === "agent" ? "Agent" : "System" }
-                                    color={ row.actor_type === "agent" ? "primary" : "default" }
+                                    label={
+                                      row.actor_type === "agent"
+                                        ? "Agent"
+                                        : row.actor_type === "customer"
+                                          ? "Customer"
+                                          : "System"
+                                    }
+                                    color={
+                                      row.actor_type === "agent"
+                                        ? "primary"
+                                        : row.actor_type === "customer"
+                                          ? "success"
+                                          : "default"
+                                    }
                                     variant="outlined"
                                   />
                                   { row.actor_id && (
@@ -404,6 +452,17 @@ const Index: React.FC = () => {
                                         idValue: row.related_id,
                                         idLabel: 'ID',
                                       },
+                                      ...(row.actor_type === "customer"
+                                        ? {
+                                          user: {
+                                            label: "Go To Customer",
+                                            color: "warning",
+                                            href: route("customers.show", row.related_id),
+                                            idValue: row.related_id,
+                                            idLabel: "ID",
+                                          },
+                                        }
+                                        : {}),
                                     };
 
                                     const cfg = typeConfig[row.related_type];

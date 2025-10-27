@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\AuthCustomer;
 
+use App\Enums\GlobalLog\LogActionUser;
 use App\Http\Controllers\Controller;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use App\Traits\HttpResponses;
 
@@ -42,6 +44,8 @@ class CustomerAuthController extends Controller
       return $this->errorResponse('Unauthorized', 401);
     }
 
+    $user->update(['last_login_at' => now()]);
+
     // Get the first membership type of the customer
     $membership = $customer->membershipTypes->first() ?? null;
 
@@ -50,6 +54,18 @@ class CustomerAuthController extends Controller
 
     // Get the first address of the customer
     $address = $customer->customerAddress ?? null;
+
+      GlobalLogger::log(
+          LogActionUser::LOGIN,
+          'user',
+          $customer->id,
+          'User logged in',
+          [
+              'before' => [
+                  'email' => $customer->email,
+              ],
+          ]
+      );
 
     return $this->successResponse([
       'name' => $customer->detail->first_name ?? null,
