@@ -43,6 +43,7 @@ import LoadingOverlay from "@/Components/LoadingOverlay";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { LoadingButton } from "@mui/lab";
+import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -303,6 +304,8 @@ const BookingStepper: React.FC = ({
         emergency_c_phone: passenger.emergency_c_phone,
         payment_method: passenger.payment_method,
         special_request: passenger.special_request,
+        special_options: passenger.special_options,
+        dietary_preferences: passenger.dietary_preferences,
         lead_passenger: passenger.lead_passenger,
         travel_info: passenger.travel_info,
         terms_n_cons: true,
@@ -314,6 +317,7 @@ const BookingStepper: React.FC = ({
     };
 
     if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
+      console.log(!payload.cabin_number , !payload.passenger.first_name , !payload.passenger.email)
       showSnackbar("Please fill all required fields!", "error");
       return;
     }
@@ -913,15 +917,10 @@ const BookingStepper: React.FC = ({
         {activeStep === 2 && (
           <Box sx={{ mt: 4 }}>
             <Grid item xs={12}>
-              <TextField
-                label="Special Request"
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={3}
-                size="small"
-                value={passenger?.special_request || ""}
-                onChange={(e) => onChange("special_request", e.target.value)}
+              <SpecialRequest
+                disabledByDesign={false}
+                onChange={onChange}
+                passenger={passenger}
               />
             </Grid>
           </Box>

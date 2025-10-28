@@ -62,6 +62,7 @@ return [
   'cbe_receive_partner_information' => 'Recibir Información de nuestros Socios de Viaje',
   'cbe_accept_bed_configuration' => 'Aceptar la Configuración de la Cama',
   'cbe_accept_terms' => 'Aceptar los Términos',
+  'cbe_dietary_preferences' => 'Preferencias Dietéticas',
   'cbe_todays_date' => 'La Fecha de Hoy',
   'cbe_request_id' => 'ID de la Solicitud de Reserva',
   'cbe_questions' => 'Si tienes alguna pregunta o inquietud, por favor no dudes en contactarnos al',

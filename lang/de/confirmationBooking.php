@@ -62,6 +62,7 @@ return [
   'cbe_receive_partner_information' => 'Informationen der Reisepartner erhalten',
   'cbe_accept_bed_configuration' => 'Bettenkonfiguration akzeptieren',
   'cbe_accept_terms' => 'Bedingungen akzeptieren',
+  'cbe_dietary_preferences' => 'Diätetische Präferenzen',
   'cbe_todays_date' => 'Heutiges Datum',
   'cbe_request_id' => 'ID der Buchungsanfrage',
   'cbe_questions' => 'Falls Du Fragen hast, zögere bitte nicht und melde Dich bei uns unter',

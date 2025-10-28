@@ -104,6 +104,9 @@ export type Passenger = {
   first_name?: string;
   last_name?: string;
   passenger_order: number;
+  special_request: string;
+  special_options: string;
+  dietary_preferences: string;
 };
 
 type Adjustment = {

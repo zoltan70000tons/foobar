@@ -67,6 +67,7 @@ class PassengerRepository implements PassengerInterface
         'emergency_c_phone' => $data['emergency_c_phone'] ?? null,
         'special_request' => $data['special_request'] ?? null,
         'special_options' => $data['special_options'] ?? null,
+        'dietary_preferences' => $data['dietary_preferences'] ?? null,
         'newsletter' => $data['newsletter'] ?? null,
         'travel_info' => $data['travel_info'] ?? null,
         'hear_about' => $data['hear_about'] ?? null,

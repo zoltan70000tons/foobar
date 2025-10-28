@@ -38,14 +38,6 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
   // PREPARE DATA FOR TEMPLATE
   private function prepareDataForTemplate()
   {
-    // \Log::info('Result ----> data: ' . json_encode($this->booking));
-    // \Log::info('Passenger ----> data: ' . json_encode($this->booking->passengers));
-    // \Log::info('Cart ----> data: ', ['cart' => $this->cart]);
-
-    // $passenger =
-    //   collect($this->booking->passengers)->firstWhere('lead_passenger', true) ??
-    //   collect($this->booking->passengers)->first();
-
     $booking = $this->booking;
     $cabin = $booking->cabin ?? null;
     $category = $cabin->category ?? null;
@@ -78,36 +70,37 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
         'receive_partner_information' => $passenger->travel_info == true ? 'YES' : 'NO',
         'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
         'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
+        'dietary_preferences' => $this->formatDietaryPreferences($passenger->dietary_preferences ?? []),
       ],
       'booking' => (object) [
         'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
         'cabin_category' => $category->title ?? 'N/A',
         'form_of_payment' => $passenger->payment_method == 'CREDIT_CARD' ? 'Credit Card' : 'Bank Transfer',
         'bed_config' => $booking->bed_config,
-        'official_ticket_price_per_person' => number_format($this->cart['cabin_price'] ?? 0, 2),
+        'official_ticket_price_per_person' => formatCurrency($this->cart['cabin_price'] ?? 0, false, $this->language, false),
         'pay_in_full_discount' => isset($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
           ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
           : 0,
-        'choose_your_cabin' => number_format($adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0, 2),
+        'choose_your_cabin' => formatCurrency($adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0, false, $this->language, false),
         'survivor_discount' => $this->event->status !== 'PUBLIC' ? $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'MEMBERSHIP_'))?->value : 0,
         'carbon_offset' =>
-        number_format($adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0, 2),
+        formatCurrency($adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0, false, $this->language, false),
         'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
           $this->cart['cabin_price'],
           $this->cart['price_save']
         ),
-        'taxes_and_fees_per_person' => number_format($this->cart['tax'] ?? 0, 2, '.', ','),
+        'taxes_and_fees_per_person' => formatCurrency($this->cart['tax'] ?? 0, false, $this->language, false),
         'single_traveler_surcharge' => $adjustments->where('code', 'SINGLE_TICKET_FEE')->first()->value ?? 'N/A',
-        'total_ticket_price' => number_format($passenger->passenger_allocated_cost ?? 0, 2),
+        'total_ticket_price' => formatCurrency($passenger->passenger_allocated_cost ?? 0, false, $this->language, false),
         'number_of_passengers' => $this->cart['cabin_type'] === 'private-cabin' ? $this->cart['cabin_capacity'] : 1,
-        'grand_total_booking_price' => number_format($this->cart['price_total'] ?? 0, 2),
+        'grand_total_booking_price' => formatCurrency($this->cart['price_total'] ?? 0, false, $this->language, false),
         'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
         'payment_schedule_installments' => !empty($this->installments)
           ? collect($this->installments)
           ->map(
             fn($installment) => [
               'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
-              'amount' => number_format($installment['amount'], 2),
+              'amount' => formatCurrency($installment['amount'], false, $this->language, false),
             ]
           )
           ->toArray()
@@ -139,7 +132,35 @@ class CustomerConfirmationBooking extends Mailable implements ShouldQueue
 
     $netPrice = $cabinPrice - $save;
 
-    return number_format($netPrice, 2, '.', '');
+    return formatCurrency($netPrice, false, $this->language, false);
+  }
+
+  // FORMAT DIETARY PREFERENCES
+  private function formatDietaryPreferences($dietaryPreferences)
+  {
+    if (empty($dietaryPreferences) || !is_array($dietaryPreferences)) {
+      return 'N/A';
+    }
+
+    $dietaryLabels = [
+      'vegetarian' => __('dietaryPreferences.vegetarian'),
+      'vegan' => __('dietaryPreferences.vegan'),
+      'gluten_free' => __('dietaryPreferences.gluten_free'),
+      'nut_allergy' => __('dietaryPreferences.nut_allergy'),
+      'kosher' => __('dietaryPreferences.kosher'),
+      'halal' => __('dietaryPreferences.halal'),
+      'lactose_intolerant' => __('dietaryPreferences.lactose_intolerant'),
+      'diabetic' => __('dietaryPreferences.diabetic'),
+    ];
+
+    $formattedPreferences = [];
+    foreach ($dietaryPreferences as $preference) {
+      if (isset($dietaryLabels[$preference])) {
+        $formattedPreferences[] = $dietaryLabels[$preference];
+      }
+    }
+
+    return !empty($formattedPreferences) ? implode(', ', $formattedPreferences) : 'N/A';
   }
 
   // GET LOCALIZED DATE

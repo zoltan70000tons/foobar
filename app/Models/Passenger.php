@@ -65,12 +65,14 @@ class Passenger extends Authenticatable
     'passenger_balance',
     'was_on_board',
     'language',
+    'dietary_preferences',
   ];
 
   protected $appends = ['full_name', 'empty'];
 
   protected $casts = [
     'special_options' => 'array',
+    'dietary_preferences' => 'array',
   ];
 
   protected static function booted()

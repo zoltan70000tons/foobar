@@ -26,6 +26,14 @@ class PassengerController extends Controller
 
     public function updateSeat(Request $request)
     {
+        if (is_string($request->dietary_preferences)) {
+            $decoded = json_decode($request->dietary_preferences, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $request->merge([
+                    'dietary_preferences' => $decoded
+                ]);
+            }
+        }
 
         $event_id = request()->route("id");
         $booking = Booking::findOrFail($request->input('booking_id'));
@@ -126,6 +134,8 @@ class PassengerController extends Controller
                 'different:phone',
             ],
             'special_request' => 'nullable|string',
+            'special_options' => 'nullable|array',
+            'dietary_preferences' => 'nullable|array',
             'hear_about' => 'nullable|string',
             // 'newsletter' => 'required|boolean',
             // 'travel_info' => 'required|boolean',
@@ -137,7 +147,13 @@ class PassengerController extends Controller
             // 'was_on_board' => 'required|boolean',
         ]);
         $validated['empty_seat'] = false;
+        if (empty($validated['special_options']['dietary_restrictions'])) {
+            $validated['dietary_preferences'] = null;
+        }
 
+        if (empty($validated['special_options']['other'])) {
+            $validated['special_request'] = null;
+        }
 
         $slot = Passenger::where('id', '=', $validated['id'])->first();
 

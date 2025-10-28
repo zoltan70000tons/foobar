@@ -217,6 +217,8 @@ class BookingsController extends Controller
       'passenger.emergency_c_phone' => ['nullable', 'string', 'max:20'],
       'passenger.payment_method' => ['required', Rule::in(['CREDIT_CARD', 'BANK_TRANSFER'])],
       'passenger.special_request' => ['nullable', 'string', 'max:1000'],
+      'passenger.special_options' => ['nullable', 'array'],
+      'passenger.dietary_preferences' => ['nullable', 'array'],
       'passenger.lead_passenger' => ['required', 'boolean'],
       'passenger.travel_info' => ['required', 'boolean'],
       'passenger.terms_n_cons' => ['required', 'accepted'],
@@ -450,7 +452,7 @@ class BookingsController extends Controller
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
           $availableTags = Tag::type('booking')->orderBy('name')->get();
           $bookingId = $booking->id;
-
+          $history = $this->logRepository->getHistory($bookingId);
           $latestBipId = Payment::onlyTrashed()
             ->where('splitAmount', true)
             ->whereHas('passenger', function ($query) use ($bookingId) {
@@ -466,15 +468,6 @@ class BookingsController extends Controller
             })
             ->get();
 
-            //Spams the logs, might not worth it
-            /*GlobalLogger::log(
-                'BOOKING_OPENED',
-                'booking',
-                $bookingId,
-                'Booking opened',
-                []
-            );*/
-
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
@@ -485,6 +478,7 @@ class BookingsController extends Controller
             'adjustments' => $adjustments,
             'availableTags' => $availableTags,
             'deletedPayments' => $deletedPayments,
+            'history' => $history,
           ]);
         },
         $event_id,

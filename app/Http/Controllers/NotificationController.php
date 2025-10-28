@@ -159,7 +159,7 @@ class NotificationController extends Controller
       $payerEmail = $validated['billingData']['email'];
       $language = $leadPassenger->user->detail->language ?? 'en';
       app()->setLocale($language);
-      $formattedAmount = 'USD ' . number_format($validated['amount'], 2);
+      $formattedAmount = formatCurrency($validated['amount'], false, $language, false);
 
       try {
         Mail::to($payerEmail)->send(
