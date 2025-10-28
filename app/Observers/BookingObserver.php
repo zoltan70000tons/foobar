@@ -209,10 +209,16 @@ class BookingObserver
                 LogActionBooking::AGENT_ID_CHANGED,
                 'booking',
                 $booking->id,
-                "Agent ID {$originalUsername} → {$newUsername}",
+                "Agent {$originalUsername} → {$newUsername}",
                 [
-                    'after' => ['agent_id' => $newAgentId],
-                    'before' => ['agent_id' => $originalAgentId],
+                    'after' => [
+                        'username' => $newUsername,
+                        'agent_id' => $newAgentId,
+                    ],
+                    'before' => [
+                        'username' => $originalUsername,
+                        'agent_id' => $originalAgentId,
+                    ],
                 ]
             );
         }
