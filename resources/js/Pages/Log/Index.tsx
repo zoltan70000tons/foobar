@@ -34,13 +34,14 @@ import {
 import InfoIcon from '@mui/icons-material/Info';
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
+import { LogActorType, LogActorTypeLabel } from "@/enums/LogActorTypeEnum";
 
 dayjs.extend(localizedFormat);
 
 type LogRow = {
   id: string;
   created_at: string;
-  actor_type: "agent" | "system";
+  actor_type: LogActorType;
   actor_id?: string | null;
   action: string;
   description: string;
@@ -76,7 +77,7 @@ type PagePropsEx = {
     to?: string | null;
     bookingCode?: string | null;
     agentName?: string | null
-    actorType?: string[]
+    actorType?: LogActorType[]
   };
   actionsByType: Record<string, string[]>;
 };
@@ -90,11 +91,10 @@ const TYPE_OPTIONS = [
   { value: "event", label: "Event" },
 ];
 
-const ACTOR_TYPE_OPTIONS = [
-  { value: "agent", label: "Agent" },
-  { value: "customer", label: "Customer" },
-  { value: "system", label: "System" },
-];
+const ACTOR_TYPE_OPTIONS = Object.values(LogActorType).map((value) => ({
+  value,
+  label: LogActorTypeLabel[value],
+}));
 
 const Index: React.FC = () => {
   const { hasPermission } = usePermissions();
@@ -123,7 +123,7 @@ console.log(actorType)
     setAction("");
   };
 
-  const handleActorTypeChange = (v: string[]) => {
+  const handleActorTypeChange = (v: LogActorType[]) => {
     setActorType(v);
     setAction("");
   };
@@ -241,7 +241,6 @@ console.log(actorType)
 
                     <Grid item xs={ 12 } sm={ 6 } md={ 3 }>
                       <FormControl fullWidth disabled={ !type }>
-                        <InputLabel id="action-label">Action</InputLabel>
                         <Autocomplete
                           options={actionsForSelectedType.sort()}
                           value={action || null}
@@ -288,7 +287,7 @@ console.log(actorType)
                           labelId="actor-type-label"
                           multiple
                           value={ actorType ?? [] }
-                          onChange={(e) => handleActorTypeChange(e.target.value as string[])}
+                          onChange={(e) => handleActorTypeChange(e.target.value as LogActorType[])}
                           label="ActorType"
                         >
                           { ACTOR_TYPE_OPTIONS.map((opt) => (
@@ -364,16 +363,16 @@ console.log(actorType)
                                   <Chip
                                     size="small"
                                     label={
-                                      row.actor_type === "agent"
-                                        ? "Agent"
-                                        : row.actor_type === "customer"
-                                          ? "Customer"
-                                          : "System"
+                                      row.actor_type === LogActorType.agent
+                                        ? LogActorTypeLabel.agent
+                                        : row.actor_type === LogActorType.customer
+                                          ? LogActorTypeLabel.customer
+                                          : LogActorTypeLabel.system
                                     }
                                     color={
-                                      row.actor_type === "agent"
+                                      row.actor_type === LogActorType.agent
                                         ? "primary"
-                                        : row.actor_type === "customer"
+                                        : row.actor_type === LogActorType.customer
                                           ? "success"
                                           : "default"
                                     }
@@ -452,7 +451,7 @@ console.log(actorType)
                                         idValue: row.related_id,
                                         idLabel: 'ID',
                                       },
-                                      ...(row.actor_type === "customer"
+                                      ...(row.actor_type === LogActorType.customer
                                         ? {
                                           user: {
                                             label: "Go To Customer",

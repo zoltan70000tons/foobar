@@ -14,10 +14,10 @@ class LogsController extends Controller
 
     public function index(Request $request)
     {
-        $type = $request->filled('type') ? (string) $request->string('type')   : null; // booking|customer|cabin
-        $action = $request->filled('action') ? (string) $request->string('action') : null; // code - action
-        $from = $request->date('from'); // Carbon|null
-        $to = $request->date('to'); // Carbon|null
+        $type = $request->filled('type') ? (string) $request->string('type') : null;
+        $action = $request->filled('action') ? (string) $request->string('action') : null;
+        $from = $request->date('from');
+        $to = $request->date('to');
         $bookingCode = $request->filled('bookingCode') ? $request->string('bookingCode') : null;
         $agentName = $request->filled('agentName') ? $request->string('agentName') : null;
         $actorType = $request->input('actorType');
@@ -35,8 +35,8 @@ class LogsController extends Controller
             ->latest('logs.created_at') 
             ->when($type, fn($qb) => $qb->where('logs.related_type', $type))
             ->when($action, fn($qb) => $qb->where('logs.action', $action))
-            ->when($from, fn($qb) => $qb->where('logs.created_at', '>=', $from->copy()->startOfDay())) // 👈
-            ->when($to, fn($qb) => $qb->where('logs.created_at', '<=', $to->copy()->endOfDay())) // 👈
+            ->when($from, fn($qb) => $qb->where('logs.created_at', '>=', $from->copy()->startOfDay()))
+            ->when($to, fn($qb) => $qb->where('logs.created_at', '<=', $to->copy()->endOfDay()))
             ->when($bookingCode, fn($qb) => $qb->where('bookings.booking_code', 'ILIKE', "%{$bookingCode}%"))
             ->when($agentName, fn($qb) => $qb->where('users.username', 'ILIKE', "%{$agentName}%"))
             ->when($actorType, fn($qb) => $qb->whereIn('logs.actor_type', $actorType));
