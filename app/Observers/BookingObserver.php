@@ -6,6 +6,7 @@ namespace App\Observers;
 use App\Enums\GlobalLog\LogActionBooking;
 use App\Models\Booking;
 use App\Models\Cabin;
+use App\Models\User;
 use App\Support\GlobalLogger;
 
 class BookingObserver
@@ -198,14 +199,20 @@ class BookingObserver
 
         // agent_id (int)
         if ($booking->wasChanged('agent_id')) {
+            $originalAgentId = $booking->getOriginal('agent_id');
+            $originalUser = User::query()->find($originalAgentId);
+            $originalUsername = $originalUser->username ?? "";
+            $newAgentId = $booking->agent_id;
+            $newUser = User::query()->find($newAgentId);
+            $newUsername = $newUser->username ?? "";
             GlobalLogger::log(
-                LogActionBooking::AGEND_ID_CHANGED,
+                LogActionBooking::AGENT_ID_CHANGED,
                 'booking',
                 $booking->id,
-                "Agent ID {$booking->getOriginal('agent_id')} → {$booking->agent_id}",
+                "Agent ID {$originalUsername} → {$newUsername}",
                 [
-                    'before' => ['agent_id' => $booking->getOriginal('agend_id')],
-                    'after' => ['agent_id' => $booking->agent_id],
+                    'after' => ['agent_id' => $newAgentId],
+                    'before' => ['agent_id' => $originalAgentId],
                 ]
             );
         }
