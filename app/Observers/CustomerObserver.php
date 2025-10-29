@@ -10,7 +10,8 @@ use App\Support\GlobalLogger;
 class CustomerObserver
 {
     //same as app/Repositories/CustomerRepository.php:172 - pick what you like best
-    public function updated(User $customer): void
+    //Currently the CustomerRepository was picked - Zoltan
+    /*public function updated(User $customer): void
     {
         // Reload all relationships to get latest values
         $customer->load([
@@ -94,7 +95,7 @@ class CustomerObserver
                 'after' => $after,
             ]
         );
-    }
+    }*/
 
     //Does not work now, since we don't delete, but update the email to deleted_....@....
     public function deleted(User $customer): void

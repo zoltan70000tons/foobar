@@ -1109,30 +1109,6 @@ class BookingsController extends Controller
 
                     $this->paymentInfoService->syncAllocatedCost($booking);
 
-                    $oldCabin = Cabin::query()->find($oldBooking->cabin_id);
-                    $oldCabinCategory = $oldCabin->category;
-                    $oldCabinCategorySpec = $oldCabinCategory->spec;
-                    $newCabin = Cabin::query()->find($booking->cabin_id);
-                    $newCabinCategory = $newCabin->category;
-                    $newCabinCategorySpec = $newCabinCategory->spec;
-
-                    GlobalLogger::log(
-                        LogActionBooking::CABIN_UPGRADE,
-                        'booking',
-                        $booking->id,
-                        'Cabin Upgrade',
-                        [
-                            'before' => [
-                                'bookingCode' => $oldBooking->booking_code,
-                                'categoryCode' => $oldCabinCategorySpec->category_code,
-                            ],
-                            'after' => [
-                                'bookingCode' => $result->booking_code,
-                                'categoryCode' => $newCabinCategorySpec->category_code,
-                            ],
-                        ],
-                    );
-
                     return redirect()
                         ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
                         ->with('success', 'Cabin upgraded successfully.');

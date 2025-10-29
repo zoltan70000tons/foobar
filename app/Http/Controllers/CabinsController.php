@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionCabin;
 use App\Enums\Permissions;
 use App\Enums\StatusCabin;
 use App\Interfaces\CabinCategoryInterface;
@@ -14,6 +15,7 @@ use App\Models\Tag;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
@@ -301,18 +303,38 @@ class CabinsController extends Controller
             $cabins = Cabin::whereIn('id', $cabinIds)->get();
 
             foreach ($cabins as $cabin) {
-                // $existingTags = $cabin->tags ?? [];
-                // $updatedTags = array_unique(array_merge($existingTags, $tags));
-                // $updatedTags = array_values($updatedTags); 
-                // $cabin->tags = $updatedTags;
-                // $cabin->save();
+                $beforeTagIds = $cabin->tags()->pluck('tags.id')->all();
+
                 $tag = Tag::type('cabin')
                     ->whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $tags))
                     ->get();
                 $cabin->tags()->sync($tag);
 
-                // $cabin->tags = array_values($tags);
-                // $cabin->save();
+                $afterTagIds  = $cabin->tags()->pluck('tags.id')->all();
+                $addedIds     = array_values(array_diff($afterTagIds, $beforeTagIds));
+                $removedIds   = array_values(array_diff($beforeTagIds, $afterTagIds));
+
+                if ($addedIds || $removedIds) {
+                    $addedNames   = $addedIds   ? Tag::whereIn('id', $addedIds)->pluck('name', 'id')   : collect();
+                    $removedNames = $removedIds ? Tag::whereIn('id', $removedIds)->pluck('name', 'id') : collect();
+
+                    GlobalLogger::log(
+                        LogActionCabin::TAG_UPDATED,
+                        'cabin',
+                        (string)$cabin->id,
+                        trim(sprintf(
+                            'Tags updated%s%s',
+                            $addedIds   ? ' — added: ' . implode(', ', $addedNames->values()->all()) : '',
+                            $removedIds ? ' — removed: ' . implode(', ', $removedNames->values()->all()) : ''
+                        )),
+                        [
+                            'before'  => $beforeTagIds,
+                            'after'   => $afterTagIds,
+                            'added'   => $addedNames,
+                            'removed' => $removedNames,
+                        ]
+                    );
+                }
             }
 
             return redirect()->back()->with([

@@ -136,8 +136,14 @@ class BookingObserver
             $newCabinCategorySpec = $newCabinCategory->spec;
             $changeLog['after']['categoryCode'] = $newCabinCategorySpec->category_code;
 
+            if ($oldCabinCategorySpec->category_code === $newCabinCategorySpec->category_code) {
+                $action = LogActionBooking::CABIN_SWAP;
+            } else {
+                $action = LogActionBooking::CABIN_UPGRADE;
+            }
+
             GlobalLogger::log(
-                LogActionBooking::CABIN_ID_CHANGED,
+                $action,
                 'booking',
                 $booking->id,
                 "Cabin ID {$booking->getOriginal('cabin_id')} → {$booking->cabin_id}, category code {$oldCabinCategorySpec->category_code} → {$newCabinCategorySpec->category_code}",

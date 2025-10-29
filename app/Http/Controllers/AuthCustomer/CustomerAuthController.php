@@ -44,6 +44,12 @@ class CustomerAuthController extends Controller
       return $this->errorResponse('Unauthorized', 401);
     }
 
+    $now = now();
+    $lastLoginBefore = $user->last_login_at;
+
+    // Calculate if more than 1 hour passed since last login
+    $shouldLogLogin = !$lastLoginBefore || $now->diffInMinutes($lastLoginBefore) >= 60;
+
     $user->update(['last_login_at' => now()]);
 
     // Get the first membership type of the customer
@@ -55,17 +61,21 @@ class CustomerAuthController extends Controller
     // Get the first address of the customer
     $address = $customer->customerAddress ?? null;
 
+    if ($shouldLogLogin) {
       GlobalLogger::log(
-          LogActionUser::LOGIN,
-          'user',
-          $customer->id,
-          'User logged in',
-          [
-              'before' => [
-                  'email' => $customer->email,
-              ],
-          ]
+        LogActionUser::LOGIN,
+        'user',
+        $customer->id,
+        'User logged in',
+        [
+          'before' => [
+            'email' => $customer->email,
+          ],
+          'last_login_at' => $lastLoginBefore,
+          'new_login_at' => $now,
+        ]
       );
+    }
 
     return $this->successResponse([
       'name' => $customer->detail->first_name ?? null,

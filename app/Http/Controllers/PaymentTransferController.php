@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Enums\Permissions;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PaymentTransfer;
 use App\Services\PaymentTransferService;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use App\Repositories\PassengerRepository;
 use App\Traits\ExceptionLogger;
@@ -91,12 +93,45 @@ class PaymentTransferController extends Controller
                     return redirect()->back()->with('error', 'Payment transfer not found.');
                 }
 
-                Payment::query()->where('id', $paymentTransfer->payment_id_from)
-                    ->delete();
-                Payment::query()->where('id', $paymentTransfer->payment_id_to)
-                    ->delete();
+                $fromPayment = Payment::find($paymentTransfer->payment_id_from);
+                $toPayment = Payment::find($paymentTransfer->payment_id_to);
+
+                if ($fromPayment) {
+                    $fromPayment->delete();
+                }
+
+                if ($toPayment) {
+                    $toPayment->delete();
+                }
 
                 $paymentTransfer->delete();
+
+                GlobalLogger::log(
+                    LogActionBooking::TRANSFER_PAYMENT_DELETED,
+                    'booking',
+                    $booking->id,
+                    'Transfer deleted between passengers',
+                    [
+                        'after' => [
+                            'from_payment' => [
+                                'payment_id' => $fromPayment->id,
+                                'passenger_id' => $fromPayment->passenger_id,
+                                'amount' => $fromPayment->amount,
+                                'notes' => $fromPayment->notes,
+                                'transaction_id' => $fromPayment->BIP_ID,
+                            ],
+                            'to_payment' => [
+                                'payment_id' => $toPayment->id,
+                                'passenger_id' => $toPayment->passenger_id,
+                                'amount' => $toPayment->amount,
+                                'notes' => $toPayment->notes,
+                                'transaction_id' => $toPayment->BIP_ID,
+                            ],
+                            'booking_id' => $booking->id,
+                            'booking_request_id' => $booking->booking_request_id,
+                        ],
+                    ]
+                );
 
                 DB::commit();
 
