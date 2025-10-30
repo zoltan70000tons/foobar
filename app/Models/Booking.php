@@ -180,6 +180,13 @@ class Booking extends Model
       $this->booking_code = $this->generateBookingCode($cabin);
       $this->save();
 
+      $oldCabin = $prevCabin;
+      $oldCabinCategory = $oldCabin->category;
+      $oldCabinCategorySpec = $oldCabinCategory->spec;
+      $newCabin = $cabin;
+      $newCabinCategory = $newCabin->category;
+      $newCabinCategorySpec = $newCabinCategory->spec;
+
       GlobalLogger::log(
         LogActionBooking::CABIN_NUMBER_CHANGED,
         'booking',
@@ -189,10 +196,12 @@ class Booking extends Model
           'before' => [
             'cabinNumber' => $prevCabin->cabin_number,
             'bookingCode' => $preBookingCode,
+            'categoryCode' => $oldCabinCategorySpec->category_code,
           ],
           'after' => [
             'cabinNumber' => $cabin->cabin_number,
             'bookingCode' => $this->booking_code,
+            'categoryCode' => $newCabinCategorySpec->category_code,
           ],
         ],
       );

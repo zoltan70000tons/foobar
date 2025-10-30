@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GlobalLog\LogActionCabin;
 use App\Enums\Permissions;
 use App\Enums\StatusCabin;
 use App\Interfaces\CabinCategoryInterface;
@@ -9,10 +10,12 @@ use App\Interfaces\CabinInterface;
 use App\Interfaces\EventRepositoryInterface;
 use App\Models\Cabin;
 use App\Models\CabinSpec;
+use App\Models\Log as LogModel;
 use App\Models\Tag;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
+use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
@@ -174,7 +177,18 @@ class CabinsController extends Controller
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             $availableTags = Tag::type('cabin')->get();
-            $logs = \App\Models\Log::query()
+            $logs = LogModel::query()->select(
+                'logs.id',
+                'logs.created_at',
+                'logs.actor_type',
+                'logs.actor_id',
+                'users.username as actor_username',
+                'logs.action',
+                'logs.description',
+                'logs.related_type',
+                'logs.related_id',
+            )
+                ->leftJoin('users', 'users.id', '=', 'logs.actor_id')
                 ->where('related_type', '=', 'cabin')
                 ->where('related_id', '=', $cabin->id)
                 ->get();
@@ -289,18 +303,38 @@ class CabinsController extends Controller
             $cabins = Cabin::whereIn('id', $cabinIds)->get();
 
             foreach ($cabins as $cabin) {
-                // $existingTags = $cabin->tags ?? [];
-                // $updatedTags = array_unique(array_merge($existingTags, $tags));
-                // $updatedTags = array_values($updatedTags); 
-                // $cabin->tags = $updatedTags;
-                // $cabin->save();
+                $beforeTagIds = $cabin->tags()->pluck('tags.id')->all();
+
                 $tag = Tag::type('cabin')
                     ->whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $tags))
                     ->get();
                 $cabin->tags()->sync($tag);
 
-                // $cabin->tags = array_values($tags);
-                // $cabin->save();
+                $afterTagIds  = $cabin->tags()->pluck('tags.id')->all();
+                $addedIds     = array_values(array_diff($afterTagIds, $beforeTagIds));
+                $removedIds   = array_values(array_diff($beforeTagIds, $afterTagIds));
+
+                if ($addedIds || $removedIds) {
+                    $addedNames   = $addedIds   ? Tag::whereIn('id', $addedIds)->pluck('name', 'id')   : collect();
+                    $removedNames = $removedIds ? Tag::whereIn('id', $removedIds)->pluck('name', 'id') : collect();
+
+                    GlobalLogger::log(
+                        LogActionCabin::TAG_UPDATED,
+                        'cabin',
+                        (string)$cabin->id,
+                        trim(sprintf(
+                            'Tags updated%s%s',
+                            $addedIds   ? ' — added: ' . implode(', ', $addedNames->values()->all()) : '',
+                            $removedIds ? ' — removed: ' . implode(', ', $removedNames->values()->all()) : ''
+                        )),
+                        [
+                            'before'  => $beforeTagIds,
+                            'after'   => $afterTagIds,
+                            'added'   => $addedNames,
+                            'removed' => $removedNames,
+                        ]
+                    );
+                }
             }
 
             return redirect()->back()->with([

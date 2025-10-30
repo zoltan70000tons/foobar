@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Enums\GlobalLog\LogActionCustomer;
 use App\Helpers\CustomerHelper;
+use App\Helpers\GlobalLogRemoveUnchanged;
 use App\Http\Requests\CustomerRequest;
 use App\Interfaces\CustomerInterface;
 use App\Models\Booking;
@@ -168,18 +169,74 @@ class CustomerRepository implements CustomerInterface
       $user->save();
 
       // Only save the logs if there are changes
-      if (!empty($logUserDescription)) {
+      if (!empty($logUserDescription) || !empty($logUserAddressDescription)) {
         $description = implode(', ', $logUserDescription); // Join the changes into a single string
-          GlobalLogger::log(
-              LogActionCustomer::CUSTOMER_UPDATED,
-              'customer',
-              $user->id,
-              $description,
-              [
-                  'before' => ['customerData' => $originalUserData, 'addresData' => $customerAddressData],
-                  'after' => ['customerData' => $logUserDescription, 'addresData' => $originalDetailData],
-              ]
-          );
+
+          $before = [
+              'user' => [
+                  'username' => $originalUserData['username'],
+                  'email' => $originalUserData['email'],
+              ],
+              'detail' => [
+                  'first_name' => $originalDetailData['first_name'],
+                  'last_name' => $originalDetailData['last_name'],
+                  'middle_name' => $originalDetailData['middle_name'],
+                  'gender' => $originalDetailData['gender'],
+                  'citizenship' => $originalDetailData['citizenship'],
+                  'phone' => $originalDetailData['phone'],
+                  'emergency_c_name' => $originalDetailData['emergency_c_name'],
+                  'emergency_c_phone' => $originalDetailData['emergency_c_phone'],
+                  'language' => $originalDetailData['language'],
+                  'dob' => $originalDetailData['dob'],
+              ],
+              'address' => [
+                  'address_first' => $user->customerAddress->getOriginal('address_first'),
+                  'address_second' => $user->customerAddress->getOriginal('address_second'),
+                  'city' => $user->customerAddress->getOriginal('city'),
+                  'state' => $user->customerAddress->getOriginal('state'),
+                  'postal_code' => $user->customerAddress->getOriginal('postal_code'),
+                  'country' => $user->customerAddress->getOriginal('country'),
+              ],
+          ];
+
+          $after = [
+              'user' => [
+                  'username' => $user->username,
+                  'email' => $user->email,
+              ],
+              'detail' => [
+                  'first_name' => $user->detail->first_name,
+                  'last_name' => $user->detail->last_name,
+                  'middle_name' => $user->detail->middle_name,
+                  'gender' => $user->detail->gender,
+                  'citizenship' => $user->detail->citizenship,
+                  'phone' => $user->detail->phone,
+                  'emergency_c_name' => $user->detail->emergency_c_name,
+                  'emergency_c_phone' => $user->detail->emergency_c_phone,
+                  'language' => $user->detail->language,
+                  'dob' => $user->detail->dob,
+              ],
+              'address' => [
+                  'address_first' => $user->customerAddress->address_first,
+                  'address_second' => $user->customerAddress->address_second,
+                  'city' => $user->customerAddress->city,
+                  'state' => $user->customerAddress->state,
+                  'postal_code' => $user->customerAddress->postal_code,
+                  'country' => $user->customerAddress->country,
+              ],
+          ];
+          [$filteredBefore, $filteredAfter] = GlobalLogRemoveUnchanged::removeUnchanged($before, $after);
+
+        GlobalLogger::log(
+          LogActionCustomer::CUSTOMER_UPDATED,
+          'customer',
+          $user->id,
+          $description,
+          [
+              'after' => $filteredAfter,
+              'before' => $filteredBefore,
+          ]
+        );
       }
 
       if (!empty($customerAddressData)) {

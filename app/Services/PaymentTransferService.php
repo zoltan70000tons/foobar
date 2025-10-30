@@ -2,17 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Installment;
-use App\Models\Passenger;
+use App\Enums\GlobalLog\LogActionBooking;
 use App\Models\Payment;
 use App\Models\PaymentTransfer;
 use App\Repositories\PaymentRepository;
+use App\Support\GlobalLogger;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Log;
-use Validator;
 
 class PaymentTransferService
 {
@@ -54,5 +51,35 @@ class PaymentTransferService
             "passenger_id_from" => $payload["passenger_id"],
             "passenger_id_to" => $payload["transfer_to_passenger"],
         ]);
+
+        $passengerFrom = $fromPayment->passenger;
+        $booking = $passengerFrom->booking;
+
+        GlobalLogger::log(
+            LogActionBooking::TRANSFER_PAYMENT_CREATED,
+            'booking',
+            $booking->id,
+            'Transfer created between passengers',
+            [
+                'after' => [
+                    'from_payment' => [
+                        'payment_id' => $fromPayment->id,
+                        'passenger_id' => $fromPayment->passenger_id,
+                        'amount' => $fromPayment->amount,
+                        'notes' => $fromPayment->notes,
+                        'transaction_id' => $fromPayment->BIP_ID,
+                    ],
+                    'to_payment' => [
+                        'payment_id' => $toPayment->id,
+                        'passenger_id' => $toPayment->passenger_id,
+                        'amount' => $toPayment->amount,
+                        'notes' => $toPayment->notes,
+                        'transaction_id' => $toPayment->BIP_ID,
+                    ],
+                    'booking_id' => $booking->id,
+                    'booking_request_id' => $booking->booking_request_id,
+                ],
+            ]
+        );
     }
 }

@@ -1109,21 +1109,6 @@ class BookingsController extends Controller
 
                     $this->paymentInfoService->syncAllocatedCost($booking);
 
-                    GlobalLogger::log(
-                        LogActionBooking::CABIN_UPGRADE,
-                        'booking',
-                        $booking->id,
-                        'Cabin Upgrade',
-                        [
-                            'before' => [
-                                'bookingCode' => $oldBooking->booking_code,
-                            ],
-                            'after' => [
-                                'bookingCode' => $result->booking_code,
-                            ],
-                        ],
-                    );
-
                     return redirect()
                         ->route('bookings.show', ['id' => $event_id, 'booking_code' => $result->booking_code])
                         ->with('success', 'Cabin upgraded successfully.');

@@ -17,8 +17,8 @@ return new class extends Migration {
                 related_id VARCHAR(64) NOT NULL,
                 description TEXT NOT NULL,
                 payload JSONB,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-                CONSTRAINT logs_actor_type_chk CHECK (actor_type IN ('agent','system')),
+                created_at TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                CONSTRAINT logs_actor_type_chk CHECK (actor_type IN ('agent','system','customer')),
                 CONSTRAINT logs_related_type_chk CHECK (related_type IN ('booking','customer','cabin','user','event'))
             ) PARTITION BY LIST (related_type);
         ");

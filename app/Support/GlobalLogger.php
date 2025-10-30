@@ -9,6 +9,7 @@ use App\Enums\GlobalLog\LogActionCustomer;
 use App\Enums\GlobalLog\LogActionEvent;
 use App\Enums\GlobalLog\LogActionUser;
 use App\Models\Log;
+use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ final class GlobalLogger
      * @param  string                 $description   Description for humans
      * @param  array                  $payload       before/after data or other (JSON)
      * @param  string|null            $actorId       user UUID (if null => system)
-     * @param  'agent'|'system'|null  $actorType     if null, deduced from $actorId
+     * @param  'agent'|'system'|'customer'|null  $actorType     if null, deduced from $actorId
      * @param  DateTimeInterface|null $createdAt     event time (default now())
      *
      * @return Log|null returns the model only if inserted immediately; null if deferred or failed
@@ -48,6 +49,14 @@ final class GlobalLogger
 
         $actorId   = $actorId ?? optional(Auth::user())->id;
         $actorType = $actorType ?? ($actorId ? 'agent' : 'system');
+
+        if ($actorId) {
+            $user = User::query()->find($actorId);
+
+            if ($user->hasRole('Customer')) {
+                $actorType = 'customer';
+            }
+        }
 
         $attrs = [
             'id'           => (string) Str::uuid(),
@@ -76,7 +85,7 @@ final class GlobalLogger
 
         if (DB::transactionLevel() > 0) {
             DB::afterCommit(static function () use ($insert) {
-                $insert(); 
+                $insert();
             });
             return null;
         }

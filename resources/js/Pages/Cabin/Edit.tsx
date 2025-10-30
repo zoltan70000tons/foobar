@@ -55,6 +55,7 @@ import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Errors } from "@inertiajs/core";
 import { Event } from "@/interfaces/Event";
 import dayjs from "dayjs";
+import { LogActorType, LogActorTypeLabel } from "@/enums/LogActorTypeEnum";
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -65,7 +66,22 @@ type Props = PageProps & {
   errors: Errors;
   shared: boolean;
   availableTags: { id: string; name: string; color: string }[];
-  logs: any;
+  logs: {
+    action: string;
+    actor_id: string;
+    actor_type: LogActorType;
+    description: string;
+    created_at: string;
+    id: string;
+    related_id: string;
+    related_type: string;
+    payload: {
+      added?: unknown;
+      after?: unknown;
+      before?: unknown;
+      removed?: unknown;
+    }
+  }[];
 };
 
 const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, logs }: Props) => {
@@ -106,7 +122,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
     balcony: cabin.cabin_spec.balcony,
     obstructedView: cabin.cabin_spec.obstructed_view,
   });
-console.log(logs)
+
   // State for managing active tab
   const [currentTab, setCurrentTab] = useState(0);
 
@@ -951,8 +967,20 @@ console.log(logs)
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Chip
                       size="small"
-                      label={row.actor_type === "agent" ? "Agent" : "System"}
-                      color={row.actor_type === "agent" ? "primary" : "default"}
+                      label={
+                        row.actor_type === LogActorType.agent
+                          ? LogActorTypeLabel.agent
+                          : row.actor_type === LogActorType.customer
+                            ? LogActorTypeLabel.customer
+                            : LogActorTypeLabel.system
+                      }
+                      color={
+                        row.actor_type === LogActorType.agent
+                          ? "primary"
+                          : row.actor_type === LogActorType.customer
+                            ? "success"
+                            : "default"
+                      }
                       variant="outlined"
                     />
                     {row.actor_id && (

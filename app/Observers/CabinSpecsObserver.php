@@ -59,12 +59,29 @@ class CabinSpecsObserver
         }
 
         if ($cabinSpec->wasChanged('lower_bed_type_2')) {
+            $originalLowerBedType2 = $cabinSpec->getOriginal('lower_bed_type_2');
+            $newLowerBedType2 = $cabinSpec->lower_bed_type_2;
+
+            if (($originalLowerBedType2 === '' || $originalLowerBedType2 === null)
+                && ($newLowerBedType2 === '' || $newLowerBedType2 === null)) {
+                return;
+            }
+
+            if ($originalLowerBedType2 === $newLowerBedType2) {
+                return;
+            }
+
             GlobalLogger::log(
                 LogActionCabin::LOWER_BED_TYPE_2_CHANGED, 'cabin', $cabinId,
-                "Lower bed type 2 {$cabinSpec->getOriginal('lower_bed_type_2')} → {$cabinSpec->lower_bed_type_2}",
-                ['before' => ['Lower bed type 2' => $cabinSpec->getOriginal('lower_bed_type_2')], 'after' => ['Lower bed type 2'
-                =>
-                    $cabinSpec->lower_bed_type_2]]
+                "Lower bed type 2 {$originalLowerBedType2} → {$newLowerBedType2}",
+                [
+                    'before' => [
+                        'Lower bed type 2' => $originalLowerBedType2
+                    ],
+                    'after' => [
+                        'Lower bed type 2' => $newLowerBedType2
+                    ],
+                ],
             );
         }
 
