@@ -374,7 +374,7 @@ const BookingStepper: React.FC = ({
         showSnackbar(response.data.error, "error");
       }
       if (response?.data?.cabins.length === 0) {
-        showSnackbar("Unavailable cabins for this category or filters", "error");
+        showSnackbar("No available cabins match your selection.", "error");
       }
       const decks = Array.isArray(response?.data?.cabins)
         ? [...new Set(response.data.cabins.map((cabin) => cabin.deck))].map(Number).sort((a, b) => a - b)
