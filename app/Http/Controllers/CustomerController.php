@@ -61,6 +61,8 @@ class CustomerController extends Controller
   public function getPaginated(Request $request): LengthAwarePaginator
   {
     $page = $request->get('page');
+    //Adding 1 to $page, since frontend starts to index it from 0, and Laravel expects it from 1
+    $page++;
     $perPage = $request->get('per_page');
     $sortBy = $request->get('sort_by');
     $sortDir = $request->get('sort_direction');

@@ -93,6 +93,7 @@ const Index = ({ auth, customers, userTags }: Props) => {
       {
         header: "Tags",
         accessor: "Tags",
+        sortable: true,
         draw: (row: Customer) => (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (

@@ -426,6 +426,7 @@ class CustomerRepository implements CustomerInterface
       'dob' => 'detail.dob',
       'survivor_number' => 'sn.survivor_number',
       'membership_type' => 'mt.name',
+      'Tags' => 'tagg.first_tag_name',
     ];
     $orderBy = $sortableFields[$sortBy] ?? 'u.email';
     $sortDir = strtolower($sortDir) === 'desc' ? 'desc' : 'asc';
@@ -446,7 +447,8 @@ class CustomerRepository implements CustomerInterface
             json_agg(
                 json_build_object('id', t.id, 'label', t.name, 'color', t.color)
                 ORDER BY t.name
-            ) AS tags_json
+            ) AS tags_json,
+            MIN(LOWER(t.name)) AS first_tag_name
         ")
       ->groupBy('tg.entity_id');
 
@@ -516,6 +518,7 @@ class CustomerRepository implements CustomerInterface
         'sn.survivor_number',
         'mt.name as membership_type',
         DB::raw('COALESCE(tagg.tags_json, \'[]\') as tags_json'),
+        DB::raw('tagg.first_tag_name'),
       ])
       ->orderBy($orderBy, $sortDir)
       ->paginate($perPage, ['*'], 'page', $page);
