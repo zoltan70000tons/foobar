@@ -1,11 +1,16 @@
 <?php
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+beforeEach(function () {
+    Organization::factory()->create(['id' => env('ORGANIZATION_ID', 1)]);
+});
 
 test('email verification screen can be rendered', function () {
     $user = User::factory()->unverified()->create();

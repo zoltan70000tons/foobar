@@ -15,43 +15,39 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerResetPasswordSuccess;
 use Illuminate\Support\Facades\Log;
-//use App\Services\EmailUniquenessService;
+use App\Enums\ErrorCode;
+use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class CustomerPasswordResetController extends Controller
 {
-  // protected EmailUniquenessService $emailUniquenessService;
-
-  // public function __construct(EmailUniquenessService $emailUniquenessService)
-  // {
-  //   $this->emailUniquenessService = $emailUniquenessService;
-  // }
-
-  /**
-   * Password reset request
-   *
-   */
+  /*
+  |--------------------------------------------------------------------------
+  | Request password reset link FORGOT PASSWORD
+  |--------------------------------------------------------------------------
+  |
+  | Handles sending a password reset link to the customer's email.
+  |
+  */
   public function requestReset(Request $request): JsonResponse
   {
     $request->validate([
       'email' => 'required|email',
-      'language' => 'sometimes|string|in:en,es,de', // Add supported languages
+      'lang' => 'sometimes|string|in:en,es,de',
     ]);
 
+    $locale = $request->input('lang');
     // Set the application locale if language is provided
-    if ($request->has('language')) {
-      App::setLocale($request->language);
+    if ($locale) {
+      App::setLocale($locale);
     }
 
     // Check if the customer exists
     $user = User::where('email', $request->email)->first();
 
     if (!$user || !$user->hasRole('Customer')) {
-      return response()->json(
-        [
-          'message' => __('passwords.user'),
-        ],
-        404
-      );
+      return $this->errorResponse(__('passwords.user'), ErrorCode::UNAUTHORIZED, 401);
     }
 
     $status = Password::broker('customers')->sendResetLink($request->only('email'));
@@ -63,56 +59,87 @@ class CustomerPasswordResetController extends Controller
         ],
         200
       );
-    } else {
-      return response()->json(
-        [
-          'message' => __('passwords.throttled'),
-        ],
-        429
-      );
     }
+
+    if ($status === Password::RESET_THROTTLED) {
+      return $this->errorResponse(__('passwords.throttled'), ErrorCode::TOO_MANY_REQUESTS, 429);
+    }
+
+    return $this->errorResponse(__('passwords.throttled'), ErrorCode::UNKNOWN_ERROR, 422);
   }
 
-  /**
-   * Reset password with token
-   *
-   */
-  public function resetPassword(Request $request)
+  /*
+  |--------------------------------------------------------------------------
+  | Reset Password RESET PASSWORD
+  |--------------------------------------------------------------------------
+  |
+  | Handles resetting the customer's password.
+  |
+  */
+  public function resetPassword(Request $request): JsonResponse
   {
     $request->validate([
       'token' => 'required',
       'email' => 'required|email',
-      'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+      'password' => ['required', 'confirmed', PasswordRule::defaults()],
+      'lang' => 'sometimes|string|in:en,es,de',
     ]);
 
-    // Attempt to reset the password
-    $status = Password::broker('customers')->reset(
-      $request->only('email', 'password', 'password_confirmation', 'token'),
-      function ($user) use ($request) {
-        // Check if the user has the 'Customer' role
-        if (!$user->hasRole('Customer')) {
-          throw ValidationException::withMessages([
-            'email' => [__('passwords.user')],
-          ]);
-        }
-
-        $user
-          ->forceFill([
-            'password' => Hash::make($request->password),
-            'remember_token' => Str::random(60),
-          ])
-          ->save();
-
-        // Fire the password reset event
-        event(new PasswordReset($user));
-      }
-    );
+    $locale = $request->input('lang');
+    if ($locale) {
+      App::setLocale($locale);
+    }
 
     $user = User::where('email', $request->email)->first();
 
+    if (!$user || !$user->hasRole('Customer')) {
+      return $this->errorResponse(__('passwords.user'), ErrorCode::UNAUTHORIZED, 401);
+    }
+
+    $tokenRecord = DB::table('password_reset_tokens')->where('email', $user->getEmailForPasswordReset())->first();
+
+    if (!$tokenRecord || !Hash::check($request->token, $tokenRecord->token)) {
+      return $this->errorResponse(__('passwords.token'), ErrorCode::INVALID_TOKEN, 400);
+    }
+
+    $expiresIn = (int) config('auth.passwords.customers.expire', config('auth.passwords.users.expire', 60));
+    $tokenExpired = Carbon::parse($tokenRecord->created_at)
+      ->addMinutes($expiresIn)
+      ->isPast();
+
+    if ($tokenExpired) {
+      DB::table('password_reset_tokens')->where('email', $user->getEmailForPasswordReset())->delete();
+
+      return $this->errorResponse(__('passwords.expired'), ErrorCode::INVALID_TOKEN, 400);
+    }
+
+    $broker = Password::broker('customers');
+
+    // Attempt to reset the password
+    $status = $broker->reset($request->only('email', 'password', 'password_confirmation', 'token'), function (
+      $user
+    ) use ($request) {
+      // Check if the user has the 'Customer' role
+      if (!$user->hasRole('Customer')) {
+        throw ValidationException::withMessages([
+          'email' => [__('passwords.user')],
+        ]);
+      }
+
+      $user
+        ->forceFill([
+          'password' => Hash::make($request->password),
+          'remember_token' => Str::random(60),
+        ])
+        ->save();
+
+      // Fire the password reset event
+      event(new PasswordReset($user));
+    });
+
     if ($status == Password::PASSWORD_RESET) {
       // Send a email to the customer the password was reset
-      $this->sendUpdatePasswordEmail($user);
+      $this->sendUpdatePasswordEmail($user, $request->input('lang', 'en'));
 
       return response()->json(
         [
@@ -120,14 +147,13 @@ class CustomerPasswordResetController extends Controller
         ],
         200
       );
-    } else {
-      return response()->json(
-        [
-          'message' => __('passwords.token'),
-        ],
-        400
-      );
     }
+
+    if ($status === Password::RESET_THROTTLED) {
+      return $this->errorResponse(__('passwords.throttled'), ErrorCode::TOO_MANY_REQUESTS, 429);
+    }
+
+    return $this->errorResponse(__('passwords.token'), ErrorCode::INVALID_TOKEN, 400);
   }
 
   /**
@@ -136,13 +162,35 @@ class CustomerPasswordResetController extends Controller
    * @param User $user
    * @return void
    */
-  protected function sendUpdatePasswordEmail(User $user): void
+  protected function sendUpdatePasswordEmail(User $user, ?string $locale = null): void
   {
     try {
       $email = $user->email;
-      Mail::to($email)->queue(new CustomerResetPasswordSuccess($user));
+      $mailLocale = $locale ?? App::getLocale();
+      Mail::to($email)->queue(new CustomerResetPasswordSuccess($user, $mailLocale));
     } catch (\Exception $e) {
       Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
     }
+  }
+
+  private function applyLocale(Request $request): void
+  {
+    $language = $request->input('lang');
+
+    if (!empty($language)) {
+      App::setLocale($language);
+    }
+  }
+
+  private function errorResponse(string $message, ErrorCode $code, int $status): JsonResponse
+  {
+    return response()->json(
+      [
+        'errorLogId' => Str::uuid(),
+        'errorMessage' => $message,
+        'errorCode' => $code->value,
+      ],
+      $status
+    );
   }
 }

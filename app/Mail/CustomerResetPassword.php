@@ -14,17 +14,19 @@ class CustomerResetPassword extends Mailable implements ShouldQueue
 {
   use Queueable, SerializesModels;
 
+  public $locale;
   public $customer;
   public $resetUrl;
-
 
   /**
    * Create a new message instance.
    */
-  public function __construct(User $user, string $resetUrl)
+  public function __construct(User $user, string $resetUrl, ?string $locale = null)
   {
     $this->customer = $user;
     $this->resetUrl = $resetUrl;
+    $this->locale = $locale ?? config('app.locale');
+    $this->locale($this->locale);
     $this->onQueue('emails');
   }
 
@@ -35,7 +37,7 @@ class CustomerResetPassword extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: 'You requested a password reset');
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.reset_password_request_subject'));
   }
 
   /**

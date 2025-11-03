@@ -5,7 +5,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use League\OAuth2\Server\Exception\OAuthServerException;
 
-
 return Application::configure(basePath: dirname(__DIR__))
   ->withRouting(
     web: __DIR__ . '/../routes/web.php',
@@ -17,12 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     // $middleware->statefulApi();
     $middleware->redirectGuestsTo(function ($request) {
       if ($request->is('oauth/*')) {
-          return '/oauth/login';
+        return '/oauth/login';
       }
 
-      return '/login'; 
-    }); 
-    
+      return '/login';
+    });
+
     $middleware->authenticateSessions();
     $middleware->encryptCookies(except: ['email_verified']);
 
@@ -54,29 +53,20 @@ return Application::configure(basePath: dirname(__DIR__))
     );
 
     // Ensure session cookie is customized before the session starts for specific paths
-    $middleware->web(
-      prepend: [
-        \App\Http\Middleware\CustomizeSessionCookie::class,
-      ]
-    );
+    $middleware->web(prepend: [\App\Http\Middleware\CustomizeSessionCookie::class]);
 
-    $middleware->api(
-      prepend: [
-        \App\Http\Middleware\TeamContext::class,
-      ]
-    );
+    $middleware->api(prepend: [\App\Http\Middleware\TeamContext::class]);
 
-    $middleware->validateCsrfTokens(except: [
-      '/api/auth/login',
-      '/api/auth/logout',
-    ]);
+    $middleware->validateCsrfTokens(except: ['/api/auth/login', '/api/auth/logout']);
   })
   ->withExceptions(function (Exceptions $exceptions) {
     // Normalize revoked/invalid token errors
-      $exceptions->report(function (OAuthServerException $e) {
-          if ($e->getCode() === 401) {
-              return response()->json(['message' => 'Unauthorized'], 401);
-          }
-      })->stop();
+    $exceptions
+      ->report(function (OAuthServerException $e) {
+        if ($e->getCode() === 401) {
+          return response()->json(['message' => 'Unauthorized'], 401);
+        }
+      })
+      ->stop();
   })
   ->create();

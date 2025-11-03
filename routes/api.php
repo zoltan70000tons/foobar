@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // controllers
 use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
-use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
+//use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
@@ -23,11 +23,18 @@ use App\Http\Middleware\ApiRedirectHttp;
 use App\Http\Middleware\EnsureUserIsNotCustomer;
 
 // --- PASSWORD RESET ---
-Route::post('/auth/password-email', [CustomerPasswordResetController::class, 'requestReset'])->middleware(['throttle:10,1', 'guest']);
-Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware(['throttle:10,1', 'guest']);
+Route::post('/auth/forgot-password', [CustomerPasswordResetController::class, 'requestReset'])->middleware([
+  'throttle:10,1',
+  'guest',
+]);
+Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware([
+  'throttle:10,1',
+  'guest',
+]);
 
 // --- LOGOUT ---
-Route::post('/auth/logout', [CustomerLoginController::class, 'logout'])->name('oauth.logout')
+Route::post('/auth/logout', [CustomerLoginController::class, 'logout'])
+  ->name('oauth.logout')
   ->middleware(['auth:api']);
 
 // --- REGISTER ---
@@ -36,10 +43,10 @@ Route::post('/auth/activate-survivor-account', [CustomerRegisteredController::cl
   'throttle:10,1'
 );
 
-Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
-  ->middleware(['web', 'signed'])
-  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
-  ->name('verificationApi.verify');
+// Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
+//   ->middleware(['web', 'signed'])
+//   ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
+//   ->name('verificationApi.verify');
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);
@@ -49,7 +56,6 @@ Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
 
 // ---- PRICING MATRIX ----
 Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show']);
-
 
 // --- ADD PAX validate page with form
 Route::get('/add-pax', [AddPaxController::class, 'validate'])
@@ -79,7 +85,7 @@ Route::middleware([
   'booking_status',
   // 'clear_expired_reservation',
 ])->group(function () {
-  // --- CART (with membership_sales) ---
+  // *** CART (with membership_sales) ***
   Route::middleware(['membership_sales', 'one_booking_per_user'])->group(function () {
     // ---- CART PER EVENT ----
     Route::get('/cart/{eventId}', [CartController::class, 'index']);
@@ -95,7 +101,7 @@ Route::middleware([
     // --- booking init
     Route::post('/booking-init', [BookingController::class, 'store']);
   });
-
+  // *** END CART ***
 
   Route::get('/cabins', [CabinController::class, 'show']);
 
@@ -125,7 +131,10 @@ Route::middleware([
   ]);
   // cancel invitation
   Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation', [BookingController::class, 'cancelInvitation']);
-  Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation-by-order', [BookingController::class, 'cancelInvitationByOrder']);
+  Route::post('/my-bookings/{eventId}/{bookingCode}/cancel-invitation-by-order', [
+    BookingController::class,
+    'cancelInvitationByOrder',
+  ]);
 
   // --- all bookings
   Route::get('/my-bookings', [BookingController::class, 'allBookings']);
@@ -148,8 +157,12 @@ Route::middleware([
   ]);
 });
 
-
 // --- PAYMENT LEGACY ENGINE TOKENS ---
-Route::post('/payment-middleware-initiate', [\App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class, 'initiate'])
-  ->middleware(['throttle:20,1']);
-Route::get('/payment-middleware-verify-token', [\App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class, 'verify']);
+Route::post('/payment-middleware-initiate', [
+  \App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class,
+  'initiate',
+])->middleware(['throttle:20,1']);
+Route::get('/payment-middleware-verify-token', [
+  \App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class,
+  'verify',
+]);

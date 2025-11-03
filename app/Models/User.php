@@ -13,6 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UUID;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Notifications\Notification;
 
@@ -153,16 +154,34 @@ class User extends Authenticatable implements CanResetPassword
     // front end url
     $url = config('app.frontend_url');
     $email = $this->email;
-    $tokenToSend = $url . '/en/password-reset?token=' . $token . '&email=' . $email;
+    $locale = App::getLocale() ?? config('app.locale');
+    $tokenToSend =
+      rtrim($url, '/') .
+      '/' .
+      $locale .
+      '/password-reset?' .
+      http_build_query([
+        'token' => $token,
+        'email' => $email,
+        'lang' => $locale,
+      ]);
 
     // internal admin url
     $adminUrl = config('app.url');
-    $adminTokenToSend = $adminUrl . '/reset-password/' . $token . '?email=' . urlencode($this->email);
+    //$adminTokenToSend = $adminUrl . '/reset-password/' . $token . '?email=' . urlencode($this->email);
+    $adminTokenToSend =
+      $adminUrl .
+      '/reset-password/' .
+      $token .
+      '?' .
+      http_build_query([
+        'email' => $email,
+      ]);
 
     // return Mail::to($this->email)->queue (new CustomerResetPassword($this, $tokenToSend));
 
     if ($this->hasRole('Customer')) {
-      Mail::to($this->email)->queue(new CustomerResetPassword($this, $tokenToSend));
+      Mail::to($this->email)->queue(new CustomerResetPassword($this, $tokenToSend, $locale));
     } else {
       Mail::to($this->email)->queue(new RegularResetPassword($this, $adminTokenToSend));
     }

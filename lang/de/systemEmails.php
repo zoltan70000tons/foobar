@@ -12,7 +12,6 @@ return [
     |
     */
 
-
   'email_send' => 'eMail wurde erfolgreich versendet.',
   'email_not_send' => 'eMail konnte nicht gesendet werden.',
   'email_verified_already' => 'eMailadresse wurde bereits bestätigt.',
@@ -35,24 +34,41 @@ return [
     'greeting' => 'Hallo :name,',
     'default_name' => 'Kunde',
     'body' => 'Die eMailadresse zu Deinem Account wurde erfolgreich aktualisiert.',
-    'security_notice' => 'Falls Du diese Änderung nicht getätigt hast, melde Dich bitte sofort bei unserem Support Team.',
+    'security_notice' =>
+      'Falls Du diese Änderung nicht getätigt hast, melde Dich bitte sofort bei unserem Support Team.',
     'thank_you' => '70000TONS OF METAL Crew',
   ],
   'email_request_to_add_pax' => 'lädt Dich in seine/ihre (depends on gender) Kabine ein',
-  'email_request_to_add_pax_body' => 'Du hast 72 Stunden Zeit, Deine Informationen in die Buchung einzufügen. Wenn Du die Informationen in dieser Zeit nicht eingibst, wird die Anfrage storniert.',
+  'email_request_to_add_pax_body' =>
+    'Du hast 72 Stunden Zeit, Deine Informationen in die Buchung einzufügen. Wenn Du die Informationen in dieser Zeit nicht eingibst, wird die Anfrage storniert.',
   'email_request_to_add_pax_cta' => 'Informationen hinzufügen',
   'email_invitation_on_your_account' => 'Du hast eine Einladung in Deinem Account.',
-  'email_invitation_on_your_account_body' => 'Du hast 72 Stunden, die Einladung anzunehmen. Wenn Du die Einladung nicht in dieser Zeit annimmst, wird die Einladung storniert. Du kannst Deine Einladungen bei Deinen Buchungen in Deinem Account sehen. Wenn Du Fragen hast, kontaktiere bitte unsere Customer Service Crew.',
+  'email_invitation_on_your_account_body' =>
+    'Du hast 72 Stunden, die Einladung anzunehmen. Wenn Du die Einladung nicht in dieser Zeit annimmst, wird die Einladung storniert. Du kannst Deine Einladungen bei Deinen Buchungen in Deinem Account sehen. Wenn Du Fragen hast, kontaktiere bitte unsere Customer Service Crew.',
   'email_not_found' => 'eMailadresse wurde nicht gefunden.',
 
+  'reset_password_request_subject' => 'Du hast eine Passwortzurücksetzung angefordert',
+  'reset_password_success_subject' => 'Dein Passwort wurde zurückgesetzt',
+  'reset_password_hi' => 'Hallo',
+  'reset_password_body' =>
+    'Du erhältst diese E-Mail, weil wir eine Anfrage zum Zurücksetzen des Passworts für dein Konto erhalten haben.',
+  'reset_password_success_body' =>
+    'Dein Passwort wurde erfolgreich zurückgesetzt. Wenn Du diese Änderung nicht vorgenommen hast, kontaktiere bitte sofort unser Support-Team.',
+  'reset_password_btn_text' => 'Passwort zurücksetzen',
+
   'seat_reset_subject' => 'Du wurdest aus Deiner Buchung entfernt',
-  'seat_reset_notification' => 'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
-  'seat_reset_questions' => 'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
+  'seat_reset_notification' =>
+    'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
+  'seat_reset_questions' =>
+    'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
   'booking_code' => 'Buchungscode',
 
   'payment_received_subject' => 'Wir haben deine Zahlung für 70000TONS OF METAL erhalten',
   'payment_received_greeting' => 'Hallo :name,',
-  'payment_received_body' => 'Wir haben deine Zahlung in Höhe von <strong>:amount</strong> für deine Buchung mit dem Code <strong>:booking_code</strong> erhalten.',
-  'payment_received_next_steps' => 'Du erhältst eine aktualisierte Buchungsbestätigung per E-Mail, sobald deine Zahlung vollständig verarbeitet wurde.',
-  'payment_received_questions' => 'Wenn du Fragen hast oder weitere Hilfe benötigst, zögere nicht, uns zu kontaktieren.',
+  'payment_received_body' =>
+    'Wir haben deine Zahlung in Höhe von <strong>:amount</strong> für deine Buchung mit dem Code <strong>:booking_code</strong> erhalten.',
+  'payment_received_next_steps' =>
+    'Du erhältst eine aktualisierte Buchungsbestätigung per E-Mail, sobald deine Zahlung vollständig verarbeitet wurde.',
+  'payment_received_questions' =>
+    'Wenn du Fragen hast oder weitere Hilfe benötigst, zögere nicht, uns zu kontaktieren.',
 ];
