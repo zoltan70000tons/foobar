@@ -66,11 +66,14 @@ class BookingController extends Controller
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$cart || empty($cart)) {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'Cart is empty',
-        'errorCode' => ErrorCode::CART_EMPTY->value,
-      ], 400);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'Cart is empty',
+          'errorCode' => ErrorCode::CART_EMPTY->value,
+        ],
+        400
+      );
     }
 
     // Age verification
@@ -79,18 +82,24 @@ class BookingController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json([
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => __('feedback.age_restriction'),
-          'errorCode' => ErrorCode::AGE_RESTRICTION->value,
-        ], 400);
+        return response()->json(
+          [
+            'errorLogId' => Str::uuid(),
+            'errorMessage' => __('feedback.age_restriction'),
+            'errorCode' => ErrorCode::AGE_RESTRICTION->value,
+          ],
+          400
+        );
       }
     } else {
-      return response()->json([
-        'errorLogId' => Str::uuid(),
-        'errorMessage' => 'Date of birth is required',
-        'errorCode' => ErrorCode::DOB_REQUIRED->value,
-      ], 400);
+      return response()->json(
+        [
+          'errorLogId' => Str::uuid(),
+          'errorMessage' => 'Date of birth is required',
+          'errorCode' => ErrorCode::DOB_REQUIRED->value,
+        ],
+        400
+      );
     }
 
     try {
@@ -163,7 +172,7 @@ class BookingController extends Controller
 
       // delete cart from db
       Cart::where('user_id', $user->id)->delete();
-      
+
       // Show debug information only in local environment
       if (app()->environment('local')) {
         \Log::info('Result ----> data: ', ['result' => $result]);
@@ -187,10 +196,10 @@ class BookingController extends Controller
           201
         );
       }
-      
+
       // Update user profile if requested
       if ($validated['update_contact_info'] === true) {
-        $result =  $userInfoService->updateUserProfile($user, $validated);
+        $result = $userInfoService->updateUserProfile($user, $validated);
       }
 
       try {
@@ -230,7 +239,7 @@ class BookingController extends Controller
         201
       );
     } catch (\Exception $e) {
-        dd($e->getMessage());
+      dd($e->getMessage());
       return response()->json(
         [
           'errorLogId' => Str::uuid(),
@@ -480,17 +489,11 @@ class BookingController extends Controller
 
     $result = $this->customerBookingRepository->setEmptySeat($eventId, $bookingCode, $passengerOrder);
 
-      GlobalLogger::log(
-          LogActionBooking::USER_SET_EMPTY_SEAT,
-          'booking',
-          $booking->id,
-          'BY USER: Set empty seat',
-          [
-              'additional' => [
-                  'passengerOrder' => $passengerOrder,
-              ],
-          ],
-      );
+    GlobalLogger::log(LogActionBooking::USER_SET_EMPTY_SEAT, 'booking', $booking->id, 'BY USER: Set empty seat', [
+      'additional' => [
+        'passengerOrder' => $passengerOrder,
+      ],
+    ]);
 
     return $result;
   }
@@ -530,17 +533,17 @@ class BookingController extends Controller
 
     $result = $this->customerBookingRepository->removeEmptySeat($eventId, $bookingCode, $passengerOrder);
 
-      GlobalLogger::log(
-          LogActionBooking::USER_REMOVED_EMPTY_SEAT,
-          'booking',
-          $booking->id,
-          'BY USER: Removed empty seat',
-          [
-              'additional' => [
-                  'passengerOrder' => $passengerOrder,
-              ],
-          ],
-      );
+    GlobalLogger::log(
+      LogActionBooking::USER_REMOVED_EMPTY_SEAT,
+      'booking',
+      $booking->id,
+      'BY USER: Removed empty seat',
+      [
+        'additional' => [
+          'passengerOrder' => $passengerOrder,
+        ],
+      ]
+    );
 
     return $result;
   }
@@ -620,17 +623,17 @@ class BookingController extends Controller
     // create passenger with booking id
     $result = $this->customerBookingRepository->addPassengerManually($eventId, $bookingCode, $passenger, $validated);
 
-      GlobalLogger::log(
-          LogActionBooking::USER_ADD_PASSENGER_MANUALLY,
-          'booking',
-          $booking->id,
-          'BY USER: Add passenger manually',
-          [
-              'additional' => [
-                  'email' => $validated['email'],
-              ],
-          ],
-      );
+    GlobalLogger::log(
+      LogActionBooking::USER_ADD_PASSENGER_MANUALLY,
+      'booking',
+      $booking->id,
+      'BY USER: Add passenger manually',
+      [
+        'additional' => [
+          'email' => $validated['email'],
+        ],
+      ]
+    );
 
     return $result;
   }
@@ -645,7 +648,10 @@ class BookingController extends Controller
   */
   public function addPassengerViaEmail(Request $request, int $eventId, string $bookingCode)
   {
-    $language = $request->input('language', 'en');
+    $language = $request->input('lang', 'en');
+    // that can be used to send non-customer invitations with different language
+    $invitationLanguage = $request->input('invitation_language', 'en');
+
     App::setLocale($language);
 
     $user = Auth::user();
@@ -686,11 +692,11 @@ class BookingController extends Controller
     // if this email is used in another booking around the same event return error
     if (
       Booking::where('event_id', $eventId)
-      ->where('status', '!=', 'CANCELLED')
-      ->whereHas('passengers', function ($query) use ($email) {
-        $query->where('email', $email);
-      })
-      ->exists()
+        ->where('status', '!=', 'CANCELLED')
+        ->whereHas('passengers', function ($query) use ($email) {
+          $query->where('email', $email);
+        })
+        ->exists()
     ) {
       return response()->json(
         ['message' => 'This email is already used in another booking, use manual add instead'],
@@ -701,8 +707,8 @@ class BookingController extends Controller
     // Check if an invitation already exists for this email and booking
     if (
       PassengerInvitation::where('booking_id', $booking->id)
-      ->where('email', $email)
-      ->exists()
+        ->where('email', $email)
+        ->exists()
     ) {
       return response()->json(['message' => 'Passenger with this email has already been invited'], 400);
     }
@@ -710,8 +716,8 @@ class BookingController extends Controller
     // Check if this slot is already taken
     if (
       PassengerInvitation::where('booking_id', $booking->id)
-      ->where('passenger_id', $passenger->id)
-      ->exists()
+        ->where('passenger_id', $passenger->id)
+        ->exists()
     ) {
       return response()->json(['message' => 'Passenger slot is already taken'], 400);
     }
@@ -722,26 +728,43 @@ class BookingController extends Controller
 
     $fromWho = $user->detail->first_name . ' ' . $user->detail->last_name;
     $toWho = $customer ? $customer->detail->first_name : $email;
+    $toWhoLang = $customer && $customer->detail ? $customer->detail->language : $invitationLanguage;
+    $toWhoLang = $toWhoLang ?: 'en';
     $event = Event::find($eventId);
 
     if ($customer) {
-      $this->customerBookingService->addPassengerViaEmailDirectly($booking, $email, $fromWho, $toWho, $event);
+      $this->customerBookingService->addPassengerViaEmailDirectly(
+        $booking,
+        $email,
+        $fromWho,
+        $toWho,
+        $event,
+        $toWhoLang
+      );
     } else {
-      $this->customerBookingService->addPassengerViaEmail($booking, $invitation, $email, $fromWho, $toWho, $event);
+      $this->customerBookingService->addPassengerViaEmail(
+        $booking,
+        $invitation,
+        $email,
+        $fromWho,
+        $toWho,
+        $event,
+        $toWhoLang
+      );
     }
 
-      GlobalLogger::log(
-          LogActionBooking::USER_ADD_PASSENGER_VIA_EMAIL,
-          'booking',
-          $booking->id,
-          'BY USER: Add passenger via email',
-          [
-              'additional' => [
-                  'toWho' => $toWho,
-                  'isInvitedCustomer'=> !!$customer,
-              ],
-          ],
-      );
+    GlobalLogger::log(
+      LogActionBooking::USER_ADD_PASSENGER_VIA_EMAIL,
+      'booking',
+      $booking->id,
+      'BY USER: Add passenger via email',
+      [
+        'additional' => [
+          'toWho' => $toWho,
+          'isInvitedCustomer' => !!$customer,
+        ],
+      ]
+    );
 
     return response()->json(['message' => 'Invitation sent'], 200);
   }
@@ -788,17 +811,17 @@ class BookingController extends Controller
 
     $passengerInvitation->delete();
 
-      GlobalLogger::log(
-          LogActionBooking::USER_CANCELLED_INVITATION,
-          'booking',
-          $booking->id,
-          'BY USER: Cancelled invitation',
-      );
+    GlobalLogger::log(
+      LogActionBooking::USER_CANCELLED_INVITATION,
+      'booking',
+      $booking->id,
+      'BY USER: Cancelled invitation'
+    );
 
     return response()->json(['message' => 'Invitation cancelled'], 200);
   }
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Cancel invitation by passengerOrder
     |--------------------------------------------------------------------------
@@ -806,49 +829,49 @@ class BookingController extends Controller
     |  Delete the invitation row
     |
     */
-    public function cancelInvitationByOrder(Request $request, int $eventId, string $bookingCode)
-    {
-        try {
-            $language = $request->input('language', 'en');
-            App::setLocale($language);
+  public function cancelInvitationByOrder(Request $request, int $eventId, string $bookingCode)
+  {
+    try {
+      $language = $request->input('language', 'en');
+      App::setLocale($language);
 
-            $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
+      $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
-            if (!$booking) {
-                return response()->json(['message' => __('feedback.booking_not_found')], 404);
-            }
+      if (!$booking) {
+        return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      }
 
-            $passengerOrder = $request->input('passenger_order');
+      $passengerOrder = $request->input('passenger_order');
 
-            if (!$passengerOrder) {
-                return response()->json(['message' => 'Error with payload'], 400);
-            }
+      if (!$passengerOrder) {
+        return response()->json(['message' => 'Error with payload'], 400);
+      }
 
-            $passenger = Passenger::query()
-                ->where('booking_id', $booking->id)
-                ->where('passenger_order', $passengerOrder)
-                ->first();
+      $passenger = Passenger::query()
+        ->where('booking_id', $booking->id)
+        ->where('passenger_order', $passengerOrder)
+        ->first();
 
-            if (!$passenger) {
-                return response()->json(['message' => 'Passenger not found'], 404);
-            }
+      if (!$passenger) {
+        return response()->json(['message' => 'Passenger not found'], 404);
+      }
 
-            $passengerInvitation = PassengerInvitation::query()
-                ->where('booking_id', $booking->id)
-                ->where('passenger_id', $passenger->id)
-                ->first();
+      $passengerInvitation = PassengerInvitation::query()
+        ->where('booking_id', $booking->id)
+        ->where('passenger_id', $passenger->id)
+        ->first();
 
-            if (!$passengerInvitation) {
-                return response()->json(['message' => 'Invitation not found'], 404);
-            }
+      if (!$passengerInvitation) {
+        return response()->json(['message' => 'Invitation not found'], 404);
+      }
 
-            $passengerInvitation->delete();
+      $passengerInvitation->delete();
 
-            return response()->json(['message' => 'Invitation cancelled'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 418);
-        }
+      return response()->json(['message' => 'Invitation cancelled'], 200);
+    } catch (\Exception $e) {
+      return response()->json(['message' => $e->getMessage()], 418);
     }
+  }
 
   /*
   |--------------------------------------------------------------------------
@@ -898,17 +921,17 @@ class BookingController extends Controller
 
     $result = $this->customerBookingRepository->resetPassengerSeat($eventId, $bookingCode, $passengerOrder);
 
-      GlobalLogger::log(
-          LogActionBooking::USER_RESET_PASSENGER_SEAT,
-          'booking',
-          $booking->id,
-          'BY USER: Reset passenger seat',
-          [
-              'additional' => [
-                  'passengerOrder' => $passengerOrder,
-              ],
-          ],
-      );
+    GlobalLogger::log(
+      LogActionBooking::USER_RESET_PASSENGER_SEAT,
+      'booking',
+      $booking->id,
+      'BY USER: Reset passenger seat',
+      [
+        'additional' => [
+          'passengerOrder' => $passengerOrder,
+        ],
+      ]
+    );
 
     return $result;
   }

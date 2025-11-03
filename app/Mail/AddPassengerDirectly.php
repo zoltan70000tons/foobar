@@ -21,22 +21,23 @@ class AddPassengerDirectly extends Mailable implements ShouldQueue
   public $fromWho;
   public $toWho;
   public $event;
-
+  public $toWhoLang;
 
   /**
    * Create a new message instance.
    */
-  public function __construct($bookingCode, $fromWho, $toWho, $event)
+  public function __construct($bookingCode, $fromWho, $toWho, $event, $toWhoLang = null)
   {
-    $this->url = config('app.frontend_url') . '/en/login';
+    $this->url = config('app.frontend_url') . '/' . $toWhoLang . '/login';
 
     $this->bookingCode = $bookingCode;
 
     $this->fromWho = $fromWho;
     $this->toWho = $toWho;
     $this->event = $event;
+    $this->toWhoLang = $toWhoLang ?: config('app.locale');
+    $this->locale($this->toWhoLang);
     $this->onQueue('emails');
-    
   }
 
   /**

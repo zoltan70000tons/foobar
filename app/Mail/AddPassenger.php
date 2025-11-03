@@ -21,23 +21,25 @@ class AddPassenger extends Mailable implements ShouldQueue
   public $fromWho;
   public $toWho;
   public $event;
-
+  public $toWhoLang;
 
   /**
    * Create a new message instance.
    */
-  public function __construct($getSignedURL, $bookingCode, $fromWho, $toWho, $event)
+  public function __construct($getSignedURL, $bookingCode, $fromWho, $toWho, $event, $toWhoLang = null)
   {
     $fontEndUrl = config('app.frontend_url');
     // trim api prefix
     $getSignedURL = substr($getSignedURL, 4);
 
-    $this->getSignedURL = $fontEndUrl . '/en' . $getSignedURL;
+    $this->getSignedURL = $fontEndUrl . $toWhoLang . $getSignedURL;
     $this->bookingCode = $bookingCode;
 
     $this->fromWho = $fromWho;
     $this->toWho = $toWho;
     $this->event = $event;
+    $this->toWhoLang = $toWhoLang ?: config('app.locale');
+    $this->locale($this->toWhoLang);
     $this->onQueue('emails');
     // Generate the activation (verification) link
   }
