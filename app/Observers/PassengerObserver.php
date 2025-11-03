@@ -92,6 +92,15 @@ class PassengerObserver
 
             $changeLog = self::generatePassengerChangeLog($passenger);
 
+            //If only passenger_allocated_cost changed, and it's an update, skip logging
+            //As per current agreement we do not log passenger updates if it only comes from syncAllocatedCost
+            if (
+                $action === LogActionBooking::PASSENGER_UPDATED &&
+                empty(array_diff(array_keys($changeLog['before']), ['passenger_allocated_cost']))
+            ) {
+                return;
+            }
+
             if (trim($changeLog['passenger'])) {
                 $description .= ': ' . $changeLog['passenger'];
             } else {

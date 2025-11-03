@@ -43,15 +43,16 @@ type LogRow = {
   created_at: string;
   actor_type: LogActorType;
   actor_id?: string | null;
-  action: string;
+  action: string[];
   description: string;
   payload: string;
-  related_type: "booking" | "customer" | "cabin";
+  related_type: "booking" | "customer" | "cabin" | "user" | "event";
   related_id: string;
   event_id?: number | null;
   booking_code?: string | null;
   cabin_number?: number | null;
   actor_username?: string | null;
+  actor_email?: string | null;
 };
 
 type InertiaPagination<T> = {
@@ -72,7 +73,7 @@ type PagePropsEx = {
   logs: InertiaPagination<LogRow>;
   filters: {
     type?: string | null;
-    action?: string | null;
+    action?: string[] | null;
     from?: string | null;
     to?: string | null;
     bookingCode?: string | null;
@@ -102,7 +103,7 @@ const Index: React.FC = () => {
   const { auth, logs, filters, actionsByType } = props;
 
   const [type, setType] = useState<string>(filters.type ?? "");
-  const [action, setAction] = useState<string>(filters.action ?? "");
+  const [action, setAction] = useState<string[]>(filters.action ?? []);
   const [from, setFrom] = useState<string>(filters.from ?? "");
   const [to, setTo] = useState<string>(filters.to ?? "");
   const [bookingCode, setBookingCode] = useState<string>(filters.bookingCode ?? "");
@@ -112,7 +113,7 @@ const Index: React.FC = () => {
   );
 
   const [loading, setLoading] = useState(false);
-console.log(actorType)
+
   const actionsForSelectedType = useMemo(() => {
     if (!type) return [];
     return actionsByType?.[type] ?? [];
@@ -120,12 +121,12 @@ console.log(actorType)
 
   const handleTypeChange = (v: string) => {
     setType(v);
-    setAction("");
+    setAction([]);
   };
 
   const handleActorTypeChange = (v: LogActorType[]) => {
     setActorType(v);
-    setAction("");
+    setAction([]);
   };
 
   const submitFilters = (page?: number) => {
@@ -150,7 +151,7 @@ console.log(actorType)
 
   const clearFilters = () => {
     setType("");
-    setAction("");
+    setAction([]);
     setFrom("");
     setTo("");
     submitFilters(1);
@@ -243,8 +244,8 @@ console.log(actorType)
                       <FormControl fullWidth disabled={ !type }>
                         <Autocomplete
                           options={actionsForSelectedType.sort()}
-                          value={action || null}
-                          onChange={(event, newValue) => setAction(newValue || "")}
+                          value={action || []}
+                          onChange={(event, newValue) => setAction(newValue || [])}
                           renderInput={(params) => (
                             <TextField
                               {...params}
@@ -255,6 +256,16 @@ console.log(actorType)
                           getOptionLabel={(option) => option || ""}
                           disableClearable={false}
                           fullWidth
+                          multiple
+                          sx={{
+                            "& .MuiChip-root": {
+                              fontSize: "0.75rem",
+                              height: 22,
+                              "& .MuiChip-label": {
+                                padding: "0 12px 0 8px",
+                              },
+                            },
+                          }}
                         />
                       </FormControl>
                     </Grid>
@@ -457,7 +468,7 @@ console.log(actorType)
                                             label: "Go To Customer",
                                             color: "warning",
                                             href: route("customers.show", row.related_id),
-                                            idValue: row.related_id,
+                                            idValue: row.actor_email ?? row.actor_username,
                                             idLabel: "ID",
                                           },
                                         }
