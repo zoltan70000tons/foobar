@@ -46,12 +46,13 @@ type LogRow = {
   action: string[];
   description: string;
   payload: string;
-  related_type: "booking" | "customer" | "cabin";
+  related_type: "booking" | "customer" | "cabin" | "user" | "event";
   related_id: string;
   event_id?: number | null;
   booking_code?: string | null;
   cabin_number?: number | null;
   actor_username?: string | null;
+  actor_email?: string | null;
 };
 
 type InertiaPagination<T> = {
@@ -120,12 +121,12 @@ const Index: React.FC = () => {
 
   const handleTypeChange = (v: string) => {
     setType(v);
-    setAction("");
+    setAction([]);
   };
 
   const handleActorTypeChange = (v: LogActorType[]) => {
     setActorType(v);
-    setAction("");
+    setAction([]);
   };
 
   const submitFilters = (page?: number) => {
@@ -467,7 +468,7 @@ const Index: React.FC = () => {
                                             label: "Go To Customer",
                                             color: "warning",
                                             href: route("customers.show", row.related_id),
-                                            idValue: row.related_id,
+                                            idValue: row.actor_email ?? row.actor_username,
                                             idLabel: "ID",
                                           },
                                         }

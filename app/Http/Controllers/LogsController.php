@@ -47,6 +47,7 @@ class LogsController extends Controller
             'logs.actor_type',
             'logs.actor_id',
             'users.username as actor_username',
+            'users.email as actor_email',
             'logs.action',
             'logs.description',
             'logs.related_type',
