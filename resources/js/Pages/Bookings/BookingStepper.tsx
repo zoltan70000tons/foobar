@@ -553,6 +553,9 @@ const BookingStepper: React.FC = ({
                           {option.status === "AVAILABLE" && (
                           <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
                           )}
+                          {option.status === "PARTIALLY_BOOKED" && (
+                            <Chip sx={{ ml: 1 }} label={"PARTIALLY BOOKED"} color="info" size="small" />
+                          )}
                         </Box>
                       );
                     }}
