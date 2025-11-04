@@ -118,7 +118,7 @@ class PDFService
       ];
 
       // 2) Get booking details
-      $logoUrl = 'https://70000tons.com/wp-content/uploads/2019/04/70K_Logo_Claim_BW_HiRes.jpg';
+      $logoUrl =  env('AWS_ASSETS_CDN') . '/logos/70K_Logo_Claim_BW_HiRes.jpg';
       $logoData = base64_encode(file_get_contents($logoUrl));
       $logoSrc = 'data:image/jpeg;base64,' . $logoData;
 
