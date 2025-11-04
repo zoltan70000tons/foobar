@@ -1036,7 +1036,7 @@ const BookingStepper: React.FC = ({
                     </TableRow>
                     <TableRow>
                       <TableCell>
-                        <strong>First Address:</strong>
+                        <strong>Address 1:</strong>
                       </TableCell>
                       <TableCell>{passenger.address_first}</TableCell>
                     </TableRow>
