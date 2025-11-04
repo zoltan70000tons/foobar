@@ -203,7 +203,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             <Grid container spacing={2} mt={1}>
               <Grid item xs={12} md={6}>
                 <TextField
-                  label="BIP ID"
+                  label="Payment ID"
                   name="BIP_ID"
                   value={formData.BIP_ID}
                   onChange={handleChange}
@@ -283,7 +283,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     <TableCell>Type</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Date</TableCell>
-                    <TableCell>BIP ID</TableCell>
+                    <TableCell>Payment ID</TableCell>
                     <TableCell>Source</TableCell>
                     <TableCell>Delete</TableCell>
                   </TableRow>
