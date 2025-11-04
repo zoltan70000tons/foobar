@@ -20,6 +20,8 @@ class PassengerController extends Controller
     protected PassengerRepository $passengerRepository;
     public function __construct(PassengerRepository $passengerRepository)
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        setPermissionsTeamId(config('settings.organization_id'));
         $this->passengerRepository = $passengerRepository;
     }
 
@@ -137,14 +139,8 @@ class PassengerController extends Controller
             'special_options' => 'nullable|array',
             'dietary_preferences' => 'nullable|array',
             'hear_about' => 'nullable|string',
-            // 'newsletter' => 'required|boolean',
-            // 'travel_info' => 'required|boolean',
             'terms_n_cons' => 'required|boolean',
-            // 'cabin_conf_accp' => 'required|boolean',
-            //'single_t_agreement' => 'required|boolean',
-            //'passenger_allocated_cost' => 'required|numeric',
-            //'passenger_balance' => 'required|numeric',
-            // 'was_on_board' => 'required|boolean',
+
         ]);
         $validated['empty_seat'] = false;
         if (empty($validated['special_options']['dietary_restrictions'])) {
@@ -272,12 +268,9 @@ class PassengerController extends Controller
                 $slot->terms_n_cons = false;
                 $slot->cabin_conf_accp = false;
                 $slot->single_t_agreement = false;
-                // $slot->passenger_allocated_cost = 0;
-                // $slot->passenger_balance = 0;
                 $slot->was_on_board = false;
                 $slot->empty_seat = false;
-                //$slot->language = 'en'; //Cannot release seat of uncommented, language column does not exist
-                // on passengers table
+
                 $slot->save();
 
                 if ($passengerInvitationEmail) {
@@ -381,10 +374,13 @@ class PassengerController extends Controller
 
         try {
             $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
-                ->where('email', 'LIKE', "%{$query}%")
-                ->orWhereHas('detail', function ($q) use ($query) {
-                    $q->where('first_name', 'LIKE', "%{$query}%")
-                        ->orWhere('last_name', 'LIKE', "%{$query}%");
+                ->role('Customer')
+                ->where(function ($q) use ($query) {
+                    $q->where('email', 'LIKE', "%{$query}%")
+                        ->orWhereHas('detail', function ($q2) use ($query) {
+                            $q2->where('first_name', 'LIKE', "%{$query}%")
+                                ->orWhere('last_name', 'LIKE', "%{$query}%");
+                        });
                 })
                 ->get()
                 ->map(function ($user) use ($eventId, $request) {
@@ -395,13 +391,6 @@ class PassengerController extends Controller
                             $query->where('survivor_number', $user->survivorNumber?->survivor_number);
                         })
                             ->where('event_id', $eventId);
-
-                        // If there is a bookingId, it means it's an EditPassenger call
-                        //if ($bookingId) { //Zoltan: Commented it out for https://app.asana.com/1/1208601927370271/project/1208683268730907/task/1210395025088838
-                            // Ensure the current booking is excluded in the double-booking check
-                            //$baseQuery->where('id', '!=', $bookingId);  // Exclude current booking
-                        //}
-
                         $exists = $baseQuery->where('status', '!=', 'CANCELLED')
                             ->exists();
 
