@@ -59,14 +59,44 @@ class RestrictionEvaluator
   // Compare actual and expected values based on the operator
   protected static function compare($actual, string $operator, $expected): bool
   {
+    // Normalize both values before comparison
+    $actual = self::normalizeValue($actual);
+    $expected = self::normalizeValue($expected);
+
     return match ($operator) {
       'equals' => $actual == $expected,
       'not_equals' => $actual != $expected,
-      'in' => is_array($expected) && in_array($actual, $expected),
-      'not_in' => is_array($expected) && !in_array($actual, $expected),
-      'gte' => is_numeric($actual) && $actual >= $expected,
-      'lte' => is_numeric($actual) && $actual <= $expected,
+      'in' => is_array($expected) && in_array($actual, $expected, true),
+      'not_in' => is_array($expected) && !in_array($actual, $expected, true),
+      'gte' => is_numeric($actual) && is_numeric($expected) && $actual >= $expected,
+      'lte' => is_numeric($actual) && is_numeric($expected) && $actual <= $expected,
       default => false,
     };
+  }
+
+  // Normalize booleans, numeric strings, and null-like strings
+  protected static function normalizeValue($value)
+  {
+    if (is_string($value)) {
+      $lower = strtolower(trim($value));
+
+      if ($lower === 'true') {
+        return true;
+      }
+
+      if ($lower === 'false') {
+        return false;
+      }
+
+      if ($lower === 'null' || $lower === 'undefined' || $lower === '') {
+        return null;
+      }
+
+      if (is_numeric($value)) {
+        return $value + 0;
+      }
+    }
+
+    return $value;
   }
 }

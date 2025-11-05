@@ -101,43 +101,43 @@ class EventController extends Controller
 
     $access = $this->checkMembershipAccess($membership, null, $id);
 
-    $context = [];
+    // $context = [];
 
-    if ($customer) {
-      $cart = $customer->cart()->first();
+    // if ($customer) {
+    //   $cart = $customer->cart()->first();
 
-      if ($cart && !empty($cart->cart_data)) {
-        $categoryId = $cart->cart_data['cabin_category'] ?? null;
-        $category = null;
+    //   if ($cart && !empty($cart->cart_data)) {
+    //     $categoryId = $cart->cart_data['cabin_category'] ?? null;
+    //     $category = null;
 
-        if ($categoryId) {
-          $category = CabinCategory::with('spec')->where('id', $categoryId)->where('event_id', $id)->first();
-        }
+    //     if ($categoryId) {
+    //       $category = CabinCategory::with('spec')->where('id', $categoryId)->where('event_id', $id)->first();
+    //     }
 
-        // Build context
-        $context['cabin'] = [
-          'category_id' => $categoryId,
-          'category_name' => $category?->category_name,
-          'code' => $cart->cart_data['cabin_code'] ?? null,
-          'capacity' => $cart->cart_data['cabin_capacity'] ?? null,
-        ];
+    //     // Build context
+    //     $context['cabin'] = [
+    //       'category_id' => $categoryId,
+    //       'category_name' => $category?->category_name,
+    //       'code' => $cart->cart_data['cabin_code'] ?? null,
+    //       'capacity' => $cart->cart_data['cabin_capacity'] ?? null,
+    //     ];
 
-        // \Log::info('EventController showOne - context', ['context' => $context]);
+    //     // \Log::info('EventController showOne - context', ['context' => $context]);
 
-        $context['cabin_category'] = $category;
-      }
-    }
+    //     $context['cabin_category'] = $category;
+    //   }
+    // }
 
-    $event->adjustments->transform(function ($adjustment) use ($context) {
-      $isApplicable = $adjustment->shouldApply($context);
-      $adjustment->is_applicable = $isApplicable;
+    // $event->adjustments->transform(function ($adjustment) use ($context) {
+    //   $isApplicable = $adjustment->shouldApply($context);
+    //   $adjustment->is_applicable = $isApplicable;
 
-      if ($isApplicable && $adjustment->code === 'CHOOSE_YOUR_CABIN') {
-        $adjustment->value = '0.00';
-      }
+    //   if ($isApplicable && $adjustment->code === 'CHOOSE_YOUR_CABIN') {
+    //     $adjustment->value = '0.00';
+    //   }
 
-      return $adjustment;
-    });
+    //   return $adjustment;
+    // });
 
     return response()->json([
       'status' => 200,

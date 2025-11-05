@@ -61,6 +61,34 @@ class CartController extends Controller
       return $adjustment;
     });
 
+    if (isset($cart['addons']) && is_array($cart['addons'])) {
+      $cart['addons'] = collect($cart['addons'])
+        ->map(function ($addon) use ($adjustments) {
+          if (!is_array($addon)) {
+            $addon = (array) $addon;
+          }
+
+          $matchedAdjustment = $adjustments->firstWhere('code', $addon['code'] ?? null);
+
+          if (!$matchedAdjustment) {
+            return $addon;
+          }
+
+          $value = $matchedAdjustment->value;
+
+          if (is_numeric($value)) {
+            $value = number_format((float) $value, 2, '.', '');
+          }
+
+          return array_merge($addon, [
+            'value' => $value,
+            'operation' => $matchedAdjustment->operation,
+            'type' => $matchedAdjustment->type,
+          ]);
+        })
+        ->toArray();
+    }
+
     $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
 
     $cabinTitle =
@@ -257,7 +285,7 @@ class CartController extends Controller
   |  Update the cart data in session
   |
   */
-  public function update(Request $request)
+  public function update(Request $request, ReservationService $reservationService)
   {
     $validated = $request->validate([
       'event_id' => 'required|string',
@@ -300,6 +328,8 @@ class CartController extends Controller
       );
     }
 
+    /// current state of cart
+    $existingCart = Cart::where('user_id', $user->id)->first()?->cart_data ?? [];
     // Age verification
     $dateOfBirth = $user->detail->dob ?? null;
     if ($dateOfBirth) {
@@ -324,6 +354,19 @@ class CartController extends Controller
         ],
         422
       );
+    }
+
+    // handle choose dynamic selection of choose your cabin
+    // if the user changed from we_pick to you_pick we need to release the cabin
+    if (isset($existingCart['choose_your_cabin']) && isset($validated['choose_your_cabin'])) {
+      if ($existingCart['choose_your_cabin'] === false && $validated['choose_your_cabin'] === true) {
+        // release cabin
+        $reservationService->releaseCabin($user);
+        // clear cabin_number and reservation_id from cart
+        $validated['cabin_number'] = null;
+        $validated['reservation_id'] = null;
+        $validated['reservation_timestamp'] = null;
+      }
     }
 
     Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $validated]);

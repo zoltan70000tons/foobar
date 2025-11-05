@@ -21,7 +21,7 @@ use Log;
 class CabinController extends Controller
 {
   use CabinFilter, DecksFilter;
-  /** 
+  /**
    * Show all cabins for a specific cabin type based on filters.
    *
    * @param Request $request
@@ -43,18 +43,17 @@ class CabinController extends Controller
     $cabinCapacity = $request->input('capacity', null);
     $cabinDeck = $request->input('deck', null);
 
-
     // FIRST DECK FROM CART !IMPORTANT
     // IF DECK IS NOT SELECTED FOR EXAMPLE. FIRST INIT OF PAGE
-    // OR 
+    // OR
 
-    // if all requests parameters are null, try get from cart 
+    // if all requests parameters are null, try get from cart
     if (is_null($cabinCategoryCode) && is_null($cabinCapacity)) {
       $cart = Auth::user() ? Cart::where('user_id', Auth::id())->first()?->cart_data ?? [] : [];
       $cart = (array) $cart;
-      
+
       Log::info('Cart data:', ['cart' => $cart]);
-      
+
       $cabinCategoryCode = $cart['cabin_code'] ?? null;
       $cabinCapacity = $cart['cabin_capacity'] ?? null;
     }
@@ -67,12 +66,11 @@ class CabinController extends Controller
     // decks with cabins only
     $decks = $this->filterDecks($cabinTypeId, $cabinCategoryCode, true, $cabinCapacity);
 
-
     // first deck with lowest number
     $cabinDeck = $cabinDeck ?? collect($decks)->first();
 
     // if cabinDeck is not in decks, return error
-    if(!$cabinDeck) {
+    if (!$cabinDeck) {
       return response()->json(['message' => 'No decks found for the given parameters.'], 404);
     }
 
@@ -83,10 +81,13 @@ class CabinController extends Controller
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
     }
 
-    return response()->json([
-      'decks' => $decks,
-      'cabins' => $filteredCabins['cabins']
-    ], 200);
+    return response()->json(
+      [
+        'decks' => $decks,
+        'cabins' => $filteredCabins['cabins'],
+      ],
+      200
+    );
   }
 
   /**
@@ -162,7 +163,6 @@ class CabinController extends Controller
       return response()->json(['message' => 'Option available only for private cabin'], 400);
     }
 
-
     // ------- If user have a reservation, and he want to create new.
     if ($cart && $reservationId) {
       // get from Temporary reservation table, and set expires_at to keepOldTimeStamp
@@ -184,10 +184,7 @@ class CabinController extends Controller
     // we checking there, if temporary reservation instance exist
     // if reservationID is not null
     // *and temporary reservation ID is not equal to current reservation ID
-    if ($tempReservationId->isNotEmpty() 
-        && $reservationId 
-        && $tempReservationId->first()->id !== $reservationId
-    ) {
+    if ($tempReservationId->isNotEmpty() && $reservationId && $tempReservationId->first()->id !== $reservationId) {
       return response()->json(['message' => __('feedback.double_booking')], 403);
     }
 
@@ -227,10 +224,10 @@ class CabinController extends Controller
     $language = $request->input('language', 'en');
     App::setLocale($language);
 
-
     $cabinTypeId = $request->input('cabin_type_id');
     $cabinCategoryCode = $request->input('category_code');
     $cabinCapacity = $request->input('capacity');
+    $isSwap = $request->input('is_swap', false);
 
     $user = Auth::user();
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
@@ -243,13 +240,25 @@ class CabinController extends Controller
     $tempReservationId = TemporaryReservation::where('user_id', $user->id)->get();
 
     // if user have a reservation throw error
-    if ($tempReservationId->isNotEmpty()) {
+    if ($tempReservationId->isNotEmpty() && !$isSwap) {
       TemporaryReservation::where('user_id', $user->id)->delete();
       return response()->json(['message' => __('feedback.double_booking')], 403);
     }
 
     if (!$cabinTypeId || !$cabinCategoryCode || !$cabinCapacity) {
       return response()->json(['message' => 'Cabin category code, capacity and cabin type are required.'], 400);
+    }
+
+    // if is swap, release current reservation
+    if ($isSwap) {
+      $reservationService = new ReservationService();
+      $reservationService->releaseCabin($user);
+
+      $cart['choose_your_cabin'] = false;
+      $cart['cabin_number'] = null;
+      $cart['reservation_id'] = null;
+      $cart['reservationTimestamp'] = null;
+      Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
     }
 
     $filteredCabins = $this->filterCabins($cabinTypeId, null, null, true, $cabinCategoryCode, $cabinCapacity);
@@ -285,7 +294,10 @@ class CabinController extends Controller
     });
 
     if (!$cabin) {
-      return response()->json(['message' => 'There are no available cabins at the moment. Please try again later'], 404);
+      return response()->json(
+        ['message' => 'There are no available cabins at the moment. Please try again later'],
+        404
+      );
     }
 
     return $this->createTemporaryReservation($cabin, $user, $cart, 'serviceSelect', false);
@@ -319,10 +331,9 @@ class CabinController extends Controller
   {
     $reservationTime = (int) env('TEMPORARY_RESERVATION_TIME');
 
-    if(!$user) {
+    if (!$user) {
       return response()->json(['message' => 'User not authenticated'], 401);
     }
-
 
     try {
       DB::beginTransaction();
@@ -352,12 +363,14 @@ class CabinController extends Controller
 
       $prevTimestamp = $keepOldTimeStamp ? $cart['reservation_timestamp'] : null;
 
-      $cart['cabinSelection'] = $selectionType;
-      $cart['reservationId'] = $reserved->id;
-      $cart['cabin_number'] = $cabin['cabin_number'];
+      $cart['cabin_selection'] = $selectionType;
+      $cart['reservation_id'] = $reserved->id;
+      $cart['cabin_number'] = $selectionType === 'clientSelect' ? $cabin['cabin_number'] : null;
       $cart['cabin_category_type'] = $cabin['cabin_category_type'] ?? null;
-      $cart['reservationTimestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
-      $cart['lower_bed_type_2'] = $cabin['lower_bed_type_2'];
+      $cart['reservation_timestamp'] = $prevTimestamp ? $prevTimestamp : now()->timestamp;
+      $cart['lower_bed_type_2'] = $selectionType === 'clientSelect' ? $cabin['lower_bed_type_2'] : null;
+
+      \Log::info('Cart update after reservation:', ['cart' => $cart]);
 
       Cart::updateOrCreate(['user_id' => $user->id], ['cart_data' => $cart]);
 

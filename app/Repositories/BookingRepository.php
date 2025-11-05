@@ -124,10 +124,10 @@ class BookingRepository implements BookingInterface
   ) {
     $query = Booking::with([
       'cabin',
-  'cabin.cabinType',
-  'customer',
-  'customer.detail',
-  'passengers.installments',
+      'cabin.cabinType',
+      'customer',
+      'customer.detail',
+      'passengers.installments',
       'passengers.payments',
       'agent',
       'agent.detail',
@@ -138,12 +138,12 @@ class BookingRepository implements BookingInterface
       ->where('event_id', $eventId)
       ->where('status', $status);
 
-
     if (!empty($keyword)) {
       $keyword = strtolower($keyword);
 
       $query->where(function ($query) use ($keyword) {
-        $query->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
+        $query
+          ->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
           ->orWhereHas('customer.detail', function ($query) use ($keyword) {
             $query->where(function ($query) use ($keyword) {
               $query
@@ -171,7 +171,8 @@ class BookingRepository implements BookingInterface
 
     if (!empty($tags)) {
       $query->whereExists(function ($sub) use ($tags) {
-        $sub->select(DB::raw(1))
+        $sub
+          ->select(DB::raw(1))
           ->from('taggings as tg')
           ->whereColumn('tg.entity_id', DB::raw('bookings.id::text'))
           ->where('tg.entity_type', 'booking')
@@ -215,13 +216,18 @@ class BookingRepository implements BookingInterface
         ? Carbon::parse($dateRange['longestDueDateInstallment']['endDate'])
         : null;
 
-      $filtered = $results->getCollection()->filter(function ($booking) use ($startDate, $endDate) {
-        $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
-        if (!$dueDate) return false;
+      $filtered = $results
+        ->getCollection()
+        ->filter(function ($booking) use ($startDate, $endDate) {
+          $dueDate = InstallmentHelper::getFirstUnpaidInstallmentForBooking($booking);
+          if (!$dueDate) {
+            return false;
+          }
 
-        $dueDate = Carbon::parse($dueDate);
-        return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
-      })->values();
+          $dueDate = Carbon::parse($dueDate);
+          return $dueDate->gte($startDate) && (!$endDate || $dueDate->lte($endDate));
+        })
+        ->values();
 
       $results = new \Illuminate\Pagination\LengthAwarePaginator(
         $filtered,
@@ -283,7 +289,7 @@ class BookingRepository implements BookingInterface
       'comments',
       'comments.user',
       'agent',
-      'tags'
+      'tags',
     ])
       ->where('booking_code', '=', $code)
       ->first();
@@ -312,15 +318,17 @@ class BookingRepository implements BookingInterface
     $booking->save();
   }
 
-  function delete($id) {}
+  function delete($id)
+  {
+  }
 
   function addTags($booking, $tags)
   {
     try {
       $originalTags = $booking->tags()->pluck('name')->toArray();
-      $tag          = Tag::type('booking')->whereIn('id', $tags)->get();
+      $tag = Tag::type('booking')->whereIn('id', $tags)->get();
       $booking->tags()->sync($tag);
-      $newTags      = $booking->tags()->pluck('name')->toArray();
+      $newTags = $booking->tags()->pluck('name')->toArray();
 
       $addedTags = array_diff($newTags, $originalTags);
       $removedTags = array_diff($originalTags, $newTags);
@@ -335,16 +343,10 @@ class BookingRepository implements BookingInterface
       }
 
       if ($action) {
-        GlobalLogger::log(
-          $action,
-          'booking',
-          $booking->id,
-          'Booking tags changed',
-          [
-            'before' => ['originalTags' => $originalTags],
-            'after' => ['newTags' => $newTags],
-          ]
-        );
+        GlobalLogger::log($action, 'booking', $booking->id, 'Booking tags changed', [
+          'before' => ['originalTags' => $originalTags],
+          'after' => ['newTags' => $newTags],
+        ]);
       }
 
       return $booking;
@@ -515,7 +517,6 @@ class BookingRepository implements BookingInterface
         $passenger = $this->passengerRepository->create($passengerData, $booking);
       }
 
-      // JG ---- start Installments
       if ($passenger && $bookingData['number_of_installments'] >= 1) {
         // get passenger who lead_passenger have true
         $passId = $passenger->id;
@@ -523,10 +524,11 @@ class BookingRepository implements BookingInterface
 
         $this->paymentService->createInstallments($passId, $installments);
       }
-      // JG  ---- end Installments
+
+      $selectedCabin->loadMissing('category');
+      $booking->setRelation('cabin', $selectedCabin);
 
       if ($passenger && $booking) {
-        // JG  ---- start Create adjustments
         $adjustmentIds = collect($passengerData['addons'] ?? [])
           ->filter(fn($addon) => isset($addon['id']))
           ->map(fn($addon) => $addon['id'])
@@ -542,7 +544,6 @@ class BookingRepository implements BookingInterface
         }
 
         $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
-        // JG  ---- end Create adjustments
 
         if ($temporaryBookingId) {
           TemporaryReservation::find($temporaryBookingId)?->delete();
@@ -576,12 +577,8 @@ class BookingRepository implements BookingInterface
     string $cabinNumber,
     int $cabinTypeId,
     int $cabinCategoryId
-  ): Cabin | null {
-    return Cabin::with([
-      'category.spec',
-      'cabinSpec',
-      'cabinType'
-    ])
+  ): Cabin|null {
+    return Cabin::with(['category.spec', 'cabinSpec', 'cabinType'])
       ->whereHas('category.spec', function ($q) use ($currentCapacity) {
         $q->where('capacity', '=', $currentCapacity);
       })
@@ -597,7 +594,8 @@ class BookingRepository implements BookingInterface
       ->first();
   }
 
-  public function changePaymentPlan($booking, $payment_plan, $number_of_installments){
+  public function changePaymentPlan($booking, $payment_plan, $number_of_installments)
+  {
     if (!in_array($payment_plan, ['INSTALLMENTS', 'PAY_IN_FULL'])) {
       throw new InvalidArgumentException('Invalid payment plan');
     }
@@ -690,52 +688,58 @@ class BookingRepository implements BookingInterface
             ->get();
 
           $existingCount = $existing->count();
-          $baseDate = $existingCount ? Carbon::parse($existing->first()->due_date) : Carbon::parse($booking->created_at);
+          $baseDate = $existingCount
+            ? Carbon::parse($existing->first()->due_date)
+            : Carbon::parse($booking->created_at);
           $lastAllowed = Carbon::parse($booking->event->start_date)->subWeek();
 
-                // Compute allowed max installments from baseDate up to lastAllowed (max 5)
-                $allowedMax = 0;
-                for ($i = 0; $i < 5; $i++) {
-                  $due = $baseDate->copy()->addMonths($i);
-                  if ($due->lte($lastAllowed)) {
-                    $allowedMax = $i + 1;
-                  } else {
-                    break;
-                  }
-                }
+          // Compute allowed max installments from baseDate up to lastAllowed (max 5)
+          $allowedMax = 0;
+          for ($i = 0; $i < 5; $i++) {
+            $due = $baseDate->copy()->addMonths($i);
+            if ($due->lte($lastAllowed)) {
+              $allowedMax = $i + 1;
+            } else {
+              break;
+            }
+          }
 
-                if ($allowedMax < 2) {
-                  throw new InvalidArgumentException('Not enough time to create at least 2 installments before event cutoff (one week before start).');
-                }
+          if ($allowedMax < 2) {
+            throw new InvalidArgumentException(
+              'Not enough time to create at least 2 installments before event cutoff (one week before start).'
+            );
+          }
 
-                // If there are already as many or more installments than requested, do nothing
-                if ($existingCount >= $number_of_installments) {
-                  continue;
-                }
+          // If there are already as many or more installments than requested, do nothing
+          if ($existingCount >= $number_of_installments) {
+            continue;
+          }
 
-                // Determine how many new installments we can add without exceeding allowedMax
-                $targetTotal = min($number_of_installments, $allowedMax);
-                $needed = $targetTotal - $existingCount;
-                if ($needed <= 0) {
-                  continue;
-                }
+          // Determine how many new installments we can add without exceeding allowedMax
+          $targetTotal = min($number_of_installments, $allowedMax);
+          $needed = $targetTotal - $existingCount;
+          if ($needed <= 0) {
+            continue;
+          }
 
-                // Generate following due dates starting after the last existing installment (or baseDate if none)
-                $startIndex = $existingCount >= 1 ? $existingCount : 0;
-                for ($i = $startIndex; $i < $startIndex + $needed; $i++) {
-                  $due = $baseDate->copy()->addMonths($i)->toDateString();
-                  // safety: ensure due is <= lastAllowed
-                  if (Carbon::parse($due)->gt($lastAllowed)) break;
-                  Installment::create([
-                    'passenger_id' => $passenger->id,
-                    'due_date' => $due,
-                    'type' => 'PAYMENT',
-                  ]);
-                }
+          // Generate following due dates starting after the last existing installment (or baseDate if none)
+          $startIndex = $existingCount >= 1 ? $existingCount : 0;
+          for ($i = $startIndex; $i < $startIndex + $needed; $i++) {
+            $due = $baseDate->copy()->addMonths($i)->toDateString();
+            // safety: ensure due is <= lastAllowed
+            if (Carbon::parse($due)->gt($lastAllowed)) {
+              break;
+            }
+            Installment::create([
+              'passenger_id' => $passenger->id,
+              'due_date' => $due,
+              'type' => 'PAYMENT',
+            ]);
+          }
 
-                if($passenger->payment_method === 'BANK_TRANSFER'){
-                  $passenger->update(['payment_method' => 'CREDIT_CARD']);
-                }
+          if ($passenger->payment_method === 'BANK_TRANSFER') {
+            $passenger->update(['payment_method' => 'CREDIT_CARD']);
+          }
         }
         $this->paymentInfoService->syncAllocatedCost($booking);
         GlobalLogger::log(

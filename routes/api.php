@@ -27,6 +27,7 @@ Route::post('/auth/forgot-password', [CustomerPasswordResetController::class, 'r
   'throttle:10,1',
   'guest',
 ]);
+
 Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware([
   'throttle:10,1',
   'guest',
@@ -101,7 +102,6 @@ Route::middleware([
     // --- booking init
     Route::post('/booking-init', [BookingController::class, 'store']);
   });
-  // *** END CART ***
 
   Route::get('/cabins', [CabinController::class, 'show']);
 
