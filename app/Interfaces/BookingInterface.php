@@ -23,5 +23,5 @@ $sortDirection ='asc', $dateRange = null, ?array $tags =[]);
     function addComment(Booking $booking, $comment);
     function cancel(Booking $booking);
     function createBooking(array $bookingData,array $passengerData, ?Cabin $cabin = null, ?int $reservation_id = null ): array;
- 
+    function changePaymentPlan(Booking $booking, string $payment_plan, int $number_of_installments);
 }

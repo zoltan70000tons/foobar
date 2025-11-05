@@ -68,7 +68,7 @@ class PassengerRepository implements PassengerInterface
         'special_request' => $data['special_request'] ?? null,
         'special_options' => $data['special_options'] ?? null,
         'dietary_preferences' => $data['dietary_preferences'] ?? null,
-        'newsletter' => $data['newsletter'] ?? null,
+        'newsletter' => $data['newsletter'] ?? false,
         'travel_info' => $data['travel_info'] ?? null,
         'hear_about' => $data['hear_about'] ?? null,
         // 'referral_details' => $data['referral_details'] ?? null,

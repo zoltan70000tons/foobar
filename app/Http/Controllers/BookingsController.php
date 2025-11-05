@@ -31,7 +31,6 @@ use App\Rules\UniqueSurvivorInEvent;
 use App\Support\GlobalLogger;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Traits\ExceptionLogger;
@@ -41,6 +40,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 use App\Services\PaymentInfoService;
+use App\Helpers\InstallmentHelper;
 
 class BookingsController extends Controller
 {
@@ -106,44 +106,7 @@ class BookingsController extends Controller
       }
       return $this->withPermission(
         [Permissions::ViewBookings],
-        // function ($event_id, $keyword, $tag) {
-        //   $newBookings = $this->bookingRepository->getByStatus('NEW', $keyword);
-        //   $inProgressBookings = $this->bookingRepository->getByStatus('ON HOLD', $keyword);
-        //   $uploadedBookings = $this->bookingRepository->getByStatus('UPLOADED', $keyword);
-        //   $cancelledBookings = $this->bookingRepository->getByStatus('CANCELLED', $keyword);
-        //   $users = $this->teamRepository->getAllMembers(1);
-        //   $cabinTypes = $this->cabinRepository->getTypes();
-        //   $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
-        //   $tabIndex = 0;
-        //   if (count($newBookings) > 0) {
-        //     $tabIndex = 0;
-        //   } elseif (count($inProgressBookings) > 0) {
-        //     $tabIndex = 1;
-        //   } elseif (count($uploadedBookings) > 0) {
-        //     $tabIndex = 2;
-        //   } elseif (count($cancelledBookings) > 0) {
-        //     $tabIndex = 3;
-        //   }
-
-        //   //$cancelledBookings = [];
-        //   $event = $this->eventRepository->find($event_id);
-        //   return Inertia::render('Bookings/Index', [
-        //     'event' => $event,
-        //     'newBookings' => $newBookings,
-        //     'inProgressBookings' => $inProgressBookings,
-        //     'uploadedBookings' => $uploadedBookings,
-        //     'cancelledBookings' => $cancelledBookings,
-        //     'users' => $users,
-        //     'cabinTypes' => $cabinTypes,
-        //     'cabinCategories' => $cabinCategories,
-        //     'tabIndex' => $tabIndex,
-        //   ]);
-        // },
-
         function ($event_id, $keyword, $tag) use ($status, $tab) {
-          // THIS IS SLOW
-          //$bookings = $this->bookingRepository->getByStatus($status, $keyword, ); // Only fetch one set
-
           $event = $this->eventRepository->find($event_id);
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
@@ -151,13 +114,6 @@ class BookingsController extends Controller
 
           // THIS IS SLOW - FIXED
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
-
-          // Log everything
-          // \Log::info('Event arr', ['event' => $event]);
-          // \Log::info('Bookings arr', ['bookings' => $bookings]);
-          // \Log::info('Users arr', ['users' => $users]);
-          // \Log::info('CabinTypes arr', ['cabinTypes' => $cabinTypes]);
-          // \Log::info('CabinCategories arr', ['cabinCategories' => $cabinCategories]);
 
           return Inertia::render('Bookings/Index', [
             'event' => $event,
@@ -239,10 +195,6 @@ class BookingsController extends Controller
           }
         },
       ],
-      'passenger.newsletter' => ['nullable', 'boolean'],
-      'passenger.passenger_allocated_cost' => ['nullable', 'numeric', 'min:0'],
-      'passenger.passenger_balance' => ['nullable', 'numeric', 'min:0'],
-      //'passenger.language' => ['nullable', 'string', 'max:2'],
     ]);
 
     try {
@@ -363,7 +315,7 @@ class BookingsController extends Controller
         'message' => 'Booking created successfully.',
         'success' => true,
       ]);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
       return redirect()->back()->with('flash', [
         'message' => 'Error creating booking.',
@@ -401,7 +353,7 @@ class BookingsController extends Controller
         },
         $request
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -430,7 +382,7 @@ class BookingsController extends Controller
         $tags,
         $user
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -471,6 +423,7 @@ class BookingsController extends Controller
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
+            'maxInstallmentsAllowed' => InstallmentHelper::maxInstallmentsAllowed($booking),
             'users' => $users,
             'isEditable' => $isEditable,
             'cabinTypes' => $cabinTypes,
@@ -555,60 +508,12 @@ class BookingsController extends Controller
               username: $lock ? $user->username : null
           ));
       }catch (Exception $e) {
-          dd($e->getMessage());
+         $this->logException($e);
       }
 
     // // return inertia
     return $this->withPermission([Permissions::EditBookings], fn() => Inertia::location(url()->previous()));
 
-    // try {
-    //   $booking_id = $request->input('booking_id');
-    //   $lock = $request->input('lock');
-    //   $event_id = $request->input('event_id');
-
-    //   broadcast(new \App\Events\BookingAgentSession(
-    //     bookingId: $booking_id,
-    //     username: $lock ? Auth::user()->username : null
-    //   ));
-
-
-    //   return $this->withPermission(
-    //     [Permissions::EditBookings],
-    //     function ($event_id, $booking_id, $lock) {
-    //       $event = $this->eventRepository->find($event_id);
-    //       $booking = Booking::find($booking_id);
-
-    //       if ($lock == '1') {
-    //         $bookingSession = new BookingAgentSessions();
-    //         $bookingSession->agent_id = Auth::user()->id;
-    //         $bookingSession->booking_id = $booking->id;
-    //         $bookingSession->time = now();
-    //         $bookingSession->save();
-
-    //         return Inertia::location(url()->previous());
-    //       } elseif ($lock == '0') {
-    //         $bookingSession = BookingAgentSessions::where('booking_id', $booking_id)->first();
-    //         if ($bookingSession) {
-    //           $bookingSession->delete();
-    //           return Inertia::location(url()->previous());
-    //         }
-    //       }
-
-    //       return response()->json(
-    //         [
-    //           'success' => false,
-    //           'message' => 'Invalid lock value.',
-    //         ],
-    //         400
-    //       );
-    //     },
-    //     $event_id,
-    //     $booking_id,
-    //     $lock
-    //   );
-    // } catch (\Exception $e) {
-    //   $this->logException($e);
-    // }
   }
 
   public function statusUpdate(Request $request)
@@ -635,7 +540,7 @@ class BookingsController extends Controller
         $booking_id,
         $status
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -673,7 +578,7 @@ class BookingsController extends Controller
         $booking_id,
         $selectedCabin
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -701,7 +606,7 @@ class BookingsController extends Controller
         $booking_id,
         $booking_code
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -728,7 +633,7 @@ class BookingsController extends Controller
         $booking_id,
         $comment
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->logException($e);
     }
   }
@@ -798,7 +703,7 @@ class BookingsController extends Controller
       return response()->json([
         'cabins' => $filteredCabins->sortBy('cabin_number')->values()->all(),
       ]);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       //throw $th;
     }
   }
@@ -825,7 +730,7 @@ class BookingsController extends Controller
       } else {
         session()->flash('error', 'Error cancelling booking.');
       }
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       session()->flash('error', $e->getMessage());
     } finally {
       return Inertia::location(
@@ -898,7 +803,7 @@ class BookingsController extends Controller
             return response()->json([
                 'cabins' => $upgradeCabins->values(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             //throw $th;
         }
     }
@@ -1117,9 +1022,43 @@ class BookingsController extends Controller
                 $booking_id,
                 $selectedCabin
             );
-        } catch (\Exception $e) {
-            //dd('Transaction failed', $e->getMessage(), $e->getTraceAsString());
+        } catch (Exception $e) {
             $this->logException($e);
         }
     }
+
+  public function switchPaymentPlan(Request $request)
+  {
+    
+    $request->validate([
+      'booking_id' => 'required|exists:bookings,id',
+      'payment_plan' => 'required|in:PAY_IN_FULL,INSTALLMENTS',
+      'number_of_installments' => 'nullable|integer|min:1',
+    ]);
+    
+    $result = null;
+    try {
+      $booking = Booking::findOrFail($request->booking_id);
+      $event_id = $booking->event_id;
+
+      $number_of_installments = $request->input('number_of_installments', 1);
+
+      $result = $this->bookingRepository->changePaymentPlan($booking, $request->payment_plan, $number_of_installments);
+
+      if ($result) {
+        session()->flash('success', 'Payment plan switched successfully.');
+      } else {
+        session()->flash('error', 'Error switching payment plan.');
+      }
+    } catch (Exception $e) {
+      session()->flash('error', $e->getMessage());
+    } finally {
+      return Inertia::location(
+        route('bookings.show', [
+          'id' => $event_id,
+          'booking_code' => $result?->booking_code ?? ($booking->booking_code ?? ''),
+        ])
+      );
+    }
+  }
 }

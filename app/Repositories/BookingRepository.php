@@ -18,6 +18,7 @@ use App\Models\Cabin;
 use App\Models\Comment;
 use App\Models\Tag;
 use App\Models\TemporaryReservation;
+use App\Models\Installment;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\PassengerRepository;
 use App\Repositories\AdjustmentsRepository;
@@ -123,11 +124,10 @@ class BookingRepository implements BookingInterface
   ) {
     $query = Booking::with([
       'cabin',
-      'cabin.cabinType',
-      'customer',
-      'customer.detail',
-      'passengers' => fn($q) => $q->orderBy('passenger_order'),
-      'passengers.installments',
+  'cabin.cabinType',
+  'customer',
+  'customer.detail',
+  'passengers.installments',
       'passengers.payments',
       'agent',
       'agent.detail',
@@ -595,5 +595,166 @@ class BookingRepository implements BookingInterface
       ->where('cabin_type_id', $cabinTypeId)
       ->where('cabin_category_id', $cabinCategoryId)
       ->first();
+  }
+
+  public function changePaymentPlan($booking, $payment_plan, $number_of_installments){
+    if (!in_array($payment_plan, ['INSTALLMENTS', 'PAY_IN_FULL'])) {
+      throw new InvalidArgumentException('Invalid payment plan');
+    }
+    if ($payment_plan === 'INSTALLMENTS') {
+      $number_of_installments = (int) $number_of_installments;
+      if ($number_of_installments < 2 || $number_of_installments > 5) {
+        throw new InvalidArgumentException('Number of installments must be between 2 and 5');
+      }
+    }
+
+    DB::beginTransaction();
+    try {
+      $originalPlan = $booking->payment_plan;
+      if ($originalPlan === $payment_plan) {
+        return $booking;
+      }
+
+      // SWITCH: INSTALLMENTS -> PAY_IN_FULL
+      if ($originalPlan === 'INSTALLMENTS' && $payment_plan === 'PAY_IN_FULL') {
+        $paidInFullId = $this->adjustmentsRepository->getPaidInFullId();
+        if ($paidInFullId) {
+          $exists = $booking->adjustments()->where('adjustments.id', $paidInFullId)->exists();
+          if (!$exists) {
+            $booking->adjustments()->attach($paidInFullId);
+          }
+        }
+        $booking->payment_plan = 'PAY_IN_FULL';
+        $booking->save();
+
+        // age warning
+        $warning = null;
+        if (Carbon::parse($booking->created_at)->diffInDays(now()) > 7) {
+          $warning = 'Please note this booking is a week old';
+        }
+
+        // For each passenger: keep first installment, remove other installments that have NO payments
+        foreach ($booking->passengers as $passenger) {
+          $installments = Installment::where('passenger_id', $passenger->id)
+            ->where('type', 'PAYMENT')
+            ->orderBy('due_date')
+            ->get();
+
+          if ($installments->isEmpty()) {
+            continue;
+          }
+
+          // Keep the first installment always
+          $first = $installments->first();
+
+          // Delete other installments only if they have no linked payments
+          $toDelete = $installments->skip(1)->filter(function ($inst) {
+            return $inst->payments()->count() === 0;
+          });
+
+          if ($toDelete->isNotEmpty()) {
+            Installment::whereIn('id', $toDelete->pluck('id')->toArray())->delete();
+          }
+        }
+
+        $this->paymentInfoService->syncAllocatedCost($booking);
+
+        GlobalLogger::log(
+          LogActionBooking::PAYMENT_PLAN_CHANGED,
+          'booking',
+          $booking->id,
+          'Switched from INSTALLMENTS to PAY IN FULL (5% discount applied)',
+          ['before' => $originalPlan, 'after' => $payment_plan]
+        );
+
+        DB::commit();
+
+        return ['booking' => $booking, 'warning' => $warning];
+      }
+
+      // SWITCH: PAY_IN_FULL -> INSTALLMENTS
+      if ($originalPlan === 'PAY_IN_FULL' && $payment_plan === 'INSTALLMENTS') {
+        $paidInFullId = $this->adjustmentsRepository->getPaidInFullId();
+        if ($paidInFullId) {
+          $booking->adjustments()->detach($paidInFullId);
+        }
+        $booking->payment_plan = 'INSTALLMENTS';
+        $booking->save();
+
+        // For each passenger, create/install missing installments based on existing first installment due_date
+        foreach ($booking->passengers as $passenger) {
+          // Count existing PAYMENT-type installments (excluding FEE)
+          $existing = Installment::where('passenger_id', $passenger->id)
+            ->where('type', 'PAYMENT')
+            ->orderBy('due_date')
+            ->get();
+
+          $existingCount = $existing->count();
+          $baseDate = $existingCount ? Carbon::parse($existing->first()->due_date) : Carbon::parse($booking->created_at);
+          $lastAllowed = Carbon::parse($booking->event->start_date)->subWeek();
+
+                // Compute allowed max installments from baseDate up to lastAllowed (max 5)
+                $allowedMax = 0;
+                for ($i = 0; $i < 5; $i++) {
+                  $due = $baseDate->copy()->addMonths($i);
+                  if ($due->lte($lastAllowed)) {
+                    $allowedMax = $i + 1;
+                  } else {
+                    break;
+                  }
+                }
+
+                if ($allowedMax < 2) {
+                  throw new InvalidArgumentException('Not enough time to create at least 2 installments before event cutoff (one week before start).');
+                }
+
+                // If there are already as many or more installments than requested, do nothing
+                if ($existingCount >= $number_of_installments) {
+                  continue;
+                }
+
+                // Determine how many new installments we can add without exceeding allowedMax
+                $targetTotal = min($number_of_installments, $allowedMax);
+                $needed = $targetTotal - $existingCount;
+                if ($needed <= 0) {
+                  continue;
+                }
+
+                // Generate following due dates starting after the last existing installment (or baseDate if none)
+                $startIndex = $existingCount >= 1 ? $existingCount : 0;
+                for ($i = $startIndex; $i < $startIndex + $needed; $i++) {
+                  $due = $baseDate->copy()->addMonths($i)->toDateString();
+                  // safety: ensure due is <= lastAllowed
+                  if (Carbon::parse($due)->gt($lastAllowed)) break;
+                  Installment::create([
+                    'passenger_id' => $passenger->id,
+                    'due_date' => $due,
+                    'type' => 'PAYMENT',
+                  ]);
+                }
+
+                if($passenger->payment_method === 'BANK_TRANSFER'){
+                  $passenger->update(['payment_method' => 'CREDIT_CARD']);
+                }
+        }
+        $this->paymentInfoService->syncAllocatedCost($booking);
+        GlobalLogger::log(
+          LogActionBooking::PAYMENT_PLAN_CHANGED,
+          'booking',
+          $booking->id,
+          'Switched from PAY IN FULL to INSTALLMENTS',
+          ['before' => $originalPlan, 'after' => $payment_plan, 'installments' => $number_of_installments]
+        );
+
+        DB::commit();
+        return ['booking' => $booking];
+      }
+      DB::rollBack();
+      throw new \Exception('Unsupported payment plan change');
+    } catch (\Throwable $e) {
+      DB::rollBack();
+      Log::error('Failed to change payment plan: ' . $e->getMessage());
+      throw $e;
+    }
   }
 }

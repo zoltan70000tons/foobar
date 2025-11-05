@@ -31,10 +31,45 @@ class PaymentService
   public function createInstallments(int $passengerId, int $numberOfInstallments): void
   {
     $installments = [];
-    $currentDate = Carbon::now();
 
-    for ($i = 0; $i < $numberOfInstallments; $i++) {
-      $installments[] = $currentDate->copy()->addMonths($i)->toDateString();
+    $passenger = Passenger::find($passengerId);
+    if (!$passenger) {
+      throw new \InvalidArgumentException('Passenger not found');
+    }
+
+    $booking = $passenger->booking;
+    if (!$booking || !$booking->event || !$booking->event->start_date) {
+      throw new \InvalidArgumentException('Associated booking or event start date not found');
+    }
+
+    $baseDate = Carbon::now();
+    // Use booking created_at if present and booking was just created (consistency with previous behavior)
+    if ($passenger->booking && $passenger->booking->created_at) {
+      $baseDate = Carbon::parse($passenger->booking->created_at);
+    }
+
+    $lastAllowed = Carbon::parse($booking->event->start_date)->subWeek();
+
+    // Compute maximum number of monthly installments we can fit before lastAllowed (max 5)
+    $allowedMax = 0;
+    for ($i = 0; $i < 5; $i++) {
+      $due = $baseDate->copy()->addMonths($i);
+      if ($due->lte($lastAllowed)) {
+        $allowedMax = $i + 1;
+      } else {
+        break;
+      }
+    }
+
+    // Ensure at least 2 installments are possible
+    if ($allowedMax < 2) {
+      throw new \InvalidArgumentException('Not enough time to create at least 2 installments before event cutoff (one week before start).');
+    }
+
+    $count = min($numberOfInstallments, $allowedMax);
+
+    for ($i = 0; $i < $count; $i++) {
+      $installments[] = $baseDate->copy()->addMonths($i)->toDateString();
     }
 
     $this->paymentRepository->createInstallments($passengerId, $installments);
