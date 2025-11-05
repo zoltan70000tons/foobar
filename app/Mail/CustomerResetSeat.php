@@ -16,7 +16,6 @@ class CustomerResetSeat extends Mailable implements ShouldQueue
 
   public $passengerEmail;
 
-
   /**
    * Create a new message instance.
    */
@@ -33,7 +32,7 @@ class CustomerResetSeat extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.seat_reset_subject'));
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.seat.reset.subject'));
   }
 
   /**

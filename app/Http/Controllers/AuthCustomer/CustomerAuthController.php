@@ -32,9 +32,9 @@ class CustomerAuthController extends Controller
   {
     // Get the authenticated customer by guard
     //$customer = Auth::user()->role === 'Customer' ? Auth::user() : null;
-    
+
     \Log::info('CustomerAuthController: customer method called');
-    
+
     $user = Auth::user();
     $customer = $user->hasRole('Customer') ? $user : null;
 
@@ -62,19 +62,13 @@ class CustomerAuthController extends Controller
     $address = $customer->customerAddress ?? null;
 
     if ($shouldLogLogin) {
-      GlobalLogger::log(
-        LogActionUser::LOGIN,
-        'user',
-        $customer->id,
-        'User logged in',
-        [
-          'before' => [
-            'email' => $customer->email,
-          ],
-          'last_login_at' => $lastLoginBefore,
-          'new_login_at' => $now,
-        ]
-      );
+      GlobalLogger::log(LogActionUser::LOGIN, 'user', $customer->id, 'User logged in', [
+        'before' => [
+          'email' => $customer->email,
+        ],
+        'last_login_at' => $lastLoginBefore,
+        'new_login_at' => $now,
+      ]);
     }
 
     return $this->successResponse([
@@ -184,7 +178,10 @@ class CustomerAuthController extends Controller
       $user->save();
 
       // Update passenger data for existing bookings ( NEW or ON HOLD)
-      $bookings = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->get();
+      $bookings = $user
+        ->bookings()
+        ->whereIn('status', ['NEW', 'ON HOLD'])
+        ->get();
 
       foreach ($bookings as $booking) {
         foreach ($booking->passengers->where('survivor_number', $user->survivorNumber->survivor_number) as $passenger) {
@@ -201,7 +198,7 @@ class CustomerAuthController extends Controller
       // Send notification to the old email address
       $this->sendEmailUpdateNotification($user, $oldEmail, $language);
 
-      return response()->json(['message' => __('systemEmails.update_email.subject')]);
+      return response()->json(['message' => __('systemEmails.account.update.subject')]);
     } catch (\Exception $e) {
       return $this->errorResponse('Unauthorized', 401);
     }
@@ -215,8 +212,6 @@ class CustomerAuthController extends Controller
       Log::error('Failed to send email update notification to user ID ' . $user->id . ': ' . $e->getMessage());
     }
   }
-
-
 
   /*
   |--------------------------------------------------------------------------
@@ -232,16 +227,16 @@ class CustomerAuthController extends Controller
     $user = $request->user();
 
     // Check if user has an active booking
-    $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
+    $hasActiveBooking = $user
+      ->bookings()
+      ->whereIn('status', ['NEW', 'ON HOLD'])
+      ->exists();
 
     return response()->json([
       'canDelete' => !$hasActiveBooking,
-      'message' => $hasActiveBooking
-        ? __('feedback.cannot_delete_account')
-        : __('feedback.proceed_delete_account'),
+      'message' => $hasActiveBooking ? __('feedback.cannot_delete_account') : __('feedback.proceed_delete_account'),
     ]);
   }
-
 
   /**
    * Delete the authenticated user
@@ -261,7 +256,10 @@ class CustomerAuthController extends Controller
     }
 
     // if user have bookings, we don't allow to delete account
-    $hasActiveBooking = $user->bookings()->whereIn('status', ['NEW', 'ON HOLD'])->exists();
+    $hasActiveBooking = $user
+      ->bookings()
+      ->whereIn('status', ['NEW', 'ON HOLD'])
+      ->exists();
     if ($hasActiveBooking) {
       return $this->errorResponse('You cannot delete your account while you have an active booking.', 403);
     }
@@ -288,7 +286,6 @@ class CustomerAuthController extends Controller
       ]);
     }
 
-  
     // return success
     return response()->json(['message' => 'Account deleted successfully.']);
   }

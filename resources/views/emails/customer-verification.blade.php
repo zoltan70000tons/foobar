@@ -10,25 +10,28 @@
 
 @extends('emails.layouts.systemLayout')
 
-@section('title', 'Verify Your Email Address')
+@section('title', __('systemEmails.account.verification.title'))
 
 @section('header')
     70000TONS OF METAL
 @endsection
 
 @section('content')
-    <p>Hello {{ $user->detail->first_name ?? 'Sailor' }},</p>
-    <p>Please click the button below to verify your email address:</p>
-
+    <p>{{ __('systemEmails.common.greeting.hello', ['name' => $user->detail->first_name ?? __('systemEmails.common.greeting.default_name')]) }}</p>
+    <p>{{ __('systemEmails.account.verification.instruction') }}</p>
     @include('emails.components.button', [
         'url' => $verificationUrl,
-        'slot' => 'Verify Email Address'
+        'slot' => __('systemEmails.account.verification.cta_label')
     ])
-
-    <p>If you did not create an account, no further action is required.</p>
+    <p>{{ __('systemEmails.common.cta_help') }}</p>
+    @include('emails.components.long-string', [
+        'url' => $verificationUrl,
+        'slot' => $verificationUrl
+    ])
+    <p>{{ __('systemEmails.account.verification.fallback') }}</p>
 @endsection
 
 @section('regards')
-    <p>{{ __('systemEmails.email_thanks') }}</p>
-    <p>{{ __('systemEmails.email_regards') }}</p>
+    <p>{{ __('systemEmails.common.salutation.thanks') }}</p>
+    <p>{{ __('systemEmails.common.salutation.regards') }}</p>
 @endsection

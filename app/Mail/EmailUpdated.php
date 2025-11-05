@@ -17,7 +17,6 @@ class EmailUpdated extends Mailable implements ShouldQueue
   public $user;
   public $language;
 
-
   /**
    * Create a new message instance.
    */
@@ -35,7 +34,10 @@ class EmailUpdated extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.update_email.subject', [], $this->language));
+    return new Envelope(
+      from: $mailFromAddress,
+      subject: __('systemEmails.account.update.subject', [], $this->language)
+    );
   }
 
   /**

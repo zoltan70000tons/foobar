@@ -1,74 +1,92 @@
 <?php
-
 return [
   /*
     |--------------------------------------------------------------------------
     | System Emails Language Lines DE
     |--------------------------------------------------------------------------
-    |
-    | The following language lines are used during authentication for various
-    | messages that we need to display to the user. You are free to modify
-    | these language lines according to your application's requirements.
-    |
     */
-
-  'email_send' => 'eMail wurde erfolgreich versendet.',
-  'email_not_send' => 'eMail konnte nicht gesendet werden.',
-  'email_verified_already' => 'eMailadresse wurde bereits bestätigt.',
-  'email_verification_link_sent' => 'Bestätigungslink wurde versendet.',
-  'email_verification_subject' => 'Bitte verifiziere Deine eMailadresse',
-  'email_hi' => 'Hi',
-  'email_thanks' => 'Cheers,',
-  'email_regards' => 'Deine 70000TONS OF METAL Crew',
-  'email_excited' => 'Wir freuen uns, dich an Bord willkommen zu heißen!',
-  'email_account_created' => 'Dein Account wurde erfolgreich erstellt.',
-  'email_activated_account' => 'Dein Account ist jetzt aktiv.',
-  'email_new_survivor_number' => 'Deine Survivornummer ist:',
-  'email_cta_activate_account' => 'Account aktivieren',
-  'email_cant_see_button' => 'Falls Du den Button nicht siehst, klicke den Link unten:',
-  'email_activate_account' => 'Bitte aktiviere Deinen Account, indem Du den untenstehenden Button drückst:',
-  'email_thank_you' => 'Danke, dass Du Dich für uns entschieden hast.',
-  'update_email' => [
-    'subject' => 'Deine Accountinformationen wurden aktualisiert.',
-    'title' => 'eMailadresse wurde aktualisiert.',
-    'greeting' => 'Hallo :name,',
-    'default_name' => 'Kunde',
-    'body' => 'Die eMailadresse zu Deinem Account wurde erfolgreich aktualisiert.',
-    'security_notice' =>
-      'Falls Du diese Änderung nicht getätigt hast, melde Dich bitte sofort bei unserem Support Team.',
-    'thank_you' => '70000TONS OF METAL Crew',
+  'alerts' => [
+    'sent' => 'E-Mail wurde erfolgreich versendet.',
+    'send_failed' => 'E-Mail konnte nicht gesendet werden.',
+    'already_verified' => 'E-Mail-Adresse wurde bereits bestätigt.',
+    'verification_link_sent' => 'Bestätigungslink wurde versendet.',
+    'not_found' => 'E-Mail-Adresse wurde nicht gefunden.',
   ],
-  'email_request_to_add_pax' => 'lädt Dich in seine/ihre (depends on gender) Kabine ein',
-  'email_request_to_add_pax_body' =>
-    'Du hast 72 Stunden Zeit, Deine Informationen in die Buchung einzufügen. Wenn Du die Informationen in dieser Zeit nicht eingibst, wird die Anfrage storniert.',
-  'email_request_to_add_pax_cta' => 'Informationen hinzufügen',
-  'email_invitation_on_your_account' => 'Du hast eine Einladung in Deinem Account.',
-  'email_invitation_on_your_account_body' =>
-    'Du hast 72 Stunden, die Einladung anzunehmen. Wenn Du die Einladung nicht in dieser Zeit annimmst, wird die Einladung storniert. Du kannst Deine Einladungen bei Deinen Buchungen in Deinem Account sehen. Wenn Du Fragen hast, kontaktiere bitte unsere Customer Service Crew.',
-  'email_not_found' => 'eMailadresse wurde nicht gefunden.',
-
-  'reset_password_request_subject' => 'Du hast eine Passwortzurücksetzung angefordert',
-  'reset_password_success_subject' => 'Dein Passwort wurde zurückgesetzt',
-  'reset_password_hi' => 'Hallo',
-  'reset_password_body' =>
-    'Du erhältst diese E-Mail, weil wir eine Anfrage zum Zurücksetzen des Passworts für dein Konto erhalten haben.',
-  'reset_password_success_body' =>
-    'Dein Passwort wurde erfolgreich zurückgesetzt. Wenn Du diese Änderung nicht vorgenommen hast, kontaktiere bitte sofort unser Support-Team.',
-  'reset_password_btn_text' => 'Passwort zurücksetzen',
-
-  'seat_reset_subject' => 'Du wurdest aus Deiner Buchung entfernt',
-  'seat_reset_notification' =>
-    'Wir möchten dir Bescheid sagen, dass Dein zugeordneter Platz in der Kabine zurückgesetzt wurde.',
-  'seat_reset_questions' =>
-    'Falls Du Fragen hast, melde Dich bitte beim Lead Passenger der Kabine für weitere Informationen.',
-  'booking_code' => 'Buchungscode',
-
-  'payment_received_subject' => 'Wir haben deine Zahlung für 70000TONS OF METAL erhalten',
-  'payment_received_greeting' => 'Hallo :name,',
-  'payment_received_body' =>
-    'Wir haben deine Zahlung in Höhe von <strong>:amount</strong> für deine Buchung mit dem Code <strong>:booking_code</strong> erhalten.',
-  'payment_received_next_steps' =>
-    'Du erhältst eine aktualisierte Buchungsbestätigung per E-Mail, sobald deine Zahlung vollständig verarbeitet wurde.',
-  'payment_received_questions' =>
-    'Wenn du Fragen hast oder weitere Hilfe benötigst, zögere nicht, uns zu kontaktieren.',
+  'common' => [
+    'greeting' => [
+      'hi' => 'Hi',
+      'hello' => 'Hallo :name,',
+      'default_name' => 'Kunde',
+    ],
+    'salutation' => [
+      'thanks' => 'Cheers,',
+      'regards' => 'Deine 70000TONS OF METAL Crew',
+    ],
+    'cta_help' => 'Falls du den Button nicht sehen kannst, klicke bitte auf den folgenden Link:',
+  ],
+  'account' => [
+    'activation' => [
+      'title' => 'Account erstellt',
+      'welcome' => 'Wir freuen uns, dich an Bord willkommen zu heißen!',
+      'created' => 'Dein Account wurde erfolgreich erstellt.',
+      'activated' => 'Dein Account ist jetzt aktiv.',
+      'survivor_number_label' => 'Deine Survivor-Nummer ist:',
+      'cta_intro' => 'Bitte aktiviere deinen Account, indem du auf den Button klickst:',
+      'cta_label' => 'Account aktivieren',
+    ],
+    'verification' => [
+      'title' => 'Bestätige deine E-Mail-Adresse',
+      'instruction' => 'Bitte klicke auf den Button, um deine E-Mail-Adresse zu bestätigen:',
+      'fallback' => 'Wenn du keinen Account erstellt hast, musst du nichts weiter tun.',
+      'cta_label' => 'E-Mail-Adresse bestätigen',
+    ],
+    'update' => [
+      'subject' => 'Deine Accountinformationen wurden aktualisiert',
+      'title' => 'E-Mail-Adresse aktualisiert',
+      'greeting' => 'Hallo :name,',
+      'default_name' => 'Kunde',
+      'body' => 'Die E-Mail-Adresse deines Accounts wurde erfolgreich aktualisiert.',
+      'security_notice' =>
+        'Falls du diese Änderung nicht vorgenommen hast, kontaktiere bitte sofort unser Support-Team, um deinen Account zu sichern.',
+      'signature' => '70000TONS OF METAL Crew',
+    ],
+  ],
+  'invitation' => [
+    'request' => [
+      'title' => 'Anfrage zum Hinzufügen eines Gastes',
+      'headline' => ':from lädt dich ein, die Kabine für :event zu teilen',
+      'instructions' =>
+        'Du hast 72 Stunden Zeit, deine Informationen in die Buchung einzutragen. Wenn du die Angaben nicht innerhalb dieses Zeitraums machst, wird die Anfrage storniert.',
+      'account_notice' => 'Du hast eine Einladung in deinem Account.',
+      'account_instructions' =>
+        'Du hast 72 Stunden Zeit, diese Einladung anzunehmen. Wenn du sie nicht innerhalb dieses Zeitraums annimmst, wird sie storniert. Du findest deine Einladungen auf der Buchungsseite deines Accounts. Wenn du Fragen hast, kontaktiere bitte unsere Customer Service Crew.',
+      'cta' => [
+        'add_details' => 'Details hinzufügen',
+        'complete_form' => 'Formular ausfüllen',
+        'login' => 'In deinen Account einloggen',
+      ],
+      'booking_code_label' => 'Buchungscode',
+    ],
+  ],
+  'password' => [
+    'reset' => [
+      'subject' => 'Du hast eine Passwortzurücksetzung angefordert',
+      'title' => 'Passwort zurücksetzen',
+      'intro' => 'Du erhältst diese E-Mail, weil wir eine Anfrage zum Zurücksetzen deines Passworts erhalten haben.',
+      'cta_label' => 'Passwort zurücksetzen',
+    ],
+    'confirmation' => [
+      'subject' => 'Dein Passwort wurde zurückgesetzt',
+      'title' => 'Bestätigung der Passwortzurücksetzung',
+      'intro' => 'Wir möchten dich informieren, dass dein Passwort erfolgreich zurückgesetzt wurde.',
+    ],
+  ],
+  'seat' => [
+    'reset' => [
+      'subject' => 'Du wurdest aus deiner Buchung entfernt',
+      'intro' => 'Wir möchten dich darüber informieren, dass du aus deiner Buchung entfernt wurdest.',
+      'questions' =>
+        'Falls du Fragen hast, wende dich bitte für weitere Informationen an den Lead Passenger deiner Kabine.',
+    ],
+  ],
 ];

@@ -259,6 +259,6 @@
 @endsection
 
 @section('regards')
-    <p>{{ __('systemEmails.email_thanks') }}</p>
-    <p>{{ __('systemEmails.email_regards') }}</p>
+    <p>{{ __('systemEmails.common.salutation.thanks') }}</p>
+    <p>{{ __('systemEmails.common.salutation.regards') }}</p>
 @endsection

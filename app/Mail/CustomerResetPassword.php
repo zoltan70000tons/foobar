@@ -37,7 +37,7 @@ class CustomerResetPassword extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.reset_password_request_subject'));
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.password.reset.subject'));
   }
 
   /**
@@ -48,7 +48,7 @@ class CustomerResetPassword extends Mailable implements ShouldQueue
     return new Content(
       view: 'emails.customer-reset-password',
       with: [
-        'customer' => $this->customer,
+        'customerName' => $this->customer?->detail?->first_name ?? __('systemEmails.common.greeting.default_name'),
         'resetUrl' => $this->resetUrl,
       ]
     );

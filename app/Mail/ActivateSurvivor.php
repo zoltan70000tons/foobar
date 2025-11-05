@@ -20,7 +20,6 @@ class ActivateSurvivor extends Mailable implements ShouldQueue
   public $survivorNumber;
   public $activationLink;
 
-
   /**
    * Create a new message instance.
    */
@@ -46,7 +45,10 @@ class ActivateSurvivor extends Mailable implements ShouldQueue
     // use MAIL_FROM_ADDRESS in .env
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.email_verification_subject'));
+    return new Envelope(
+      from: $mailFromAddress,
+      subject: __('systemEmails.account.activation.activated', [], $this->language)
+    );
   }
 
   /**

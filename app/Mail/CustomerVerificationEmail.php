@@ -19,15 +19,16 @@ class CustomerVerificationEmail extends Mailable implements ShouldQueue
   public $user;
   public $verificationUrl;
   public $language;
+  public $locale;
 
-
-  public function __construct($user, $verificationUrl, $language)
+  public function __construct($user, $verificationUrl, ?string $language = null)
   {
     $this->user = $user;
     $this->verificationUrl = $verificationUrl;
     $this->language = $language;
+    $this->locale = $language ?? config('app.locale');
+    $this->locale($this->locale);
     $this->onQueue('emails');
-
   }
 
   /**
@@ -37,7 +38,7 @@ class CustomerVerificationEmail extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: 'Customer Verification Email');
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.account.verification.title'));
   }
 
   /**

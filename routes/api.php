@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // controllers
 use App\Http\Controllers\AuthCustomer\CustomerRegisteredController;
-//use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
+use App\Http\Controllers\AuthCustomer\CustomerEmailVerificationController;
 use App\Http\Controllers\AuthCustomer\CustomerLoginController;
 use App\Http\Controllers\AuthCustomer\CustomerAuthController;
 use App\Http\Controllers\AuthCustomer\CustomerPasswordResetController;
@@ -43,10 +43,10 @@ Route::post('/auth/activate-survivor-account', [CustomerRegisteredController::cl
   'throttle:10,1'
 );
 
-// Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
-//   ->middleware(['web', 'signed'])
-//   ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
-//   ->name('verificationApi.verify');
+Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::class, 'verify'])
+  ->middleware(['web', 'signed'])
+  ->withoutMiddleware([ApiRedirectHttp::class, EnsureUserIsNotCustomer::class])
+  ->name('verificationApi.verify');
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);

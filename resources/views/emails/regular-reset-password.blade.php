@@ -10,18 +10,18 @@ This template is used to send a reset password link to the customer.
 
 @extends('emails.layouts.systemLayout')
 
-@section('title', 'Reset Password')
+@section('title', __('systemEmails.password.reset.title'))
 
 @section('header')
     70000TONS OF METAL
 @endsection
 
 @section('content')
-    <p>Hi,</p>
-    <p>You are receiving this email because we received a password reset request for your account.</p>
+    <p>{{ __('systemEmails.common.greeting.hi') }},</p>
+    <p>{{ __('systemEmails.password.reset.intro') }}</p>
     @include('emails.components.button', [
         'url' => $resetUrl,
-        'slot' => 'Reset Password'
+        'slot' => __('systemEmails.password.reset.cta_label')
     ])
     <p>{{ __('systemEmails.email_cant_see_button') }}</p>
 
@@ -29,9 +29,8 @@ This template is used to send a reset password link to the customer.
         'url' => $resetUrl,
         'slot' => $resetUrl
     ])
-    
 @endsection
 @section('regards')
-    <p>{{ __('systemEmails.email_thanks') }}</p>
-    <p>{{ __('systemEmails.email_regards') }}</p>
+    <p>{{ __('systemEmails.common.salutation.thanks') }}</p>
+    <p>{{ __('systemEmails.common.salutation.regards') }}</p>
 @endsection
