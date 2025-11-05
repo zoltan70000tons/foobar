@@ -89,6 +89,7 @@ class EmailTemplateService
     private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger, array $extraData = [], $lang): array
     {
         // Booking and passenger details
+        $CDN_URL = env('AWS_ASSETS_CDN', 'https://d24lxyxdohunaw.cloudfront.net');
         $eventLocation = $booking->event->location ?? '';
         $cabinType = $booking->cabinType->cabin_type ?? '';
         $bookingCode = $booking->booking_code ?? '';
@@ -156,6 +157,7 @@ class EmailTemplateService
 
         // Map placeholder values
         $lookup = [
+            'LOGO_IMAGE_URL'         => $CDN_URL . '/logos/70K_Logo_Claim_BW_HiRes.jpg',
             'EVENT_LOCATION'         => $eventLocation,
             'BOOKING_CODE'           => $bookingCode,
             'PASSENGER_NAME'         => $passengerName,

@@ -11,6 +11,7 @@ import {
   Button,
   TextField,
   Autocomplete,
+  MenuItem,
   ToggleButton,
   Switch,
   FormControlLabel,
@@ -30,6 +31,8 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import PinIcon from '@mui/icons-material/Pin';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ClearIcon from '@mui/icons-material/Clear'
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+
 import {
   DateRange as DateRangeIcon,
   LocationOn as LocationOnIcon,
@@ -46,7 +49,7 @@ import {
 import { formatDate } from "@/Helpers/stringUtils";
 import { isArray } from "lodash";
 
-const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
+const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInstallmentsAllowed }) => {
   const [open, setOpen] = useState(false);
   const [upgradeCabinModalOpen, setUpgradeCabinModalOpen] = useState(false);
   const [cabinType, setCabinType] = useState(null);
@@ -67,6 +70,10 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
   const [cabinsToUpgradeTo, setCabinsToUpgradeTo] = useState([]);
   const [upgradeCabin, setUpgradeCabin] = useState(null);
   const [changeCabin, setChangeCabin] = useState(null);
+
+  const [switchPlanOpen, setSwitchPlanOpen] = useState(false);
+  const [switchingPlan, setSwitchingPlan] = useState(false);
+  const [selectedInstallments, setSelectedInstallments] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -91,6 +98,15 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     PARTIALLY_BOOKED: 1,
     AVAILABLE: 2,
   };
+
+  const isInstallments = booking?.payment_plan === 'INSTALLMENTS';
+  const currentPlanLabel = isInstallments ? 'Installments' : 'Paid in Full';
+  const nextPlanLabel = isInstallments ? 'Paid in Full' : 'Installments';
+  const maxAllowed = isInstallments ? 0 : maxInstallmentsAllowed ?? 0;
+  const bookingCreatedAt = booking?.created_at ? new Date(booking.created_at) : null;
+  const bookingAgeDays = bookingCreatedAt ? Math.floor((Date.now() - bookingCreatedAt.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const bookingOlderThanWeek = bookingAgeDays > 7;
+  console.log(bookingCreatedAt, bookingAgeDays, bookingOlderThanWeek);
 
   const fetchAvailableCabins = async () => {
     try {
@@ -257,6 +273,39 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
     );
   };
 
+  const handleSwitchClick = () => {
+    setSwitchPlanOpen(true);
+    // reset selection when opening
+    setSelectedInstallments(null);
+  }
+
+  const handleConfirmSwitchPlan = () => {
+    setSwitchingPlan(true);
+    const payload = {
+      payment_plan: isInstallments ? 'PAY_IN_FULL' : 'INSTALLMENTS',
+      booking_id: booking.id,
+      number_of_installments: isInstallments ? null : selectedInstallments,
+    };
+
+    router.post(
+      route("bookings.switchPaymentPlan", { booking_id: booking.id, event_id: event.id }),
+      payload,
+      {
+        onSuccess: () => {
+          setSwitchPlanOpen(false);
+          showSnackbar(`Payment plan changed to ${nextPlanLabel}`, "success");
+        },
+        onError: (errors) => {
+          console.error(errors);
+          showSnackbar("Error switching payment plan", "error");
+        },
+        onFinish: () => {
+          setSwitchingPlan(false);
+        }
+      }
+    );
+  };
+
   return (
     <>
       <Box>
@@ -383,6 +432,11 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
                   <Box mt={3} textAlign="right">
                     <Button variant="contained" color="primary" startIcon={<UpgradeIcon />} onClick={handleUpgradeCabin}>
                       Upgrade Cabin
+                    </Button>
+                  </Box>
+                  <Box mt={3} textAlign="right">
+                    <Button variant="contained" color="primary" startIcon={<SwapHorizIcon />} onClick={handleSwitchClick}>
+                      Switch Payment Plan
                     </Button>
                   </Box>
                 </Box>
@@ -669,6 +723,101 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={switchPlanOpen} onClose={() => !switchingPlan && setSwitchPlanOpen(false)}>
+        <DialogTitle>Switch Payment Plan</DialogTitle>
+        <DialogContent>
+          {isInstallments ? (
+            <>
+             {bookingOlderThanWeek && (
+              <>
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Please note this booking is a week old
+              </Alert>
+              <br />
+              </>
+
+            )}
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <AlertTitle>Switch to Paid in Full</AlertTitle>
+              This will <b>convert the booking to a Paid in Full plan</b>.
+              The following changes will be applied:
+              <ul>
+                <li>Add the <b>5% Pay in Full adjustment</b> to this booking.</li>
+                <li>Mark all remaining installments as <b>fully due immediately</b>.</li>
+                <li>Update outstanding balances per passenger.</li>
+              </ul>
+              <b>Note:</b> Existing payment entries will not be modified.
+            </Alert>
+            </>
+          ) : (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <AlertTitle>Switch to Installments</AlertTitle>
+              This will <b>switch the booking to an Installment Plan</b>.
+              The following changes will be applied:
+              <ul>
+                <li>Remove the <b>5% Pay in Full adjustment</b> from this booking.</li>
+                <li>Generate <b>2–5 monthly installments</b>.</li>
+                <li>Recalculate <b>outstanding amounts per passenger</b>.</li>
+              </ul>
+              <b>Note:</b> Existing payment entries will not be altered.
+            </Alert>
+          )}
+
+          <Typography variant="body2" color="text.secondary">
+            Booking: <b>{booking?.booking_code}</b>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Current Plan: <b>{currentPlanLabel}</b> → New Plan: <b>{nextPlanLabel}</b>
+          </Typography>
+          {!isInstallments && (
+            <Box mt={2}>
+              <TextField
+                select
+                fullWidth
+                label="Number of installments"
+                value={selectedInstallments ?? ''}
+                onChange={(e) => setSelectedInstallments(Number(e.target.value) || null)}
+                helperText={
+                  maxAllowed < 2
+                    ? 'Not enough time to create at least 2 installments before event cutoff'
+                    : `Select number of installments (2-${maxAllowed})`
+                }
+                disabled={maxAllowed < 2}
+              >
+                {Array.from({ length: Math.max(0, maxAllowed - 1) }, (_, i) => i + 2).map((n) => (
+                  <MenuItem key={n} value={n}>
+                    {n}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setSwitchPlanOpen(false)}
+            color="secondary"
+      variant="outlined"
+      disabled={switchingPlan}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={handleConfirmSwitchPlan}
+      color="primary"
+      variant="contained"
+      startIcon={<SwapHorizIcon />}
+      disabled={
+        switchingPlan || (!isInstallments && (maxAllowed < 2 || !selectedInstallments || selectedInstallments < 2))
+      }
+    >
+      {switchingPlan ? "Processing..." : "Confirm Switch"}
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
     </>
   );
 };

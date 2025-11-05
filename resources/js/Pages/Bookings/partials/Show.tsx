@@ -34,11 +34,12 @@ import '@/echo';
 import { ReverbLockBookingEvent } from "@/interfaces/ReverbLockBookingEvent";
 
 
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments, history}: PageProps) => {
+const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments, history, maxInstallmentsAllowed}: PageProps) => {
 
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
+  console.log('maxInstallmentAllowed', maxInstallmentsAllowed);
 
 
   const propsIsLockedBy: boolean = booking.locked_by !== null;
@@ -357,6 +358,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
           editMode={editMode}
           cabinTypes={cabinTypes}
           cabinCategories={cabinCategories}
+          maxInstallmentsAllowed={maxInstallmentsAllowed}
         />
         <Passengers booking={booking} editMode={editMode} setLoading={setLoading} />
         <AdjustmentForm booking={booking} editMode={editMode} onSubmit={handleAddAdjustment} list={adjustments} />
