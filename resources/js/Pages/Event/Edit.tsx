@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Head, useForm , usePage} from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -19,19 +19,15 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
-//import utc from 'dayjs/plugin/utc';
-//import timezone from 'dayjs/plugin/timezone';
 import ImageUpload from "@/Components/ImageUpload";
 import EventStatusSelect from "@/Components/EventStatusSelect";
 import { EventStatus } from "@/enums/EventStatusEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
-
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const Edit = ({ auth, errors}: PageProps) => {
   const { event, membership_presale_periods } = usePage().props;
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const { hasPermission } = usePermissions();
   const { data, setData, head, processing } = useForm({
     name: event.name || "",
@@ -44,8 +40,7 @@ const Edit = ({ auth, errors}: PageProps) => {
     membership_presale_periods: membership_presale_periods || [],
   });
 
-  //dayjs.extend(utc);
-  //dayjs.extend(timezone);
+  const { showSnackbar } = useSnackbar();
 
   const handleDateChange = (field: 'start_date' | 'end_date') => (newValue: Dayjs | null) => {
     setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
@@ -131,16 +126,12 @@ const Edit = ({ auth, errors}: PageProps) => {
     router.post(`/events/${event.id}`, formData, {
         forceFormData: true,
         onSuccess: (response) => {
-            setSnackbar({ open: true, severity: 'success', message: 'Event edited successfully' });
+          showSnackbar('Event edited successfully', 'success');
         },
         onError: (errors) => {
-            setSnackbar({ open: true, severity: 'error', message: 'Error editing event' });
+          showSnackbar('Error editing event', 'error');
         },
       });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleBack = () => {
@@ -363,12 +354,6 @@ const Edit = ({ auth, errors}: PageProps) => {
             </form>
           </Paper>
         )}
-         <SnackbarAlert
-        open={snackbar.open}
-        severity={snackbar.severity}
-        message={snackbar.message}
-        onClose={handleCloseSnackbar}
-      />
         </Grid>
       </Container>
     </AuthenticatedLayout>

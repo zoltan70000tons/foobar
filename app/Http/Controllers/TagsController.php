@@ -68,12 +68,27 @@ class TagsController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'color' => ['required', 'string', 'max:7'],
+            'entity' => ['required', 'string', 'max:50'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
 
         try {
-            $newTag  = Tag::create(['name' => $request->name, 'color' => $request->color, 'type' => $request->entity, 'description' => $request->description]);
-            return redirect()->route('tags.index')->with('flash', 'Tag created successfully.');
+            Tag::create([
+                'name' => $validated['name'],
+                'color' => $validated['color'],
+                'type' => $validated['entity'],
+                'description' => $validated['description'],
+            ]);
+            return redirect()
+                ->route('tags.index')
+                ->with('flash', 'Tag created successfully.');
         } catch (\Throwable $th) {
-            return redirect()->route('tags.index')->with('flash', 'Error creating tag: ' . $th->getMessage());
+            return redirect()
+                ->route('tags.index')
+                ->with('flash', 'Error creating tag: ' . $th->getMessage());
         }
     }
 
@@ -90,10 +105,19 @@ class TagsController extends Controller
         );
     }
 
-    public function update(Tag $tag)
+    public function update(Request $request, Tag $tag)
     {
-        $tag->update(request()->only(['name', 'color', 'description']));
-        return redirect()->route('tags.index')->with('flash', 'Tag updated successfully.');
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'color' => ['required', 'string', 'max:7'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $tag->update($validated);
+
+        return redirect()
+            ->route('tags.index')
+            ->with('flash', 'Tag updated successfully.');
     }
 
     public function destroy(Tag $tag)

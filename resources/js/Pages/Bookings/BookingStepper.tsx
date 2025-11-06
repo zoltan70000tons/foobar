@@ -34,9 +34,7 @@ import {
 import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { LocationEnum } from "@/enums/LocationEnum";
-import { DeckEnum } from "@/enums/DeckEnum";
 import { router } from "@inertiajs/react";
-import { FilterList } from "@mui/icons-material";
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
 import LoadingOverlay from "@/Components/LoadingOverlay";
@@ -44,6 +42,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
+import { CabinType, CabinTypeIds } from "@/enums/CabinType";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -61,7 +60,6 @@ const BookingStepper: React.FC = ({
   onBookingCreated,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [cabin, setCabin] = useState("");
   const [passenger, setPassenger] = useState({
     id: "",
     first_name: "",
@@ -127,6 +125,27 @@ const BookingStepper: React.FC = ({
   const eventId = cabinCategory?.event_id;
   const cabinTypeRef = useRef(null);
 
+  const validateGenders = (silent = false): boolean => {
+    if (!cabinType || !selectedUser) return true;
+
+    const { id } = cabinType;
+    const { gender } = selectedUser;
+
+    const invalid =
+      (id === CabinTypeIds[CabinType.SINGLE_TICKET_MALE] && gender === "F") ||
+      (id === CabinTypeIds[CabinType.SINGLE_TICKET_FEMALE] && gender === "M");
+
+    if (invalid) {
+      if (!silent) {
+        console.warn("Gender does not match cabin type");
+        showSnackbar("Gender does not match cabin type", "error");
+      }
+      return false;
+    }
+
+    return true;
+  };
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -179,18 +198,20 @@ const BookingStepper: React.FC = ({
         }
         return !!rule;
       case 1:
-        return !!(
-          passenger.first_name &&
-          passenger.last_name &&
-          passenger.address_first &&
-          passenger.city &&
-          passenger.country &&
-          passenger.email &&
-          passenger.dob &&
-          passenger.gender &&
-          passenger.payment_method &&
-          passenger.terms_n_cons &&
-          (isSingleRoom ? passenger.single_t_agreement : true)
+        return (
+          !!(
+            passenger.first_name &&
+            passenger.last_name &&
+            passenger.address_first &&
+            passenger.city &&
+            passenger.country &&
+            passenger.email &&
+            passenger.dob &&
+            passenger.gender &&
+            passenger.payment_method &&
+            passenger.terms_n_cons &&
+            (isSingleRoom ? passenger.single_t_agreement : true)
+          ) && validateGenders(true)
         );
       case 2:
         return true;
@@ -210,6 +231,8 @@ const BookingStepper: React.FC = ({
       showSnackbar("User already has a booking for the same event!", "error");
       return;
     }
+
+    validateGenders();
 
     setPassenger((prev) => ({
       ...prev,
@@ -651,7 +674,7 @@ const BookingStepper: React.FC = ({
                       />
                     )}
                     renderOption={(props, option) => (
-                      <li {...props}>
+                      <li {...props} key={option.email}>
                         <div style={{ display: "flex", alignItems: "center" }}>
                           <span>{`${option.first_name} ${option.last_name} (${option.email})`}</span>
                           {option.has_booking && (

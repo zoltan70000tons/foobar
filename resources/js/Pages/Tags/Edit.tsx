@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -13,9 +13,9 @@ import {
   Button, Chip,
 } from '@mui/material';
 import { usePermissions } from '@/Providers/PermissionContext';
-import SnackbarAlert from '@/Components/SnackbarAlert';
 import { Permissions } from '@/enums/PermissionEnum';
 import { ColorPicker, useColor } from "react-color-palette";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 type Tag = {
   name: string;
@@ -30,8 +30,8 @@ type PageProps = {
 
 const Edit = ({ auth, errors }: PageProps) => {
   const { tag }: PageProps = usePage().props;
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const { hasPermission } = usePermissions();
+  const { showSnackbar } = useSnackbar();
 
   const { data, setData, head, processing } = useForm({
     name: tag.name || '',
@@ -68,22 +68,14 @@ const Edit = ({ auth, errors }: PageProps) => {
     router.post(`/tags/${tag.id}`, formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        setSnackbar({ open: true, severity: 'success', message: 'tag edited successfully' });
+        showSnackbar('Tag edited successfully', 'success');
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join('\n');
-        setSnackbar({
-          open: true,
-          severity: 'error',
-          message: `Error editing tag\n${errorMessages}`,
-        });
+        showSnackbar(`Error editing tag\n${errorMessages}`, 'error');
       },
       onFinish: () => {},
     });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -170,15 +162,6 @@ const Edit = ({ auth, errors }: PageProps) => {
               </form>
             </Paper>
           )}
-
-          <SnackbarAlert
-            open={snackbar.open}
-            severity={snackbar.severity}
-            message={snackbar.message}
-            onClose={handleCloseSnackbar}
-            horizontal={'center'}
-            vertical={'top'}
-          />
         </Grid>
       </Container>
     </AuthenticatedLayout>

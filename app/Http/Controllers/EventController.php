@@ -201,8 +201,11 @@ class EventController extends Controller
         return redirect()->route('events.edit', $event->id)
           ->with('success', 'Event updated successfully.');
       } catch (\Exception $e) {
-        DB::rollBack();
-        return redirect()->route('events.edit', $event->id)->with('error', 'Problem updating event.');
+          DB::rollBack();
+
+          return back()->withErrors([
+              'general' => 'Problem updating event.',
+          ]);
       }
     }, $request, $event);
   }

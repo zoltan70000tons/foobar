@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -12,20 +12,17 @@ import {
   Box,
   Button,
   Typography,
-  Select,
   SelectChangeEvent,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs, { Dayjs } from "dayjs";
-//import utc from 'dayjs/plugin/utc';
-//import timezone from 'dayjs/plugin/timezone';
 import ImageUpload from "@/Components/ImageUpload";
 import { EventStatus } from "@/enums/EventStatusEnum";
 import EventStatusSelect from "@/Components/EventStatusSelect";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { DateTimePicker } from "@mui/x-date-pickers";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const Create = ({ auth, errors }: PageProps) => {
   const { membership_presale_periods } = usePage().props;
@@ -40,14 +37,7 @@ const Create = ({ auth, errors }: PageProps) => {
     membership_presale_periods: membership_presale_periods || [],
   });
 
-  //dayjs.extend(utc);
-  //dayjs.extend(timezone);
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
+  const { showSnackbar } = useSnackbar();
 
   const handleDateChange =
     (field: "start_date" | "end_date") => (newValue: Dayjs | null) => {
@@ -86,10 +76,6 @@ const Create = ({ auth, errors }: PageProps) => {
 
   const handleStatusChange = (event: SelectChangeEvent<EventStatus>) => {
     setData("status", event.target.value);
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -139,18 +125,11 @@ const Create = ({ auth, errors }: PageProps) => {
     router.post(route("events.store"), formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: "Event created successfully",
-        });
+        showSnackbar("Event created successfully", "success");
       },
       onError: (errors) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: "Error creating event",
-        });
+        const errorMessages = Object.values(errors).join("\n");
+        showSnackbar(`Error creating event\n${errorMessages}`, "error");
       },
     });
   };
@@ -359,12 +338,6 @@ const Create = ({ auth, errors }: PageProps) => {
               </Box>
             </form>
           </Paper>
-          <SnackbarAlert
-            open={snackbar.open}
-            severity={snackbar.severity}
-            message={snackbar.message}
-            onClose={handleCloseSnackbar}
-          />
         </Grid>
       </Container>
     </AuthenticatedLayout>

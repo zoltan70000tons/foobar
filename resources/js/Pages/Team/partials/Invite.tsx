@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box, Select, MenuItem, InputLabel, FormControl, Grid, CircularProgress, Alert, IconButton } from '@mui/material';
-import { useForm, Head, Link } from '@inertiajs/react';
+import {
+  TextField,
+  Button,
+  Box,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Grid,
+  CircularProgress,
+  Alert,
+  IconButton
+} from '@mui/material';
+import { useForm } from '@inertiajs/react';
 import axios from 'axios';
 import apiRoutes from '@/Helpers/ApiRoutes';
 import { Add, Remove } from '@mui/icons-material';
-import SnackbarAlert from '@/Components/SnackbarAlert';
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 export default function Invite() {
   const { data, setData, post, errors, clearErrors, setError: setFormError } = useForm({
@@ -14,7 +26,9 @@ export default function Invite() {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
+
+  const { showSnackbar } = useSnackbar();
+
   useEffect(() => {
     axios.get(apiRoutes.orgRolesUrl, { params: { org_id: '1' } })  
       .then(response => {
@@ -42,10 +56,6 @@ export default function Invite() {
     setData('invitations', newInvitations);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -66,14 +76,13 @@ export default function Invite() {
     axios.post(apiRoutes.sendInvitationsUrl, data)
       .then(response => {
         setLoading(false);
-        setSnackbar({ open: true, severity: 'success', message: response.data.message });
+        showSnackbar(response.data.message, 'success');
       })
       .catch(error => {
         setLoading(false);
-        setSnackbar({ open: true, severity: 'error', message: 'Some invitations could not be processed.' });
+        showSnackbar('Some invitations could not be processed.', 'error');
       });
   };
-  
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
@@ -96,8 +105,7 @@ export default function Invite() {
           </Grid>
           <Grid item xs={4}>
             <FormControl fullWidth margin="normal" required error={!!errors[`invitations.${index}.role`]}>
-            <InputLabel id={`role-label-${index}`} style={{ top: -6 }}>Role</InputLabel>
-
+              <InputLabel id={`role-label-${index}`} style={{ top: -6 }}>Role</InputLabel>
               <Select
                 size="small"
                 fullWidth
@@ -145,12 +153,6 @@ export default function Invite() {
         </Button>
       </Box>
       {errorMessage && <Alert severity="error" sx={{ mt: 2 }}>{errorMessage}</Alert>}
-      <SnackbarAlert
-        open={snackbar.open}
-        severity={snackbar.severity}
-        message={snackbar.message}
-        onClose={handleCloseSnackbar}
-      />
     </Box>
   );
 }

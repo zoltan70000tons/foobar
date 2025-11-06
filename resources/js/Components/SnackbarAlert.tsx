@@ -29,18 +29,19 @@ const SnackbarAlert: React.FC<SnackAlertProps> = ({
   message,
   severity = 'success',
   open,
+  snackbarKey,
   onClose,
   vertical = 'top',
   horizontal = 'center',
 }) => {
   return (
     <Snackbar
+      key={snackbarKey}
       open={open}
       autoHideDuration={5000}
       onClose={onClose}
       anchorOrigin={{ vertical, horizontal }}
       TransitionComponent={(props) => <Slide {...props} direction="down" />}
-      key={vertical + horizontal}
     >
       <Alert
         onClose={onClose}

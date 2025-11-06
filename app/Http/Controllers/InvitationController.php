@@ -27,25 +27,23 @@ class InvitationController extends Controller
             'invitations.*.email' => 'required|email',
             'invitations.*.role' => 'required|string',
         ]);
+
         if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors(),
             ], 422);
         }
 
-        $successfulInvitations = [];
         $failedInvitations = [];
     
         foreach ($request->invitations as $invitation) {
             $result = $this->teamRepository->inviteMember($invitation);
     
-            if ($result) {
-                $successfulInvitations[] = $invitation;
-            } else {
+            if (!$result) {
                 $failedInvitations[] = $invitation;
             }
         }
-    
+
         if (count($failedInvitations) > 0) {
             return response()->json([
                 'message' => 'Some invitations could not be processed.'
@@ -55,6 +53,5 @@ class InvitationController extends Controller
         return response()->json([
             'message' => 'All invitations were processed successfully.'
         ], 200);
-    
     }
 }

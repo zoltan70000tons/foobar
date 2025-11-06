@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\GlobalLog\LogActionBooking;
+use App\Enums\Gender;
+use App\Enums\CabinType;
 use App\Enums\Permissions;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\CabinCategoryInterface;
@@ -28,7 +29,6 @@ use App\Repositories\LogRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\TeamRepository;
 use App\Rules\UniqueSurvivorInEvent;
-use App\Support\GlobalLogger;
 use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -152,7 +152,31 @@ class BookingsController extends Controller
       'passenger.middle_name' => ['nullable', 'string', 'max:255'],
       'passenger.last_name' => ['required', 'string', 'max:255'],
       'passenger.dob' => ['required', 'date', 'before:today'],
-      'passenger.gender' => ['required', Rule::in(['M', 'F', 'O'])],
+      'passenger.gender' => [
+          'required',
+          Rule::in(Gender::values()),
+          function ($attribute, $value, $fail) use ($request) {
+              $cabin_number = $request->input('cabin_number');
+              $cabinCategoryId = $request->input('cabin_category_id');
+
+              $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number, $cabinCategoryId) {
+                  $query->where('cabin_number', $cabin_number)
+                      ->where('cabin_category_id', $cabinCategoryId);
+              })->first();
+
+              if (!$cabin) {
+                  return $fail('Invalid cabin selection.');
+              }
+
+              if ($cabin->cabin_type_id === CabinType::SINGLE_MALE->value && $value === Gender::FEMALE->value) {
+                  return $fail('Female passengers cannot be assigned to a Single Male cabin.');
+              }
+
+              if ($cabin->cabin_type_id === CabinType::SINGLE_FEMALE->value && $value === Gender::MALE->value) {
+                  return $fail('Male passengers cannot be assigned to a Single Female cabin.');
+              }
+          },
+      ],
       'passenger.citizenship' => ['nullable', 'string', 'max:3'],
       'passenger.survivor_number' => [
         'required',
@@ -161,7 +185,7 @@ class BookingsController extends Controller
         'exists:survivor_numbers,survivor_number',
         new UniqueSurvivorInEvent($event_id),
       ],
-      'passenger.email' => ['required', 'email', 'email'],
+      'passenger.email' => ['required', 'email'],
       'passenger.phone' => ['nullable', 'string', 'max:20'],
       'passenger.address_first' => ['required', 'string', 'max:255'],
       'passenger.address_second' => ['nullable', 'string', 'max:255'],
@@ -187,7 +211,10 @@ class BookingsController extends Controller
           if ($cabinSpec) {
             $cabin = Cabin::query()->find($cabinSpec->id);
 
-            if ($cabin && in_array($cabin->cabin_type_id, [2, 3])) {
+            if ($cabin && in_array($cabin->cabin_type_id, [
+              CabinType::SINGLE_MALE->value,
+              CabinType::SINGLE_FEMALE->value,
+            ])) {
               if (!$value) {
                 $fail('The STA must be checked when the cabin type Single');
               }

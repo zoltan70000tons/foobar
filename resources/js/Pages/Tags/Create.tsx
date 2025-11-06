@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Head, useForm } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -13,11 +13,11 @@ import {
   Button, Chip,
   Autocomplete,
 } from "@mui/material";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ColorPicker, useColor } from "react-color-palette";
 import "react-color-palette/dist/css/rcp.css";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
   console.log('Events:', events);
@@ -29,11 +29,7 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
   });
   const [color, setColor] = useColor("#121212");
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
+  const { showSnackbar } = useSnackbar();
 
   const handleChange = <TForm extends Record<string, any>>(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -43,14 +39,8 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
     setData(name as keyof TForm, value as TForm[keyof TForm]);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false, message: "" });
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    setSnackbar({ ...snackbar, message: "" });
 
     const formData = new FormData();
     for (const key in data) {
@@ -61,19 +51,11 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
     router.post(route("tags.store"), formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: "Tag created successfully",
-        });
+        showSnackbar('Tag created successfully', 'success');
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join("\n");
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: `Error creating tag\n${ errorMessages }`,
-        });
+        showSnackbar(`Error creating tag\n${ errorMessages }`, 'error');
       },
     });
   };
@@ -214,14 +196,6 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
               </form>
             </Paper>
           ) }
-          <SnackbarAlert
-            open={ snackbar.open }
-            severity={ snackbar.severity }
-            message={ snackbar.message }
-            onClose={ handleCloseSnackbar }
-            horizontal={ "center" }
-            vertical={ "top" }
-          />
         </Grid>
       </Container>
     </AuthenticatedLayout>

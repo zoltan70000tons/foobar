@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import React from "react";
+import { Head, useForm } from "@inertiajs/react";
 import { EventType, PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import {
@@ -10,7 +10,6 @@ import {
   TextField,
   Box,
   Typography,
-  Button,
   Tooltip,
   IconButton,
 } from "@mui/material";
@@ -19,9 +18,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import ImageUpload from "@/Components/ImageUpload";
-import EventStatusSelect from "@/Components/EventStatusSelect";
 import { usePermissions } from "@/Providers/PermissionContext";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
 import DashboardCard from "../Dashboard/DashboardCard";
 import RoomPreferencesIcon from '@mui/icons-material/RoomPreferences';
@@ -30,19 +27,10 @@ import { Permissions } from "@/enums/PermissionEnum";
 type PropsWithEvent = PageProps<{ event: EventType }>;
 
 const View = ({ auth, event }: PropsWithEvent) => {
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
   const { get, delete: destroy } = useForm();
   const { hasPermission } = usePermissions();
 
   console.log(event);
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
 
   const handleEdit = () => {
     get(route('events.edit', { event: event.id}));
@@ -264,12 +252,6 @@ const View = ({ auth, event }: PropsWithEvent) => {
             </Paper>
             </>
           )}
-          <SnackbarAlert
-            open={snackbar.open}
-            severity={snackbar.severity}
-            message={snackbar.message}
-            onClose={handleCloseSnackbar}
-          />
         </Grid>
       </Container>
     </AuthenticatedLayout>

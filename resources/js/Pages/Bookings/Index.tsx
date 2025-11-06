@@ -16,17 +16,15 @@ import {
   TextField,
   InputAdornment,
 } from "@mui/material";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Person } from "@mui/icons-material";
 import MuiTable from "@/Components/tables/MuiTable";
-import { TagEnum, TagEnumStyles } from "@/enums/TagEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import { Visibility, Clear } from "@mui/icons-material";
 import UserSelectorModal from "@/Components/UserSelectorModal";
 import NewBookingModal from "./NewBookingModal";
 import { PageProps } from "@/types";
-// import LoadingOverlay from "@/Components/LoadingOverlay";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -62,6 +60,18 @@ type DateRangeState = Record<
   }
 >;
 
+type Tag = {
+  id: string;
+  name: string;
+  color: string;
+  description: string;
+  type: string;
+  sort_order: number;
+  is_system: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 type Props = PageProps & {
   auth: AuthProps;
   event: Event;
@@ -71,7 +81,7 @@ type Props = PageProps & {
   errors: Errors;
   tabIndex: number;
   tab: string;
-  tags: { id: string; name: string; color: string }[];
+  tags: Tag[];
 };
 
 declare module '@inertiajs/core' {
@@ -94,25 +104,22 @@ const Index = ({
 }: Props) => {
   const { hasPermission } = usePermissions();
   const { flash } = usePage().props;
+  const { showSnackbar } = useSnackbar();
 
-  const [openDialog, setOpenDialog] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<{ id: string, username: string }[]>([]);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState<number>(tabIndex);
   const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [tableKey, setTableKey] = useState(0);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const eventId = event.id;
   const [shouldReload, setShouldReload] = useState(false);
 
-
   useEffect(() => {
-
     if (shouldReload) {
       setShouldReload(false);
       setTableKey((prev) => prev + 1);
@@ -136,20 +143,12 @@ const Index = ({
       {
         onSuccess: () => {
           const message = flash?.message || "Updated successfully.";
-          setSnackbar({ 
-            open: true,
-            severity: "success",
-            message
-          });
+          showSnackbar(message, "success");
           setOpenModal(false);
           setShouldReload(true);
         },
         onError: (errors) => {
-          setSnackbar({
-            open: true,
-            severity: "error",
-            message: "There was an error assigning the user.",
-          });
+          showSnackbar("There was an error assigning the user.", "error");
         },
         preserveScroll: true,
       },
@@ -159,20 +158,6 @@ const Index = ({
   const handleTabChange = (e: React.SyntheticEvent, newValue: number) => {
     e.preventDefault();
     setSelectedTab(newValue);
-  };
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
   };
 
   const handleViewClick = (row: Booking) => {
@@ -196,22 +181,6 @@ const Index = ({
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
-  };
-
-  const getTagStyle = (rawTag: string) => {
-    const normalized = rawTag.trim().toUpperCase();
-
-    const match = Object.values(TagEnum).find((enumValue) => enumValue.toUpperCase() === normalized);
-    if (match) {
-      return TagEnumStyles[match as TagEnum];
-    }
-
-
-    // fallback
-    return {
-      label: normalized,
-      color: "#9e9e9e",
-    };
   };
 
   const bookingColumns = useMemo(
@@ -320,7 +289,6 @@ const Index = ({
           </Box>
         ),
       },
-
       {
         header: "Being taken care of by",
         accessor: "agent_id",
@@ -350,8 +318,6 @@ const Index = ({
         accessor: "",
         disableFilter: true,
         draw: (row: Booking) => {
-
-
           return (
             <Box
               sx={{
@@ -372,8 +338,8 @@ const Index = ({
               )}
 
               <LockedByAgent
-                bookingId={row?.id}
-                currentEditingUser={row?.editingUsername}
+                bookingId={row.id}
+                currentEditingUser={row.editingUsername}
               />
             </Box>
           );
@@ -426,19 +392,21 @@ const Index = ({
       {
         header: "Next Payment",
         accesor: "installment_status",
-        draw: (row: Passenger) => (
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Chip
-              label={row.installment_status.fully_paid ? "Paid" : formatDate(row.installment_status.next_installment?.due_date)}
-              color={row.installment_status.fully_paid ? "success" : "error"}
-              size="small"
-              sx={{
-                fontSize: "0.7rem",
-                fontWeight: 500,
-              }}
-            />
-          </div>
-        ),
+        draw: (row: Passenger) => {
+          return (
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Chip
+                label={row.installment_status.fully_paid ? "Paid" : formatDate(row.installment_status.next_installment?.due_date ?? null)}
+                color={row.installment_status.fully_paid ? "success" : "error"}
+                size="small"
+                sx={{
+                  fontSize: "0.7rem",
+                  fontWeight: 500,
+                }}
+              />
+            </div>
+          );
+        },
       },
       {
         header: "Payment Method",
@@ -452,7 +420,6 @@ const Index = ({
     setInputValue("");
     setSearchTerm("");
     setKeyword("");
-    //setSelectedTags([]);
     setTableKey((prev) => prev + 1);
   };
 
@@ -471,7 +438,6 @@ const Index = ({
       dateRangeState: DateRangeState
     ) => {
       try {
-        console.log(selectedTags, 'selectedTags');
         let tags = selectedTags
           ? selectedTags.map(tag => tag.id).join(',')
           : null;
@@ -498,9 +464,6 @@ const Index = ({
     [event.id, searchTerm, selectedTab, selectedTags, selectedUsers, tableKey]
   );
 
-
-
-
   const bookingTabs = [
     {
       status: BookingStatusEnum.NEW,
@@ -523,10 +486,6 @@ const Index = ({
       icon: <CancelIcon />,
     },
   ];
-
-
-
-
 
   return (
     <AuthenticatedLayout user={auth.user} header={"Bookings"}>
@@ -560,6 +519,11 @@ const Index = ({
                   value={inputValue}
                   placeholder="Search"
                   onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleFilter();
+                    }
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -568,7 +532,7 @@ const Index = ({
                         </IconButton>
                         <IconButton
                           onClick={() => {
-                            handleFilter(inputValue);
+                            handleFilter();
                           }}
                           size="small"
                         >
@@ -625,17 +589,6 @@ const Index = ({
                   renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Tags" />}
                   sx={{ minWidth: 250 }}
                 />
-                {/* <IconButton
-                  onClick={() => {
-                    setSearchTerm(inputValue);
-                    setTableKey(prev => prev + 1);
-                  }}
-                  color="primary"
-                  size="medium"
-                  sx={{ border: '1px solid #ccc', borderRadius: 1 }}
-                >
-                  <SearchIcon />
-                </IconButton> */}
 
                 <Autocomplete
                   multiple
@@ -703,19 +656,11 @@ const Index = ({
                 subColumns={subColumns}
                 showCheckBox={false}
                 showSubCheckBox={false}
-                // showCustomFilter={true}
                 onCustomFilter={customFilter}
                 serverSidePagination={true}
                 fetchData={fetchData}
               />
             </Box>
-
-            <SnackbarAlert
-              open={snackbar.open}
-              severity={snackbar.severity}
-              message={snackbar.message}
-              onClose={handleCloseSnackbar}
-            />
 
             <UserSelectorModal
               open={openModal}
@@ -726,7 +671,6 @@ const Index = ({
             />
           </Grid>
         </Grid>
-        {/* <LoadingOverlay open={loading} /> */}
       </Container>
     </AuthenticatedLayout>
   );

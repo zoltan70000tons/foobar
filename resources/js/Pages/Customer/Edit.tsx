@@ -18,16 +18,15 @@ import {
   Tab, FormControl, InputLabel, FormHelperText,
 } from '@mui/material';
 import { usePermissions } from '@/Providers/PermissionContext';
-import SnackbarAlert from '@/Components/SnackbarAlert';
 import { Permissions } from '@/enums/PermissionEnum';
 import PhoneNumber from '@/Components/PhoneNumber';
 import Country from '@/Components/Country';
 import BookingHistory from '@/Pages/Customer/partials/BookingHistory';
-import LoadingOverlay from '@/Components/LoadingOverlay';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import iso3166 from "iso-3166-2";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 type Nullable<T> = T | null;
 
@@ -86,10 +85,9 @@ type CustomerFormData = {
 
 const Edit = ({ auth, errors }: PageProps) => {
   const { customer, bookings }: PageProps = usePage().props;
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
   const [selectedTab, setSelectedTab] = useState(0);
-  const [loading, setLoading] = useState(true);
   const { hasPermission } = usePermissions();
+  const { showSnackbar } = useSnackbar();
 
   const { data, setData, head, processing } = useForm<CustomerFormData>({
     survivor_number: customer.survivor_number.survivor_number || '',
@@ -175,7 +173,6 @@ const Edit = ({ auth, errors }: PageProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
 
     const formData = new FormData();
     for (const key in data) {
@@ -186,35 +183,18 @@ const Edit = ({ auth, errors }: PageProps) => {
     router.post(`/customers/${customer.id}/update`, formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        setSnackbar({ open: true, severity: 'success', message: 'Customer edited successfully' });
+        showSnackbar('Customer edited successfully', 'success');
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join('\n');
-        setSnackbar({
-          open: true,
-          severity: 'error',
-          message: `Error editing customer\n${errorMessages}`,
-        });
-      },
-      onFinish: () => {
-        setLoading(false);
+        showSnackbar(`Error editing customer\n${errorMessages}`, 'error');
       },
     });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
   };
-
-  useEffect(() => {
-    if (customer) {
-      setLoading(false);
-    }
-  }, [customer, bookings]);
 
   return (
     <AuthenticatedLayout user={auth.user} header={'Customers'}>
@@ -497,16 +477,7 @@ const Edit = ({ auth, errors }: PageProps) => {
           {hasPermission(Permissions.ViewBookings) && selectedTab === 1 && (
             <BookingHistory auth={auth} bookings={bookings} />
           )}
-          <SnackbarAlert
-            open={snackbar.open}
-            severity={snackbar.severity}
-            message={snackbar.message}
-            onClose={handleCloseSnackbar}
-            horizontal={'center'}
-            vertical={'top'}
-          />
         </Grid>
-        {/* <LoadingOverlay open={loading} /> */}
       </Container>
     </AuthenticatedLayout>
   );

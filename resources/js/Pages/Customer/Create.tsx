@@ -15,10 +15,10 @@ import {
   Select,
   MenuItem, FormHelperText, FormControl, InputLabel,
 } from "@mui/material";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import SnackbarAlert from "@/Components/SnackbarAlert";
 import { Permissions } from "@/enums/PermissionEnum";
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
@@ -50,6 +50,8 @@ const Create = ({ auth, errors }: PageProps) => {
     language: "",
   });
 
+  const { showSnackbar } = useSnackbar();
+
   const selectedCountry = data.country;
 
   const getStateOptions = (countryCode: string) => {
@@ -75,12 +77,6 @@ const Create = ({ auth, errors }: PageProps) => {
     setData("state", "");
   }, [selectedCountry]);
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
   const handleChange = <TForm extends Record<string, unknown>>(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -88,7 +84,6 @@ const Create = ({ auth, errors }: PageProps) => {
 
     setData(name as keyof TForm, value as TForm[keyof TForm]);
   };
-
 
   const handleSelectChange = (
     e: React.ChangeEvent<{ name?: string; value: unknown }>
@@ -106,15 +101,8 @@ const Create = ({ auth, errors }: PageProps) => {
     setData(name, value as TForm[keyof TForm]);
   };
 
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false, message: "" });
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    setSnackbar({ ...snackbar, message: "" });
 
     const formData = new FormData();
     for (const key in data) {
@@ -123,19 +111,11 @@ const Create = ({ auth, errors }: PageProps) => {
     router.post(route("customers.store"), formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: "Customer created successfully",
-        });
+        showSnackbar("Customer created successfully", "success");
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join("\n");
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: `Error creating customer\n${errorMessages}`,
-        });
+        showSnackbar(`Error creating customer\n${errorMessages}`, "error");
       },
     });
   };
@@ -423,14 +403,6 @@ const Create = ({ auth, errors }: PageProps) => {
             </form>
           </Paper>
           )}
-          <SnackbarAlert
-            open={snackbar.open}
-            severity={snackbar.severity}
-            message={snackbar.message}
-            onClose={handleCloseSnackbar}
-            horizontal={"center"}
-            vertical={"top"}
-          />
         </Grid>
       </Container>
     </AuthenticatedLayout>

@@ -6,28 +6,22 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import axios from 'axios';
-import { useTheme } from '@emotion/react';
 import LoadingButton from '@mui/lab/LoadingButton';
 import apiRoutes from '@/Helpers/ApiRoutes';
 import { useForm } from '@inertiajs/react';
-import LoadingOverlay from '@/Components/LoadingOverlay';
 import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
 import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
 
 const List = () => {
   const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newPermission, setNewPermission] = useState('');
   const [editOpen, setEditOpen] = useState(false);
   const [editPermission, setEditPermission] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
-  const theme = useTheme();
   const { hasPermission } = usePermissions();
-  const viewPermission = Permissions.ViewPermissions;
   const createPermission = Permissions.CreatePermissions;
   const updatePermission = Permissions.EditPermissions;
   const deletePermission = Permissions.DeletePermissions;
@@ -47,11 +41,9 @@ const List = () => {
           system: roles.system,
         }));
         setRows(rolesData);
-        setLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching permissions:', error);
-        setLoading(false);
       });
   }, []);
 
@@ -63,10 +55,6 @@ const List = () => {
   const handleEdit = async (permission) => {
     setEditPermission(permission);
     setEditOpen(true);
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleOpen = () => setOpen(true);
@@ -122,7 +110,6 @@ const List = () => {
       handleEditClose();
     } catch (error) {
       showSnackbar('Error updating permission', 'error');
-      //console.error("Error updating permission:", error);
       setEditLoading(false);
     }
   };
