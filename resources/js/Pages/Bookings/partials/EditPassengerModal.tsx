@@ -324,7 +324,7 @@ const EditPassengerModal = ({
                                 onClick={handlePrefill}
                                 disabled={!selectedUser || isLeadPassenger}
                             >
-                                Prefill
+                                SELECT CUSTOMER
                             </Button>
                         </Stack>
                     </Box>

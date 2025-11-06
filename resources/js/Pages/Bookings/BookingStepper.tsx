@@ -687,7 +687,7 @@ const BookingStepper: React.FC = ({
                 </Grid>
                 <Grid item>
                   <Button variant="outlined" color="secondary" onClick={handlePrefill}>
-                    PREFILL
+                    SELECT CUSTOMER
                   </Button>
                 </Grid>
               </Grid>
