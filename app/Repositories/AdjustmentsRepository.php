@@ -46,17 +46,6 @@ class AdjustmentsRepository
     }
   }
 
-  // public function getAdjustments($user, $cabin, $cabinOffset = false, $singleTicket = false){
-  //      $memberType = strtoupper($user->membership->memberType->name);
-  //      $price = $cabin->category->price;
-  //      foreach (MemberShip::cases() as $membership) {
-  //       if($memberType == $membership->value){
-  //         $result = Adjustment::where('code', '=', $membership->name)->get();
-  //       }
-
-  //     }
-  // }
-
   public function getAdjustmentsBySurvivorNumber($survivorNumber): int|null
   {
     if (!$survivorNumber) {
@@ -136,53 +125,29 @@ class AdjustmentsRepository
    */
   public function prepareAdjustmentsForBooking(Collection $adjustments, Booking $booking, bool $filterForEvent = true): Collection
   {
-    $event = $booking->event;
     $context = $this->buildContextFromBooking($booking);
 
-    if ($filterForEvent) {
-      $adjustments = $adjustments
-        ->filter(function ($adjustment) use ($event) {
-          if ($event && $event->status === 'PUBLIC' && str_starts_with($adjustment->code, 'MEMBERSHIP_')) {
-            return false;
-          }
-
-          return true;
-        })
-        ->values();
-    }
-
-    return $adjustments->map(function ($adjustment) use ($context) {
+    return $adjustments->filter(function ($adjustment) use ($context) {
       $restrictionApplies = method_exists($adjustment, 'shouldApply') ? $adjustment->shouldApply($context) : true;
-      $effectiveValue = $this->calculateEffectiveValue($adjustment, $restrictionApplies);
-
-      $adjustment->setAttribute('restriction_applies', $restrictionApplies);
-      $adjustment->setAttribute('effective_value', $effectiveValue);
-      $adjustment->value = $effectiveValue;
-
-      return $adjustment;
+      return $restrictionApplies;
     });
-  }
-
-  protected function calculateEffectiveValue(Adjustment $adjustment, bool $restrictionApplies): float
-  {
-    $value = (float) $adjustment->value;
-
-    if ($adjustment->code === 'CHOOSE_YOUR_CABIN' && $restrictionApplies) {
-      return 0.0;
-    }
-
-    return $value;
   }
 
   protected function buildContextFromBooking(Booking $booking): array
   {
     $selectedCabin = $booking->cabin;
+    $event = $booking->event;
 
     return [
       'cabin' => [
         'category_name' => $selectedCabin?->category?->category_name,
         'code' => $selectedCabin?->category?->category_code,
         'capacity' => $selectedCabin?->category?->capacity,
+      ],
+      'event' => [
+        'status' => $event->status,
+        'start_date' => $event->start_date,
+        'end_date' => $event->end_date,
       ],
     ];
   }

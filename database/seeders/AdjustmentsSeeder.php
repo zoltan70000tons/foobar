@@ -3,101 +3,154 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Adjustment;
 
 class AdjustmentsSeeder extends Seeder
 {
   public function run()
   {
-    DB::statement('TRUNCATE TABLE adjustments RESTART IDENTITY CASCADE;');
+    // Discounts
+    Adjustment::updateOrCreate(
+      ['code' => 'SINGLE_TICKET_FEE', 'event_id' => 1],
+      [
+        'type' => 'ADDON',
+        'operation' => 'FIXED',
+        'value' => 100.0,
+        'restrictions' => null,
+        'system' => true,
+      ]
+    );
 
-    DB::table('adjustments')->insert([
-      // Discounts
+    Adjustment::updateOrCreate(
+      ['code' => 'PAID_IN_FULL', 'event_id' => 1],
       [
-        'code' => 'SINGLE_TICKET_FEE',
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 5.0,
+        'restrictions' => null,
+        'system' => true,
+      ]
+    );
+
+    // Membership discounts
+    Adjustment::updateOrCreate(
+      ['code' => 'MEMBERSHIP_SILVER', 'event_id' => 1],
+      [
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 5.0,
+        'restrictions' => [
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+        ],
+        'system' => true,
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'MEMBERSHIP_SILVER_PLUS', 'event_id' => 1],
+      [
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 5.0,
+        'restrictions' => [
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+        ],
+        'system' => true,
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'MEMBERSHIP_GOLD', 'event_id' => 1],
+      [
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 10.0,
+        'restrictions' => [
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+        ],
+        'system' => true,
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'MEMBERSHIP_GOLD_PLUS', 'event_id' => 1],
+      [
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 10.0,
+        'restrictions' => [
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+        ],
+        'system' => true,
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'MEMBERSHIP_BLACK', 'event_id' => 1],
+      [
+        'type' => 'DISCOUNT',
+        'operation' => 'PERCENTAGE',
+        'value' => 10.0,
+        'restrictions' => [
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+        ],
+        'system' => true,
+      ]
+    );
+
+    // Addons
+    Adjustment::updateOrCreate(
+      ['code' => 'CHOOSE_YOUR_CABIN', 'event_id' => 1],
+      [
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 100.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      [
-        'code' => 'PAID_IN_FULL',
-        'type' => 'DISCOUNT',
-        'operation' => 'PERCENTAGE',
-        'value' => 5.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      // Membership discounts
-      [
-        'code' => 'MEMBERSHIP_SILVER',
-        'type' => 'DISCOUNT',
-        'operation' => 'PERCENTAGE',
-        'value' => 5.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      [
-        'code' => 'MEMBERSHIP_SILVER_PLUS',
-        'type' => 'DISCOUNT',
-        'operation' => 'PERCENTAGE',
-        'value' => 5.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      [
-        'code' => 'MEMBERSHIP_GOLD',
-        'type' => 'DISCOUNT',
-        'operation' => 'PERCENTAGE',
-        'value' => 10.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      [
-        'code' => 'MEMBERSHIP_GOLD_PLUS',
-        'type' => 'DISCOUNT',
-        'operation' => 'PERCENTAGE',
-        'value' => 10.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      [
-        'code' => 'MEMBERSHIP_BLACK',
-        'type' => 'DISCOUNT',
-        'operation' => 'PERCENTAGE',
-        'value' => 10.0,
-        'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
-        'system' => true,
-      ],
-      // Addons
-      [
-        'code' => 'CHOOSE_YOUR_CABIN',
-        'type' => 'ADDON',
-        'operation' => 'FIXED',
-        'value' => 100.0,
-        'restrictions' => json_encode([
+        'restrictions' => [
           'logic' => 'OR',
           'conditions' => [
             [
@@ -119,68 +172,65 @@ class AdjustmentsSeeder extends Seeder
               'value' => 'Grand Suite - 2 Bedroom',
             ],
           ],
-          'behavior' => 'APPLY_ONLY_IF_MATCHED',
-        ]),
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
+          'behavior' => 'APPLY_UNLESS_MATCHED',
+        ],
         'system' => true,
-      ],
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'CARBON_OFFSET_I', 'event_id' => 1],
       [
-        'code' => 'CARBON_OFFSET_I',
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 37.0,
         'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
         'system' => true,
-      ],
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'CARBON_OFFSET_O', 'event_id' => 1],
       [
-        'code' => 'CARBON_OFFSET_O',
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 37.0,
         'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
         'system' => true,
-      ],
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'CARBON_OFFSET_B', 'event_id' => 1],
       [
-        'code' => 'CARBON_OFFSET_B',
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 38.0,
         'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
         'system' => true,
-      ],
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'CARBON_OFFSET_S', 'event_id' => 1],
       [
-        'code' => 'CARBON_OFFSET_S',
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 49.0,
         'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
         'system' => true,
-      ],
+      ]
+    );
+
+    Adjustment::updateOrCreate(
+      ['code' => 'TAX', 'event_id' => 1],
       [
-        'code' => 'TAX',
         'type' => 'ADDON',
         'operation' => 'FIXED',
         'value' => 494.0,
         'restrictions' => null,
-        'event_id' => 1,
-        'created_at' => now(),
-        'updated_at' => now(),
         'system' => true,
-      ],
-    ]);
+      ]
+    );
   }
 }

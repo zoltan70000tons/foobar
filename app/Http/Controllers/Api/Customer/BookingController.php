@@ -120,6 +120,7 @@ class BookingController extends Controller
         'is_single_occupancy' => false,
         'tags' => [],
         'bed_config' => $bedConfig,
+        'addons' => $validated['cart']['addons'],
       ];
 
       $event = Event::find($eventId);
@@ -157,7 +158,6 @@ class BookingController extends Controller
         'single_t_agreement' => $validated['cart']['single_t_agreement'],
         // passenger allocated cost - take from calculation
         'passenger_allocated_cost' => $totalPassenger,
-        'addons' => $validated['cart']['addons'],
         'passenger_balance' => 0,
         'was_on_board' => false,
         'language' => $validated['language'] ?? 'en',

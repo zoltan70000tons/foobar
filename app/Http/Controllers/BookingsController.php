@@ -225,16 +225,6 @@ class BookingsController extends Controller
           })->first();
 
           if ($cabin) {
-            $bookingData = [
-              'event_id' => $event_id,
-              'customer_id' => $passenger_data['id'],
-              'payment_plan' => $payment_plan,
-              'number_of_installments' => $number_of_installments,
-            ];
-            $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
-            $booking = $bookingData['booking'];
-            $this->logRepository->writeOnBooking($booking->id, 'Booking created manually', $user);
-
             $adjustmentIds = [];
 
             if ($carbonOffset === true) {
@@ -292,14 +282,18 @@ class BookingsController extends Controller
                 $adjustmentIds[] = $membershipLevelAdjustmentId;
               }
             }
-
-            DB::transaction(function () use ($adjustmentIds, $booking) {
-              $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
-
-              $booking->refresh();
-
-              $this->paymentInfoService->syncAllocatedCost($booking);
-            });
+            
+            $bookingData = [
+              'event_id' => $event_id,
+              'customer_id' => $passenger_data['id'],
+              'payment_plan' => $payment_plan,
+              'number_of_installments' => $number_of_installments,
+              'addons' => array_map(fn($id) => ['id' => $id], $adjustmentIds),
+            ];
+            
+            $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
+            $booking = $bookingData['booking'];
+            $this->logRepository->writeOnBooking($booking->id, 'Booking created manually', $user);
           }
         },
         $event_id,
