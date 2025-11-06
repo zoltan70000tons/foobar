@@ -483,6 +483,7 @@ class BookingRepository implements BookingInterface
       }
       if (!$selectedCabin) {
         throw new \Exception('Cabin not found.');
+        // CC: JG Do we need the logic below?
         $availableCabins = $this->filterCabins(
           $selectedCabin->cabin_type_id,
           $selectedCabin->cabin_category_id,
@@ -509,32 +510,41 @@ class BookingRepository implements BookingInterface
       $booking->cabin_id = $selectedCabin->id;
       unset($booking->number_of_installments);
       $booking->save();
-
-      // Attach adjustments (addons and discounts) to booking
-      $adjustmentIds = collect($bookingData['addons'] ?? [])
-        ->filter(fn($addon) => isset($addon['id']) && $addon['value'] != 0) // only addons with non-zero value
-        ->map(fn($addon) => $addon['id'])
-        ->all();
-        
-      $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
-      $booking->load('adjustments');
-
-      // Create Passenger Entries
       $passenger = null;
+
       if ($passengerData) {
         $passengerData['number_of_installments'] = $bookingData['number_of_installments'] ?? null;
         $passenger = $this->passengerRepository->create($passengerData, $booking);
       }
 
-      // Create Installment Entries
       if ($passenger && $bookingData['number_of_installments'] >= 1) {
+        // get passenger who lead_passenger have true
         $passId = $passenger->id;
         $installments = (int) $bookingData['number_of_installments'];
 
         $this->paymentService->createInstallments($passId, $installments);
       }
 
-      if ($booking) {
+      $selectedCabin->loadMissing('category');
+      $booking->setRelation('cabin', $selectedCabin);
+
+      if ($passenger && $booking) {
+        $adjustmentIds = collect($passengerData['addons'] ?? [])
+          ->filter(fn($addon) => isset($addon['id']))
+          ->map(fn($addon) => $addon['id'])
+          ->all();
+
+        $membershipLevelAdjustmentId = $this->adjustmentsRepository->getAdjustmentsBySurvivorNumber(
+          $passengerData['survivor_number']
+        );
+
+        // Check if the adjustment is already in the list
+        if ($membershipLevelAdjustmentId && !in_array($membershipLevelAdjustmentId, $adjustmentIds)) {
+          $adjustmentIds[] = $membershipLevelAdjustmentId;
+        }
+
+        $this->adjustmentsRepository->attachAdjustments($adjustmentIds, $booking);
+
         if ($temporaryBookingId) {
           TemporaryReservation::find($temporaryBookingId)?->delete();
         }
