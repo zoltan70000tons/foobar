@@ -47,15 +47,17 @@ class CartController extends Controller
         'code' => $cart['cabin_code'] ?? null,
         'capacity' => $cart['cabin_capacity'] ?? null,
       ],
+      'event' => [
+        'id' => $eventId,
+        'status' => Event::find($eventId)->status,
+      ],
     ];
 
     $adjustments->transform(function ($adjustment) use ($context) {
+      // Check if adjustment has restrictions and does not pass them
       if (method_exists($adjustment, 'shouldApply') && !$adjustment->shouldApply($context)) {
+        $adjustment->value = 0; // If restrictions do not pass, set value to 0
         return $adjustment;
-      }
-
-      if ($adjustment->code === 'CHOOSE_YOUR_CABIN' && $adjustment->shouldApply($context)) {
-        $adjustment->value = 0.0;
       }
 
       return $adjustment;
@@ -74,6 +76,7 @@ class CartController extends Controller
             return $addon;
           }
 
+          // Use the value from the transformed adjustment (which may be 0 based on restrictions)
           $value = $matchedAdjustment->value;
 
           if (is_numeric($value)) {

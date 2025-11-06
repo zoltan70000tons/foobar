@@ -46,6 +46,18 @@ class AdjustmentsSeeder extends Seeder
         'created_at' => now(),
         'updated_at' => now(),
         'system' => true,
+        'restrictions' => json_encode([
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_IF_MATCHED',
+        ]),
       ],
       [
         'code' => 'MEMBERSHIP_SILVER_PLUS',
@@ -57,6 +69,18 @@ class AdjustmentsSeeder extends Seeder
         'created_at' => now(),
         'updated_at' => now(),
         'system' => true,
+        'restrictions' => json_encode([
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_IF_MATCHED',
+        ]),
       ],
       [
         'code' => 'MEMBERSHIP_GOLD',
@@ -68,6 +92,18 @@ class AdjustmentsSeeder extends Seeder
         'created_at' => now(),
         'updated_at' => now(),
         'system' => true,
+        'restrictions' => json_encode([
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_IF_MATCHED',
+        ]),
       ],
       [
         'code' => 'MEMBERSHIP_GOLD_PLUS',
@@ -79,6 +115,18 @@ class AdjustmentsSeeder extends Seeder
         'created_at' => now(),
         'updated_at' => now(),
         'system' => true,
+        'restrictions' => json_encode([
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_IF_MATCHED',
+        ]),
       ],
       [
         'code' => 'MEMBERSHIP_BLACK',
@@ -90,6 +138,18 @@ class AdjustmentsSeeder extends Seeder
         'created_at' => now(),
         'updated_at' => now(),
         'system' => true,
+        'restrictions' => json_encode([
+          'logic' => 'OR',
+          'conditions' => [
+            [
+              'model' => 'event',
+              'property' => 'status',
+              'operator' => 'equals',
+              'value' => 'PRE-SALE',
+            ],
+          ],
+          'behavior' => 'APPLY_IF_MATCHED',
+        ]),
       ],
       // Addons
       [
@@ -119,7 +179,7 @@ class AdjustmentsSeeder extends Seeder
               'value' => 'Grand Suite - 2 Bedroom',
             ],
           ],
-          'behavior' => 'APPLY_ONLY_IF_MATCHED',
+          'behavior' => 'APPLY_UNLESS_MATCHED',
         ]),
         'event_id' => 1,
         'created_at' => now(),
