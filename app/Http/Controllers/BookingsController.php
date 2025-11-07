@@ -692,7 +692,6 @@ class BookingsController extends Controller
       $categoryId = $request->get('category_id');
       $typeId = $request->get('type_id');
       $deck = $request->get('deck');
-      $balcony = $request->boolean('balcony');
       $location = $request->get('location');
       $accessible = $request->boolean('accessible');
 
@@ -710,9 +709,6 @@ class BookingsController extends Controller
       $filteredCabins = collect($cabinsData['cabins'])
         ->when($deck, function ($collection, $deck) {
           return $collection->where('deck', $deck);
-        })
-        ->when($balcony, function ($collection) {
-          return $collection->where('balcony', true);
         })
         ->when($location, function ($collection, $location) {
           return $collection->where('location', $location);
