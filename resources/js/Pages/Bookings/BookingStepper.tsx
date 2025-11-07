@@ -660,7 +660,7 @@ const BookingStepper: React.FC = ({
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Search by Email or Name"
+                        label="Search by Email, Name or Survivor Number"
                         variant="outlined"
                         InputProps={{
                           ...params.InputProps,
