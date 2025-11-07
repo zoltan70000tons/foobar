@@ -380,6 +380,9 @@ class PassengerController extends Controller
                         ->orWhereHas('detail', function ($q2) use ($query) {
                             $q2->where('first_name', 'LIKE', "%{$query}%")
                                 ->orWhere('last_name', 'LIKE', "%{$query}%");
+                        })
+                        ->orWhereHas('survivorNumber', function ($q3) use ($query) {
+                            $q3->where('survivor_number', 'LIKE', "%{$query}%");
                         });
                 })
                 ->get()

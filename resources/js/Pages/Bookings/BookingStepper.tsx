@@ -637,7 +637,7 @@ const BookingStepper: React.FC = ({
                 <Grid item xs>
                   <Autocomplete
                     options={suggestions}
-                    getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email})`}
+                    getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email ?? 'N/A'}) - SN: ${option.survivor_number}`}
                     loading={loading}
                     value={selectedUser}
                     inputValue={searchQuery}
@@ -646,7 +646,7 @@ const BookingStepper: React.FC = ({
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Search by Email or Name"
+                        label="Search by Email, Name or Survivor Number"
                         variant="outlined"
                         InputProps={{
                           ...params.InputProps,
@@ -662,7 +662,7 @@ const BookingStepper: React.FC = ({
                     renderOption={(props, option) => (
                       <li {...props} key={option.email}>
                         <div style={{ display: "flex", alignItems: "center" }}>
-                          <span>{`${option.first_name} ${option.last_name} (${option.email})`}</span>
+                          <span>{`${option.first_name} ${option.last_name} (${option.email ?? 'N/A'}) - SN: ${option.survivor_number}`}</span>
                           {option.has_booking && (
                             <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: "20px" }} />
                           )}
