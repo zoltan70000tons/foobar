@@ -137,8 +137,8 @@ const BookingStepper: React.FC = ({
 
     if (invalid) {
       if (!silent) {
-        console.warn("Gender does not match cabin type");
-        showSnackbar("Gender does not match cabin type", "error");
+        console.warn("This cabin is gender-restricted and cannot be assigned to this customer.");
+        showSnackbar("This cabin is gender-restricted and cannot be assigned to this customer.", "error");
       }
       return false;
     }
