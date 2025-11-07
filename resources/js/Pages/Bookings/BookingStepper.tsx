@@ -96,7 +96,6 @@ const BookingStepper: React.FC = ({
   const [cabinNumber, setCabinNumber] = useState(null);
   const [advancedFilters, setAdvancedFilters] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState(null);
-  const [onlyBalcony, setOnlyBalcony] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [onlyAccessible, setOnlyAccessible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -272,7 +271,7 @@ const BookingStepper: React.FC = ({
 
   useEffect(() => {
     fetchAvailableCabins();
-  }, [cabinType, cabinCategory, selectedDeck, onlyBalcony, selectedLocation, onlyAccessible, advancedFilters]);
+  }, [cabinType, cabinCategory, selectedDeck, selectedLocation, onlyAccessible, advancedFilters]);
 
   useEffect(() => {
     if (searchQuery.length < 3) {
@@ -387,7 +386,6 @@ const BookingStepper: React.FC = ({
           type_id: cabinType?.id,
           category_id: cabinCategory?.id,
           deck: selectedDeck,
-          balcony: onlyBalcony,
           location: selectedLocation,
           accessible: onlyAccessible,
         },
@@ -479,7 +477,6 @@ const BookingStepper: React.FC = ({
                         setSelectedLocation(null);
                         setAvailableDecks([]);
                         setOnlyAccessible(false);
-                        setOnlyBalcony(false);
                       }
                     }}
                     disabled={loading}
@@ -536,18 +533,6 @@ const BookingStepper: React.FC = ({
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={onlyBalcony}
-                          onChange={(e) => setOnlyBalcony(e.target.checked)}
-                          disabled={!cabinType || !cabinCategory}
-                        />
-                      }
-                      label="Only Balcony"
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={3}>
-                    <FormControlLabel
-                      control={
-                        <Switch
                           checked={onlyAccessible}
                           onChange={(e) => setOnlyAccessible(e.target.checked)}
                           disabled={!cabinType || !cabinCategory}
@@ -556,6 +541,7 @@ const BookingStepper: React.FC = ({
                       label="Only Accessible"
                     />
                   </Grid>
+                  <Grid item xs={12} md={3}></Grid>
                 </>
               )}
 
