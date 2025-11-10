@@ -144,6 +144,7 @@ class BookingRepository implements BookingInterface
       $query->where(function ($query) use ($keyword) {
         $query
           ->orWhere(DB::raw('LOWER(booking_code)'), 'like', '%' . $keyword . '%')
+          ->orWhere(DB::raw('LOWER(booking_request_id)'), 'like', '%' . $keyword . '%')
           ->orWhereHas('customer.detail', function ($query) use ($keyword) {
             $query->where(function ($query) use ($keyword) {
               $query
@@ -160,7 +161,10 @@ class BookingRepository implements BookingInterface
               $query
                 ->where(DB::raw('LOWER(first_name)'), 'like', '%' . $keyword . '%')
                 ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $keyword . '%')
-                ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%');
+                ->orWhere(DB::raw("LOWER(CONCAT(first_name, ' ', last_name))"), 'like', '%' . $keyword . '%')
+                ->orWhere(DB::raw('LOWER(email)'), 'like', '%' . $keyword . '%')
+                ->orWhere(DB::raw('phone'), 'like', '%' . $keyword . '%')
+                ->orWhere(DB::raw('survivor_number'), 'like', '%' . $keyword . '%');
             });
           })
           ->orWhereHas('agent', function ($query) use ($keyword) {
