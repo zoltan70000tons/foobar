@@ -68,3 +68,9 @@ Schedule::command('logs:create-year-partitions')
     ->yearlyOn(12, 15, '03:00') // Run on December 15th at 3:00 AM
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('survivors:sync')
+    ->dailyAt('02:00')
+    ->timezone('America/Los_Angeles')
+    ->withoutOverlapping()
+    ->runInBackground();
