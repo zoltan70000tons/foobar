@@ -333,12 +333,6 @@ class Booking extends Model
     return "{$cabin->cabin_number}{$identifier_code}-{$year}1{$categoryNumber}{$categoryLetter}";
   }
 
-  public function addNewTag()
-  {
-    $tag = createTag('NEW', 'booking', '#ff9800', 'System generated tag for new bookings');
-    $this->attachTags([$tag->id]);
-    return $tag;
-  }
 
   protected static function boot()
   {
