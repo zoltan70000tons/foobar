@@ -114,9 +114,23 @@ class PassengerObserver
                 $description,
                 [
                     'before' => $changeLog['before'],
-                    'after'  => $changeLog['after'],
+                    'after' => $changeLog['after'],
                 ]
             );
+        }
+
+        // Check if passenger has a survivor number and previous sync attempts
+        if (
+            is_null($passenger->getOriginal('survivor_number')) &&
+            $passenger->getOriginal('survivor_sync_attempts') !== 0 &&
+            (
+                $passenger->first_name !== $passenger->getOriginal('first_name') ||
+                $passenger->last_name !== $passenger->getOriginal('last_name') ||
+                $passenger->dob !== $passenger->getOriginal('dob')
+            )
+        ) {
+            // Reset sync attempts if name or DOB changed
+            $passenger->updateQuietly(['survivor_sync_attempts' => 0]);
         }
     }
 
