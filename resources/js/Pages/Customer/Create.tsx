@@ -29,7 +29,6 @@ import iso3166 from 'iso-3166-2';
 const Create = ({ auth, errors }: PageProps) => {
   const { hasPermission } = usePermissions();
   const { data, setData, post, processing } = useForm({
-    username: "",
     email: "",
     survivor_number: "",
     first_name: "",
@@ -157,16 +156,6 @@ const Create = ({ auth, errors }: PageProps) => {
                       variant="outlined"
                       value={data.email}
                       name={"email"}
-                      onChange={handleChange}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      fullWidth
-                      label="Username"
-                      variant="outlined"
-                      value={data.username}
-                      name={"username"}
                       onChange={handleChange}
                     />
                   </Grid>
