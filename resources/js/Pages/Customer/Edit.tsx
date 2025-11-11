@@ -64,7 +64,6 @@ type PageProps = {
 type CustomerFormData = {
   survivor_number: string;
   email: string;
-  username: string;
   first_name: string;
   last_name: string;
   middle_name: string;
@@ -92,7 +91,6 @@ const Edit = ({ auth, errors }: PageProps) => {
   const { data, setData, head, processing } = useForm<CustomerFormData>({
     survivor_number: customer.survivor_number.survivor_number || '',
     email: customer.email || '',
-    username: customer.username || '',
     first_name: customer.detail.first_name || '',
     last_name: customer.detail.last_name || '',
     middle_name: customer.detail.middle_name || '',
@@ -240,16 +238,6 @@ const Edit = ({ auth, errors }: PageProps) => {
                         variant="outlined"
                         value={data.email}
                         name={'email'}
-                        onChange={handleChange}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Username"
-                        variant="outlined"
-                        value={data.username}
-                        name={'username'}
                         onChange={handleChange}
                       />
                     </Grid>

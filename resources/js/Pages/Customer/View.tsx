@@ -49,7 +49,7 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
   const [comments, setComments] = useState(customer.comments || []);
 
   const handleEdit = () => {
-    get(route('customers.edit', { customer: customer.id }));
+    get(route('customers.edit', { user: customer.id }));
   }
 
   const handleBack = () => {
@@ -62,7 +62,7 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
   const handleDelete = () => {
     const confirmed = window.confirm('Are you sure you want to delete this customer?');
     if (confirmed) {
-      destroy(route('customers.destroy', { customer: customer.id }));
+      destroy(route('customers.destroy', { user: customer.id }));
     }
   };
 

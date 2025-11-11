@@ -1,5 +1,11 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+
+uses(Tests\Support\ActsAsAgent::class)->in('Feature');
+uses(DatabaseTransactions::class)->in('Feature');
+
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -45,3 +51,4 @@ function something()
 {
     // ..
 }
+

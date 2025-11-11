@@ -116,12 +116,6 @@ class CustomerRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->route('user')),
                 'not_regex:/[<>{}]/',
             ],
-            'username' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('users', 'username')->ignore($this->route('user')),
-            ],
         ];
     }
 

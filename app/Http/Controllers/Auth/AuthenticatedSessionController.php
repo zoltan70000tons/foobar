@@ -37,10 +37,14 @@ class AuthenticatedSessionController extends Controller
 
         $email = $request->get('email');
 
+        $user = $request->user(); 
+        $email = $user->email;
+    
+
         GlobalLogger::log(
             LogActionUser::LOGIN,
             'user',
-            $email,
+            $user->id,
             'User logged in',
             [
                 'before' => [

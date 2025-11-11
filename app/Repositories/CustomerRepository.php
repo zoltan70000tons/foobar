@@ -86,10 +86,6 @@ class CustomerRepository implements CustomerInterface
         $user->email = $request->input('email');
       }
 
-      if ($request->filled('username') && $request->input('username') !== $originalUserData['username']) {
-        $logUserDescription[] = "username was changed from {$originalUserData['username']} to {$request->input('username')}";
-        $user->username = $request->input('username');
-      }
 
       if ($request->filled('gender') && $request->input('gender') !== $originalDetailData['gender']) {
         $logUserDescription[] = "gender was changed from {$originalDetailData['gender']} to {$request->input('gender')}";
@@ -174,7 +170,6 @@ class CustomerRepository implements CustomerInterface
 
           $before = [
               'user' => [
-                  'username' => $originalUserData['username'],
                   'email' => $originalUserData['email'],
               ],
               'detail' => [
@@ -201,7 +196,6 @@ class CustomerRepository implements CustomerInterface
 
           $after = [
               'user' => [
-                  'username' => $user->username,
                   'email' => $user->email,
               ],
               'detail' => [
@@ -251,7 +245,6 @@ class CustomerRepository implements CustomerInterface
 
       DB::commit();
     } catch (Exception $e) {
-      Log::info($e->getMessage());
       DB::rollBack();
     }
   }
@@ -268,7 +261,6 @@ class CustomerRepository implements CustomerInterface
 
       $user = new User();
       $user->email = $request->input('email');
-      $user->username = $request->input('username');
       $user->password = bin2hex(random_bytes(16)); //Something must be saved
       $user->save();
 
@@ -308,7 +300,6 @@ class CustomerRepository implements CustomerInterface
         $after = [
             // User fields
             'email' => $user->email,
-            'username' => $user->username,
             'id' => $user->id,
 
             // User Detail

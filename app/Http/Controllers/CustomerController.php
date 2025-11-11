@@ -82,7 +82,6 @@ class CustomerController extends Controller
     try {
       return $this->withPermission([Permissions::CreateCustomers], function ($request) {
         $this->customerRepository->store($request);
-
         return redirect()->route('customers.index')->with('flash', 'Customer created successfully.');
       }, $request);
     } catch (\Exception $e) {
@@ -106,11 +105,11 @@ class CustomerController extends Controller
   {
     try {
       $this->customerService->updateCustomer($request, $user);
-
-      return redirect()->route('customers.edit', $user->id)
+      return redirect()->route('customers.edit', ['user' => $user])
         ->with('success', 'Customer updated successfully.');
     } catch (\Exception | \Throwable $e) {
-      return redirect()->route('customers.edit', $user->id)->with('error', 'Problem updating customer.');
+      $this->logException($e);
+     return redirect()->route('customers.edit', ['user' => $user])->with('error', 'Problem updating customer.');
     }
   }
 
@@ -185,7 +184,6 @@ class CustomerController extends Controller
     try {
       $customerId = request()->route('user');
       $comment = $request->input('comment');
-
       return $this->withPermission(
         [Permissions::EditCustomers],
         function ($customerId, $comment) {
@@ -194,12 +192,12 @@ class CustomerController extends Controller
 
           if ($result) {
             return redirect()
-              ->route('customers.show', ['customer' => $customerId])
+              ->route('customers.show', ['user' => $customer])
               ->with('success', 'Comment added successfully.');
           }
 
           return redirect()
-            ->route('customers.show', ['customer' => $customerId])
+            ->route('customers.show', ['user' => $customer])
             ->with('error', 'Failed to add comment.');
         },
         $customerId,
@@ -207,11 +205,11 @@ class CustomerController extends Controller
       );
     } catch (\Exception $e) {
       $this->logException($e);
-
+      $customer = $this->customerRepository->find(request()->route('user'));
       return redirect()
-        ->route('customers.show', ['customer' => $customerId])
+        ->route('customers.show', ['user' => $customer])
         ->with('error', 'Failed to add comment.');
-    }
+     }
   }
 
   public function updateTags(Request $request)
@@ -226,12 +224,12 @@ class CustomerController extends Controller
           $result = $this->customerRepository->addTags($customer, $tags);
           if ($result) {
             return redirect()
-              ->route('customers.show', ['customer' => $customerId])
+              ->route('customers.show', ['user' => $customer])
               ->with('success', 'Tags updated successfully.');
           }
 
           return redirect()
-            ->route('customers.show', ['customer' => $customerId])
+            ->route('customers.show', ['user' => $customer])
             ->with('error', 'Failed to update tags.');
         },
         $customerId,
@@ -239,9 +237,9 @@ class CustomerController extends Controller
       );
     } catch (\Exception $e) {
       $this->logException($e);
-
+      $customer = $this->customerRepository->find(request()->route('user'));
       return redirect()
-        ->route('customers.show', ['customer' => $customerId])
+        ->route('customers.show', ['user' => $customer])
         ->with('error', 'Failed to update tags.');
     }
   }
@@ -258,12 +256,12 @@ class CustomerController extends Controller
           $result = $this->customerRepository->deleteComment($customer, $commentId);
           if ($result) {
             return redirect()
-              ->route('customers.show', ['customer' => $customerId])
+              ->route('customers.show', ['user' => $customerId])
               ->with('success', 'Comment deleted successfully.');
           }
 
           return redirect()
-            ->route('customers.show', ['customer' => $customerId])
+            ->route('customers.show', ['user' => $customerId])
             ->with('error', 'Failed to delete comment.');
         },
         $customerId,
@@ -273,7 +271,7 @@ class CustomerController extends Controller
       $this->logException($e);
 
       return redirect()
-        ->route('customers.show', ['customer' => $customerId])
+        ->route('customers.show', ['user' => $customerId])
         ->with('error', 'Failed to delete comment.');
     }
   }
