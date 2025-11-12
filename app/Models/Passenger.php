@@ -66,6 +66,7 @@ class Passenger extends Authenticatable
     'was_on_board',
     'language',
     'dietary_preferences',
+    'survivor_sync_attempts',
   ];
 
   protected $appends = ['full_name', 'empty'];
