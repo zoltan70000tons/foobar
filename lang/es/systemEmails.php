@@ -89,4 +89,14 @@ return [
         'Si tienes alguna pregunta, comunícate con el Pasajero Principal de tu cabina para obtener más información.',
     ],
   ],
+  'payment' => [
+    'received' => [
+      'subject' => 'Hemos recibido tu pago para 70000TONS OF METAL',
+      'body' =>
+        'Hemos recibido tu pago de <strong>:amount</strong> para tu reserva con el código <strong>:booking_code</strong>.',
+      'next_steps' =>
+        'Recibirás un correo de Confirmación de Reserva actualizado una vez que tu pago haya sido procesado por completo.',
+      'questions' => 'Si tienes alguna pregunta o necesitas ayuda adicional, no dudes en contactarnos.',
+    ],
+  ],
 ];

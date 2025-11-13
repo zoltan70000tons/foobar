@@ -97,31 +97,39 @@ class NotificationController extends Controller
       $eventId = $booking->event_id;
 
       // Ensure all paymentData passengers belong to this booking
-      $passengerIds = collect($validated['paymentData'])->pluck('passengerId')->unique()->values();
-      $passengersInBooking = Passenger::whereIn('id', $passengerIds)->where('booking_id', $booking->id)->pluck('id');
+      $passengerIds = collect($validated['paymentData'])
+        ->pluck('passengerId')
+        ->unique()
+        ->values();
+      $passengersInBooking = Passenger::whereIn('id', $passengerIds)
+        ->where('booking_id', $booking->id)
+        ->pluck('id');
       if ($passengersInBooking->count() !== $passengerIds->count()) {
         $invalid = $passengerIds->diff($passengersInBooking);
-        return response()->json([
-          'error' => 'One or more passengers do not belong to this booking',
-          'invalidPassengerIds' => $invalid->values(),
-        ], 422);
+        return response()->json(
+          [
+            'error' => 'One or more passengers do not belong to this booking',
+            'invalidPassengerIds' => $invalid->values(),
+          ],
+          422
+        );
       }
 
       $isSplit = $passengerIds->count() > 1;
 
       foreach ($validated['paymentData'] as $row) {
-        $paxId        = (int) $row['passengerId'];
+        $paxId = (int) $row['passengerId'];
         $amountForPax = (float) $row['paymentAmount'];
 
         Payment::create([
-          'amount'           => $amountForPax,
-          'passenger_id'     => $paxId,
-          'BIP_ID'           => $validated['BIP_ID'],
-          'type'             => $validated['type'],
-          'notes'            => $validated['notes'] ?? null,
+          'amount' => $amountForPax,
+          'passenger_id' => $paxId,
+          'BIP_ID' => $validated['BIP_ID'],
+          'type' => $validated['type'],
+          'notes' => $validated['notes'] ?? null,
           'transaction_date' => $validated['transaction_date'],
-          'source'           => 'SYSTEM',
-          'splitAmount'      => $isSplit,
+          'source' => 'SYSTEM',
+          'splitAmount' => $isSplit,
         ]);
 
         // Sync passenger balance
@@ -129,12 +137,12 @@ class NotificationController extends Controller
       }
 
       // Booking log text that matches your plan and amount
-        GlobalLogger::log(
-            LogActionBooking::SYSTEM_TRANSACTION_RECEIVED,
-            'booking',
-            $booking->id,
-            "System {$validated['type']} of \${$validated['amount']} was added to booking",
-        );
+      GlobalLogger::log(
+        LogActionBooking::SYSTEM_TRANSACTION_RECEIVED,
+        'booking',
+        $booking->id,
+        "System {$validated['type']} of \${$validated['amount']} was added to booking"
+      );
 
       DB::commit();
 
@@ -163,13 +171,13 @@ class NotificationController extends Controller
 
       try {
         Mail::to($payerEmail)->send(
-          new PaymentReceived($payerName, $formattedAmount, $validated['bookingCode'])
+          new PaymentReceived($payerName, $formattedAmount, $validated['bookingCode'], $language)
         );
       } catch (\Exception $e) {
         Log::error('Failed to send payment received email', [
           'error' => $e->getMessage(),
           'booking_code' => $validated['bookingCode'],
-          'email' => $payerEmail
+          'email' => $payerEmail,
         ]);
         return response()->json(['error' => 'Payment processed but email failed to send'], 500);
       }
