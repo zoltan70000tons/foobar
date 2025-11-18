@@ -46,8 +46,6 @@ class CabinsController extends Controller
         try {
             return $this->withPermission([Permissions::ViewCabins], function () {
                 $event_id = request()->route('id');
-                $cabins = [];
-                $categories = [];
 
                 if ($event_id == 'all') {
                     $events = $this->eventRepository->getAll();
@@ -66,7 +64,6 @@ class CabinsController extends Controller
                         'categories' => $categories,
                         'event' => $event,
                         'tags' => $tags,
-
                     ]);
                 }
             }, null);

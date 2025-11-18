@@ -73,6 +73,7 @@ class TagsController extends Controller
             'color' => ['required', 'string', 'max:7'],
             'entity' => ['required', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'priority' => ['nullable', 'numeric', 'min:0', 'max:10'],
         ]);
 
         try {
@@ -81,6 +82,7 @@ class TagsController extends Controller
                 'color' => $validated['color'],
                 'type' => $validated['entity'],
                 'description' => $validated['description'],
+                'priority' => $validated['priority'],
             ]);
             return redirect()
                 ->route('tags.index')
@@ -111,6 +113,7 @@ class TagsController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'color' => ['required', 'string', 'max:7'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'priority' => ['nullable', 'numeric', 'min:0', 'max:10'],
         ]);
 
         $tag->update($validated);

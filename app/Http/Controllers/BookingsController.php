@@ -423,7 +423,7 @@ class BookingsController extends Controller
           $cabinTypes = $this->cabinRepository->getTypes();
           $adjustments = $this->adjustmentsRepository->listAdjustments();
           $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
-          $availableTags = Tag::type('booking')->orderBy('name')->get();
+          $availableTags = Tag::type('booking')->get();
           $bookingId = $booking->id;
           $history = $this->logRepository->getHistory($bookingId);
           $latestBipId = Payment::onlyTrashed()

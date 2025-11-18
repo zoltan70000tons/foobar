@@ -13,7 +13,14 @@ class Tag extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     protected $guarded = [];
-    protected $fillable = ['name','type','color','description','is_system'];
+    protected $fillable = [
+        'name',
+        'type',
+        'color',
+        'description',
+        'is_system',
+        'priority',
+    ];
     protected $casts = [
         'is_system' => 'boolean',
         'created_at' => 'datetime',
@@ -41,4 +48,13 @@ class Tag extends Model
 
     public function scopeType($q, string $type)   { return $q->where('type', $type); }
     public function scopeSearch($q, string $text) { return $q->whereRaw("search_tsv @@ plainto_tsquery('simple', ?)", [$text]); }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('defaultOrder', function ($query) {
+            $query
+                ->orderByRaw('priority DESC NULLS LAST')
+                ->orderBy('name', 'asc');
+        });
+    }
 }

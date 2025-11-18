@@ -387,7 +387,13 @@ class CustomerRepository implements CustomerInterface
 
   function getAllCustomerData(int $perPage = 50): LengthAwarePaginator
   {
-    return User::with(['detail', 'customerAddress', 'survivorNumber', 'membershipTypes', 'tags'])
+    return User::with([
+      'detail',
+      'customerAddress',
+      'survivorNumber',
+      'membershipTypes',
+      'tags',
+    ])
       ->whereIn('id', function ($query) {
         $query->select('model_has_roles.model_id')
           ->from('model_has_roles')
@@ -437,7 +443,6 @@ class CustomerRepository implements CustomerInterface
             tg.entity_id,
             json_agg(
                 json_build_object('id', t.id, 'label', t.name, 'color', t.color)
-                ORDER BY t.name
             ) AS tags_json,
             MIN(LOWER(t.name)) AS first_tag_name
         ")

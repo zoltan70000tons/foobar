@@ -10,8 +10,11 @@ import {
   Toolbar,
   TextField,
   Box,
-  Button, Chip,
+  Button,
+  Chip,
   Autocomplete,
+  Rating,
+  Typography,
 } from "@mui/material";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -25,6 +28,7 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
   const { data, setData, post, processing } = useForm({
     name: "",
     description: "",
+    priority: 0,
     //color: "",
   });
   const [color, setColor] = useColor("#121212");
@@ -159,6 +163,23 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
                         name={ "color" }
                         disabled
                         onChange={ handleChange }
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography component="legend">Priority</Typography>
+                      <Rating
+                        name="priority"
+                        value={Number(data.priority)}
+                        onChange={(event, newValue) => {
+                          const clampedValue = Math.max(0, Math.min(10, newValue ?? 0));
+                          handleChange({
+                            target: {
+                              name: 'priority',
+                              value: clampedValue,
+                            },
+                          });
+                        }}
+                        max={10}
                       />
                     </Grid>
                     <Grid item xs={ 6 }>

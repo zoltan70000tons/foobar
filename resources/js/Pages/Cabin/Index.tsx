@@ -38,7 +38,7 @@ import TagToolTip from '@/Components/TagToolTip';
 import axios from 'axios';
 import { Link, useRemember } from '@inertiajs/react';
 
-type Tag = { id: string; name: string; color: string, description: string };
+type Tag = { id: string; name: string; color: string; description: string; priority: number; };
 
 type Props = PageProps & {
   auth: AuthProps;
