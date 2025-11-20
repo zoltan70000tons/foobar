@@ -70,6 +70,6 @@ Schedule::command('logs:create-year-partitions')
     ->runInBackground();
 
 Schedule::command('survivors:sync')
-    ->everyMinute()
+    ->dailyAt("02:00")
     ->withoutOverlapping()
     ->runInBackground();
