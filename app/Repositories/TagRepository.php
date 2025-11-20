@@ -112,6 +112,7 @@ class TagRepository
             }
             $q->where('type', $type);
         }
-        return $q->orderBy('type')->orderBy('name')->get();
+
+        return $q->get();
     }
 }

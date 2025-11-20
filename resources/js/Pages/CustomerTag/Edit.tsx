@@ -21,6 +21,7 @@ type Tag = {
   name: string;
   description: string;
   color: string;
+  priority: number;
 }
 
 type PageProps = {

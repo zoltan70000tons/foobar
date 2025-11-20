@@ -196,7 +196,8 @@ class CabinRepository implements CabinInterface
             },
             'temporaryReservations' => function ($q) {
               $q->where('expires_at', '>', now());
-            }
+            },
+            'tags',
           ]);
         }
       ])

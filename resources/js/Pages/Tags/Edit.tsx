@@ -10,7 +10,10 @@ import {
   Toolbar,
   TextField,
   Box,
-  Button, Chip,
+  Button,
+  Chip,
+  Rating,
+  Typography,
 } from '@mui/material';
 import { usePermissions } from '@/Providers/PermissionContext';
 import { Permissions } from '@/enums/PermissionEnum';
@@ -22,6 +25,7 @@ type Tag = {
   description: string;
   color: string;
   type: string;
+  priority: number;
 }
 
 type PageProps = {
@@ -37,6 +41,7 @@ const Edit = ({ auth, errors }: PageProps) => {
     name: tag.name || '',
     description: tag.description || '',
     color: tag.color || '',
+    priority: tag.priority || 0,
   });
 
   const [color, setColor] = useColor(data.color);
@@ -120,6 +125,23 @@ const Edit = ({ auth, errors }: PageProps) => {
                         value={data.description}
                         name={'description'}
                         onChange={handleChange}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography component="legend">Priority</Typography>
+                      <Rating
+                        name="priority"
+                        value={Number(data.priority)}
+                        onChange={(event, newValue) => {
+                          const clampedValue = Math.max(0, Math.min(10, newValue ?? 0));
+                          handleChange({
+                            target: {
+                              name: 'priority',
+                              value: clampedValue,
+                            },
+                          });
+                        }}
+                        max={10}
                       />
                     </Grid>
                     <Grid item xs={6}>

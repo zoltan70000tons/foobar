@@ -70,6 +70,7 @@ type Tag = {
   is_system: boolean;
   created_at: string;
   updated_at: string;
+  priority: number;
 };
 
 type Props = PageProps & {

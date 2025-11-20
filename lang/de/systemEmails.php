@@ -89,4 +89,15 @@ return [
         'Falls du Fragen hast, wende dich bitte für weitere Informationen an den Lead Passenger deiner Kabine.',
     ],
   ],
+  'payment' => [
+    'received' => [
+      'subject' => 'Wir haben deine Zahlung für 70000TONS OF METAL erhalten',
+      'body' =>
+        'Wir haben deine Zahlung in Höhe von <strong>:amount</strong> für deine Buchung mit dem Code <strong>:booking_code</strong> erhalten.',
+      'next_steps' =>
+        'Du erhältst eine aktualisierte Buchungsbestätigung per E-Mail, sobald deine Zahlung vollständig verarbeitet wurde.',
+      'questions' =>
+        'Wenn du Fragen hast oder weitere Unterstützung benötigst, zögere bitte nicht, uns zu kontaktieren.',
+    ],
+  ],
 ];

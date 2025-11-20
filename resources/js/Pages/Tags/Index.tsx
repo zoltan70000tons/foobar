@@ -56,6 +56,12 @@ const Index = ({ auth, tags }: PageProps) => {
                 sortable: true,
                 //width: '17%',
             },
+          {
+            header: 'Priority',
+            accessor: 'priority',
+            sortable: true,
+            //width: '17%',
+          },
             {
                 header: 'Actions',
                 accessor: 'id',

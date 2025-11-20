@@ -20,6 +20,7 @@ type Tag = {
     color: string;
     description: string;
     name: string;
+    priority: number;
 }
 
 type Customer = {

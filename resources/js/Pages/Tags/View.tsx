@@ -11,7 +11,10 @@ import {
   Box,
   Tooltip,
   IconButton,
-  Button, Chip,
+  Button,
+  Chip,
+  Rating,
+  Typography,
 } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { ArrowBack, Delete, Edit } from "@mui/icons-material";
@@ -78,6 +81,15 @@ const View = ({ auth, tag }: PageProps) => {
                         variant="outlined"
                         value={ tag.description }
                         InputProps={{ readOnly: true }}
+                      />
+                    </Grid>
+                    <Grid item xs={ 12 }>
+                      <Typography component="legend">Priority</Typography>
+                      <Rating
+                        name="priority"
+                        value={Number(tag.priority)}
+                        max={10}
+                        disabled
                       />
                     </Grid>
                     <Grid item xs={ 8 } sx={{display: 'flex', gap: '16px', height: '72px', alignItems: 'center'}}>
