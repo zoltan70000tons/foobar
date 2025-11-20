@@ -70,7 +70,6 @@ Schedule::command('logs:create-year-partitions')
     ->runInBackground();
 
 Schedule::command('survivors:sync')
-    ->dailyAt('02:00')
-    ->timezone('America/Los_Angeles')
+    ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
