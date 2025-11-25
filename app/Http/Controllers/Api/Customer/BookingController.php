@@ -648,11 +648,8 @@ class BookingController extends Controller
   */
   public function addPassengerViaEmail(Request $request, int $eventId, string $bookingCode)
   {
-    $language = $request->input('lang', 'en');
     // that can be used to send non-customer invitations with different language
     $invitationLanguage = $request->input('invitation_language', 'en');
-
-    App::setLocale($language);
 
     $user = Auth::user();
 
