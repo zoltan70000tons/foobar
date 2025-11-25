@@ -19,9 +19,10 @@ interface ActionMenuProps {
   params:{
     row: User;
   };
+  onUpdate: () => void;
 }
 
-const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
+const ActionMenu: React.FC<ActionMenuProps> = ({ params, onUpdate }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User>(params.row);
@@ -77,7 +78,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params }) => {
       >
         <DialogTitle>Edit User Details</DialogTitle>
         <DialogContent>
-          <ViewMember selectedUser={selectedUser} />
+          <ViewMember selectedUser={selectedUser} onUpdate={onUpdate}/>
         </DialogContent>
         <DialogActions>
           <Button

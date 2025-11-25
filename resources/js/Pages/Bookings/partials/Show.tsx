@@ -39,7 +39,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
-  console.log('maxInstallmentAllowed', maxInstallmentsAllowed);
 
 
   const propsIsLockedBy: boolean = booking.locked_by !== null;
@@ -309,7 +308,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                       }}
                     >
                       <Typography variant={'body2'}>Locked by: </Typography>
-                      <Chip icon={<FaceIcon />} color="warning" label={isLockedBy} />
+                      <Chip icon={<FaceIcon />} color="warning" label={isLockedBy} />z
                     </Box>
                   )}
                 </Box>

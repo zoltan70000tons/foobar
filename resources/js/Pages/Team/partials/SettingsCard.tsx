@@ -1,19 +1,21 @@
 import React, { ChangeEvent, useState } from "react";
-import {Card,CardContent, Divider, Grid, Button, Tabs, Tab, Box} from "@mui/material";
+import { Card, CardContent, Divider, Grid, Button, Tabs, Tab, Box, Typography, Chip, Avatar } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import CustomInput from "./CustomInput";
 import AssignRoles from "@/Components/AssignRoles";
 import { usePermissions } from "@/Providers/PermissionContext";
-import { useForm, usePage } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import { useTeamData } from "@/Hooks/useTeamData";
 import CustomSelect from "./CustomSelect";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import { User } from "@/interfaces/User";
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 interface SettingsCardProps {
   user: User;
+  onUpdate: () => void;
 }
 
 interface TForm {
@@ -29,9 +31,9 @@ interface TForm {
   gender: string;
 }
 
-const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
+const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
   const { hasPermission } = usePermissions();
-  const { fetchData } = useTeamData();
+  const fetchData = onUpdate;
   const { errors } = usePage().props;
   const { showSnackbar } = useSnackbar();
 
@@ -49,6 +51,26 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
   });
 
   const canEdit = hasPermission(Permissions.EditUsers);
+
+  const { data: colorData, setData: setColorData, put: putColor, processing: processingColor } = useForm({
+    badge: {
+      text: user?.detail?.avatar?.badge?.text || "#FFFFFF",
+      background: user?.detail?.avatar?.badge?.background || "#007BFF",
+    },
+  });
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    putColor(route("users.avatar.update", user.id), {
+      preserveScroll: true,
+      onSuccess: () => {
+      showSnackbar("Colors updated!", "success");
+      fetchData();
+    },onError: () => showSnackbar("Error saving colors", "error"),
+    });
+  };
+
+
 
   const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -74,7 +96,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
           fetchData();
         },
         onError: () => {
-           showSnackbar('Error updating user',"error");
+          showSnackbar('Error updating user', "error");
         },
       });
     }
@@ -84,7 +106,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
     setData('gender', value.target.value);
   }
   return (
-    <Card variant="outlined" sx={{marginTop:'0.02rem', borderRadius:0, height: "99.9%", width: "100%",background:"#383838", border:"2px solid grey", borderLeft:{ xs: '2px solid grey', md: 'none'}, marginBottom:"1rem" }}>
+    <Card variant="outlined" sx={{ marginTop: '0.02rem', borderRadius: 0, height: "99.9%", width: "100%", background: "#383838", border: "2px solid grey", borderLeft: { xs: '2px solid grey', md: 'none' }, marginBottom: "1rem" }}>
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
@@ -93,6 +115,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
       >
         <Tab value="one" label="Account" />
         <Tab value="two" label="Manage Role" />
+        {canEdit && (<Tab value="three" label="Styling" />)}
       </Tabs>
       <Divider />
 
@@ -138,18 +161,18 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
 
                 <Grid item xs={12} md={4}>
                   <Box>
-                    <PhoneNumber value={data?.phone_number || "" }
-                      sx={{width:'100%', maxHeight:'20px'}}
+                    <PhoneNumber value={data?.phone_number || ""}
+                      sx={{ width: '100%', maxHeight: '20px' }}
                       onChange={(value) => handleChangePhone(value)}
                       forceDialCode={true}
                       error={errors.phone_number}
                       helperText={errors.phone_number}
                     />
-                  </Box> 
+                  </Box>
                 </Grid>
 
                 {/* Third row */}
-                <Grid item xs={12} md={4} sx={{mt:{xs:4, md:0}}}>
+                <Grid item xs={12} md={4} sx={{ mt: { xs: 4, md: 0 } }}>
                   <CustomInput
                     name="email"
                     value={data?.email || ""}
@@ -166,7 +189,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
                     title="Gender"
                     onChange={handleGenderChange}
                     options={[
-                      { value: '', label: '-'},
+                      { value: '', label: '-' },
                       { value: 'M', label: 'Male' },
                       { value: 'F', label: 'Female' },
 
@@ -202,6 +225,75 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user }) => {
           <AssignRoles userId={user.id} orgId={user.organization_id} />
         </CardContent>
       )}
+
+      {tabValue === "three" && canEdit && (
+        <CardContent sx={{ p: 3, maxHeight: { md: "40vh" }, textAlign: { xs: "center", md: "start" }, width: "100%" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            <Typography variant="h6">Badge Color</Typography>
+
+            <Box sx={{ display: "flex", gap: 3 }}>
+              <Box>
+                <Typography variant="body2">Background color</Typography>
+                <input
+                  type="color"
+                  value={colorData.badge.background}
+                  onChange={(e) =>
+                    setColorData("badge", {
+                      ...colorData.badge,
+                      background: e.target.value,
+                    })
+                  }
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="body2">Text color</Typography>
+                <input
+                  type="color"
+                  value={colorData.badge.text}
+                  onChange={(e) =>
+                    setColorData("badge", {
+                      ...colorData.badge,
+                      text: e.target.value,
+                    })
+                  }
+                />
+              </Box>
+            </Box>
+
+
+            <Box sx={{ display: "inline-flex", gap: 0.5 }}>
+              <Chip
+                label={user.user_name || "Agent Name"}
+                avatar={user?.user_name ? <Avatar>{user.user_name[0]}</Avatar> : <PersonAddIcon />}
+                size="small"
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: colorData.badge.text,
+                  backgroundColor: colorData.badge.background,
+                  "& .MuiChip-label": { px: 1.5 },
+                }}
+              />
+
+
+            </Box>
+
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 3, alignSelf: "flex-start" }}
+              onClick={handleSave}
+            >
+              Save Colors
+            </Button>
+            <p style={{ visibility: "hidden" }}>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Veniam dicta fugit adipisci quisquam sed soluta quo, dolor dolores quasi eveniet animi beatae ducimus, itaque est doloribus pariatur cupiditate atque? Sit?</p>
+          </Box>
+        </CardContent>
+      )}
+
+
+
 
     </Card>
   );

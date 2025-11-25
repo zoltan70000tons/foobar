@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Container, Stack, Chip, Box } from "@mui/material";
+import { Container, Stack, Chip, Box, Avatar } from "@mui/material";
 import { DataGrid, GridColDef, GridFilterModel, GridFilterItem, GridRowModel, GridFilterInputMultipleValue, GridFilterInputValue } from "@mui/x-data-grid";
 import { useTeamData } from "@/Hooks/useTeamData";
 import ActionMenu from "./ActionMenu";
-import { PanoramaSharp } from "@mui/icons-material";
-// import LoadingOverlay from '@/Components/LoadingOverlay';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 interface User {
   id: number;
+  user_name: string;
   name: string;
   email: string;
   status: string;
@@ -21,9 +21,6 @@ const List: React.FC = () => {
     items: [],
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // Custom filtering logic for the "name" column
   const applyCustomFilter = (row: GridRowModel, filter: GridFilterItem) => {
@@ -118,6 +115,27 @@ const List: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
+      field: "user_name",
+      headerName: "Username",
+      width: 200,
+      renderCell: (params) => (
+        <Stack direction="row" alignItems="center" height="100%">
+           <Chip
+                label={params.row.user_name || "Agent Name"}
+                avatar={params.row?.user_name ? <Avatar>{params.row.user_name[0]}</Avatar> : <PersonAddIcon />}
+                size="small"
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: params.row.detail?.avatar?.badge?.text,
+                  backgroundColor: params.row.detail?.avatar?.badge?.background,
+                  "& .MuiChip-label": { px: 1.5 },
+                }}
+              /> 
+        </Stack>
+      ),
+    },
+    {
       field: "fullName",
       headerName: "Name",
       width: 200,
@@ -152,7 +170,7 @@ const List: React.FC = () => {
       field: "actions",
       headerName: "Actions",
       width: 150,
-      renderCell: (params) => <Box display="flex" justifyContent="flex-end" width="100%"><ActionMenu params={params} /></Box>,
+      renderCell: (params) => <Box display="flex" justifyContent="flex-end" width="100%"><ActionMenu params={params} onUpdate={fetchData} /></Box>,
     },
   ];
 

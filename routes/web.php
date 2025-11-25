@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Events\TestMessageSent;
 use App\Http\Controllers\AdjustmentsController;
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FeeController;
 use App\Http\Controllers\PassengerController;
@@ -84,7 +85,7 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::apiResource('/organizations', OrganizationController::class);
   Route::get('/organization/permissions', 'App\Http\Controllers\Permission\PermissionController@listByOrganization');
   Route::get('/organization/roles', 'App\Http\Controllers\Role\RoleController@listByOrganization');
-  Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization');
+  Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization')->name('team.members.list');
   Route::put('/organization/members/updateRole', 'App\Http\Controllers\Api\TeamController@updateMemberRoles')->name(
     'member.updateRole'
   );
@@ -320,6 +321,9 @@ Route::resource('/tags', TagsController::class)
         'update' => 'tags.update',
         'destroy' => 'tags.destroy'
     ]);
+
+Route::put('/users/{user}/avatar', [AgentController::class, 'update'])
+        ->name('users.avatar.update');
 
 Route::match(['GET', 'POST'], '/logs', [LogsController::class, 'index'])
     ->name('logs.index');

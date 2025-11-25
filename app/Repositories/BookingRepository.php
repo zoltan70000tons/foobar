@@ -292,7 +292,9 @@ class BookingRepository implements BookingInterface
       'lockedBy.agent',
       'comments',
       'comments.user',
-      'agent',
+      'agent.detail' => function ($q) {
+        $q->select('id','user_id' ,'avatar');
+        },
       'tags',
     ])
       ->where('booking_code', '=', $code)

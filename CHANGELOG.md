@@ -5,6 +5,20 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-11-24
+
+### Added
+- Custom badge color management for agent users
+- Badge color selection interface in user settings
+- Avatar and badge color fields in user details
+- Command to fix user details avatar data
+- Badge color display in booking history and team member lists
+
+### Changed
+- Enhanced user selector modal to display agent badge colors
+- Updated team member view to show custom badge colors
+- Modified user details model to support avatar customization
+
 ## [1.1.0] - 2025-11-18
 
 ### Added

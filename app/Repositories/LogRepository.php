@@ -6,6 +6,7 @@ use App\Interfaces\LogInterface;
 use App\Models\Booking;
 use App\Models\Comment;
 use App\Models\Log;
+use App\Models\UserDetail;
 use Illuminate\Support\Collection;
 
 class LogRepository implements LogInterface
@@ -50,6 +51,7 @@ class LogRepository implements LogInterface
                 'booking_request_id' => $this->booking->booking_request_id,
                 'actor'      => $l->actor ? [
                     'username' => $l->actor->username,
+                    'avatar'   => $l->actor->detail ? $l->actor->detail->avatar : $this->noDetail(),
                 ] : null,
                 'created_at' => $l->created_at,
                 'raw'        => $l->only(['id','related_id','related_type']), 
@@ -75,6 +77,7 @@ class LogRepository implements LogInterface
                 'booking_request_id' => $this->booking->booking_request_id,
                 'actor'      => $c->user ? [
                     'username' => $c->user->username,
+                    'avatar'   => $c->user->detail ? $c->user->detail->avatar : $this->noDetail(),
                 ] : null,
                 'created_at' => $c->created_at,
                 'raw'        => $c->only(['id','booking_id']), 
@@ -89,5 +92,17 @@ class LogRepository implements LogInterface
     public function writeOnBooking($id, $action, $user)
     {
        
+    }
+
+
+    private function noDetail(){
+        $payload = [
+                        'image' => null,
+                        'badge' => [
+                            'text' => UserDetail::DEFAULT_BADGE_TEXT,
+                            'background' => UserDetail::DEFAULT_BADGE_BACKGROUND,
+                        ],
+        ];
+        return $payload;
     }
 }

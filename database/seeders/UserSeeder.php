@@ -64,7 +64,7 @@ class UserSeeder extends Seeder
 
     //Seed users without 'Customer' role
     foreach (range(1, 20) as $index) {
-      $name =  'TEST ' . $this->faker->firstname;
+      $name =  'TEST_' . $this->faker->firstname;
       $user = User::updateOrCreate(
         ['email' => Str::lower($name) . '@70000tons.com'],
         [

@@ -7,8 +7,6 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Traits\JsonResponseTrait;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -117,7 +115,6 @@ class TeamRepository implements TeamRepositoryInterface
         try {
             $email = $data['email'];
             $user = User::where('email', $email)->first();
-
             if ($user) {
                 $user_id = $user->id;
                 $detailsData = /*array_filter(*/[

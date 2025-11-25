@@ -9,9 +9,10 @@ import { User } from "@/interfaces/User";
 
 interface ViewMemberProps {
   selectedUser: User;
+  onUpdate: () => void;
 }
 
-export default function ViewMember({ selectedUser }: ViewMemberProps) {
+export default function ViewMember({ selectedUser , onUpdate}: ViewMemberProps) {
   return (
     <Grid
       container
@@ -22,7 +23,7 @@ export default function ViewMember({ selectedUser }: ViewMemberProps) {
         <ProfileCard user={selectedUser}></ProfileCard>
       </Grid>
       <Grid item md={9} sx={{ width: '100%', paddingTop:'0px'}}>
-        <SettingsCard user={selectedUser}  ></SettingsCard>
+        <SettingsCard user={selectedUser}  onUpdate={onUpdate}></SettingsCard>
       </Grid>
     </Grid>
   );

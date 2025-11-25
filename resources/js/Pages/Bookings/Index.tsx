@@ -127,6 +127,7 @@ const Index = ({
     }
   }, [shouldReload]);
 
+
   const handleOpenModal = (userId: string | null, booking_id: string | null) => {
     setSelectedBookingId(booking_id);
     setSelectedUserId(userId);
@@ -300,17 +301,19 @@ const Index = ({
           const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <PersonAddIcon />;
 
           return (
-            <Box sx={{ display: "inline-flex", gap: 0.5 }}>
               <Chip
-                key={row.id}
                 label={label}
                 avatar={avatar}
-                onClick={() => handleClick(agent?.id.toString() || '', row.booking_code)}
                 size="small"
-                color={agent?.username ? "primary" : "default"}
-                sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
+                onClick={() => handleClick(agent?.id.toString() || '', row.booking_code)}
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  color: agent?.detail?.avatar?.badge?.text,
+                  backgroundColor: agent?.detail?.avatar?.badge?.background,
+                  "& .MuiChip-label": { px: 1.5 },
+                }}
               />
-            </Box>
           );
         },
       },
@@ -442,7 +445,6 @@ const Index = ({
         let tags = selectedTags
           ? selectedTags.map(tag => tag.id).join(',')
           : null;
-        console.log(tags, 'tags');
         const res = await axios.get(route("bookings.data", { id: event.id }), {
           params: {
             page: page + 1,

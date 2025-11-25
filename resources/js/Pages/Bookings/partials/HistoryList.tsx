@@ -18,6 +18,7 @@ import {
   Accordion,
   Grid,
   AccordionDetails,
+  Avatar,
 } from "@mui/material";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import HistoryIcon from "@mui/icons-material/History";
@@ -26,7 +27,9 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 const formatDateTime = (iso?: string | Date) =>
   iso ? new Date(iso).toLocaleString() : "";
 
-type Actor = { username: string; avatar?: string; id?: number | string };
+type Avatar = {image: string | null; badge: { text: string; background: string }};
+
+type Actor = { username: string; id?: number | string, avatar?: Avatar | null };
 
 type HistoryItem = {
   id: string;
@@ -107,7 +110,7 @@ const CopyBtn: React.FC<{ value?: string }> = ({ value }) => {
 
 
 
-const HistoryList = ({ history = [] as HistoryItem[]  }) => {
+const HistoryList = ({ history = [] as HistoryItem[] }) => {
   const [openItem, setOpenItem] = useState<HistoryItem | null>(null);
 
   if (!Array.isArray(history) || history.length === 0) {
@@ -140,6 +143,7 @@ const HistoryList = ({ history = [] as HistoryItem[]  }) => {
           const username = item?.actor?.username ?? "System";
           const text = primaryText(item);
           const showMoreVisible = !!text && text.trim().length > 0;
+          console.log(item.actor, 'actor');
 
           return (
             <Box key={item.id}>
@@ -178,7 +182,19 @@ const HistoryList = ({ history = [] as HistoryItem[]  }) => {
                       </Box>
 
                       <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        @{username}
+                        <Chip
+                          label={item?.actor?.username ?? "System"}
+                          avatar={item?.actor?.username ? <Avatar>{item?.actor?.username[0]}</Avatar> : <Avatar>A</Avatar>}
+                          size="small"
+                          sx={{
+                            fontSize: "0.75rem",
+                            fontWeight: 500,
+                            color: item?.actor?.avatar?.badge?.text,
+                            textTransform: 'capitalize',
+                            backgroundColor: item?.actor?.avatar?.badge?.background,
+                            "& .MuiChip-label": { px: 1.5 },
+                          }}
+                        />
                       </Typography>
 
                       <Box sx={{ flexGrow: 1 }} />
@@ -200,12 +216,12 @@ const HistoryList = ({ history = [] as HistoryItem[]  }) => {
                         sx={
                           isComment
                             ? {
-                                display: "-webkit-box",
-                                WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 1,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }
+                              display: "-webkit-box",
+                              WebkitBoxOrient: "vertical",
+                              WebkitLineClamp: 1,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }
                             : undefined
                         }
                       >
@@ -243,20 +259,18 @@ const HistoryList = ({ history = [] as HistoryItem[]  }) => {
             <Stack spacing={1.5}>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Chip
+                  label={openItem?.actor?.username ?? "System"}
+                  avatar={openItem?.actor?.username ? <Avatar>{openItem?.actor?.username[0]}</Avatar> : <Avatar>A</Avatar>}
                   size="small"
-                  color={openItem.type === "comment" ? "secondary" : "primary"}
-                  icon={
-                    openItem.type === "comment" ? (
-                      <ChatBubbleOutlineIcon sx={{ fontSize: 16 }} />
-                    ) : (
-                      <HistoryIcon sx={{ fontSize: 16 }} />
-                    )
-                  }
-                  label={openItem.type.toUpperCase()}
+                  sx={{
+                    fontSize: "0.75rem",
+                    textTransform: 'capitalize',
+                    fontWeight: 500,
+                    color: openItem?.actor?.avatar?.badge?.text,
+                    backgroundColor: openItem?.actor?.avatar?.badge?.background,
+                    "& .MuiChip-label": { px: 1.5 },
+                  }}
                 />
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  @{openItem?.actor?.username ?? "System"}
-                </Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <Tooltip title={new Date(openItem.created_at).toISOString()}>
                   <Typography variant="caption" sx={{ opacity: 0.7 }}>
@@ -328,15 +342,8 @@ const HistoryList = ({ history = [] as HistoryItem[]  }) => {
                         sx={{ mb: 1 }}
                       >
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip
-                            size="small"
-                            color={
-                              openItem.type === "comment" ? "secondary" : "primary"
-                            }
-                            label={summary.action}
-                          />
                           <Typography variant="subtitle2">
-                            @{summary.who}
+                            Booking Data:
                           </Typography>
                         </Stack>
                         <Typography variant="caption" sx={{ opacity: 0.75 }}>
@@ -398,7 +405,7 @@ const HistoryList = ({ history = [] as HistoryItem[]  }) => {
 
                       </Grid>
                     </Box>
-                   
+
 
                     {parsed && (
                       <Box

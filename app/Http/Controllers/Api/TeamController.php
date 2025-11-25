@@ -46,8 +46,6 @@ class TeamController extends Controller
                 $user_id = $request->user_id;
                 $roles = $request->roles;
                 $data = $this->teamRepositoryInterface->updateMemberRoles($user_id, $this->organizationId, $roles);
-                //return Redirect::route('teams')->with('success', 'Role updated.');
-                //return to_route();
                 return redirect()->back()->with('success', 'User role updated successfully');
             }, $request);
         } catch (\Exception $e) {
@@ -63,7 +61,7 @@ class TeamController extends Controller
                 return Redirect::route('teams', ['slug' => '70K'])->with('message', 'User updated successfully');
             }, $request);
         } catch (\Exception $ex) {
-            return Inertia::render('Team', [
+            return Inertia::render('Teams', [
                 'errors' => $ex->getMessage()
             ]);
         }

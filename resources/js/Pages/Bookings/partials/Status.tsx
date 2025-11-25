@@ -63,6 +63,7 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
   const leadPassenger = booking.passengers.find((p) => p.lead_passenger);
   const defaultLanguage = leadPassenger?.language || "en"; // fallback to 'en' if not found
 
+
   const handleUpdate = () => {
     router.post(
       route('bookings.updateCode', { id: event.id }),
@@ -173,7 +174,7 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
                   <EditIcon />
                 </IconButton> */}
                 </Box>
-                <Chip
+                {/* <Chip
                   key={booking.id}
                   label={label}
                   avatar={avatar}
@@ -186,7 +187,22 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
                     alignSelf: 'flex-start',
                     width: 'auto',
                   }}
-                />
+                /> */}
+                <Chip
+                    label={label}
+                    avatar={avatar}
+                    size="small"
+                    //onClick={() => handleClick(agent?.id.toString() || '', row.booking_code)}
+                    sx={{
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      color: agent?.detail?.avatar?.badge?.text,
+                      backgroundColor: agent?.detail?.avatar?.badge?.background,
+                      "& .MuiChip-label": { px: 1.5 },
+                      alignSelf: 'flex-start',
+                      width: "auto",
+                      }}
+                    />
               </Grid>
               <Grid item xs={12} md={6}>
                 <Grid container spacing={2} alignItems="center">
