@@ -677,7 +677,7 @@ const EditPassengerModal = ({
                                             disabled={disabledByDesign}
                                         />
                                     }
-                                    label="Confirmed booking email"
+                                    label="Confirmed Booking Email"
                                 />
                             </Grid>
                             <Grid item xs={12} md={2}>
@@ -690,7 +690,7 @@ const EditPassengerModal = ({
                                             disabled={disabledByDesign}
                                         />
                                     }
-                                    label="Terms"
+                                    label="Terms & Conditions"
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -753,7 +753,7 @@ const EditPassengerModal = ({
                                             disabled={disabledByDesign}
                                         />
                                     }
-                                    label="CCA"
+                                    label="Cabin Conf Acceptance"
                                 />
                             </Grid>
                             <Grid item xs={12} md={2}>
@@ -766,7 +766,7 @@ const EditPassengerModal = ({
                                             disabled={disabledByDesign}
                                         />
                                     }
-                                    label="WOB"
+                                    label="Was On Board"
                                 />
                             </Grid>
                         </Grid>
