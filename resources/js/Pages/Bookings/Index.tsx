@@ -292,7 +292,7 @@ const Index = ({
         ),
       },
       {
-        header: "Being taken care of by",
+        header: "Managed by",
         accessor: "agent_id",
         sortable: true,
         draw: (row: Booking) => {
