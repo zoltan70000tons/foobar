@@ -42,8 +42,7 @@ trait CabinFilter
             if ($cabinTypeId == 1) {
                 $query->where('status', StatusCabin::AVAILABLE);
             } else {
-                $query->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED,
-                    StatusCabin::RESERVED]);
+                $query->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED]);
             }
         }
       })
