@@ -47,7 +47,7 @@ class AddPassengerDirectly extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: "{$this->fromWho} - invites you to join their cabin!");
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.invitation.request.headline', ['from' => $this->fromWho, 'event' => $this->event->name]));
   }
 
   /**

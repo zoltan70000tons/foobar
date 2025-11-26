@@ -28,11 +28,11 @@ class AddPassenger extends Mailable implements ShouldQueue
    */
   public function __construct($getSignedURL, $bookingCode, $fromWho, $toWho, $event, $toWhoLang = null)
   {
-    $fontEndUrl = config('app.frontend_url');
+    $frontEndUrl = config('app.frontend_url');
     // trim api prefix
     $getSignedURL = substr($getSignedURL, 4);
 
-    $this->getSignedURL = $fontEndUrl . $toWhoLang . $getSignedURL;
+    $this->getSignedURL = $frontEndUrl . '/' . $toWhoLang . $getSignedURL;
     $this->bookingCode = $bookingCode;
 
     $this->fromWho = $fromWho;
@@ -51,7 +51,7 @@ class AddPassenger extends Mailable implements ShouldQueue
   {
     $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: "{$this->fromWho} - invites you to join their cabin!");
+    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.invitation.request.headline', ['from' => $this->fromWho, 'event' => $this->event->name]));
   }
 
   /**
