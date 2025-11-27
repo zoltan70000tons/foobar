@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Customer\PricingMatrixController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\BookingsController;
@@ -269,6 +270,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/generate-booking-pdf', [EmailController::class, 'generateBookingPDF'])->name('email.generateBookingPDF');
   Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
   Route::get('/generate-invoice-pdf', [EmailController::class, 'generateInvoicePDF'])->name('email.generateInvoicePDF');
+
+    Route::get('/pricing-matrix/{eventId}', [PricingMatrixController::class, 'show2'])->name('show.cabin-matrix');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');
