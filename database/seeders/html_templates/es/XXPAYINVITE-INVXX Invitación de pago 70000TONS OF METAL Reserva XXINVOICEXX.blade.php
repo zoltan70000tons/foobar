@@ -96,10 +96,9 @@ style="color: rgb(102, 102,
                                             padding-bottom: 15px;">¡Nos
                                             alegra tenerte a bordo de
                                             70000TONS OF METAL!<br>
+                                            {OUTSTANDING_RECIPIENTS}
                                             <br>
-                                            Tu próximo pago se deberá
-                                            realizar para el
-                                            {NEXT_INSTALLMENT_DATE}.<br>
+                                            {NEXT_INSTALLMENT_TEXT}<br>
                                             <br>
                                             Puedes encontrar tu Confirmación de Reserva adjunta. Para poder ver este documento 
                                             será necesario tener instalado "Adobe Reader", el cual podrás descargar aquí:<br />
@@ -168,7 +167,7 @@ style="display:
                                               text-decoration:
                                               underline;">Instrucciones
                                               de Pago:</strong><br>
-                                            <br>
+{OUTSTANDING_PASSENGER_BREAKDOWN}
                                             <strong>IMPORTANTE:</strong><span>&nbsp;</span>recuerda
 
                                             siempre<span>&nbsp;</span><strong>ingresar

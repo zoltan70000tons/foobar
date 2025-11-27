@@ -28,7 +28,6 @@ class EmailTemplateService
     {
         $booking = Booking::with(['cabin.cabinSpec', 'passengers'])->find($bookingId);
         $lang = DB::table('email_templates')->where('id', $templateId)->value('lang');
-
         if (!$booking) return '';
 
         switch ($lang) {
@@ -122,11 +121,16 @@ class EmailTemplateService
 
         $capacity = $booking->cabin->cabinSpec->capacity ?? '';
 
-
         // Installment data
         $paymentData = $passenger->installment_status ?? [];
         $nextInstallmentAmountRaw = $paymentData['next_installment']['amount_due'] ?? '';
         $nextInstallmentDateRaw = $paymentData['next_installment']['due_date'] ?? '';
+        $isOverdue = false;
+        if (!empty($nextInstallmentDateRaw)) {
+            $dueDate = \Carbon\Carbon::parse($nextInstallmentDateRaw);
+            $today   = \Carbon\Carbon::today();
+            $isOverdue = $dueDate->lt($today); 
+        }
 
         // Adjust totals if on installment plan
         if ($paymentPlan === 'INSTALLMENTS') {
@@ -137,23 +141,25 @@ class EmailTemplateService
             }
         }
 
+
         // Pre-format values
-        $formattedGrandTotal = formatCurrency($grandTotal, true) ?? '';
-        $formattedIndividualTotal = formatCurrency($individualTotal, true) ?? '';
-        $formattedNextInstallmentAmount = formatCurrency($nextInstallmentAmountRaw) ?? '';
-        $formattedNextInstallmentDate = formatDate($nextInstallmentDateRaw) ?? '';
+        $formattedGrandTotal = formatCurrency($grandTotal, true, $lang) ?? '';
+        $formattedIndividualTotal = formatCurrency($individualTotal, true, $lang) ?? '';
+        $formattedNextInstallmentAmount = formatCurrency($nextInstallmentAmountRaw, false, $lang) ?? '';
+        $formattedNextInstallmentDate = formatDate($nextInstallmentDateRaw, false, $lang) ?? '';
         $passengerName = capitalizeWords($passenger->first_name ?? '');
-        $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true) ?? '';
-        $formatRefund = formatCurrency($refunds, true) ?? '';
-        $formatedTicketPrice = formatCurrency($booking->cabin->category->price, true) ?? '';
+        $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true,$lang) ?? '';
+        $formatRefund = formatCurrency($refunds, true, $lang) ?? '';
+        $formatedTicketPrice = formatCurrency($booking->cabin->category->price, true,$lang) ?? '';
         $firstChunk = 10000;
         $firstChunkFormated = '';
         $secondChunkFormated = '';
         if ($grandTotal > $firstChunk) {
-            $firstChunkFormated = formatCurrency($firstChunk, true);
-            $secondChunkFormated = formatCurrency($grandTotal - $firstChunk,true); 
+            $firstChunkFormated = formatCurrency($firstChunk, true,$lang);
+            $secondChunkFormated = formatCurrency($grandTotal - $firstChunk, true, $lang);
         }
 
+        
 
         // Map placeholder values
         $lookup = [
@@ -177,6 +183,14 @@ class EmailTemplateService
             'CAPACITY'              => $capacity,
             'TICKET_PRICE'          => $formatedTicketPrice,
         ];
+            $outs = $this->buildOutstandingPlaceholders($booking, $lang);
+            $nextInstallmentText = $isOverdue
+                ? __('passengers.due_immediately')
+                : __('passengers.next_installment', ['date' => $formattedNextInstallmentDate]);
+            
+            $lookup['OUTSTANDING_RECIPIENTS'] = $outs['OUTSTANDING_RECIPIENTS'];
+            $lookup['OUTSTANDING_PASSENGER_BREAKDOWN'] = $outs['OUTSTANDING_PASSENGER_BREAKDOWN'];
+            $lookup['NEXT_INSTALLMENT_TEXT'] = $nextInstallmentText;
 
         // Build the output values
         $values = [];
@@ -206,16 +220,11 @@ class EmailTemplateService
     public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac = false, $emailContent = '', $subject = ''): bool
     {
         try {
-            Log::info('Booking pdf sendMail: ' . json_encode($bookingPdf));
-            Log::info('Event Image sendmail: ' . json_encode($eventImage));
-            Log::info('TicketContract sendMail: ' . json_encode($ticketContrac));
-
             $to = $booking->passengers
                 ->pluck('email')
                 ->filter(fn($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
                 ->values()
                 ->toArray();
-            Log::info('sending email to: ' . json_encode($to));
             SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac, $emailContent, $subject, $to)
                 ->onQueue('emails');
 
@@ -284,4 +293,72 @@ class EmailTemplateService
 
         return $templates[$language][$template] ?? null;
     }
+
+    private function buildOutstandingPlaceholders(Booking $booking, string $lang): array
+    {
+        $passengers = $booking->passengers;
+        $outstanding = [];
+        $breakdownLines = [];
+        $event = $booking->event;
+        $title = $event->name ?? '';
+
+        foreach ($passengers as $p) {
+
+            $status = $p->getInstallmentStatus();
+            $next = $status['next_installment'] ?? null;
+            if (!$next || ($status['fully_paid'] ?? false)) {
+                continue;
+            }
+
+            $amountDue = $next['amount_due'] ?? 0;
+            if ($amountDue <= 0) continue;
+
+            $dueDate = isset($next['due_date']) ? new \DateTime($next['due_date']) : null;
+            $today   = new \DateTime('today');
+
+            if ($dueDate === null || $dueDate > $today) {
+                continue;
+            }
+
+            $name = trim($p->first_name);
+            if (!$name) {
+                $name = getPassengerOrderLabel($p->passenger_order, $lang, 'words');
+            } else {
+                $name = ucfirst(strtolower(trim($p->first_name)));
+            }
+
+            $outstanding[] = $name;
+            $formatted = 'USD '.formatCurrency($amountDue, true, $lang);
+            $dueLabel = __('passengers.due');
+            $breakdownLines[] = "{$name}, {$dueLabel} {$formatted}";
+        }
+
+        if (count($outstanding) === 0) {
+            return [
+                'OUTSTANDING_RECIPIENTS' => '',
+                'OUTSTANDING_PASSENGER_BREAKDOWN' => '',
+            ];
+        }
+
+        if (count($outstanding) === 1) {
+            $recipientText = $outstanding[0];
+        } else {
+            $and = $lang === 'es' ? ' y ' : ($lang === 'de' ? ' en ' : ' and ');
+            $last = array_pop($outstanding);
+            $recipientText = implode(', ', $outstanding) . " {$and} {$last}";
+        }
+
+        $prefix = __('passengers.no_payment_prefix');
+        $for = __('passengers.for', ['title' => $title]);
+
+        $recipientsOutput = "{$prefix} {$recipientText} {$for}.";
+        $breakdownLines =implode("<br>", $breakdownLines);
+        $breakdownLines = $breakdownLines.'<br /><br />';
+
+        return [
+            'OUTSTANDING_RECIPIENTS' => $recipientsOutput,
+            'OUTSTANDING_PASSENGER_BREAKDOWN' => $breakdownLines,
+        ];
+    }
+
 }

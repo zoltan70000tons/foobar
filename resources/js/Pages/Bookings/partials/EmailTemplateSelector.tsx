@@ -77,6 +77,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+  const [templateInputValue, setTemplateInputValue] = useState<string>("");
 
   const { hasPermission } = usePermissions();
 
@@ -84,8 +85,20 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
 
   const { showSnackbar } = useSnackbar();
 
+  const handleLangChange = (value: string) => {
+   setLang(value.toLowerCase().trim());
+  };
+
   const fetchTemplates = useCallback(async () => {
     setIsSending(true);
+    setSelectedTemplate(null);
+    setTemplateInputValue("");
+    setSelectedPassenger(null);
+    setSubject("");
+    setAttachments([]);
+    setPdfFile(null);
+    setImgFile(null);
+    setInvoiceFile(null);
     try {
       const response = await fetch(`/get-email-templates?lang=${lang}`);
       const data = await response.json();
@@ -106,6 +119,13 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
     } finally {
       setIsSending(false);
     }
+    if (window.unlayer) {
+    try {
+      window.unlayer.loadDesign({ body: { rows: [] } });
+    } catch (e) {
+      console.debug("unlayer reset failed", e);
+    }
+  }
   }, [lang]);
 
   useEffect(() => {
@@ -295,12 +315,18 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       <Grid container spacing={2}>
         {/* Language Selector */}
         <Grid item xs={12} md={1}>
-          <Select size="small" value={lang} onChange={(e) => setLang(e.target.value)} fullWidth disabled={canSendEmail}>
-            {LANGUAGES.map((language) => (
-              <MenuItem key={language} value={language} >
-                {language.toUpperCase()}
-              </MenuItem>
-            ))}
+          <Select
+              size="small"
+              value={lang}
+              onChange={(e) => handleLangChange(e.target.value)}
+              fullWidth
+              disabled={canSendEmail}
+            >
+              {LANGUAGES.map((language) => (
+                <MenuItem key={language} value={language}>
+                  {language.toUpperCase()}
+                </MenuItem>
+              ))}
           </Select>
         </Grid>
 
@@ -309,29 +335,34 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
           {isSending ? (
             <CircularProgress />
           ) : (
-            <Autocomplete
-              size="small"
-              disabled={canSendEmail}
-              options={templates}
-              value={selectedTemplate}
-              onChange={(event, newValue) => {
-                if (newValue) {
+             <Autocomplete
+                size="small"
+                disabled={canSendEmail}
+                options={templates}
+                value={selectedTemplate}
+                inputValue={templateInputValue}
+                onInputChange={(e, newInput) => setTemplateInputValue(newInput)}
+                onChange={(event, newValue) => {
                   setSelectedTemplate(newValue);
-                  setSubject(newValue.subject + " " + booking.booking_code);
-                }
-              }}
-              getOptionLabel={(option) => option.name || ""}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              disableClearable
-              freeSolo={false}
-              renderOption={(props, option) => (
-                <li {...props} style={{ display: "flex", alignItems: "center" }}>
-                  {option.priority === 1 && <span style={{ marginRight: 6 }}>⭐</span>}
-                  {option.name}
-                </li>
-              )}
-              renderInput={(params) => <TextField {...params} label="Select an email template" fullWidth />}
-            />
+                  if (newValue) {
+                    setSubject(newValue.subject + " " + booking.booking_code);
+                    setTemplateInputValue(newValue.name);
+                  } else {
+                    setSubject("");
+                  }
+                }}
+                getOptionLabel={(option) => option?.name || ""}
+                isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                clearOnEscape
+                renderOption={(props, option) => (
+                  <li {...props} style={{ display: "flex", alignItems: "center" }}>
+                    {option.priority === 1 && <span style={{ marginRight: 6 }}>⭐</span>}
+                    {option.name}
+                  </li>
+                )}
+                renderInput={(params) => <TextField {...params} label="Select an email template" fullWidth />}
+              />
+
           )}
         </Grid>
         <Grid item xs={4}>

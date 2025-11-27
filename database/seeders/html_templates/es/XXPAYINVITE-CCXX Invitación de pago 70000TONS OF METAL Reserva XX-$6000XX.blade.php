@@ -96,10 +96,9 @@ style="color: rgb(102, 102,
                                             padding-bottom: 15px;">¡Nos
                                             alegra tenerte a bordo de
                                             70000TONS OF METAL!<br>
+                                            {OUTSTANDING_RECIPIENTS}
                                             <br>
-                                            Tu próximo pago a plazos se
-                                            deberá realizar para el
-                                            {NEXT_INSTALLMENT_DATE}.<br>
+                                            {NEXT_INSTALLMENT_TEXT}<br>
                                             <br>
                                             Puedes encontrar tu Confirmación de Reserva adjunta. Para poder ver este documento 
                                             será necesario tener instalado "Adobe Reader", el cual podrás descargar aquí:<br />
@@ -169,9 +168,7 @@ style="display:
                                               underline;">Instrucciones
                                               de Pago:</strong><br>
                                             <br>
-                                            {PASSENGER_NAME}, tu pago individual
-                                            es de: USD {INDIVIDUAL_TOTAL}<br>
-                                            <br>
+                                            {OUTSTANDING_PASSENGER_BREAKDOWN}
                                             Si pagas por todos los
                                             pasajeros en la reserva, el
                                             total a pagar es: 

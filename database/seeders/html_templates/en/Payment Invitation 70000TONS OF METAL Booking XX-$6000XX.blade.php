@@ -96,9 +96,9 @@ style="color: rgb(102, 102,
                                             are happy to have you on
                                             board for 70000TONS OF
                                             METAL!<br>
+                                            {OUTSTANDING_RECIPIENTS}
                                             <br>
-                                            Your next installment
-                                            payment is due on {NEXT_INSTALLMENT_DATE}.<br>
+                                            {NEXT_INSTALLMENT_TEXT}<br>
                                             <br>
                                             Please find your Booking
                                             Confirmation. To view
@@ -167,10 +167,8 @@ style="display:
                                               text-decoration:
                                               underline;">Payment
                                               Instructions:</strong><br>
-                                            If each passenger will be
-                                            paying separately, your
-                                            individual payments will be:
-                                            {INDIVIDUAL_TOTAL}<br>
+
+{OUTSTANDING_PASSENGER_BREAKDOWN}
                                             If you pay for all
                                             passengers at once, your
                                             total amount due is:

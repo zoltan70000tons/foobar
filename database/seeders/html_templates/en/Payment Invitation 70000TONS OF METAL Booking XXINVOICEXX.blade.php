@@ -96,17 +96,16 @@ style="color: rgb(102, 102,
                                             are happy to have you on
                                             board for 70000TONS OF
                                             METAL!<br>
+{OUTSTANDING_RECIPIENTS}
                                             <br>
-                                            Your next installment
-                                            payment is due on {NEXT_INSTALLMENT_DATE}.<br>
+                                            {NEXT_INSTALLMENT_TEXT}<br>
                                             <br>
                                             Please find your Booking
                                             Confirmation attached. To view
                                             these document you will
                                             need "Adobe Reader", which
                                             you can download here:<br>
-                                            <br>
-                                            <a
+                                            <br><a
 href="https://get.adobe.com/reader"
 style="color: rgb(0, 0,
                                               238); text-decoration:
@@ -167,6 +166,7 @@ style="display:
                                               text-decoration:
                                               underline;">Payment
                                               Instructions:</strong><br>
+{OUTSTANDING_PASSENGER_BREAKDOWN}
                                             IMPORTANT: Please remember
                                             to<span>&nbsp;</span><strong>always
 

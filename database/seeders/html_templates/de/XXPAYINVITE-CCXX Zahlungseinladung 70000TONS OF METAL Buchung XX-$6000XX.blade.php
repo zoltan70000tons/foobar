@@ -97,9 +97,10 @@ style="color: rgb(102, 102,
                                             freuen uns darauf, Dich an
                                             Bord von 70000TONS OF METAL
                                             begrüßen zu können!<br>
+                                            {OUTSTANDING_RECIPIENTS}
                                             <br>
-                                            Deine Zahlung ist am
-                                            {NEXT_INSTALLMENT_DATE} fällig.<br>
+                                            {NEXT_INSTALLMENT_TEXT}
+                                            <br>
                                             <br>
                                             Im Anhang findest Du Deine 
                                             Buchungsbestätigung. Um dieses 
@@ -186,9 +187,7 @@ style="display:
                                               text-decoration:
                                               underline;">Zahlungsangaben:</strong><br>
                                             <br>
-                                            {PASSENGER_NAME}, Deine fällige
-                                            Zahlung beträgt: USD
-                                            {INDIVIDUAL_TOTAL}<br>
+                                            {OUTSTANDING_PASSENGER_BREAKDOWN}
                                             Wenn Du für alle
                                             Mitreisenden zusammen
                                             bezahlst, ist der
