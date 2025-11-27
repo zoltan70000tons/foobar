@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
+use App\Enums\CabinType;
+use App\Enums\StatusCabin;
 use Log;
 
 class CabinController extends Controller
@@ -126,6 +128,100 @@ class CabinController extends Controller
     }
 
     return response()->json($cabinTypes);
+  }
+
+  /**
+   * Returns a list of cabin categories that are available for upgrade,
+   * along with the price difference. Only returns categories that have at least one
+   * available cabin matching the specified criteria.
+   *
+   * @param Request $request HTTP request containing:
+   *   - event_id (int, required): The event ID to search upgrades for
+   *   - cabin_capacity (int, required): Current cabin capacity (e.g., 2, 3, 4)
+   *   - cabin_category_type (string, required): Current category type 
+   *     Options: "Interior", "Ocean View", "Balcony", "Suite"
+   *   - cabin_price (float, required): Current cabin price (used to calculate price difference)
+   *   - cabin_type (string, required): Type of cabin
+   *     Options: "private-cabin", "single-male", "single-female"
+   *
+   * @return 
+   *   - All cabin category fields (id, event_id, price, etc.)
+   *   - price_difference (float): Additional cost to upgrade
+   *   - cabin_type_id (int): The cabin type ID
+   *   - original_cabin_code (string): The category code being upgraded from
+   */
+  public function showUpgrades(Request $request)
+  {
+    $eventId = $request->get('event_id');
+    $cabinCapacity = $request->get('cabin_capacity');
+    $cabinCategoryType = $request->get('cabin_category_type');
+    $cabinCategoryCode = $request->get('cabin_code');
+    $cabinPrice = $request->get('cabin_price');
+    $cabinTypeId = $request->get('cabin_type') === 'private-cabin'
+      ? CabinType::PRIVATE_CABIN : ($request->get('cabin_type') === 'single-male'
+        ? CabinType::SINGLE_MALE : CabinType::SINGLE_FEMALE
+      );
+
+    // Upgrade mapping based on cabin category type
+    $upgradeMap = [
+      "Interior"   => ["Ocean View", "Balcony"],
+      "Ocean View" => ["Balcony", "Suite"],
+      "Balcony"    => ["Suite", "Suite"],
+      "Suite"      => ["Suite"],
+    ];
+
+    $upgrades = $upgradeMap[$cabinCategoryType] ?? [];
+
+    if (empty($upgrades)) {
+      return response()->json(['error' => 'No upgrades available for this cabin type'], 400);
+    }
+
+    // Single optimized query to get all potential upgrade cabins
+    $upgradeResults = collect();
+    $currentMinPrice = $cabinPrice;
+
+    foreach ($upgrades as $upgradeType) {
+      // Get Upgrade option following the criteria below:
+      // - Category Capacity must be the same as current cabin
+      // - Price must be greater than current category price
+      // - Contains at least one cabin that: 
+      // -- Matches the same Cabin type (Private Cabin / Singles Male / Single Female)
+      // -- Status is AVAILABLE or PARTIALLY_BOOKED
+      // -- Exclude cabins with active temporary reservations
+      $categoryUpgradeOption = CabinCategory::where('event_id', $eventId)
+        ->whereHas('spec', function ($q) use ($cabinCapacity, $upgradeType) {
+          $q->where('capacity', $cabinCapacity)
+            ->where('category_type', $upgradeType);
+        })
+        ->where('price', '>', $currentMinPrice)
+        ->whereHas('cabins', function ($q) use ($cabinTypeId) {
+          $q->where('cabin_type_id', $cabinTypeId)
+            ->whereIn('status', [StatusCabin::AVAILABLE, StatusCabin::PARTIALLY_BOOKED])
+            ->whereDoesntHave('temporaryReservations', function ($subQ) {
+              $subQ->where('expires_at', '>', now());
+            });
+        })
+        ->orderBy('price')
+        ->first();
+
+      if (!$categoryUpgradeOption) continue;
+
+      // Update currentMinPrice for next iteration to avoid selecting the same category
+      $currentMinPrice = $categoryUpgradeOption->price;
+
+      // Remove the spec relationship to avoid duplication
+      $categoryUpgradeOption->makeHidden('spec');
+
+      // Add additional fields for frontend use
+      $categoryUpgradeOption->price_difference = $categoryUpgradeOption->price - $cabinPrice;
+      $categoryUpgradeOption->cabin_type_id = $cabinTypeId;
+      $categoryUpgradeOption->original_cabin_code = $cabinCategoryCode;
+
+      // Return qualifying upgrade cabin category + price with current adjustments
+      $upgradeResults->push($categoryUpgradeOption);
+    }
+
+    return response()->json($upgradeResults);
   }
 
   /*

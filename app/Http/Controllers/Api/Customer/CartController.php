@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use App\Models\Adjustment;
 use App\Helpers\PriceCalculation;
@@ -17,6 +18,7 @@ use App\Enums\ErrorCode;
 
 class CartController extends Controller
 {
+    use CabinFilter;
   /*
   |--------------------------------------------------------------------------
   | GET CART DATA
@@ -25,7 +27,7 @@ class CartController extends Controller
   |  Private function for re-use the cart data
   |
   */
-  private function getCartData($eventId)
+  private function getCartData(Request $request, $eventId)
   {
     // Fetch cart from session
     $user = Auth::user();
@@ -134,7 +136,7 @@ class CartController extends Controller
   | Index
   |--------------------------------------------------------------------------
   |
-  |  Fetch the cart data from db 
+  |  Fetch the cart data from db
   |
   */
   public function index(Request $request, $eventId)
@@ -156,7 +158,7 @@ class CartController extends Controller
   public function store(Request $request, ReservationService $reservationService)
   {
     $validated = $request->validate([
-      'event_id' => 'required|string',
+      'event_id' => 'required|numeric',
       'cabin_type' => 'nullable|string',
       'addons' => 'nullable|array',
       'step' => 'required|integer',
@@ -181,6 +183,8 @@ class CartController extends Controller
       'price_extras' => 'nullable|numeric|sometimes',
       'tax' => 'nullable|numeric|sometimes',
       'lower_bed_type_2' => 'nullable|string',
+      'show_upgrade_offer' =>  'nullable|boolean',
+      'original_cabin_code' => 'nullable|string',
     ]);
 
     $user = Auth::user();
@@ -237,6 +241,7 @@ class CartController extends Controller
       'cabin_price' => null,
       'cabin_capacity' => null,
       'cabin_category' => null,
+      'upgrade_cabin' => null,
     ];
 
     $mergedCart = array_merge($defaultCart, $validated);
@@ -291,7 +296,7 @@ class CartController extends Controller
   public function update(Request $request, ReservationService $reservationService)
   {
     $validated = $request->validate([
-      'event_id' => 'required|string',
+      'event_id' => 'required|numeric',
       'cabin_type' => 'nullable|string',
       'addons' => 'nullable|array',
       'step' => 'required|integer',
@@ -316,6 +321,8 @@ class CartController extends Controller
       'price_extras' => 'nullable|numeric|sometimes',
       'tax' => 'nullable|numeric|sometimes',
       'lower_bed_type_2' => 'nullable|string',
+      'show_upgrade_offer' => 'nullable|boolean|sometimes',
+      'original_cabin_code' => 'nullable|string|sometimes',
     ]);
 
     $user = Auth::user();

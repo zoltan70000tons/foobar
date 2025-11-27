@@ -76,6 +76,9 @@ Route::post('/check-booking/logout', [CheckBookingController::class, 'logout'])-
 // --- GET CABINS ---
 Route::get('/cabins/types', [CabinController::class, 'showTypes']);
 
+// --- GET CABINS TO UPGRADE ---
+Route::post('/cabins/upgrade', [CabinController::class, 'showUpgrades']);
+
 // --- GET SINGLE CATEGORY ---
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
 

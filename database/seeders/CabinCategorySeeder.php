@@ -76,6 +76,7 @@ class CabinCategorySeeder extends Seeder
                 'display_order'   => $record['display_order'],
                 'cruise_id'       => $cruiseId,
                 'category_number' => $categoryNumber,
+                'high_roller'     => $record['high_roller'] == 'TRUE' ? true : false,
             ];
 
             $cabinCategorySpec = CabinCategorySpec::updateOrCreate([

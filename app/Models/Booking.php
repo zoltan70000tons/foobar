@@ -32,6 +32,11 @@ class Booking extends Model
     'bed_config',
     'agent_id',
     'status',
+    'cart_snapshot',
+  ];
+
+  protected $casts = [
+    'cart_snapshot' => 'array',
   ];
 
   public function getMorphableIdAttribute(): string

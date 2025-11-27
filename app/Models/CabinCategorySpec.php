@@ -26,11 +26,13 @@ class CabinCategorySpec extends Model
     'display_order',
     'cruise_id',
     'category_number',
+    'high_roller',
   ];
 
   protected $casts = [
     'description' => 'array', // JSONB field for multi-language descriptions
     'images' => 'array', // JSON field for storing images as an array
+    'high_roller' => 'boolean',
   ];
 
   // Relations

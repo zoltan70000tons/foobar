@@ -121,6 +121,7 @@ class BookingController extends Controller
         'tags' => [],
         'bed_config' => $bedConfig,
         'addons' => $validated['cart']['addons'],
+        'cart_snapshot' => $cart,
       ];
 
       $event = Event::find($eventId);

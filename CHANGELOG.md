@@ -5,6 +5,17 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-11-26
+
+### Added
+- Upgradable Categories Controller
+- High Roller flag to cabin category spec to identify free perks
+- Cart snapshot field to bookings table for tracking additional data
+
+### Changed
+- Modified cabin and cart controllers for upgrade flow improvements
+- Cabin category seeder to support new High Roller Fields
+
 ## [1.2.2] - 2025-11-25
 
 ### Fixed
@@ -80,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This project uses [Semantic Versioning](https://semver.org/):
 - **MAJOR** version for incompatible API changes
-- **MINOR** version for backwards-compatible functionality additions  
+- **MINOR** version for backwards-compatible functionality additions
 - **PATCH** version for backwards-compatible bug fixes
 
 ## Categories

@@ -31,6 +31,7 @@ class BookingObserver
                     'status' => $booking->status,
                     'bed_config' => $booking->bed_config,
                     'agent_id' => $booking->agent_id ?? null,
+                    'cart_snapshot' => $booking->cart_snapshot ?? null,
                 ],
             ]
         );

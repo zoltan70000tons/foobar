@@ -34,6 +34,7 @@ class CabinCategory extends Model
     'iframe',
     'title',
     'capacity_description',
+    'high_roller',
   ];
 
   // Relations
@@ -103,6 +104,11 @@ class CabinCategory extends Model
   protected function iframe(): Attribute
   {
     return Attribute::get(fn() => $this->spec->iframe ?? null);
+  }
+  
+  protected function highRoller(): Attribute
+  {
+    return Attribute::get(fn() => $this->spec->high_roller ?? false);
   }
 
   // ==========================
