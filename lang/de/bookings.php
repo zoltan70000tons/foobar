@@ -1,7 +1,8 @@
 <?php
 
 return [
-  'booking_create_no_mail' => 'Die Buchung wurde erfolgreich generiert, die Bestätigungsemail konnte jedoch nicht verschickt werden.',
+  'booking_create_no_mail' =>
+    'Die Buchung wurde erfolgreich generiert, die Bestätigungsemail konnte jedoch nicht verschickt werden.',
   'booking_create_success' => 'Buchung erfolgreich generiert.',
   'error_creating_booking' => 'Beim Erstellen der Buchung ist ein Fehler aufgetreten.',
   'single_occupancy' => 'Diese Buchung ist eine Einzelbelegung.',
@@ -12,7 +13,8 @@ return [
   'seat_reset' => 'Fehler beim zurücksetzen des Passagierbettes.',
   'email_already_taken' => 'Ein Passagier mit dieser eMailadresse wurde bereits dieser Buchung hinzugefügt.',
   'pax_order_taken' => 'Die Reihenfolge der Passagiere ist bereits aufgenommen.',
-  'use_manual_add_instead' => 'Diese eMailadresse wurde bereits in einer anderen Buchung benutzt, nutze stattdessen die manuelle Eingabe.',
+  'use_manual_add_instead' =>
+    'Diese eMailadresse wurde bereits in einer anderen Buchung benutzt, nutze stattdessen die manuelle Eingabe.',
   'email_already_invited' => 'Ein Passagier mit dieser eMailadresse wurde bereits zu dieser Buchung eingeladen.',
   'slot_taken' => 'Der Passagier-Slot ist bereits vergeben.',
   'invite_sent' => 'Einladung wurde versendet.',
@@ -25,4 +27,5 @@ return [
   'empty_seat_added' => 'Leeres Bett hinzugefügt.',
   'empty_seat_removed' => 'Leeres Bett entfernt',
   'already_has_booking' => 'Du hast bereits eine bestehende Buchung für dieses Event.',
+  'already_has_invitation' => 'Du wurdest bereits zu einer Buchung für dieses Event eingeladen.',
 ];

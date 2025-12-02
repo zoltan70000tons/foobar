@@ -1,7 +1,8 @@
 <?php
 
 return [
-  'booking_create_no_mail' => 'Reserva creada exitosamente, pero se produjo un error al enviar el correo de confirmación.',
+  'booking_create_no_mail' =>
+    'Reserva creada exitosamente, pero se produjo un error al enviar el correo de confirmación.',
   'booking_create_success' => 'Reserva creada exitosamente.',
   'error_creating_booking' => 'Ocurrió un error al crear la reservación.',
   'single_occupancy' => 'Esta reserva es de ocupación individual',
@@ -12,7 +13,8 @@ return [
   'seat_reset' => 'Restablecimiento de cama de pasajero',
   'email_already_taken' => 'Ya se había agregado un Pasajero con este correo electrónico a esta reserva',
   'pax_order_taken' => 'La orden del Pasajero ya está tomada',
-  'use_manual_add_instead' => 'Este correo electrónico ya está usado en otra reserva, utilice la opción de añadir manualmente',
+  'use_manual_add_instead' =>
+    'Este correo electrónico ya está usado en otra reserva, utilice la opción de añadir manualmente',
   'email_already_invited' => 'Ya se invitó al Pasajero con esta dirección de correo',
   'slot_taken' => 'El espacio para el Pasajero ya ha sido tomado',
   'invite_sent' => 'Invitación enviada',
@@ -25,4 +27,5 @@ return [
   'empty_seat_added' => 'Se agregó una cama vacía',
   'empty_seat_removed' => 'Se eliminó la cama vacía',
   'already_has_booking' => 'Ya posees una reserva para este evento',
+  'already_has_invitation' => 'Ya has sido invitado a una reserva para este evento',
 ];
