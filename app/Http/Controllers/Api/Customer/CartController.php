@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Traits\CabinFilter;
 use Illuminate\Http\Request;
 use App\Models\Adjustment;
 use App\Helpers\PriceCalculation;
@@ -13,12 +12,18 @@ use App\Services\ReservationService;
 use App\Models\Event;
 use App\Models\Cart;
 use App\Helpers\AgeRestriction;
+use App\Helpers\ErrorResponse;
 use Illuminate\Support\Str;
 use App\Enums\ErrorCode;
 
 class CartController extends Controller
 {
-    use CabinFilter;
+  protected $reservationService;
+
+  public function __construct(ReservationService $reservationService)
+  {
+    $this->reservationService = $reservationService;
+  }
   /*
   |--------------------------------------------------------------------------
   | GET CART DATA
@@ -27,14 +32,15 @@ class CartController extends Controller
   |  Private function for re-use the cart data
   |
   */
-  private function getCartData(Request $request, $eventId)
+  private function getCartData($eventId)
   {
     // Fetch cart from session
     $user = Auth::user();
 
-    $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
+    $cartModel = Cart::where('user_id', $user->id)->first();
 
-    if (empty($cart)) {
+    $cart = $cartModel->cart_data ?? null;
+    if (!$cart || !is_array($cart) || empty($cart)) {
       return [];
     }
 
@@ -131,6 +137,41 @@ class CartController extends Controller
     return $cart;
   }
 
+  /**
+   * Validates that a cart has a valid reservation when required (step 4+).
+   *
+   * Checks if the cart has a valid reservation based on the current or intended step.
+   * Steps 1-3 don't require a reservation. Steps 4+ require a valid, existing reservation.
+   * If validation fails after step 3, the cart is cleared and an error response is returned.
+   *
+   * @param array $cart The cart data to validate
+   * @param int|null $newCartStep Optional step number to validate when cart is being updated
+   * @return \Illuminate\Http\JsonResponse|null Returns error response if invalid, null if valid
+   */
+  private function validateCartReservationOrFail(array $cart, $newCartStep = null)
+  {
+    // Determine which step to validate: use the provided step when cart is being updated or fall back to the cart's current when fetching
+    $stepToCheck = $newCartStep ?? ($cart['step'] ?? 0);
+
+    // Steps 1-3: Reservation is not required yet (user is still selecting cabin/options)
+    if ($stepToCheck <= 3 && (!isset($cart['reservation_id']) || is_null($cart['reservation_id']))) {
+      return null; // Validation passes - no reservation needed
+    }
+
+    // Steps 4+: Reservation must exist and be valid
+    // Check if reservation_id is missing, null, or doesn't exist in the cart/database for this user
+    if (
+      !isset($cart['reservation_id']) ||
+      is_null($cart['reservation_id']) ||
+      !$this->reservationService->reservationExists($cart['reservation_id'], Auth::id())
+    ) {
+      return ErrorResponse::reservationExpired();
+    }
+
+    // Validation passes - cart has a valid reservation
+    return null;
+  }
+
   /*
   |--------------------------------------------------------------------------
   | Index
@@ -139,11 +180,15 @@ class CartController extends Controller
   |  Fetch the cart data from db
   |
   */
-  public function index(Request $request, $eventId)
+  public function index($eventId)
   {
-    $cart = $this->getCartData($request, $eventId);
+    $cart = $this->getCartData($eventId);
 
-    \Log::info('CartController@index', ['cart' => $cart]) ?? null;
+    // Validate reservation if cart is past step 3
+    if ($cartValidationError = $this->validateCartReservationOrFail($cart)) {
+      return $cartValidationError;
+    }
+
     return response()->json($cart, 200);
   }
 
@@ -183,7 +228,7 @@ class CartController extends Controller
       'price_extras' => 'nullable|numeric|sometimes',
       'tax' => 'nullable|numeric|sometimes',
       'lower_bed_type_2' => 'nullable|string',
-      'show_upgrade_offer' =>  'nullable|boolean',
+      'show_upgrade_offer' => 'nullable|boolean',
       'original_cabin_code' => 'nullable|string',
     ]);
 
@@ -279,7 +324,7 @@ class CartController extends Controller
     return response()->json(
       [
         'message' => 'Cart updated successfully',
-        'cart' => $this->getCartData($request, $validated['event_id']),
+        'cart' => $this->getCartData($validated['event_id']),
       ],
       200
     );
@@ -340,6 +385,18 @@ class CartController extends Controller
 
     /// current state of cart
     $existingCart = Cart::where('user_id', $user->id)->first()?->cart_data ?? [];
+
+    \Log::info('Existing Cart:', $existingCart);
+
+    // if cart is empty return error
+    if (empty($existingCart)) {
+      return ErrorResponse::reservationExpired();
+    }
+
+    if ($cartValidationError = $this->validateCartReservationOrFail($existingCart, $validated['step'])) {
+      return $cartValidationError;
+    }
+
     // Age verification
     $dateOfBirth = $user->detail->dob ?? null;
     if ($dateOfBirth) {
@@ -384,7 +441,7 @@ class CartController extends Controller
     return response()->json(
       [
         'message' => 'Cart updated successfully',
-        'cart' => $this->getCartData($request, $validated['event_id']),
+        'cart' => $this->getCartData($validated['event_id']),
       ],
       200
     );

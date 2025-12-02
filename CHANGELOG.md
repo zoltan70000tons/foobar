@@ -5,6 +5,16 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2025-12-01
+
+### Added
+- Error response helper for standardized API error handling
+- Cart empty error code for improved error tracking
+
+### Fixed
+- Reservation expiration handling to prevent booking expired cabins
+- Cart validation logic to properly verify cabin reservations before updates
+
 ## [1.3.0] - 2025-11-26
 
 ### Added
