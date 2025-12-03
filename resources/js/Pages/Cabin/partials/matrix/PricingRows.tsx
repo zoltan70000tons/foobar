@@ -23,6 +23,7 @@ type Props = {
 export default function PricingRows({
   data: allData,
   eventId,
+  cabinTypeSlug,
 }: Props) {
   const data = allData.main_category.categories;
   const maxCapacity = allData.main_category.max_capacity;
@@ -96,6 +97,7 @@ export default function PricingRows({
                   cabin={cabin}
                   cabinCategoryType={allData.main_category.name}
                   eventId={eventId}
+                  cabinTypeSlug={cabinTypeSlug}
                   isLast={index === rowData.cabins.length - 1}
                   onOpenDetail={() => handleCabinDetailOpen(cabin)}
                 />

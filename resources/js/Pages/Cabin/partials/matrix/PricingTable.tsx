@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, useMediaQuery, Typography } from "@mui/material";
+import { Box, Typography, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Sticky from "react-sticky-el";
 
@@ -10,7 +10,7 @@ import PricingHeader from "@/Pages/Cabin/partials/matrix/PricingHeader";
 import { MainCategory } from "@/types/cabin";
 
 type TableTitleType = {
-  imgByCat: any;
+  imgByCat: string;
   categoryName: string;
 };
 
@@ -22,44 +22,44 @@ interface PricingTableProps extends TableTitleType {
 const TableTitle = ({
   imgByCat,
   categoryName,
-  isSticky,
-  isMobile,
+  isSticky = false,
+  isMobile = false,
 }: TableTitleType & { isSticky?: boolean; isMobile?: boolean }) => {
   const imageSize = isSticky && isMobile ? 50 : 70;
+
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
         backgroundColor: "#1e1e1e",
+        px: 1.5,
+        py: 1,
       }}
     >
       <Box
         sx={{
+          width: imageSize,
+          height: imageSize,
+          overflow: "hidden",
+          borderRadius: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: `${imageSize}px`,
-          height: `${imageSize}px`,
-          overflow: "hidden",
-          borderRadius: "0px",
           transition: "all 0.2s ease-in-out",
           mr: 2,
         }}
       >
         <img
           src={imgByCat}
-          alt="Cabin Interior"
+          alt={categoryName}
           width={imageSize}
           height={imageSize}
-          //quality={100}
           style={{ objectFit: "cover" }}
         />
       </Box>
-      <Typography
-        fontSize={isSticky ? 14 : 16}
-        fontWeight={600}
-      >
+
+      <Typography fontSize={isSticky ? 14 : 16} fontWeight={600}>
         {categoryName}
       </Typography>
     </Box>
@@ -71,30 +71,28 @@ export default function PricingTable({
   categoryName,
   data,
   eventId,
+  cabinTypeSlug,
 }: PricingTableProps) {
   const theme = useTheme();
-  const maxCapacity = data.main_category.max_capacity;
-  const mainCategoryName = data.main_category.name;
-console.log(data)
-  const [isSticky, setIsSticky] = useState(false);
+  const { main_category } = data;
+  const { max_capacity, name } = main_category;
 
+  const [isSticky, setSticky] = useState(false);
   const isMobile = useMediaQuery(
     `(max-width:${theme.breakpoints.values.md}px)`
   );
 
-  // Consolidate Sticky props
   const stickyProps = {
     topOffset: isMobile ? -70 : -40,
     boundaryElement: ".pricing-table-container",
-    onFixedToggle: setIsSticky,
+    onFixedToggle: (fixed: boolean) => setSticky(fixed),
     stickyStyle: {
       zIndex: 2,
       backgroundColor: "#191919",
     },
   };
 
-  // Conditionally choose header content based on screen size
-  const headerContent = isMobile ? (
+  const renderHeader = () => (
     <>
       <TableTitle
         imgByCat={imgByCat}
@@ -102,36 +100,26 @@ console.log(data)
         isSticky={isSticky}
         isMobile={isMobile}
       />
-      <PricingHeaderMobile
-        maxCapacity={maxCapacity}
-        mainCategoryName={mainCategoryName}
-      />
-    </>
-  ) : (
-    <>
-      <TableTitle
-        imgByCat={imgByCat}
-        categoryName={categoryName}
-        isSticky={isSticky}
-      />
-      <PricingHeader maxCapacity={maxCapacity} />
+
+      {isMobile ? (
+        <PricingHeaderMobile
+          maxCapacity={max_capacity}
+          mainCategoryName={name}
+        />
+      ) : (
+        <PricingHeader maxCapacity={max_capacity} />
+      )}
     </>
   );
 
   return (
-    <Box
-      className="pricing-table-container"
-      sx={{ position: "relative", mx: "auto" }}
-    >
-      <Sticky {...stickyProps}>{headerContent}</Sticky>
+    <Box className="pricing-table-container" sx={{ position: "relative", mx: "auto" }}>
+      <Sticky {...stickyProps}>{renderHeader()}</Sticky>
 
       {isMobile ? (
-        <PricingRowsMobile
-          data={data}
-          eventId={eventId}
-        />
+        <PricingRowsMobile data={data} eventId={eventId} cabinTypeSlug={cabinTypeSlug} />
       ) : (
-        <PricingRows data={data} eventId={eventId} />
+        <PricingRows data={data} eventId={eventId} cabinTypeSlug={cabinTypeSlug} />
       )}
     </Box>
   );

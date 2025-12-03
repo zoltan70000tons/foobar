@@ -23,6 +23,7 @@ type Props = {
 export default function PricingRowsMobile({
   data: allData,
   eventId,
+  cabinTypeSlug,
 }: Props) {
   const data = allData.main_category.categories;
 
@@ -146,6 +147,7 @@ export default function PricingRowsMobile({
               cabin={rowData}
               eventId={eventId}
               cabinCategoryType={allData.main_category.name}
+              cabinTypeSlug={cabinTypeSlug}
               onOpenDetail={() => handleCabinDetailOpen(rowData)}
             />
           </Box>
@@ -221,7 +223,7 @@ export default function PricingRowsMobile({
               margin: "10px auto",
             }}
           >
-            imageDisclaimer
+            Note: All cabin images are representative samples. Actual cabins may differ in appearance.
           </Typography>
         </DialogContent>
       </Dialog>

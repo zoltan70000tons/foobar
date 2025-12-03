@@ -1,3 +1,12 @@
+export type InventoryStatus = {
+  AVAILABLE: number;
+  RESERVED: number;
+  BOOKED: number;
+  CLOSED: number;
+  PARTIALLY_BOOKED: number;
+  IP: number;
+};
+
 export type PriceAndCapacity = {
   cabin_category_id: number;
   capacity: number;
@@ -12,6 +21,7 @@ export type PriceAndCapacity = {
     en: string;
     es: string;
   };
+  inventory: InventoryStatus;
 }
 
 export type PriceAndAvailability = {

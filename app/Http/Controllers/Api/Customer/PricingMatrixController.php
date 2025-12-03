@@ -28,7 +28,7 @@ class PricingMatrixController extends Controller
   /**
    * Show cabins grouped by ticket type.
    */
-  public function show($eventId, $cabinTypeId)
+  public function show2($eventId, $cabinTypeId)
   {
     if (!$eventId || !$cabinTypeId) {
       return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
@@ -65,23 +65,26 @@ class PricingMatrixController extends Controller
     return response()->json($formattedCategories->values());
   }
 
-    public function show2($eventId)
+    public function show($eventId, $cabinTypeId)
     {
-        if (!$eventId) {
-            return response()->json(['message' => 'Event ID is required'], 400);
+        if (!$eventId || !$cabinTypeId) {
+            return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
         }
 
         // \DB::enableQueryLog();
         // Fetch categories with cabins and specs based on ticket type
         $categories = CabinCategory::where('event_id', $eventId)
-            ->with(['cabins' => fn($query) => $query->with('cabinSpec'), 'spec'])
+            ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
             ->get();
 
         if (!$categories->count()) {
             return response()->json(['message' => 'No categories found'], 404);
         }
 
-        $reservationsCabinNumbers = TemporaryReservation::pluck('cabin_number')
+        $reservationsCabinNumbers = TemporaryReservation::whereHas('cabin', function ($query) use ($cabinTypeId) {
+            $query->where('cabin_type_id', $cabinTypeId);
+        })
+            ->pluck('cabin_number')
             ->toArray();
 
 
@@ -93,7 +96,7 @@ class PricingMatrixController extends Controller
 
         // Format categories for response
         $formattedCategories = $groupedCategories->map(
-            fn($category) => $this->formatCategory2($category, $categories, $reservationsCabinNumbers)
+            fn($category) => $this->formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
         );
 
         return response()->json($formattedCategories->values());
@@ -124,30 +127,6 @@ class PricingMatrixController extends Controller
     ];
   }
 
-    /**
-     * Format a category for response.
-     */
-    protected function formatCategory2($category, $categories, $reservationsCabinNumbers)
-    {
-        $categorySpec = $category->spec;
-
-        // Determine max capacity
-        $maxCapacity =
-            $categorySpec->category_type === 'Suite'
-                ? 8
-                : 6; // Private Cabin max capacity
-
-        return [
-            'main_category' => [
-                'name' => $categorySpec->category_type,
-                'display_order' => $categorySpec->display_order,
-                'max_capacity' => $maxCapacity,
-                'categories' => $this->getCategories2($categorySpec->category_type, $categories,
-                    $reservationsCabinNumbers),
-            ],
-        ];
-    }
-
   /**
    * Get categories based on category type.
    */
@@ -162,20 +141,6 @@ class PricingMatrixController extends Controller
       ->values(); // Reset collection keys
   }
 
-    /**
-     * Get categories based on category type.
-     */
-    public function getCategories2($categoryType, $categories, $reservationsCabinNumbers)
-    {
-        // Filter, group, and sort categories by category type
-        return $categories
-            ->where('category_type', $categoryType)
-            ->sortBy('display_order')
-            ->unique('category_name')
-            ->map(fn($category) => $this->formatFilteredCategory2($category, $categories, $reservationsCabinNumbers))
-            ->values(); // Reset collection keys
-    }
-
   /**
    * Format a filtered category for response.
    */
@@ -188,18 +153,4 @@ class PricingMatrixController extends Controller
       'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId, $reservationsCabinNumbers),
     ];
   }
-
-    /**
-     * Format a filtered category for response.
-     */
-    protected function formatFilteredCategory2($category, $categories, $reservationsCabinNumbers)
-    {
-        return [
-            'name' => $category->category_name,
-            'cabin_category_id' => $category->id,
-            'display_order' => $category->display_order,
-            'cabins' => MatrixHelper::getUniqueCategories2($categories, $category->category_name,
-                $reservationsCabinNumbers),
-        ];
-    }
 }

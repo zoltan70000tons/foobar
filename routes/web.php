@@ -271,7 +271,7 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
   Route::get('/generate-invoice-pdf', [EmailController::class, 'generateInvoicePDF'])->name('email.generateInvoicePDF');
 
-    Route::get('/pricing-matrix/{eventId}', [PricingMatrixController::class, 'show2'])->name('show.cabin-matrix');
+    Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show2'])->name('show.cabin-matrix');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');

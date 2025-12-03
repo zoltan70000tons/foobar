@@ -10,10 +10,9 @@ const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
 
 const LoadingOverlay = ({ open }) => {
   return (
-    <></>
-    // <StyledBackdrop open={open}>
-    //   <CircularProgress color="inherit" />
-    // </StyledBackdrop>
+    <StyledBackdrop open={open}>
+       <CircularProgress color="inherit" />
+    </StyledBackdrop>
   );
 };
 

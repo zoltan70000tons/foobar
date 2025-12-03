@@ -1,6 +1,5 @@
 import { Box, Typography } from "@mui/material";
-
-export const fixedHeight: string = "65px";
+import { fixedHeight } from "@/Pages/Cabin/partials/matrix/constants";
 
 export default function PricingHeader({
   maxCapacity,

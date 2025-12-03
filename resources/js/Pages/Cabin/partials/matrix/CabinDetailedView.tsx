@@ -164,7 +164,7 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
           {configs.map((config, index) => (
             <Tab
               key={index}
-              label={`occupancy ${config.capacity}`}
+              label={`Occupancy ${config.capacity}`}
               value={config.capacity}
               sx={{
                 flex: 1,
@@ -203,7 +203,7 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
             m: "10px auto",
           }}
         >
-          imageDisclaimer
+          Note: All cabin images are representative samples. Actual cabins may differ in appearance.
         </Typography>
       </Box>
     </Box>
