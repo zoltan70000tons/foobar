@@ -44,13 +44,17 @@ class CustomerController extends Controller
   public function index(Request $request)
   {
     try {
-      return $this->withPermission([Permissions::ViewCustomers], function () {
-        $userTags = Tag::type('customer')->get();
-        return Inertia::render('Customer/Index', [
-          'customers' => $this->customerRepository->getAllCustomerData(),
-          'userTags' => $userTags,
-        ]);
-      }, $request);
+      return $this->withPermission(
+        [Permissions::ViewCustomers],
+        function () {
+          $userTags = Tag::type('customer')->get();
+          return Inertia::render('Customer/Index', [
+            'customers' => $this->customerRepository->getAllCustomerData(),
+            'userTags' => $userTags,
+          ]);
+        },
+        $request
+      );
     } catch (\Exception $e) {
       $this->logException($e);
 
@@ -80,13 +84,17 @@ class CustomerController extends Controller
   public function store(CustomerRequest $request): RedirectResponse|Response|InertiaResponse
   {
     try {
-      return $this->withPermission([Permissions::CreateCustomers], function ($request) {
-        $this->customerRepository->store($request);
-        return redirect()->route('customers.index')->with('flash', 'Customer created successfully.');
-      }, $request);
+      return $this->withPermission(
+        [Permissions::CreateCustomers],
+        function ($request) {
+          $this->customerRepository->store($request);
+          return back()->with('flash', 'Customer created successfully.');
+        },
+        $request
+      );
     } catch (\Exception $e) {
       $this->logException($e);
-      return redirect()->route('customers.index')->with('error', 'Problem creating customer.');
+      return back()->with('error', 'Problem creating customer.');
     }
   }
 
@@ -105,34 +113,47 @@ class CustomerController extends Controller
   {
     try {
       $this->customerService->updateCustomer($request, $user);
-      return redirect()->route('customers.edit', ['user' => $user])
+      return redirect()
+        ->route('customers.edit', ['user' => $user])
         ->with('success', 'Customer updated successfully.');
     } catch (\Exception | \Throwable $e) {
       $this->logException($e);
-     return redirect()->route('customers.edit', ['user' => $user])->with('error', 'Problem updating customer.');
+      return redirect()
+        ->route('customers.edit', ['user' => $user])
+        ->with('error', 'Problem updating customer.');
     }
   }
 
   public function show(User $user): RedirectResponse|Response|InertiaResponse
   {
-
     try {
-      return $this->withPermission([Permissions::ViewCustomers], function ($user) {
-        //$user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings', 'comments.author', 'logs.author');
-        // @todo check why tags are not loaded
-        $user = Customer::with([ 'tags','detail', 'survivorNumber', 'customerAddress', 'bookings', 'comments.author', 'logs.author'])->find($user->id);
-        $bookings = $this->customerRepository->getBookingDataForCustomer($user);
-        $availableTags = Tag::type('customer')->get();
-        // check if user have generated temporary password
-        $isTemporaryPassword = TemporaryPassword::where('customer_id', $user->id)
-          ->exists();
-        return Inertia::render('Customer/View', [
-          'customer' => $user,
-          'bookings' => $bookings,
-          'availableTags' => $availableTags,
-          'isTemporaryPassword' => $isTemporaryPassword,
-        ]);
-      }, $user);
+      return $this->withPermission(
+        [Permissions::ViewCustomers],
+        function ($user) {
+          //$user->load(['detail', 'survivorNumber', 'customerAddress', 'bookings', 'comments.author', 'logs.author');
+          // @todo check why tags are not loaded
+          $user = Customer::with([
+            'tags',
+            'detail',
+            'survivorNumber',
+            'customerAddress',
+            'bookings',
+            'comments.author',
+            'logs.author',
+          ])->find($user->id);
+          $bookings = $this->customerRepository->getBookingDataForCustomer($user);
+          $availableTags = Tag::type('customer')->get();
+          // check if user have generated temporary password
+          $isTemporaryPassword = TemporaryPassword::where('customer_id', $user->id)->exists();
+          return Inertia::render('Customer/View', [
+            'customer' => $user,
+            'bookings' => $bookings,
+            'availableTags' => $availableTags,
+            'isTemporaryPassword' => $isTemporaryPassword,
+          ]);
+        },
+        $user
+      );
     } catch (\Exception $e) {
       $this->logException($e);
 
@@ -143,11 +164,15 @@ class CustomerController extends Controller
   public function destroy(User $user): RedirectResponse|Response|InertiaResponse
   {
     try {
-      return $this->withPermission([Permissions::DeleteCustomers], function ($user) {
-        $this->customerRepository->delete($user);
+      return $this->withPermission(
+        [Permissions::DeleteCustomers],
+        function ($user) {
+          $this->customerRepository->delete($user);
 
-        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
-      }, $user);
+          return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
+        },
+        $user
+      );
     } catch (\Exception $e) {
       $this->logException($e);
 
@@ -209,7 +234,7 @@ class CustomerController extends Controller
       return redirect()
         ->route('customers.show', ['user' => $customer])
         ->with('error', 'Failed to add comment.');
-     }
+    }
   }
 
   public function updateTags(Request $request)
@@ -296,44 +321,40 @@ class CustomerController extends Controller
       $booking = Booking::with('passengers')->findOrFail($request->bookingId);
       $currentLead = $booking->passengers->firstWhere('lead_passenger', true);
       $currentSurvivor = SurvivorNumber::where('survivor_number', $currentLead->survivor_number)->first();
-      $currentLeadUser = $currentSurvivor
-        ? User::with('membershipTypes')->find($currentSurvivor->user_id)
-        : null;
+      $currentLeadUser = $currentSurvivor ? User::with('membershipTypes')->find($currentSurvivor->user_id) : null;
 
-      $currentMaxMembership = $currentLeadUser?->membershipTypes
-        ->sortByDesc('booking_number_requirement')
-        ->first()?->booking_number_requirement;
+      $currentMaxMembership = $currentLeadUser?->membershipTypes->sortByDesc('booking_number_requirement')->first()
+        ?->booking_number_requirement;
       $sameBookingBySN = $booking->passengers->keyBy('survivor_number');
       $users = User::with(['detail', 'survivorNumber', 'customerAddress', 'membershipTypes'])
         ->where(function ($query) use ($searchQuery) {
-          $query->where('email', 'LIKE', "%{$searchQuery}%")
-            ->orWhereHas('detail', function ($q) use ($searchQuery) {
-               $q->where('first_name', 'ilike', "%{$searchQuery}%")
-                  ->orWhere('last_name', 'ilike', "%{$searchQuery}%");
-            });
+          $query->where('email', 'LIKE', "%{$searchQuery}%")->orWhereHas('detail', function ($q) use ($searchQuery) {
+            $q->where('first_name', 'ilike', "%{$searchQuery}%")->orWhere('last_name', 'ilike', "%{$searchQuery}%");
+          });
         })
         ->get();
 
       $results = $users->map(function ($user) use ($request, $currentMaxMembership, $booking, $sameBookingBySN) {
-
         $survivorNumber = $user->survivorNumber?->survivor_number;
         $passengerInSame = $survivorNumber ? $sameBookingBySN->get($survivorNumber) : null;
-        $inSameBooking   = (bool) $passengerInSame;
-        $isCurrentLead   = (bool) ($passengerInSame?->lead_passenger);
-        $hasBooking = Passenger::checkSurvivorInActiveBookings($survivorNumber, $request->eventId, excludeBookingId: $booking->id);
+        $inSameBooking = (bool) $passengerInSame;
+        $isCurrentLead = (bool) $passengerInSame?->lead_passenger;
+        $hasBooking = Passenger::checkSurvivorInActiveBookings(
+          $survivorNumber,
+          $request->eventId,
+          excludeBookingId: $booking->id
+        );
         if ($isCurrentLead) {
           $hasBooking = true;
         }
 
-        $userMax = $user->membershipTypes
-          ->sortByDesc('booking_number_requirement')
-          ->first()?->booking_number_requirement ?? null;
+        $userMax =
+          $user->membershipTypes->sortByDesc('booking_number_requirement')->first()?->booking_number_requirement ??
+          null;
 
-        $isLowerTier = $userMax && $currentMaxMembership
-          ? $userMax < $currentMaxMembership
-          : false;
+        $isLowerTier = $userMax && $currentMaxMembership ? $userMax < $currentMaxMembership : false;
 
-        $detail  = $user->detail;
+        $detail = $user->detail;
         $address = $user->customerAddress;
 
         return [
@@ -369,8 +390,8 @@ class CustomerController extends Controller
           'passenger_allocated_cost' => $detail->passenger_allocated_cost ?? null,
           'passenger_balance' => $detail->passenger_balance ?? null,
           'was_on_board' => $detail->was_on_board ?? null,
-          'has_booking' => $hasBooking,    
-          'lower_tier'  => $isLowerTier,
+          'has_booking' => $hasBooking,
+          'lower_tier' => $isLowerTier,
           'in_same_booking' => $inSameBooking,
           'is_current_lead' => $isCurrentLead,
         ];

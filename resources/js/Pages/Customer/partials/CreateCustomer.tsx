@@ -40,7 +40,7 @@ type Props = {
 export default function CreateCustomer({ handleClose }: Props) {
   const { hasPermission } = usePermissions();
 
-  const { data, setData, errors, processing } = useForm({
+  const { data, setData, errors, reset, processing } = useForm({
     email: "",
     survivor_number: "",
     first_name: "",
@@ -119,6 +119,10 @@ export default function CreateCustomer({ handleClose }: Props) {
       forceFormData: true,
       onSuccess: (response) => {
         showSnackbar("Customer created successfully", "success");
+        reset();
+        if (handleClose) {
+          handleClose();
+        }
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join("\n");

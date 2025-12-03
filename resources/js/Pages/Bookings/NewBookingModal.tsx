@@ -11,7 +11,7 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
+  bgcolor: "grey.900",
   border: "1px solid #3f3f3f",
   borderRadius: 2,
   boxShadow: 24,
@@ -27,23 +27,23 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
 
   // open and set param modal in url
   const handleOpen = () => {
-    router.visit(window.location.pathname, {
-      data: { modal: "new_booking" },
-      preserveScroll: true,
-      preserveState: true,
-    });
+    // router.visit(window.location.pathname, {
+    //   data: { modal: "new_booking" },
+    //   preserveScroll: true,
+    //   preserveState: true,
+    // });
 
     setOpen(true);
   };
 
   // close and remove param modal from url
   const handleClose = () => {
-    router.visit(window.location.pathname, {
-      // Remove modal param from URL
-      data: { modal: null },
-      preserveScroll: true,
-      preserveState: true,
-    });
+    // router.visit(window.location.pathname, {
+    //   // Remove modal param from URL
+    //   data: { modal: null },
+    //   preserveScroll: true,
+    //   preserveState: true,
+    // });
     setOpen(false);
   };
 
@@ -73,7 +73,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
           justifyContent: "center",
         }}
       >
-        <Box sx={{ ...style }}>
+        <Box sx={{ ...style, width: 1160 }}>
           <Box
             sx={{
               display: "flex",
@@ -129,13 +129,20 @@ const CustomerModal = () => {
         onClose={handleClose}
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
+        slotProps={{
+          backdrop: {
+            sx: {
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+            },
+          },
+        }}
       >
         <Box
           sx={{
             ...style,
             width: 1300,
-            height: "70vh",
-            mt: "auto",
+            height: "84vh",
+            transform: "translate(-50%, -44%)",
             overflow: "auto",
             alignItems: "center",
             justifyContent: "center",
