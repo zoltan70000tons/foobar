@@ -105,10 +105,7 @@ class MatrixHelper
       // if single cabin number is in array of reservations, then it is not available
       $byReservation = self::isAvailableByReservation($cabin, $reservationsCabinNumbers, $ticketType);
 
-      $available = $byStatus && $byReservation;
-
-      return $available;
-
+      return $byStatus && $byReservation;
     });
 
     // Get first instance just to get category attributes

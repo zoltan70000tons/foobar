@@ -50,7 +50,6 @@ class PricingMatrixController extends Controller
       ->pluck('cabin_number')
       ->toArray();
 
-
     // Group categories by type, sort, and select the first for each type
     $groupedCategories = $categories
       ->groupBy(fn($category) => $category->category_type)
