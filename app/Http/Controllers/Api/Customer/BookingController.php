@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Enums\ErrorCode;
+use App\Helpers\ErrorResponse;
 
 class BookingController extends Controller
 {
@@ -66,12 +67,9 @@ class BookingController extends Controller
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$cart || empty($cart)) {
-      return response()->json(
-        [
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => 'Cart is empty',
-          'errorCode' => ErrorCode::CART_EMPTY->value,
-        ],
+      return ErrorResponse::error(
+        'Your cart is empty or not found. Please add items to your cart.',
+        ErrorCode::CART_EMPTY,
         400
       );
     }
@@ -82,24 +80,10 @@ class BookingController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json(
-          [
-            'errorLogId' => Str::uuid(),
-            'errorMessage' => __('feedback.age_restriction'),
-            'errorCode' => ErrorCode::AGE_RESTRICTION->value,
-          ],
-          400
-        );
+        return ErrorResponse::error(__('feedback.age_restriction'), ErrorCode::AGE_RESTRICTION, 400);
       }
     } else {
-      return response()->json(
-        [
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => 'Date of birth is required',
-          'errorCode' => ErrorCode::DOB_REQUIRED->value,
-        ],
-        400
-      );
+      return ErrorResponse::error('Date of birth is required', ErrorCode::DOB_REQUIRED, 400);
     }
 
     try {
@@ -241,14 +225,15 @@ class BookingController extends Controller
       );
     } catch (\Exception $e) {
       dd($e->getMessage());
-      return response()->json(
-        [
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => $e->getMessage(),
-          'errorCode' => ErrorCode::UNKNOWN_ERROR->value,
-        ],
-        500
-      );
+      // return response()->json(
+      //   [
+      //     'errorLogId' => Str::uuid(),
+      //     'errorMessage' => $e->getMessage(),
+      //     'errorCode' => ErrorCode::UNKNOWN_ERROR->value,
+      //   ],
+      //   500
+      // );
+      return ErrorResponse::error($e->getMessage(), ErrorCode::UNKNOWN_ERROR, 500);
     }
   }
 
@@ -656,35 +641,43 @@ class BookingController extends Controller
 
     $email = $request->input('email');
 
+    // validate email
     if (!$email) {
-      return response()->json(['message' => 'Email is required'], 400);
+      return ErrorResponse::error(__('bookings.error.email_required'), ErrorCode::UNAUTHORIZED, 400);
     }
 
+    // cannot invite yourself
     if ($email === $user->email) {
-      return response()->json(['message' => 'You cannot send an email invitation to yourself. Use manual add'], 400);
+      return ErrorResponse::error(__('bookings.error.cannot_invite_yourself'), ErrorCode::CANNOT_INVITE_YOURSELF, 400);
     }
 
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
+    // no booking
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
+    // single occupancy
     if ($booking->is_single_occupancy) {
-      return response()->json(['message' => 'This booking is single occupancy'], 400);
+      return ErrorResponse::error(__('bookings.error.single_occupancy'), ErrorCode::SINGLE_OCCUPANCY_BOOKING, 400);
     }
 
     $passengerOrder = $request->input('passenger_order');
 
     // Check if a passenger with this email is already added to the booking
     if ($booking->passengers()->where('email', $email)->exists()) {
-      return response()->json(['message' => 'A passenger with this email is already added to the booking'], 400);
+      return ErrorResponse::error(
+        __('bookings.error.email_already_used'),
+        ErrorCode::EMAIL_ALREADY_USED_IN_ANOTHER_BOOKING,
+        400
+      );
     }
 
     // Check if the passenger order is already taken
     $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
     if ($passenger && $passenger->email) {
-      return response()->json(['message' => 'Passenger order is already taken'], 400);
+      return ErrorResponse::error(__('bookings.error.passenger_order_taken'), ErrorCode::PASSENGER_ORDER_TAKEN, 400);
     }
 
     // if this email is used in another booking around the same event return error
@@ -696,8 +689,9 @@ class BookingController extends Controller
         })
         ->exists()
     ) {
-      return response()->json(
-        ['message' => 'This email is already used in another booking, use manual add instead'],
+      return ErrorResponse::error(
+        __('bookings.error.email_already_used'),
+        ErrorCode::EMAIL_ALREADY_USED_IN_ANOTHER_BOOKING,
         400
       );
     }
@@ -708,7 +702,7 @@ class BookingController extends Controller
         ->where('email', $email)
         ->exists()
     ) {
-      return response()->json(['message' => 'Passenger with this email has already been invited'], 400);
+      return ErrorResponse::error(__('bookings.error.email_already_invited'), ErrorCode::ALREADY_HAS_INVITATION, 400);
     }
 
     // Check if this slot is already taken
@@ -717,7 +711,7 @@ class BookingController extends Controller
         ->where('passenger_id', $passenger->id)
         ->exists()
     ) {
-      return response()->json(['message' => 'Passenger slot is already taken'], 400);
+      return ErrorResponse::error(__('bookings.error.slot_taken'), ErrorCode::PASSENGER_SLOT_TAKEN, 400);
     }
 
     $customer = User::where('email', $email)->first();

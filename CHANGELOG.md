@@ -5,6 +5,17 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2025-12-03
+
+### Fixed
+- Email invitation error response handling to correctly use `errorMessage` field instead of `message`
+- Passenger invitation error display in SendingStep component
+- Modal error handling for failed invitation requests
+
+### Changed
+- Updated email invitation API endpoint from `/api/my-booking/add-passenger-via-email` to `/api/manage-passengers/add-passenger-via-email`
+- Improved error handling flow in ModalSendInvitation component
+
 ## [1.3.1] - 2025-12-01
 
 ### Added
