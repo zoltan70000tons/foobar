@@ -36,7 +36,6 @@ export default function PricingHeaderMobile({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              // backgroundColor: "transparent",
             }}
           >
             <Typography

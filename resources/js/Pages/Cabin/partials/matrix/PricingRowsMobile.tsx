@@ -26,6 +26,7 @@ export default function PricingRowsMobile({
   cabinTypeSlug,
 }: Props) {
   const data = allData.main_category.categories;
+  const locale = "en";
 
   // State for the cabin detail modal
   const [isCabinDetailOpen, setCabinDetailOpen] = useState<boolean>(false);
@@ -68,7 +69,6 @@ export default function PricingRowsMobile({
     const singleRowData: MobileCabinRow[] = [];
 
     availablePrices.forEach((price: PriceAndCapacity) => {
-
       singleRowData.push({
         code,
         decks_static: decksStatic,
@@ -83,7 +83,7 @@ export default function PricingRowsMobile({
     });
 
     return singleRowData;
-  };
+  }
 
   // data structure
   const dataStructure = (): MobileCabinRow[][] => {
@@ -124,6 +124,14 @@ export default function PricingRowsMobile({
 
   const groupedCabins: MobileCabinRow[][] = dataStructure();
   const flatGroupedCabins: MobileCabinRow[] = groupedCabins.flat();
+
+  const descriptionObj =
+    selectedCabinDetail?.price_and_availability?.description;
+
+  const descriptionHTML =
+    descriptionObj?.[locale as keyof typeof descriptionObj] ??
+    descriptionObj?.en ??
+    "";
 
   return (
     <>
@@ -189,16 +197,8 @@ export default function PricingRowsMobile({
           <Typography
             align="center"
             variant="body2"
-            dangerouslySetInnerHTML={{
-              __html:
-                selectedCabinDetail?.price_and_availability?.description?.[
-                  selectedCabinDetail.price_and_availability.description
-                  ] ?? "",
-            }}
-            sx={{
-              maxWidth: "400px",
-              margin: "20px auto",
-            }}
+            dangerouslySetInnerHTML={{ __html: descriptionHTML }}
+            sx={{ maxWidth: "400px", margin: "20px auto" }}
           />
           <Box
             sx={{

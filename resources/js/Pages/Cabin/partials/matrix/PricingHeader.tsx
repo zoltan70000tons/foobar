@@ -47,7 +47,6 @@ export default function PricingHeader({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            // backgroundColor: "transparent",
           }}
         >
           <Typography

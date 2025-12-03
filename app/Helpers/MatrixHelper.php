@@ -126,10 +126,15 @@ class MatrixHelper
       ];
 
       foreach ($cabin->cabins as $singleCabin) {
-          $inv[$singleCabin->status->value] += 1;
+          $countOfInProgress = TemporaryReservation::query()
+              ->where("cabin_id", "=", $singleCabin->id)
+              ->count();
 
-          $foo = TemporaryReservation::query()->where("cabin_id", "=", $singleCabin->id)->count();
-          $inv["IP"] = $foo;
+          if ($countOfInProgress) {
+              $inv["IP"] += $countOfInProgress;
+          } else {
+            $inv[$singleCabin->status->value] += 1;
+          }
       }
 
     return [

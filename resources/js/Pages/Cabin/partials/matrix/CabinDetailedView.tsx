@@ -44,43 +44,38 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 
 // Main Component
 export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProps) {
-
   const locale = 'en';
 
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [configs, setConfigs] = useState<PriceAndCapacity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  console.log(configs)
 
   useEffect(() => {
     if (!cabinDetail) {
-      console.log('asdsa')
       setConfigs([]);
       setTabValue(null);
       setIsLoading(false);
+
       return;
     }
 
     // Category with price_and_availability
     const entries = Object.values(cabinDetail.price_and_availability || {});
-    console.log(entries)
     const arr = entries
-    .filter((v: any) => v && v.price !== null && v.price !== "-" && Number(v.price) > 0)
-    .map((v: any) => v as PriceAndCapacity);
+      .filter((v: any) => v && v.price !== null && v.price !== "-" && Number(v.price) > 0)
+      .map((v: any) => v as PriceAndCapacity);
 
     setConfigs(arr);
     const firstAvailable = arr.find((c) => c.is_available);
     setTabValue(firstAvailable?.capacity ?? arr[0]?.capacity ?? null);
 
     setIsLoading(false);
-
   }, [cabinDetail]);
 
   // handle tab change
   const handleChange = useCallback((event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   }, []);
-
 
   // Show loading spinner
   if(isLoading) {
@@ -148,7 +143,6 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
       </Grid>
     </>
   );
-
 
   return (
     <Box>

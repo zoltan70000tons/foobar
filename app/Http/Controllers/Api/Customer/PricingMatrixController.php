@@ -28,7 +28,7 @@ class PricingMatrixController extends Controller
   /**
    * Show cabins grouped by ticket type.
    */
-  public function show2($eventId, $cabinTypeId)
+  public function show($eventId, $cabinTypeId)
   {
     if (!$eventId || !$cabinTypeId) {
       return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
@@ -43,13 +43,13 @@ class PricingMatrixController extends Controller
     if (!$categories->count()) {
       return response()->json(['message' => 'No categories found'], 404);
     }
-    
+
     $reservationsCabinNumbers = TemporaryReservation::whereHas('cabin', function ($query) use ($cabinTypeId) {
       $query->where('cabin_type_id', $cabinTypeId);
     })
       ->pluck('cabin_number')
       ->toArray();
-    
+
 
     // Group categories by type, sort, and select the first for each type
     $groupedCategories = $categories
@@ -64,43 +64,6 @@ class PricingMatrixController extends Controller
 
     return response()->json($formattedCategories->values());
   }
-
-    public function show($eventId, $cabinTypeId)
-    {
-        if (!$eventId || !$cabinTypeId) {
-            return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
-        }
-
-        // \DB::enableQueryLog();
-        // Fetch categories with cabins and specs based on ticket type
-        $categories = CabinCategory::where('event_id', $eventId)
-            ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
-            ->get();
-
-        if (!$categories->count()) {
-            return response()->json(['message' => 'No categories found'], 404);
-        }
-
-        $reservationsCabinNumbers = TemporaryReservation::whereHas('cabin', function ($query) use ($cabinTypeId) {
-            $query->where('cabin_type_id', $cabinTypeId);
-        })
-            ->pluck('cabin_number')
-            ->toArray();
-
-
-        // Group categories by type, sort, and select the first for each type
-        $groupedCategories = $categories
-            ->groupBy(fn($category) => $category->category_type)
-            ->map(fn($group) => $group->sortBy(fn($category) => $category->displayOrder)->first())
-            ->sortBy(fn($category) => $category->displayOrder);
-
-        // Format categories for response
-        $formattedCategories = $groupedCategories->map(
-            fn($category) => $this->formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
-        );
-
-        return response()->json($formattedCategories->values());
-    }
 
   /**
    * Format a category for response.
