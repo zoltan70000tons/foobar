@@ -7,18 +7,19 @@ class PriceCalculation
   /**
    * Calculate the total price per passenger.
    *
-   * @param array $params An associative array containing all necessary parameters.
+   * @param float $cabinPrice The base price of the cabin
+   * @param int $cabinCapacity The capacity of the cabin
+   * @param bool $isPrivateCabin Whether the cabin is a private cabin (true) or shared (false)
+   * @param mixed $selectedAdjustments Collection or array of Adjustment models
    * @return array An array with 'total', 'totalPassenger', 'save', and 'extras' keys.
    */
-  public static function calculatePricePerPassenger(array $params): array
+  public static function calculatePricePerPassenger(
+    float $cabinPrice,
+    int $cabinCapacity,
+    bool $isPrivateCabin,
+    $selectedAdjustments
+  ): array
   {
-    // Extract parameters from the input array
-    $cabinPrice = (float) $params['cabinPrice'];
-    $cabinCapacity = (int) $params['cabinCapacity'];
-    $cabinType = (bool) $params['cabinType'];
-    $selectedAdjustments = $params['selectedAdjustments'];
-    $adjustments = $params['adjustments'];
-    $eventStatus = $params['eventStatus'];
 
     // Helper function to round to two decimal places
     $roundToTwoDecimals = fn($value) => round($value * 100) / 100;
@@ -33,41 +34,19 @@ class PriceCalculation
     $sumOfFixedDiscounts = 0;
 
     // Ensure $selectedAdjustments is an array and not empty
-    if (is_array($selectedAdjustments) && !empty($selectedAdjustments)) {
-      foreach ($selectedAdjustments as $addon) {
-        // Find percentage-based discounts
-        $adjustment = $adjustments
-          ->where('code', $addon['code'])
-          ->where('operation', 'PERCENTAGE')
-          ->where('type', 'DISCOUNT')
-          ->first();
+    if ($selectedAdjustments->isNotEmpty()) {
 
-        // Add the value only if the adjustment exists
-        if ($adjustment && isset($adjustment->value)) {
-          // Apply MEMBERSHIP discount only if event status is PRE-SALE
-          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'PRE-SALE') {
-            continue;
-          }
-          $sumOfPercentagesDiscounts += $adjustment->value;
-        }
-      }
+      // Get Total Percentage Based Discounts
+      $sumOfPercentagesDiscounts = $selectedAdjustments
+        ->where('operation', 'PERCENTAGE')
+        ->where('type', 'DISCOUNT')
+        ->sum('value');
 
-      foreach ($selectedAdjustments as $addon) {
-        // Find fixed discounts
-        $adjustment = $adjustments
-          ->where('code', $addon['code'])
-          ->where('operation', 'FIXED')
-          ->where('type', 'DISCOUNT')
-          ->first();
-
-        // Add the value only if the adjustment exists
-        if ($adjustment && isset($adjustment->value)) {
-          if (strpos($adjustment->code, 'MEMBERSHIP') !== false && $eventStatus !== 'PRE-SALE') {
-            continue;
-          }
-          $sumOfFixedDiscounts += $adjustment->value;
-        }
-      }
+      // Get Total Fixed Discounts
+      $sumOfFixedDiscounts = $selectedAdjustments
+        ->where('operation', 'FIXED')
+        ->where('type', 'DISCOUNT')
+        ->sum('value');
     }
 
     // Cap the percentage discount at 100%
@@ -86,33 +65,19 @@ class PriceCalculation
     $sumOfPercentageAddons = 0;
     $sumOfFixedAddons = 0;
 
-    if (is_array($selectedAdjustments) && !empty($selectedAdjustments)) {
-      foreach ($selectedAdjustments as $addon) {
-        // Find percentage-based addons
-        $adjustment = $adjustments
-          ->where('code', $addon['code'])
-          ->where('operation', 'PERCENTAGE')
-          ->where('type', 'ADDON')
-          ->first();
+    if ($selectedAdjustments->isNotEmpty()) {
 
-        if ($adjustment && isset($adjustment->value)) {
-          $sumOfPercentageAddons += $adjustment->value;
-        }
-      }
+      // Get Total Percentage Based Addons
+      $sumOfPercentageAddons = $selectedAdjustments
+        ->where('operation', 'PERCENTAGE')
+        ->where('type', 'ADDON')
+        ->sum('value');
 
-      foreach ($selectedAdjustments as $addon) {
-        // Find fixed addons
-        $adjustment = $adjustments
-          ->where('code', $addon['code'])
-          ->where('operation', 'FIXED')
-          ->where('type', 'ADDON')
-          ->first();
-
-        // Add the value only if the adjustment exists
-        if ($adjustment && isset($adjustment->value)) {
-          $sumOfFixedAddons += $adjustment->value;
-        }
-      }
+      // Get Total Fixed Addons
+      $sumOfFixedAddons = $selectedAdjustments
+        ->where('operation', 'FIXED')
+        ->where('type', 'ADDON')
+        ->sum('value');
     }
 
     // Calculate total addon cost (both fixed and percentage-based)
@@ -123,7 +88,7 @@ class PriceCalculation
     $totalPassenger = $roundToTwoDecimals($discountedPrice + $sumOfAddons);
 
     // Determine total based on cabin type
-    $total = $totalPassenger * ($cabinType ? $cabinCapacity : 1);
+    $total = $totalPassenger * ($isPrivateCabin ? $cabinCapacity : 1);
 
     // Calculate total savings
     $saveCalc = $cabinPrice - $discountedPrice;

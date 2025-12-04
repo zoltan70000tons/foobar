@@ -5,6 +5,23 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-12-03
+
+### Added
+- Optional "Choose Your Cabin" adjustment in manual booking UI
+- `getBookingFinalCost` endpoint to preCalculate a Booking Price
+- `SystemAdjustment` enum for type-safe adjustment code handling
+
+### Changed
+- Optimized adjustment retrieval from individual queries to single bulk query
+- Refactored `PriceCalculation::calculatePricePerPassenger()` to use explicit parameters instead of array
+- Improved `CartController::getCartData()` to use constructor injection and optimized adjustment fetching
+- Updated `AdjustmentsRepository` to use event-aware filtering for all adjustment queries
+- Simplified booking controller logic using `SystemAdjustment` enum instead of hardcoded strings
+
+### Removed
+- 7 obsolete adjustment repository methods: `getSingleTicketFeeId()`, `getPaidInFullId()`, `getTaxAdjustmentId()`, `getChooseYourCabinFeeId()`, `getCarbonOffsetFeeId()`, `getIdByCode()`, `getCarbonOffsetCodeByCabinCategorySpecId()`
+
 ## [1.3.2] - 2025-12-03
 
 ### Fixed

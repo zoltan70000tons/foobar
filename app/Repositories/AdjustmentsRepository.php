@@ -46,7 +46,14 @@ class AdjustmentsRepository
     }
   }
 
-  public function getAdjustmentsBySurvivorNumber($survivorNumber): int|null
+  /**
+   * Get Membership Adjustment based on survivor number.
+   *
+   * @param string|null $survivorNumber The survivor number to look up.
+   * @param int $eventId The event ID to filter adjustments.
+   * @return Adjustment|null
+   */
+  public function getAdjustmentsBySurvivorNumber($survivorNumber, int $eventId): Adjustment|null
   {
     if (!$survivorNumber) {
       return null;
@@ -65,59 +72,46 @@ class AdjustmentsRepository
 
     foreach (MemberShip::cases() as $membership) {
       if ($memberType == $membership->value) {
-        $result = Adjustment::where('code', '=', $membership->name)->first();
+        $result = Adjustment::where('code', '=', $membership->name)
+          ->where('event_id', $eventId)
+          ->first();
+        break;
       }
-    }
-
-    if ($result) {
-      $result = $result->id;
     }
 
     return $result;
   }
 
-  public function listAdjustments()
+  /**
+   * List all adjustments for a specific event.
+   *
+   * @param int $eventId The event ID to filter adjustments
+   * @param bool $systemOnly Whether to include only system adjustments
+   * @return Collection Collection of adjustments
+   */
+  public function listAdjustments(int $eventId, bool $systemOnly = false): Collection
   {
-    //return Adjustment::where('system', true)->get();
-    return Adjustment::query()->orderBy('system', 'DESC')->get(); //According to the Manual Adjustments - Adjustments
-    // Delete Functionality, custom adjustments should be up for reuse
+    return Adjustment::query()
+      ->where('event_id', $eventId)
+      ->when($systemOnly, function ($query) {
+        $query->where('is_system', true);
+      })
+      ->get();
   }
 
-  public function getSingleTicketFeeId(): int
+  /**
+   * Get multiple adjustments by their codes in a single query, filtered by event.
+   *
+   * @param array $codes Array of adjustment codes to retrieve
+   * @param int $eventId The event ID to filter by
+   * @return Collection Collection of adjustments keyed by code
+   */
+  public function getAdjustmentsByCodes(array $codes, int $eventId): Collection
   {
-    return Adjustment::query()->where('code', 'SINGLE_TICKET_FEE')->value('id');
-  }
-
-  public function getPaidInFullId(): int
-  {
-    return Adjustment::query()->where('code', 'PAID_IN_FULL')->value('id');
-  }
-
-  public function getTaxAdjustmentId(): int
-  {
-    return Adjustment::query()->where('code', 'TAX')->value('id');
-  }
-
-  public function getChooseYourCabinFeeId(): int
-  {
-    return Adjustment::query()->where('code', 'CHOOSE_YOUR_CABIN')->value('id');
-  }
-
-  public function getCarbonOffsetFeeId($code): int
-  {
-    return Adjustment::query()->where('code', $code)->value('id');
-  }
-
-  public function getIdByCode(string $code): int|null
-  {
-    return match ($code) {
-      'SINGLE_TICKET_FEE' => $this->getSingleTicketFeeId(),
-      'PAID_IN_FULL' => $this->getPaidInFullId(),
-      'TAX' => $this->getTaxAdjustmentId(),
-      'CHOOSE_YOUR_CABIN' => $this->getChooseYourCabinFeeId(),
-      'CARBON_OFFSET_I', 'CARBON_OFFSET_B', 'CARBON_OFFSET_S', 'CARBON_OFFSET_O' => $this->getCarbonOffsetFeeId($code),
-      default => null,
-    };
+    return Adjustment::query()
+      ->where('event_id', $eventId)
+      ->whereIn('code', $codes)
+      ->get();
   }
 
   /**

@@ -8,6 +8,9 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  OutlinedInput,
+  Chip,
+  ListItemText,
 } from "@mui/material";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import React, { useEffect, useState } from "react";
@@ -92,47 +95,64 @@ export default function SpecialRequest({
 
   let dietarySelect = <></>;
   if (dietarySelected) {
+    const selectValue = Array.isArray(passenger.dietary_preferences)
+      ? passenger.dietary_preferences
+      : typeof passenger.dietary_preferences === "string"
+        ? (() => {
+          try {
+            const parsed = JSON.parse(passenger.dietary_preferences);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })()
+        : [];
+
+    const ITEM_HEIGHT = 48;
+    const ITEM_PADDING_TOP = 8;
+    const MenuProps = {
+      PaperProps: {
+        style: {
+          maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+          maxWidth: "1200px",
+          width: "calc(100% - 64px)",
+        },
+      },
+    };
     dietarySelect = <>
       <InputLabel id="info-select-label">Please select dietary preferences</InputLabel>
       <Select
         labelId="dietary-options-select-label"
-        id="dietaryOptions"
-        name="dietaryOptions"
+        id="dietaryPreferences"
+        name="dietaryPreferences"
         label="Dietary Options"
-        autoWidth={true}
         multiple={true}
-        value={
-          Array.isArray(passenger.dietary_preferences)
-            ? passenger.dietary_preferences
-            : typeof passenger.dietary_preferences === "string"
-              ? (() => {
-                try {
-                  const parsed = JSON.parse(passenger.dietary_preferences);
-                  return Array.isArray(parsed) ? parsed : [];
-                } catch {
-                  return [];
-                }
-              })()
-              : []
-        }
+        value={selectValue}
+        fullWidth
         onChange={(e) => onChange("dietary_preferences", e.target.value)}
         sx={{
           backgroundColor: "rgba(255, 255, 255, 0.05)",
         }}
-        fullWidth
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              width: '100%',
-            },
-          },
-        }}
+        input={<OutlinedInput label="" />}
+        renderValue={(selected) => (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {(selected).map((value) => (
+              <Chip key={value} label={DietaryOptionsLabels[value]} size="small" />
+            ))}
+          </Box>
+        )}
+        MenuProps={MenuProps}
       >
-        {Object.values(DietaryOptions).map((option) => (
-          <MenuItem key={option} value={option}>
-            {DietaryOptionsLabels[option]}
-          </MenuItem>
-        ))}
+        {Object.values(DietaryOptions).map((option) => {
+          const arraySelected: string[] = selectValue ?? [];
+
+          return (
+            <MenuItem key={option} value={option}>
+              <Checkbox checked={arraySelected.includes(option)} />
+              <ListItemText primary={DietaryOptionsLabels[option]} />
+            </MenuItem>
+          );
+        })}
       </Select>
     </>
   }
