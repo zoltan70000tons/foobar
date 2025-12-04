@@ -5,6 +5,34 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-12-03
+
+### Added
+- Optional "Choose Your Cabin" adjustment in manual booking UI
+- `getBookingFinalCost` endpoint to preCalculate a Booking Price
+- `SystemAdjustment` enum for type-safe adjustment code handling
+
+### Changed
+- Optimized adjustment retrieval from individual queries to single bulk query
+- Refactored `PriceCalculation::calculatePricePerPassenger()` to use explicit parameters instead of array
+- Improved `CartController::getCartData()` to use constructor injection and optimized adjustment fetching
+- Updated `AdjustmentsRepository` to use event-aware filtering for all adjustment queries
+- Simplified booking controller logic using `SystemAdjustment` enum instead of hardcoded strings
+
+### Removed
+- 7 obsolete adjustment repository methods: `getSingleTicketFeeId()`, `getPaidInFullId()`, `getTaxAdjustmentId()`, `getChooseYourCabinFeeId()`, `getCarbonOffsetFeeId()`, `getIdByCode()`, `getCarbonOffsetCodeByCabinCategorySpecId()`
+
+## [1.3.2] - 2025-12-03
+
+### Fixed
+- Email invitation error response handling to correctly use `errorMessage` field instead of `message`
+- Passenger invitation error display in SendingStep component
+- Modal error handling for failed invitation requests
+
+### Changed
+- Updated email invitation API endpoint from `/api/my-booking/add-passenger-via-email` to `/api/manage-passengers/add-passenger-via-email`
+- Improved error handling flow in ModalSendInvitation component
+
 ## [1.3.1] - 2025-12-01
 
 ### Added

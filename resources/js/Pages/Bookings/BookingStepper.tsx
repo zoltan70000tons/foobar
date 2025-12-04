@@ -43,6 +43,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
+import { formatCurrency } from "@/Helpers/stringUtils";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -51,6 +52,13 @@ const TabPanel = ({ children, value, index }) => {
     </div>
   );
 };
+
+type PriceCalc = {
+  extras: number;
+  save: string;
+  total: number;
+  totalPassenger: number;
+}
 
 const BookingStepper: React.FC = ({
   cabinTypes,
@@ -106,6 +114,7 @@ const BookingStepper: React.FC = ({
   const [numberOfInstallments, setNumberOfInstallments] = useState(null);
   const [isNextDisabled, setIsNextDisabled] = useState(true);
   const [carbonOffset, setCarbonOffset] = useState(false);
+  const [youChooseYourCabin, setYouChooseYourCabin] = useState(false);
   const [isSingleRoom, setIsSingleRoom] = useState(false);
   const [fetching, setIsFetching] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
@@ -123,6 +132,8 @@ const BookingStepper: React.FC = ({
   const [createLoader, setCreateLoader] = useState(false);
   const eventId = cabinCategory?.event_id;
   const cabinTypeRef = useRef(null);
+  const [loadingFinalPrice, setLoadingFinalPrice] = useState<boolean>(true);
+  const [priceCalc, setPriceCalc] = useState<PriceCalc | null>(null);
 
   const validateGenders = (silent = false): boolean => {
     if (!cabinType || !selectedUser) return true;
@@ -305,6 +316,7 @@ const BookingStepper: React.FC = ({
       payment_plan: paymentPlan.value,
       number_of_installments: numberOfInstallments?.value,
       carbon_offset: carbonOffset,
+      you_choose_your_cabin: youChooseYourCabin,
       passenger: {
         id: passenger.id,
         first_name: passenger.first_name,
@@ -414,6 +426,55 @@ const BookingStepper: React.FC = ({
     }
   };
 
+  useEffect(() => {
+    if (activeStep === 4) {
+      getBookingFinalPrice();
+    }
+  }, [activeStep]);
+
+  const getBookingFinalPrice = async () => {
+    if (!cabinType || !cabinCategory) {
+      return;
+    }
+    const { capacity, cabin_category_spec_id, id: cabinCategoryId } = cabinCategory;
+
+    const payload = {
+      cabin_number: cabinNumber,
+      cabin_capacity: capacity,
+      cabin_category_id: cabinCategoryId,
+      cabin_type_id: cabinType.id,
+      cabin_category_spec_id: cabin_category_spec_id,
+      payment_plan: paymentPlan.value,
+      number_of_installments: numberOfInstallments?.value,
+      carbon_offset: carbonOffset,
+      you_choose_your_cabin: youChooseYourCabin,
+      passenger: {
+        id: passenger.id,
+        gender: passenger.gender,
+        survivor_number: passenger.survivor_number,
+        payment_method: passenger.payment_method,
+      },
+    };
+    try {
+      setLoadingFinalPrice(true);
+      const response = await axios.get(route("bookings.getBookingFinalCost", { event: eventId }), {
+        params: payload,
+      });
+      if (response?.data?.error) {
+        showSnackbar(response.data.error, "error");
+      }
+
+      if (response?.data?.priceCalc) {
+        setPriceCalc(response?.data?.priceCalc);
+      }
+    } catch (error) {
+      //showSnackbar(error.response.data.error, "error");
+      console.error("Couldn't get booking final price:", error);
+    } finally {
+      setLoadingFinalPrice(false);
+    }
+  }
+
   return (
     <Box sx={{ width: "100%", margin: "0 auto", mt: 4 }}>
       <Stepper activeStep={activeStep}>
@@ -447,7 +508,7 @@ const BookingStepper: React.FC = ({
                   <Autocomplete
                     fullWidth
                     options={filteredCategories}
-                    getOptionLabel={(option) => `${option.title} - ${option.capacity_description}`}
+                    getOptionLabel={(option) => `${option.title} - ${option.capacity_description} - ${formatCurrency(option.price)}`}
                     value={cabinCategory}
                     onChange={(event, newValue) => {
                       setCabinCategory(newValue);
@@ -939,19 +1000,34 @@ const BookingStepper: React.FC = ({
         )}
 
         {activeStep === 3 && (
-          <Box>
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              Carbon Offset
-            </Typography>
-            <Grid item xs={12} md={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox size="small" checked={carbonOffset} onChange={(e) => setCarbonOffset(!carbonOffset)} />
-                }
-                label="Carbon Offset"
-              />
-            </Grid>
-          </Box>
+          <>
+            <Box>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Carbon Offset
+              </Typography>
+              <Grid item xs={12} md={3}>
+                <FormControlLabel
+                  control={
+                    <Checkbox size="small" checked={carbonOffset} onChange={(e) => setCarbonOffset(!carbonOffset)} />
+                  }
+                  label="Carbon Offset"
+                />
+              </Grid>
+            </Box>
+            <Box>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                You Choose Your Cabin
+              </Typography>
+              <Grid item xs={12} md={3}>
+                <FormControlLabel
+                  control={
+                    <Checkbox size="small" checked={youChooseYourCabin} onChange={(e) => setYouChooseYourCabin(!youChooseYourCabin)} />
+                  }
+                  label="You Choose Your Cabin"
+                />
+              </Grid>
+            </Box>
+          </>
         )}
 
         {activeStep === 4 && (
@@ -973,8 +1049,16 @@ const BookingStepper: React.FC = ({
             </Tabs>
 
             {/* Tab Panel for Cabin Details */}
-            <TabPanel value={tabValue} index={0}>
-              <TableContainer component={Paper} elevation={3}>
+            {loadingFinalPrice && (
+              <CircularProgress
+                color="inherit"
+                size={40}
+                style={{ position: "absolute", inset: "50%", marginLeft: "-20px" }}
+              />
+            )}
+            {!loadingFinalPrice && (
+              <TabPanel value={tabValue} index={0}>
+                <TableContainer component={Paper} elevation={3}>
                 <Table size="small">
                   <TableBody>
                     <TableRow>
@@ -1003,14 +1087,31 @@ const BookingStepper: React.FC = ({
                     </TableRow>
                     <TableRow>
                       <TableCell>
-                        <strong>Price Per Person:</strong>
+                        <strong>Price Per Person Before Calculations:</strong>
                       </TableCell>
-                      <TableCell>{cabinCategory.price}</TableCell>
+                      <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
                     </TableRow>
+                    {priceCalc?.totalPassenger && (
+                      <TableRow>
+                        <TableCell>
+                          <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
+                        </TableCell>
+                        <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
+                      </TableRow>
+                    )}
+                    {priceCalc?.total && (
+                      <TableRow>
+                        <TableCell>
+                          <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                        </TableCell>
+                        <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
-            </TabPanel>
+              </TabPanel>
+            )}
 
             {/* Tab Panel for Lead Passenger */}
             <TabPanel value={tabValue} index={1}>

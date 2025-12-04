@@ -14,15 +14,20 @@ use App\Models\Cart;
 use App\Helpers\AgeRestriction;
 use App\Helpers\ErrorResponse;
 use Illuminate\Support\Str;
+use App\Enums\SystemAdjustment;
 use App\Enums\ErrorCode;
+use App\Repositories\AdjustmentsRepository;
 
 class CartController extends Controller
 {
-  protected $reservationService;
+  protected AdjustmentsRepository $adjustmentsRepository;
+  
+  protected ReservationService $reservationService;
 
-  public function __construct(ReservationService $reservationService)
+  public function __construct(ReservationService $reservationService, AdjustmentsRepository $adjustmentsRepository)
   {
     $this->reservationService = $reservationService;
+    $this->adjustmentsRepository = $adjustmentsRepository;
   }
   /*
   |--------------------------------------------------------------------------
@@ -45,8 +50,26 @@ class CartController extends Controller
     }
 
     $eventId = $cart['event_id'] ?? $eventId;
-    // Fetch adjustments and tax
-    $adjustments = Adjustment::where('event_id', $eventId)->get();
+    
+    // Extract adjustment codes from cart addons
+    $adjustmentCodes = [];
+    if (isset($cart['addons']) && is_array($cart['addons'])) {
+      $adjustmentCodes = collect($cart['addons'])
+        ->pluck('code')
+        ->filter()
+        ->toArray();
+    }
+
+    // Always include TAX (avoid duplicates)
+    if (!in_array(SystemAdjustment::TAX->value, $adjustmentCodes)) {
+      $adjustmentCodes[] = SystemAdjustment::TAX->value;
+    }
+
+    // Remove duplicates just in case
+    $adjustmentCodes = array_unique($adjustmentCodes);
+
+    // Fetch only the adjustments we need in a single query
+    $adjustments = $this->adjustmentsRepository->getAdjustmentsByCodes($adjustmentCodes, $eventId);
 
     $category = CabinCategorySpec::find($cart['cabin_category']);
     $context = [
@@ -61,46 +84,15 @@ class CartController extends Controller
       ],
     ];
 
+    // Apply restrictions to adjustments
     $adjustments->transform(function ($adjustment) use ($context) {
-      // Check if adjustment has restrictions and does not pass them
       if (method_exists($adjustment, 'shouldApply') && !$adjustment->shouldApply($context)) {
-        $adjustment->value = 0; // If restrictions do not pass, set value to 0
-        return $adjustment;
+        $adjustment->value = 0;
       }
-
       return $adjustment;
     });
 
-    if (isset($cart['addons']) && is_array($cart['addons'])) {
-      $cart['addons'] = collect($cart['addons'])
-        ->map(function ($addon) use ($adjustments) {
-          if (!is_array($addon)) {
-            $addon = (array) $addon;
-          }
-
-          $matchedAdjustment = $adjustments->firstWhere('code', $addon['code'] ?? null);
-
-          if (!$matchedAdjustment) {
-            return $addon;
-          }
-
-          // Use the value from the transformed adjustment (which may be 0 based on restrictions)
-          $value = $matchedAdjustment->value;
-
-          if (is_numeric($value)) {
-            $value = number_format((float) $value, 2, '.', '');
-          }
-
-          return array_merge($addon, [
-            'value' => $value,
-            'operation' => $matchedAdjustment->operation,
-            'type' => $matchedAdjustment->type,
-          ]);
-        })
-        ->toArray();
-    }
-
-    $taxAddon = $adjustments->where('code', 'TAX')->first()?->value ?? 0;
+    $taxAddon = $adjustments->where('code', SystemAdjustment::TAX->value)->first()?->value ?? 0;
 
     $cabinTitle =
       CabinCategorySpec::where('category_code', $cart['cabin_code'])
@@ -110,18 +102,15 @@ class CartController extends Controller
         ?->first()
         ?->getTitleAttribute() ?? null;
 
-    $eventStatus = Event::find($eventId)->status;
     $errorCode = null;
 
     if (isset($cart['cabin_price'])) {
-      $priceCalc = PriceCalculation::calculatePricePerPassenger([
-        'cabinPrice' => (float) $cart['cabin_price'],
-        'cabinCapacity' => (int) $cart['cabin_capacity'],
-        'cabinType' => $cart['cabin_type'] === 'private-cabin',
-        'selectedAdjustments' => $cart['addons'],
-        'adjustments' => $adjustments,
-        'eventStatus' => $eventStatus,
-      ]);
+      $priceCalc = PriceCalculation::calculatePricePerPassenger(
+        (float) $cart['cabin_price'],
+        (int) $cart['cabin_capacity'],
+        $cart['cabin_type'] === 'private-cabin',
+        $adjustments
+      );
 
       $cart = array_merge($cart, [
         'price_total' => $priceCalc['total'],

@@ -169,6 +169,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::post('/events/{id}/bookings/update-tags', [BookingsController::class, 'updateTags'])->name(
     'bookings.updateTags'
   );
+    Route::get('/events/{event}/bookings/getFinalCost', [BookingsController::class, 'getBookingFinalCost'])
+        ->name('bookings.getBookingFinalCost');
   Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])->name('bookings.show');
   Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])->name('bookings.update');
   Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name(
