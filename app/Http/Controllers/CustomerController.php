@@ -26,6 +26,7 @@ use Inertia\Response as InertiaResponse;
 use DB;
 use Illuminate\Http\Response;
 use Log;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CustomerController extends Controller
 {
@@ -81,20 +82,28 @@ class CustomerController extends Controller
     return Inertia::render('Customer/Create');
   }
 
-  public function store(CustomerRequest $request): RedirectResponse|Response|InertiaResponse
+  public function store(CustomerRequest $request): JsonResponse
   {
     try {
-      return $this->withPermission(
+      $result = $this->withPermission(
         [Permissions::CreateCustomers],
         function ($request) {
-          $this->customerRepository->store($request);
-          return back()->with('flash', 'Customer created successfully.');
+          $customer = $this->customerRepository->store($request);
+          return response()->json(['customer' => $customer], 200);
         },
         $request
       );
+
+      // Convert to JsonResponse if not already.
+      if ($result instanceof JsonResponse) {
+        return $result;
+      }
+
+      // If permission denied, return a JSON error.
+      return response()->json(['error' => 'Permission denied.'], 403);
     } catch (\Exception $e) {
       $this->logException($e);
-      return back()->with('error', 'Problem creating customer.');
+      return response()->json(['error' => 'Problem creating customer.'], 500);
     }
   }
 
@@ -158,6 +167,60 @@ class CustomerController extends Controller
       $this->logException($e);
 
       return redirect()->route('customers.index')->with('error', 'Something went wrong.');
+    }
+  }
+
+  /*
+   * ----------------------------------------------------------------------
+   * Single Customer Data
+   * ----------------------------------------------------------------------
+   * Get data about user and return as json response
+   * - with permission to view customers
+   *
+   * @param User $user_id
+   * @return JsonResponse
+   * ----------------------------------------------------------------------
+   */
+  public function getCustomerJson(User $user): JsonResponse
+  {
+    try {
+      $result = $this->withPermission(
+        [Permissions::ViewCustomers],
+        function ($user) {
+          $user = Customer::with([
+            'tags',
+            'detail',
+            'survivorNumber',
+            'customerAddress',
+            'bookings',
+            'comments.author',
+            'logs.author',
+          ])->find($user->id);
+          $bookings = $this->customerRepository->getBookingDataForCustomer($user);
+          $availableTags = Tag::type('customer')->get();
+          // check if user have generated temporary password
+          $isTemporaryPassword = TemporaryPassword::where('customer_id', $user->id)->exists();
+          return response()->json(
+            [
+              'customer' => $user,
+              'bookings' => $bookings,
+              'availableTags' => $availableTags,
+              'isTemporaryPassword' => $isTemporaryPassword,
+            ],
+            200
+          );
+        },
+        $user
+      );
+
+      if ($result instanceof JsonResponse) {
+        return $result;
+      }
+
+      return response()->json(['error' => 'Permission denied.'], 403);
+    } catch (\Exception $e) {
+      $this->logException($e);
+      return response()->json(['error' => 'Something went wrong.'], 500);
     }
   }
 

@@ -58,14 +58,19 @@ type PriceCalc = {
   save: string;
   total: number;
   totalPassenger: number;
-}
+};
 
-const BookingStepper: React.FC = ({
+type Props = {
+  createdCustomerId?: string | null;
+};
+
+const BookingStepper: React.FC<Props> = ({
   cabinTypes,
   cabinCategories,
   close,
   setIsCreateCustomerVisible,
   onBookingCreated,
+  createdCustomerId,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [passenger, setPassenger] = useState({
@@ -159,6 +164,23 @@ const BookingStepper: React.FC = ({
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  // if createdCustomerId is set, prefill passenger data
+  // useEffect(() => {
+  //   if (createdCustomerId) {
+  //     const fetchCustomerData = async () => {
+  //       try {
+  //         const response = await axios.get(`/customers/json/${createdCustomerId}`);
+  //         const customer = response.data;
+  //         setSelectedUser(customer);
+  //       } catch (error) {
+  //         console.error("Error fetching customer data:", error);
+  //       }
+  //     };
+
+  //     fetchCustomerData();
+  //   }
+  // }, [createdCustomerId]);
 
   useEffect(() => {
     if (cabinTypeRef.current) {
@@ -351,7 +373,7 @@ const BookingStepper: React.FC = ({
     };
 
     if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
-      console.log(!payload.cabin_number , !payload.passenger.first_name , !payload.passenger.email)
+      console.log(!payload.cabin_number, !payload.passenger.first_name, !payload.passenger.email);
       showSnackbar("Please fill all required fields!", "error");
       return;
     }
@@ -473,7 +495,7 @@ const BookingStepper: React.FC = ({
     } finally {
       setLoadingFinalPrice(false);
     }
-  }
+  };
 
   return (
     <Box sx={{ width: "100%", margin: "0 auto", mt: 4 }}>
@@ -508,7 +530,9 @@ const BookingStepper: React.FC = ({
                   <Autocomplete
                     fullWidth
                     options={filteredCategories}
-                    getOptionLabel={(option) => `${option.title} - ${option.capacity_description} - ${formatCurrency(option.price)}`}
+                    getOptionLabel={(option) =>
+                      `${option.title} - ${option.capacity_description} - ${formatCurrency(option.price)}`
+                    }
                     value={cabinCategory}
                     onChange={(event, newValue) => {
                       setCabinCategory(newValue);
@@ -618,10 +642,10 @@ const BookingStepper: React.FC = ({
                         <Box component="li" {...optionProps} key={key}>
                           {option.cabin_number}{" "}
                           {option.status === "RESERVED" && (
-                          <Chip sx={{ ml: 1 }} label={"INTERNALLY AVAILABLE"} color="warning" size="small" />
+                            <Chip sx={{ ml: 1 }} label={"INTERNALLY AVAILABLE"} color="warning" size="small" />
                           )}
                           {option.status === "AVAILABLE" && (
-                          <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
+                            <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
                           )}
                           {option.status === "PARTIALLY_BOOKED" && (
                             <Chip sx={{ ml: 1 }} label={"PARTIALLY BOOKED"} color="info" size="small" />
@@ -698,7 +722,9 @@ const BookingStepper: React.FC = ({
                 <Grid item xs>
                   <Autocomplete
                     options={suggestions}
-                    getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email ?? 'N/A'}) - SN: ${option.survivor_number}`}
+                    getOptionLabel={(option) =>
+                      `${option.first_name} ${option.last_name} (${option.email ?? "N/A"}) - SN: ${option.survivor_number}`
+                    }
                     loading={loading}
                     value={selectedUser}
                     inputValue={searchQuery}
@@ -723,7 +749,7 @@ const BookingStepper: React.FC = ({
                     renderOption={(props, option) => (
                       <li {...props} key={option.email}>
                         <div style={{ display: "flex", alignItems: "center" }}>
-                          <span>{`${option.first_name} ${option.last_name} (${option.email ?? 'N/A'}) - SN: ${option.survivor_number}`}</span>
+                          <span>{`${option.first_name} ${option.last_name} (${option.email ?? "N/A"}) - SN: ${option.survivor_number}`}</span>
                           {option.has_booking && (
                             <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: "20px" }} />
                           )}
@@ -990,11 +1016,7 @@ const BookingStepper: React.FC = ({
         {activeStep === 2 && (
           <Box sx={{ mt: 4 }}>
             <Grid item xs={12}>
-              <SpecialRequest
-                disabledByDesign={false}
-                onChange={onChange}
-                passenger={passenger}
-              />
+              <SpecialRequest disabledByDesign={false} onChange={onChange} passenger={passenger} />
             </Grid>
           </Box>
         )}
@@ -1021,7 +1043,11 @@ const BookingStepper: React.FC = ({
               <Grid item xs={12} md={3}>
                 <FormControlLabel
                   control={
-                    <Checkbox size="small" checked={youChooseYourCabin} onChange={(e) => setYouChooseYourCabin(!youChooseYourCabin)} />
+                    <Checkbox
+                      size="small"
+                      checked={youChooseYourCabin}
+                      onChange={(e) => setYouChooseYourCabin(!youChooseYourCabin)}
+                    />
                   }
                   label="You Choose Your Cabin"
                 />
@@ -1059,57 +1085,57 @@ const BookingStepper: React.FC = ({
             {!loadingFinalPrice && (
               <TabPanel value={tabValue} index={0}>
                 <TableContainer component={Paper} elevation={3}>
-                <Table size="small">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Type:</strong>
-                      </TableCell>
-                      <TableCell>{cabinType.cabin_type}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Category:</strong>
-                      </TableCell>
-                      <TableCell>{cabinCategory.title}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Cabin Number:</strong>
-                      </TableCell>
-                      <TableCell>{cabinNumber}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Capacity:</strong>
-                      </TableCell>
-                      <TableCell>{cabinCategory.spec.capacity}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Price Per Person Before Calculations:</strong>
-                      </TableCell>
-                      <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
-                    </TableRow>
-                    {priceCalc?.totalPassenger && (
+                  <Table size="small">
+                    <TableBody>
                       <TableRow>
                         <TableCell>
-                          <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
+                          <strong>Type:</strong>
                         </TableCell>
-                        <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
+                        <TableCell>{cabinType.cabin_type}</TableCell>
                       </TableRow>
-                    )}
-                    {priceCalc?.total && (
                       <TableRow>
                         <TableCell>
-                          <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                          <strong>Category:</strong>
                         </TableCell>
-                        <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                        <TableCell>{cabinCategory.title}</TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Cabin Number:</strong>
+                        </TableCell>
+                        <TableCell>{cabinNumber}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Capacity:</strong>
+                        </TableCell>
+                        <TableCell>{cabinCategory.spec.capacity}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Price Per Person Before Calculations:</strong>
+                        </TableCell>
+                        <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
+                      </TableRow>
+                      {priceCalc?.totalPassenger && (
+                        <TableRow>
+                          <TableCell>
+                            <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
+                          </TableCell>
+                          <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
+                        </TableRow>
+                      )}
+                      {priceCalc?.total && (
+                        <TableRow>
+                          <TableCell>
+                            <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                          </TableCell>
+                          <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </TabPanel>
             )}
 

@@ -3,8 +3,8 @@ import { Button, Box, Modal, Paper } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
-import { router } from "@inertiajs/react";
 import CreateCustomer from "../Customer/partials/CreateCustomer";
+import { CabinCategory } from "@/interfaces/CabinCategory";
 
 const style = {
   position: "absolute",
@@ -22,8 +22,15 @@ const style = {
   maxWidth: 1200,
 };
 
-export default function NewBookingModal({ cabinTypes, cabinCategories, onBookingCreated }) {
-  const [open, setOpen] = useState(false);
+type Props = {
+  cabinTypes: Array<{ id: number; name: string }>;
+  cabinCategories: CabinCategory[];
+  onBookingCreated: () => void;
+};
+
+export default function NewBookingModal({ cabinTypes, cabinCategories, onBookingCreated }: Props) {
+  const [open, setOpen] = useState<boolean>(false);
+  const [createdCustomerId, setCreatedCustomerId] = useState<string | null>(null);
 
   // open and set param modal in url
   const handleOpen = () => {
@@ -88,6 +95,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
               close={handleClose}
               setIsCreateCustomerVisible={setIsCreateCustomerVisible}
               onBookingCreated={onBookingCreated}
+              createdCustomerId={createdCustomerId}
             />
             <Box
               sx={{
@@ -96,7 +104,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
                 justifyContent: "flex-end",
               }}
             >
-              {isCreateCustomerVisible && <CustomerModal />}
+              {isCreateCustomerVisible && <CustomerModal setCreatedCustomerId={setCreatedCustomerId} />}
               <Button onClick={handleClose} variant="outlined" color="secondary">
                 Cancel
               </Button>
@@ -108,7 +116,12 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
   );
 }
 
-const CustomerModal = () => {
+type CustomerModalProps = {
+  setCreatedCustomerId?: (id: string) => void;
+};
+
+// Customer Modal
+const CustomerModal = ({ setCreatedCustomerId }: CustomerModalProps) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     console.log("Opening Customer Modal");
@@ -146,13 +159,12 @@ const CustomerModal = () => {
             overflow: "auto",
             alignItems: "center",
             justifyContent: "center",
-
             py: 0,
             zIndex: (theme) => theme.zIndex.modal + 1,
           }}
         >
           <Box sx={{ position: "relative" }}>
-            <CreateCustomer handleClose={handleClose} />
+            <CreateCustomer handleClose={handleClose} setCreatedCustomerId={setCreatedCustomerId} />
           </Box>
         </Box>
       </Modal>

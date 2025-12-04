@@ -28,6 +28,7 @@ import PhoneNumber from "@/Components/PhoneNumber";
 import { usePermissions } from "@/Providers/PermissionContext";
 import dayjs from "dayjs";
 import iso3166 from "iso-3166-2";
+import axios from "axios";
 
 type CountryWithSubs = ReturnType<typeof iso3166.country> & {
   sub?: Record<string, { type: string; name: string }>;
@@ -35,9 +36,10 @@ type CountryWithSubs = ReturnType<typeof iso3166.country> & {
 
 type Props = {
   handleClose?: () => void;
+  setCreatedCustomerId?: (id: string) => void;
 };
 
-export default function CreateCustomer({ handleClose }: Props) {
+export default function CreateCustomer({ handleClose, setCreatedCustomerId }: Props) {
   const { hasPermission } = usePermissions();
 
   const { data, setData, errors, reset, processing } = useForm({
@@ -108,27 +110,61 @@ export default function CreateCustomer({ handleClose }: Props) {
     setData(name, value as TForm[keyof TForm]);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // error helper
+  function extractErrorMessages(error: any): string {
+    const data = error?.response?.data ?? error;
+
+    if (data.errors && typeof data.errors === "object") {
+      const messages: string[] = [];
+
+      Object.values(data.errors).forEach((value) => {
+        if (Array.isArray(value)) {
+          messages.push(...value);
+        } else if (typeof value === "string") {
+          messages.push(value);
+        }
+      });
+
+      return messages.join("\n");
+    }
+
+    if (typeof data.message === "string") {
+      return data.message;
+    }
+
+    if (typeof data === "object") {
+      return JSON.stringify(data);
+    }
+
+    return "An unknown error occurred.";
+  }
+
+  // Submit
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData();
     for (const key in data) {
       formData.append(key, data[key]);
     }
-    router.post(route("customers.store"), formData, {
-      forceFormData: true,
-      onSuccess: (response) => {
-        showSnackbar("Customer created successfully", "success");
-        reset();
-        if (handleClose) {
-          handleClose();
-        }
-      },
-      onError: (errors) => {
-        const errorMessages = Object.values(errors).join("\n");
-        showSnackbar(`Error creating customer\n${errorMessages}`, "error");
-      },
-    });
+
+    try {
+      const res = await axios.post(route("customers.store"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Success
+      showSnackbar("Customer created successfully", "success");
+      reset();
+
+      handleClose?.();
+      setCreatedCustomerId?.(res.data.customer.id);
+    } catch (error: any) {
+      const errorText = extractErrorMessages(error);
+      showSnackbar(`Error creating customer\n${errorText}`, "error");
+    }
   };
 
   return (
