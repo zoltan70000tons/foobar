@@ -61,7 +61,7 @@ type PriceCalc = {
 };
 
 type Props = {
-  createdCustomerId?: string | null;
+  createdCustomer?: string | null;
 };
 
 const BookingStepper: React.FC<Props> = ({
@@ -70,7 +70,7 @@ const BookingStepper: React.FC<Props> = ({
   close,
   setIsCreateCustomerVisible,
   onBookingCreated,
-  createdCustomerId,
+  createdCustomer,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [passenger, setPassenger] = useState({
@@ -164,23 +164,6 @@ const BookingStepper: React.FC<Props> = ({
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
-
-  // if createdCustomerId is set, prefill passenger data
-  // useEffect(() => {
-  //   if (createdCustomerId) {
-  //     const fetchCustomerData = async () => {
-  //       try {
-  //         const response = await axios.get(`/customers/json/${createdCustomerId}`);
-  //         const customer = response.data;
-  //         setSelectedUser(customer);
-  //       } catch (error) {
-  //         console.error("Error fetching customer data:", error);
-  //       }
-  //     };
-
-  //     fetchCustomerData();
-  //   }
-  // }, [createdCustomerId]);
 
   useEffect(() => {
     if (cabinTypeRef.current) {

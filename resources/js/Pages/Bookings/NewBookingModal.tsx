@@ -30,7 +30,7 @@ type Props = {
 
 export default function NewBookingModal({ cabinTypes, cabinCategories, onBookingCreated }: Props) {
   const [open, setOpen] = useState<boolean>(false);
-  const [createdCustomerId, setCreatedCustomerId] = useState<string | null>(null);
+  const [createdCustomer, setCreatedCustomer] = useState<any | null>(null);
 
   // open and set param modal in url
   const handleOpen = () => {
@@ -95,7 +95,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
               close={handleClose}
               setIsCreateCustomerVisible={setIsCreateCustomerVisible}
               onBookingCreated={onBookingCreated}
-              createdCustomerId={createdCustomerId}
+              createdCustomer={createdCustomer}
             />
             <Box
               sx={{
@@ -104,7 +104,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
                 justifyContent: "flex-end",
               }}
             >
-              {isCreateCustomerVisible && <CustomerModal setCreatedCustomerId={setCreatedCustomerId} />}
+              {isCreateCustomerVisible && <CustomerModal setCreatedCustomer={setCreatedCustomer} />}
               <Button onClick={handleClose} variant="outlined" color="secondary">
                 Cancel
               </Button>
@@ -117,11 +117,11 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
 }
 
 type CustomerModalProps = {
-  setCreatedCustomerId?: (id: string) => void;
+  setCreatedCustomer?: (customer: any) => void;
 };
 
 // Customer Modal
-const CustomerModal = ({ setCreatedCustomerId }: CustomerModalProps) => {
+const CustomerModal = ({ setCreatedCustomer }: CustomerModalProps) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
     console.log("Opening Customer Modal");
@@ -164,7 +164,7 @@ const CustomerModal = ({ setCreatedCustomerId }: CustomerModalProps) => {
           }}
         >
           <Box sx={{ position: "relative" }}>
-            <CreateCustomer handleClose={handleClose} setCreatedCustomerId={setCreatedCustomerId} />
+            <CreateCustomer handleClose={handleClose} setCreatedCustomer={setCreatedCustomer} />
           </Box>
         </Box>
       </Modal>

@@ -36,10 +36,10 @@ type CountryWithSubs = ReturnType<typeof iso3166.country> & {
 
 type Props = {
   handleClose?: () => void;
-  setCreatedCustomerId?: (id: string) => void;
+  setCreatedCustomer?: (customer: any) => void;
 };
 
-export default function CreateCustomer({ handleClose, setCreatedCustomerId }: Props) {
+export default function CreateCustomer({ handleClose, setCreatedCustomer }: Props) {
   const { hasPermission } = usePermissions();
 
   const { data, setData, errors, reset, processing } = useForm({
@@ -160,7 +160,7 @@ export default function CreateCustomer({ handleClose, setCreatedCustomerId }: Pr
       reset();
 
       handleClose?.();
-      setCreatedCustomerId?.(res.data.customer.id);
+      setCreatedCustomer?.(res.data.customer);
     } catch (error: any) {
       const errorText = extractErrorMessages(error);
       showSnackbar(`Error creating customer\n${errorText}`, "error");
