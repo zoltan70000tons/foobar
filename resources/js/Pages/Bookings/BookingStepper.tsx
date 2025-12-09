@@ -63,7 +63,7 @@ type PriceCalc = {
 
 type BookingStepperProps = {
   cabinTypes: Array<{ id: number; name: string }>;
-  cabinCategories: CabinCategory[];
+  cabinCategories: any[];
   close: () => void;
   setIsCreateCustomerVisible: (visible: boolean) => void;
   onBookingCreated: () => void;
