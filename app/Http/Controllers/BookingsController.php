@@ -151,6 +151,7 @@ class BookingsController extends Controller
       'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
       'cabin_category_id' => ['required', 'integer', 'exists:cabin_categories,id'],
       'payment_plan' => ['required', Rule::in(['INSTALLMENTS', 'PAY_IN_FULL'])],
+      'bed_configuration' => ['required', Rule::in('SEPARATED', 'JOINED')],
       'carbon_offset' => ['required', 'boolean'],
       'you_choose_your_cabin' => ['required', 'boolean'],
       'number_of_installments' => ['nullable', 'integer', 'min:1', 'required_if:payment_plan,INSTALLMENTS'],
@@ -241,6 +242,7 @@ class BookingsController extends Controller
       $payment_plan = $validated['payment_plan'];
       $carbonOffset = $validated['carbon_offset'];
       $youChooseYourCabin = $validated['you_choose_your_cabin'];
+      $bedConfig = $validated['bed_configuration'];
 
       return $this->withPermission(
         [Permissions::CreateBookings],
@@ -253,7 +255,8 @@ class BookingsController extends Controller
           $payment_plan,
           $number_of_installments,
           $carbonOffset,
-          $youChooseYourCabin
+          $youChooseYourCabin,
+          $bedConfig
         ) {
           $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number, $cabinCategoryId) {
             $query->where('cabin_number', $cabin_number);
@@ -316,6 +319,7 @@ class BookingsController extends Controller
               'customer_id' => $passenger_data['id'],
               'payment_plan' => $payment_plan,
               'number_of_installments' => $number_of_installments,
+              'bed_config' => $bedConfig,
               'addons' => array_map(fn($id) => ['id' => $id], $adjustmentIds),
             ];
             
@@ -332,7 +336,8 @@ class BookingsController extends Controller
         $payment_plan,
         $number_of_installments,
         $carbonOffset,
-        $youChooseYourCabin
+        $youChooseYourCabin,
+        $bedConfig
       );
       return redirect()->back()->with('flash', [
         'message' => 'Booking created successfully.',
