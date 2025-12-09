@@ -308,7 +308,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                       }}
                     >
                       <Typography variant={'body2'}>Locked by: </Typography>
-                      <Chip icon={<FaceIcon />} color="warning" label={isLockedBy} />z
+                      <Chip icon={<FaceIcon />} color="warning" label={isLockedBy} />
                     </Box>
                   )}
                 </Box>

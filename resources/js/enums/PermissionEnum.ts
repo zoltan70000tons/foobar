@@ -111,4 +111,8 @@ export enum Permissions {
 
     //Logs
     ViewLogs = "View Logs",
+
+    //Installments
+
+    EditInstallments = "Edit Installments",
 }

@@ -354,6 +354,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 booking={booking}
                 installments={filteredInstallments}
                 setIsBookingError={(error) => console.error("Booking Error:", error)}
+                editMode={editMode}
               />
 
               {/* Payment Details */}
