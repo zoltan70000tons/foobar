@@ -70,7 +70,7 @@ type BookingStepperProps = {
   createdCustomer: Customer | null;
 };
 
-const BookingStepper: React.FC<Props> = ({
+const BookingStepper: React.FC<BookingStepperProps> = ({
   cabinTypes,
   cabinCategories,
   close,
