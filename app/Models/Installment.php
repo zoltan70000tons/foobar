@@ -29,5 +29,9 @@ class Installment extends Model
     return $this->belongsTo(Fee::class, 'fee_id');
   }
 
+  public function passenger(){
+    return $this->belongsTo(Passenger::class, 'passenger_id');
+  }
+
 
 }

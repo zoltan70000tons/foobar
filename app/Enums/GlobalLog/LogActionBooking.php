@@ -76,4 +76,6 @@ enum LogActionBooking: string
 
     //Cron
     case SURVIVOR_NUMBER_SYNCED = 'SURVIVOR_NUMBER_SYNCED';
+
+    case PAYMENT_SCHEDULE_UPDATED = 'PAYMENT_SCHEDULE_UPDATED';
 }
