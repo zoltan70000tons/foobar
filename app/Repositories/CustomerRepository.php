@@ -380,7 +380,7 @@ class CustomerRepository implements CustomerInterface
       ]);
 
       DB::commit();
-      return $user;
+      return $after;
     } catch (Exception $e) {
       DB::rollBack();
       throw $e;

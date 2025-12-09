@@ -79,7 +79,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   createdCustomer,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [passenger, setPassenger] = useState({
+  const initialPassenger = {
     id: "",
     first_name: "",
     middle_name: "",
@@ -107,7 +107,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     newsletter: false,
     passenger_allocated_cost: "",
     passenger_balance: "",
-  });
+  };
+  const [passenger, setPassenger] = useState(initialPassenger);
   const [cabinType, setCabinType] = useState(null);
   const [cabinCategory, setCabinCategory] = useState(null);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -129,6 +130,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   const [isSingleRoom, setIsSingleRoom] = useState(false);
   const [fetching, setIsFetching] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
+  
+
   const paymentPlanOptions = [
     {
       id: "INSTALLMENTS",
@@ -167,9 +170,49 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     return true;
   };
 
+  const resetState = () => {
+    setActiveStep(0);
+    setPassenger({ ...initialPassenger });
+    setCabinType(null);
+    setCabinCategory(null);
+    setFilteredCategories([]);
+    setAvailableCabins([]);
+    setCabinNumber(null);
+    setAdvancedFilters(false);
+    setSelectedDeck(null);
+    setSelectedLocation("");
+    setOnlyAccessible(false);
+    setSearchQuery("");
+    setSuggestions([]);
+    setSelectedUser(null);
+    setLoading(false);
+    setPaymentPlan(null);
+    setNumberOfInstallments(null);
+    setIsNextDisabled(true);
+    setCarbonOffset(false);
+    setYouChooseYourCabin(false);
+    setIsSingleRoom(false);
+    setAvailableDecks([]);
+    setTabValue(0);
+    setCreateLoader(false);
+    setLoadingFinalPrice(true);
+    setPriceCalc(null);
+  };
+
+  const handleClose = () => {
+    resetState();
+    close();
+  };
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  useEffect(() => {
+    return () => {
+      resetState();
+    };
+  }, []);
 
   useEffect(() => {
     if (cabinTypeRef.current) {
@@ -184,6 +227,13 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   useEffect(() => {
     setIsNextDisabled(!validateStep());
   }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
+
+  useEffect(() => {
+  if (createdCustomer) {
+    fillPassengerFromUser(createdCustomer);
+    showSnackbar("New customer created and selected.", "success");
+  }
+}, [createdCustomer]);
 
   useEffect(() => {
     if (!cabinType) return;
@@ -245,46 +295,55 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     }
   };
 
+  const fillPassengerFromUser = (user) => {
+    if (!user) return;
+    const valid = validateGenders(); 
+    if (!valid) return;
+
+    setSelectedUser(user);
+    setSearchQuery(`${user.first_name} ${user.last_name}`);
+
+    setPassenger((prev) => ({
+      ...prev,
+      id: user.id,
+      first_name: user.first_name,
+      middle_name: user.middle_name || "",
+      last_name: user.last_name,
+      dob: user.dob || "",
+      gender: user.gender || "",
+      citizenship: user.citizenship || "",
+      survivor_number: user.survivor_number || "",
+      email: user.email,
+      phone: user.phone || "",
+      address_first: user.address_first || "",
+      address_second: user.address_second || "",
+      city: user.city || "",
+      state: user.state || "",
+      postal_code: user.postal_code || "",
+      country: user.country || "",
+      emergency_c_name: user.emergency_c_name || "",
+      emergency_c_phone: user.emergency_c_phone || "",
+      payment_method: paymentPlan?.id === "INSTALLMENTS" ? "CREDIT_CARD" : user.payment_method || "",
+      special_request: user.special_request || "",
+      lead_passenger: user.lead_passenger ?? true,
+      travel_info: user.travel_info ?? false,
+      terms_n_cons: true,
+      single_t_agreement: isSingleRoom ? true : user.single_t_agreement || false,
+      newsletter: user.newsletter || false,
+      passenger_allocated_cost: user.passenger_allocated_cost || "",
+      passenger_balance: user.passenger_balance || "",
+    }));
+
+    setIsNextDisabled(!validateStep());
+  };
+
   const handlePrefill = () => {
     if (!selectedUser) return;
-
     if (selectedUser.has_booking) {
       showSnackbar("User already has a booking for the same event!", "error");
       return;
     }
-
-    validateGenders();
-
-    setPassenger((prev) => ({
-      ...prev,
-      id: selectedUser.id,
-      first_name: selectedUser.first_name,
-      middle_name: selectedUser.middle_name || "",
-      last_name: selectedUser.last_name,
-      dob: selectedUser.dob || "",
-      gender: selectedUser.gender || "",
-      citizenship: selectedUser.citizenship || "",
-      survivor_number: selectedUser.survivor_number || "",
-      email: selectedUser.email,
-      phone: selectedUser.phone || "",
-      address_first: selectedUser.address_first || "",
-      address_second: selectedUser.address_second || "",
-      city: selectedUser.city || "",
-      state: selectedUser.state || "",
-      postal_code: selectedUser.postal_code || "",
-      country: selectedUser.country || "",
-      emergency_c_name: selectedUser.emergency_c_name || "",
-      emergency_c_phone: selectedUser.emergency_c_phone || "",
-      payment_method: paymentPlan?.id === "INSTALLMENTS" ? "CREDIT_CARD" : selectedUser.payment_method || "",
-      special_request: selectedUser.special_request || "",
-      lead_passenger: selectedUser.lead_passenger || true,
-      travel_info: selectedUser.travel_info || false,
-      terms_n_cons: true,
-      single_t_agreement: isSingleRoom ? true : selectedUser.single_t_agreement || false,
-      newsletter: selectedUser.newsletter || false,
-      passenger_allocated_cost: selectedUser.passenger_allocated_cost || "",
-      passenger_balance: selectedUser.passenger_balance || "",
-    }));
+    fillPassengerFromUser(selectedUser);
   };
 
   // Handlers for navigation
@@ -362,7 +421,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     };
 
     if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
-      console.log(!payload.cabin_number, !payload.passenger.first_name, !payload.passenger.email);
       showSnackbar("Please fill all required fields!", "error");
       return;
     }
@@ -374,7 +432,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
         showSnackbar("Booking created successfully!", "success");
         setActiveStep(0);
         if (onBookingCreated) onBookingCreated();
-        close();
+        handleClose();
       },
       onError: (errors) => {
         console.error("Error creating booking:", errors);
