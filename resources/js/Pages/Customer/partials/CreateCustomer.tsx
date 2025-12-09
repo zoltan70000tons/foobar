@@ -17,6 +17,7 @@ import {
   FormHelperText,
   FormControl,
   InputLabel,
+  Alert,
 } from "@mui/material";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -29,19 +30,22 @@ import { usePermissions } from "@/Providers/PermissionContext";
 import dayjs from "dayjs";
 import iso3166 from "iso-3166-2";
 import axios from "axios";
+import { Customer } from "@/interfaces/Customer";
 
 type CountryWithSubs = ReturnType<typeof iso3166.country> & {
   sub?: Record<string, { type: string; name: string }>;
 };
 
 type Props = {
+  isCloseBtn?: boolean;
   handleClose?: () => void;
-  setCreatedCustomer?: (customer: any) => void;
+  setCreatedCustomer?: (customer: Customer) => void;
 };
 
-export default function CreateCustomer({ handleClose, setCreatedCustomer }: Props) {
+export default function CreateCustomer({ isCloseBtn, handleClose, setCreatedCustomer }: Props) {
   const { hasPermission } = usePermissions();
 
+  const [customerAlert, setCustomerAlert] = useState<Record<string, string> | null>(null);
   const { data, setData, errors, reset, processing } = useForm({
     email: "",
     survivor_number: "",
@@ -63,7 +67,7 @@ export default function CreateCustomer({ handleClose, setCreatedCustomer }: Prop
     language: "",
   });
 
-  const { showSnackbar } = useSnackbar();
+  // const { showSnackbar } = useSnackbar();
 
   const selectedCountry = data.country;
 
@@ -156,19 +160,20 @@ export default function CreateCustomer({ handleClose, setCreatedCustomer }: Prop
       });
 
       // Success
-      showSnackbar("Customer created successfully", "success");
+      // showSnackbar("Customer created successfully", "success");
+      setCustomerAlert({ type: "success", message: "Customer created successfully" });
       reset();
 
       handleClose?.();
       setCreatedCustomer?.(res.data.customer);
     } catch (error: any) {
       const errorText = extractErrorMessages(error);
-      showSnackbar(`Error creating customer\n${errorText}`, "error");
+      setCustomerAlert({ type: "error", message: `Error creating customer\n${errorText}` });
     }
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, position: "relative" }}>
       <Grid container spacing={3}>
         {hasPermission(Permissions.CreateCustomers) && (
           <Paper
@@ -182,8 +187,16 @@ export default function CreateCustomer({ handleClose, setCreatedCustomer }: Prop
           >
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
               <h1>Create Customer</h1>
-              {handleClose && (
-                <Button variant="outlined" color="secondary" onClick={handleClose} sx={{ mb: 2 }}>
+              {isCloseBtn && (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleClose}
+                  sx={{
+                    mb: 2,
+                    position: "relative",
+                  }}
+                >
                   Close
                 </Button>
               )}
@@ -423,6 +436,20 @@ export default function CreateCustomer({ handleClose, setCreatedCustomer }: Prop
                 </Grid>
               </Box>
               <Box sx={{ mt: 4 }}>
+                {customerAlert && (
+                  <Alert
+                    severity={customerAlert.type === "success" ? "success" : "error"}
+                    onClose={() => setCustomerAlert(null)}
+                    sx={{
+                      my: 2,
+                      zIndex: (theme) => theme.zIndex.modal + 1,
+                    }}
+                  >
+                    {customerAlert.message.split("\n").map((msg, index) => (
+                      <div key={index}>{msg}</div>
+                    ))}
+                  </Alert>
+                )}
                 <Button variant="contained" color="primary" fullWidth type="submit" disabled={processing}>
                   {processing ? "Submitting..." : "Submit"}
                 </Button>

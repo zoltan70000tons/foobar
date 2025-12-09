@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Button, Box, Modal, Paper } from "@mui/material";
+import { Button, Box, Modal } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
-import CreateCustomer from "../Customer/partials/CreateCustomer";
+import CustomerModal from "./partials/CustomerModal";
 import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Customer } from "@/interfaces/Customer";
 
-const style = {
+const bookingModalStyle = {
   position: "absolute",
   top: "50%",
   left: "50%",
@@ -15,11 +16,9 @@ const style = {
   border: "1px solid #3f3f3f",
   borderRadius: 2,
   boxShadow: 24,
-  pt: 2,
-  px: 4,
-  pb: 3,
   width: "100%",
   maxWidth: 1200,
+  p: 2,
 };
 
 type Props = {
@@ -29,29 +28,17 @@ type Props = {
 };
 
 export default function NewBookingModal({ cabinTypes, cabinCategories, onBookingCreated }: Props) {
-  const [open, setOpen] = useState<boolean>(false);
-  const [createdCustomer, setCreatedCustomer] = useState<any | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState<boolean>(false);
+  const [createdCustomer, setCreatedCustomer] = useState<Customer | null>(null);
 
-  // open and set param modal in url
-  const handleOpen = () => {
-    // router.visit(window.location.pathname, {
-    //   data: { modal: "new_booking" },
-    //   preserveScroll: true,
-    //   preserveState: true,
-    // });
-
-    setOpen(true);
-  };
-
-  // close and remove param modal from url
-  const handleClose = () => {
-    // router.visit(window.location.pathname, {
-    //   // Remove modal param from URL
-    //   data: { modal: null },
-    //   preserveScroll: true,
-    //   preserveState: true,
-    // });
-    setOpen(false);
+  const openBookingModal = () => setIsBookingOpen(true);
+  const closeBookingModal = () => setIsBookingOpen(false);
+  const openCustomerModal = () => setIsCustomerModalOpen(true);
+  const closeCustomerModal = () => setIsCustomerModalOpen(false);
+  const handleCustomerCreated = (customer: Customer) => {
+    setCreatedCustomer(customer);
+    closeCustomerModal();
   };
 
   const { hasPermission } = usePermissions();
@@ -63,15 +50,15 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
       <Button
         variant="outlined"
         color="secondary"
-        onClick={handleOpen}
+        onClick={openBookingModal}
         disabled={!canCreateBooking}
         style={{ height: "40px" }}
       >
         New Booking
       </Button>
       <Modal
-        open={open}
-        onClose={handleClose}
+        open={isBookingOpen}
+        onClose={closeBookingModal}
         aria-labelledby="parent-modal-title"
         aria-describedby="parent-modal-description"
         sx={{
@@ -80,7 +67,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
           justifyContent: "center",
         }}
       >
-        <Box sx={{ ...style, width: 1160 }}>
+        <Box sx={{ ...bookingModalStyle, width: 1160 }}>
           <Box
             sx={{
               display: "flex",
@@ -92,7 +79,7 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
             <BookingStepper
               cabinTypes={cabinTypes}
               cabinCategories={cabinCategories}
-              close={handleClose}
+              close={closeBookingModal}
               setIsCreateCustomerVisible={setIsCreateCustomerVisible}
               onBookingCreated={onBookingCreated}
               createdCustomer={createdCustomer}
@@ -104,8 +91,15 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
                 justifyContent: "flex-end",
               }}
             >
-              {isCreateCustomerVisible && <CustomerModal setCreatedCustomer={setCreatedCustomer} />}
-              <Button onClick={handleClose} variant="outlined" color="secondary">
+              {isCreateCustomerVisible && (
+                <CustomerModal
+                  open={isCustomerModalOpen}
+                  onOpen={openCustomerModal}
+                  onClose={closeCustomerModal}
+                  onCustomerCreated={handleCustomerCreated}
+                />
+              )}
+              <Button onClick={closeBookingModal} variant="outlined" color="secondary">
                 Cancel
               </Button>
             </Box>
@@ -115,59 +109,3 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
     </>
   );
 }
-
-type CustomerModalProps = {
-  setCreatedCustomer?: (customer: any) => void;
-};
-
-// Customer Modal
-const CustomerModal = ({ setCreatedCustomer }: CustomerModalProps) => {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => {
-    console.log("Opening Customer Modal");
-
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  return (
-    <>
-      <Button variant="outlined" color="warning" onClick={handleOpen}>
-        Create Customer
-      </Button>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="child-modal-title"
-        aria-describedby="child-modal-description"
-        slotProps={{
-          backdrop: {
-            sx: {
-              backgroundColor: "rgba(0, 0, 0, 0.3)",
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            ...style,
-            width: 1300,
-            height: "84vh",
-            transform: "translate(-50%, -44%)",
-            overflow: "auto",
-            alignItems: "center",
-            justifyContent: "center",
-            py: 0,
-            zIndex: (theme) => theme.zIndex.modal + 1,
-          }}
-        >
-          <Box sx={{ position: "relative" }}>
-            <CreateCustomer handleClose={handleClose} setCreatedCustomer={setCreatedCustomer} />
-          </Box>
-        </Box>
-      </Modal>
-    </>
-  );
-};

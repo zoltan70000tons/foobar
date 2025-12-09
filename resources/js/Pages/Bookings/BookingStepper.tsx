@@ -44,6 +44,7 @@ import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
 import { formatCurrency } from "@/Helpers/stringUtils";
+import { Customer } from "@/interfaces/Customer";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -60,8 +61,13 @@ type PriceCalc = {
   totalPassenger: number;
 };
 
-type Props = {
-  createdCustomer?: string | null;
+type BookingStepperProps = {
+  cabinTypes: Array<{ id: number; name: string }>;
+  cabinCategories: CabinCategory[];
+  close: () => void;
+  setIsCreateCustomerVisible: (visible: boolean) => void;
+  onBookingCreated: () => void;
+  createdCustomer: Customer | null;
 };
 
 const BookingStepper: React.FC<Props> = ({
