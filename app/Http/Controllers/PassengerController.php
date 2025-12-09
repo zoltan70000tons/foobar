@@ -471,6 +471,7 @@ class PassengerController extends Controller
             $passengers = Passenger::query()
                 ->with(['installments', 'payments', 'fees', 'passengerInvitation'])
                 ->where('booking_id', $validated['bookingId'])
+                ->orderBy('passenger_order', 'asc')
                 ->get();
 
             if ($passengerEmail) {
