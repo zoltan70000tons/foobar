@@ -5,6 +5,26 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+
+## [1.5.1] - 2025-12-09
+
+### Added
+
+ - Inline customer creation support in the manual booking flow (agents can create a new customer without leaving the stepper).
+ - fillPassengerFromUser(user) helper to populate passenger fields from a selected or newly created customer.
+ - createdCustomer prop handling: automatically selects and pre-fills the stepper when a new customer is created.
+ - resetState() and handleClose() to fully reset the stepper state when the modal is closed.
+
+### Changed
+
+ - Reworked prefill flow so handlePrefill reuses the new fillPassengerFromUser function.
+ - Prefill now sets searchQuery and selectedUser to reflect the chosen/new customer.
+
+### Fixed
+
+ - Prevented stale user being kept between openings by resetting selectedUser, searchQuery, and all relevant state on close/unmount.
+
 ## [1.5.0] - 2025-12-08
 
 ### Added
