@@ -13,7 +13,7 @@ export function renderInventory(inventory: InventoryStatus) {
   return (
     <>
       {renderInventoryRow("Available", "green", inventory.AVAILABLE)}
-      {renderInventoryRow("Internally Available", "yellow", inventory.RESERVED)}
+      {renderInventoryRow("Internally Available", "yellow", inventory.PARTIALLY_BOOKED)}
       {renderInventoryRow("In progress", "red", inventory.IP)}
     </>
   );

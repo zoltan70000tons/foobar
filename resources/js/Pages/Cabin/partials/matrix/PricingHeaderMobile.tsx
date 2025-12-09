@@ -6,7 +6,7 @@ export default function PricingHeaderMobile({
   maxCapacity: number;
 }) {
   // head data
-  let headData: string[] = ["category", "info", "price"];
+  let headData: string[] = ["Category", "Info", "Price"];
 
   // trim the head data based on the max capacity
   headData = headData

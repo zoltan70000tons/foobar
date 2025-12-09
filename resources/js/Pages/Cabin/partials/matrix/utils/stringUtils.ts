@@ -1,24 +1,10 @@
 /**
- * Converts a string into a handleized/slug version suitable for URLs or identifiers.
- *
- * @param str - The input string to be handleized.
- * @returns The handleized version of the input string.
- */
-export function handleize(str: string): string {
-  return str
-  .toLowerCase()
-  .replace(/\s+/g, "-") // Replace spaces with hyphens
-  .replace(/[^a-z0-9-]/g, "") // Remove all non-alphanumeric characters except hyphens
-  .replace(/-+/g, "-") // Replace multiple hyphens with a single one
-  .replace(/^-+|-+$/g, ""); // Remove hyphens from the start and end
-}
-
-/**
  * Formats a number as a localized currency string.
  *
  * @param number - The number to format. Can be a number or a string that represents a number.
  * @param locale - The locale to use for formatting. Defaults to "en".
  * @param hideDecimals - Whether to hide decimal places. Defaults to false.
+ * @param fullCurrency
  * @returns The formatted currency string.
  */
 export function localNumberFormat(
@@ -34,7 +20,7 @@ export function localNumberFormat(
     ? {}
     : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
-  if (fullCurrency === true) {
+  if (fullCurrency) {
     return (
       "USD " +
       new Intl.NumberFormat(overrideLocale, options).format(
