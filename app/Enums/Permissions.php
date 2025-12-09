@@ -114,4 +114,7 @@ enum Permissions: string
 
     //Logs
     case ViewLogs = "View Logs";
+
+    //Installments
+    case EditInstallments = 'Edit Installments';
 }

@@ -147,6 +147,22 @@ class BookingsController extends Controller
   {
     $event_id = request()->route('id');
 
+    // Pre load cabin for validation rules
+    $cachedCabin = null;
+    $getCabin = function () use ($request, &$cachedCabin) {
+      if ($cachedCabin === null) {
+        $cabin_number = $request->input('cabin_number');
+        $cabinCategoryId = $request->input('cabin_category_id');
+        
+        $cachedCabin = Cabin::with(['cabinType', 'category.spec'])
+          ->whereHas('cabinSpec', function ($query) use ($cabin_number, $cabinCategoryId) {
+            $query->where('cabin_number', $cabin_number)
+                ->where('cabin_category_id', $cabinCategoryId);
+          })->first();
+      }
+      return $cachedCabin;
+    };
+
     $validated = $request->validate([
       'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
       'cabin_category_id' => ['required', 'integer', 'exists:cabin_categories,id'],
@@ -162,14 +178,8 @@ class BookingsController extends Controller
       'passenger.gender' => [
           'required',
           Rule::in(Gender::values()),
-          function ($attribute, $value, $fail) use ($request) {
-              $cabin_number = $request->input('cabin_number');
-              $cabinCategoryId = $request->input('cabin_category_id');
-
-              $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number, $cabinCategoryId) {
-                  $query->where('cabin_number', $cabin_number)
-                      ->where('cabin_category_id', $cabinCategoryId);
-              })->first();
+          function ($attribute, $value, $fail) use ($getCabin) {
+              $cabin = $getCabin();
 
               if (!$cabin) {
                   return $fail('Invalid cabin selection.');
@@ -212,11 +222,8 @@ class BookingsController extends Controller
       'passenger.single_t_agreement' => [
         'required',
         'boolean',
-        function ($attribute, $value, $fail) use ($request) {
-          $cabinSpec = CabinSpec::query()->where('cabin_number', $request->input('cabin_number'))->first();
-
-          if ($cabinSpec) {
-            $cabin = Cabin::query()->find($cabinSpec->id);
+        function ($attribute, $value, $fail) use ($getCabin) {
+          $cabin = $getCabin();
 
             if ($cabin && in_array($cabin->cabin_type_id, [
               CabinType::SINGLE_MALE->value,
@@ -226,28 +233,25 @@ class BookingsController extends Controller
                 $fail('The STA must be checked when the cabin type Single');
               }
             }
-          }
         },
       ],
     ]);
 
     try {
       $user = $request->user();
-      $cabin_number = $validated['cabin_number'];
-      $cabinCategoryId = $validated['cabin_category_id'];
       $passenger_data = $validated['passenger'];
       $passenger_data['cabin_conf_accp'] = true; //CCA is a required field, thus should go set as true by default - Nic
       $number_of_installments = $validated['number_of_installments'] ?? 1;
       $payment_plan = $validated['payment_plan'];
       $carbonOffset = $validated['carbon_offset'];
       $youChooseYourCabin = $validated['you_choose_your_cabin'];
+      $cabin = $getCabin();
 
       return $this->withPermission(
         [Permissions::CreateBookings],
         function (
           $event_id,
-          $cabin_number,
-          $cabinCategoryId,
+          $cabin,
           $user,
           $passenger_data,
           $payment_plan,
@@ -255,11 +259,6 @@ class BookingsController extends Controller
           $carbonOffset,
           $youChooseYourCabin
         ) {
-          $cabin = Cabin::whereHas('cabinSpec', function ($query) use ($cabin_number, $cabinCategoryId) {
-            $query->where('cabin_number', $cabin_number);
-            $query->where('cabin_category_id', $cabinCategoryId);
-          })->first();
-
           if ($cabin) {
             $adjustmentIds = [];
 
@@ -325,8 +324,7 @@ class BookingsController extends Controller
           }
         },
         $event_id,
-        $cabin_number,
-        $cabinCategoryId,
+        $cabin,
         $user,
         $passenger_data,
         $payment_plan,

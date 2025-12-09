@@ -30,21 +30,19 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import EditPassengerModal from "./EditPassengerModal";
 import { router } from "@inertiajs/react";
 import { PersonAdd } from "@mui/icons-material";
-import PersonIcon from '@mui/icons-material/Person';
-import Person2Icon from '@mui/icons-material/Person2';
-import SwapHoriz from '@mui/icons-material/SwapHoriz';
+import PersonIcon from "@mui/icons-material/Person";
+import Person2Icon from "@mui/icons-material/Person2";
+import SwapHoriz from "@mui/icons-material/SwapHoriz";
 import { Passenger } from "./Payment";
-import debounce from 'lodash/debounce';
+import debounce from "lodash/debounce";
 import Country from "@/Components/Country";
 import PhoneNumber from "@/Components/PhoneNumber";
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
-import HomeIcon from '@mui/icons-material/Home';
-import ContactMailIcon from '@mui/icons-material/ContactMail';
-
-
-
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import HomeIcon from "@mui/icons-material/Home";
+import ContactMailIcon from "@mui/icons-material/ContactMail";
+import CloseIcon from "@mui/icons-material/Close";
 
 type PassengersProps = {
   booking: Booking;
@@ -70,7 +68,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const [selectedUser, setSelectedUser] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [passengers, setPassengers] = useState(
-    [...booking.passengers].sort((a, b) => a.passenger_order - b.passenger_order)
+    [...booking.passengers].sort((a, b) => a.passenger_order - b.passenger_order),
   );
   const [searchLoading, setSearchLoading] = useState(false);
   const [editingPassenger, setEditingPassenger] = useState(null);
@@ -80,9 +78,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const [savinLoading, setSavingLoading] = useState(false);
   const [releaseLoading, setReleaseLoading] = useState(false);
   const [passengerToCancelInvitationFor, setPassengerToCancelInvitationFor] = useState(null);
-  const isSingleRoom = [CabinType.SINGLE_MALE, CabinType.SINGLE_FEMALE].includes(
-    booking?.cabin?.cabin_type_id
-  );
+  const isSingleRoom = [CabinType.SINGLE_MALE, CabinType.SINGLE_FEMALE].includes(booking?.cabin?.cabin_type_id);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
@@ -95,9 +91,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const validation = errors?.response?.data?.errors;
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [leadPassengerCurrent, setLeadPassengerCurrent] = useState<Passenger | null>(
-    passengers.find(p => p.lead_passenger) || null
+    passengers.find((p) => p.lead_passenger) || null,
   );
-
 
   useEffect(() => {
     const fetchSuggestions = debounce(async (query: string) => {
@@ -106,8 +101,8 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         return;
       }
       try {
-        setSearchLoading(true)
-        const response = await axios.get(route('switch.lead.search'), {
+        setSearchLoading(true);
+        const response = await axios.get(route("switch.lead.search"), {
           params: { query: query, bookingId: booking.id, eventId: booking.event_id },
         });
         setSuggestions(response.data);
@@ -127,11 +122,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     };
   }, [searchQuery]);
 
-
-
   const handleSwitchLeadPassenger = (passenger: Passenger) => {
     setOpenSwitchPassengerModal(true);
-  }
+  };
 
   // Open edit modal and set passenger data
   const handleEditPassenger = (passenger) => {
@@ -143,12 +136,11 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   const handleCancelPassengerInvitation = (passenger) => {
     setPassengerToCancelInvitationFor(passenger);
     setOpenConfirmCancelInvitation(true);
-
-  }
+  };
 
   const handleCloseCancelInvitationModal = () => {
     setOpenConfirmCancelInvitation(false);
-  }
+  };
 
   const handleConfirmCancelInvitation = async () => {
     setOpenConfirmCancelInvitation(false);
@@ -162,10 +154,10 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
 
       setPassengers(response.data.passengers);
 
-      showSnackbar('Invitation successfully cancelled!', 'success');
+      showSnackbar("Invitation successfully cancelled!", "success");
 
       setErrors({});
-      router.reload({ only: ['booking'] });
+      router.reload({ only: ["booking"] });
     } catch (error) {
       console.error("Error cancelling invitation:", error.response?.data || error);
       showSnackbar("Failed to cancel invitation", "error");
@@ -173,26 +165,20 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       setPassengerToCancelInvitationFor(null);
       setReleaseLoading(false);
     }
-  }
+  };
 
   // Update passenger details
   const handleSavePassenger = async () => {
     try {
       setSavingLoading(true);
-      const response = await axios.post(route('seat.update', { id: booking.event_id, booking_id: booking.id }), {
-        ...editedPassengerData
+      const response = await axios.post(route("seat.update", { id: booking.event_id, booking_id: booking.id }), {
+        ...editedPassengerData,
       });
-      setPassengers((prev) =>
-        prev.map((p) =>
-          p.id === editingPassenger.id
-            ? { ...p, ...response.data }
-            : p
-        )
-      );
+      setPassengers((prev) => prev.map((p) => (p.id === editingPassenger.id ? { ...p, ...response.data } : p)));
       setEditPassengerOpen(false);
       setEditingPassenger(null);
       setErrors({});
-      router.reload({ only: ['booking'] });
+      router.reload({ only: ["booking"] });
       showSnackbar("Passenger data updated succesfully!", "success");
     } catch (error) {
       setErrors(error);
@@ -203,24 +189,21 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     }
   };
 
-
   const searchCustomers = async (query) => {
-    if (!query || query.trim() === '') return [];
+    if (!query || query.trim() === "") return [];
 
     try {
-      const res = await axios.get(route('customers.search'), {
-        params: { search: query }
+      const res = await axios.get(route("customers.search"), {
+        params: { search: query },
       });
-      console.log('Search results:', res.data);
+      console.log("Search results:", res.data);
       const customers = res.data;
       return Array.isArray(customers) ? customers : [];
     } catch (err) {
-      console.error('Search error:', err);
+      console.error("Search error:", err);
       return [];
     }
   };
-
-
 
   const onDelete = () => {
     setOpenConfirm(true);
@@ -233,9 +216,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     try {
       const response = await releaseSeat(editedPassengerData.id, booking.id, booking.event_id);
 
-      let updatedPassengers = passengers.filter(
-        (passenger) => passenger.id !== editedPassengerData.id
-      );
+      let updatedPassengers = passengers.filter((passenger) => passenger.id !== editedPassengerData.id);
 
       if (response.data && Object.keys(response.data).length > 0) {
         updatedPassengers.push(response.data);
@@ -249,7 +230,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       setEditPassengerOpen(false);
       setEditingPassenger(null);
       setErrors({});
-      router.reload({ only: ['booking'] });
+      router.reload({ only: ["booking"] });
     } catch (error) {
       console.error("Error releasing seat:", error.response?.data || error);
       showSnackbar("Failed to release seat", "error");
@@ -259,18 +240,18 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   };
 
   const releaseSeat = async (slotId: number, bookingId: number, eventId: number) => {
-    return axios.post(route('seat.release', { id: eventId, booking_id: bookingId }), {
+    return axios.post(route("seat.release", { id: eventId, booking_id: bookingId }), {
       slotId,
-      bookingId
+      bookingId,
     });
   };
 
   const cancelInvitation = async (passengerId: number, bookingId: number, eventId: number) => {
-    return axios.post(route('passenger_invitation.cancel', { id: eventId, booking_id: bookingId }), {
+    return axios.post(route("passenger_invitation.cancel", { id: eventId, booking_id: bookingId }), {
       passengerId,
       bookingId,
-    })
-  }
+    });
+  };
 
   const handleCancel = () => {
     setOpenConfirm(false);
@@ -284,7 +265,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         height: 50,
         mr: 2,
         cursor: "pointer",
-        color: passenger.lead_passenger ? '#ffa726' : getAvatarColor(passenger),
+        color: passenger.lead_passenger ? "#ffa726" : getAvatarColor(passenger),
       },
     };
 
@@ -305,7 +286,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   };
 
   const getAvatarIcon = (passenger) => {
-
     if (passenger.empty) return PersonAdd;
     switch (passenger.gender?.toLowerCase()) {
       case "m":
@@ -317,18 +297,16 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     }
   };
 
-
   const getPassengerBgColor = (passenger) => {
     if (passenger.lead_passenger) return "#B0BEC5";
     if (passenger.empty) return "#90CAF9";
     return "#FFF59D";
   };
 
-
   // Handle set seat as empty
   const showModalSeatEmpty = () => {
     setOpenConfirmSeatEmpty(true);
-  }
+  };
 
   // handle confirm / unset empty seat
   const handleConfirmEmptySeat = async () => {
@@ -336,33 +314,28 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
 
     setReleaseLoading(true);
     try {
-      const response = await axios.post(route('seat.empty', { id: booking.event_id, booking_id: booking.id, slot_id: editedPassengerData?.id }), {
-        ...editedPassengerData,
-        empty_seat: !editedPassengerData?.empty_seat
-      });
-
-      setPassengers((prev) =>
-        prev.map((p) =>
-          p.id === editedPassengerData.id
-            ? { ...p, ...response.data }
-            : p
-        )
+      const response = await axios.post(
+        route("seat.empty", { id: booking.event_id, booking_id: booking.id, slot_id: editedPassengerData?.id }),
+        {
+          ...editedPassengerData,
+          empty_seat: !editedPassengerData?.empty_seat,
+        },
       );
+
+      setPassengers((prev) => prev.map((p) => (p.id === editedPassengerData.id ? { ...p, ...response.data } : p)));
       setEditPassengerOpen(false);
       setEditingPassenger(null);
       setErrors({});
-      router.reload({ only: ['booking'] });
+      router.reload({ only: ["booking"] });
       showSnackbar("Seat updated successfully!", "success");
-    }
-    catch (error) {
+    } catch (error) {
       setErrors(error);
       console.error(error);
       showSnackbar("Error updating seat!" + (error.response?.data?.error || error), "error");
-    }
-    finally {
+    } finally {
       setReleaseLoading(false);
     }
-  }
+  };
 
   const handleSwitchLeadPassengerConfirm = async () => {
     if (!switchPassengerData?.id) return;
@@ -378,7 +351,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         {
           new_lead_passenger_id: switchPassengerData.id,
           ...switchPassengerData,
-        }
+        },
       );
 
       setPassengers(response.data.passengers);
@@ -386,7 +359,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       setOpenSwitchPassengerModal(false);
       setSelectedUser(null);
       setSwitchStep("search");
-      router.reload({ only: ['booking'] });
+      router.reload({ only: ["booking"] });
     } catch (error) {
       console.error("Error switching lead passenger:", error);
       showSnackbar("Error switching lead passenger", "error");
@@ -395,35 +368,43 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     }
   };
 
-
-  const SectionTitle = ({ icon: Icon, title, color = 'primary.main' }) => (
-    <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', pb: 1 }}>
+  const SectionTitle = ({ icon: Icon, title, color = "primary.main" }) => (
+    <Box sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", pb: 1 }}>
         <Icon sx={{ mr: 1, color }} />
         <Typography variant="h6">{title}</Typography>
       </Box>
     </Box>
   );
 
-
   const renderChip = (passenger) => {
     if (passenger.empty_seat) {
-      return <Chip label="Empty Bed" size="small" color="info" sx={{ color: "white" }} />
+      return <Chip label="Empty Bed" size="small" color="info" sx={{ color: "white" }} />;
     }
 
-    if (editMode &&
+    if (
+      editMode &&
       !passenger?.dob &&
       !passenger?.empty_seat &&
-      !(passenger?.passenger_invitation && passenger.passenger_invitation.length > 0)) {
-      return <Chip label="Add Passenger" size="small" color="primary" sx={{ color: "white" }} />
+      !(passenger?.passenger_invitation && passenger.passenger_invitation.length > 0)
+    ) {
+      return <Chip label="Add Passenger" size="small" color="primary" sx={{ color: "white" }} />;
     }
 
     if (passenger?.passenger_invitation && passenger?.passenger_invitation.length > 0) {
-      return <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />
+
+      return (
+        <Chip
+          label="Invited"
+          size="small"
+          color="success"
+          sx={{ color: "white" }}
+        />
+      );
     }
 
     if (isSingleRoom) {
-      return <Chip label={"Passenger"} size="small" color="default" sx={{ color: "white" }} />
+      return <Chip label={"Passenger"} size="small" color="default" sx={{ color: "white" }} />;
     }
 
     if (passenger.lead_passenger) {
@@ -434,10 +415,10 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
       );
     }
 
-
-
-    return <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />;
-  }
+    return (
+      <Chip label={`Passenger #${passenger.passenger_order}`} size="small" color="default" sx={{ color: "white" }} />
+    );
+  };
 
   // const onChangeLeadPassenger = (field, value) => {
   //   console.log("onChangeLeadPassenger", field, value);
@@ -465,12 +446,27 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   };
 
   const validateSwitchPassengerData = () => {
-    const requiredFields = ['first_name', 'last_name', 'dob', 'gender', 'citizenship', 'email', 'phone', 'address_first', 'city', 'country', 'postal_code', 'emergency_c_name', 'emergency_c_phone', 'payment_method'];
+    const requiredFields = [
+      "first_name",
+      "last_name",
+      "dob",
+      "gender",
+      "citizenship",
+      "email",
+      "phone",
+      "address_first",
+      "city",
+      "country",
+      "postal_code",
+      "emergency_c_name",
+      "emergency_c_phone",
+      "payment_method",
+    ];
     const newErrors = {};
 
     requiredFields.forEach((field) => {
       if (!switchPassengerData[field]) {
-        newErrors[field] = 'This field is required';
+        newErrors[field] = "This field is required";
       }
     });
 
@@ -488,7 +484,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     setErrors({});
   };
 
-
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
@@ -502,65 +497,65 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                 display="flex"
                 alignItems="center"
                 sx={{
-                  position: 'relative',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  border: '1px solid grey',
-                  cursor: 'pointer',
-                  minHeight: '140px',
+                  position: "relative",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid grey",
+                  cursor: "pointer",
+                  minHeight: "140px",
                 }}
                 onClick={() =>
-                  passenger?.passenger_invitation?.length
-                    ? handleCancelPassengerInvitation(passenger)
-                    : handleEditPassenger(passenger)
+                    passenger?.passenger_invitation?.length
+                      ? editMode && handleCancelPassengerInvitation(passenger)
+                      : handleEditPassenger(passenger)
                 }
-              >
-                {(passenger.lead_passenger && !isSingleRoom) && (<Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                  <IconButton
-                    size="small"
-                    disabled={!editMode}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSwitchLeadPassenger(passenger);
-                    }}
-                    sx={{
-                      borderRadius: 1,
-                      padding: '6px',
-                      fontSize: '0.75rem',
-                      '&:hover': {
-                        backgroundColor: '#424242',
-                        cursor: 'pointer',
-                      },
-                    }}
-                  >
-                    Switch Lead Passenger&nbsp;<SwapHoriz fontSize="small" />
-                  </IconButton>
 
-                </Box>)}
+              >
+                {passenger.lead_passenger && !isSingleRoom && (
+                  <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+                    <IconButton
+                      size="small"
+                      disabled={!editMode}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSwitchLeadPassenger(passenger);
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        padding: "6px",
+                        fontSize: "0.75rem",
+                        "&:hover": {
+                          backgroundColor: "#424242",
+                          cursor: "pointer",
+                        },
+                      }}
+                    >
+                      Switch Lead Passenger&nbsp;
+                      <SwapHoriz fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
                 {getAvatar(passenger)}
                 <Box>
                   <Typography>
-                    {passenger?.passenger_invitation?.length
-                      ? `Passenger ${index + 1}`
-                      : passenger.full_name}
+                    {passenger?.passenger_invitation?.length ? `Passenger ${index + 1}` : passenger.full_name}
                   </Typography>
                 </Box>
                 <Box
                   sx={{
-                    position: 'absolute',
+                    position: "absolute",
                     bottom: 8,
                     right: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    alignItems: 'flex-end',
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                    alignItems: "flex-end",
                   }}
                 >
                   {renderChip(passenger)}
                 </Box>
               </Box>
             </Grid>
-
           ))}
         </Grid>
       </Paper>
@@ -584,13 +579,10 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
               value = value.value;
             }
           }
-          setEditedPassengerData((prev) => ({ ...prev, [field]: value }))
-        }
-
-        }
+          setEditedPassengerData((prev) => ({ ...prev, [field]: value }));
+        }}
         errors={errors}
       />
-
 
       <Dialog open={openConfirm} onClose={handleCancel}>
         <DialogTitle>Confirm Action</DialogTitle>
@@ -626,12 +618,13 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         </DialogActions>
       </Dialog>
 
-
       <Dialog open={openConfirmSeatEmpty} onClose={handleCancel}>
         <DialogTitle>Confirm Action</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {editedPassengerData?.empty_seat ? "Are you sure you want delete empty seat? This seat will be available again" : "Are you sure you want to SET this seat as empty?"}
+            {editedPassengerData?.empty_seat
+              ? "Are you sure you want delete empty seat? This seat will be available again"
+              : "Are you sure you want to SET this seat as empty?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -644,18 +637,21 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openSwithPassengerModal} fullWidth
-        maxWidth={false} onClose={handleCloseSwitchModal}
+      <Dialog
+        open={openSwithPassengerModal}
+        fullWidth
+        maxWidth={false}
+        onClose={handleCloseSwitchModal}
         PaperProps={{
           sx: {
             width: {
-              xs: '95vw',
-              sm: '90vw',
-              md: '80vw',
-              lg: '70vw',
-              xl: '60vw',
+              xs: "95vw",
+              sm: "90vw",
+              md: "80vw",
+              lg: "70vw",
+              xl: "60vw",
             },
-            maxWidth: 'none',
+            maxWidth: "none",
           },
         }}
       >
@@ -664,17 +660,17 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
           {switchStep === "search" && (
             <>
               <DialogContentText sx={{ mb: 2 }}>
-                Select a customer to switch lead passenger.<br />
+                Select a customer to switch lead passenger.
+                <br />
               </DialogContentText>
               <Alert severity="info" sx={{ mb: 2 }}>
-                Note: You cannot switch to a customer who is already registered in another booking or has a lower-tier membership.
+                Note: You cannot switch to a customer who is already registered in another booking or has a lower-tier
+                membership.
               </Alert>
               <Autocomplete
                 options={suggestions}
                 getOptionLabel={(option) =>
-                  typeof option === 'string'
-                    ? option
-                    : `${option.full_name} (${option.email})`
+                  typeof option === "string" ? option : `${option.full_name} (${option.email})`
                 }
                 filterOptions={(x) => x}
                 getOptionDisabled={(option) => option.has_booking || option.lower_tier}
@@ -698,7 +694,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     terms_n_cons: true,
                     cabin_conf_accp: true,
                   });
-                  setLeadPassengerCurrent(passengers.find(p => p.lead_passenger) || null);
+                  setLeadPassengerCurrent(passengers.find((p) => p.lead_passenger) || null);
                   setSwitchStep("edit");
                 }}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -711,9 +707,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                       ...params.InputProps,
                       endAdornment: (
                         <>
-                          {searchLoading ? (
-                            <CircularProgress color="inherit" size={20} />
-                          ) : null}
+                          {searchLoading ? <CircularProgress color="inherit" size={20} /> : null}
                           {params.InputProps.endAdornment}
                         </>
                       ),
@@ -722,42 +716,28 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                 )}
                 renderOption={(props, option) => (
                   <li {...props}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
                       <span>{`${option.full_name} (${option.email})`}</span>
                       {option.has_booking && (
-                        <Chip
-                          label="ALREADY BOOKED"
-                          color="error"
-                          style={{ marginLeft: '20px' }}
-                        />
+                        <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: "20px" }} />
                       )}
-                      {option.lower_tier && (
-                        <Chip
-                          label="LOWER TIER"
-                          color="error"
-                          style={{ marginLeft: '20px' }}
-                        />
-                      )}
+                      {option.lower_tier && <Chip label="LOWER TIER" color="error" style={{ marginLeft: "20px" }} />}
                       {option.is_same_booking && (
-                        <Chip
-                          label="SAME BOOKING"
-                          color="info"
-                          style={{ marginLeft: '20px' }}
-                        />
+                        <Chip label="SAME BOOKING" color="info" style={{ marginLeft: "20px" }} />
                       )}
                     </div>
                   </li>
                 )}
               />
             </>
-          )} {switchStep == 'edit' && (
+          )}{" "}
+          {switchStep == "edit" && (
             <>
               <DialogContentText>
                 <Grid>
-
-                  <SectionTitle icon={PersonIcon} title={'PERSONAL INFO'} />
+                  <SectionTitle icon={PersonIcon} title={"PERSONAL INFO"} />
                   {/* First group */}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: "1rem" }}>
                     {/* First Column */}
                     <Grid item xs={12} md={3}>
                       <TextField
@@ -812,13 +792,13 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                       />
                     </Grid>
                     <Grid item xs={12} md={3}>
-                      <FormControl fullWidth  >
+                      <FormControl fullWidth>
                         <InputLabel>Gender</InputLabel>
                         <Select
                           value={switchPassengerData?.gender || ""}
                           onChange={(e) => onChangeLeadPassenger("gender", e.target.value)}
                           disabled={isDisabled}
-                          label={'Gender'}
+                          label={"Gender"}
                           error={!!validation?.gender}
                           helperText={validation?.gender}
                           required
@@ -837,7 +817,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         variant="outlined"
                         value={switchPassengerData?.citizenship || ""}
                         name={"citizenship"}
-                        onChange={(e) => onChangeLeadPassenger('citizenship', e)}
+                        onChange={(e) => onChangeLeadPassenger("citizenship", e)}
                         disabled={isDisabled}
                         error={!!validation?.citizenship}
                         helperText={validation?.citizenship}
@@ -860,9 +840,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     </Grid>
                   </Grid>
 
-                  <SectionTitle icon={ContactMailIcon} title={'CONTACT INFO'} />
+                  <SectionTitle icon={ContactMailIcon} title={"CONTACT INFO"} />
                   {/* Second group*/}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: "1rem" }}>
                     <Grid item xs={12} md={3}>
                       <TextField
                         label="Email"
@@ -893,10 +873,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     </Grid>
                   </Grid>
 
-
-                  <SectionTitle icon={HomeIcon} title={'ADDRESS INFO'} />
+                  <SectionTitle icon={HomeIcon} title={"ADDRESS INFO"} />
                   {/* First group */}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: "1rem" }}>
                     <Grid item xs={12} md={5}>
                       <TextField
                         label="Address Line 1"
@@ -936,7 +915,6 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                       />
                     </Grid>
 
-
                     <Grid item xs={12} md={6}>
                       <Country
                         fullWidth
@@ -951,36 +929,42 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         required
                       />
                     </Grid>
-                    {selectedCountry === "USA" || selectedCountry === "CAN" ? (<Grid item xs={12} md={3}>
-                      <Autocomplete
-                        options={selectedOptions}
-                        getOptionLabel={(option) => option.label ? option.label : ""}
-                        value={selectedOptions.find(option => option.value === switchPassengerData?.state) || null}
-                        onChange={(e, value) => onChangeLeadPassenger("state", value)}
-                        disabled={isDisabled}
-                        isOptionEqualToValue={(option, value) => option.value === value.value}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            required
-                            label="State"
-                            variant="outlined"
-                            error={!!validation?.state}
-                            helperText={validation?.state}
-                          />
-                        )} />
-                    </Grid>) : (
-                      <Grid item xs={12} md={3}><TextField
-                        fullWidth
-                        label="State"
-                        variant="outlined"
-                        value={switchPassengerData?.state || ""}
-                        name={"state"}
-                        onChange={(e) => onChangeLeadPassenger("state", e.target.value)}
-                        disabled={isDisabled}
-                        error={!!validation?.state}
-                        helperText={validation?.state}
-                      /></Grid>)}
+                    {selectedCountry === "USA" || selectedCountry === "CAN" ? (
+                      <Grid item xs={12} md={3}>
+                        <Autocomplete
+                          options={selectedOptions}
+                          getOptionLabel={(option) => (option.label ? option.label : "")}
+                          value={selectedOptions.find((option) => option.value === switchPassengerData?.state) || null}
+                          onChange={(e, value) => onChangeLeadPassenger("state", value)}
+                          disabled={isDisabled}
+                          isOptionEqualToValue={(option, value) => option.value === value.value}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              label="State"
+                              variant="outlined"
+                              error={!!validation?.state}
+                              helperText={validation?.state}
+                            />
+                          )}
+                        />
+                      </Grid>
+                    ) : (
+                      <Grid item xs={12} md={3}>
+                        <TextField
+                          fullWidth
+                          label="State"
+                          variant="outlined"
+                          value={switchPassengerData?.state || ""}
+                          name={"state"}
+                          onChange={(e) => onChangeLeadPassenger("state", e.target.value)}
+                          disabled={isDisabled}
+                          error={!!validation?.state}
+                          helperText={validation?.state}
+                        />
+                      </Grid>
+                    )}
                     <Grid item xs={12} md={3}>
                       <TextField
                         label="Postal Code"
@@ -996,9 +980,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                     </Grid>
                   </Grid>
 
-                  <SectionTitle icon={ReportProblemIcon} title={'EMERGENCY CONTACT'} />
+                  <SectionTitle icon={ReportProblemIcon} title={"EMERGENCY CONTACT"} />
                   {/* First group */}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: "1rem" }}>
                     <Grid item xs={12} md={3}>
                       <TextField
                         label="Emergency Contact Name"
@@ -1027,12 +1011,11 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         required
                       />
                     </Grid>
-
                   </Grid>
 
                   <SectionTitle icon={CreditCardIcon} title="PAYMENT INFO" />
                   {/* First group */}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: "1rem" }}>
                     <Grid item xs={12} md={3}>
                       <FormControl fullWidth error={!!validation?.payment_method}>
                         <InputLabel>Payment Method</InputLabel>
@@ -1040,27 +1023,24 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                           value={switchPassengerData?.payment_method || ""}
                           onChange={(e) => onChangeLeadPassenger("payment_method", e.target.value)}
                           disabled={isDisabled}
-                          label={'Payment Method'}
+                          label={"Payment Method"}
                           required
                           error={!!validation?.payment_method}
                           helperText={validation?.payment_method}
                         >
-                          {booking.payment_plan === 'PAY_IN_FULL' && (<MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>)}
+                          {booking.payment_plan === "PAY_IN_FULL" && (
+                            <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>
+                          )}
                           <MenuItem value="CREDIT_CARD">Credit Card</MenuItem>
-
                         </Select>
-                        {validation?.payment_method && (
-                          <FormHelperText>{validation.payment_method}</FormHelperText>
-                        )}
+                        {validation?.payment_method && <FormHelperText>{validation.payment_method}</FormHelperText>}
                       </FormControl>
                     </Grid>
                   </Grid>
 
-
-
                   <SectionTitle icon={DirectionsBoatIcon} title="TRAVEL INFO" />
                   {/* Second group*/}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: '1rem' }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: "1rem" }}>
                     <Grid item xs={12} md={3}>
                       <FormControlLabel
                         control={
@@ -1079,10 +1059,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         control={
                           <Checkbox
                             size="small"
-                            checked={
-                              switchPassengerData?.terms_n_cons ??
-                              (isLeadPassenger === false)
-                            }
+                            checked={switchPassengerData?.terms_n_cons ?? isLeadPassenger === false}
                             onChange={(e, checked) => onChangeLeadPassenger("terms_n_cons", checked)}
                             disabled={true}
                           />
@@ -1130,31 +1107,29 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                         label="Travel Info"
                       />
                     </Grid>
-                    {isSingleRoom && (<Grid item xs={12} md={2}>
-                      <Tooltip title="Single Ticket Agreement">
-                        <FormControlLabel
-                          control={
-
-                            <Checkbox
-                              size="small"
-                              checked={switchPassengerData?.single_t_agreement || false}
-                              onChange={(e) => onChangeLeadPassenger("single_t_agreement", e.target.checked)}
-                              disabled={isDisabled}
-                            />
-
-                          }
-                          label="STA"
-                        />
-                      </Tooltip>
-                    </Grid>)}
+                    {isSingleRoom && (
+                      <Grid item xs={12} md={2}>
+                        <Tooltip title="Single Ticket Agreement">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                size="small"
+                                checked={switchPassengerData?.single_t_agreement || false}
+                                onChange={(e) => onChangeLeadPassenger("single_t_agreement", e.target.checked)}
+                                disabled={isDisabled}
+                              />
+                            }
+                            label="STA"
+                          />
+                        </Tooltip>
+                      </Grid>
+                    )}
                     <Grid item xs={12} md={2}>
                       <FormControlLabel
                         control={
                           <Checkbox
                             size="small"
-                            checked={switchPassengerData?.cabin_conf_accp ??
-                              (isLeadPassenger === false)
-                            }
+                            checked={switchPassengerData?.cabin_conf_accp ?? isLeadPassenger === false}
                             onChange={(e, checked) => onChangeLeadPassenger("cabin_conf_accp", checked)}
                             disabled={true}
                           />
@@ -1176,89 +1151,197 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                       />
                     </Grid>
                   </Grid>
-
-
-
-
-
                 </Grid>
               </DialogContentText>
             </>
           )}
-          {switchStep === 'review' && (<> <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <SectionTitle icon={PersonIcon} title="Current Lead Passenger" />
-              {leadPassengerCurrent && (
-                <Box>
-                  <Typography><strong>Name:</strong> {leadPassengerCurrent.first_name}</Typography>
-                  <Typography><strong>Middle Name:</strong> {leadPassengerCurrent.middle_name}</Typography>
-                  <Typography><strong>Last Name:</strong> {leadPassengerCurrent.last_name}</Typography>
-                  <Typography><strong>Date of Birth:</strong> {leadPassengerCurrent.dob}</Typography>
-                  <Typography><strong>Gender:</strong> {leadPassengerCurrent.gender} </Typography>
-                  <Typography><strong>Email:</strong> {leadPassengerCurrent.email}</Typography>
-                  <Typography><strong>Phone:</strong> {leadPassengerCurrent.phone}</Typography>
-                  <Typography><strong>Survivor Number:</strong> {leadPassengerCurrent.survivor_number}</Typography>
-                  <Typography><strong>Address First:</strong> {leadPassengerCurrent.address_first}</Typography>
-                  <Typography><strong>Address Second:</strong> {leadPassengerCurrent.address_second}</Typography>
-                  <Typography><strong>City:</strong> {leadPassengerCurrent.city}</Typography>
-                  <Typography><strong>State:</strong> {leadPassengerCurrent.state}</Typography>
-                  <Typography><strong>Country:</strong> {leadPassengerCurrent.country}</Typography>
-                  <Typography><strong>Postal Code:</strong> {leadPassengerCurrent.postal_code}</Typography>
-                  <Typography><strong>Citizenship:</strong> {leadPassengerCurrent.citizenship}</Typography>
-                  <Typography><strong>Emergency Contact Name:</strong> {leadPassengerCurrent.emergency_c_name}</Typography>
-                  <Typography><strong>Emergency Contact Phone:</strong> {leadPassengerCurrent.emergency_c_phone}</Typography>
-                  <Typography><strong>Payment Method:</strong> {leadPassengerCurrent.payment_method}</Typography>
-                  <Typography><strong>Confirmed Booking Email:</strong> {leadPassengerCurrent.confirmed_booking_email ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Special Request:</strong> {leadPassengerCurrent.special_request}</Typography>
-                  <Typography><strong>Newsletter:</strong> {leadPassengerCurrent.newsletter ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Travel Info:</strong> {leadPassengerCurrent.travel_info ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Terms & Conditions:</strong> {leadPassengerCurrent.terms_n_cons ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Cabin Conf Acceptance:</strong> {leadPassengerCurrent.cabin_conf_accp ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Single Ticket Agreement:</strong> {leadPassengerCurrent.single_t_agreement ? "Yes" : "No"}</Typography>
-                  <Typography><strong>Was On Board:</strong> {leadPassengerCurrent.was_on_board ? "Yes" : "No"}</Typography>
-
-                </Box>
-              )}
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <SectionTitle icon={PersonIcon} title="New Lead Passenger Data" />
-              <Box>
-                <Typography><strong>Name:</strong> {switchPassengerData.first_name}</Typography>
-                <Typography><strong>Middle Name:</strong> {switchPassengerData.middle_name}</Typography>
-                <Typography><strong>Last Name:</strong> {switchPassengerData.last_name}</Typography>
-                <Typography><strong>Date of Birth:</strong> {switchPassengerData.dob}</Typography>
-                <Typography><strong>Gender:</strong> {switchPassengerData.gender} </Typography>
-                <Typography><strong>Email:</strong> {switchPassengerData.email}</Typography>
-                <Typography><strong>Phone:</strong> {switchPassengerData.phone}</Typography>
-                <Typography><strong>Survivor Number:</strong> {switchPassengerData.survivor_number}</Typography>
-                <Typography><strong>Address First:</strong> {switchPassengerData.address_first}</Typography>
-                <Typography><strong>Address Second:</strong> {switchPassengerData.address_second}</Typography>
-                <Typography><strong>City:</strong> {switchPassengerData.city}</Typography>
-                <Typography><strong>State:</strong> {switchPassengerData.state}</Typography>
-                <Typography><strong>Country:</strong> {switchPassengerData.country}</Typography>
-                <Typography><strong>Postal Code:</strong> {switchPassengerData.postal_code}</Typography>
-                <Typography><strong>Citizenship:</strong> {switchPassengerData.citizenship}</Typography>
-                <Typography><strong>Emergency Contact Name:</strong> {switchPassengerData.emergency_c_name}</Typography>
-                <Typography><strong>Emergency Contact Phone:</strong> {switchPassengerData.emergency_c_phone}</Typography>
-                <Typography><strong>Payment Method:</strong> {switchPassengerData.payment_method}</Typography>
-                <Typography><strong>Confirmed Booking Email:</strong> {switchPassengerData.confirmed_booking_email ? "Yes" : "No"}</Typography>
-                <Typography><strong>Special Request:</strong> {switchPassengerData.special_request}</Typography>
-                <Typography><strong>Newsletter:</strong> {switchPassengerData.newsletter ? "Yes" : "No"}</Typography>
-                <Typography><strong>Travel Info:</strong> {switchPassengerData.travel_info ? "Yes" : "No"}</Typography>
-                <Typography><strong>Terms & Conditions:</strong> {switchPassengerData.terms_n_cons ? "Yes" : "No"}</Typography>
-                <Typography><strong>Cabin Conf Acceptance:</strong> {switchPassengerData.cabin_conf_accp ? "Yes" : "No"}</Typography>
-                <Typography><strong>Single Ticket Agreement:</strong> {switchPassengerData.single_t_agreement ? "Yes" : "No"}</Typography>
-                <Typography><strong>Was On Board:</strong> {switchPassengerData.was_on_board ? "Yes" : "No"}</Typography>
-                {/* campos editados */}
-              </Box>
-            </Grid>
-          </Grid></>)}
+          {switchStep === "review" && (
+            <>
+              {" "}
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <SectionTitle icon={PersonIcon} title="Current Lead Passenger" />
+                  {leadPassengerCurrent && (
+                    <Box>
+                      <Typography>
+                        <strong>Name:</strong> {leadPassengerCurrent.first_name}
+                      </Typography>
+                      <Typography>
+                        <strong>Middle Name:</strong> {leadPassengerCurrent.middle_name}
+                      </Typography>
+                      <Typography>
+                        <strong>Last Name:</strong> {leadPassengerCurrent.last_name}
+                      </Typography>
+                      <Typography>
+                        <strong>Date of Birth:</strong> {leadPassengerCurrent.dob}
+                      </Typography>
+                      <Typography>
+                        <strong>Gender:</strong> {leadPassengerCurrent.gender}{" "}
+                      </Typography>
+                      <Typography>
+                        <strong>Email:</strong> {leadPassengerCurrent.email}
+                      </Typography>
+                      <Typography>
+                        <strong>Phone:</strong> {leadPassengerCurrent.phone}
+                      </Typography>
+                      <Typography>
+                        <strong>Survivor Number:</strong> {leadPassengerCurrent.survivor_number}
+                      </Typography>
+                      <Typography>
+                        <strong>Address First:</strong> {leadPassengerCurrent.address_first}
+                      </Typography>
+                      <Typography>
+                        <strong>Address Second:</strong> {leadPassengerCurrent.address_second}
+                      </Typography>
+                      <Typography>
+                        <strong>City:</strong> {leadPassengerCurrent.city}
+                      </Typography>
+                      <Typography>
+                        <strong>State:</strong> {leadPassengerCurrent.state}
+                      </Typography>
+                      <Typography>
+                        <strong>Country:</strong> {leadPassengerCurrent.country}
+                      </Typography>
+                      <Typography>
+                        <strong>Postal Code:</strong> {leadPassengerCurrent.postal_code}
+                      </Typography>
+                      <Typography>
+                        <strong>Citizenship:</strong> {leadPassengerCurrent.citizenship}
+                      </Typography>
+                      <Typography>
+                        <strong>Emergency Contact Name:</strong> {leadPassengerCurrent.emergency_c_name}
+                      </Typography>
+                      <Typography>
+                        <strong>Emergency Contact Phone:</strong> {leadPassengerCurrent.emergency_c_phone}
+                      </Typography>
+                      <Typography>
+                        <strong>Payment Method:</strong> {leadPassengerCurrent.payment_method}
+                      </Typography>
+                      <Typography>
+                        <strong>Confirmed Booking Email:</strong>{" "}
+                        {leadPassengerCurrent.confirmed_booking_email ? "Yes" : "No"}
+                      </Typography>
+                      <Typography>
+                        <strong>Special Request:</strong> {leadPassengerCurrent.special_request}
+                      </Typography>
+                      <Typography>
+                        <strong>Newsletter:</strong> {leadPassengerCurrent.newsletter ? "Yes" : "No"}
+                      </Typography>
+                      <Typography>
+                        <strong>Travel Info:</strong> {leadPassengerCurrent.travel_info ? "Yes" : "No"}
+                      </Typography>
+                      <Typography>
+                        <strong>Terms & Conditions:</strong> {leadPassengerCurrent.terms_n_cons ? "Yes" : "No"}
+                      </Typography>
+                      <Typography>
+                        <strong>Cabin Conf Acceptance:</strong> {leadPassengerCurrent.cabin_conf_accp ? "Yes" : "No"}
+                      </Typography>
+                      <Typography>
+                        <strong>Single Ticket Agreement:</strong>{" "}
+                        {leadPassengerCurrent.single_t_agreement ? "Yes" : "No"}
+                      </Typography>
+                      <Typography>
+                        <strong>Was On Board:</strong> {leadPassengerCurrent.was_on_board ? "Yes" : "No"}
+                      </Typography>
+                    </Box>
+                  )}
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <SectionTitle icon={PersonIcon} title="New Lead Passenger Data" />
+                  <Box>
+                    <Typography>
+                      <strong>Name:</strong> {switchPassengerData.first_name}
+                    </Typography>
+                    <Typography>
+                      <strong>Middle Name:</strong> {switchPassengerData.middle_name}
+                    </Typography>
+                    <Typography>
+                      <strong>Last Name:</strong> {switchPassengerData.last_name}
+                    </Typography>
+                    <Typography>
+                      <strong>Date of Birth:</strong> {switchPassengerData.dob}
+                    </Typography>
+                    <Typography>
+                      <strong>Gender:</strong> {switchPassengerData.gender}{" "}
+                    </Typography>
+                    <Typography>
+                      <strong>Email:</strong> {switchPassengerData.email}
+                    </Typography>
+                    <Typography>
+                      <strong>Phone:</strong> {switchPassengerData.phone}
+                    </Typography>
+                    <Typography>
+                      <strong>Survivor Number:</strong> {switchPassengerData.survivor_number}
+                    </Typography>
+                    <Typography>
+                      <strong>Address First:</strong> {switchPassengerData.address_first}
+                    </Typography>
+                    <Typography>
+                      <strong>Address Second:</strong> {switchPassengerData.address_second}
+                    </Typography>
+                    <Typography>
+                      <strong>City:</strong> {switchPassengerData.city}
+                    </Typography>
+                    <Typography>
+                      <strong>State:</strong> {switchPassengerData.state}
+                    </Typography>
+                    <Typography>
+                      <strong>Country:</strong> {switchPassengerData.country}
+                    </Typography>
+                    <Typography>
+                      <strong>Postal Code:</strong> {switchPassengerData.postal_code}
+                    </Typography>
+                    <Typography>
+                      <strong>Citizenship:</strong> {switchPassengerData.citizenship}
+                    </Typography>
+                    <Typography>
+                      <strong>Emergency Contact Name:</strong> {switchPassengerData.emergency_c_name}
+                    </Typography>
+                    <Typography>
+                      <strong>Emergency Contact Phone:</strong> {switchPassengerData.emergency_c_phone}
+                    </Typography>
+                    <Typography>
+                      <strong>Payment Method:</strong> {switchPassengerData.payment_method}
+                    </Typography>
+                    <Typography>
+                      <strong>Confirmed Booking Email:</strong>{" "}
+                      {switchPassengerData.confirmed_booking_email ? "Yes" : "No"}
+                    </Typography>
+                    <Typography>
+                      <strong>Special Request:</strong> {switchPassengerData.special_request}
+                    </Typography>
+                    <Typography>
+                      <strong>Newsletter:</strong> {switchPassengerData.newsletter ? "Yes" : "No"}
+                    </Typography>
+                    <Typography>
+                      <strong>Travel Info:</strong> {switchPassengerData.travel_info ? "Yes" : "No"}
+                    </Typography>
+                    <Typography>
+                      <strong>Terms & Conditions:</strong> {switchPassengerData.terms_n_cons ? "Yes" : "No"}
+                    </Typography>
+                    <Typography>
+                      <strong>Cabin Conf Acceptance:</strong> {switchPassengerData.cabin_conf_accp ? "Yes" : "No"}
+                    </Typography>
+                    <Typography>
+                      <strong>Single Ticket Agreement:</strong> {switchPassengerData.single_t_agreement ? "Yes" : "No"}
+                    </Typography>
+                    <Typography>
+                      <strong>Was On Board:</strong> {switchPassengerData.was_on_board ? "Yes" : "No"}
+                    </Typography>
+                    {/* campos editados */}
+                  </Box>
+                </Grid>
+              </Grid>
+            </>
+          )}
         </DialogContent>
 
         <DialogActions>
           {switchStep === "edit" && (
             <>
-              <Button onClick={() => setSwitchStep("search")} color="secondary">Back</Button>
+              <Button onClick={() => setSwitchStep("search")} color="secondary">
+                Back
+              </Button>
               <Button
                 onClick={() => {
                   if (validateSwitchPassengerData()) {
@@ -1274,16 +1357,21 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
           )}
           {switchStep === "review" && (
             <>
-              <Button onClick={() => setSwitchStep("edit")} color="secondary">Back</Button>
-              <Button onClick={handleSwitchLeadPassengerConfirm} variant="contained" color="primary">Confirm</Button>
+              <Button onClick={() => setSwitchStep("edit")} color="secondary">
+                Back
+              </Button>
+              <Button onClick={handleSwitchLeadPassengerConfirm} variant="contained" color="primary">
+                Confirm
+              </Button>
             </>
           )}
           {switchStep === "search" && (
-            <Button onClick={handleCloseSwitchModal} color="secondary">Cancel</Button>
+            <Button onClick={handleCloseSwitchModal} color="secondary">
+              Cancel
+            </Button>
           )}
         </DialogActions>
       </Dialog>
-
     </Box>
   );
 };

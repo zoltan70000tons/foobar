@@ -8,6 +8,7 @@ use App\Http\Controllers\CabinsController;
 use App\Http\Controllers\DeletedController;
 use App\Http\Controllers\CustomerTagController;
 use App\Http\Controllers\ContactFormController;
+use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MenuController;
@@ -346,6 +347,9 @@ Route::resource('/tags', TagsController::class)
 Route::put('/users/{user}/avatar', [AgentController::class, 'update'])->name('users.avatar.update');
 
 Route::match(['GET', 'POST'], '/logs', [LogsController::class, 'index'])->name('logs.index');
+
+Route::patch('/installments/update-due', [InstallmentController::class, 'update'])
+    ->name('installments.update-due');
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 Route::prefix('oauth')->group(function () {
