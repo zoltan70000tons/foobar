@@ -47,6 +47,7 @@ use Illuminate\Validation\Rule;
 
 use App\Services\PaymentInfoService;
 use App\Helpers\InstallmentHelper;
+use App\Http\Requests\UpdateBedConfigRequest;
 
 class BookingsController extends Controller
 {
@@ -1084,6 +1085,8 @@ class BookingsController extends Controller
     }
   }
 
+
+
   public function getBookingFinalCost(Request $request, Event $event)
   {
     $passenger = $request->input('passenger');
@@ -1164,4 +1167,30 @@ class BookingsController extends Controller
 
     return response()->json(['priceCalc' => $priceCalc]);
   }
+
+  public function updateBedConfig(UpdateBedConfigRequest $request, Booking $booking)
+  {
+    try {
+      $old = $booking->bed_config;
+      $booking->bed_config = $request->validated()['bed_config'];
+      
+      $this->withPermission([Permissions::EditBookings], function($request, $old, $booking){
+        $booking->save();
+        return redirect()
+        ->back()
+        ->with('success', 'Bed configuration updated');
+      }
+      ,$request,$old,$booking);
+
+    } catch (\Throwable $e) {
+      \Log::error('Error updating bed config', [
+        'booking_id' => $booking->id,
+        'error' => $e->getMessage(),
+      ]);
+      return redirect()
+        ->back()
+        ->with('error', 'Failed to update bed configuration. Please try again.');
+    }
+  }
+
 }

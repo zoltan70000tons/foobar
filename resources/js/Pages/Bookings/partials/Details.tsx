@@ -19,6 +19,7 @@ import {
   AlertTitle,
   Chip,
   CircularProgress,
+  Select,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import UpgradeIcon from '@mui/icons-material/Upgrade';
@@ -48,6 +49,8 @@ import {
 
 import { formatDate } from "@/Helpers/stringUtils";
 import { isArray } from "lodash";
+import { Permissions } from "@/enums/PermissionEnum";
+import { usePermissions } from "@/Providers/PermissionContext";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInstallmentsAllowed }) => {
   const [open, setOpen] = useState(false);
@@ -74,6 +77,14 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
   const [switchPlanOpen, setSwitchPlanOpen] = useState(false);
   const [switchingPlan, setSwitchingPlan] = useState(false);
   const [selectedInstallments, setSelectedInstallments] = useState<number | null>(null);
+  const [bedConfig, setBedConfig] = useState(booking.bed_config);
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission(Permissions.EditBookings);
+
+  const bedOptions = [
+    { value: "SEPARATED", label: "SEPARATED" },
+    { value: "JOINED", label: "JOINED" },
+  ];
 
 
   useEffect(() => {
@@ -306,6 +317,25 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
     );
   };
 
+  const handleBedConfigChange = (value) => {
+    setBedConfig(value);
+  };
+  const handleBedConfigUpdate = () => {
+    if (!bedConfig) return;
+    setLoading(true);
+    router.put(route('bookings.update-bed-config', booking.id), { bed_config: bedConfig }, {
+      onSuccess: () => {
+        setLoading(false);
+      },
+      onError: () => {
+        setLoading(false);
+      },
+      onFinish: () => {
+        setLoading(false);
+      },
+    });
+  };
+
   return (
     <>
       <Box>
@@ -384,6 +414,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                     icon: <BedIcon fontSize="small" />,
                     label: "Bed Configuration",
                     value: booking?.bed_config || "-",
+                    editable: canEdit,
                   },
                   {
                     icon: <PinIcon fontSize="small" />,
@@ -405,7 +436,6 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                     label: "Internal Notes",
                     value: booking?.cabin?.internal_notes || "-",
                   },
-                  
                 ].map((field, index) => (
                   <Grid item xs={12} sm={6} key={index}>
                     <Box display="flex" alignItems="center" mb={0.5}>
@@ -414,15 +444,37 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                         {field.label}:
                       </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {field.value}
-                    </Typography>
+
+                    {field.editable && editMode ? (
+                      <Box display="flex" gap={1}>
+                        <Select
+                          size="small"
+                          fullWidth
+                          value={bedConfig || ""}
+                          onChange={(e) => handleBedConfigChange(e.target.value)}
+                        >
+                          {bedOptions.map((opt) => (
+                            <MenuItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+
+                        <Button variant="contained" size="small" onClick={handleBedConfigUpdate}>
+                          Update
+                        </Button>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        {field.value}
+                      </Typography>
+                    )}
                   </Grid>
                 ))}
               </Grid>
 
               {editMode && (
-                <Box sx={{display: "flex", gap: "16px", justifyContent: "flex-end"}}>
+                <Box sx={{ display: "flex", gap: "16px", justifyContent: "flex-end" }}>
                   <Box mt={3} textAlign="right">
                     <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={handleEditClick}>
                       Swap Cabins
@@ -430,12 +482,22 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                   </Box>
 
                   <Box mt={3} textAlign="right">
-                    <Button variant="contained" color="primary" startIcon={<UpgradeIcon />} onClick={handleUpgradeCabin}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<UpgradeIcon />}
+                      onClick={handleUpgradeCabin}
+                    >
                       Upgrade Cabin
                     </Button>
                   </Box>
                   <Box mt={3} textAlign="right">
-                    <Button variant="contained" color="primary" startIcon={<SwapHorizIcon />} onClick={handleSwitchClick}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SwapHorizIcon />}
+                      onClick={handleSwitchClick}
+                    >
                       Switch Payment Plan
                     </Button>
                   </Box>
@@ -449,7 +511,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
       {/* Dialog for Editing Cabin Details */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Cabin Details</DialogTitle>
-        <DialogContent sx={{ paddingTop: '1rem !important' }}>
+        <DialogContent sx={{ paddingTop: "1rem !important" }}>
           {loading && (
             <Box
               sx={{
@@ -505,12 +567,12 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
               }}
               disabled={loading}
               sx={{
-                color: advancedFilters ? 'error.main' : 'inherit',
-                borderColor: advancedFilters ? 'error.main' : 'default',
+                color: advancedFilters ? "error.main" : "inherit",
+                borderColor: advancedFilters ? "error.main" : "default",
               }}
             >
               {advancedFilters ? <ClearIcon /> : <FilterListIcon />}
-              {advancedFilters ? 'Clear Filters' : 'Advanced Filters'}
+              {advancedFilters ? "Clear Filters" : "Advanced Filters"}
             </ToggleButton>
           </Box>
           {advancedFilters && (
@@ -518,7 +580,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
               <Autocomplete
                 fullWidth
                 options={availableDecks}
-                getOptionLabel={(option) => option ? `Deck ${option}` : ''}
+                getOptionLabel={(option) => (option ? `Deck ${option}` : "")}
                 value={selectedDeck}
                 onChange={(event, newValue) => setSelectedDeck(newValue)}
                 renderInput={(params) => <TextField {...params} label="Cabin Deck" />}
@@ -527,23 +589,17 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
               />
               <FormControlLabel
                 control={
-                  <Switch
-                    checked={onlyBalcony}
-                    onChange={(e) => setOnlyBalcony(e.target.checked)}
-                    disabled={loading}
-                  />
+                  <Switch checked={onlyBalcony} onChange={(e) => setOnlyBalcony(e.target.checked)} disabled={loading} />
                 }
                 label="Only Balcony"
               />
               <Autocomplete
                 fullWidth
                 options={Object.values(LocationEnum)}
-                getOptionLabel={(option) => option || ''}
+                getOptionLabel={(option) => option || ""}
                 value={selectedLocation}
                 onChange={(event, newValue) => setSelectedLocation(newValue)}
-                renderInput={(params) => (
-                  <TextField {...params} label="Location" />
-                )}
+                renderInput={(params) => <TextField {...params} label="Location" />}
                 sx={{ mt: 2 }}
                 disabled={loading}
               />
@@ -565,10 +621,8 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
             </Typography>
             <Autocomplete
               fullWidth
-              options={[...availableCabins].sort(
-                (a, b) => statusPriority[a.status] - statusPriority[b.status]
-              )}
-              getOptionLabel={(option) => option.cabin_number + ' ' + option.status}
+              options={[...availableCabins].sort((a, b) => statusPriority[a.status] - statusPriority[b.status])}
+              getOptionLabel={(option) => option.cabin_number + " " + option.status}
               value={availableCabins?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
               onChange={(event, newValue) => {
                 setChangeCabin(newValue || null);
@@ -576,17 +630,23 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
               }}
               renderOption={(props, option) => (
                 <li {...props} key={option.cabin_number}>
-                  {option.cabin_number} 
+                  {option.cabin_number}
                   <Chip
-                    label={option.status === "RESERVED" ? "INTERNALLY AVAILABLE" : option.status === "AVAILABLE" ? "PUBLICALLY AVAILABLE" : option.status}
+                    label={
+                      option.status === "RESERVED"
+                        ? "INTERNALLY AVAILABLE"
+                        : option.status === "AVAILABLE"
+                          ? "PUBLICALLY AVAILABLE"
+                          : option.status
+                    }
                     size="small"
-                    sx={{ ml: 1 ,color:'white'}}
+                    sx={{ ml: 1, color: "white" }}
                     color={
-                      option.status === 'AVAILABLE'
-                        ? 'success'
-                        : option.status === 'PARTIALLY_BOOKED'
-                          ? 'warning'
-                          : 'default'
+                      option.status === "AVAILABLE"
+                        ? "success"
+                        : option.status === "PARTIALLY_BOOKED"
+                          ? "warning"
+                          : "default"
                     }
                   />
                 </li>
@@ -594,16 +654,18 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
               renderInput={(params) => <TextField {...params} label="Available Cabins" />}
               disabled={loading}
             />
-
-
           </Box>
-
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary" variant="outlined">
             Cancel
           </Button>
-          <Button onClick={() => setConfirmOpen(true)} color="primary" variant="outlined" disabled={!changeCabin || loading}>
+          <Button
+            onClick={() => setConfirmOpen(true)}
+            color="primary"
+            variant="outlined"
+            disabled={!changeCabin || loading}
+          >
             Save
           </Button>
         </DialogActions>
@@ -614,9 +676,8 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Warning</AlertTitle>
-            Are you sure you want to save? This action will permanently release the current cabin,
-            update the booking code, and associate the selected cabin with this booking.
-            The change will be recorded in the system.
+            Are you sure you want to save? This action will permanently release the current cabin, update the booking
+            code, and associate the selected cabin with this booking. The change will be recorded in the system.
           </Alert>
         </DialogContent>
         <DialogActions>
@@ -629,9 +690,9 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
         </DialogActions>
       </Dialog>
 
-      <Dialog open={upgradeCabinModalOpen} onClose={()=>setUpgradeCabinModalOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={upgradeCabinModalOpen} onClose={() => setUpgradeCabinModalOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>Upgrade Cabin</DialogTitle>
-        <DialogContent sx={{ paddingTop: '1rem !important' }}>
+        <DialogContent sx={{ paddingTop: "1rem !important" }}>
           {loading && (
             <Box
               sx={{
@@ -660,9 +721,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
             {isArray(cabinsToUpgradeTo) && cabinsToUpgradeTo.length !== 0 && (
               <Autocomplete
                 fullWidth
-                options={[...cabinsToUpgradeTo].sort(
-                  (a, b) => statusPriority[a.status] - statusPriority[b.status]
-                )}
+                options={[...cabinsToUpgradeTo].sort((a, b) => statusPriority[a.status] - statusPriority[b.status])}
                 getOptionLabel={(option) => `${option.cabin_number} ${option.status}`}
                 value={cabinsToUpgradeTo?.find((cabin) => cabin.cabin_number === cabinNumber) || null}
                 onChange={(event, newValue) => {
@@ -672,20 +731,25 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                   <li {...props} key={option.cabin_number}>
                     {option.cabin_number}
                     <Chip
-                      label={option.status === "RESERVED" ? "INTERNALLY AVAILABLE" : option.status === "AVAILABLE" ? "PUBLICALLY AVAILABLE" : option.status}
+                      label={
+                        option.status === "RESERVED"
+                          ? "INTERNALLY AVAILABLE"
+                          : option.status === "AVAILABLE"
+                            ? "PUBLICALLY AVAILABLE"
+                            : option.status
+                      }
                       size="small"
-                      sx={{ ml: 1 ,color:'white'}}
+                      sx={{ ml: 1, color: "white" }}
                       color={
-                        option.status === 'AVAILABLE'
-                          ? 'success'
-                          : option.status === 'PARTIALLY_BOOKED'
-                            ? 'warning'
-                            : 'default'
+                        option.status === "AVAILABLE"
+                          ? "success"
+                          : option.status === "PARTIALLY_BOOKED"
+                            ? "warning"
+                            : "default"
                       }
                     />
-                    - Price: {option.category.price}
-                    - Name: {option.category.category_name}
-                    - Capacity: {option.category.spec.capacity}
+                    - Price: {option.category.price}- Name: {option.category.category_name}- Capacity:{" "}
+                    {option.category.spec.capacity}
                   </li>
                 )}
                 renderInput={(params) => <TextField {...params} label="Available Cabins" />}
@@ -695,10 +759,15 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={()=>setUpgradeCabinModalOpen(false)} color="secondary" variant="outlined">
+          <Button onClick={() => setUpgradeCabinModalOpen(false)} color="secondary" variant="outlined">
             Cancel
           </Button>
-          <Button onClick={() => setConfirmUpgradeOpen(true)} color="primary" variant="outlined" disabled={!cabinNumber || loading}>
+          <Button
+            onClick={() => setConfirmUpgradeOpen(true)}
+            color="primary"
+            variant="outlined"
+            disabled={!cabinNumber || loading}
+          >
             Save
           </Button>
         </DialogActions>
@@ -709,9 +778,8 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Warning</AlertTitle>
-            Are you sure you want to save? This action will permanently release the current cabin,
-            update the booking code, and associate the selected cabin with this booking.
-            The change will be recorded in the system.
+            Are you sure you want to save? This action will permanently release the current cabin, update the booking
+            code, and associate the selected cabin with this booking. The change will be recorded in the system.
           </Alert>
         </DialogContent>
         <DialogActions>
@@ -729,36 +797,43 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
         <DialogContent>
           {isInstallments ? (
             <>
-             {bookingOlderThanWeek && (
-              <>
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Please note this booking is a week old
+              {bookingOlderThanWeek && (
+                <>
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    Please note this booking is a week old
+                  </Alert>
+                  <br />
+                </>
+              )}
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                <AlertTitle>Switch to Paid in Full</AlertTitle>
+                This will <b>convert the booking to a Paid in Full plan</b>. The following changes will be applied:
+                <ul>
+                  <li>
+                    Add the <b>5% Pay in Full adjustment</b> to this booking.
+                  </li>
+                  <li>
+                    Mark all remaining installments as <b>fully due immediately</b>.
+                  </li>
+                  <li>Update outstanding balances per passenger.</li>
+                </ul>
+                <b>Note:</b> Existing payment entries will not be modified.
               </Alert>
-              <br />
-              </>
-
-            )}
-            <Alert severity="warning" sx={{ mb: 2 }}>
-              <AlertTitle>Switch to Paid in Full</AlertTitle>
-              This will <b>convert the booking to a Paid in Full plan</b>.
-              The following changes will be applied:
-              <ul>
-                <li>Add the <b>5% Pay in Full adjustment</b> to this booking.</li>
-                <li>Mark all remaining installments as <b>fully due immediately</b>.</li>
-                <li>Update outstanding balances per passenger.</li>
-              </ul>
-              <b>Note:</b> Existing payment entries will not be modified.
-            </Alert>
             </>
           ) : (
             <Alert severity="warning" sx={{ mb: 2 }}>
               <AlertTitle>Switch to Installments</AlertTitle>
-              This will <b>switch the booking to an Installment Plan</b>.
-              The following changes will be applied:
+              This will <b>switch the booking to an Installment Plan</b>. The following changes will be applied:
               <ul>
-                <li>Remove the <b>5% Pay in Full adjustment</b> from this booking.</li>
-                <li>Generate <b>2–5 monthly installments</b>.</li>
-                <li>Recalculate <b>outstanding amounts per passenger</b>.</li>
+                <li>
+                  Remove the <b>5% Pay in Full adjustment</b> from this booking.
+                </li>
+                <li>
+                  Generate <b>2–5 monthly installments</b>.
+                </li>
+                <li>
+                  Recalculate <b>outstanding amounts per passenger</b>.
+                </li>
               </ul>
               <b>Note:</b> Existing payment entries will not be altered.
             </Alert>
@@ -776,11 +851,11 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                 select
                 fullWidth
                 label="Number of installments"
-                value={selectedInstallments ?? ''}
+                value={selectedInstallments ?? ""}
                 onChange={(e) => setSelectedInstallments(Number(e.target.value) || null)}
                 helperText={
                   maxAllowed < 2
-                    ? 'Not enough time to create at least 2 installments before event cutoff'
+                    ? "Not enough time to create at least 2 installments before event cutoff"
                     : `Select number of installments (2-${maxAllowed})`
                 }
                 disabled={maxAllowed < 2}
@@ -798,26 +873,25 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
           <Button
             onClick={() => setSwitchPlanOpen(false)}
             color="secondary"
-      variant="outlined"
-      disabled={switchingPlan}
-    >
-      Cancel
-    </Button>
-    <Button
-      onClick={handleConfirmSwitchPlan}
-      color="primary"
-      variant="contained"
-      startIcon={<SwapHorizIcon />}
-      disabled={
-        switchingPlan || (!isInstallments && (maxAllowed < 2 || !selectedInstallments || selectedInstallments < 2))
-      }
-    >
-      {switchingPlan ? "Processing..." : "Confirm Switch"}
-    </Button>
-  </DialogActions>
-</Dialog>
-
-
+            variant="outlined"
+            disabled={switchingPlan}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmSwitchPlan}
+            color="primary"
+            variant="contained"
+            startIcon={<SwapHorizIcon />}
+            disabled={
+              switchingPlan ||
+              (!isInstallments && (maxAllowed < 2 || !selectedInstallments || selectedInstallments < 2))
+            }
+          >
+            {switchingPlan ? "Processing..." : "Confirm Switch"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
