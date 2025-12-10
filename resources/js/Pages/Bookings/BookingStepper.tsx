@@ -44,6 +44,7 @@ import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
 import { formatCurrency } from "@/Helpers/stringUtils";
+import { BedConfigOption, bedConfigOptions } from '@/types/bedconfig';
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -112,7 +113,7 @@ const BookingStepper: React.FC = ({
   const [loading, setLoading] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState(null);
   const [numberOfInstallments, setNumberOfInstallments] = useState(null);
-  const [bedConfig, setBedConfig] = useState(null);
+  const [bedConfig, setBedConfig] = React.useState<BedConfigOption | null>(null);
   const [isNextDisabled, setIsNextDisabled] = useState(true);
   const [carbonOffset, setCarbonOffset] = useState(false);
   const [youChooseYourCabin, setYouChooseYourCabin] = useState(false);
@@ -692,10 +693,7 @@ const BookingStepper: React.FC = ({
                  <FormControl fullWidth>
                   <Autocomplete
                       fullWidth
-                      options={[
-                        { id: 'SEPARATED', value: "SEPARATED" },
-                        { id: 'JOINED', value: "JOINED" },
-                      ]}
+                      options={bedConfigOptions}
                       getOptionLabel={(option) => `${option.value}`}
                       value={bedConfig}
                       onChange={(event, newValue) => setBedConfig(newValue)}

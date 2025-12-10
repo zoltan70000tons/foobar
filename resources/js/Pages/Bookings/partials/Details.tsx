@@ -51,6 +51,7 @@ import { formatDate } from "@/Helpers/stringUtils";
 import { isArray } from "lodash";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
+import { BedConfigOption, bedConfigOptions } from "@/types/bedconfig";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInstallmentsAllowed }) => {
   const [open, setOpen] = useState(false);
@@ -77,14 +78,9 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
   const [switchPlanOpen, setSwitchPlanOpen] = useState(false);
   const [switchingPlan, setSwitchingPlan] = useState(false);
   const [selectedInstallments, setSelectedInstallments] = useState<number | null>(null);
-  const [bedConfig, setBedConfig] = useState(booking.bed_config);
+  const [bedConfig, setBedConfig] = React.useState<BedConfigOption | null>(booking.bed_config);
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission(Permissions.EditBookings);
-
-  const bedOptions = [
-    { value: "SEPARATED", label: "SEPARATED" },
-    { value: "JOINED", label: "JOINED" },
-  ];
 
 
   useEffect(() => {
@@ -453,9 +449,9 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                           value={bedConfig || ""}
                           onChange={(e) => handleBedConfigChange(e.target.value)}
                         >
-                          {bedOptions.map((opt) => (
+                          {bedConfigOptions.map((opt) => (
                             <MenuItem key={opt.value} value={opt.value}>
-                              {opt.label}
+                              {opt.id}
                             </MenuItem>
                           ))}
                         </Select>
