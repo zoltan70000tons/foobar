@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [1.5.1] - 2025-12-09
+## [1.5.2] - 2025-12-09
 
 ### Added
 - Added bed config to the manual booking stepper.
@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 - Refactored Autocomplete usage to rely on inferred MUI typings and avoid duplicate option definitions.
 
+## [1.5.1] - 2025-12-09
+
+### Changed
+- Standarize Error Handling on `BookingContoller`
 
 ## [1.5.0] - 2025-12-08
 
