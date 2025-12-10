@@ -12,5 +12,5 @@ interface CabinCategoryInterface
   function update(array $data, $id);
   function delete($id);
   function getCategoriesByEvent($event_id);
-  function getModalBookingCategories($event_id);
+  function getCategoriesWithCabins($event_id);
 }

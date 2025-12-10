@@ -27,10 +27,14 @@ class CabinCategoryRepository implements CabinCategoryInterface
   }
 
   /**
-   * Cabin categories for booking flows (lightweight, avoids N+1)
-   *
+   * Get cabin categories with their available cabins for an event.
+   * 
+   * This method is optimized for booking flows where cabin availability is needed.
+   * 
+   * @param int $event_id The event ID to filter categories
+   * @return \Illuminate\Database\Eloquent\Collection Collection of CabinCategory models with cabins
    */
-  function getModalBookingCategories($event_id)
+  function getCategoriesWithCabins($event_id)
   {
     $categories = CabinCategory::with([
       'spec',
@@ -55,13 +59,6 @@ class CabinCategoryRepository implements CabinCategoryInterface
 
   function getCategoriesByEvent($event_id)
   {
-    // return CabinCategory::with(['spec', 'cabins.cabinType'])
-    //     ->where('event_id', '=', $event_id)
-    //     ->whereHas('cabins', function ($query) {
-    //         $query->whereIn('status', ['AVAILABLE', 'PARTIALLY_BOOKED', 'RESERVED']);
-    //     })
-    //     ->get()
-    //     ->toArray();
     return CabinCategory::with('spec')
       ->where('event_id', '=', $event_id)
       ->whereHas('cabins', fn($q) => $q->whereIn('status', ['AVAILABLE', 'PARTIALLY_BOOKED', 'RESERVED']))

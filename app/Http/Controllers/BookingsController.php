@@ -156,7 +156,7 @@ class BookingsController extends Controller
       return $this->withPermission(
         [Permissions::ViewBookings],
         function ($eventId) {
-          $categories = $this->cabinCategoryRepository->getModalBookingCategories($eventId);
+          $categories = $this->cabinCategoryRepository->getCategoriesWithCabins($eventId);
           return response()->json(['cabinCategories' => $categories]);
         },
         $eventId
@@ -459,7 +459,7 @@ class BookingsController extends Controller
           $users = $this->teamRepository->getAllMembers(1);
           $cabinTypes = $this->cabinRepository->getTypes();
           $adjustments = $this->adjustmentsRepository->listAdjustments($event_id);
-          $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent(1);
+          $cabinCategories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
           $availableTags = Tag::type('booking')->get();
           $bookingId = $booking->id;
           $history = $this->logRepository->getHistory($bookingId);
