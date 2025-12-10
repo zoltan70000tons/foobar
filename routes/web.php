@@ -186,7 +186,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   );
   Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
   Route::get('/bookings/edit-mode-reassign', [BookingsController::class, 'reAssign'])->name('bookings.reAssign');
-
+  Route::put('bookings/{booking}/bed-config', [BookingsController::class, 'updateBedConfig'])
+    ->name('bookings.update-bed-config');
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
   Route::get('/cabins/upgrade-list', [BookingsController::class, 'getCabinsToUpgradeTo'])->name('cabins.upgrade-list');

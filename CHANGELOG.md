@@ -5,6 +5,22 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2025-12-10
+### Added
+- Added bed config to the manual booking stepper.
+- Added editable bed configuration dropdown in the SPA Admin.
+- Added “Update” action to save the bed configuration.
+- Added backend endpoint to update the bed configuration.
+- Added form validation, error handling and try/catch in the update controller.
+- Added TypeScript types for bed configuration options (`BedConfigId`, `BedConfigOption`).
+- Centralized `bedConfigOptions` into a shared types file.
+
+### Fixed
+- Fixed Autocomplete typing error by updating state to use `BedConfigOption | null`.
+
+### Updated
+- Refactored Autocomplete usage to rely on inferred MUI typings and avoid duplicate option definitions.
+
 ## [1.5.2] - 2025-12-09
 
 ### Added

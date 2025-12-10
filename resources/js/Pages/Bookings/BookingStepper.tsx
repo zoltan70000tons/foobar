@@ -44,6 +44,7 @@ import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
 import { formatCurrency } from "@/Helpers/stringUtils";
+import { BedConfigOption, bedConfigOptions } from '@/types/bedconfig';
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -112,6 +113,7 @@ const BookingStepper: React.FC = ({
   const [loading, setLoading] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState(null);
   const [numberOfInstallments, setNumberOfInstallments] = useState(null);
+  const [bedConfig, setBedConfig] = React.useState<BedConfigOption | null>(null);
   const [isNextDisabled, setIsNextDisabled] = useState(true);
   const [carbonOffset, setCarbonOffset] = useState(false);
   const [youChooseYourCabin, setYouChooseYourCabin] = useState(false);
@@ -172,7 +174,7 @@ const BookingStepper: React.FC = ({
 
   useEffect(() => {
     setIsNextDisabled(!validateStep());
-  }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
+  }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments, bedConfig]);
 
   useEffect(() => {
     if (!cabinType) return;
@@ -202,7 +204,7 @@ const BookingStepper: React.FC = ({
   const validateStep = () => {
     switch (activeStep) {
       case 0:
-        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber && !fetching;
+        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber && !fetching && bedConfig;
         if (paymentPlan?.value === "INSTALLMENTS") {
           rule = rule && numberOfInstallments;
         }
@@ -315,6 +317,7 @@ const BookingStepper: React.FC = ({
       cabin_category_spec_id: cabin_category_spec_id,
       payment_plan: paymentPlan.value,
       number_of_installments: numberOfInstallments?.value,
+      bed_configuration: bedConfig?.value,
       carbon_offset: carbonOffset,
       you_choose_your_cabin: youChooseYourCabin,
       passenger: {
@@ -667,7 +670,7 @@ const BookingStepper: React.FC = ({
 
               {/* Number of Installments */}
               {paymentPlan?.value === "INSTALLMENTS" && (
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <FormControl fullWidth>
                     <Autocomplete
                       fullWidth
@@ -686,6 +689,20 @@ const BookingStepper: React.FC = ({
                   </FormControl>
                 </Grid>
               )}
+              <Grid item xs={12} md={3}>
+                 <FormControl fullWidth>
+                  <Autocomplete
+                      fullWidth
+                      options={bedConfigOptions}
+                      getOptionLabel={(option) => `${option.value}`}
+                      value={bedConfig}
+                      onChange={(event, newValue) => setBedConfig(newValue)}
+                      renderInput={(params) => <TextField {...params} label="Bed Configuration" />}
+                      sx={{ mb: 2 }}
+                    />
+
+                 </FormControl>
+              </Grid>
             </Grid>
           </Box>
         )}
@@ -1072,6 +1089,12 @@ const BookingStepper: React.FC = ({
                         <strong>Category:</strong>
                       </TableCell>
                       <TableCell>{cabinCategory.title}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <strong>Bed Configuration:</strong>
+                      </TableCell>
+                      <TableCell>{bedConfig.value}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>
