@@ -5,16 +5,21 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.1] - 2025-12-09
+## [1.5.2] - 2025-12-09
 
 ### Added
 
 - Route /json/events/{id}/bookings/cabin-categories
 - getCabinCategories in BookingsController
 
-### Changded
+### Changed
 
 - By default we not return all categories for New Booking modal. Instead after New Booking is selected we fetch categories only, to prevent massive pull each time
+
+## [1.5.1] - 2025-12-09
+
+### Changed
+- Standarize Error Handling on `BookingContoller`
 
 ## [1.5.0] - 2025-12-08
 
