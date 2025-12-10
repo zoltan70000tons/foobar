@@ -5,6 +5,16 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/793) - 2025-12-10
+
+### Added
+
+- Blacklisted tag
+
+### Changed
+
+- Blacklisted customers not show up in Manual Booking flow and flag is returned to the frontend to handle
+
 ## [1.5.2] - 2025-12-09
 
 ### Added

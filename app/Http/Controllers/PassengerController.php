@@ -380,7 +380,7 @@ class PassengerController extends Controller
                     $query->select(DB::raw(1))
                         ->from('taggings')
                         ->join('tags', 'tags.id', '=', 'taggings.tag_id')
-                        ->whereRaw('taggings.entity_id::uuid = users.id') // cast entity_id to uuid
+                        ->whereRaw('taggings.entity_id::uuid = users.id')
                         ->where('taggings.entity_type', 'customer')
                         ->where('tags.name', 'BLACKLISTED')
                         ->where('tags.type', 'customer');

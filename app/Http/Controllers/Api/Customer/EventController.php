@@ -146,7 +146,6 @@ class EventController extends Controller
       'purchase_access' => $access['status'],
       'access_message' => $access['message'] ?? null,
       'is_blacklisted' => $user->isBlacklisted(),
-        'user' => $user,
     ]);
   }
 }
