@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Repositories\PassengerRepository;
 use App\Rules\UniqueSurvivorInEvent;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Log;
 
@@ -373,8 +374,17 @@ class PassengerController extends Controller
         $eventId = $request->get('eventId');
 
         try {
-            $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
+            $results = User::with(['detail', 'survivorNumber', 'customerAddress', 'tags'])
                 ->role('Customer')
+                ->whereNotExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('taggings')
+                        ->join('tags', 'tags.id', '=', 'taggings.tag_id')
+                        ->whereRaw('taggings.entity_id::uuid = users.id') // cast entity_id to uuid
+                        ->where('taggings.entity_type', 'customer')
+                        ->where('tags.name', 'BLACKLISTED')
+                        ->where('tags.type', 'customer');
+                })
                 ->where(function ($q) use ($query) {
                     $q->where('email', 'LIKE', "%{$query}%")
                         ->orWhereHas('detail', function ($q2) use ($query) {

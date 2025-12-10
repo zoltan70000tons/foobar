@@ -191,4 +191,15 @@ class User extends Authenticatable implements CanResetPassword
   {
     return $this->morphToMany(Tag::class, 'entity', 'taggings', 'entity_id', 'tag_id')->withPivot('created_at');
   }
+
+    public function isBlacklisted(): bool
+    {
+        return \DB::table('taggings')
+            ->join('tags', 'tags.id', '=', 'taggings.tag_id')
+            ->where('taggings.entity_id', $this->id)
+            ->where('taggings.entity_type', 'customer')   // FIX: Use correct type
+            ->where('tags.name', 'BLACKLISTED')
+            ->where('tags.type', 'customer')
+            ->exists();
+    }
 }
