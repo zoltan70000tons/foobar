@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { Button, Box, Modal } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Box } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
-import CustomerModal from "./partials/CustomerModal";
+import axios from "axios";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Customer } from "@/interfaces/Customer";
+import CustomerModal from "./partials/CustomerModal";
+
 
 const bookingModalStyle = {
   position: "absolute",
@@ -21,32 +24,64 @@ const bookingModalStyle = {
   p: 2,
 };
 
-type Props = {
+
+type NewBookingModalProps = {
   cabinTypes: Array<{ id: number; name: string }>;
-  cabinCategories: CabinCategory[];
+  eventId: number | string;
+  cabinCategories?: CabinCategory[];
   onBookingCreated: () => void;
 };
 
-export default function NewBookingModal({ cabinTypes, cabinCategories, onBookingCreated }: Props) {
-  const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
+const NewBookingModal: React.FC<NewBookingModalProps> = ({
+  cabinTypes,
+  cabinCategories: initialCabinCategories = [],
+  eventId,
+  onBookingCreated,
+}) => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const { hasPermission } = usePermissions();
+  const canCreateBooking = hasPermission(Permissions.CreateBookings);
+  const [isCreateCustomerVisible, setIsCreateCustomerVisible] = useState(false);
+  const [cabinCategories, setCabinCategories] = useState<CabinCategory[]>(initialCabinCategories);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState<boolean>(false);
+  const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const { showSnackbar } = useSnackbar();
   const [createdCustomer, setCreatedCustomer] = useState<Customer | null>(null);
-
+  const handleCustomerCreated = (customer: Customer) => {
+    console.log(customer);
+    setCreatedCustomer(customer);
+    closeCustomerModal();
+  };
   const openBookingModal = () => setIsBookingOpen(true);
   const closeBookingModal = () => setIsBookingOpen(false);
   const openCustomerModal = () => setIsCustomerModalOpen(true);
   const closeCustomerModal = () => setIsCustomerModalOpen(false);
-  const handleCustomerCreated = (customer: Customer) => {
-    setCreatedCustomer(customer);
-    closeCustomerModal();
+
+
+
+  const fetchCabinCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await axios.get(route("bookings.cabinCategories", { id: eventId }));
+      setCabinCategories(response?.data?.cabinCategories || []);
+    } catch (error) {
+      console.error("Error loading cabin categories", error);
+      showSnackbar("Unable to load cabin categories. Please try again.", "error");
+    } finally {
+      setLoadingCategories(false);
+    }
   };
 
-  const { hasPermission } = usePermissions();
-  const canCreateBooking = hasPermission(Permissions.CreateBookings);
-  const [isCreateCustomerVisible, setIsCreateCustomerVisible] = useState(false);
+ useEffect(() => {
+    if (isBookingOpen && cabinCategories.length === 0 && !loadingCategories) {
+      fetchCabinCategories();
+    }
+  }, [isBookingOpen, eventId]);
 
-  return (
-    <>
+  return (<>
       <Button
         variant="outlined"
         color="secondary"
@@ -108,4 +143,6 @@ export default function NewBookingModal({ cabinTypes, cabinCategories, onBooking
       </Modal>
     </>
   );
-}
+};
+
+export default NewBookingModal;

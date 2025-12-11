@@ -78,7 +78,7 @@ type Props = PageProps & {
   event: Event;
   users: User[];
   cabinTypes: { id: string; name: string }[];
-  cabinCategories: CabinCategory[];
+  cabinCategories?: CabinCategory[];
   errors: Errors;
   tabIndex: number;
   tab: string;
@@ -98,7 +98,7 @@ const Index = ({
   event,
   users,
   cabinTypes,
-  cabinCategories,
+  cabinCategories = [],
   errors,
   tabIndex,
   tags
@@ -514,7 +514,12 @@ const Index = ({
                 }}
               >
                 <Box sx={{ minHeight: "40px", display: "flex", alignItems: "center" }}>
-                  <NewBookingModal cabinTypes={cabinTypes} cabinCategories={cabinCategories} onBookingCreated={() => setShouldReload(true)} />
+                  <NewBookingModal
+                    cabinTypes={cabinTypes}
+                    cabinCategories={cabinCategories}
+                    eventId={event.id}
+                    onBookingCreated={() => setShouldReload(true)}
+                  />
                 </Box>
                 <TextField
                   size="small"

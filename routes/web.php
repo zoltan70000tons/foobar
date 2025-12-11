@@ -176,6 +176,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/events/{event}/bookings/getFinalCost', [BookingsController::class, 'getBookingFinalCost'])->name(
     'bookings.getBookingFinalCost'
   );
+  Route::get('/json/events/{id}/bookings/cabin-categories', [BookingsController::class, 'getCabinCategories'])->name(
+    'bookings.cabinCategories'
+  );
   Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])->name('bookings.show');
   Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])->name('bookings.update');
   Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name(
@@ -183,7 +186,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   );
   Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
   Route::get('/bookings/edit-mode-reassign', [BookingsController::class, 'reAssign'])->name('bookings.reAssign');
-
+  Route::put('bookings/{booking}/bed-config', [BookingsController::class, 'updateBedConfig'])
+    ->name('bookings.update-bed-config');
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
   Route::get('/cabins/upgrade-list', [BookingsController::class, 'getCabinsToUpgradeTo'])->name('cabins.upgrade-list');
@@ -348,8 +352,7 @@ Route::put('/users/{user}/avatar', [AgentController::class, 'update'])->name('us
 
 Route::match(['GET', 'POST'], '/logs', [LogsController::class, 'index'])->name('logs.index');
 
-Route::patch('/installments/update-due', [InstallmentController::class, 'update'])
-    ->name('installments.update-due');
+Route::patch('/installments/update-due', [InstallmentController::class, 'update'])->name('installments.update-due');
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 Route::prefix('oauth')->group(function () {
