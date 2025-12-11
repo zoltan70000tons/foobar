@@ -67,17 +67,23 @@ class CustomerRepository implements CustomerInterface
       $customerAddressData = [];
 
       if ($request->filled('first_name') && $request->input('first_name') !== $originalDetailData['first_name']) {
-        $logUserDescription[] = "first_name was changed from {$originalDetailData['first_name']} to {$request->input('first_name')}";
+        $logUserDescription[] = "first_name was changed from {$originalDetailData['first_name']} to {$request->input(
+          'first_name'
+        )}";
         $user->detail->first_name = $request->input('first_name');
       }
 
       if ($request->filled('last_name') && $request->input('last_name') !== $originalDetailData['last_name']) {
-        $logUserDescription[] = "last_name was changed from {$originalDetailData['last_name']} to {$request->input('last_name')}";
+        $logUserDescription[] = "last_name was changed from {$originalDetailData['last_name']} to {$request->input(
+          'last_name'
+        )}";
         $user->detail->last_name = $request->input('last_name');
       }
 
       if ($request->filled('middle_name') && $request->input('middle_name') !== $originalDetailData['middle_name']) {
-        $logUserDescription[] = "middle_name was changed from {$originalDetailData['middle_name']} to {$request->input('middle_name')}";
+        $logUserDescription[] = "middle_name was changed from {$originalDetailData['middle_name']} to {$request->input(
+          'middle_name'
+        )}";
         $user->detail->middle_name = $request->input('middle_name');
       }
 
@@ -86,14 +92,17 @@ class CustomerRepository implements CustomerInterface
         $user->email = $request->input('email');
       }
 
-
       if ($request->filled('gender') && $request->input('gender') !== $originalDetailData['gender']) {
-        $logUserDescription[] = "gender was changed from {$originalDetailData['gender']} to {$request->input('gender')}";
+        $logUserDescription[] = "gender was changed from {$originalDetailData['gender']} to {$request->input(
+          'gender'
+        )}";
         $user->detail->gender = $request->input('gender');
       }
 
       if ($request->filled('citizenship') && $request->input('citizenship') !== $originalDetailData['citizenship']) {
-        $logUserDescription[] = "citizenship was changed from {$originalDetailData['citizenship']} to {$request->input('citizenship')}";
+        $logUserDescription[] = "citizenship was changed from {$originalDetailData['citizenship']} to {$request->input(
+          'citizenship'
+        )}";
         $user->detail->citizenship = $request->input('citizenship');
       }
 
@@ -102,18 +111,30 @@ class CustomerRepository implements CustomerInterface
         $user->detail->phone = $request->input('phone');
       }
 
-      if ($request->filled('emergency_c_name') && $request->input('emergency_c_name') !== $originalDetailData['emergency_c_name']) {
-        $logUserDescription[] = "emergency_c_name was changed from {$originalDetailData['emergency_c_name']} to {$request->input('emergency_c_name')}";
+      if (
+        $request->filled('emergency_c_name') &&
+        $request->input('emergency_c_name') !== $originalDetailData['emergency_c_name']
+      ) {
+        $logUserDescription[] = "emergency_c_name was changed from {$originalDetailData['emergency_c_name']} to {$request->input(
+          'emergency_c_name'
+        )}";
         $user->detail->emergency_c_name = $request->input('emergency_c_name');
       }
 
-      if ($request->filled('emergency_c_phone') && $request->input('emergency_c_phone') !== $originalDetailData['emergency_c_phone']) {
-        $logUserDescription[] = "emergency_c_phone was changed from {$originalDetailData['emergency_c_phone']} to {$request->input('emergency_c_phone')}";
+      if (
+        $request->filled('emergency_c_phone') &&
+        $request->input('emergency_c_phone') !== $originalDetailData['emergency_c_phone']
+      ) {
+        $logUserDescription[] = "emergency_c_phone was changed from {$originalDetailData['emergency_c_phone']} to {$request->input(
+          'emergency_c_phone'
+        )}";
         $user->detail->emergency_c_phone = $request->input('emergency_c_phone');
       }
 
       if ($request->filled('language') && $request->input('language') !== $originalDetailData['language']) {
-        $logUserDescription[] = "language was changed from {$originalDetailData['language']} to {$request->input('language')}";
+        $logUserDescription[] = "language was changed from {$originalDetailData['language']} to {$request->input(
+          'language'
+        )}";
         $user->detail->language = $request->input('language');
       }
 
@@ -123,40 +144,58 @@ class CustomerRepository implements CustomerInterface
         $user->detail->dob = $dob;
       }
 
-      if ($request->filled('address_first') && $request->input('address_first') !== $user->customerAddress->address_first) {
-        $logUserAddressDescription[] = "address_first was changed from {$user->customerAddress->address_first} to {$request->input('address_first')}";
+      if (
+        $request->filled('address_first') &&
+        $request->input('address_first') !== $user->customerAddress->address_first
+      ) {
+        $logUserAddressDescription[] = "address_first was changed from {$user->customerAddress->address_first} to {$request->input(
+          'address_first'
+        )}";
         $customerAddressData['address_first'] = $request->input('address_first');
       }
 
-      if ($request->filled('address_second') && $request->input('address_second') !== $user->customerAddress->address_second) {
-        $logUserAddressDescription[] = "address_second was changed from {$user->customerAddress->address_second} to {$request->input('address_second')}";
+      if (
+        $request->filled('address_second') &&
+        $request->input('address_second') !== $user->customerAddress->address_second
+      ) {
+        $logUserAddressDescription[] = "address_second was changed from {$user->customerAddress->address_second} to {$request->input(
+          'address_second'
+        )}";
         $customerAddressData['address_second'] = $request->input('address_second');
       }
 
       if ($request->filled('city') && $request->input('city') !== $user->customerAddress->city) {
-        $logUserAddressDescription[] = "city was changed from {$user->customerAddress->city} to {$request->input('city')}";
+        $logUserAddressDescription[] = "city was changed from {$user->customerAddress->city} to {$request->input(
+          'city'
+        )}";
         $customerAddressData['city'] = $request->input('city');
       }
 
       if ($request->filled('state') && $request->input('state') !== $user->customerAddress->state) {
-        $logUserAddressDescription[] = "state was changed from {$user->customerAddress->state} to {$request->input('state')}";
+        $logUserAddressDescription[] = "state was changed from {$user->customerAddress->state} to {$request->input(
+          'state'
+        )}";
         $customerAddressData['state'] = $request->input('state');
       }
 
       if ($request->filled('postal_code') && $request->input('postal_code') !== $user->customerAddress->postal_code) {
-        $logUserAddressDescription[] = "postal_code was changed from {$user->customerAddress->postal_code} to {$request->input('postal_code')}";
+        $logUserAddressDescription[] = "postal_code was changed from {$user->customerAddress->postal_code} to {$request->input(
+          'postal_code'
+        )}";
         $customerAddressData['postal_code'] = $request->input('postal_code');
       }
 
       if ($request->filled('country') && $request->input('country') !== $user->customerAddress->country) {
-        $logUserAddressDescription[] = "country was changed from {$user->customerAddress->country} to {$request->input('country')}";
+        $logUserAddressDescription[] = "country was changed from {$user->customerAddress->country} to {$request->input(
+          'country'
+        )}";
         $customerAddressData['country'] = $request->input('country');
       }
 
       // Update or create the customer address for the user
       $user->customerAddress()->updateOrCreate(
         ['user_id' => $user->id], // Match by user_id
-        $customerAddressData,
+        $customerAddressData
       );
 
       $user->save();
@@ -168,69 +207,63 @@ class CustomerRepository implements CustomerInterface
       if (!empty($logUserDescription) || !empty($logUserAddressDescription)) {
         $description = implode(', ', $logUserDescription); // Join the changes into a single string
 
-          $before = [
-              'user' => [
-                  'email' => $originalUserData['email'],
-              ],
-              'detail' => [
-                  'first_name' => $originalDetailData['first_name'],
-                  'last_name' => $originalDetailData['last_name'],
-                  'middle_name' => $originalDetailData['middle_name'],
-                  'gender' => $originalDetailData['gender'],
-                  'citizenship' => $originalDetailData['citizenship'],
-                  'phone' => $originalDetailData['phone'],
-                  'emergency_c_name' => $originalDetailData['emergency_c_name'],
-                  'emergency_c_phone' => $originalDetailData['emergency_c_phone'],
-                  'language' => $originalDetailData['language'],
-                  'dob' => $originalDetailData['dob'],
-              ],
-              'address' => [
-                  'address_first' => $user->customerAddress->getOriginal('address_first'),
-                  'address_second' => $user->customerAddress->getOriginal('address_second'),
-                  'city' => $user->customerAddress->getOriginal('city'),
-                  'state' => $user->customerAddress->getOriginal('state'),
-                  'postal_code' => $user->customerAddress->getOriginal('postal_code'),
-                  'country' => $user->customerAddress->getOriginal('country'),
-              ],
-          ];
+        $before = [
+          'user' => [
+            'email' => $originalUserData['email'],
+          ],
+          'detail' => [
+            'first_name' => $originalDetailData['first_name'],
+            'last_name' => $originalDetailData['last_name'],
+            'middle_name' => $originalDetailData['middle_name'],
+            'gender' => $originalDetailData['gender'],
+            'citizenship' => $originalDetailData['citizenship'],
+            'phone' => $originalDetailData['phone'],
+            'emergency_c_name' => $originalDetailData['emergency_c_name'],
+            'emergency_c_phone' => $originalDetailData['emergency_c_phone'],
+            'language' => $originalDetailData['language'],
+            'dob' => $originalDetailData['dob'],
+          ],
+          'address' => [
+            'address_first' => $user->customerAddress->getOriginal('address_first'),
+            'address_second' => $user->customerAddress->getOriginal('address_second'),
+            'city' => $user->customerAddress->getOriginal('city'),
+            'state' => $user->customerAddress->getOriginal('state'),
+            'postal_code' => $user->customerAddress->getOriginal('postal_code'),
+            'country' => $user->customerAddress->getOriginal('country'),
+          ],
+        ];
 
-          $after = [
-              'user' => [
-                  'email' => $user->email,
-              ],
-              'detail' => [
-                  'first_name' => $user->detail->first_name,
-                  'last_name' => $user->detail->last_name,
-                  'middle_name' => $user->detail->middle_name,
-                  'gender' => $user->detail->gender,
-                  'citizenship' => $user->detail->citizenship,
-                  'phone' => $user->detail->phone,
-                  'emergency_c_name' => $user->detail->emergency_c_name,
-                  'emergency_c_phone' => $user->detail->emergency_c_phone,
-                  'language' => $user->detail->language,
-                  'dob' => $user->detail->dob,
-              ],
-              'address' => [
-                  'address_first' => $user->customerAddress->address_first,
-                  'address_second' => $user->customerAddress->address_second,
-                  'city' => $user->customerAddress->city,
-                  'state' => $user->customerAddress->state,
-                  'postal_code' => $user->customerAddress->postal_code,
-                  'country' => $user->customerAddress->country,
-              ],
-          ];
-          [$filteredBefore, $filteredAfter] = GlobalLogRemoveUnchanged::removeUnchanged($before, $after);
+        $after = [
+          'user' => [
+            'email' => $user->email,
+          ],
+          'detail' => [
+            'first_name' => $user->detail->first_name,
+            'last_name' => $user->detail->last_name,
+            'middle_name' => $user->detail->middle_name,
+            'gender' => $user->detail->gender,
+            'citizenship' => $user->detail->citizenship,
+            'phone' => $user->detail->phone,
+            'emergency_c_name' => $user->detail->emergency_c_name,
+            'emergency_c_phone' => $user->detail->emergency_c_phone,
+            'language' => $user->detail->language,
+            'dob' => $user->detail->dob,
+          ],
+          'address' => [
+            'address_first' => $user->customerAddress->address_first,
+            'address_second' => $user->customerAddress->address_second,
+            'city' => $user->customerAddress->city,
+            'state' => $user->customerAddress->state,
+            'postal_code' => $user->customerAddress->postal_code,
+            'country' => $user->customerAddress->country,
+          ],
+        ];
+        [$filteredBefore, $filteredAfter] = GlobalLogRemoveUnchanged::removeUnchanged($before, $after);
 
-        GlobalLogger::log(
-          LogActionCustomer::CUSTOMER_UPDATED,
-          'customer',
-          $user->id,
-          $description,
-          [
-              'after' => $filteredAfter,
-              'before' => $filteredBefore,
-          ]
-        );
+        GlobalLogger::log(LogActionCustomer::CUSTOMER_UPDATED, 'customer', $user->id, $description, [
+          'after' => $filteredAfter,
+          'before' => $filteredBefore,
+        ]);
       }
 
       if (!empty($customerAddressData)) {
@@ -297,47 +330,47 @@ class CustomerRepository implements CustomerInterface
       $user->assignRole('Customer');
       $user->save();
 
-        $after = [
-            // User fields
-            'email' => $user->email,
-            'id' => $user->id,
+      $after = [
+        // User fields
+        'email' => $user->email,
+        'id' => $user->id,
 
-            // User Detail
-            'first_name' => $userDetail->first_name ?? null,
-            'middle_name' => $userDetail->middle_name ?? null,
-            'last_name' => $userDetail->last_name ?? null,
-            'gender' => $userDetail->gender ?? null,
-            'citizenship' => $userDetail->citizenship ?? null,
-            'phone' => $userDetail->phone ?? null,
-            'emergency_c_name' => $userDetail->emergency_c_name ?? null,
-            'emergency_c_phone' => $userDetail->emergency_c_phone ?? null,
-            'language' => $userDetail->language ?? null,
-            'dob' => $userDetail->dob ?? null,
+        // User Detail
+        'first_name' => $userDetail->first_name ?? null,
+        'middle_name' => $userDetail->middle_name ?? null,
+        'last_name' => $userDetail->last_name ?? null,
+        'gender' => $userDetail->gender ?? null,
+        'citizenship' => $userDetail->citizenship ?? null,
+        'phone' => $userDetail->phone ?? null,
+        'emergency_c_name' => $userDetail->emergency_c_name ?? null,
+        'emergency_c_phone' => $userDetail->emergency_c_phone ?? null,
+        'language' => $userDetail->language ?? null,
+        'dob' => $userDetail->dob ?? null,
 
-            // Customer Address
-            'address_first' => $customerAddress->address_first ?? null,
-            'address_second' => $customerAddress->address_second ?? null,
-            'city' => $customerAddress->city ?? null,
-            'state' => $customerAddress->state ?? null,
-            'postal_code' => $customerAddress->postal_code ?? null,
-            'country' => $customerAddress->country ?? null,
+        // Customer Address
+        'address_first' => $customerAddress->address_first ?? null,
+        'address_second' => $customerAddress->address_second ?? null,
+        'city' => $customerAddress->city ?? null,
+        'state' => $customerAddress->state ?? null,
+        'postal_code' => $customerAddress->postal_code ?? null,
+        'country' => $customerAddress->country ?? null,
 
-            // Survivor Number
-            'survivor_number' => $user->survivorNumber->survivor_number ?? null,
+        // Survivor Number
+        'survivor_number' => $user->survivorNumber->survivor_number ?? null,
 
-            // Tags (array of tag names or IDs)
-            'tags' => $user->tags->pluck('name')->toArray() ?? [],
-        ];
+        // Tags (array of tag names or IDs)
+        'tags' => $user->tags->pluck('name')->toArray() ?? [],
+      ];
 
-        // Log - Cannot do created or saved in observer because relationships are not present when user is saved, but
-        // synced afterwards
-        GlobalLogger::log(
-            LogActionCustomer::CUSTOMER_CREATED,
-            'customer',
-            $user->id,
-            sprintf('Customer created (%s)', $user->email),
-            ['after' => $after]
-        );
+      // Log - Cannot do created or saved in observer because relationships are not present when user is saved, but
+      // synced afterwards
+      GlobalLogger::log(
+        LogActionCustomer::CUSTOMER_CREATED,
+        'customer',
+        $user->id,
+        sprintf('Customer created (%s)', $user->email),
+        ['after' => $after]
+      );
 
       UserLog::create([
         'customer_id' => $user->id,
@@ -347,6 +380,7 @@ class CustomerRepository implements CustomerInterface
       ]);
 
       DB::commit();
+      return $after;
     } catch (Exception $e) {
       DB::rollBack();
       throw $e;
@@ -387,15 +421,10 @@ class CustomerRepository implements CustomerInterface
 
   function getAllCustomerData(int $perPage = 50): LengthAwarePaginator
   {
-    return User::with([
-      'detail',
-      'customerAddress',
-      'survivorNumber',
-      'membershipTypes',
-      'tags',
-    ])
+    return User::with(['detail', 'customerAddress', 'survivorNumber', 'membershipTypes', 'tags'])
       ->whereIn('id', function ($query) {
-        $query->select('model_has_roles.model_id')
+        $query
+          ->select('model_has_roles.model_id')
           ->from('model_has_roles')
           ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
           ->where('roles.name', 'Customer');
@@ -431,7 +460,7 @@ class CustomerRepository implements CustomerInterface
     $tagIds = [];
     if (is_array($tags) && count($tags)) {
       $tagIds = array_map(static function ($t) {
-        return is_array($t) ? ($t['id'] ?? $t['value'] ?? $t['tag_id'] ?? null) : $t;
+        return is_array($t) ? $t['id'] ?? ($t['value'] ?? ($t['tag_id'] ?? null)) : $t;
       }, $tags);
       $tagIds = array_values(array_filter($tagIds, fn($v) => !is_null($v) && $v !== ''));
     }
@@ -439,13 +468,15 @@ class CustomerRepository implements CustomerInterface
     $tagsAgg = DB::table('taggings as tg')
       ->join('tags as t', 't.id', '=', 'tg.tag_id')
       ->where('tg.entity_type', 'customer')
-      ->selectRaw("
+      ->selectRaw(
+        "
             tg.entity_id,
             json_agg(
                 json_build_object('id', t.id, 'label', t.name, 'color', t.color)
             ) AS tags_json,
             MIN(LOWER(t.name)) AS first_tag_name
-        ")
+        "
+      )
       ->groupBy('tg.entity_id');
 
     $baseQuery = DB::table('users as u')
@@ -482,11 +513,11 @@ class CustomerRepository implements CustomerInterface
         $baseQuery->whereRaw("TO_CHAR(detail.dob, 'YYYY-MM-DD') ILIKE ?", ["%{$value}%"]);
       } else {
         $columnMap = [
-          'first_name'       => 'detail.first_name',
-          'last_name'        => 'detail.last_name',
-          'email'            => 'u.email',
-          'survivor_number'  => 'sn.survivor_number',
-          'membership_type'  => 'mt.name',
+          'first_name' => 'detail.first_name',
+          'last_name' => 'detail.last_name',
+          'email' => 'u.email',
+          'survivor_number' => 'sn.survivor_number',
+          'membership_type' => 'mt.name',
         ];
         if (isset($columnMap[$key])) {
           $baseQuery->whereRaw("{$columnMap[$key]} ILIKE ?", ["%{$value}%"]);
@@ -587,23 +618,26 @@ class CustomerRepository implements CustomerInterface
 
       $user = Auth::user();
 
-        GlobalLogger::log(
-            LogActionCustomer::CUSTOMER_TAGS_CHANGED,
-            'customer',
-            $customer->id,
-            sprintf('Customer tags updated (%s)', $customer->email),
-            [
-                'before' => $originalTags,
-                'after' => $uniqueTags,
-            ]
-        );
+      GlobalLogger::log(
+        LogActionCustomer::CUSTOMER_TAGS_CHANGED,
+        'customer',
+        $customer->id,
+        sprintf('Customer tags updated (%s)', $customer->email),
+        [
+          'before' => $originalTags,
+          'after' => $uniqueTags,
+        ]
+      );
 
       UserLog::create([
         'customer_id' => $customer->id,
         'author_id' => $user->id,
         'action' => 'Tags updated on user',
-        'description' => 'The original tags were: ' . json_encode($originalTagIds) . ', and the new tags are: '
-          . json_encode($uniqueTags),
+        'description' =>
+          'The original tags were: ' .
+          json_encode($originalTagIds) .
+          ', and the new tags are: ' .
+          json_encode($uniqueTags),
       ]);
 
       return true;
