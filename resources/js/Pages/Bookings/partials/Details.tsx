@@ -51,7 +51,7 @@ import { formatDate } from "@/Helpers/stringUtils";
 import { isArray } from "lodash";
 import { Permissions } from "@/enums/PermissionEnum";
 import { usePermissions } from "@/Providers/PermissionContext";
-import { BedConfigOption, bedConfigOptions } from "@/types/bedconfig";
+import { BedConfigOption, bedConfigOptions } from "@/types/bed-config";
 
 const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInstallmentsAllowed }) => {
   const [open, setOpen] = useState(false);

@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.5] - 2025-12-11
+
+### Changed
+- Renamed `bedConfig.ts` to `bed-config.ts` to avoid case-sensitivity issues on Forge.
+- Updated all related imports and exports to match the new filename.
+
+
 ## [1.5.4] - 2025-12-11
 
 ### Added

@@ -45,7 +45,7 @@ import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
 import { formatCurrency } from "@/Helpers/stringUtils";
 import { Customer } from "@/interfaces/Customer";
-import { BedConfigOption, bedConfigOptions } from '@/types/bedconfig';
+import { BedConfigOption, bedConfigOptions } from "@/types/bed-config";
 
 const TabPanel = ({ children, value, index }) => {
   return (
