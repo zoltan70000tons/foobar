@@ -1,14 +1,13 @@
-import { SVGProps } from 'react';
 import { Paper, Typography, Box, IconButton, Badge, Grid } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../Theme/theme";
 import { router } from "@inertiajs/react";
-import LoadingOverlay from "@/Components/LoadingOverlay";
+import { SvgIconComponent } from "@mui/icons-material";
 
 type DashboardCardProps = {
   title: string;
   description: string;
-  Icon: React.ComponentType<SVGProps<SVGSVGElement>>;
+  Icon: SvgIconComponent;
   link: string;
   badgeContent?: number;
   onBadgeClick?: () => void;
@@ -36,8 +35,8 @@ const DashboardCard = ({ title, description, Icon, link, badgeContent, onBadgeCl
         onClick={() => handleClick()} // Redirect on click
       >
         <Box sx={{ marginRight: "15px" }}>{Icon && <Icon fontSize="large" />}</Box>
-        <Box sx={{ flex: "1 0 auto" }}>
-          <Typography variant="h5" component="div">
+        <Box>
+          <Typography variant="h5" component="div" sx={{ wordBreak: "break-word" }}>
             {title}
           </Typography>
           <Typography variant="body2" color="text.secondary">

@@ -92,6 +92,8 @@ export type Passenger = {
   id: number;
   name: string;
   lead_passenger: boolean;
+  survivor_number: string | null;
+  dob: Date;
   passenger_allocated_cost: string;
   passenger_balance: string;
   installments: Installment[];
