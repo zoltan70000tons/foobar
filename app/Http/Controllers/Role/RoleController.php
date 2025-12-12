@@ -132,7 +132,51 @@ class RoleController extends Controller
     } catch (\Exception $e) {
       $this->logException($e);
     }
-    
-
   }
+
+    /**
+     * Export roles as CSV
+     */
+    public function export()
+    {
+        $roles = Role::with('permissions')->get();
+
+        $date = now()->format('Y_m_d');
+        $fileName = "ADMIN_PANEL_ROLES_{$date}.csv";
+
+        $handle = fopen('php://temp', 'r+');
+
+        foreach ($roles as $role) {
+            $first = true;
+            foreach ($role->permissions as $permission) {
+                if ($first) {
+                    // First row: RoleName + Permission
+                    fputcsv($handle, [$role->name, $permission->name], ';');
+                    $first = false;
+                } else {
+                    // Subsequent rows: empty A column, permission in B
+                    fputcsv($handle, ['', $permission->name], ';');
+                }
+            }
+
+            // If the role has no permissions, just put role name
+            if ($first) {
+                fputcsv($handle, [$role->name], ';');
+            }
+
+            // Add empty row to separate roles
+            fputcsv($handle, [], ';');
+        }
+
+        rewind($handle);
+        $contents = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($contents)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"")
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
 }

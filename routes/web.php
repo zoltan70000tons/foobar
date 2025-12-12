@@ -80,6 +80,7 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
     return Inertia::render('ManagePermission');
   })->name('permissions');
 
+  Route::get('/roles/export', [RoleController::class, 'export'])->name('roles.export');
   Route::apiResource('/roles', RoleController::class);
   Route::apiResource('/permissions', PermissionController::class);
   Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
