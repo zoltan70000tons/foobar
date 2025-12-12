@@ -319,6 +319,7 @@ class PassengerController extends Controller
     try {
       $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
         ->role('Customer')
+        ->notBlacklisted()
         ->where(function ($q) use ($query) {
           $q->where('email', 'LIKE', "%{$query}%")
             ->orWhereHas('detail', function ($q2) use ($query) {

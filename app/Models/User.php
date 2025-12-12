@@ -192,14 +192,27 @@ class User extends Authenticatable implements CanResetPassword
     return $this->morphToMany(Tag::class, 'entity', 'taggings', 'entity_id', 'tag_id')->withPivot('created_at');
   }
 
-    public function isBlacklisted(): bool
-    {
-        return \DB::table('taggings')
-            ->join('tags', 'tags.id', '=', 'taggings.tag_id')
-            ->where('taggings.entity_id', $this->id)
-            ->where('taggings.entity_type', 'customer')   // FIX: Use correct type
-            ->where('tags.name', 'BLACKLISTED')
-            ->where('tags.type', 'customer')
-            ->exists();
-    }
+  public function isBlacklisted(): bool
+  {
+    return \DB::table('taggings')
+      ->join('tags', 'tags.id', '=', 'taggings.tag_id')
+      ->whereRaw('taggings.entity_id::uuid = ?', [$this->id])
+      ->where('taggings.entity_type', 'customer')
+      ->where('tags.name', 'BLACKLISTED')
+      ->where('tags.type', 'customer')
+      ->exists();
+  }
+
+  public function scopeNotBlacklisted($query)
+  {
+    return $query->whereNotExists(function ($q) {
+      $q->select(\DB::raw(1))
+        ->from('taggings')
+        ->join('tags', 'tags.id', '=', 'taggings.tag_id')
+        ->whereRaw('taggings.entity_id::uuid = users.id')
+        ->where('taggings.entity_type', 'customer')
+        ->where('tags.name', 'BLACKLISTED')
+        ->where('tags.type', 'customer');
+    });
+  }
 }
