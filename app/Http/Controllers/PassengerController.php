@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Repositories\PassengerRepository;
 use App\Rules\UniqueSurvivorInEvent;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Log;
 
@@ -265,9 +266,6 @@ class PassengerController extends Controller
 
     $passengerEmail = $slot->email;
 
-    // $this->clearSlot($slot);
-    // $slot->refresh();
-
     // If slot have first name, last name or dob then clear the slot
     if ($slot->first_name || $slot->last_name || $slot->dob) {
       $this->clearSlot($slot);
@@ -321,6 +319,7 @@ class PassengerController extends Controller
     try {
       $results = User::with(['detail', 'survivorNumber', 'customerAddress'])
         ->role('Customer')
+        ->notBlacklisted()
         ->where(function ($q) use ($query) {
           $q->where('email', 'LIKE', "%{$query}%")
             ->orWhereHas('detail', function ($q2) use ($query) {

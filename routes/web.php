@@ -202,7 +202,7 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
     ->name('customers.show');
   Route::get('/customers/json/{user}', [CustomerController::class, 'getCustomerJson'])
     ->where('user', '[a-f0-9\-]+')
-    ->name('customers.show');
+    ->name('customers.show.json');
   Route::get('/customers/{user}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
   Route::put('/customers/{user}/update', [CustomerController::class, 'update'])->name('customers.update');
   Route::delete('/customers/{user}', [CustomerController::class, 'destroy'])->name('customers.destroy');

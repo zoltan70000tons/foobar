@@ -76,7 +76,12 @@ class TagSeeder extends Seeder
                 'color' => '#3f51b5',
                 'description' => 'For RCCL use only',
             ],
-
+            [
+                'name' => 'BLACKLISTED',
+                'type' => 'customer',
+                'color' => '#000000',
+                'description' => 'Block customer from booking',
+            ],
         ];
 
         foreach ($tags as $tag) {
