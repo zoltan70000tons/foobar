@@ -5,7 +5,7 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/793) - 2025-12-10
+## [1.6.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/793) - 2025-12-11
 
 ### Added
 
@@ -14,6 +14,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Blacklisted customers not show up in Manual Booking flow and flag is returned to the frontend to handle
+
+## [1.6.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/785) - 2025-12-11
+
+### Added
+
+- More sophisticated survivor sync
+- Admin UI to manage potential matches
+- Enable running the command from the UI
+
+## [1.5.5] - 2025-12-11
+
+### Changed
+
+- Renamed `bedConfig.ts` to `bed-config.ts` to avoid case-sensitivity issues on Forge.
+- Updated all related imports and exports to match the new filename.
+
+## [1.5.4] - 2025-12-11
+
+### Added
+
+- Inline customer creation support in the manual booking flow (agents can create a new customer without leaving the stepper).
+- fillPassengerFromUser(user) helper to populate passenger fields from a selected or newly created customer.
+- createdCustomer prop handling: automatically selects and pre-fills the stepper when a new customer is created.
+- resetState() and handleClose() to fully reset the stepper state when the modal is closed.
+
+### Changed
+
+- Reworked prefill flow so handlePrefill reuses the new fillPassengerFromUser function.
+- Prefill now sets searchQuery and selectedUser to reflect the chosen/new customer.
+
+### Fixed
+
+- Prevented stale user being kept between openings by resetting selectedUser, searchQuery, and all relevant state on close/unmount.
+
+## [1.5.3] - 2025-12-10
+
+### Added
+
+- Added bed config to the manual booking stepper.
+- Added editable bed configuration dropdown in the SPA Admin.
+- Added “Update” action to save the bed configuration.
+- Added backend endpoint to update the bed configuration.
+- Added form validation, error handling and try/catch in the update controller.
+- Added TypeScript types for bed configuration options (`BedConfigId`, `BedConfigOption`).
+- Centralized `bedConfigOptions` into a shared types file.
+
+### Fixed
+
+- Fixed Autocomplete typing error by updating state to use `BedConfigOption | null`.
+
+### Updated
+
+- Refactored Autocomplete usage to rely on inferred MUI typings and avoid duplicate option definitions.
 
 ## [1.5.2] - 2025-12-09
 
@@ -29,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.1] - 2025-12-09
 
 ### Changed
+
 - Standarize Error Handling on `BookingContoller`
 
 ## [1.5.0] - 2025-12-08

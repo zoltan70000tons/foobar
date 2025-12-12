@@ -47,6 +47,7 @@ use Illuminate\Validation\Rule;
 
 use App\Services\PaymentInfoService;
 use App\Helpers\InstallmentHelper;
+use App\Http\Requests\UpdateBedConfigRequest;
 
 class BookingsController extends Controller
 {
@@ -195,6 +196,7 @@ class BookingsController extends Controller
       'cabin_number' => ['required', 'string', 'exists:cabin_specs,cabin_number'],
       'cabin_category_id' => ['required', 'integer', 'exists:cabin_categories,id'],
       'payment_plan' => ['required', Rule::in(['INSTALLMENTS', 'PAY_IN_FULL'])],
+      'bed_configuration' => ['required', Rule::in('SEPARATED', 'JOINED')],
       'carbon_offset' => ['required', 'boolean'],
       'you_choose_your_cabin' => ['required', 'boolean'],
       'number_of_installments' => ['nullable', 'integer', 'min:1', 'required_if:payment_plan,INSTALLMENTS'],
@@ -273,6 +275,7 @@ class BookingsController extends Controller
       $payment_plan = $validated['payment_plan'];
       $carbonOffset = $validated['carbon_offset'];
       $youChooseYourCabin = $validated['you_choose_your_cabin'];
+      $bedConfig = $validated['bed_configuration'];
       $cabin = $getCabin();
 
       return $this->withPermission(
@@ -285,7 +288,8 @@ class BookingsController extends Controller
           $payment_plan,
           $number_of_installments,
           $carbonOffset,
-          $youChooseYourCabin
+          $youChooseYourCabin,
+          $bedConfig
         ) {
           if ($cabin) {
             $adjustmentIds = [];
@@ -346,6 +350,7 @@ class BookingsController extends Controller
               'customer_id' => $passenger_data['id'],
               'payment_plan' => $payment_plan,
               'number_of_installments' => $number_of_installments,
+              'bed_config' => $bedConfig,
               'addons' => array_map(fn($id) => ['id' => $id], $adjustmentIds),
             ];
 
@@ -361,7 +366,8 @@ class BookingsController extends Controller
         $payment_plan,
         $number_of_installments,
         $carbonOffset,
-        $youChooseYourCabin
+        $youChooseYourCabin,
+        $bedConfig
       );
       return redirect()
         ->back()
@@ -1116,6 +1122,8 @@ class BookingsController extends Controller
     }
   }
 
+
+
   public function getBookingFinalCost(Request $request, Event $event)
   {
     $passenger = $request->input('passenger');
@@ -1196,4 +1204,30 @@ class BookingsController extends Controller
 
     return response()->json(['priceCalc' => $priceCalc]);
   }
+
+  public function updateBedConfig(UpdateBedConfigRequest $request, Booking $booking)
+  {
+    try {
+      $old = $booking->bed_config;
+      $booking->bed_config = $request->validated()['bed_config'];
+      
+      $this->withPermission([Permissions::EditBookings], function($request, $old, $booking){
+        $booking->save();
+        return redirect()
+        ->back()
+        ->with('success', 'Bed configuration updated');
+      }
+      ,$request,$old,$booking);
+
+    } catch (\Throwable $e) {
+      \Log::error('Error updating bed config', [
+        'booking_id' => $booking->id,
+        'error' => $e->getMessage(),
+      ]);
+      return redirect()
+        ->back()
+        ->with('error', 'Failed to update bed configuration. Please try again.');
+    }
+  }
+
 }

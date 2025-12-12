@@ -14,6 +14,7 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotAllowedController;
 use App\Http\Controllers\Permission\PermissionController;
+use App\Http\Controllers\PotentialSurvivorMatchesController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\TagsController;
 use App\Http\Middleware\TeamsPermission;
@@ -186,7 +187,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   );
   Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
   Route::get('/bookings/edit-mode-reassign', [BookingsController::class, 'reAssign'])->name('bookings.reAssign');
-
+  Route::put('bookings/{booking}/bed-config', [BookingsController::class, 'updateBedConfig'])
+    ->name('bookings.update-bed-config');
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
   Route::get('/cabins/upgrade-list', [BookingsController::class, 'getCabinsToUpgradeTo'])->name('cabins.upgrade-list');
@@ -195,6 +197,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
   Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
   Route::get('/customers/{user}', [CustomerController::class, 'show'])
+    ->where('user', '[a-f0-9\-]+')
+    ->name('customers.show');
+  Route::get('/customers/json/{user}', [CustomerController::class, 'getCustomerJson'])
     ->where('user', '[a-f0-9\-]+')
     ->name('customers.show');
   Route::get('/customers/{user}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
@@ -275,6 +280,23 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/generate-booking-pdf', [EmailController::class, 'generateBookingPDF'])->name('email.generateBookingPDF');
   Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
   Route::get('/generate-invoice-pdf', [EmailController::class, 'generateInvoicePDF'])->name('email.generateInvoicePDF');
+
+  Route::get('/potential-survivor-matches', [
+    PotentialSurvivorMatchesController::class,
+    'index'
+  ])->name('matches.index');
+  Route::get('/potential-survivor-matches/paginated', [
+    PotentialSurvivorMatchesController::class,
+    'getPaginated'
+  ]);
+  Route::get('/potential-survivor-matches/{id}', [PotentialSurvivorMatchesController::class, 'show'])
+    ->name('matches.show');
+  Route::delete('/potential-survivor-matches/{id}', [PotentialSurvivorMatchesController::class, 'destroy'])->name('matches.destroy');
+  Route::put('/potential-survivor-matches/{id}/update', [PotentialSurvivorMatchesController::class, 'update'])->name('matches.update');
+  Route::put('/potential-survivor-matches/{id}/resolve', [PotentialSurvivorMatchesController::class, 'resolve'])
+    ->name('matches.resolve');
+  Route::post('/sync-survivors', [PotentialSurvivorMatchesController::class, 'syncSurvivors'])
+    ->name('matches.run-manual-sync');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');
