@@ -5,7 +5,7 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/793) - 2025-12-11
+## [1.7.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/793) - 2025-12-11
 
 ### Added
 
@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Blacklisted customers not show up in Manual Booking flow and flag is returned to the frontend to handle
+
+## [1.7.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/792) - 2025-12-11
+
+### Added
+
+- Export function for admins on the Team/Roles page
 
 ## [1.6.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/785) - 2025-12-11
 

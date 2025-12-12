@@ -48,6 +48,7 @@ enum Permissions: string
     case CreateRoles = 'Create Roles';
     case EditRoles = 'Edit Roles';
     case DeleteRoles = 'Delete Roles';
+    case ExportRoles = 'Export Roles';
 
     // Manage Permissions
     case ViewPermissions = 'View Permissions';

@@ -16,8 +16,9 @@ import {
   ButtonGroup,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Link, useForm } from '@inertiajs/react';
@@ -56,6 +57,7 @@ const List = () => {
   const createRolePermission = Permissions.CreateRoles;
   const editRolePermission = Permissions.EditRoles;
   const deleteRolePermission = Permissions.DeleteRoles;
+  const exportRolesPermission = Permissions.ExportRoles;
 
   const theme = useTheme();
   const { delete: destroy } = useForm({
@@ -115,6 +117,27 @@ const List = () => {
     setOpen(false);
     setNewRole('');
   };
+
+  const handleExport = async () => {
+    try {
+      const response = await axios.get(route('roles.export'), {
+        responseType: 'blob',
+      });
+
+      // Create a temporary URL for download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '_'); // YYYY_MM_DD
+      link.href = url;
+      link.setAttribute('download', `ADMIN_PANEL_ROLES_${date}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      showSnackbar('Error exporting roles', 'error');
+    }
+  }
 
   const handleEditClose = () => {
     setEditOpen(false);
@@ -213,7 +236,12 @@ const List = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {hasPermission(createRolePermission) && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, gap: 2 }}>
+          {hasPermission(exportRolesPermission) && (
+            <Button variant="contained" color="secondary" startIcon={<DownloadIcon />} onClick={handleExport}>
+              Export Roles
+            </Button>
+          )}
           <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpen}>
             Add Role
           </Button>
