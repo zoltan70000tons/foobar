@@ -9,11 +9,13 @@ use App\Http\Controllers\CabinsController;
 use App\Http\Controllers\DeletedController;
 use App\Http\Controllers\CustomerTagController;
 use App\Http\Controllers\ContactFormController;
+use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotAllowedController;
 use App\Http\Controllers\Permission\PermissionController;
+use App\Http\Controllers\PotentialSurvivorMatchesController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\TagsController;
 use App\Http\Middleware\TeamsPermission;
@@ -37,7 +39,6 @@ use App\Http\Controllers\TemporaryPasswordController;
 use Laravel\Passport\Passport;
 use App\Http\Controllers\OAuth\PublicAuthController;
 use App\Http\Controllers\OAuth\VerifyEmailController;
-
 
 Route::get('/', function () {
   return Inertia::render('Welcome', [
@@ -80,13 +81,16 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
     return Inertia::render('ManagePermission');
   })->name('permissions');
 
+  Route::get('/roles/export', [RoleController::class, 'export'])->name('roles.export');
   Route::apiResource('/roles', RoleController::class);
   Route::apiResource('/permissions', PermissionController::class);
   Route::post('/permissions/addToRole', 'App\Http\Controllers\Role\RoleController@addPermissionToRole');
   Route::apiResource('/organizations', OrganizationController::class);
   Route::get('/organization/permissions', 'App\Http\Controllers\Permission\PermissionController@listByOrganization');
   Route::get('/organization/roles', 'App\Http\Controllers\Role\RoleController@listByOrganization');
-  Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization')->name('team.members.list');
+  Route::get('/organization/getTeam', 'App\Http\Controllers\Api\TeamController@listMembersByOrganization')->name(
+    'team.members.list'
+  );
   Route::put('/organization/members/updateRole', 'App\Http\Controllers\Api\TeamController@updateMemberRoles')->name(
     'member.updateRole'
   );
@@ -107,9 +111,11 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/events/{id}/cabins/tags', [TagsController::class, 'index'])->name('cabins.tags');
   Route::get('/events/{id}/cabins/create', [CabinsController::class, 'create'])->name('cabins.create');
   Route::post('/events/{id}/cabins/store', [CabinsController::class, 'store'])->name('cabins.store');
-  Route::post('/events/{id}/cabins/createShared', [CabinsController::class, 'createShared'])->name('cabins.createShared');
+  Route::post('/events/{id}/cabins/createShared', [CabinsController::class, 'createShared'])->name(
+    'cabins.createShared'
+  );
   Route::get('/events/{id}/cabins/getData', [CabinsController::class, 'getData'])->name('cabins.getData');
-  
+
   //Cabin categories
   Route::get('/events/{id}/cabins/categories/{catId}/show', [CabinCategoriesController::class, 'show'])->name(
     'cabinCategory.show'
@@ -155,9 +161,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::post('/events/{id}/bookings/update-cabin', [BookingsController::class, 'cabinUpdate'])->name(
     'bookings.updateCabin'
   );
-    Route::post('/events/{id}/bookings/upgrade-cabin', [BookingsController::class, 'cabinUpgrade'])->name(
-        'bookings.upgradeCabin'
-    );
+  Route::post('/events/{id}/bookings/upgrade-cabin', [BookingsController::class, 'cabinUpgrade'])->name(
+    'bookings.upgradeCabin'
+  );
   Route::post('/events/{id}/bookings/update-code', [BookingsController::class, 'codeUpdate'])->name(
     'bookings.updateCode'
   );
@@ -170,6 +176,12 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::post('/events/{id}/bookings/update-tags', [BookingsController::class, 'updateTags'])->name(
     'bookings.updateTags'
   );
+  Route::get('/events/{event}/bookings/getFinalCost', [BookingsController::class, 'getBookingFinalCost'])->name(
+    'bookings.getBookingFinalCost'
+  );
+  Route::get('/json/events/{id}/bookings/cabin-categories', [BookingsController::class, 'getCabinCategories'])->name(
+    'bookings.cabinCategories'
+  );
   Route::get('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'show'])->name('bookings.show');
   Route::post('/events/{id}/bookings/{booking_code}', [BookingsController::class, 'update'])->name('bookings.update');
   Route::put('/bookings/{booking}/assign-agent', [BookingsController::class, 'assignAgent'])->name(
@@ -177,7 +189,8 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   );
   Route::get('/bookings/edit-mode', [BookingsController::class, 'editMode'])->name('bookings.editMode');
   Route::get('/bookings/edit-mode-reassign', [BookingsController::class, 'reAssign'])->name('bookings.reAssign');
-
+  Route::put('bookings/{booking}/bed-config', [BookingsController::class, 'updateBedConfig'])
+    ->name('bookings.update-bed-config');
   Route::post('/events/{id}//bookings/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
   Route::get('/cabins/available', [BookingsController::class, 'getAvailableCabins'])->name('cabins.available');
   Route::get('/cabins/upgrade-list', [BookingsController::class, 'getCabinsToUpgradeTo'])->name('cabins.upgrade-list');
@@ -188,24 +201,23 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/customers/{user}', [CustomerController::class, 'show'])
     ->where('user', '[a-f0-9\-]+')
     ->name('customers.show');
+  Route::get('/customers/json/{user}', [CustomerController::class, 'getCustomerJson'])
+    ->where('user', '[a-f0-9\-]+')
+    ->name('customers.show.json');
   Route::get('/customers/{user}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
   Route::put('/customers/{user}/update', [CustomerController::class, 'update'])->name('customers.update');
   Route::delete('/customers/{user}', [CustomerController::class, 'destroy'])->name('customers.destroy');
   Route::get('/customers/by-survivor-number/{survivorNumber}', [CustomerController::class, 'editBySurvivorNumber'])
-      ->where('survivorNumber', '[0-9]{9}')
-      ->name('customers.editBySurvivorNumber');
+    ->where('survivorNumber', '[0-9]{9}')
+    ->name('customers.editBySurvivorNumber');
   Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
   //Route::resource('customers', CustomerController::class);
-    Route::post('/customers/{user}/add-comment', [CustomerController::class, 'addComment'])->name(
-        'customers.addComment'
-    );
-    Route::post('/customers/{user}/update-tags', [CustomerController::class, 'updateTags'])->name(
-        'customers.updateTags'
-    );
-    Route::post('/customers/{user}/delete-comment', [CustomerController::class, 'deleteComment'])->name(
-        'customers.delete-comment'
-    );
-  
+  Route::post('/customers/{user}/add-comment', [CustomerController::class, 'addComment'])->name('customers.addComment');
+  Route::post('/customers/{user}/update-tags', [CustomerController::class, 'updateTags'])->name('customers.updateTags');
+  Route::post('/customers/{user}/delete-comment', [CustomerController::class, 'deleteComment'])->name(
+    'customers.delete-comment'
+  );
+
   // cutsomer temporary password
   Route::post('/customers/{user}/temporary-password', [TemporaryPasswordController::class, 'create'])->name(
     'customers.temporaryPassword.create'
@@ -271,7 +283,24 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::get('/generate-img', [EmailController::class, 'generateBookingIMG'])->name('email.generateBookingIMG');
   Route::get('/generate-invoice-pdf', [EmailController::class, 'generateInvoicePDF'])->name('email.generateInvoicePDF');
 
-  Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])->name('show.cabin-matrix');
+  Route::get('/potential-survivor-matches', [
+    PotentialSurvivorMatchesController::class,
+    'index'
+  ])->name('matches.index');
+  Route::get('/potential-survivor-matches/paginated', [
+    PotentialSurvivorMatchesController::class,
+    'getPaginated'
+  ]);
+  Route::get('/potential-survivor-matches/{id}', [PotentialSurvivorMatchesController::class, 'show'])
+    ->name('matches.show');
+  Route::delete('/potential-survivor-matches/{id}', [PotentialSurvivorMatchesController::class, 'destroy'])->name('matches.destroy');
+  Route::put('/potential-survivor-matches/{id}/update', [PotentialSurvivorMatchesController::class, 'update'])->name('matches.update');
+  Route::put('/potential-survivor-matches/{id}/resolve', [PotentialSurvivorMatchesController::class, 'resolve'])
+    ->name('matches.resolve');
+  Route::post('/sync-survivors', [PotentialSurvivorMatchesController::class, 'syncSurvivors'])
+    ->name('matches.run-manual-sync');
+
+    Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])->name('show.cabin-matrix');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');
@@ -283,18 +312,28 @@ Route::prefix('discounts')->group(function () {
 });
 
 Route::prefix('onboard-credit')->group(function () {
-  Route::post('{event_id}/{booking_id}/store', [OnboardCreditController::class, 'store'])->name('manual.onboard-credit');
-  Route::post('{event_id}/{booking_id}/delete', [OnboardCreditController::class, 'delete'])->name('delete.onboard-credit');
+  Route::post('{event_id}/{booking_id}/store', [OnboardCreditController::class, 'store'])->name(
+    'manual.onboard-credit'
+  );
+  Route::post('{event_id}/{booking_id}/delete', [OnboardCreditController::class, 'delete'])->name(
+    'delete.onboard-credit'
+  );
 });
 
 Route::prefix('payment-transfer')->group(function () {
-    Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\PaymentTransferController::class, 'store'])->name('manual.payment-transfer');
-    Route::post('{event_id}/{booking_id}/delete', [\App\Http\Controllers\PaymentTransferController::class, 'delete'])->name('delete.payment-transfer');
+  Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\PaymentTransferController::class, 'store'])->name(
+    'manual.payment-transfer'
+  );
+  Route::post('{event_id}/{booking_id}/delete', [
+    \App\Http\Controllers\PaymentTransferController::class,
+    'delete',
+  ])->name('delete.payment-transfer');
 });
 
 Route::prefix('split-payment')->group(function () {
-    Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\SplitPaymentController::class, 'store'])
-        ->name('manual.split-payment');
+  Route::post('{event_id}/{booking_id}/store', [\App\Http\Controllers\SplitPaymentController::class, 'store'])->name(
+    'manual.split-payment'
+  );
 });
 
 Route::get('/events/{id}/bookings-data', [BookingsController::class, 'getData'])->name('bookings.data');
@@ -303,48 +342,60 @@ Route::get('/customer-tags/paginated', [CustomerTagController::class, 'getPagina
 Route::get('/customer-tags/create', [CustomerTagController::class, 'create'])->name('customer-tags.create');
 Route::post('/customer-tags', [CustomerTagController::class, 'store'])->name('customer-tags.store');
 Route::get('/customer-tags/{userTag}', [CustomerTagController::class, 'show'])
-    ->where('userTag', '[0-9]+')
-    ->name('customer-tags.show');
+  ->where('userTag', '[0-9]+')
+  ->name('customer-tags.show');
 Route::get('/customer-tags/{userTag}/edit', [CustomerTagController::class, 'edit'])->name('customer-tags.edit');
 Route::put('/customer-tags/{userTag}/update', [CustomerTagController::class, 'update'])->name('customer-tags.update');
 Route::delete('/customer-tags/{userTag}', [CustomerTagController::class, 'destroy'])->name('customer-tags.destroy');
 Route::get('/customer-tags', [CustomerTagController::class, 'index'])->name('customer-tags.index');
 Route::get('/customers-search', [CustomerController::class, 'search'])->name('switch.lead.search');
-Route::post('/events/{event_id}/booking/{booking_id}/switch-lead-passenger', [BookingsController::class, 'switchLeadPassenger'])->name('lead.passenger.switch');
-Route::post('/events/{event_id}/booking/{booking_id}/switch-payment-plan', [BookingsController::class, 'switchPaymentPlan'])->name('bookings.switchPaymentPlan');
+Route::post('/events/{event_id}/booking/{booking_id}/switch-lead-passenger', [
+  BookingsController::class,
+  'switchLeadPassenger',
+])->name('lead.passenger.switch');
+Route::post('/events/{event_id}/booking/{booking_id}/switch-payment-plan', [
+  BookingsController::class,
+  'switchPaymentPlan',
+])->name('bookings.switchPaymentPlan');
 
 Route::resource('/tags', TagsController::class)
-    ->only(['index', 'show','create', 'store', 'edit', 'update', 'destroy'])
-    ->names([
-        'index' => 'tags.index',
-        'show' => 'tags.show',
-        'create' => 'tags.create',
-        'store' => 'tags.store',
-        'edit' => 'tags.edit',
-        'update' => 'tags.update',
-        'destroy' => 'tags.destroy'
-    ]);
+  ->only(['index', 'show', 'create', 'store', 'edit', 'update', 'destroy'])
+  ->names([
+    'index' => 'tags.index',
+    'show' => 'tags.show',
+    'create' => 'tags.create',
+    'store' => 'tags.store',
+    'edit' => 'tags.edit',
+    'update' => 'tags.update',
+    'destroy' => 'tags.destroy',
+  ]);
 
-Route::put('/users/{user}/avatar', [AgentController::class, 'update'])
-        ->name('users.avatar.update');
+Route::put('/users/{user}/avatar', [AgentController::class, 'update'])->name('users.avatar.update');
 
-Route::match(['GET', 'POST'], '/logs', [LogsController::class, 'index'])
-    ->name('logs.index');
+Route::match(['GET', 'POST'], '/logs', [LogsController::class, 'index'])->name('logs.index');
+
+Route::patch('/installments/update-due', [InstallmentController::class, 'update'])->name('installments.update-due');
 
 // --- API ROUTES FOR PASSPORT - DO NOT DELETE THIS ---
 Route::prefix('oauth')->group(function () {
-    // Login/Logout
-    Route::get('/login', [PublicAuthController::class, 'index'])->name('oauth.login');
-    Route::post('/login', [PublicAuthController::class, 'login'])->name('oauth.login.submit');
-    // this is for web and admin context
-    Route::post('/logout', [PublicAuthController::class, 'logoutWeb'])->name('oauth.web.logout');
-    // this is for SPA context
-    Route::get('/logout', [PublicAuthController::class, 'logoutSPA']);
+  // Login/Logout
+  Route::get('/login', [PublicAuthController::class, 'index'])->name('oauth.login');
+  Route::post('/login', [PublicAuthController::class, 'login'])->name('oauth.login.submit');
+  // this is for web and admin context
+  Route::post('/logout', [PublicAuthController::class, 'logoutWeb'])->name('oauth.web.logout');
+  // this is for SPA context
+  Route::get('/logout', [PublicAuthController::class, 'logoutSPA']);
 
-    // Email Verification
-    Route::get('/verify-email', [VerifyEmailController::class, 'index'])->name('oauth.email.verify.notice')->middleware('custom.auth.redirect');
-    Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])->name('oauth.email.verify.resend');
-    Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed')->name('oauth.email.verify.link');
+  // Email Verification
+  Route::get('/verify-email', [VerifyEmailController::class, 'index'])
+    ->name('oauth.email.verify.notice')
+    ->middleware('custom.auth.redirect');
+  Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])->name(
+    'oauth.email.verify.resend'
+  );
+  Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, 'verify'])
+    ->middleware('signed')
+    ->name('oauth.email.verify.link');
 });
 
 $guard = config('passport.guard', null);

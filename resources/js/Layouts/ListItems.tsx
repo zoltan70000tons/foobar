@@ -8,7 +8,8 @@ import {
   RoomPreferences as RoomPreferenceIcon,
   Person as PersonIcon,
   DirectionsBoat as EventIcon,
-  History as HistoryIcon
+  History as HistoryIcon,
+  JoinInner as JoinInnerIcon
 } from "@mui/icons-material";
 import SellIcon from "@mui/icons-material/Sell";
 import { Link, router, usePage } from "@inertiajs/react";
@@ -51,6 +52,7 @@ const MenuItems: React.FC = () => {
       isEventsRoute: is("events") && !is("bookings") && !is("cabins"),
       isTagsRoute: is("tags"),
       isLogsRoute: is("logs"),
+      isPSMRoute: is("potential-survivor-matches"),
     };
   }, [currentPath]);
 
@@ -126,6 +128,14 @@ const MenuItems: React.FC = () => {
       href: route("logs.index"),
       can: Permissions.ViewLogs,
       active: flags.isLogsRoute, // fixed: was isLogsRoute
+    },
+    {
+      key: "Potential Survivor Matches",
+      label: "Potential Survivor Matches",
+      icon: <JoinInnerIcon />,
+      href: route("matches.index"),
+      can: Permissions.ViewCustomers,
+      active: flags.isPSMRoute,
     },
   ] as const;
 

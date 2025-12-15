@@ -50,6 +50,7 @@ export enum Permissions {
     CreateRoles = "Create Roles",
     EditRoles = "Edit Roles",
     DeleteRoles = "Delete Roles",
+    ExportRoles = "Export Roles",
 
     // Manage Permissions
     ViewPermissions = "View Permissions",
@@ -111,4 +112,8 @@ export enum Permissions {
 
     //Logs
     ViewLogs = "View Logs",
+
+    //Installments
+
+    EditInstallments = "Edit Installments",
 }

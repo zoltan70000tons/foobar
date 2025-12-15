@@ -1,16 +1,24 @@
-import { useEffect } from "react";
-import { Box, Typography, alpha } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography, alpha } from "@mui/material";
 import { green, blue, red } from "@mui/material/colors";
 import { InfoRounded } from "@mui/icons-material";
-import dayjs from "dayjs";
 import FeeInstallmentList from "@/Components/FeeInstallmentList";
 import { getOrdinalName } from "@/Helpers/stringUtils";
 import type { InstallmentItem, InstallmentStatus, Fee, Installment } from "@/types/payments"; // Adjust the import path as needed
+import { useForm, router } from '@inertiajs/react';
 
 // Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 import { Passenger } from "@/interfaces/Passenger";
 import { Booking } from "@/types/booking";
+import EditCalendarIcon from "@mui/icons-material/EditCalendar";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
+import { editingStateInitializer } from "@mui/x-data-grid/internals";
+import { Permissions } from "@/enums/PermissionEnum";
+import { usePermissions } from '@/Providers/PermissionContext';
 
 
 // Define types
@@ -29,7 +37,11 @@ type InstallmentPaymentProps = {
   installmentsLength: number;
   installmentCost: number;
   perc: number;
+  nextDue?: string | null;
+  onEditDate?: (installment: Installment, newDate: string) => Promise<void>;
+  editMode?: boolean;
 };
+
 
 // Installment payment part
 const InstallmentPayment = ({
@@ -41,7 +53,54 @@ const InstallmentPayment = ({
   installmentsLength,
   installmentCost,
   perc,
-}: InstallmentPaymentProps) => {
+  nextDue,
+  onEditDate,
+  editMode
+}: InstallmentPaymentProps) => { 
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(
+  installment?.due_date ? dayjs(installment.due_date) : null
+  );
+  const [saving, setSaving] = useState(false);
+
+  const nextDueDayjs = nextDue ? dayjs(nextDue) : null;
+  const dateInvalid = selectedDate && nextDueDayjs && selectedDate.isAfter(nextDueDayjs, "day");
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission(Permissions.EditInstallments);
+  const isDisabled = status === "paid" || !editMode || !canEdit;
+
+  useEffect(() => {
+    setSelectedDate(installment?.due_date ? dayjs(installment.due_date) : null);
+  }, [installment?.due_date]);
+
+  const handleOpen = () => {
+    setSelectedDate(installment?.due_date ? dayjs(installment.due_date) : null);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setSelectedDate(installment?.due_date ? dayjs(installment.due_date) : null);
+    setOpen(false);
+  };
+
+
+  const handleSave = async () => {
+    if (!selectedDate) return;
+    const iso = (selectedDate as dayjs.Dayjs).toISOString();
+    setSaving(true);
+    try {
+      if (typeof onEditDate === "function") {
+        await onEditDate(installment as Installment, iso);
+      } else {
+        console.warn("onEditDate callback not provided");
+      }
+      setOpen(false);
+    } catch (e) {
+      console.error("Save due date failed", e);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Box
@@ -72,34 +131,84 @@ const InstallmentPayment = ({
       <Box
         sx={{
           display: "flex",
-          mt: "5px",
-          alignItems: "flex-start",
           flexDirection: "column",
-          justifyContent: "space-between",
+          mt: "5px",
           textTransform: "capitalize",
           p: 1,
           my: 1,
           backgroundColor:
             status === "paid" ? alpha(green[500], 0.2) : isOverdue ? alpha(red[500], 0.2) : alpha("#fff", 0.1),
           color: status === "paid" ? green[500] : isOverdue ? red[500] : "inherit",
+          borderRadius: 1,
         }}
       >
-        <Typography fontSize="12px">
-          {status === "paid" ? `${formatCurrency(installment?.amount)}` : `${formatCurrency(installment?.amount_due)}`}
-        </Typography>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 0.5,
+          }}
+        >
+          <Typography fontSize="12px">
+            {status === "paid"
+              ? `${formatCurrency(installment?.amount)}`
+              : `${formatCurrency(installment?.amount_due)}`}
+          </Typography>
+
+          <IconButton size="small" onClick={handleOpen} aria-label="edit due date" disabled={isDisabled}>
+            <EditCalendarIcon fontSize="small" />
+          </IconButton>
+        </Box>
 
         {status === "paid" ? (
           <Typography fontSize="12px">Paid</Typography>
         ) : isOverdue ? (
-          <Typography fontSize={"12px"}>Due Immediately</Typography>
+          <Typography fontSize="12px">Due Immediately</Typography>
         ) : (
-          <Typography fontSize={"12px"}>Due Date: {formatDate(installment?.due_date)}</Typography>
+          <Typography fontSize="12px">Due Date: {formatDate(installment?.due_date)}</Typography>
         )}
-        
+
         <Typography fontSize="12px" fontWeight="bold">
           {getOrdinalName(order + 1)} Installment
         </Typography>
       </Box>
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">
+        <DialogTitle>Edit due date</DialogTitle>
+        <DialogContent>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              disablePast
+              value={selectedDate}
+              onChange={(newVal) => setSelectedDate(newVal)}
+              maxDate={nextDueDayjs || undefined}
+              sx={{width: "100%", mt: 2}}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  fullWidth
+                  error={!!dateInvalid}
+                  helperText={
+                    dateInvalid
+                      ? `Due date cannot be after next installment (${nextDueDayjs?.format("YYYY-MM-DD")})`
+                      : params?.inputProps?.placeholder || ""
+                  }
+                />
+              )}
+            />
+          </LocalizationProvider>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleSave} disabled={saving || !selectedDate}>
+            {saving ? "Saving..." : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
@@ -110,17 +219,28 @@ const Installments = ({
   installments,
   passengerAllocatedCost,
   installment_plan,
+  editMode
 }: {
   perc: number;
   installments: Installment[];
   passengerAllocatedCost: number;
   installment_plan: InstallmentStatus;
+  editMode?: boolean;
 }) => {
   if (!installments || installments.length === 0) {
     return <Box>Something went wrong</Box>;
   }
 
   const installmentsLength = installments.length;
+
+  const saveInstallmentDate = (inst: InstallmentItem, newDate: string) => {
+    router.patch(route("installments.update-due"), 
+      { due_date: newDate, installment: inst.installment_id },
+      {
+        preserveScroll: true,
+      }
+    );
+  };
 
   // Total cost for each installment
   const installmentCost = passengerAllocatedCost / installmentsLength || 0;
@@ -139,6 +259,8 @@ const Installments = ({
       remainingPercentage = 0; // No remaining percentage
     }
   });
+
+
 
   return (
     <Box
@@ -171,6 +293,8 @@ const Installments = ({
           null;
 
         const isOverdue = fillPerc < 100 && today.isAfter(dueDate);
+        const nextInstallment = installments[index + 1] ?? null;
+        const nextDue = nextInstallment ? nextInstallment.due_date : null;
 
         return (
           <InstallmentPayment
@@ -183,6 +307,9 @@ const Installments = ({
             installmentsLength={installmentsLength}
             installmentCost={installmentCost}
             perc={perc}
+            nextDue={nextDue}
+            onEditDate={saveInstallmentDate}
+            editMode={editMode}
           />
         );
       })}
@@ -191,7 +318,7 @@ const Installments = ({
 };
 
 // Section Percentage
-export default function SectionPercentage({ passenger, booking, installments }: Props) {
+export default function SectionPercentage({ passenger, booking, installments, setIsBookingError, editMode}: Props) {
   const paymentInstallments = installments
     .filter((inst: Installment) => inst.type === "PAYMENT")
     .sort((a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
@@ -230,6 +357,7 @@ export default function SectionPercentage({ passenger, booking, installments }: 
     passengerAllocatedCost,
     "passengerPercentage",
     passengerPercentageRounded,
+    "editMode", editMode
   );
 
   return (
@@ -256,6 +384,7 @@ export default function SectionPercentage({ passenger, booking, installments }: 
           passengerAllocatedCost={passengerAllocatedCost}
           installments={paymentInstallments}
           installment_plan={installment_status}
+          editMode={editMode}
         />
 
         <Typography

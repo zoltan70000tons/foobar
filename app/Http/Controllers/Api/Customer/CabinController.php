@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use App\Enums\CabinType;
 use App\Enums\StatusCabin;
+use App\Helpers\ErrorResponse;
 use Log;
 
 class CabinController extends Controller
@@ -138,13 +139,13 @@ class CabinController extends Controller
    * @param Request $request HTTP request containing:
    *   - event_id (int, required): The event ID to search upgrades for
    *   - cabin_capacity (int, required): Current cabin capacity (e.g., 2, 3, 4)
-   *   - cabin_category_type (string, required): Current category type 
+   *   - cabin_category_type (string, required): Current category type
    *     Options: "Interior", "Ocean View", "Balcony", "Suite"
    *   - cabin_price (float, required): Current cabin price (used to calculate price difference)
    *   - cabin_type (string, required): Type of cabin
    *     Options: "private-cabin", "single-male", "single-female"
    *
-   * @return 
+   * @return
    *   - All cabin category fields (id, event_id, price, etc.)
    *   - price_difference (float): Additional cost to upgrade
    *   - cabin_type_id (int): The cabin type ID
@@ -157,17 +158,19 @@ class CabinController extends Controller
     $cabinCategoryType = $request->get('cabin_category_type');
     $cabinCategoryCode = $request->get('cabin_code');
     $cabinPrice = $request->get('cabin_price');
-    $cabinTypeId = $request->get('cabin_type') === 'private-cabin'
-      ? CabinType::PRIVATE_CABIN : ($request->get('cabin_type') === 'single-male'
-        ? CabinType::SINGLE_MALE : CabinType::SINGLE_FEMALE
-      );
+    $cabinTypeId =
+      $request->get('cabin_type') === 'private-cabin'
+        ? CabinType::PRIVATE_CABIN
+        : ($request->get('cabin_type') === 'single-male'
+          ? CabinType::SINGLE_MALE
+          : CabinType::SINGLE_FEMALE);
 
     // Upgrade mapping based on cabin category type
     $upgradeMap = [
-      "Interior"   => ["Ocean View", "Balcony"],
-      "Ocean View" => ["Balcony", "Suite"],
-      "Balcony"    => ["Suite", "Suite"],
-      "Suite"      => ["Suite"],
+      'Interior' => ['Ocean View', 'Balcony'],
+      'Ocean View' => ['Balcony', 'Suite'],
+      'Balcony' => ['Suite', 'Suite'],
+      'Suite' => ['Suite'],
     ];
 
     $upgrades = $upgradeMap[$cabinCategoryType] ?? [];
@@ -184,14 +187,13 @@ class CabinController extends Controller
       // Get Upgrade option following the criteria below:
       // - Category Capacity must be the same as current cabin
       // - Price must be greater than current category price
-      // - Contains at least one cabin that: 
+      // - Contains at least one cabin that:
       // -- Matches the same Cabin type (Private Cabin / Singles Male / Single Female)
       // -- Status is AVAILABLE or PARTIALLY_BOOKED
       // -- Exclude cabins with active temporary reservations
       $categoryUpgradeOption = CabinCategory::where('event_id', $eventId)
         ->whereHas('spec', function ($q) use ($cabinCapacity, $upgradeType) {
-          $q->where('capacity', $cabinCapacity)
-            ->where('category_type', $upgradeType);
+          $q->where('capacity', $cabinCapacity)->where('category_type', $upgradeType);
         })
         ->where('price', '>', $currentMinPrice)
         ->whereHas('cabins', function ($q) use ($cabinTypeId) {
@@ -204,7 +206,9 @@ class CabinController extends Controller
         ->orderBy('price')
         ->first();
 
-      if (!$categoryUpgradeOption) continue;
+      if (!$categoryUpgradeOption) {
+        continue;
+      }
 
       // Update currentMinPrice for next iteration to avoid selecting the same category
       $currentMinPrice = $categoryUpgradeOption->price;
@@ -251,6 +255,11 @@ class CabinController extends Controller
 
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
+    // if cart is empty, return error
+    if (empty($cart)) {
+      return ErrorResponse::cartEmpty();
+    }
+
     $reservationId = $cart['reservation_id'] ?? null;
     $keepOldTimeStamp = null;
 
@@ -291,7 +300,7 @@ class CabinController extends Controller
       return response()->json(['message' => 'Cabin number, type ID, capacity, and category ID are required.'], 400);
     }
 
-    $filteredCabins = $this->filterCabins($cabinTypeId, null, null, false, $cabinCategoryCode, $cabinCapacity);
+    $filteredCabins = $this->filterCabins($cabinTypeId, null, null, true, $cabinCategoryCode, $cabinCapacity);
 
     if (isset($filteredCabins['error'])) {
       return response()->json(['message' => $filteredCabins['error']], $filteredCabins['status']);
@@ -330,6 +339,11 @@ class CabinController extends Controller
 
     if (!$user) {
       return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // if cart is empty, return error
+    if (empty($cart)) {
+      return ErrorResponse::cartEmpty();
     }
 
     // ------- If user id is in tepmorary reservation table, thriow error

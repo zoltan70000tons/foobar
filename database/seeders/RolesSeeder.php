@@ -195,6 +195,7 @@ class RolesSeeder extends Seeder
             Permissions::DeleteTags,
             Permissions::CreateTags,
             Permissions::ViewLogs,
+            Permissions::EditInstallments,
         ]);
         $this->assignToRole(Roles::Agent, [
             Permissions::ViewDashboard,
@@ -290,6 +291,7 @@ class RolesSeeder extends Seeder
             Permissions::CreateRoles, 
             Permissions::EditRoles, 
             Permissions::DeleteRoles,
+            Permissions::ExportRoles,
             Permissions::ViewPermissions,
             Permissions::CreatePermissions, 
             Permissions::EditPermissions, 
@@ -326,6 +328,7 @@ class RolesSeeder extends Seeder
             Permissions::DeleteTags,
             Permissions::CreateTags,
             Permissions::ViewLogs,
+            Permissions::EditInstallments,
         ]);
 
         $this->assignToRole(Roles::Owner, [ // Superadmin
@@ -358,6 +361,7 @@ class RolesSeeder extends Seeder
             Permissions::CreateRoles, 
             Permissions::EditRoles, 
             Permissions::DeleteRoles,
+            Permissions::ExportRoles,
             Permissions::ViewPermissions,
             Permissions::CreatePermissions, 
             Permissions::EditPermissions, 
@@ -393,6 +397,7 @@ class RolesSeeder extends Seeder
             Permissions::DeleteTags,
             Permissions::CreateTags,
             Permissions::ViewLogs,
+            Permissions::EditInstallments,
         ]);
 
         $this->assignToRole(Roles::Trainee, [  // Only View Access

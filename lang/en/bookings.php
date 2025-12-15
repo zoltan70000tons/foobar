@@ -25,4 +25,18 @@ return [
   'empty_seat_added' => 'Empty bed added',
   'empty_seat_removed' => 'Empty bed removed',
   'already_has_booking' => 'You already have a booking for this event',
+  'already_has_invitation' => 'You have already been invited to a booking for this event',
+  'error' => [
+    'email_required' => 'eMail is required',
+    'cannot_invite_yourself' =>
+      'You cannot send an email invitation to yourself. If you want to reuse the same email for another passenger, please fill the form manually.',
+    'single_occupancy' => 'You cannot add passenger to a single occupancy booking.',
+    'email_already_used' =>
+      'This eMail is already used in another booking for this event. If you want to reuse the same email for another passenger, please fill the form manually.',
+    'passenger_order_taken' =>
+      'There is already a passenger for this slot. Please refresh the page or choose another slot.',
+    'email_already_invited' =>
+      'A passenger with this eMail has already been invited to this booking. If you want to reuse the same email for another passenger, please fill the form manually.',
+    'slot_taken' => 'This bed is already taken. Please refresh the page or choose another bed.',
+  ],
 ];

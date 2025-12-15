@@ -1,8 +1,7 @@
-import React from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import { Container, Toolbar, Grid, CircularProgress, Typography } from "@mui/material";
+import { Container, Toolbar, Grid } from "@mui/material";
 import DashboardCard from "./Dashboard/DashboardCard";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
@@ -14,29 +13,12 @@ import PersonIcon from "@mui/icons-material/Person";
 import GroupWorkIcon from "@mui/icons-material/GroupWork";
 import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
-import TagIcon from '@mui/icons-material/Tag';
-import HistoryIcon from '@mui/icons-material/History';
+import TagIcon from "@mui/icons-material/Tag";
+import HistoryIcon from "@mui/icons-material/History";
+import JoinInnerIcon from "@mui/icons-material/JoinInner";
 
 export default function Dashboard({ auth }: PageProps) {
   const { hasPermission } = usePermissions();
-
-  //if (error) return <Typography color="error">Error: {error.message}</Typography>;
-
-  // Show loader while permissions are being fetched
-  // if (loading) {
-  //   return (
-  //     <AuthenticatedLayout user={auth.user} header="Dashboard">
-  //       <Head title="Dashboard" />
-  //       <Toolbar />
-  //       <Container
-  //         maxWidth="lg"
-  //         sx={{ mt: 4, mb: 4, display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}
-  //       >
-  //         <CircularProgress />
-  //       </Container>
-  //     </AuthenticatedLayout>
-  //   );
-  // }
 
   // Dashboard Items Configuration
   const dashboardItems = [
@@ -95,6 +77,13 @@ export default function Dashboard({ auth }: PageProps) {
       icon: HistoryIcon,
       link: "/logs",
       permission: Permissions.ViewLogs,
+    },
+    {
+      title: "Potential Survivor Matches",
+      description: "Potential Survivor Matches",
+      icon: JoinInnerIcon,
+      link: "/potential-survivor-matches",
+      permission: Permissions.ViewCustomers,
     },
   ];
 

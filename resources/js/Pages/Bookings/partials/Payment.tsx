@@ -10,10 +10,12 @@ import {
   TableRow,
   Button,
   Grid,
-  Avatar, Tooltip, IconButton,
+  Avatar,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
-import InfoIcon from '@mui/icons-material/Info';
+import AddIcon from "@mui/icons-material/Add";
+import InfoIcon from "@mui/icons-material/Info";
 import SectionPercentage from "@/Components/SectionPercentage";
 import PaymentModal from "./PaymentModal";
 import FeesForm, { Fee } from "./FeesForm";
@@ -30,6 +32,9 @@ import { formatCurrency } from "@/Helpers/stringUtils";
 import PaymentTransferForm, { PaymentTransfer } from "@/Pages/Bookings/partials/PaymentTransferForm";
 import SplitPaymentModal from "@/Pages/Bookings/partials/SplitPaymentModal";
 import SplitPaymentModal2 from "@/Pages/Bookings/partials/SplitPaymentModal2";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import dayjs from "dayjs";
 
 const getOrdinalSuffix = (n: number): string => {
   if (n === 1) return "st";
@@ -41,7 +46,7 @@ const getOrdinalSuffix = (n: number): string => {
 type MergedTransfer = {
   payment_id_from: number;
   payment_id_to: number;
-}
+};
 
 type Payment = {
   id: number;
@@ -86,12 +91,14 @@ type OnboardCredit = {
   amount: number;
   passenger_id: number;
   created_at: string;
-}
+};
 
 export type Passenger = {
   id: number;
   name: string;
   lead_passenger: boolean;
+  survivor_number: string | null;
+  dob: Date;
   passenger_allocated_cost: string;
   passenger_balance: string;
   installments: Installment[];
@@ -136,8 +143,8 @@ export type DeletedPayments = {
   id: number;
   BIP_ID: string;
   amount: string;
-  passenger_id: number
-}
+  passenger_id: number;
+};
 
 const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean }) => {
   const passengers = booking.passengers;
@@ -150,12 +157,20 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
   const pricePerPerson = booking.cabin.category.price;
   const { showSnackbar } = useSnackbar();
   const [currentPassenger, setCurrentPassenger] = useState<Passenger | null>(null);
-  const [selectedFeeId, setSelectedFeeId] = useState<number | null>(null);
-  const [selectedPassengerId, setSelectedPassengerId] = useState<number | null>(null);
-  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
-  const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(null);
-
   const [deletedPayments, setDeletedPayments] = useState<DeletedPayments[]>(null);
+  const [showDiscountsMap, setShowDiscountsMap] = useState<Record<number, boolean>>({});
+  const [showTaxesAndFeesMap, setShowTaxesAndFeesMap] = useState<Record<number, boolean>>({});
+  const [showAditionalFeesMap, setShowAdditionalFeesMap] = useState<Record<number, boolean>>({});
+
+  const toggleShowDiscounts = (passengerId: number) => {
+    setShowDiscountsMap((prev) => ({ ...prev, [passengerId]: !prev[passengerId] }));
+  };
+  const toggleShowTaxesAndFees = (passengerId: number) => {
+    setShowTaxesAndFeesMap((prev) => ({ ...prev, [passengerId]: !prev[passengerId] }));
+  };
+  const toggleShowAdditionalFees = (passengerId: number) => {
+    setShowAdditionalFeesMap((prev) => ({ ...prev, [passengerId]: !prev[passengerId] }));
+  };
 
   // Payment Model States
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
@@ -242,12 +257,12 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
 
   const handleOpenSplitPaymentModal = () => {
     setOpenSplitPaymentModal(true);
-  }
+  };
 
   const handleSplitPaymentDeleted = () => {
     handleOpenSplitPaymentModal();
     setOpenPaymentModal(false);
-  }
+  };
 
   return (
     <Grid>
@@ -273,7 +288,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
             </TableBody>
           </Table>
         </Box>
-        <Box sx={{gap: 2, display: "flex"}}>
+        <Box sx={{ gap: 2, display: "flex" }}>
           <Button
             variant="outlined"
             color="secondary"
@@ -343,8 +358,8 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
               </Divider>
             </Box>
 
-            <Typography variant="h5" mb={2} sx={{ textAlign: 'center' }}>
-              {displayText} { pax?.first_name ? `- ${pax?.first_name} ${pax?.last_name}` : null }
+            <Typography variant="h5" mb={2} sx={{ textAlign: "center" }}>
+              {displayText} {pax?.first_name ? `- ${pax?.first_name} ${pax?.last_name}` : null}
             </Typography>
 
             <Paper variant="outlined" sx={{ p: 3, backgroundColor: "#1c1c1c", mb: 4 }}>
@@ -354,161 +369,264 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 booking={booking}
                 installments={filteredInstallments}
                 setIsBookingError={(error) => console.error("Booking Error:", error)}
+                editMode={editMode}
               />
 
               {/* Payment Details */}
-              <Table size="small" sx={{ mt: 2, color: "white" }}>
+              <Table
+                size="small"
+                sx={{
+                  mt: 2,
+                  color: "white",
+                  "& td, & th": {
+                    border: 0,
+                  },
+                  "& .MuiTableCell-root": {
+                    padding: 0.5,
+                    borderBottom: "none",
+                  },
+                }}
+              >
                 <TableBody>
                   {/*** Official Ticket Price ***/}
-                  <TableRow>
-                    <TableCell>Official Ticket Price:</TableCell>
-                    <TableCell align="right">{formatCurrency(Number(pricePerPerson || 0))}</TableCell>
+                  <TableRow sx={{ borderTop: "4px solid #A97E1E" }}>
+                    <TableCell>OFFICIAL TICKET PRICE</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: "500" }}>
+                      {formatCurrency(Number(pricePerPerson || 0))}
+                    </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Discounts ***/}
                   <TableRow>
-                    <TableCell sx={{ pl: "2rem", color: "#4CAF50" }}>Total Discounts:</TableCell>
+                    <TableCell sx={{ color: "#4CAF50" }}>
+                      TOTAL DISCOUNTS{" "}
+                      <IconButton
+                        size="small"
+                        onClick={() => toggleShowDiscounts(pax.id)}
+                        aria-label={`toggle-discounts-${pax.id}`}
+                        sx={{ p: 0, m: 0 }}
+                      >
+                        {showDiscountsMap[pax.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      </IconButton>
+                    </TableCell>
+
                     <TableCell align="right">
-                      <Box component="span" sx={{ color: "#4CAF50" }}>
-                        {totalDiscounts > 0
+                      <Box component="span" sx={{ color: "#4CAF50", fontWeight: "500" }}>
+                        {totalPassengerDiscount > 0
                           ? `-${formatCurrency(totalPassengerDiscount)}`
                           : `${formatCurrency(totalPassengerDiscount)}`}
                       </Box>
                     </TableCell>
-                    <TableCell></TableCell>
                   </TableRow>
-                  {discounts.map((discount, i) => (
-                    <TableRow key={`discount-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Discount ({discount.code}):</TableCell>
-                      <TableCell align="right">
-                        {discount.value > 0
-                          ? `-${formatCurrency(discount.value)}`
-                          : `${formatCurrency(discount.value)}`}
-                      </TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  ))}
-                  {passengerDiscounts.map((discount, i) => {
-                    console.log(discount)
-                    return (
-                      <TableRow key={`discount-${i}`}>
-                        <TableCell sx={{ pl: "3rem" }}>
-                          Discount ({discount.code})
-                          <Tooltip title={discount.notes}>
-                            <IconButton>
-                              <InfoIcon fontSize={"small"} />
-                            </IconButton>
-                          </Tooltip>
-                          :
-                        </TableCell>
-                        <TableCell align="right">
-                          {discount.value > 0
-                            ? `-${formatCurrency(discount.value)}`
-                            : `${formatCurrency(discount.value)}`}
-                        </TableCell>
-                        <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
+                  {showDiscountsMap[pax.id] && (
+                    <>
+                      {discounts.map((discount, i) => (
+                        <TableRow key={`global-discount-${pax.id}-${i}`}>
+                          <TableCell sx={{ ml: "3rem" }}>
+                            <Box sx={{ ml: 6, color: "grey", py: 1 }}>
+                              Discount ({discount.code}){" "}
+                              <b>
+                                {discount.value > 0
+                                  ? `-${formatCurrency(discount.value)}`
+                                  : formatCurrency(discount.value)}
+                              </b>
+                              {discount.notes && (
+                                <Tooltip title={discount.notes}>
+                                  <IconButton>
+                                    <InfoIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right"></TableCell>
+                          <TableCell />
+                        </TableRow>
+                      ))}
+                      {passengerDiscounts.map((discount, i) => (
+                        <TableRow key={`passenger-discount-${pax.id}-${i}`}>
+                          <TableCell>
+                            <Box sx={{ ml: 6, color: "grey" }}>
+                              {discount.code}{" "}
+                              <b>
+                                {discount.value > 0
+                                  ? `-${formatCurrency(discount.value)}`
+                                  : formatCurrency(discount.value)}
+                              </b>
+                              {discount.notes && (
+                                <Tooltip title={discount.notes}>
+                                  <IconButton>
+                                    <InfoIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right"></TableCell>
+                          <TableCell />
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
 
                   {/*** Official Ticket Price ***/}
                   <TableRow>
-                    <TableCell>Net Ticket Price:</TableCell>
-                    <TableCell align="right">
+                    <TableCell>NET TICKET PRICE</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: "500" }}>
                       {formatCurrency(Number(pricePerPerson - totalDiscounts - totalPassengerDiscounts || 0))}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Addons ***/}
+                  <TableRow sx={{ borderTop: "2px solid #A97E1E" }}>
+                    <TableCell>TAXES & FEES</TableCell>
+                    <TableCell align="right"></TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
                   <TableRow>
-                    <TableCell style={{ color: "#FF9800" }} sx={{ pl: "2rem" }}>
-                      Total Addons:
+                    <TableCell>
+                      TOTAL ADD-ONS{" "}
+                      <IconButton
+                        size="small"
+                        onClick={() => toggleShowTaxesAndFees(pax.id)}
+                        aria-label={`toggle-taxes-and-fees-${pax.id}`}
+                        sx={{ p: 0, m: 0 }}
+                      >
+                        {showTaxesAndFeesMap[pax.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      </IconButton>
                     </TableCell>
                     <TableCell align="right">
-                      <Box component="span" sx={{ color: "#FF9800" }}>
+                      <Box component="span" sx={{ color: "#FF9800", fontWeight: "500" }}>
                         {totalAddons > 0 ? `+${formatCurrency(totalAddons)}` : `${formatCurrency(totalAddons)}`}
                       </Box>
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
-                  {addons.map((addon, i) => (
-                    <TableRow key={`addon-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>Addon ({addon.code}):</TableCell>
-                      <TableCell align="right">+{formatCurrency(addon.value)}</TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  ))}
+                  {showTaxesAndFeesMap[pax.id] && (
+                    <>
+                      {/* addons */}
+                      {Array.isArray(addons) &&
+                        addons.map((addon, aIdx) => (
+                          <TableRow key={`addon-${pax.id}-${aIdx}`}>
+                            <TableCell sx={{ pl: "3rem" }}>
+                              <Box sx={{ ml: 6, color: "gray", py: 1 }}>
+                                Addon ({addon.code}) <b>+{formatCurrency(addon.value)}</b>
+                              </Box>
+                            </TableCell>
+                            <TableCell align="right"></TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        ))}
+                    </>
+                  )}
 
                   {/*** Fees ***/}
-                  <TableRow>
-                    <TableCell style={{ fontWeight: "400", color: "#FFC107" }} sx={{ pl: "2rem" }}>
-                      Total Fees:
+                  <TableRow sx={{ borderTop: "2px solid #A97E1E" }}>
+                    <TableCell>
+                      TOTAL ADDITIONAL FEES{" "}
+                      <IconButton
+                        size="small"
+                        onClick={() => toggleShowAdditionalFees(pax.id)}
+                        aria-label={`toggle-additional-fees-${pax.id}`}
+                        sx={{ p: 0, m: 0 }}
+                      >
+                        {showAditionalFeesMap[pax.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      </IconButton>
                     </TableCell>
-                    <TableCell align="right" style={{ fontWeight: "400", color: "#FFC107" }}>
+                    <TableCell align="right" style={{ fontWeight: "500", color: "#FFC107" }}>
                       {totalFees > 0 ? `+${formatCurrency(totalFees)}` : `${formatCurrency(totalFees)}`}
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
-                  {pax.fees.map((fee, i) => (
-                    <TableRow key={`fee-${i}`}>
-                      <TableCell sx={{ pl: "3rem" }}>
-                        Fee ({fee.type})
-                        <Tooltip title={fee.notes}>
-                          <IconButton>
-                            <InfoIcon fontSize={"small"} />
-                          </IconButton>
-                        </Tooltip>
-                        :
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box component="span">
-                          {Number(fee.amount) > 0
-                            ? `+${formatCurrency(Number(fee.amount))}`
-                            : `${formatCurrency(Number(fee.amount))}`}
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center" style={{ margin: 0, padding: 0, width: "3%" }}>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {showAditionalFeesMap[pax.id] && (
+                    <>
+                      {Array.isArray(pax.fees) &&
+                        pax.fees.map((fee, i) => (
+                          <TableRow key={`fee-${pax.id}-${i}`}>
+                            <TableCell sx={{ pl: "3rem" }}>
+                              <Box sx={{ ml: 6, color: "gray" }}>
+                                Fee ({fee.type}){" "}
+                                <b>
+                                  {Number(fee.amount) > 0
+                                    ? `+${formatCurrency(Number(fee.amount))}`
+                                    : formatCurrency(Number(fee.amount))}
+                                </b>
+                                <Tooltip title={fee.notes || ""}>
+                                  <IconButton aria-label={`fee-info-${pax.id}-${i}`}>
+                                    <InfoIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </TableCell>
 
+                            <TableCell align="right">
+                              <Box component="span"></Box>
+                            </TableCell>
+
+                            <TableCell align="center" sx={{ m: 0, p: 0, width: "3%" }} />
+                          </TableRow>
+                        ))}
+                    </>
+                  )}
                   {/*** Total Ticket Price ***/}
-                  <TableRow>
-                    <TableCell>Total Ticket Price:</TableCell>
-                    <TableCell align="right">{formatCurrency(Number(totalCostAfterAdjustments || 0))}</TableCell>
+                  <TableRow sx={{ borderTop: "2px solid #A97E1E" }}>
+                    <TableCell>TOTAL TICKET PRICE:</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: "500" }}>
+                      {formatCurrency(Number(totalCostAfterAdjustments || 0))}
+                    </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
 
                   {/*** Total Paid ***/}
                   <TableRow>
-                    <TableCell sx={{ pl: "2rem", color: "#4CAF50" }}>Paid</TableCell>
-                    <TableCell align="right">{formatCurrency(Number(pax.passenger_balance || 0))}</TableCell>
+                    <TableCell sx={{ color: "#C6FE6D" }}>TOTAL PAID</TableCell>
+                    <TableCell align="right" sx={{ color: "#C6FE6D", fontWeight: "500" }}>
+                      {formatCurrency(Number(pax.passenger_balance || 0))}
+                    </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Outstanding Balance:</TableCell>
+                    <TableCell sx={{ fontSize: "0.95rem" }}>OUTSTANDING BALANCE:</TableCell>
                     <TableCell align="right">
-                      <Box component="span" sx={{ color: "#2196F3", fontWeight: "600", fontSize: "1.2rem" }}>
+                      <Box component="span" sx={{ fontWeight: "500", fontSize: "0.95rem" }}>
                         {formatCurrency(totalCostAfterAdjustments - pax.passenger_balance)}
                       </Box>
                     </TableCell>
                     <TableCell></TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell>Next Payment</TableCell>
-                    <TableCell align="right" sx={!pax.installment_status.next_installment ? { color: '#4CAF50' } : {}}>
-                      {pax.installment_status.fully_paid ? 'Paid' : formatDate(pax.installment_status?.next_installment?.due_date)}
+                  <TableRow sx={{ borderTop: "2px solid #A97E1E" }}>
+                    <TableCell sx={{ color: "#b89a18" }}>
+                      NEXT PAYMENT DUE:{" "}
+                      <b>
+                        {pax.installment_status.fully_paid ? (
+                          <span style={{ color: "#4CAF50" }}>PAID</span>
+                        ) : pax.installment_status?.next_installment?.due_date &&
+                          dayjs(pax.installment_status.next_installment.due_date).isBefore(dayjs(), "day") ? (
+                          <span style={{ color: "#FF5252" }}>
+                            {dayjs(pax.installment_status.next_installment.due_date)
+                              .format("MMM DD, YYYY")
+                              .toUpperCase()}{" "}
+                            (OVERDUE)
+                          </span>
+                        ) : pax.installment_status?.next_installment?.due_date ? (
+                          dayjs(pax.installment_status.next_installment.due_date).format("MMM DD, YYYY").toUpperCase()
+                        ) : null}
+                      </b>
                     </TableCell>
+
+                    <TableCell
+                      align="right"
+                      sx={!pax.installment_status.next_installment ? { color: "#4CAF50" } : {}}
+                    ></TableCell>
+
                     <TableCell></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
 
-              <Divider sx={{ my: 2, borderColor: "gray" }} />
-
+              <br></br>
               <Grid container spacing={3}>
                 {canCreatePayment && (
                   <Grid item xs={12} sm={3}>
@@ -526,12 +644,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 )}
                 {canCreateFee && (
                   <Grid item xs={12} sm={3}>
-                    <FeesForm
-                      passenger={pax}
-                      booking_id={booking.id}
-                      event_id={booking.event_id}
-                      editMode={editMode}
-                    />
+                    <FeesForm passenger={pax} booking_id={booking.id} event_id={booking.event_id} editMode={editMode} />
                   </Grid>
                 )}
                 {canCreateDiscount && (
@@ -556,11 +669,7 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
                 )}
                 {canCreatePayment && passengers.length > 1 && (
                   <Grid item xs={12} sm={3}>
-                    <PaymentTransferForm
-                      passenger={pax}
-                      booking={booking}
-                      editMode={editMode}
-                    />
+                    <PaymentTransferForm passenger={pax} booking={booking} editMode={editMode} />
                   </Grid>
                 )}
               </Grid>
@@ -569,7 +678,6 @@ const Payment = ({ booking, editMode }: { booking: Booking; editMode: boolean })
           </Box>
         );
       })}
-
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <SplitPaymentModal

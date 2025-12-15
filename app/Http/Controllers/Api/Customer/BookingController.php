@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Enums\ErrorCode;
+use App\Helpers\ErrorResponse;
 
 class BookingController extends Controller
 {
@@ -55,23 +56,22 @@ class BookingController extends Controller
   |--------------------------------------------------------------------------
   |
   |  Store a new booking
+  |  @param  \App\Http\Requests\StoreBookingRequest  $request
+  |  @param  \App\Services\UserInfoService  $userInfoService
+  |  @return \Illuminate\Http\Response
   |
   */
   public function store(StoreBookingRequest $request, UserInfoService $userInfoService)
   {
     $validated = $request->validated();
 
-    // Get authenticated user
     $user = Auth::user();
     $cart = $user ? Cart::where('user_id', $user->id)->first()?->cart_data ?? [] : [];
 
     if (!$cart || empty($cart)) {
-      return response()->json(
-        [
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => 'Cart is empty',
-          'errorCode' => ErrorCode::CART_EMPTY->value,
-        ],
+      return ErrorResponse::error(
+        'Your cart is empty or not found. Please add items to your cart.',
+        ErrorCode::CART_EMPTY,
         400
       );
     }
@@ -82,24 +82,10 @@ class BookingController extends Controller
       // If age restricion is false return error
       $isAgeValid = AgeRestriction::isAgeValid($dateOfBirth, 21);
       if (!$isAgeValid) {
-        return response()->json(
-          [
-            'errorLogId' => Str::uuid(),
-            'errorMessage' => __('feedback.age_restriction'),
-            'errorCode' => ErrorCode::AGE_RESTRICTION->value,
-          ],
-          400
-        );
+        return ErrorResponse::error(__('feedback.age_restriction'), ErrorCode::AGE_RESTRICTION, 400);
       }
     } else {
-      return response()->json(
-        [
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => 'Date of birth is required',
-          'errorCode' => ErrorCode::DOB_REQUIRED->value,
-        ],
-        400
-      );
+      return ErrorResponse::error('Date of birth is required', ErrorCode::DOB_REQUIRED, 400);
     }
 
     try {
@@ -157,7 +143,6 @@ class BookingController extends Controller
         'terms_n_cons' => $validated['terms'],
         'cabin_conf_accp' => $validated['cart']['cabin_conf_accp'],
         'single_t_agreement' => $validated['cart']['single_t_agreement'],
-        // passenger allocated cost - take from calculation
         'passenger_allocated_cost' => $totalPassenger,
         'passenger_balance' => 0,
         'was_on_board' => false,
@@ -235,20 +220,12 @@ class BookingController extends Controller
             'total_price' => $totalPrice,
             'cabin_title' => $cabinTitle,
           ],
-          // "passenger" => $result["passenger"],
         ],
         201
       );
     } catch (\Exception $e) {
       dd($e->getMessage());
-      return response()->json(
-        [
-          'errorLogId' => Str::uuid(),
-          'errorMessage' => $e->getMessage(),
-          'errorCode' => ErrorCode::UNKNOWN_ERROR->value,
-        ],
-        500
-      );
+      return ErrorResponse::error($e->getMessage(), ErrorCode::UNKNOWN_ERROR, 500);
     }
   }
 
@@ -329,13 +306,13 @@ class BookingController extends Controller
     $event = Event::find($eventId);
 
     if (!$event || !in_array($event->status, ['PUBLIC', 'PRE-SALE'])) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     $result = $this->customerBookingRepository->getBookingByCode($eventId, $bookingCode, $user);
 
     if (!$result) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     // hide cabin number if status is new or cancelled
@@ -376,13 +353,13 @@ class BookingController extends Controller
     $event = Event::find($eventId);
 
     if (!$event || !in_array($event->status, ['PUBLIC', 'PRE-SALE'])) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     $result = $this->customerBookingRepository->getBookingByRequestId($eventId, $requestId, $user);
 
     if (!$result) {
-      return response()->json(['message' => 'Booking not found'], 404);
+      return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     // hide cabin number if status is new or cancelled
@@ -474,16 +451,16 @@ class BookingController extends Controller
 
     // no booking
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(['message' => 'This booking is single occupancy'], 400);
+      return ErrorResponse::error(__('bookings.error.single_occupancy'), ErrorCode::SINGLE_OCCUPANCY_BOOKING, 400);
     }
 
     // not the owner
     if ($booking->customer_id !== $user->id) {
-      return response()->json(['message' => 'Unauthorized'], 403);
+      return ErrorResponse::error('Unauthorized', ErrorCode::UNAUTHORIZED, 403);
     }
 
     $passengerOrder = $request->input('passenger_order');
@@ -518,20 +495,19 @@ class BookingController extends Controller
 
     // no booking
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(['message' => 'This booking is single occupancy'], 400);
+      return ErrorResponse::error(__('bookings.error.single_occupancy'), ErrorCode::SINGLE_OCCUPANCY_BOOKING, 400);
     }
 
     // not the owner
     if ($booking->customer_id !== $user->id) {
-      return response()->json(['message' => 'Unauthorized'], 403);
+      return ErrorResponse::error('Unauthorized', ErrorCode::UNAUTHORIZED, 403);
     }
 
     $passengerOrder = $request->input('passenger_order');
-
     $result = $this->customerBookingRepository->removeEmptySeat($eventId, $bookingCode, $passengerOrder);
 
     GlobalLogger::log(
@@ -562,11 +538,11 @@ class BookingController extends Controller
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(['message' => 'This booking is single occupancy'], 400);
+      return ErrorResponse::error(__('bookings.error.single_occupancy'), ErrorCode::SINGLE_OCCUPANCY_BOOKING, 400);
     }
 
     $validated = $request->validated();
@@ -578,7 +554,11 @@ class BookingController extends Controller
       $survivorNumberExist = SurvivorNumber::where('survivor_number', $survivorNumber)->exists();
 
       if (!$survivorNumberExist) {
-        return response()->json(['message' => 'Survivor number not found'], 404);
+        return ErrorResponse::error(
+          __('feedback.survivor_number_not_found'),
+          ErrorCode::SURVIVOR_NUMBER_NOT_FOUND,
+          404
+        );
       }
 
       $userWithSurvivor = User::with(['survivorNumber', 'detail'])
@@ -587,7 +567,6 @@ class BookingController extends Controller
         })
         ->first();
 
-      //$dateOfBirth = $request->dateOfBirth;
       // Normalize input names
       $formattedName = $this->normalizeString($request->first_name);
       $formattedLastName = $this->normalizeString($request->last_name);
@@ -597,12 +576,10 @@ class BookingController extends Controller
         !$userWithSurvivor ||
         !$this->isSimilar($this->normalizeString($userWithSurvivor->detail->first_name ?? ''), $formattedName) ||
         !$this->isSimilar($this->normalizeString($userWithSurvivor->detail->last_name ?? ''), $formattedLastName)
-        // $userWithSurvivor->detail->dob !== $dateOfBirth
       ) {
-        return response()->json(
-          [
-            'message' => __('feedback.survivor_number_not_match'),
-          ],
+        return ErrorResponse::error(
+          __('feedback.survivor_number_not_match'),
+          ErrorCode::SURVIVOR_NUMBER_NOT_FOUND,
           404
         );
       }
@@ -611,14 +588,18 @@ class BookingController extends Controller
       $passenger = $booking->passengers()->where('survivor_number', $survivorNumber)->first();
 
       if ($passenger) {
-        return response()->json(['message' => 'This user already is assigned to other booking'], 400);
+        return ErrorResponse::error(
+          __('bookings.error.email_already_used'),
+          ErrorCode::EMAIL_ALREADY_USED_IN_ANOTHER_BOOKING,
+          400
+        );
       }
     }
 
     // Check if passenger order is already taken
     $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
     if ($passenger->email) {
-      return response()->json(['message' => 'Passenger order is already taken'], 400);
+      return ErrorResponse::error(__('bookings.error.passenger_order_taken'), ErrorCode::PASSENGER_ORDER_TAKEN, 400);
     }
 
     // create passenger with booking id
@@ -656,35 +637,43 @@ class BookingController extends Controller
 
     $email = $request->input('email');
 
+    // validate email
     if (!$email) {
-      return response()->json(['message' => 'Email is required'], 400);
+      return ErrorResponse::error(__('bookings.error.email_required'), ErrorCode::UNAUTHORIZED, 400);
     }
 
+    // cannot invite yourself
     if ($email === $user->email) {
-      return response()->json(['message' => 'You cannot send an email invitation to yourself. Use manual add'], 400);
+      return ErrorResponse::error(__('bookings.error.cannot_invite_yourself'), ErrorCode::CANNOT_INVITE_YOURSELF, 400);
     }
 
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
+    // no booking
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
+    // single occupancy
     if ($booking->is_single_occupancy) {
-      return response()->json(['message' => 'This booking is single occupancy'], 400);
+      return ErrorResponse::error(__('bookings.error.single_occupancy'), ErrorCode::SINGLE_OCCUPANCY_BOOKING, 400);
     }
 
     $passengerOrder = $request->input('passenger_order');
 
     // Check if a passenger with this email is already added to the booking
     if ($booking->passengers()->where('email', $email)->exists()) {
-      return response()->json(['message' => 'A passenger with this email is already added to the booking'], 400);
+      return ErrorResponse::error(
+        __('bookings.error.email_already_used'),
+        ErrorCode::EMAIL_ALREADY_USED_IN_ANOTHER_BOOKING,
+        400
+      );
     }
 
     // Check if the passenger order is already taken
     $passenger = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
     if ($passenger && $passenger->email) {
-      return response()->json(['message' => 'Passenger order is already taken'], 400);
+      return ErrorResponse::error(__('bookings.error.passenger_order_taken'), ErrorCode::PASSENGER_ORDER_TAKEN, 400);
     }
 
     // if this email is used in another booking around the same event return error
@@ -696,8 +685,9 @@ class BookingController extends Controller
         })
         ->exists()
     ) {
-      return response()->json(
-        ['message' => 'This email is already used in another booking, use manual add instead'],
+      return ErrorResponse::error(
+        __('bookings.error.email_already_used'),
+        ErrorCode::EMAIL_ALREADY_USED_IN_ANOTHER_BOOKING,
         400
       );
     }
@@ -708,7 +698,7 @@ class BookingController extends Controller
         ->where('email', $email)
         ->exists()
     ) {
-      return response()->json(['message' => 'Passenger with this email has already been invited'], 400);
+      return ErrorResponse::error(__('bookings.error.email_already_invited'), ErrorCode::ALREADY_HAS_INVITATION, 400);
     }
 
     // Check if this slot is already taken
@@ -717,7 +707,7 @@ class BookingController extends Controller
         ->where('passenger_id', $passenger->id)
         ->exists()
     ) {
-      return response()->json(['message' => 'Passenger slot is already taken'], 400);
+      return ErrorResponse::error(__('bookings.error.slot_taken'), ErrorCode::PASSENGER_SLOT_TAKEN, 400);
     }
 
     $customer = User::where('email', $email)->first();
@@ -783,18 +773,15 @@ class BookingController extends Controller
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
-    // passenger_id: passengerId,
-    // passenger_invitation_id: invitationId,
-    // passenger_invitation_token: token,
     $passengerId = $request->input('passenger_id');
     $invitationId = $request->input('passenger_invitation_id');
     $token = $request->input('passenger_invitation_token');
 
     if (!$passengerId || !$invitationId || !$token) {
-      return response()->json(['message' => 'Passenger ID, Invitation ID, and Token are required'], 400);
+      return ErrorResponse::error('Passenger ID, Invitation ID, and Token are required', ErrorCode::UNKNOWN_ERROR, 400);
     }
 
     $passengerInvitation = PassengerInvitation::where('id', $invitationId)
@@ -804,7 +791,7 @@ class BookingController extends Controller
       ->first();
 
     if (!$passengerInvitation) {
-      return response()->json(['message' => 'Invitation not found'], 404);
+      return ErrorResponse::error('Invitation not found', ErrorCode::INVITATION_NOT_FOUND, 404);
     }
 
     $passengerInvitation->delete();
@@ -836,13 +823,13 @@ class BookingController extends Controller
       $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
       if (!$booking) {
-        return response()->json(['message' => __('feedback.booking_not_found')], 404);
+        return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
       }
 
       $passengerOrder = $request->input('passenger_order');
 
       if (!$passengerOrder) {
-        return response()->json(['message' => 'Error with payload'], 400);
+        return ErrorResponse::error('Error with payload', ErrorCode::UNKNOWN_ERROR, 400);
       }
 
       $passenger = Passenger::query()
@@ -851,7 +838,7 @@ class BookingController extends Controller
         ->first();
 
       if (!$passenger) {
-        return response()->json(['message' => 'Passenger not found'], 404);
+        return ErrorResponse::error('Passenger not found', ErrorCode::PASSENGER_NOT_FOUND, 404);
       }
 
       $passengerInvitation = PassengerInvitation::query()
@@ -860,14 +847,14 @@ class BookingController extends Controller
         ->first();
 
       if (!$passengerInvitation) {
-        return response()->json(['message' => 'Invitation not found'], 404);
+        return ErrorResponse::error('Invitation not found', ErrorCode::INVITATION_NOT_FOUND, 404);
       }
 
       $passengerInvitation->delete();
 
       return response()->json(['message' => 'Invitation cancelled'], 200);
     } catch (\Exception $e) {
-      return response()->json(['message' => $e->getMessage()], 418);
+      return ErrorResponse::error($e->getMessage(), ErrorCode::UNKNOWN_ERROR, 418);
     }
   }
 
@@ -889,32 +876,31 @@ class BookingController extends Controller
     $booking = Booking::where('booking_code', $bookingCode)->where('event_id', $eventId)->first();
 
     if (!$booking) {
-      return response()->json(['message' => __('feedback.booking_not_found')], 404);
+      return ErrorResponse::error(__('feedback.booking_not_found'), ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     if ($booking->is_single_occupancy) {
-      return response()->json(['message' => 'This booking is single occupancy'], 400);
+      return ErrorResponse::error('This booking is single occupancy', ErrorCode::SINGLE_OCCUPANCY_BOOKING, 400);
     }
 
     // not the owner
     if ($booking->customer_id !== $user->id) {
-      return response()->json(['message' => 'Unauthorized'], 403);
+      return ErrorResponse::error('Unauthorized', ErrorCode::UNAUTHORIZED, 403);
     }
 
     // if user is the lead passenger and request passenger id is assigned to his survivor number, throw error
-
     $passengerOrder = $request->input('passenger_order');
     $passModel = $booking->passengers()->where('passenger_order', $passengerOrder)->first();
 
     if (!$passModel) {
-      return response()->json(['message' => 'Passenger not found'], 404);
+      return ErrorResponse::error('Passenger not found', ErrorCode::PASSENGER_NOT_FOUND, 404);
     }
 
     $passSurvivorNumber = $passModel->survivor_number;
     $userSurvivorNumber = $user->survivorNumber->survivor_number;
 
     if ($passSurvivorNumber === $userSurvivorNumber) {
-      return response()->json(['message' => 'You cannot reset your own seat'], 400);
+      return ErrorResponse::error('You cannot reset your own seat', ErrorCode::CANNOT_RESET_OWN_SEAT, 400);
     }
 
     $result = $this->customerBookingRepository->resetPassengerSeat($eventId, $bookingCode, $passengerOrder);

@@ -43,6 +43,9 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
+import { formatCurrency } from "@/Helpers/stringUtils";
+import { Customer } from "@/interfaces/Customer";
+import { BedConfigOption, bedConfigOptions } from "@/types/bed-config";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -52,15 +55,32 @@ const TabPanel = ({ children, value, index }) => {
   );
 };
 
-const BookingStepper: React.FC = ({
+type PriceCalc = {
+  extras: number;
+  save: string;
+  total: number;
+  totalPassenger: number;
+};
+
+type BookingStepperProps = {
+  cabinTypes: Array<{ id: number; name: string }>;
+  cabinCategories: any[];
+  close: () => void;
+  setIsCreateCustomerVisible: (visible: boolean) => void;
+  onBookingCreated: () => void;
+  createdCustomer: Customer | null;
+};
+
+const BookingStepper: React.FC<BookingStepperProps> = ({
   cabinTypes,
   cabinCategories,
   close,
   setIsCreateCustomerVisible,
   onBookingCreated,
+  createdCustomer,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [passenger, setPassenger] = useState({
+  const initialPassenger = {
     id: "",
     first_name: "",
     middle_name: "",
@@ -88,7 +108,8 @@ const BookingStepper: React.FC = ({
     newsletter: false,
     passenger_allocated_cost: "",
     passenger_balance: "",
-  });
+  };
+  const [passenger, setPassenger] = useState(initialPassenger);
   const [cabinType, setCabinType] = useState(null);
   const [cabinCategory, setCabinCategory] = useState(null);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -104,11 +125,15 @@ const BookingStepper: React.FC = ({
   const [loading, setLoading] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState(null);
   const [numberOfInstallments, setNumberOfInstallments] = useState(null);
+  const [bedConfig, setBedConfig] = React.useState<BedConfigOption | null>(null);
   const [isNextDisabled, setIsNextDisabled] = useState(true);
   const [carbonOffset, setCarbonOffset] = useState(false);
+  const [youChooseYourCabin, setYouChooseYourCabin] = useState(false);
   const [isSingleRoom, setIsSingleRoom] = useState(false);
   const [fetching, setIsFetching] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
+  
+
   const paymentPlanOptions = [
     {
       id: "INSTALLMENTS",
@@ -123,6 +148,8 @@ const BookingStepper: React.FC = ({
   const [createLoader, setCreateLoader] = useState(false);
   const eventId = cabinCategory?.event_id;
   const cabinTypeRef = useRef(null);
+  const [loadingFinalPrice, setLoadingFinalPrice] = useState<boolean>(true);
+  const [priceCalc, setPriceCalc] = useState<PriceCalc | null>(null);
 
   const validateGenders = (silent = false): boolean => {
     if (!cabinType || !selectedUser) return true;
@@ -145,9 +172,49 @@ const BookingStepper: React.FC = ({
     return true;
   };
 
+  const resetState = () => {
+    setActiveStep(0);
+    setPassenger({ ...initialPassenger });
+    setCabinType(null);
+    setCabinCategory(null);
+    setFilteredCategories([]);
+    setAvailableCabins([]);
+    setCabinNumber(null);
+    setAdvancedFilters(false);
+    setSelectedDeck(null);
+    setSelectedLocation("");
+    setOnlyAccessible(false);
+    setSearchQuery("");
+    setSuggestions([]);
+    setSelectedUser(null);
+    setLoading(false);
+    setPaymentPlan(null);
+    setNumberOfInstallments(null);
+    setIsNextDisabled(true);
+    setCarbonOffset(false);
+    setYouChooseYourCabin(false);
+    setIsSingleRoom(false);
+    setAvailableDecks([]);
+    setTabValue(0);
+    setCreateLoader(false);
+    setLoadingFinalPrice(true);
+    setPriceCalc(null);
+  };
+
+  const handleClose = () => {
+    resetState();
+    close();
+  };
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  useEffect(() => {
+    return () => {
+      resetState();
+    };
+  }, []);
 
   useEffect(() => {
     if (cabinTypeRef.current) {
@@ -161,7 +228,14 @@ const BookingStepper: React.FC = ({
 
   useEffect(() => {
     setIsNextDisabled(!validateStep());
-  }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments]);
+  }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments, bedConfig]);
+
+  useEffect(() => {
+  if (createdCustomer) {
+    fillPassengerFromUser(createdCustomer);
+    showSnackbar("New customer created and selected.", "success");
+  }
+}, [createdCustomer]);
 
   useEffect(() => {
     if (!cabinType) return;
@@ -191,7 +265,7 @@ const BookingStepper: React.FC = ({
   const validateStep = () => {
     switch (activeStep) {
       case 0:
-        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber && !fetching;
+        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber && !fetching && bedConfig;
         if (paymentPlan?.value === "INSTALLMENTS") {
           rule = rule && numberOfInstallments;
         }
@@ -223,46 +297,55 @@ const BookingStepper: React.FC = ({
     }
   };
 
+  const fillPassengerFromUser = (user) => {
+    if (!user) return;
+    const valid = validateGenders(); 
+    if (!valid) return;
+
+    setSelectedUser(user);
+    setSearchQuery(`${user.first_name} ${user.last_name}`);
+
+    setPassenger((prev) => ({
+      ...prev,
+      id: user.id,
+      first_name: user.first_name,
+      middle_name: user.middle_name || "",
+      last_name: user.last_name,
+      dob: user.dob || "",
+      gender: user.gender || "",
+      citizenship: user.citizenship || "",
+      survivor_number: user.survivor_number || "",
+      email: user.email,
+      phone: user.phone || "",
+      address_first: user.address_first || "",
+      address_second: user.address_second || "",
+      city: user.city || "",
+      state: user.state || "",
+      postal_code: user.postal_code || "",
+      country: user.country || "",
+      emergency_c_name: user.emergency_c_name || "",
+      emergency_c_phone: user.emergency_c_phone || "",
+      payment_method: paymentPlan?.id === "INSTALLMENTS" ? "CREDIT_CARD" : user.payment_method || "",
+      special_request: user.special_request || "",
+      lead_passenger: user.lead_passenger ?? true,
+      travel_info: user.travel_info ?? false,
+      terms_n_cons: true,
+      single_t_agreement: isSingleRoom ? true : user.single_t_agreement || false,
+      newsletter: user.newsletter || false,
+      passenger_allocated_cost: user.passenger_allocated_cost || "",
+      passenger_balance: user.passenger_balance || "",
+    }));
+
+    setIsNextDisabled(!validateStep());
+  };
+
   const handlePrefill = () => {
     if (!selectedUser) return;
-
     if (selectedUser.has_booking) {
       showSnackbar("User already has a booking for the same event!", "error");
       return;
     }
-
-    validateGenders();
-
-    setPassenger((prev) => ({
-      ...prev,
-      id: selectedUser.id,
-      first_name: selectedUser.first_name,
-      middle_name: selectedUser.middle_name || "",
-      last_name: selectedUser.last_name,
-      dob: selectedUser.dob || "",
-      gender: selectedUser.gender || "",
-      citizenship: selectedUser.citizenship || "",
-      survivor_number: selectedUser.survivor_number || "",
-      email: selectedUser.email,
-      phone: selectedUser.phone || "",
-      address_first: selectedUser.address_first || "",
-      address_second: selectedUser.address_second || "",
-      city: selectedUser.city || "",
-      state: selectedUser.state || "",
-      postal_code: selectedUser.postal_code || "",
-      country: selectedUser.country || "",
-      emergency_c_name: selectedUser.emergency_c_name || "",
-      emergency_c_phone: selectedUser.emergency_c_phone || "",
-      payment_method: paymentPlan?.id === "INSTALLMENTS" ? "CREDIT_CARD" : selectedUser.payment_method || "",
-      special_request: selectedUser.special_request || "",
-      lead_passenger: selectedUser.lead_passenger || true,
-      travel_info: selectedUser.travel_info || false,
-      terms_n_cons: true,
-      single_t_agreement: isSingleRoom ? true : selectedUser.single_t_agreement || false,
-      newsletter: selectedUser.newsletter || false,
-      passenger_allocated_cost: selectedUser.passenger_allocated_cost || "",
-      passenger_balance: selectedUser.passenger_balance || "",
-    }));
+    fillPassengerFromUser(selectedUser);
   };
 
   // Handlers for navigation
@@ -304,7 +387,9 @@ const BookingStepper: React.FC = ({
       cabin_category_spec_id: cabin_category_spec_id,
       payment_plan: paymentPlan.value,
       number_of_installments: numberOfInstallments?.value,
+      bed_configuration: bedConfig?.value,
       carbon_offset: carbonOffset,
+      you_choose_your_cabin: youChooseYourCabin,
       passenger: {
         id: passenger.id,
         first_name: passenger.first_name,
@@ -339,7 +424,6 @@ const BookingStepper: React.FC = ({
     };
 
     if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
-      console.log(!payload.cabin_number , !payload.passenger.first_name , !payload.passenger.email)
       showSnackbar("Please fill all required fields!", "error");
       return;
     }
@@ -351,7 +435,7 @@ const BookingStepper: React.FC = ({
         showSnackbar("Booking created successfully!", "success");
         setActiveStep(0);
         if (onBookingCreated) onBookingCreated();
-        close();
+        handleClose();
       },
       onError: (errors) => {
         console.error("Error creating booking:", errors);
@@ -414,6 +498,55 @@ const BookingStepper: React.FC = ({
     }
   };
 
+  useEffect(() => {
+    if (activeStep === 4) {
+      getBookingFinalPrice();
+    }
+  }, [activeStep]);
+
+  const getBookingFinalPrice = async () => {
+    if (!cabinType || !cabinCategory) {
+      return;
+    }
+    const { capacity, cabin_category_spec_id, id: cabinCategoryId } = cabinCategory;
+
+    const payload = {
+      cabin_number: cabinNumber,
+      cabin_capacity: capacity,
+      cabin_category_id: cabinCategoryId,
+      cabin_type_id: cabinType.id,
+      cabin_category_spec_id: cabin_category_spec_id,
+      payment_plan: paymentPlan.value,
+      number_of_installments: numberOfInstallments?.value,
+      carbon_offset: carbonOffset,
+      you_choose_your_cabin: youChooseYourCabin,
+      passenger: {
+        id: passenger.id,
+        gender: passenger.gender,
+        survivor_number: passenger.survivor_number,
+        payment_method: passenger.payment_method,
+      },
+    };
+    try {
+      setLoadingFinalPrice(true);
+      const response = await axios.get(route("bookings.getBookingFinalCost", { event: eventId }), {
+        params: payload,
+      });
+      if (response?.data?.error) {
+        showSnackbar(response.data.error, "error");
+      }
+
+      if (response?.data?.priceCalc) {
+        setPriceCalc(response?.data?.priceCalc);
+      }
+    } catch (error) {
+      //showSnackbar(error.response.data.error, "error");
+      console.error("Couldn't get booking final price:", error);
+    } finally {
+      setLoadingFinalPrice(false);
+    }
+  };
+
   return (
     <Box sx={{ width: "100%", margin: "0 auto", mt: 4 }}>
       <Stepper activeStep={activeStep}>
@@ -447,7 +580,9 @@ const BookingStepper: React.FC = ({
                   <Autocomplete
                     fullWidth
                     options={filteredCategories}
-                    getOptionLabel={(option) => `${option.title} - ${option.capacity_description}`}
+                    getOptionLabel={(option) =>
+                      `${option.title} - ${option.capacity_description} - ${formatCurrency(option.price)}`
+                    }
                     value={cabinCategory}
                     onChange={(event, newValue) => {
                       setCabinCategory(newValue);
@@ -557,10 +692,10 @@ const BookingStepper: React.FC = ({
                         <Box component="li" {...optionProps} key={key}>
                           {option.cabin_number}{" "}
                           {option.status === "RESERVED" && (
-                          <Chip sx={{ ml: 1 }} label={"INTERNALLY AVAILABLE"} color="warning" size="small" />
+                            <Chip sx={{ ml: 1 }} label={"INTERNALLY AVAILABLE"} color="warning" size="small" />
                           )}
                           {option.status === "AVAILABLE" && (
-                          <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
+                            <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
                           )}
                           {option.status === "PARTIALLY_BOOKED" && (
                             <Chip sx={{ ml: 1 }} label={"PARTIALLY BOOKED"} color="info" size="small" />
@@ -606,7 +741,7 @@ const BookingStepper: React.FC = ({
 
               {/* Number of Installments */}
               {paymentPlan?.value === "INSTALLMENTS" && (
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <FormControl fullWidth>
                     <Autocomplete
                       fullWidth
@@ -625,6 +760,20 @@ const BookingStepper: React.FC = ({
                   </FormControl>
                 </Grid>
               )}
+              <Grid item xs={12} md={3}>
+                 <FormControl fullWidth>
+                  <Autocomplete
+                      fullWidth
+                      options={bedConfigOptions}
+                      getOptionLabel={(option) => `${option.value}`}
+                      value={bedConfig}
+                      onChange={(event, newValue) => setBedConfig(newValue)}
+                      renderInput={(params) => <TextField {...params} label="Bed Configuration" />}
+                      sx={{ mb: 2 }}
+                    />
+
+                 </FormControl>
+              </Grid>
             </Grid>
           </Box>
         )}
@@ -637,7 +786,9 @@ const BookingStepper: React.FC = ({
                 <Grid item xs>
                   <Autocomplete
                     options={suggestions}
-                    getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email ?? 'N/A'}) - SN: ${option.survivor_number}`}
+                    getOptionLabel={(option) =>
+                      `${option.first_name} ${option.last_name} (${option.email ?? "N/A"}) - SN: ${option.survivor_number}`
+                    }
                     loading={loading}
                     value={selectedUser}
                     inputValue={searchQuery}
@@ -662,7 +813,7 @@ const BookingStepper: React.FC = ({
                     renderOption={(props, option) => (
                       <li {...props} key={option.email}>
                         <div style={{ display: "flex", alignItems: "center" }}>
-                          <span>{`${option.first_name} ${option.last_name} (${option.email ?? 'N/A'}) - SN: ${option.survivor_number}`}</span>
+                          <span>{`${option.first_name} ${option.last_name} (${option.email ?? "N/A"}) - SN: ${option.survivor_number}`}</span>
                           {option.has_booking && (
                             <Chip label="ALREADY BOOKED" color="error" style={{ marginLeft: "20px" }} />
                           )}
@@ -929,29 +1080,44 @@ const BookingStepper: React.FC = ({
         {activeStep === 2 && (
           <Box sx={{ mt: 4 }}>
             <Grid item xs={12}>
-              <SpecialRequest
-                disabledByDesign={false}
-                onChange={onChange}
-                passenger={passenger}
-              />
+              <SpecialRequest disabledByDesign={false} onChange={onChange} passenger={passenger} />
             </Grid>
           </Box>
         )}
 
         {activeStep === 3 && (
-          <Box>
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              Carbon Offset
-            </Typography>
-            <Grid item xs={12} md={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox size="small" checked={carbonOffset} onChange={(e) => setCarbonOffset(!carbonOffset)} />
-                }
-                label="Carbon Offset"
-              />
-            </Grid>
-          </Box>
+          <>
+            <Box>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Carbon Offset
+              </Typography>
+              <Grid item xs={12} md={3}>
+                <FormControlLabel
+                  control={
+                    <Checkbox size="small" checked={carbonOffset} onChange={(e) => setCarbonOffset(!carbonOffset)} />
+                  }
+                  label="Carbon Offset"
+                />
+              </Grid>
+            </Box>
+            <Box>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                You Choose Your Cabin
+              </Typography>
+              <Grid item xs={12} md={3}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={youChooseYourCabin}
+                      onChange={(e) => setYouChooseYourCabin(!youChooseYourCabin)}
+                    />
+                  }
+                  label="You Choose Your Cabin"
+                />
+              </Grid>
+            </Box>
+          </>
         )}
 
         {activeStep === 4 && (
@@ -973,44 +1139,69 @@ const BookingStepper: React.FC = ({
             </Tabs>
 
             {/* Tab Panel for Cabin Details */}
-            <TabPanel value={tabValue} index={0}>
-              <TableContainer component={Paper} elevation={3}>
-                <Table size="small">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Type:</strong>
-                      </TableCell>
-                      <TableCell>{cabinType.cabin_type}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Category:</strong>
-                      </TableCell>
-                      <TableCell>{cabinCategory.title}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Cabin Number:</strong>
-                      </TableCell>
-                      <TableCell>{cabinNumber}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Capacity:</strong>
-                      </TableCell>
-                      <TableCell>{cabinCategory.spec.capacity}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Price Per Person:</strong>
-                      </TableCell>
-                      <TableCell>{cabinCategory.price}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </TabPanel>
+            {loadingFinalPrice && (
+              <CircularProgress
+                color="inherit"
+                size={40}
+                style={{ position: "absolute", inset: "50%", marginLeft: "-20px" }}
+              />
+            )}
+            {!loadingFinalPrice && (
+              <TabPanel value={tabValue} index={0}>
+                <TableContainer component={Paper} elevation={3}>
+                  <Table size="small">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Type:</strong>
+                        </TableCell>
+                        <TableCell>{cabinType.cabin_type}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Category:</strong>
+                        </TableCell>
+                        <TableCell>{cabinCategory.title}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Cabin Number:</strong>
+                        </TableCell>
+                        <TableCell>{cabinNumber}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Capacity:</strong>
+                        </TableCell>
+                        <TableCell>{cabinCategory.spec.capacity}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Price Per Person Before Calculations:</strong>
+                        </TableCell>
+                        <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
+                      </TableRow>
+                      {priceCalc?.totalPassenger && (
+                        <TableRow>
+                          <TableCell>
+                            <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
+                          </TableCell>
+                          <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
+                        </TableRow>
+                      )}
+                      {priceCalc?.total && (
+                        <TableRow>
+                          <TableCell>
+                            <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                          </TableCell>
+                          <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </TabPanel>
+            )}
 
             {/* Tab Panel for Lead Passenger */}
             <TabPanel value={tabValue} index={1}>
