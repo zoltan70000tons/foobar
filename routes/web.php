@@ -300,7 +300,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
   Route::post('/sync-survivors', [PotentialSurvivorMatchesController::class, 'syncSurvivors'])
     ->name('matches.run-manual-sync');
 
-    Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])->name('show.cabin-matrix');
+  Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])
+    ->middleware('pricing.source:backend')
+    ->name('show.cabin-matrix');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');

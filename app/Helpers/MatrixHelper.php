@@ -20,7 +20,8 @@ class MatrixHelper
         return $decks->implode(',');
     }
 
-    public static function getUniqueCategories($categories, $parentCategoryName, $ticketType, $reservationsCabinNumbers)
+    public static function getUniqueCategories($categories, $parentCategoryName, $ticketType,
+                                               $reservationsCabinNumbers, $tempReservations, $needToListInventory)
     {
         // Filter categories by parent category name and ticket type
         $filteredCategories = $categories
@@ -31,14 +32,9 @@ class MatrixHelper
         $groupedByCode = $filteredCategories->groupBy(fn($category) => $category->spec->category_code);
 
         // Map each group to a single entry, merging decks across all categories in the group
-        $result = $groupedByCode->map(function ($group) use ($categories, $ticketType, $reservationsCabinNumbers) {
+        $result = $groupedByCode->map(function ($group) use ($categories, $ticketType, $reservationsCabinNumbers,
+            $tempReservations, $needToListInventory) {
             $firstCategory = $group->first();
-
-            // $allCabins = $group->flatMap(fn($category) => $category->cabins);
-
-            //$decks = self::getUniqueDecks($allCabins);
-
-            $tempReservations = TemporaryReservation::all();
 
             return [
                 'name' => $firstCategory->spec->category_name,
@@ -49,7 +45,7 @@ class MatrixHelper
                 'full_title' => $firstCategory->getTitleAttribute(),
                 'description' => $firstCategory->description,
                 'price_and_availability' => self::getPriceDetails($categories, $firstCategory->category_code, $ticketType,
-                    $reservationsCabinNumbers, $tempReservations),
+                    $reservationsCabinNumbers, $tempReservations, $needToListInventory),
             ];
         });
 
@@ -62,7 +58,7 @@ class MatrixHelper
      *
      * @return array
      */
-    public static function getPriceDetails($categories, $code, $ticketType, $reservationsCabinNumbers, $tempReservations)
+    public static function getPriceDetails($categories, $code, $ticketType, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
     {
         $filteredCategories = $categories
             ->where('category_code', $code)
@@ -74,14 +70,14 @@ class MatrixHelper
             ->mapWithKeys(
                 fn($capacity) => [
                     "price_capacity_$capacity" => self::getSinglePrice($filteredCategories, $capacity, $ticketType,
-                        $reservationsCabinNumbers, $tempReservations),
+                        $reservationsCabinNumbers, $tempReservations, $needToListInventory),
                 ]
             )
             ->toArray();
     }
 
     // Single price for a specific capacity
-    public static function getSinglePrice($filteredCategories, $capacity, $ticketType, $reservationsCabinNumbers, $tempReservations)
+    public static function getSinglePrice($filteredCategories, $capacity, $ticketType, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
     {
         // Pre-group temp reservations by cabin_id
         $tempByCabin = $tempReservations->groupBy('cabin_id');
@@ -120,49 +116,48 @@ class MatrixHelper
 
         $category_full_title = $cabinCategory->getTitleAttribute() . ' ' . $cabinCategory->capacityDescription;
 
-        $inv = [
-            StatusCabin::AVAILABLE->value => 0,
-            StatusCabin::RESERVED->value => 0,
-            StatusCabin::BOOKED->value => 0,
-            StatusCabin::CLOSED->value => 0,
-            StatusCabin::PARTIALLY_BOOKED->value => 0,
-            "IP" => 0,
-        ];
+        $inv = null;
 
-        foreach ($cabinCategory->cabins as $singleCabin) {
-            $tempForCabin = $tempByCabin[$singleCabin->id] ?? collect();
-            $tempCount = $tempForCabin->sum('inventory'); // seats in progress
+        if ($needToListInventory) {
+            $inv = [
+                StatusCabin::AVAILABLE->value => 0,
+                StatusCabin::RESERVED->value => 0,
+                StatusCabin::BOOKED->value => 0,
+                StatusCabin::CLOSED->value => 0,
+                StatusCabin::PARTIALLY_BOOKED->value => 0,
+                "IP" => 0,
+            ];
 
-            $capacity = $singleCabin->category->spec->capacity;
+            foreach ($cabinCategory->cabins as $singleCabin) {
+                $tempForCabin = $tempByCabin[$singleCabin->id] ?? collect();
+                $tempCount = $tempForCabin->sum('inventory'); // seats in progress
 
-            if ($singleCabin->cabin_type_id == 1) {
+                $capacity = $singleCabin->category->spec->capacity;
+
+                if ($singleCabin->cabin_type_id == 1) {
+                    if ($tempCount > 0) {
+                        $inv["IP"] += 1;
+                    } else {
+                        $inv[$singleCabin->status->value] += 1;
+                    }
+                    continue;
+                }
+
+                // SINGLE-TICKET CABINS
                 if ($tempCount > 0) {
-                    $inv["IP"] += 1;
+                    // This cabin has temp reservations
+                    $inv["IP"] += $tempCount;
+                    if ($capacity > $tempCount) {
+                        $inv[$singleCabin->status->value] += $capacity - $tempCount;
+                    }
                 } else {
-                    $inv[$singleCabin->status->value] += 1;
+                    // No temp reservations → use actual DB status
+                    $inv[$singleCabin->status->value] += $capacity;
                 }
-                continue;
-            }
-
-            // SINGLE-TICKET CABINS
-            if ($tempCount > 0) {
-                // This cabin has temp reservations
-                $inv["IP"] += 1;
-
-                if ($tempCount < $capacity) {
-                    // Some seats temporarily reserved → internally partially booked
-                    $inv[StatusCabin::PARTIALLY_BOOKED->value] += 1;
-                } else {
-                    // All seats temporarily reserved → fully unavailable
-                    $inv[StatusCabin::BOOKED->value] += 1;
-                }
-            } else {
-                // No temp reservations → use actual DB status
-                $inv[$singleCabin->status->value] += 1;
             }
         }
 
-        return [
+        $data = [
             'price' => $cabinCategory->price,
             'capacity' => $capacity,
             'decks' => self::getUniqueDecks($cabinCategory->cabins),
@@ -172,8 +167,13 @@ class MatrixHelper
             'images' => $cabinCategory->images,
             'iframe' => $cabinCategory->iframe,
             'description' => $cabinCategory->description,
-            'inventory' => $inv,
         ];
+
+        if ($needToListInventory) {
+            $data['inventory'] = $inv;
+        }
+
+        return $data;
     }
 
     /**

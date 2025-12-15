@@ -30,15 +30,26 @@ class PricingMatrixController extends Controller
    */
   public function show($eventId, $cabinTypeId)
   {
+      $source = request()->get('pricing_matrix_call_source');
+      $needToListInventory = $source === 'backend';
+
     if (!$eventId || !$cabinTypeId) {
       return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
     }
 
     // \DB::enableQueryLog();
     // Fetch categories with cabins and specs based on ticket type
-    $categories = CabinCategory::where('event_id', $eventId)
-      ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
-      ->get();
+      $categories = CabinCategory::where('event_id', $eventId)
+          ->with([
+              'spec',
+              'cabins' => fn ($q) =>
+              $q->where('cabin_type_id', $cabinTypeId)
+                  ->with([
+                      'cabinSpec',
+                      'category.spec',
+                  ]),
+          ])
+          ->get();
 
     if (!$categories->count()) {
       return response()->json(['message' => 'No categories found'], 404);
@@ -56,9 +67,16 @@ class PricingMatrixController extends Controller
       ->map(fn($group) => $group->sortBy(fn($category) => $category->displayOrder)->first())
       ->sortBy(fn($category) => $category->displayOrder);
 
+    if ($needToListInventory) {
+        $tempReservations = TemporaryReservation::all();
+    } else {
+        $tempReservations = collect();
+    }
+
     // Format categories for response
     $formattedCategories = $groupedCategories->map(
-      fn($category) => $this->formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
+      fn($category) => $this->formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers,
+          $tempReservations, $needToListInventory)
     );
 
     return response()->json($formattedCategories->values());
@@ -67,7 +85,8 @@ class PricingMatrixController extends Controller
   /**
    * Format a category for response.
    */
-  protected function formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
+  protected function formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers,
+                                    $tempReservations, $needToListInventory = false)
   {
     $categorySpec = $category->spec;
 
@@ -84,7 +103,8 @@ class PricingMatrixController extends Controller
         'name' => $categorySpec->category_type,
         'display_order' => $categorySpec->display_order,
         'max_capacity' => $maxCapacity,
-        'categories' => $this->getCategories($categorySpec->category_type, $categories, $cabinTypeId, $reservationsCabinNumbers),
+        'categories' => $this->getCategories($categorySpec->category_type, $categories, $cabinTypeId,
+            $reservationsCabinNumbers, $tempReservations, $needToListInventory),
       ],
     ];
   }
@@ -92,27 +112,29 @@ class PricingMatrixController extends Controller
   /**
    * Get categories based on category type.
    */
-  public function getCategories($categoryType, $categories, $cabinTypeId, $reservationsCabinNumbers)
+  public function getCategories($categoryType, $categories, $cabinTypeId, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
   {
     // Filter, group, and sort categories by category type
     return $categories
       ->where('category_type', $categoryType)
       ->sortBy('display_order')
       ->unique('category_name')
-      ->map(fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers))
+      ->map(fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId,
+          $reservationsCabinNumbers, $tempReservations, $needToListInventory))
       ->values(); // Reset collection keys
   }
 
   /**
    * Format a filtered category for response.
    */
-  protected function formatFilteredCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers)
+  protected function formatFilteredCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
   {
     return [
       'name' => $category->category_name,
       'cabin_category_id' => $category->id,
       'display_order' => $category->display_order,
-      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId, $reservationsCabinNumbers),
+      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId,
+          $reservationsCabinNumbers, $tempReservations, $needToListInventory),
     ];
   }
 }

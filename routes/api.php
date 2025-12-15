@@ -56,7 +56,8 @@ Route::get('/events', [EventController::class, 'show']);
 Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
 
 // ---- PRICING MATRIX ----
-Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show']);
+Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])
+  ->middleware('pricing.source:api');
 
 // --- ADD PAX validate page with form
 Route::get('/add-pax', [AddPaxController::class, 'validate'])
