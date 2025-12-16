@@ -76,6 +76,7 @@ export type CabinPriceType = {
   cabin_code: string;
   cabin_category_id: number;
   capacity: number;
+  inventory: InventoryStatus;
   decks: string;
   iframe?: string | null;
   images?: string[] | null;
