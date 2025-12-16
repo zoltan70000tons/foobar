@@ -5,6 +5,12 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/791) - 2025-12-10
+
+### Changed
+
+- Removed NON-REV, added CREW, PARTIAL REVENUE, SPECIAL DISCOUNT and VIP in TagSeeder
+
 ## [1.7.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/796) - 2025-12-15
 
 ### Fixed
