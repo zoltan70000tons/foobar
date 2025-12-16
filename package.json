@@ -1,7 +1,7 @@
 {
   "private": true,
   "type": "module",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "scripts": {
     "serve": "php artisan serve",
     "queue": "php artisan queue:work redis --queue=emails,reverb,default",

@@ -39,12 +39,12 @@ class PassengerObserver
             return;
         }
 
-        // Skip cost/balance-only updates
-        $costOnly = collect(array_keys($changes))
-            ->diff(['passenger_allocated_cost', 'passenger_balance'])
+        // Skip cost/balance/timestamp-only updates
+        $nonTrackedFieldsOnly = collect(array_keys($changes))
+            ->diff(['passenger_allocated_cost', 'passenger_balance', 'updated_at'])
             ->isEmpty();
 
-        if ($costOnly) {
+        if ($nonTrackedFieldsOnly) {
             return;
         }
 
@@ -138,21 +138,6 @@ class PassengerObserver
         );
     }
 
-    private function logSurvivorSynced(Passenger $passenger, array $original): void
-    {
-        GlobalLogger::log(
-            LogActionBooking::SURVIVOR_NUMBER_SYNCED,
-            'booking',
-            $passenger->booking_id,
-            sprintf(
-                '%s %s was assigned Survivor Number %s',
-                $passenger->first_name,
-                $passenger->last_name,
-                $passenger->survivor_number
-            ),
-            ['before' => $original, 'after' => $passenger->getChanges()]
-        );
-    }
 
     private function logUpdated(Passenger $passenger, array $original, array $changes): void
     {

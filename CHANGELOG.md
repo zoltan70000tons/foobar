@@ -5,6 +5,19 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.6] - 2025-12-16
+
+### Changed
+
+- Standardized payment log entries to include currency amounts and passenger order
+- Payment transfer notes use passenger order instead of passenger ID
+- Improved passenger observer to skip tracking timestamp-only updates
+
+### Removed
+
+- Unused survivor number sync logging method from PassengerObserver
+- Duplicated logging in NotificationController for system transactions
+
 ## [1.7.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/791) - 2025-12-10
 
 ### Changed
