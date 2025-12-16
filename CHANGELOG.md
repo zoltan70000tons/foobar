@@ -5,7 +5,20 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.6] - 2025-12-16
+## [1.7.7](https://github.com/70000TONS-IT/booking-engine-admin/pull/801) - 2025-12-16
+
+### Changed
+
+- Made Survivor Number field read-only in passenger edit form to prevent manual modifications
+- Improved error messages to include "Survivor Number" when email or survivor number is already used
+- Extracted sync attempts reset logic into reusable helper method
+
+### Fixed
+
+- Reset survivor sync attempts when passenger is added or identity (name/DOB) is modified
+- Added `survivor_sync_attempts` to non-tracked fields list to prevent unnecessary update logs
+
+## [1.7.6](https://github.com/70000TONS-IT/booking-engine-admin/pull/800) - 2025-12-16
 
 ### Changed
 
