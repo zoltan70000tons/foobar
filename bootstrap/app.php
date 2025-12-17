@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
       'custom.auth.redirect' => \App\Http\Middleware\RedirectIfUnauthenticatedToOAuthLogin::class,
       //'check_booking_session' => \App\Http\Middleware\CheckBookingSession::class,
       'electron_auth' => \App\Http\Middleware\ElectronAuth::class,
+      'pricing.source' => \App\Http\Middleware\PricingMatrixCallSource::class,
     ]);
 
     $middleware->web(
