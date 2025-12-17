@@ -150,7 +150,7 @@ class MatrixHelper
                 } else {
                     // No temp reservations → use actual DB status
                     $inv[$singleCabin->status->value] += $seatsRemaining;
-                }               
+                }
             }
         }
 
