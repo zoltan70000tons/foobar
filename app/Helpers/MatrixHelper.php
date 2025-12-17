@@ -3,8 +3,7 @@
 namespace App\Helpers;
 
 use App\Enums\StatusCabin;
-use App\Models\CabinCategory;
-use App\Models\TemporaryReservation;
+use App\Enums\CabinType;
 
 class MatrixHelper
 {
@@ -80,7 +79,7 @@ class MatrixHelper
     public static function getSinglePrice($filteredCategories, $capacity, $ticketType, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
     {
         // Pre-group temp reservations by cabin_id
-        $tempByCabin = $tempReservations->groupBy('cabin_id');
+        $tempByCabin = $tempReservations->groupBy('cabin_number');
 
         // Filter cabins by the specific capacity
         $filteredCabins = $filteredCategories->where('capacity', $capacity);
@@ -116,8 +115,8 @@ class MatrixHelper
 
         $category_full_title = $cabinCategory->getTitleAttribute() . ' ' . $cabinCategory->capacityDescription;
 
+        // Calculate Cabin Category Availability | Only for Admin Inventory Display
         $inv = null;
-
         if ($needToListInventory) {
             $inv = [
                 StatusCabin::AVAILABLE->value => 0,
@@ -129,12 +128,9 @@ class MatrixHelper
             ];
 
             foreach ($cabinCategory->cabins as $singleCabin) {
-                $tempForCabin = $tempByCabin[$singleCabin->id] ?? collect();
+                $tempForCabin = $tempByCabin[$singleCabin->cabin_number] ?? collect();
                 $tempCount = $tempForCabin->sum('inventory'); // seats in progress
-
-                $capacity = $singleCabin->category->spec->capacity;
-
-                if ($singleCabin->cabin_type_id == 1) {
+                if ($singleCabin->cabin_type_id == CabinType::PRIVATE_CABIN->value) {
                     if ($tempCount > 0) {
                         $inv["IP"] += 1;
                     } else {
@@ -144,15 +140,16 @@ class MatrixHelper
                 }
 
                 // SINGLE-TICKET CABINS
+                $seatsRemaining = $singleCabin->inventory; // current number of seats/tickets remaining in the single ticket cabin
                 if ($tempCount > 0) {
                     // This cabin has temp reservations
                     $inv["IP"] += $tempCount;
-                    if ($capacity > $tempCount) {
-                        $inv[$singleCabin->status->value] += $capacity - $tempCount;
+                    if ($seatsRemaining >= $tempCount) {
+                        $inv[$singleCabin->status->value] += $seatsRemaining - $tempCount;
                     }
                 } else {
                     // No temp reservations → use actual DB status
-                    $inv[$singleCabin->status->value] += $capacity;
+                    $inv[$singleCabin->status->value] += $seatsRemaining;
                 }
             }
         }

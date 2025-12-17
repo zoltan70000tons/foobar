@@ -39,17 +39,9 @@ class PricingMatrixController extends Controller
 
     // \DB::enableQueryLog();
     // Fetch categories with cabins and specs based on ticket type
-      $categories = CabinCategory::where('event_id', $eventId)
-          ->with([
-              'spec',
-              'cabins' => fn ($q) =>
-              $q->where('cabin_type_id', $cabinTypeId)
-                  ->with([
-                      'cabinSpec',
-                      'category.spec',
-                  ]),
-          ])
-          ->get();
+    $categories = CabinCategory::where('event_id', $eventId)
+      ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
+      ->get();
 
     if (!$categories->count()) {
       return response()->json(['message' => 'No categories found'], 404);

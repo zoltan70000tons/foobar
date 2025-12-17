@@ -21,7 +21,7 @@ export default function SingleCell({
   isMobile = false,
   singlePrice,
 }: Props) {
-  const { price, is_available: available, inventory } = singlePrice;
+  const { price, inventory } = singlePrice;
 
   const numericPrice = Number(price);
   const isValidPrice = price && price !== "-" && numericPrice > 0;
@@ -44,7 +44,7 @@ export default function SingleCell({
     );
   }
 
-  if (!available) {
+  if ((inventory.AVAILABLE + inventory.PARTIALLY_BOOKED <= 0) && inventory.RESERVED <= 0) {
     return (
       <Box sx={baseStyles}>
         <Typography
