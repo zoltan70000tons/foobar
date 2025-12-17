@@ -10,9 +10,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Cabin inventory matrix tab in the Cabin menu to check cabin inventory
 
+## [1.7.7](https://github.com/70000TONS-IT/booking-engine-admin/pull/801) - 2025-12-16
+
+### Changed
+
+- Made Survivor Number field read-only in passenger edit form to prevent manual modifications
+- Improved error messages to include "Survivor Number" when email or survivor number is already used
+- Extracted sync attempts reset logic into reusable helper method
+
+### Fixed
+
+- Reset survivor sync attempts when passenger is added or identity (name/DOB) is modified
+- Added `survivor_sync_attempts` to non-tracked fields list to prevent unnecessary update logs
+
+## [1.7.6](https://github.com/70000TONS-IT/booking-engine-admin/pull/800) - 2025-12-16
+
+### Changed
+
+- Standardized payment log entries to include currency amounts and passenger order
+- Payment transfer notes use passenger order instead of passenger ID
+- Improved passenger observer to skip tracking timestamp-only updates
+
+### Removed
+
+- Unused survivor number sync logging method from PassengerObserver
+- Duplicated logging in NotificationController for system transactions
+
+## [1.7.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/791) - 2025-12-10
+
+### Changed
+
+- Removed NON-REV, added CREW, PARTIAL REVENUE, SPECIAL DISCOUNT and VIP in TagSeeder
+
+## [1.7.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/796) - 2025-12-15
+
+### Fixed
+
+- The form submits successfully without crashing.
+- The split amounts across passengers are calculated correctly and evenly.
+- The sum of all split amounts must not exceed the booking’s remaining balance.
+- All amounts are rounded to two decimal places, and displayed in the correct localized currency format
+
+## [1.7.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/797) - 2025-12-15
+
+### Improved
+
+- Manual booking customer search now finds customer by name case-insensitive
+
 ## [1.7.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/795) - 2025-12-14
 
 ### Improved
+
 - Enhance Payment component with collapsible sections for discounts, taxes, and fees.
 - Highlight **PAID** in green when a passenger is fully paid.
 - Fix conditional rendering for the next payment due date to avoid incorrect evaluations.

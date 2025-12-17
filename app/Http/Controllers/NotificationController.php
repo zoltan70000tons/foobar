@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\GlobalLog\LogActionBooking;
-use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use App\Models\Passenger;
 use App\Models\Booking;
@@ -135,14 +133,6 @@ class NotificationController extends Controller
         // Sync passenger balance
         $this->paymentInfoService->syncBalance($paxId, $bookingId, $eventId);
       }
-
-      // Booking log text that matches your plan and amount
-      GlobalLogger::log(
-        LogActionBooking::SYSTEM_TRANSACTION_RECEIVED,
-        'booking',
-        $booking->id,
-        "System {$validated['type']} of \${$validated['amount']} was added to booking"
-      );
 
       DB::commit();
 
