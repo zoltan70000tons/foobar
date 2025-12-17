@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Requests\StoreBookingRequest;
 use App\Repositories\BookingRepository;
+use App\Repositories\CustomerBookingRepository;
+use App\Services\CustomerBookingService;
 use App\Models\{Booking,
     Cabin,
     CabinCategory,
@@ -18,8 +21,11 @@ use App\Models\{Booking,
     TemporaryReservation,
     User,
     UserDetail};
+use App\Repositories\PassengerRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
+use Mockery;
 use Tests\Unit\utils\CabinTypeSeeder;
 use Tests\TestCase;
 use App\Http\Controllers\Api\Customer\BookingController;

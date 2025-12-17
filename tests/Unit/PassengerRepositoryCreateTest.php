@@ -14,6 +14,7 @@ use App\Models\{
 use App\Repositories\PassengerRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\Unit\utils\CabinTypeSeeder;
 use Tests\TestCase;
 
