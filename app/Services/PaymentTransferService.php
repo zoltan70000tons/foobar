@@ -31,7 +31,7 @@ class PaymentTransferService
         $fromPayment->transaction_date = Carbon::now();
         $fromPayment->amount = $payload["amount"] * -1;
         $fromPayment->source = "MANUAL";
-        $fromPayment->notes = "Payment transferred to passenger " . $payload["transfer_to_passenger"] . " by " . $user->username;
+        $fromPayment->notes = "Payment transferred to passenger " . $payload["passenger_order"] . " by " . $user->username;
 
         $toPayment = new Payment();
         $toPayment->passenger_id = $payload["transfer_to_passenger"];
@@ -40,7 +40,7 @@ class PaymentTransferService
         $toPayment->transaction_date = Carbon::now();
         $toPayment->amount = $payload["amount"];
         $toPayment->source = "MANUAL";
-        $toPayment->notes = "Payment transferred from passenger " . $payload["passenger_id"] . " by " . $user->username;
+        $toPayment->notes = "Payment transferred from passenger " . $payload["passenger_order"] . " by " . $user->username;
 
         $fromPayment->save();
         $toPayment->save();

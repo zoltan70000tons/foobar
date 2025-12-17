@@ -34,7 +34,7 @@ return [
       'Du kannst dir selbst keine Einladung per eMailadresse schicken. Wenn du dieselbe eMailadresse für einen anderen Passagier verwenden möchtest, fülle das Formular bitte manuell aus.',
     'single_occupancy' => 'Du kannst keine weiteren Passagiere zu einer Einzelbelegung hinzufügen.',
     'email_already_used' =>
-      'Diese eMailadresse wird bereits in einer anderen Buchung für dieses Event verwendet. Wenn du dieselbe eMailadresse erneut nutzen möchtest, fülle bitte das Formular manuell aus.',
+      'Diese eMailadresse oder Survivornummer wird bereits in einer anderen Buchung für dieses Event verwendet. Wenn du dieselbe eMailadresse erneut nutzen möchtest, fülle bitte das Formular manuell aus.',
     'passenger_order_taken' =>
       'Für diesen Platz wurde bereits ein Passagier hinzugefügt. Bitte lade die Seite neu oder wähle einen anderen Platz.',
     'email_already_invited' => 'Ein Passagier mit dieser eMailadresse wurde bereits zu dieser Buchung eingeladen.',

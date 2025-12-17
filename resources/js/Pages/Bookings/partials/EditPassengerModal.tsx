@@ -141,8 +141,6 @@ const EditPassengerModal = ({
         onChange("state", selectedUser.state || "");
         onChange("postal_code", selectedUser.postal_code || "");
         onChange("country", selectedUser.country || "");
-        onChange("emergency_c_name", selectedUser.emergency_c_name || "");
-        onChange("emergency_c_phone", selectedUser.emergency_c_phone || "");
         onChange("passenger_allocated_cost", selectedUser.passenger_allocated_cost || "");
         onChange("passenger_balance", selectedUser.passenger_balance || "");
         onChange("survivor_number", selectedUser.survivor_number || "");
@@ -431,14 +429,16 @@ const EditPassengerModal = ({
                             <Grid item xs={12} md={3}>
                                 <TextField
                                     label="Survivor Number"
-                                    variant="outlined"
+                                    variant="filled"
                                     fullWidth
-                                    //size="small"
                                     value={passenger?.survivor_number || ""}
                                     onChange={(e) => onChange("survivor_number", e.target.value)}
                                     disabled={isDisabled}
                                     error={!!validation?.survivor_number}
                                     helperText={validation?.survivor_number?.[0]}
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
                                 />
                             </Grid>
                         </Grid>
@@ -611,7 +611,6 @@ const EditPassengerModal = ({
                                     // size="small"
                                     value={passenger?.emergency_c_name || ""}
                                     onChange={(e) => onChange("emergency_c_name", e.target.value)}
-                                    disabled={isDisabled}
                                     error={!!validation?.emergency_c_name}
                                     helperText={validation?.emergency_c_name?.[0]}
                                     required
@@ -627,7 +626,6 @@ const EditPassengerModal = ({
                                     forceDialCode={true}
                                     name={"emergency_c_phone"}
                                     onChange={(e) => onChange("emergency_c_phone", e)}
-                                    disabled={isDisabled}
                                     error={!!validation?.emergency_c_phone}
                                     helperText={validation?.emergency_c_phone?.[0]}
                                     required

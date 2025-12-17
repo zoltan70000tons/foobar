@@ -39,12 +39,12 @@ class PassengerObserver
             return;
         }
 
-        // Skip cost/balance-only updates
-        $costOnly = collect(array_keys($changes))
-            ->diff(['passenger_allocated_cost', 'passenger_balance'])
+        // Skip cost/balance/timestamp-only updates
+        $nonTrackedFieldsOnly = collect(array_keys($changes))
+            ->diff(['passenger_allocated_cost', 'passenger_balance', 'updated_at', 'survivor_sync_attempts'])
             ->isEmpty();
 
-        if ($costOnly) {
+        if ($nonTrackedFieldsOnly) {
             return;
         }
 
@@ -58,6 +58,7 @@ class PassengerObserver
             $passenger->dob
         ) {
             $this->logAdded($passenger, $original);
+            $this->resetSurvivorSyncAttempts($passenger);
             return;
         }
 
@@ -66,6 +67,7 @@ class PassengerObserver
             $this->fieldsChanged($changes, ['first_name', 'last_name', 'dob'])
         ) {
             $this->logChanged($passenger, $original);
+            $this->resetSurvivorSyncAttempts($passenger);
             return;
         }
 
@@ -80,20 +82,7 @@ class PassengerObserver
 
         // Generic Passenger Update
         $this->logUpdated($passenger, $original, $changes);
-
-        // Check if passenger has a survivor number and previous sync attempts
-        if (
-            is_null($passenger->getOriginal('survivor_number')) &&
-            $passenger->getOriginal('survivor_sync_attempts') !== 0 &&
-            (
-                $passenger->first_name !== $passenger->getOriginal('first_name') ||
-                $passenger->last_name !== $passenger->getOriginal('last_name') ||
-                $passenger->dob !== $passenger->getOriginal('dob')
-            )
-        ) {
-            // Reset sync attempts if name or DOB changed
-            $passenger->updateQuietly(['survivor_sync_attempts' => 0]);
-        }
+        $this->resetSurvivorSyncAttempts($passenger);
     }
 
     private function emptySeatChanged(array $original, Passenger $passenger): bool
@@ -138,21 +127,6 @@ class PassengerObserver
         );
     }
 
-    private function logSurvivorSynced(Passenger $passenger, array $original): void
-    {
-        GlobalLogger::log(
-            LogActionBooking::SURVIVOR_NUMBER_SYNCED,
-            'booking',
-            $passenger->booking_id,
-            sprintf(
-                '%s %s was assigned Survivor Number %s',
-                $passenger->first_name,
-                $passenger->last_name,
-                $passenger->survivor_number
-            ),
-            ['before' => $original, 'after' => $passenger->getChanges()]
-        );
-    }
 
     private function logUpdated(Passenger $passenger, array $original, array $changes): void
     {
@@ -165,5 +139,21 @@ class PassengerObserver
             "Passenger updated: {$changedFields}",
             ['before' => $original, 'after' => $passenger->getChanges()]
         );
+    }
+
+    private function resetSurvivorSyncAttempts(Passenger $passenger): void
+    {
+        // Reset sync attempts if name or DOB changed and passenger has no survivor number
+        if (
+            is_null($passenger->getOriginal('survivor_number')) &&
+            $passenger->getOriginal('survivor_sync_attempts') !== 0 &&
+            (
+                $passenger->first_name !== $passenger->getOriginal('first_name') ||
+                $passenger->last_name !== $passenger->getOriginal('last_name') ||
+                $passenger->dob !== $passenger->getOriginal('dob')
+            )
+        ) {
+            $passenger->updateQuietly(['survivor_sync_attempts' => 0]);
+        }
     }
 }
