@@ -187,7 +187,7 @@ const SplitPaymentModal: React.FC<SplitPaymentModalProps> = ({
 
     const sanitizedFormData = sanitizeFormData(formData);
 
-    if (sanitizedFormData === {}) {
+    if (Object.keys(sanitizedFormData).length === 0) {
       showSnackbar("Something went wrong.", "error");
       return;
     }

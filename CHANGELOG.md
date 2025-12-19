@@ -5,7 +5,24 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.1] - 2025-12-18
+## [1.8.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/803) - 2025-12-19
+
+### Added
+
+- Password visibility toggle and input field icons to authentication login form
+- Icons to action buttons in passenger edit modal with descriptive tooltips
+
+### Changed
+
+- Reorganized action buttons in edit passenger modal to top header with better layout and tooltips
+
+### Fixed
+
+- Incorrect JavaScript condition checks for empty objects in SplitPaymentModal and SplitPaymentModal2 (changed from `=== {}` to `Object.keys().length === 0`)
+- Guest Authentication error message now uses translated feedback key for passenger not found errors
+- Button URLs in navigation menu for "Check Booking" and "Make Payment" routes
+
+## [1.8.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/798) - 2025-12-18
 
 ### Added
 

@@ -149,7 +149,7 @@ const SplitPaymentModal2: React.FC<SplitPaymentModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData === {}) {
+    if (Object.keys(formData).length === 0) {
       showSnackbar("Something went wrong.", "error");
       return;
     }

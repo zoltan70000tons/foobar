@@ -145,7 +145,7 @@ class CheckBookingController extends Controller
     );
 
     if (!$matchedPassenger) {
-      return response()->json(['message' => 'Passenger not found'], 404);
+      return response()->json(['message' => __('feedback.passenger_not_found')], 404);
     }
 
     // Create a short-lived personal access token scoped to view booking (15 minutes)

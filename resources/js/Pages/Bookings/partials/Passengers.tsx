@@ -485,9 +485,9 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
   };
 
   return (
-    <Box>
+    <Box my={4}>
       <Typography variant="h5" gutterBottom>
-        Seats
+        Passengers
       </Typography>
       <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
