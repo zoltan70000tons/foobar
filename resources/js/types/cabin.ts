@@ -113,3 +113,11 @@ export interface MobileCabinRow {
   iframe?: string;
   decks_static: string;
 }
+
+export type CabinType = {
+  id: number;
+  cabin_type: 'Private Cabin' | 'Single Male' | 'Single Female';
+  cabin_type_description: string | null;
+  created_at: string;
+  updated_at: string | null;
+}

@@ -43,9 +43,17 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType, CabinTypeIds } from "@/enums/CabinType";
+import { CabinType as CabinTypeType} from "@/types/cabin";
 import { formatCurrency } from "@/Helpers/stringUtils";
 import { Customer } from "@/interfaces/Customer";
 import { BedConfigOption, bedConfigOptions } from "@/types/bed-config";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useBookingActions } from "@/Hooks/booking/useBookingActions";
+import { useAvailableCabins } from "@/Hooks/booking/useAvailableCabins";
+import { useBookingSteps } from "@/Hooks/booking/useBookingSteps";
+import { usePaymentPlans } from "@/Hooks/booking/usePaymentPlans";
+import CabinSelector from "@/Pages/Bookings/partials/CabinSelector";
+//import { toggleAddon } from "@/store/slices/bookingSlice";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -63,7 +71,7 @@ type PriceCalc = {
 };
 
 type BookingStepperProps = {
-  cabinTypes: Array<{ id: number; name: string }>;
+  cabinTypes: CabinTypeType[];
   cabinCategories: any[];
   close: () => void;
   setIsCreateCustomerVisible: (visible: boolean) => void;
@@ -79,6 +87,26 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   onBookingCreated,
   createdCustomer,
 }) => {
+  const dispatch = useAppDispatch();
+  const step = useAppSelector((s) => s.booking.step);
+
+  const { tabValue, handleTabChange } = useBookingSteps();
+  const {
+    setCabin,
+    setPassengerField,
+    toggleAddon,
+    resetBooking,
+  } = useBookingActions();
+
+  const { cabins, loading: cabinsLoading } = useAvailableCabins();
+  const { plans, loading: plansLoading } = usePaymentPlans(cabinCategory?.id);
+
+  const addons = useAppSelector((s) => s.booking.addons);
+  const passenger = useAppSelector((s) => s.booking.passenger);
+
+
+
+
   const [activeStep, setActiveStep] = useState(0);
   const initialPassenger = {
     id: "",
@@ -109,7 +137,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     passenger_allocated_cost: "",
     passenger_balance: "",
   };
-  const [passenger, setPassenger] = useState(initialPassenger);
+  //const [passenger, setPassenger] = useState(initialPassenger);
   const [cabinType, setCabinType] = useState(null);
   const [cabinCategory, setCabinCategory] = useState(null);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -127,8 +155,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   const [numberOfInstallments, setNumberOfInstallments] = useState(null);
   const [bedConfig, setBedConfig] = React.useState<BedConfigOption | null>(null);
   const [isNextDisabled, setIsNextDisabled] = useState(true);
-  const [carbonOffset, setCarbonOffset] = useState(false);
-  const [youChooseYourCabin, setYouChooseYourCabin] = useState(false);
+  //const [carbonOffset, setCarbonOffset] = useState(false);
+  //const [youChooseYourCabin, setYouChooseYourCabin] = useState(false);
   const [isSingleRoom, setIsSingleRoom] = useState(false);
   const [fetching, setIsFetching] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
@@ -682,45 +710,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
 
               <Grid item xs={12} md={3}>
                 <FormControl fullWidth>
-                  <Autocomplete
-                    fullWidth
-                    options={availableCabins}
-                    getOptionLabel={(option: { cabin_number: string; status: string }) => option.cabin_number}
-                    renderOption={(props, option: { cabin_number: string; status: string }) => {
-                      const { key, ...optionProps } = props;
-                      return (
-                        <Box component="li" {...optionProps} key={key}>
-                          {option.cabin_number}{" "}
-                          {option.status === "RESERVED" && (
-                            <Chip sx={{ ml: 1 }} label={"INTERNALLY AVAILABLE"} color="warning" size="small" />
-                          )}
-                          {option.status === "AVAILABLE" && (
-                            <Chip sx={{ ml: 1 }} label={"PUBLICLY AVAILABLE"} color="success" size="small" />
-                          )}
-                          {option.status === "PARTIALLY_BOOKED" && (
-                            <Chip sx={{ ml: 1 }} label={"PARTIALLY BOOKED"} color="info" size="small" />
-                          )}
-                        </Box>
-                      );
-                    }}
-                    value={
-                      availableCabins.find((cabin: { cabin_number: string }) => cabin.cabin_number === cabinNumber) ||
-                      null
-                    }
-                    onChange={(event, newValue: any) => {
-                      setIsSingleRoom(newValue?.cabin_type_id !== 1);
-                      setCabinNumber(newValue?.cabin_number || null);
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Available Cabins"
-                        disabled={!cabinType || !cabinCategory || !availableCabins?.length}
-                      />
-                    )}
-                    loading={fetching}
-                    loadingText="Loading cabins..."
-                  />
+                  <CabinSelector />
                 </FormControl>
               </Grid>
 
@@ -852,7 +842,9 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
                   variant="outlined"
                   fullWidth
                   value={passenger?.first_name || ""}
-                  onChange={(e) => onChange("first_name", e.target.value)}
+                  onChange={(e) =>
+                    setPassengerField("first_name", e.target.value)
+                  }
                   disabled
                 />
               </Grid>
@@ -1094,7 +1086,11 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
               <Grid item xs={12} md={3}>
                 <FormControlLabel
                   control={
-                    <Checkbox size="small" checked={carbonOffset} onChange={(e) => setCarbonOffset(!carbonOffset)} />
+                    <Checkbox
+                      size="small"
+                      checked={addons.carbonOffset}
+                      onChange={() => toggleAddon("carbonOffset")}
+                    />
                   }
                   label="Carbon Offset"
                 />
@@ -1109,8 +1105,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
                   control={
                     <Checkbox
                       size="small"
-                      checked={youChooseYourCabin}
-                      onChange={(e) => setYouChooseYourCabin(!youChooseYourCabin)}
+                      checked={addons.youChooseYourCabin}
+                      onChange={() => toggleAddon("youChooseYourCabin")}
                     />
                   }
                   label="You Choose Your Cabin"
