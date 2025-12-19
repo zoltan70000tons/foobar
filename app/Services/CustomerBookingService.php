@@ -29,36 +29,36 @@ class CustomerBookingService
   |  In this method we check the type of booking and status of the booking
   |
   */
-  public function getMyBookings($user)
-  {
-    $bookings = $this->customerBookingRepository->getAllBookings($user);
+  // public function getMyBookings($user)
+  // {
+  //   $bookings = $this->customerBookingRepository->getAllBookings($user);
 
-    // if booking have status new then do not return cabin id and number
-    $bookings->map(function ($booking) {
-      if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
-        $booking->cabin->makeHidden(['cabin_number']);
-        $booking->cabin->makeHidden(['internal_notes']);
-        $booking->cabin->cabinSpec->makeHidden(['cabin_number']);
-      }
+  //   // if booking have status new then do not return cabin id and number
+  //   $bookings->map(function ($booking) {
+  //     if ($booking->status === 'NEW' || $booking->status === 'CANCELLED') {
+  //       $booking->cabin->makeHidden(['cabin_number']);
+  //       $booking->cabin->makeHidden(['internal_notes']);
+  //       $booking->cabin->cabinSpec->makeHidden(['cabin_number']);
+  //     }
 
-      // if event of booking is past return only event information
-      if ($booking->event->status === EventStatus::CLOSED->value) {
-        $booking->makeHidden([
-          'bed_config',
-          'booking_code',
-          'booking_request_id',
-          'updated_at',
-          'created_at',
-          'customer_id',
-          'payment_plan',
-          'is_single_occupancy',
-          'cabin',
-        ]);
-      }
-    });
+  //     // if event of booking is past return only event information
+  //     if ($booking->event->status === EventStatus::CLOSED->value) {
+  //       $booking->makeHidden([
+  //         'bed_config',
+  //         'booking_code',
+  //         'booking_request_id',
+  //         'updated_at',
+  //         'created_at',
+  //         'customer_id',
+  //         'payment_plan',
+  //         'is_single_occupancy',
+  //         'cabin',
+  //       ]);
+  //     }
+  //   });
 
-    return $bookings;
-  }
+  //   return $bookings;
+  // }
 
   /*
   |--------------------------------------------------------------------------

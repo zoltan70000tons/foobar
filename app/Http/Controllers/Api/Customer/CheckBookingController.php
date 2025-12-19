@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BookingResource;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Passenger;
@@ -15,7 +16,7 @@ use App\Models\PassengerToken;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Laravel\Passport\Token as PassportToken;
-
+use App\Http\Resources\EventResource;
 
 class CheckBookingController extends Controller
 {
@@ -63,15 +64,35 @@ class CheckBookingController extends Controller
     // Append installment status for all passengers in booking
     $booking->passengers->each->append('installment_status');
 
-    // Find the authenticated passenger inside booking’s passengers
-    $guestPassengerInBooking = $booking->passengers->firstWhere('id', $guestPassenger->id);
+    // Set passenger masking info in request for Resource to use
+    $request->attributes->set('passenger_masking', [
+      'full_access_ids' => [$guestPassenger->id],
+      'limited_fields' => [
+        'id',
+        'first_name',
+        'dob',
+        'last_name',
+        'passenger_allocated_cost',
+        'passenger_balance',
+        'lead_passenger',
+        'passenger_order',
+      ],
+      // here we pass param to use data masker for first_name with 'full' strategy
+      'limited_sanitize' => [
+        'first_name' => 'full',
+        'last_name' => 'full',
+        'dob' => 'dob',
+      ],
+    ]);
 
     // return booking details, event details, and passenger details
-    return response()->json([
-      'booking'    => $booking,
-      'event'      => $booking->event,
-      'guest_pax'  => $guestPassengerInBooking,
-    ], 200);
+    return response()->json(
+      [
+        'booking' => new BookingResource($booking),
+        'event' => new EventResource($booking->event),
+      ],
+      200
+    );
   }
 
   /*
@@ -95,7 +116,6 @@ class CheckBookingController extends Controller
       'bookingCode' => 'required|string',
       'dateOfBirth' => 'required|string',
     ]);
-
 
     // Find booking by booking code
     $booking = Booking::where('booking_code', $request->bookingCode)->first();
@@ -150,13 +170,15 @@ class CheckBookingController extends Controller
       ]);
     } catch (\Throwable $e) {
       // Surface a JSON error instead of HTML exception page
-      return response()->json([
-        'message' => 'Unable to issue access token',
-        'error' => $e->getMessage(),
-      ], 500);
+      return response()->json(
+        [
+          'message' => 'Unable to issue access token',
+          'error' => $e->getMessage(),
+        ],
+        500
+      );
     }
   }
-
 
   /*
   |--------------------------------------------------------------------------
