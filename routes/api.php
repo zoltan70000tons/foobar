@@ -160,6 +160,11 @@ Route::middleware([
   ]);
 });
 
+Route::get('/events/{event}/action-rules/{actionCode}', [
+    \App\Http\Controllers\Api\EventActionRuleController::class,
+    'show',
+]);
+
 // --- PAYMENT LEGACY ENGINE TOKENS ---
 Route::post('/payment-middleware-initiate', [
   \App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class,
