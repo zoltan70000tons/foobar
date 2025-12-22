@@ -5,6 +5,22 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.3] – 2025-12-22
+
+### Added
+
+ - Booking Action Rules endpoint to retrieve rules by event and action code
+ - Support for action rules including blocking behavior and additional fees
+ - Fee-related fields in action rules response (fee_amount, fee_currency)
+ - Validation logic to determine when an action requires confirmation
+
+### Changed
+
+ - Standardized action rule response structure for frontend consumption
+ - Improved rule evaluation logic to ensure consistent behavior across actions
+
+
+
 ## [1.8.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/803) - 2025-12-19
 
 ### Added
