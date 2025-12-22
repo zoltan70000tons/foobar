@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App;
 use Carbon\Carbon;
 use App\Traits\MembershipAccess;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\EventResource;
 
 class EventController extends Controller
 {
@@ -37,7 +38,8 @@ class EventController extends Controller
 
     // return events if exist
     return response()->json([
-      'events' => $events,
+      // 'events' => $events,
+      'events' => new EventResource($events),
     ]);
   }
 
@@ -98,10 +100,11 @@ class EventController extends Controller
     return response()->json([
       'status' => 200,
       'event_status' => $event->status,
-      'event' => $event,
+      // 'event' => $event,
+      'event' => new EventResource($event),
       'purchase_access' => $access['status'],
       'access_message' => $access['message'] ?? null,
-      'is_blacklisted' => $isBlacklisted
+      'is_blacklisted' => $isBlacklisted,
     ]);
   }
 }

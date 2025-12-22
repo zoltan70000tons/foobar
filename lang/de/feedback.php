@@ -26,4 +26,7 @@ return [
   'not_matching_info' => 'Die angegebenen Informationen stimmen nicht mit unseren Unterlagen überein. Bitte überprüfe deine Angaben und versuche es erneut.',
   'account_already_activated' => 'Dieses Konto wurde bereits aktiviert. Bitte melde dich an oder setze dein Passwort zurück.',
   'account_activation_success' => 'Konto erfolgreich verknüpft. Überprüfe deine eMails für den Bestätigungslink.',
+  
+  // CHECK BOOKING LOGIN
+  'passenger_not_found' => 'Passagier nicht gefunden. Bitte überprüfe die Angaben und versuche es erneut.',
 ];

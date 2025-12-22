@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Str;
 use App\Services\UserInfoService;
+use App\Http\Resources\CustomerResource;
 
 class CustomerAuthController extends Controller
 {
@@ -48,14 +49,14 @@ class CustomerAuthController extends Controller
 
     $user->update(['last_login_at' => now()]);
 
-    // Get the first membership type of the customer
-    $membership = $customer->membershipTypes->first() ?? null;
+    // // Get the first membership type of the customer
+    // $membership = $customer->membershipTypes->first() ?? null;
 
-    // Get the Customer Details
-    $customerDetails = $customer->detail ?? null;
+    // // Get the Customer Details
+    // $customerDetails = $customer->detail ?? null;
 
-    // Get the first address of the customer
-    $address = $customer->customerAddress ?? null;
+    // // Get the first address of the customer
+    // $address = $customer->customerAddress ?? null;
 
     if ($shouldLogLogin) {
       GlobalLogger::log(LogActionUser::LOGIN, 'user', $customer->id, 'User logged in', [
@@ -67,16 +68,18 @@ class CustomerAuthController extends Controller
       ]);
     }
 
-    return $this->successResponse([
-      'name' => $customer->detail->first_name ?? null,
-      'membership_type' => $membership->name ?? null,
-      'membership_discount' => $membership->discount_value ?? null,
-      'email' => $customer->email,
-      'email_verified_at' => $customer->email_verified_at ?? null,
-      'survivor_number' => $customer->survivorNumber->survivor_number ?? null,
-      'details' => $customerDetails ? $customerDetails->makeHidden(['user_id, id'])->toArray() : null,
-      'address' => $address ? $address->makeHidden(['user_id, id'])->toArray() : null,
-    ]);
+    // return $this->successResponse([
+    //   'name' => $customer->detail->first_name ?? null,
+    //   'membership_type' => $membership->name ?? null,
+    //   'membership_discount' => $membership->discount_value ?? null,
+    //   'email' => $customer->email,
+    //   'email_verified_at' => $customer->email_verified_at ?? null,
+    //   'survivor_number' => $customer->survivorNumber->survivor_number ?? null,
+    //   'details' => $customerDetails ? $customerDetails->makeHidden(['user_id, id'])->toArray() : null,
+    //   'address' => $address ? $address->makeHidden(['user_id, id'])->toArray() : null,
+    // ]);
+
+    return $this->successResponse(new CustomerResource($user));
   }
 
   /**

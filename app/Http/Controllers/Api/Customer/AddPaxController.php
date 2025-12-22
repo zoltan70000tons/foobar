@@ -11,6 +11,7 @@ use App\Models\Event;
 use Illuminate\Support\Str;
 use App\Models\PassengerInvitation;
 use App\Http\Requests\StorePassengerRequest;
+use App\Http\Resources\BookingResource;
 use App\Repositories\CustomerBookingRepository;
 use Illuminate\Support\Facades\Auth;
 
@@ -74,7 +75,7 @@ class AddPaxController extends Controller
     // You can add any additional logic here, such as checking if the passenger can be added
     return response()->json([
       'message' => 'Valid URL',
-      'booking' => $booking,
+      'booking' => new BookingResource($booking),
     ]);
   }
 

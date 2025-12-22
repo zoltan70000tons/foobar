@@ -190,7 +190,7 @@ const MenuElements = ({ language }: { language: string }) => {
   const menu = [
     {
       id: 2,
-      name: tMenu?.home || "Home",
+      name: tMenu?.booking || "Booking",
       href: FRONTEND_URL + "/" + language,
       external: false,
     },
@@ -215,13 +215,13 @@ const MenuElements = ({ language }: { language: string }) => {
     {
       id: 8,
       name: tMenu?.check_booking || "Check Booking",
-      href: FRONTEND_URL + "/check-booking" + language,
+      href: FRONTEND_URL + "/" + language + "/check-booking",
       external: false,
     },
     {
       id: 9,
       name: tMenu?.make_payment || "Make Payment",
-      href: FRONTEND_URL + "/make-a-payment" + language,
+      href: FRONTEND_URL + "/" + language + "/make-a-payment",
       external: false,
     },
   ];
@@ -251,7 +251,7 @@ const MenuElements = ({ language }: { language: string }) => {
           color: "white",
           textDecoration: "none",
           textTransform: "uppercase",
-          fontWeight: 500,
+          fontWeight: 600,
           fontSize: { xs: "18px", md: "0.8rem" },
           transition: "color 0.3s",
           "&:hover": {

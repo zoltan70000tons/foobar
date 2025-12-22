@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Customer\PricingMatrixController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\BookingsController;
@@ -298,6 +299,10 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
     ->name('matches.resolve');
   Route::post('/sync-survivors', [PotentialSurvivorMatchesController::class, 'syncSurvivors'])
     ->name('matches.run-manual-sync');
+
+  Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])
+    ->middleware('pricing.source:backend')
+    ->name('show.cabin-matrix');
 });
 
 Route::get('/join-organization', [OrganizationController::class, 'join'])->name('organization.join');

@@ -26,4 +26,7 @@ return [
   'not_matching_info' => 'La información proporcionada no coincide con nuestros registros. Por favor verifica e inténtalo de nuevo.',
   'account_already_activated'=>'Esta cuenta ya ha sido activada. Por favor inicia sesión o restablece tu contraseña.',
   'account_activation_success'=>'Cuenta vinculada con éxito. Revisa tu correo electrónico para el enlace de verificación.',
+  
+  // CHECK BOOKING LOGIN
+  'passenger_not_found' => 'Pasajero no encontrado. Por favor verifica la información e inténtalo de nuevo.',
 ];

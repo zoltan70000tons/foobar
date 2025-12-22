@@ -5,6 +5,72 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/803) - 2025-12-19
+
+### Added
+
+- Password visibility toggle and input field icons to authentication login form
+- Icons to action buttons in passenger edit modal with descriptive tooltips
+
+### Changed
+
+- Reorganized action buttons in edit passenger modal to top header with better layout and tooltips
+
+### Fixed
+
+- Incorrect JavaScript condition checks for empty objects in SplitPaymentModal and SplitPaymentModal2 (changed from `=== {}` to `Object.keys().length === 0`)
+- Guest Authentication error message now uses translated feedback key for passenger not found errors
+- Button URLs in navigation menu for "Check Booking" and "Make Payment" routes
+
+## [1.8.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/798) - 2025-12-18
+
+### Added
+
+- Introduce resources for api responses.
+- Data masker for specific field types
+
+### Changed
+
+- Removed unnecesery fields from response, removed duplicates
+
+## [1.8.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/783) - 2025-12-15
+
+### Added
+
+- Cabin inventory matrix tab in the Cabin menu to check cabin inventory
+
+## [1.7.7](https://github.com/70000TONS-IT/booking-engine-admin/pull/801) - 2025-12-16
+
+### Changed
+
+- Made Survivor Number field read-only in passenger edit form to prevent manual modifications
+- Improved error messages to include "Survivor Number" when email or survivor number is already used
+- Extracted sync attempts reset logic into reusable helper method
+
+### Fixed
+
+- Reset survivor sync attempts when passenger is added or identity (name/DOB) is modified
+- Added `survivor_sync_attempts` to non-tracked fields list to prevent unnecessary update logs
+
+## [1.7.6](https://github.com/70000TONS-IT/booking-engine-admin/pull/800) - 2025-12-16
+
+### Changed
+
+- Standardized payment log entries to include currency amounts and passenger order
+- Payment transfer notes use passenger order instead of passenger ID
+- Improved passenger observer to skip tracking timestamp-only updates
+
+### Removed
+
+- Unused survivor number sync logging method from PassengerObserver
+- Duplicated logging in NotificationController for system transactions
+
+## [1.7.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/791) - 2025-12-10
+
+### Changed
+
+- Removed NON-REV, added CREW, PARTIAL REVENUE, SPECIAL DISCOUNT and VIP in TagSeeder
+
 ## [1.7.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/796) - 2025-12-15
 
 ### Fixed

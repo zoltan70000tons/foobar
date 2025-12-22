@@ -31,6 +31,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Enums\ErrorCode;
 use App\Helpers\ErrorResponse;
+use App\Http\Resources\BookingResource;
+use App\Http\Resources\BookingInvitationResource;
 
 class BookingController extends Controller
 {
@@ -309,32 +311,16 @@ class BookingController extends Controller
       return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
-    $result = $this->customerBookingRepository->getBookingByCode($eventId, $bookingCode, $user);
+    $booking = $this->customerBookingRepository->getBookingByCode($eventId, $bookingCode, $user);
 
-    if (!$result) {
+    if (!$booking) {
       return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
-    // hide cabin number if status is new or cancelled
-    if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
-      $result->cabin->makeHidden(['cabin_number']);
-      $result->cabin->makeHidden(['internal_notes']);
-      $result->cabin->cabinSpec->makeHidden(['cabin_number']);
-    }
-
-    // hide
-    $result->passengers->map(function ($passenger) {
-      $passenger->payments->map(function ($payment) {
-        $payment->makeHidden(['BIP_ID']);
-        $payment->makeHidden(['notes']);
-      });
-    });
-
-    $schema = [
-      'booking' => $result,
-    ];
-
-    return response()->json($schema);
+    // return response()->json($schema);
+    return response()->json([
+      'booking' => new BookingResource($booking),
+    ]);
   }
 
   /*
@@ -362,27 +348,12 @@ class BookingController extends Controller
       return ErrorResponse::error('Booking not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
-    // hide cabin number if status is new or cancelled
-    if ($result->status === 'NEW' || $result->status === 'CANCELLED') {
-      $result->cabin->makeHidden(['cabin_number']);
-      $result->makeHidden(['booking_code', 'agent_id']);
-      $result->cabin->makeHidden(['internal_notes']);
-      $result->cabin->cabinSpec->makeHidden(['cabin_number']);
-    }
-
-    // hide
-    $result->passengers->map(function ($passenger) {
-      $passenger->payments->map(function ($payment) {
-        $payment->makeHidden(['BIP_ID']);
-        $payment->makeHidden(['notes']);
-      });
-    });
-
-    $schema = [
-      'booking' => $result,
-    ];
-
-    return response()->json($schema);
+    return response()->json(
+      [
+        'booking' => new BookingResource($result),
+      ],
+      200
+    );
   }
 
   /*
@@ -401,34 +372,18 @@ class BookingController extends Controller
       'booking',
       'booking.event',
       'booking.cabin.category',
-      'booking.cabin.cabinType'
+      'booking.cabin.cabinType',
+      'booking.passengers'
     )
       ->where('email', $user->email)
       ->get();
 
-    // unset agent_id
-    if ($invitations) {
-      $invitations->map(function ($invitation) {
-        // Remove agent_id from the booking.
-        unset($invitation->booking->agent_id);
-
-        // Get the lead passenger from the passengers table where booking_id matches and lead_passenger is true.
-        $leadPassenger = Passenger::where('booking_id', $invitation->booking->id)
-          ->where('lead_passenger', true)
-          ->first();
-
-        // Attach the lead passenger data to the invitation.
-        $invitation->invited_by = $leadPassenger->email;
-
-        return $invitation;
-      });
-    }
-
-    $result = $this->customerBookingService->getMyBookings($user);
+    // $bookings = $this->customerBookingService->getMyBookings($user);
+    $bookings = $this->customerBookingRepository->getAllBookings($user);
 
     return response()->json([
-      'bookings' => $result,
-      'invitations' => $invitations ?? [],
+      'bookings' => BookingResource::collection($bookings),
+      'invitations' => BookingInvitationResource::collection($invitations),
     ]);
   }
 

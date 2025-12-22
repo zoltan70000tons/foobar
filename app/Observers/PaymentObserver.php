@@ -14,14 +14,14 @@ class PaymentObserver
         $booking = $payment->passenger->booking;
 
         if ($payment->type === "REFUND") {
-            $description = 'Refund created';
+            $description = 'Refund of ' . formatCurrency($payment->amount) . ' was executed for the ' . $this->passengerOrderToString($payment->passenger->passenger_order) . ' passenger.';
             $action = LogActionBooking::REFUND_CREATED;
         } else {
-            $description = 'Payment created';
+            $description = 'Payment of ' . formatCurrency($payment->amount) . ' was received for the ' . $this->passengerOrderToString($payment->passenger->passenger_order) . ' passenger.';
             $action = LogActionBooking::PAYMENT_CREATED;
 
             if ($payment->splitAmount) {
-                $description = 'Split payment created for the ' . $this->passengerOrderToString($payment->passenger->passenger_order) .
+                $description = 'Split payment of ' . formatCurrency($payment->amount) . ' was created for the ' . $this->passengerOrderToString($payment->passenger->passenger_order) .
                     ' passenger.';
                 $action = LogActionBooking::SPLIT_PAYMENT_CREATED;
             }

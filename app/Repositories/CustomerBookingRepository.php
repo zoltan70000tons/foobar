@@ -47,12 +47,8 @@ class CustomerBookingRepository
    * @param string $bookingCode
    * @return Booking
    */
-  public function getBooking(
-    int $eventId,
-    ?string $bookingCode,
-    $user = null,
-    ?string $requestId = null
-  ) {
+  public function getBooking(int $eventId, ?string $bookingCode, $user = null, ?string $requestId = null)
+  {
     // survivor number of the authenticated user (if any)
     $userSurvivorNumber = $user->survivorNumber->survivor_number ?? null;
 
@@ -73,18 +69,20 @@ class CustomerBookingRepository
       'passengers.payments',
     ];
 
-
     $with[] = 'passengers.onboardCredits';
-
 
     // Conditional query based on bookingCode or requestId
     $booking = Booking::with($with)
       ->where('event_id', $eventId)
-      ->when($requestId, function ($q) use ($requestId) {
-        $q->where('booking_request_id', $requestId);
-      }, function ($q) use ($bookingCode) {
-        $q->where('booking_code', $bookingCode);
-      })
+      ->when(
+        $requestId,
+        function ($q) use ($requestId) {
+          $q->where('booking_request_id', $requestId);
+        },
+        function ($q) use ($bookingCode) {
+          $q->where('booking_code', $bookingCode);
+        }
+      )
       ->first();
 
     if (!$booking) {
@@ -94,13 +92,11 @@ class CustomerBookingRepository
     // Check for user-passenger information match
     if ($user) {
       $first = $user->detail->first_name ?? null;
-      $last  = $user->detail->last_name ?? null;
-      $dob   = $user->detail->dob ?? null;
+      $last = $user->detail->last_name ?? null;
+      $dob = $user->detail->dob ?? null;
 
       $userPassenger = $booking->passengers->first(function ($p) use ($first, $last, $dob) {
-        return $p->first_name === $first
-          && $p->last_name === $last
-          && $p->dob === $dob;
+        return $p->first_name === $first && $p->last_name === $last && $p->dob === $dob;
       });
 
       if (!$userPassenger) {
@@ -135,7 +131,6 @@ class CustomerBookingRepository
     return $booking;
   }
 
-
   // get booking by booking code
   public function getBookingByCode(int $eventId, string $bookingCode, $user = null)
   {
@@ -160,7 +155,13 @@ class CustomerBookingRepository
   {
     $user_survivor_number = $user->survivorNumber->survivor_number ?? null;
 
-    $bookings = Passenger::with('booking', 'booking.cabin.category', 'booking.cabin.cabinType', 'booking.event', 'booking.passengers')
+    $bookings = Passenger::with(
+      'booking',
+      'booking.cabin.category',
+      'booking.cabin.cabinType',
+      'booking.event',
+      'booking.passengers'
+    )
       ->where('survivor_number', $user_survivor_number)
       ->get()
       ->map(function ($passenger) {
@@ -177,22 +178,6 @@ class CustomerBookingRepository
         $booking->setRelation('passengers', $filteredPassengers);
       }
     });
-
-    // unset agent_id
-    $bookings->map(function ($booking) {
-      unset($booking->agent_id);
-      if ($booking->status === 'NEW') {
-        unset($booking->booking_code);
-        unset($booking->cabin->cabin_number);
-        unset($booking->cabin->cabinSpec->cabin_number);
-        unset($booking->cabin->cabinSpec->id);
-        unset($booking->cabin->cabin_spec_id);
-        unset($booking->cabin->id);
-        unset($booking->cabin_id);
-      }
-    });
-
-    //$res = $bookings->toArray();
 
     return $bookings;
   }
@@ -412,7 +397,6 @@ class CustomerBookingRepository
     $booking = $this->getBookingByCode($eventId, $bookingCode);
 
     \Log::info('booking passenger: ' . json_encode($booking));
-
 
     //$cabinCapacity = $booking->cabin->category->capacity;
     $passengers = $booking->passengers;

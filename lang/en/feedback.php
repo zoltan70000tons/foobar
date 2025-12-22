@@ -26,4 +26,7 @@ return [
   'not_matching_info' => 'The provided information does not match our records. Please verify and try again.',
   'account_already_activated'=>'This account has already been activated. Please log in or reset your password.',
   'account_activation_success'=>'Account successfully linked. Check your email for the verification link.',
+  
+  // CHECK BOOKING LOGIN
+  'passenger_not_found' => 'Passenger not found. Please check the information and try again.',
 ];

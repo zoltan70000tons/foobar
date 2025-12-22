@@ -20,7 +20,6 @@ import {
 } from '@mui/material';
 import MuiTable from '@/Components/tables/MuiTable';
 import { CabinStatus, CabinStatusColor, CabinStatusReduced } from '@/enums/CabinStatus';
-import { TagEnum } from '@/enums/TagEnum';
 import { CabinCategory } from '@/interfaces/CabinCategory';
 import { Visibility, Edit, Delete } from '@mui/icons-material';
 import { Permissions } from '@/enums/PermissionEnum';
@@ -37,6 +36,7 @@ import { StatusTooltip } from '@/Components/StatusToolTip';
 import TagToolTip from '@/Components/TagToolTip';
 import axios from 'axios';
 import { Link, useRemember } from '@inertiajs/react';
+import { TicketTypeData } from "@/Pages/Cabin/partials/matrix/TicketTypeData";
 
 type Tag = { id: string; name: string; color: string; description: string; priority: number; };
 
@@ -51,12 +51,6 @@ type Props = PageProps & {
 };
 
 const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
-  const { hasPermission } = usePermissions();
-
-  // TEST
-  // const isPermissions = auth.permissions.includes(Permissions.ViewCabinCategories);
-  // console.log('isPermissions', isPermissions);
-
   const [selectedTab, setSelectedTab] = useRemember(0, 'cabins:selectedTab');
 
   useEffect(() => {
@@ -66,8 +60,6 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   }, []);
 
   const [openDialog, setOpenDialog] = useState(false);
-
-  const [loading, setLoading] = useState(true);
 
   const { showSnackbar } = useSnackbar();
 
@@ -84,12 +76,6 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
       }
     }
   }, [flash])
-
-  useEffect(() => {
-    if (cabins) {
-      setLoading(false);
-    }
-  }, [cabins]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -348,8 +334,6 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   );
 
   const manageTags = async (rows: Cabin[], tags: string[]) => {
-    const url = apiRoutes.addCabinTags(event.id);
-    setLoading(true);
     try {
       router.post(route('cabins.addTag', { id: event.id }), { tags, rows }, {
         onSuccess: () => {
@@ -357,15 +341,12 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
           showSnackbar('Tags edited successfully', 'success');
         },
         onError: () => showSnackbar('Error updating Tags', 'error'),
-        onFinish: () => setLoading(false),
         preserveScroll: true,
       });
 
     } catch (error) {
       console.error('Error adding tags:', error);
       showSnackbar('Error updating tags', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -378,9 +359,9 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
       setOpenDialog(true);
       return;
     }
-    const url = apiRoutes.updateCabinStatus(event.id);
+
     const rowIds = rows.map((row: Cabin) => row.id);
-    setLoading(true);
+
     router.post(route('cabins.updateStatus', { id: event.id }),
       { status, rows: rowIds },
       {
@@ -389,20 +370,9 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
           showSnackbar('Status edited successfully', 'success');
         },
         onError: () => showSnackbar('Error updating status', 'error'),
-        onFinish: () => setLoading(false),
         preserveScroll: true,
       }
     );
-    // axios
-    //   .post(url, { status: status, rows: rowIds })
-    //   .then((response) => {
-    //     setLoading(false);
-    //     router.reload({ only: ['cabins'], preserveScroll: true });
-    //     showSnackbar('Status edited successfully', 'success');
-    //   })
-    //   .catch((error) => {
-    //     showSnackbar('Error updating status', 'error');
-    //   });
   };
 
   const handleCloseDialog = () => {
@@ -462,6 +432,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
               <Tabs value={selectedTab} onChange={handleTabChange} aria-label="manage inventory and categories">
                 <Tab label="CABIN INVENTORY" />
                 <Tab label="MANAGE CATEGORIES" />
+                <Tab label="MATRIX" />
               </Tabs>
               <Box sx={{ display: selectedTab === 0 ? 'block' : 'none', mt: 2 }}>
                 {cabins ? (
@@ -522,8 +493,18 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
               <Box sx={{ display: selectedTab === 1 ? 'block' : 'none', mt: 2 }}>
                 <MuiTable columns={categoriesColumns} data={categories} />
               </Box>
+
+              <Box sx={{ display: selectedTab === 2 ? 'block' : 'none', mt: 2 }}>
+                <Box
+                  sx={{
+                    mt: 6,
+                    px: { xs: 0, lg: 3 },
+                  }}
+                >
+                  <TicketTypeData eventId={event.id} cabinType={'private-cabin'} />
+                </Box>
+              </Box>
             </Box>
-            {/* <LoadingOverlay open={loading} /> */}
           </Grid>
         </Grid>
       </Container>

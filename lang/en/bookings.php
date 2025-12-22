@@ -32,7 +32,7 @@ return [
       'You cannot send an email invitation to yourself. If you want to reuse the same email for another passenger, please fill the form manually.',
     'single_occupancy' => 'You cannot add passenger to a single occupancy booking.',
     'email_already_used' =>
-      'This eMail is already used in another booking for this event. If you want to reuse the same email for another passenger, please fill the form manually.',
+      'This eMail or Survivor Number is already used in another booking for this event. If you want to reuse the same email for another passenger, please fill the form manually.',
     'passenger_order_taken' =>
       'There is already a passenger for this slot. Please refresh the page or choose another slot.',
     'email_already_invited' =>

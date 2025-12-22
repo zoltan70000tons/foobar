@@ -34,7 +34,7 @@ return [
       'No puedes enviarte una invitación por correo a ti mismo. Si deseas reutilizar el mismo eMail para otro pasajero, por favor completa el formulario manualmente.',
     'single_occupancy' => 'No puedes agregar pasajeros a una reserva de ocupación individual.',
     'email_already_used' =>
-      'Este eMail ya se ha usado en otra reserva para este evento. Si deseas reutilizar el mismo eMail para otro pasajero, por favor completa el formulario manualmente.',
+      'Este eMail o Número de Survivor ya se ha usado en otra reserva para este evento. Si deseas reutilizar el mismo eMail para otro pasajero, por favor completa el formulario manualmente.',
     'passenger_order_taken' => 'Ya hay un pasajero en este lugar. Por favor, actualiza la página o elige otro lugar.',
     'email_already_invited' => 'Ya se ha invitado a un pasajero con este eMail en esta reserva.',
     'slot_taken' => 'Esta cama ya está ocupada. Por favor, actualiza la página o elige otra cama.',
