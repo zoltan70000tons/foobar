@@ -43,7 +43,7 @@ class TagSeeder extends Seeder
       [
         'name' => 'PAID',
         'type' => 'booking',
-        'color' => '#038521ff',
+        'color' => '#038521',
         'description' => 'booking is fully paid',
       ],
       [
