@@ -62,8 +62,8 @@ class PaymentService
     }
 
     // Ensure at least 2 installments are possible
-    if ($allowedMax < 2) {
-      throw new \InvalidArgumentException('Not enough time to create at least 2 installments before event cutoff (one week before start).');
+    if ($allowedMax < 2 && $numberOfInstallments >= 2) {
+      throw new \InvalidArgumentException("Not enough time to $numberOfInstallments installments before event cutoff (one week before start).");
     }
 
     $count = min($numberOfInstallments, $allowedMax);
@@ -132,10 +132,6 @@ class PaymentService
             'created_at' => now(),
             'updated_at' => now(),
           ]);
-
-          // $installment->update([
-          //     'status' => ($amountToPay == $dueAmount) ? 'PAID' : 'PARTIALLY_PAID',
-          // ]);
         }
 
         return ['success' => true, 'payment' => $payment];
