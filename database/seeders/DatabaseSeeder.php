@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
       //PaymentSeeder::class,
       EmailTemplatesSeeder::class,
       CustomerBookingSeeder::class,
-      UserTagsSeeder::class,
       OauthClientSeeder::class,
       PassengerPersonalAccessClientSeeder::class,
     ]);
