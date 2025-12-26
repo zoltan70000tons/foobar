@@ -354,9 +354,7 @@ class BookingsController extends Controller
               'addons' => array_map(fn($id) => ['id' => $id], $adjustmentIds),
             ];
 
-            $bookingData = $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
-            $booking = $bookingData['booking'];
-            $this->logRepository->writeOnBooking($booking->id, 'Booking created manually', $user);
+            $this->bookingRepository->createBooking($bookingData, $passenger_data, $cabin);
           }
         },
         $event_id,
@@ -435,7 +433,6 @@ class BookingsController extends Controller
           $event = $this->eventRepository->find($event_id);
           $booking = $this->bookingRepository->findByCode($booking_code);
           $this->bookingRepository->update(['tags' => $tags], $booking->id);
-          $this->logRepository->writeOnBooking($booking->id, 'Updated Tag', $user);
           return Inertia::render('Bookings/partials/Show', [
             'event' => $event,
             'booking' => $booking,
@@ -987,13 +984,7 @@ class BookingsController extends Controller
             $leadPassengerSlot->save();
             $booking->customer_id = $newLeadId;
             $booking->save();
-
-            $this->logRepository->writeOnBooking(
-              $booking->id,
-              'Lead passenger switched (same booking): from SN ' . $oldSurvivorNumber . ' to SN ' . $sn,
-              $request->user()
-            );
-
+            
             $passengers = $booking->passengers()->orderBy('passenger_order')->get();
             return response()->json(['passengers' => $passengers]);
           }
@@ -1013,12 +1004,6 @@ class BookingsController extends Controller
 
           $booking->customer_id = $newLeadId;
           $booking->save();
-
-          $this->logRepository->writeOnBooking(
-            $booking->id,
-            'Lead passenger switched from SN ' . $oldSurvivorNumber . ' to SN ' . $sn,
-            $request->user()
-          );
 
           $passengers = $booking->passengers()->orderBy('passenger_order')->get();
           return response()->json(['passengers' => $passengers]);

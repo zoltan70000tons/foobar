@@ -5,6 +5,17 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/TBD) - 2025-12-26
+
+### Fixed
+
+- Undefined key issue in BookingsController when creating bookings
+- Validation for installment count in PaymentService to account for Pay in Full
+
+### Removed
+
+- Legacy booking log write operations from BookingsController (writeOnBooking method calls and interface/repository implementation)
+
 ## [1.8.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/808/) - 2025-12-26
 
 ### Added

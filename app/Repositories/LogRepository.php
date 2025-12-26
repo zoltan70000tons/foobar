@@ -89,12 +89,6 @@ class LogRepository implements LogInterface
                 ->values(); 
     }
 
-    public function writeOnBooking($id, $action, $user)
-    {
-       
-    }
-
-
     private function noDetail(){
         $payload = [
                         'image' => null,
