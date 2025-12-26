@@ -160,13 +160,3 @@ Route::middleware([
     'removeInvitation',
   ]);
 });
-
-// --- PAYMENT LEGACY ENGINE TOKENS ---
-Route::post('/payment-middleware-initiate', [
-  \App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class,
-  'initiate',
-])->middleware(['throttle:20,1']);
-Route::get('/payment-middleware-verify-token', [
-  \App\Http\Controllers\Api\PaymentLegacyEngineTokenController::class,
-  'verify',
-]);
