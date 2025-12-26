@@ -30,6 +30,8 @@ class EventActionRuleController extends Controller
             'is_blocking' => $rule->is_blocking,
             'fee_amount'  => $rule->fee_amount,
             'description' => $rule->description,
+            'applies_from_date' => $rule->applies_from_date,
+            'applies_until_date' => $rule->applies_until_date
         ]);
     }
 }
