@@ -35,7 +35,7 @@ class PublicAuthController extends Controller
       App::setLocale($language);
     }
 
-    if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
+    if (Auth::check() && Auth::user()->hasRole('Customer') && !Auth::user()->hasVerifiedEmail()) {
       return Inertia::render('OAuth/EmailVerify', [
         'tAuth' => Lang::get('oauth.Auth'),
         'tGeneral' => Lang::get('general.General'),
@@ -48,6 +48,12 @@ class PublicAuthController extends Controller
           ]
           : null,
       ]);
+    }
+
+    // if not contain client_id redirect to error page
+    if (!$request->query('client_id')) {
+      $frontURL = config('app.frontend_url') . '/' . App::getLocale();
+      return redirect()->to($frontURL);
     }
 
     // Return the login view with translations for the page
