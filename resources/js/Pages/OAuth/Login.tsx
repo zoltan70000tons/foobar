@@ -111,7 +111,7 @@ export default function Login() {
                 "Invalid request or time expired, please refresh the page and try again."}
             </Alert>
           )}
-          {reset === "true" && (
+          {reset === "success" && (
             <Alert
               severity="success"
               sx={{
@@ -164,7 +164,7 @@ export default function Login() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <AccountCircle sx={{ color: 'text.secondary', opacity: 0.6 }} />
+                    <AccountCircle sx={{ color: "text.secondary", opacity: 0.6 }} />
                   </InputAdornment>
                 ),
               }}
@@ -181,20 +181,17 @@ export default function Login() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Key sx={{ color: 'text.secondary', opacity: 0.6 }} />
+                    <Key sx={{ color: "text.secondary", opacity: 0.6 }} />
                   </InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
+                    <IconButton aria-label="toggle password visibility" onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
-              }}              
+              }}
             />
             <Button type="submit" fullWidth variant="contained" disabled={loading} sx={{ mt: 2 }}>
               {loading ? (tAuth?.login ?? "Sign In") : (tAuth?.login ?? "Sign In")}
