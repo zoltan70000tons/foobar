@@ -29,12 +29,6 @@ class BookingActionRule extends Model
 
     public function scopeActive($query){
         $now = now();
-        \Log::info('BookingActionRule scopeActive debug', [
-    'now' => now()->toDateTimeString(),
-    'now_timezone' => now()->timezoneName,
-    'applies_from_date' => optional($this->applies_from_date)->toDateTimeString(),
-    'applies_until_date' => optional($this->applies_until_date)->toDateTimeString(),
-]);
         return $query
             ->where(function ($q) use ($now) {
                 $q->whereNull('applies_from_date')

@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\BookingRuleAction;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Cabin;
@@ -15,6 +16,7 @@ use App\Services\EmailTemplateService;
 use App\Notifications\NewAddPaxAddedToBooking;
 use App\Notifications\LeadPassRemovesSomeone;
 use App\Services\BookingActionRuleService;
+use App\Services\PaymentInfoService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
@@ -27,16 +29,17 @@ class CustomerBookingRepository
   protected $passenger;
   protected $cabin;
   protected $emailService;
-
   protected $bookingActionRuleService;
+  protected $paymentInfoService;
 
-  public function __construct(Booking $booking, Passenger $passenger, Cabin $cabin, EmailTemplateService $emailService, BookingActionRuleService $bookingActionRuleService)
+  public function __construct(Booking $booking, Passenger $passenger, Cabin $cabin, EmailTemplateService $emailService, BookingActionRuleService $bookingActionRuleService, PaymentInfoService $paymentInfoService)
   {
     $this->booking = $booking;
     $this->passenger = $passenger;
     $this->cabin = $cabin;
     $this->emailService = $emailService;
     $this->bookingActionRuleService = $bookingActionRuleService;
+    $this->paymentInfoService = $paymentInfoService;
   }
 
   /**
@@ -337,10 +340,11 @@ class CustomerBookingRepository
 
             $fees = $this->bookingActionRuleService->applyPassengerActionRule(
                 $eventId,
-                'ADD_PASSENGER',
-                $passenger->id,
-                $booking->id
+                BookingRuleAction::ADD_PASSENGER->value,
+                $passenger->id
             );
+
+            $this->paymentInfoService->syncAllocatedCost($booking);
         });
 
     } catch (\Throwable $e) {

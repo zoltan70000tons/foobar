@@ -3,27 +3,18 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
 use App\Models\BookingActionRule;
 use App\Models\Fee;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Str;
 
 class BookingActionRuleService
 {
-    protected $paymentInfoService;
 
-    public function __construct(
-        PaymentInfoService $paymentInfoService
-    ) {
-        $this->paymentInfoService = $paymentInfoService;
-    }
     public function applyPassengerActionRule(
         int $eventId,
         string $actionCode,
-        int $passengerId,
-        $bookingId
+        int $passengerId
     ): Collection {
         $appliedFees = collect();
 
@@ -52,15 +43,7 @@ class BookingActionRuleService
             ]);
 
             $appliedFees->push($fee);
-
-            Log::info('Fee created', [
-                'passenger_id' => $passengerId,
-                'action_rule_id' => $rule->id,
-                'amount' => $rule->fee_amount,
-            ]);
         }
-
-        $this->paymentInfoService->syncAllocatedCost(Booking::find($bookingId));
 
         return $appliedFees;
     }
