@@ -28,6 +28,11 @@ Route::post('/auth/forgot-password', [CustomerPasswordResetController::class, 'r
   'guest',
 ]);
 
+Route::get('/auth/validate-reset-token', [CustomerPasswordResetController::class, 'validateResetToken'])->middleware([
+  'throttle:10,1',
+  'guest',
+]);
+
 Route::post('/auth/password-reset', [CustomerPasswordResetController::class, 'resetPassword'])->middleware([
   'throttle:10,1',
   'guest',
@@ -56,8 +61,9 @@ Route::get('/events', [EventController::class, 'show']);
 Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
 
 // ---- PRICING MATRIX ----
-Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])
-  ->middleware('pricing.source:api');
+Route::get('/pricing-matrix/{eventId}/{cabinTypeId}', [PricingMatrixController::class, 'show'])->middleware(
+  'pricing.source:api'
+);
 
 // --- ADD PAX validate page with form
 Route::get('/add-pax', [AddPaxController::class, 'validate'])

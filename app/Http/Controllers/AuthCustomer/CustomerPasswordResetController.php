@@ -70,6 +70,41 @@ class CustomerPasswordResetController extends Controller
 
   /*
   |--------------------------------------------------------------------------
+  | Check the reset token VALIDATE TOKEN
+  |--------------------------------------------------------------------------
+  |
+  | before proceeding to reset password, the token should be validated
+  |
+  */
+  public function validateResetToken(Request $request): JsonResponse
+  {
+    $request->validate([
+      'token' => 'required',
+      'email' => 'required|email',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !$user->hasRole('Customer')) {
+      return $this->errorResponse(__('passwords.user'), ErrorCode::UNAUTHORIZED, 401);
+    }
+
+    $tokenRecord = DB::table('password_reset_tokens')->where('email', $user->getEmailForPasswordReset())->first();
+
+    if (!$tokenRecord || !Hash::check($request->token, $tokenRecord->token)) {
+      return $this->errorResponse(__('passwords.token'), ErrorCode::INVALID_TOKEN, 400);
+    }
+
+    return response()->json(
+      [
+        'message' => __('passwords.valid'),
+      ],
+      200
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
   | Reset Password RESET PASSWORD
   |--------------------------------------------------------------------------
   |
