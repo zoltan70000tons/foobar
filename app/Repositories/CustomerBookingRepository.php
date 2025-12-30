@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\BookingRuleAction;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Cabin;
@@ -10,11 +11,13 @@ use Illuminate\Support\Str;
 use App\Traits\StringNormalization;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerResetSeat;
-use App\Models\User;
-use Mockery\Generator\StringManipulation\Pass\Pass;
+
 use App\Services\EmailTemplateService;
 use App\Notifications\NewAddPaxAddedToBooking;
 use App\Notifications\LeadPassRemovesSomeone;
+use App\Services\BookingActionRuleService;
+use App\Services\PaymentInfoService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 
@@ -26,13 +29,17 @@ class CustomerBookingRepository
   protected $passenger;
   protected $cabin;
   protected $emailService;
+  protected $bookingActionRuleService;
+  protected $paymentInfoService;
 
-  public function __construct(Booking $booking, Passenger $passenger, Cabin $cabin, EmailTemplateService $emailService)
+  public function __construct(Booking $booking, Passenger $passenger, Cabin $cabin, EmailTemplateService $emailService, BookingActionRuleService $bookingActionRuleService, PaymentInfoService $paymentInfoService)
   {
     $this->booking = $booking;
     $this->passenger = $passenger;
     $this->cabin = $cabin;
     $this->emailService = $emailService;
+    $this->bookingActionRuleService = $bookingActionRuleService;
+    $this->paymentInfoService = $paymentInfoService;
   }
 
   /**
@@ -299,40 +306,63 @@ class CustomerBookingRepository
     }
 
     if ($passenger) {
-      try {
-        $passenger->update([
-          'survivor_number' => $validated['survivor_number'] ?? null,
-          'booking_id' => $booking->id,
-          'first_name' => $this->normalizeString($validated['first_name']),
-          'middle_name' => $this->normalizeString($validated['middle_name']) ?? null,
-          'last_name' => $this->normalizeString($validated['last_name']),
-          'dob' => $validated['date_of_birth'],
-          'gender' => $validated['gender'],
-          'citizenship' => $validated['citizenship'],
-          'address_first' => $validated['address_line_1'],
-          'address_second' => $validated['address_line_2'],
-          'city' => $validated['city'],
-          'state' => $validated['state'],
-          'postal_code' => $validated['zip_code'],
-          'country' => $validated['country'],
-          'email' => $validated['email'],
-          'phone' => $validated['phone_number'],
-          'emergency_c_name' => $this->normalizeString($validated['emergency_contact_name']),
-          'emergency_c_phone' => $validated['emergency_phone_number'],
-          'special_request' => $validated['special_request'],
-          'language' => $validated['language'] ?? 'en',
-          'terms_n_cons' => true,
-          'cabin_conf_accp' => true,
-        ]);
-      } catch (\Exception $e) {
+       try {
+        DB::transaction(function () use (
+            $passenger,
+            $validated,
+            $booking,
+            $eventId,
+        ) {
+            $passenger->update([
+                'survivor_number' => $validated['survivor_number'] ?? null,
+                'booking_id' => $booking->id,
+                'first_name' => $this->normalizeString($validated['first_name']),
+                'middle_name' => $this->normalizeString($validated['middle_name']) ?? null,
+                'last_name' => $this->normalizeString($validated['last_name']),
+                'dob' => $validated['date_of_birth'],
+                'gender' => $validated['gender'],
+                'citizenship' => $validated['citizenship'],
+                'address_first' => $validated['address_line_1'],
+                'address_second' => $validated['address_line_2'],
+                'city' => $validated['city'],
+                'state' => $validated['state'],
+                'postal_code' => $validated['zip_code'],
+                'country' => $validated['country'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone_number'],
+                'emergency_c_name' => $this->normalizeString($validated['emergency_contact_name']),
+                'emergency_c_phone' => $validated['emergency_phone_number'],
+                'special_request' => $validated['special_request'],
+                'language' => $validated['language'] ?? 'en',
+                'terms_n_cons' => true,
+                'cabin_conf_accp' => true,
+            ]);
+
+            // Apply booking action rule fees if applicable
+            $this->bookingActionRuleService->applyPassengerActionRule(
+                $eventId,
+                BookingRuleAction::ADD_PASSENGER->value,
+                $passenger->id
+            );
+
+            // Refresh booking relationships to include the newly created fee
+            $booking->load(['passengers.fees', 'passengers.discounts', 'adjustments']);
+
+            $this->paymentInfoService->syncAllocatedCost($booking);
+        });
+
+    } catch (\Throwable $e) {
         \Log::error('Error while adding passenger', [
-          'error' => $e->getMessage(),
-          'event_id' => $eventId,
-          'booking_code' => $bookingCode,
-          'passenger_data' => $validated,
+            'error' => $e->getMessage(),
+            'event_id' => $eventId,
+            'booking_code' => $bookingCode,
+            'passenger_id' => $passenger->id,
         ]);
-        return response()->json(['message' => 'Error while adding passenger'], 500);
-      }
+
+        return response()->json([
+            'message' => 'Error while adding passenger',
+        ], 500);
+    }
 
       // send notification to slack
       try {

@@ -5,7 +5,15 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.6] - 2025-12-29
+## [1.9.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/804)- 2025-12-31
+
+### Added
+
+- Booking Action Rules endpoint to retrieve rules by event and action code
+- Support for action rules including blocking behavior and additional fees
+- Validation logic to determine when an action requires confirmation
+
+## [1.8.6](https://github.com/70000TONS-IT/booking-engine-admin/pull/813) - 2025-12-29
 
 ### Added
 
@@ -15,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reset password form received correct param
 
-## [1.8.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/TBD) - 2025-12-26
+## [1.8.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/812) - 2025-12-26
 
 ### Fixed
 
@@ -30,17 +38,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Check client_id in oauth login page, to prevent non ids login
+- Booking Action Rules endpoint to retrieve rules by event and action code
+- Support for action rules including blocking behavior and additional fees
+- Fee-related fields in action rules response (fee_amount, fee_currency)
+- Validation logic to determine when an action requires confirmation
 
-## [1.8.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/810) - 2025-12-26
+### Changed
 
-### Added
-
-- Laravel Nightwatch package for application monitoring and insights
-
-### Removed
-
-- Payment legacy engine token system (model, controller, command, migration, API routes, and scheduled cleanup task)
+- Standardized action rule response structure for frontend consumption
+- Improved rule evaluation logic to ensure consistent behavior across actions
 
 ## [1.8.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/803) - 2025-12-19
 

@@ -166,3 +166,10 @@ Route::middleware([
     'removeInvitation',
   ]);
 });
+
+// --- EVENT ACTION RULES ---
+Route::get('/events/{event}/action-rules/{actionCode}', [
+    \App\Http\Controllers\Api\EventActionRuleController::class,
+    'show',
+]);
+
