@@ -5,21 +5,48 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.6] – 2025-12-29
+## [1.9.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/804)- 2025-12-31
 
 ### Added
 
- - Booking Action Rules endpoint to retrieve rules by event and action code
- - Support for action rules including blocking behavior and additional fees
- - Fee-related fields in action rules response (fee_amount, fee_currency)
- - Validation logic to determine when an action requires confirmation
+- Booking Action Rules endpoint to retrieve rules by event and action code
+- Support for action rules including blocking behavior and additional fees
+- Validation logic to determine when an action requires confirmation
+
+## [1.8.6](https://github.com/70000TONS-IT/booking-engine-admin/pull/813) - 2025-12-29
+
+### Added
+
+- validate reset password token
 
 ### Changed
 
- - Standardized action rule response structure for frontend consumption
- - Improved rule evaluation logic to ensure consistent behavior across actions
+- Reset password form received correct param
 
+## [1.8.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/812) - 2025-12-26
 
+### Fixed
+
+- Undefined key issue in BookingsController when creating bookings
+- Validation for installment count in PaymentService to account for Pay in Full
+
+### Removed
+
+- Legacy booking log write operations from BookingsController (writeOnBooking method calls and interface/repository implementation)
+
+## [1.8.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/808/) - 2025-12-26
+
+### Added
+
+- Booking Action Rules endpoint to retrieve rules by event and action code
+- Support for action rules including blocking behavior and additional fees
+- Fee-related fields in action rules response (fee_amount, fee_currency)
+- Validation logic to determine when an action requires confirmation
+
+### Changed
+
+- Standardized action rule response structure for frontend consumption
+- Improved rule evaluation logic to ensure consistent behavior across actions
 
 ## [1.8.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/803) - 2025-12-19
 
