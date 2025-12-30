@@ -307,11 +307,11 @@ class CustomerBookingRepository
 
     if ($passenger) {
        try {
-        $result = DB::transaction(function () use (
+        DB::transaction(function () use (
             $passenger,
             $validated,
             $booking,
-            $eventId
+            $eventId,
         ) {
             $passenger->update([
                 'survivor_number' => $validated['survivor_number'] ?? null,
@@ -338,11 +338,15 @@ class CustomerBookingRepository
                 'cabin_conf_accp' => true,
             ]);
 
-            $fees = $this->bookingActionRuleService->applyPassengerActionRule(
+            // Apply booking action rule fees if applicable
+            $this->bookingActionRuleService->applyPassengerActionRule(
                 $eventId,
                 BookingRuleAction::ADD_PASSENGER->value,
                 $passenger->id
             );
+
+            // Refresh booking relationships to include the newly created fee
+            $booking->load(['passengers.fees', 'passengers.discounts', 'adjustments']);
 
             $this->paymentInfoService->syncAllocatedCost($booking);
         });
