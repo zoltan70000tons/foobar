@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use App\Traits\MembershipAccess;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\EventResource;
+use App\Helpers\ErrorResponse;
+use App\Enums\ErrorCode;
 
 class EventController extends Controller
 {
@@ -52,14 +54,15 @@ class EventController extends Controller
   {
     App::setLocale($language);
 
+    if ($id === null || $id === '' || !is_numeric($id)) {
+      return ErrorResponse::error(__('event.no_event_found'), ErrorCode::EVENT_NOT_FOUND, 404);
+    }
+
     // Retrieve the event with adjustments and presale periods
-    $event = Event::with(['adjustments', 'presalePeriods.membershipType'])->find($id);
+    $event = Event::with(['adjustments', 'presalePeriods.membershipType'])->find((int) $id);
 
     if (!$event) {
-      return response()->json([
-        'status' => 404,
-        'message' => __('event.no_event_found'),
-      ]);
+      return ErrorResponse::error(__('event.no_event_found'), ErrorCode::EVENT_NOT_FOUND, 404);
     }
 
     // check the event is past
@@ -77,10 +80,7 @@ class EventController extends Controller
 
     // Check event status
     if (!in_array($event->status, ['PRE-SALE', 'PUBLIC'])) {
-      return response()->json([
-        'status' => 403,
-        'message' => __('event.no_event_found'),
-      ]);
+      return ErrorResponse::error(__('event.no_event_found'), ErrorCode::EVENT_NOT_FOUND, 404);
     }
 
     // check if the Auth
