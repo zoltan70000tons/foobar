@@ -6,13 +6,11 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class CabinTypeSeeder extends Seeder
-{
+class CabinTypeSeeder extends Seeder {
     /**
      * Run the database seeders.
      */
-    public function run(): void
-    {
+    public function run(): void {
         // Private Cabin
         DB::table('cabin_types')->insert([
             'cabin_type' => 'Private Cabin',

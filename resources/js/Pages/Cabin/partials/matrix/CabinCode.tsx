@@ -29,9 +29,7 @@ export function CabinCode({ cabinCode, onOpenDetail }: CabinCodeProps) {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Typography sx={{ fontWeight: "bold", fontSize: "14px" }}>
-          {cabinCode}
-        </Typography>
+        <Typography sx={{ fontWeight: "bold", fontSize: "14px" }}>{cabinCode}</Typography>
         <PhotoCamera sx={{ color: blue[600], fontSize: 16 }} />
       </Box>
     </Box>

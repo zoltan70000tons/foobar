@@ -20,20 +20,17 @@ it('creates a comment for a seeded booking and checks relations', function () {
     /** @var Comment $comment */
     $comment = Comment::create([
         'booking_id' => $booking->id,
-        'user_id'    => $user->id,
-        'comment'    => 'Test comment generated for test.',
+        'user_id' => $user->id,
+        'comment' => 'Test comment generated for test.',
     ]);
-
 
     expect($comment->id)->not->toBeNull();
     $comment->load('user', 'booking');
 
-
     expect($comment->user)->not->toBeNull();
     expect($comment->user->id)->toBe($user->id);
-    expect($comment->user->getAttributes())->not->toHaveKey('email'); 
+    expect($comment->user->getAttributes())->not->toHaveKey('email');
     expect($comment->user->username)->toBe($user->username);
-
 
     expect($comment->booking)->not->toBeNull();
     expect($comment->booking->id)->toBe($booking->id);

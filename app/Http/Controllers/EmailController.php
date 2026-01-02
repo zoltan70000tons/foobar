@@ -16,20 +16,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Log;
 
-class EmailController extends Controller
-{
+class EmailController extends Controller {
     protected $emailTemplateService;
 
     use HandlePermissions;
 
-    public function __construct(EmailTemplateService $emailTemplateService)
-    {
+    public function __construct(EmailTemplateService $emailTemplateService) {
         $this->emailTemplateService = $emailTemplateService;
     }
 
-    public function sendEmail(Request $request)
-    {
-
+    public function sendEmail(Request $request) {
         $validated = $request->validate([
             'lang' => 'required|string|in:en,es,fr,de',
             'template_name' => 'required|string|exists:email_templates,name',
@@ -42,7 +38,7 @@ class EmailController extends Controller
             'selected_pass_id' => 'required_if:selected_email,true|integer',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120', // Máx. 5MB per file
             'booking_pdf' => 'required|boolean',
-            'booking_image' => 'required|boolean'
+            'booking_image' => 'required|boolean',
         ]);
         try {
             return $this->withPermission(
@@ -50,7 +46,7 @@ class EmailController extends Controller
                 function ($validated, $request) {
                     $folderPath = storage_path('app/temp_attachments');
                     if (!file_exists($folderPath)) {
-                        mkdir($folderPath, 0775, true); 
+                        mkdir($folderPath, 0775, true);
                     }
                     $booking = Booking::find($validated['booking_id']);
                     $content = $validated['email_content'];
@@ -69,7 +65,7 @@ class EmailController extends Controller
                             $storedPath = $file->store('temp_attachments', 'local');
                             $absolutePath = storage_path("app/{$storedPath}");
                             $preparedAttachments[] = [
-                                'path' =>  $absolutePath,
+                                'path' => $absolutePath,
                                 'name' => $file->getClientOriginalName(),
                                 'original_name' => $file->getClientOriginalName(),
                                 'mime' => $file->getMimeType(),
@@ -86,7 +82,7 @@ class EmailController extends Controller
                             $image,
                             false,
                             $content,
-                            $subject
+                            $subject,
                         );
 
                         GlobalLogger::log(
@@ -105,7 +101,7 @@ class EmailController extends Controller
                     }
                 },
                 $validated,
-                $request
+                $request,
             );
         } catch (\Exception $ex) {
             Log::info('Error sending email', [
@@ -117,8 +113,7 @@ class EmailController extends Controller
         }
     }
 
-    public function getEmailTemplates(Request $request)
-    {
+    public function getEmailTemplates(Request $request) {
         $validated = Validator::make($request->all(), [
             'lang' => 'required|string|in:en,es,de',
         ])->validate();
@@ -139,8 +134,7 @@ class EmailController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getEmailTemplate(Request $request)
-    {
+    public function getEmailTemplate(Request $request) {
         $validated = Validator::make($request->all(), [
             'lang' => 'required|string|in:en,es,de',
             'template_id' => 'required|integer',
@@ -153,7 +147,7 @@ class EmailController extends Controller
             $validated['booking_id'],
             $validated['template_id'],
             $passenger,
-            []
+            [],
         );
         if (!$htmlContent) {
             return response()->json(['error' => 'Template not found'], 404);
@@ -191,19 +185,18 @@ class EmailController extends Controller
 
     //for testing
 
-    public function showEmail(Request $request)
-    {
-    //   $booking_id = $request->input('id');
-    //   $passenger_id = $request->input('passenger_id');
-    //   $booking = Booking::find($booking_id);
-    //   $passenger = Passenger::find($passenger_id);
-    //   if (!$booking || !$passenger) {
-    //       return response()->json(['error' => 'Booking or Passenger not found'], 404);
-    //   }
-    //   $service = new PDFService();
-    //    $pdf = $service->generateBookingConfirmationPDF($booking);
-    //    $pdf->setPaper('letter', 'potrait');
-    //    return $pdf->stream();
+    public function showEmail(Request $request) {
+        //   $booking_id = $request->input('id');
+        //   $passenger_id = $request->input('passenger_id');
+        //   $booking = Booking::find($booking_id);
+        //   $passenger = Passenger::find($passenger_id);
+        //   if (!$booking || !$passenger) {
+        //       return response()->json(['error' => 'Booking or Passenger not found'], 404);
+        //   }
+        //   $service = new PDFService();
+        //    $pdf = $service->generateBookingConfirmationPDF($booking);
+        //    $pdf->setPaper('letter', 'potrait');
+        //    return $pdf->stream();
 
         // $htmlContent = $this->emailTemplateService->getProcessedTemplate(
         //     $booking_id,
@@ -218,8 +211,7 @@ class EmailController extends Controller
         //return response()->json(['html' => $htmlContent]);
     }
 
-    public function generateBookingPDF(Request $request)
-    {
+    public function generateBookingPDF(Request $request) {
         $validated = Validator::make($request->all(), [
             // 'lang' => 'required|string|in:en,es,de',
             'booking_id' => 'required|integer',
@@ -238,8 +230,7 @@ class EmailController extends Controller
         }
     }
 
-    public function generateBookingImg(Request $request)
-    {
+    public function generateBookingImg(Request $request) {
         $validated = Validator::make($request->all(), [
             'booking_id' => 'required|integer',
         ])->validate();
@@ -264,9 +255,8 @@ class EmailController extends Controller
             return response()->json(['error' => 'Error retrieving image'], 500);
         }
     }
-    
-    public function generateInvoicePDF(Request $request)
-    {
+
+    public function generateInvoicePDF(Request $request) {
         $validated = Validator::make($request->all(), [
             // 'lang' => 'required|string|in:en,es,de',
             'booking_id' => 'required|integer',

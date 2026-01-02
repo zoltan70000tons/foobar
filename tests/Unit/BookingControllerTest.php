@@ -4,7 +4,8 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
-use App\Models\{Booking,
+use App\Models\{
+    Booking,
     Cabin,
     CabinCategory,
     CabinCategorySpec,
@@ -15,7 +16,7 @@ use App\Models\{Booking,
     Passenger,
     SurvivorNumber,
     User,
-    UserDetail
+    UserDetail,
 };
 use App\Repositories\PassengerRepository;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +60,9 @@ describe('store', function () {
         $rules = $request->rules();
         $validator = Validator::make($validData, $rules);
 
-        expect($validator->fails())->toBeTrue("Expected validation to fail for {$field} = " . var_export($invalidValue, true));
+        expect($validator->fails())->toBeTrue(
+            "Expected validation to fail for {$field} = " . var_export($invalidValue, true),
+        );
     })->with('fieldValidationMatrix');
 
     it('returns 400 with "Cart is empty" message when no user is authenticated', function () {
@@ -164,7 +167,10 @@ describe('store', function () {
 
         Cart::factory([
             'user_id' => $user->id,
-            'cart_data' => json_decode('{"event_id":"1","cabin_type":"private-cabin","addons":[{"id":13,"code":"TAX","type":"ADDON","operation":"FIXED","value":"494.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T21:46:21.000000Z","system":true},{"id":7,"code":"MEMBERSHIP_BLACK","type":"DISCOUNT","operation":"PERCENTAGE","value":"10.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T17:15:58.000000Z","system":true}],"step":7,"payment_plan":"INSTALLMENTS","number_of_installments":"5","choose_your_cabin":false,"cabin_conf_accp":true,"cabin_number":null,"reservation_id":215,"reservation_timestamp":"Wed, 11 Jun 2025 22:07:13 GMT","cabin_price":"1366.00","cabin_capacity":4,"cabin_code":"3V","cabin_category":5,"cabin_category_decks":"6,7,8,9,10","cabin_category_type":"Interior","single_t_agreement":false,"time_to_cancel":20,"price_total":6893.6,"price_total_passenger":1723.4,"price_save":"136.60","price_extras":494,"tax":"494.00","lower_bed_type_2":null}', true),
+            'cart_data' => json_decode(
+                '{"event_id":"1","cabin_type":"private-cabin","addons":[{"id":13,"code":"TAX","type":"ADDON","operation":"FIXED","value":"494.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T21:46:21.000000Z","system":true},{"id":7,"code":"MEMBERSHIP_BLACK","type":"DISCOUNT","operation":"PERCENTAGE","value":"10.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T17:15:58.000000Z","system":true}],"step":7,"payment_plan":"INSTALLMENTS","number_of_installments":"5","choose_your_cabin":false,"cabin_conf_accp":true,"cabin_number":null,"reservation_id":215,"reservation_timestamp":"Wed, 11 Jun 2025 22:07:13 GMT","cabin_price":"1366.00","cabin_capacity":4,"cabin_code":"3V","cabin_category":5,"cabin_category_decks":"6,7,8,9,10","cabin_category_type":"Interior","single_t_agreement":false,"time_to_cancel":20,"price_total":6893.6,"price_total_passenger":1723.4,"price_save":"136.60","price_extras":494,"tax":"494.00","lower_bed_type_2":null}',
+                true,
+            ),
         ])->create();
 
         $request = StoreBookingRequest::create('/booking-init', 'POST', $data);
@@ -198,7 +204,9 @@ describe('store', function () {
         // Assert response is a JsonResponse with status 400 and correct message
         expect($response)->toBeInstanceOf(\Illuminate\Http\JsonResponse::class);
         expect($response->getStatusCode())->toBe(201);
-        expect($response->getData(true))->toMatchArray(['message' => 'Booking created successfully, but failed to send confirmation email.']);
+        expect($response->getData(true))->toMatchArray([
+            'message' => 'Booking created successfully, but failed to send confirmation email.',
+        ]);
     });
 
     it('returns 201 when booking created', function () {
@@ -220,7 +228,7 @@ describe('store', function () {
 
         $specifiedRequestParams = [
             'cart' => [
-                'event_id' => (string)$event->id,
+                'event_id' => (string) $event->id,
             ],
         ];
 
@@ -228,7 +236,10 @@ describe('store', function () {
 
         Cart::factory([
             'user_id' => $user->id,
-            'cart_data' => json_decode('{"event_id":"1","cabin_type":"private-cabin","addons":[{"id":13,"code":"TAX","type":"ADDON","operation":"FIXED","value":"494.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T21:46:21.000000Z","system":true},{"id":7,"code":"MEMBERSHIP_BLACK","type":"DISCOUNT","operation":"PERCENTAGE","value":"10.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T17:15:58.000000Z","system":true}],"step":7,"payment_plan":"INSTALLMENTS","number_of_installments":"5","choose_your_cabin":false,"cabin_conf_accp":true,"cabin_number":null,"reservation_id":215,"reservation_timestamp":"Wed, 11 Jun 2025 22:07:13 GMT","cabin_price":"1366.00","cabin_capacity":4,"cabin_code":"3V","cabin_category":5,"cabin_category_decks":"6,7,8,9,10","cabin_category_type":"Interior","single_t_agreement":false,"time_to_cancel":20,"price_total":6893.6,"price_total_passenger":1723.4,"price_save":"136.60","price_extras":494,"tax":"494.00","lower_bed_type_2":null}', true),
+            'cart_data' => json_decode(
+                '{"event_id":"1","cabin_type":"private-cabin","addons":[{"id":13,"code":"TAX","type":"ADDON","operation":"FIXED","value":"494.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T21:46:21.000000Z","system":true},{"id":7,"code":"MEMBERSHIP_BLACK","type":"DISCOUNT","operation":"PERCENTAGE","value":"10.00","restrictions":null,"event_id":1,"created_at":"2025-03-28T17:15:58.000000Z","updated_at":"2025-03-28T17:15:58.000000Z","system":true}],"step":7,"payment_plan":"INSTALLMENTS","number_of_installments":"5","choose_your_cabin":false,"cabin_conf_accp":true,"cabin_number":null,"reservation_id":215,"reservation_timestamp":"Wed, 11 Jun 2025 22:07:13 GMT","cabin_price":"1366.00","cabin_capacity":4,"cabin_code":"3V","cabin_category":5,"cabin_category_decks":"6,7,8,9,10","cabin_category_type":"Interior","single_t_agreement":false,"time_to_cancel":20,"price_total":6893.6,"price_total_passenger":1723.4,"price_save":"136.60","price_extras":494,"tax":"494.00","lower_bed_type_2":null}',
+                true,
+            ),
         ])->create();
 
         $request = StoreBookingRequest::create('/booking-init', 'POST', $data);
@@ -360,7 +371,7 @@ describe('store', function () {
             ...collect([-5, 0, 5, [], true, false])
                 ->map(fn($invalid) => ['cart.cabin_price', $invalid])
                 ->all(),
-            ...collect([null, '', -5, 5, [], 'string',])
+            ...collect([null, '', -5, 5, [], 'string'])
                 ->map(fn($invalid) => ['cart.choose_your_cabin', $invalid])
                 ->all(),
             ...collect([-5, [], 'string', true, false])
@@ -369,10 +380,10 @@ describe('store', function () {
             ...collect([null, '', -5, [], 'string', true, false])
                 ->map(fn($invalid) => ['cart.price_total', $invalid])
                 ->all(),
-            ...collect([null, '', -5, 5, [], 'string',])
+            ...collect([null, '', -5, 5, [], 'string'])
                 ->map(fn($invalid) => ['cart.cabin_conf_accp', $invalid])
                 ->all(),
-            ...collect([null, '', -5, 5, [], 'string',])
+            ...collect([null, '', -5, 5, [], 'string'])
                 ->map(fn($invalid) => ['cart.single_t_agreement', $invalid])
                 ->all(),
             ...collect([null, '', -5, 0, 5, [], true, false])
@@ -388,8 +399,7 @@ describe('store', function () {
         ];
     });
 
-    function getBaseValidData($params = []): array
-    {
+    function getBaseValidData($params = []): array {
         $base = [
             'language' => 'en',
             'address_line_1' => '123 Street',

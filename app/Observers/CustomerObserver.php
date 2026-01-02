@@ -7,8 +7,7 @@ use App\Enums\GlobalLog\LogActionCustomer;
 use App\Models\User;
 use App\Support\GlobalLogger;
 
-class CustomerObserver
-{
+class CustomerObserver {
     //same as app/Repositories/CustomerRepository.php:172 - pick what you like best
     //Currently the CustomerRepository was picked - Zoltan
     /*public function updated(User $customer): void
@@ -98,15 +97,9 @@ class CustomerObserver
     }*/
 
     //Does not work now, since we don't delete, but update the email to deleted_....@....
-    public function deleted(User $customer): void
-    {
+    public function deleted(User $customer): void {
         // Reload all relationships to get latest values
-        $customer->load([
-            'tags',
-            'detail',
-            'survivorNumber',
-            'customerAddress',
-        ]);
+        $customer->load(['tags', 'detail', 'survivorNumber', 'customerAddress']);
 
         // Prepare 'before' data from original attributes
         $before = [
@@ -150,7 +143,7 @@ class CustomerObserver
             sprintf('Customer updated (%s)', $customer->email),
             [
                 'before' => $before,
-            ]
+            ],
         );
     }
 }

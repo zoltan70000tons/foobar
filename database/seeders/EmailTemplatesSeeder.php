@@ -7,13 +7,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
-class EmailTemplatesSeeder extends Seeder
-{
+class EmailTemplatesSeeder extends Seeder {
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         DB::table('email_templates')->truncate();
         $languages = ['de', 'en', 'es'];
         $basePath = base_path('database' . DIRECTORY_SEPARATOR . 'seeders' . DIRECTORY_SEPARATOR . 'html_templates');
@@ -80,8 +78,7 @@ class EmailTemplatesSeeder extends Seeder
         }
     }
 
-    function removeXXWords($text)
-    {
+    function removeXXWords($text) {
         return trim(preg_replace('/XX[^ ]+XX|\bX+\b/', '', $text));
     }
 }

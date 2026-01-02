@@ -1,38 +1,38 @@
-import React, { useMemo, useState } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { Container, Grid, Toolbar, Box, Button, Autocomplete, TextField } from '@mui/material';
-import { usePermissions } from '@/Providers/PermissionContext';
-import 'dayjs/locale/en';
-import { Permissions } from '@/enums/PermissionEnum';
-import MuiTable from '@/Components/tables/MuiTable';
-import { Visibility, Check, Close, Beenhere } from '@mui/icons-material';
-import axios from 'axios';
+import React, { useMemo, useState } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head, router } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { Container, Grid, Toolbar, Box, Button, Autocomplete, TextField } from "@mui/material";
+import { usePermissions } from "@/Providers/PermissionContext";
+import "dayjs/locale/en";
+import { Permissions } from "@/enums/PermissionEnum";
+import MuiTable from "@/Components/tables/MuiTable";
+import { Visibility, Check, Close, Beenhere } from "@mui/icons-material";
+import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import type { AxiosResponse } from "axios";
 import NewBookingModal from "@/Pages/Bookings/NewBookingModal";
 
 enum PotentialSurvivorMatchesTypes {
-  'match' = 'Match',
-  'double_booking' = 'Double Booking',
+  "match" = "Match",
+  "double_booking" = "Double Booking",
 }
-type PotentialSurvivorMatchesTypesKeys = 'match' | 'double_booking';
+type PotentialSurvivorMatchesTypesKeys = "match" | "double_booking";
 
 export enum PotentialSurvivorMatchStatus {
-  InProgress = 'in_progress',
-  Reviewed = 'reviewed',
-  Approved = 'approved',
-  Rejected = 'rejected',
-  Resolved = 'resolved',
+  InProgress = "in_progress",
+  Reviewed = "reviewed",
+  Approved = "approved",
+  Rejected = "rejected",
+  Resolved = "resolved",
 }
 
 export const PotentialSurvivorMatchStatusLabel: Record<PotentialSurvivorMatchStatus, string> = {
-  [PotentialSurvivorMatchStatus.InProgress]: 'In Progress',
-  [PotentialSurvivorMatchStatus.Reviewed]: 'Reviewed',
-  [PotentialSurvivorMatchStatus.Approved]: 'Approved',
-  [PotentialSurvivorMatchStatus.Rejected]: 'Rejected',
-  [PotentialSurvivorMatchStatus.Resolved]: 'Resolved',
+  [PotentialSurvivorMatchStatus.InProgress]: "In Progress",
+  [PotentialSurvivorMatchStatus.Reviewed]: "Reviewed",
+  [PotentialSurvivorMatchStatus.Approved]: "Approved",
+  [PotentialSurvivorMatchStatus.Rejected]: "Rejected",
+  [PotentialSurvivorMatchStatus.Resolved]: "Resolved",
 };
 
 export type PotentialSurvivorMatches = {
@@ -53,7 +53,7 @@ export type PotentialSurvivorMatches = {
   user_first_name: string;
   user_last_name: string;
   data: any;
-}
+};
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -63,124 +63,118 @@ type Props = PageProps & {
 
 const Index = ({ auth, potentialMatches, statuses }: Props) => {
   const { hasPermission } = usePermissions();
-  const {showSnackbar} = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const [selectedStatuses, setSelectedStatuses] = useState([PotentialSurvivorMatchStatus.InProgress]);
 
   const columns = useMemo(
     () => [
       {
-        header: 'Score',
-        accessor: 'score',
+        header: "Score",
+        accessor: "score",
         filterable: false,
         sortable: true,
-        width: '6%',
-        draw: (row: PotentialSurvivorMatches) => (
-          <>{ row.score.toFixed(2) }</>
-        ),
+        width: "6%",
+        draw: (row: PotentialSurvivorMatches) => <>{row.score.toFixed(2)}</>,
       },
       {
-        header: 'Type',
-        accessor: 'type',
+        header: "Type",
+        accessor: "type",
         filterable: true,
         sortable: true,
-        width: '8%',
-        draw: (row: PotentialSurvivorMatches) => (
-          <>{ PotentialSurvivorMatchesTypes[row.type] }</>
-        ),
+        width: "8%",
+        draw: (row: PotentialSurvivorMatches) => <>{PotentialSurvivorMatchesTypes[row.type]}</>,
       },
       {
-        header: 'Pax Name',
-        accessor: 'passenger_name',
+        header: "Pax Name",
+        accessor: "passenger_name",
         filterable: true,
         sortable: true,
-        width: '15%',
+        width: "15%",
       },
       {
-        accessor: 'passenger_dob',
-        header: 'Pax DOB',
+        accessor: "passenger_dob",
+        header: "Pax DOB",
         filterable: true,
         sortable: true,
-        width: '15%',
+        width: "15%",
       },
       {
-        header: 'User Name',
-        accessor: 'user_name',
+        header: "User Name",
+        accessor: "user_name",
         filterable: true,
         sortable: true,
-        width: '15%',
+        width: "15%",
       },
       {
-        accessor: 'user_dob',
-        header: 'User DOB',
+        accessor: "user_dob",
+        header: "User DOB",
         filterable: true,
         sortable: true,
-        width: '15%',
+        width: "15%",
       },
       {
-        header: 'Status',
-        accessor: 'status',
+        header: "Status",
+        accessor: "status",
         filterable: true,
         sortable: true,
-        width: '14%',
-        draw: (row: PotentialSurvivorMatches) => (
-          <>{ PotentialSurvivorMatchStatusLabel[row.status] }</>
-        ),
+        width: "14%",
+        draw: (row: PotentialSurvivorMatches) => <>{PotentialSurvivorMatchStatusLabel[row.status]}</>,
       },
       {
-        header: 'Actions',
-        accessor: 'id',
+        header: "Actions",
+        accessor: "id",
         disableFilter: true,
-        width: '12%',
+        width: "12%",
         draw: (row: PotentialSurvivorMatches) => (
           <>
             {row.status === PotentialSurvivorMatchStatus.InProgress && (
-              <Box sx={{ display: 'flex', gap: '4px' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
+              <Box sx={{ display: "flex", gap: "4px" }}>
+                <div style={{ display: "flex", gap: "10px" }}>
                   {hasPermission(Permissions.ViewCustomers) && (
                     <Visibility
                       onClick={() => {
-                        router.get(route('matches.show', { id: row.id }));
+                        router.get(route("matches.show", { id: row.id }));
                       }}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                     />
                   )}
                 </div>
-                {row.type === 'match' && (
+                {row.type === "match" && (
                   <>
                     <div>
                       {hasPermission(Permissions.EditCustomers) && (
                         <Check
                           color="success"
                           onClick={() => {
-                            router.put(route('matches.update', { id: row.id }));
+                            router.put(route("matches.update", { id: row.id }));
                           }}
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                         />
                       )}
                     </div>
                     <div>
-                      { hasPermission(Permissions.DeleteCustomers) && (
+                      {hasPermission(Permissions.DeleteCustomers) && (
                         <Close
                           color="error"
                           onClick={() => {
-                            router.delete(route('matches.destroy', { id: row.id }));
+                            router.delete(route("matches.destroy", { id: row.id }));
                           }}
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                         />
                       )}
                     </div>
                   </>
                 )}
-                {row.type === 'double_booking' && (
+                {row.type === "double_booking" && (
                   <div>
                     {hasPermission(Permissions.EditCustomers) && (
                       <Beenhere
                         color="success"
                         onClick={() => {
-                          router.put(route('matches.resolve', { id: row.id }));
+                          router.put(route("matches.resolve", { id: row.id }));
                         }}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: "pointer" }}
                       />
                     )}
                   </div>
@@ -188,14 +182,14 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
               </Box>
             )}
             {row.status !== PotentialSurvivorMatchStatus.InProgress && (
-              <Box sx={{ display: 'flex', gap: '4px' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
+              <Box sx={{ display: "flex", gap: "4px" }}>
+                <div style={{ display: "flex", gap: "10px" }}>
                   {hasPermission(Permissions.ViewCustomers) && (
                     <Visibility
                       onClick={() => {
-                        router.get(route('matches.show', { id: row.id }));
+                        router.get(route("matches.show", { id: row.id }));
                       }}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                     />
                   )}
                 </div>
@@ -212,10 +206,10 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
     page: number,
     rowsPerPage: number,
     filters: { [key: string]: string },
-    sort: { key: string; direction: 'asc' | 'desc' },
+    sort: { key: string; direction: "asc" | "desc" },
   ): Promise<{ data: PotentialSurvivorMatches[]; total: number }> => {
     try {
-      const response = await axios.get('/potential-survivor-matches/paginated', {
+      const response = await axios.get("/potential-survivor-matches/paginated", {
         params: {
           page,
           per_page: rowsPerPage,
@@ -234,29 +228,28 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
         total: response.data?.total ?? 0,
       };
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error("Error fetching customers:", error);
       return { data: [], total: 0 };
     }
   };
 
   const handleManualSync = async () => {
-    showSnackbar('Sync started successfully', 'success');
+    showSnackbar("Sync started successfully", "success");
 
-    await axios.post<{ status: number; output: string }>(
-      route("matches.run-manual-sync")
-    )
-    .then((res: AxiosResponse<{ status: number; output: string }>) => {
-      if (res?.data?.status === 0) {
-        showSnackbar(res.data.output, 'success');
-      } else {
-        showSnackbar('Something went wrong', 'error');
-      }
-    })
-    .catch(() => showSnackbar('Something went wrong', 'error'));
-  }
+    await axios
+      .post<{ status: number; output: string }>(route("matches.run-manual-sync"))
+      .then((res: AxiosResponse<{ status: number; output: string }>) => {
+        if (res?.data?.status === 0) {
+          showSnackbar(res.data.output, "success");
+        } else {
+          showSnackbar("Something went wrong", "error");
+        }
+      })
+      .catch(() => showSnackbar("Something went wrong", "error"));
+  };
 
   return (
-    <AuthenticatedLayout user={auth.user} header={'Potential Survivor Matches'}>
+    <AuthenticatedLayout user={auth.user} header={"Potential Survivor Matches"}>
       <Head title="Potential Survivor Matches" />
       <Toolbar sx={{ mt: 8 }}>
         <Button variant="outlined" color="secondary" onClick={handleManualSync} sx={{ mr: 2 }}>
@@ -282,13 +275,7 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
                   getOptionLabel={(option) => PotentialSurvivorMatchStatusLabel[option]}
                   value={selectedStatuses}
                   onChange={(event, newValue) => setSelectedStatuses(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      placeholder="Filter by Status"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Status" />}
                   sx={{ minWidth: 250 }}
                 />
               </Box>

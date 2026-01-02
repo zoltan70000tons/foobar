@@ -1,30 +1,22 @@
-<?php 
+<?php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class InstallmentPayment extends Model
-{
+class InstallmentPayment extends Model {
     use HasFactory;
 
-    protected $table = 'installment_payment'; 
+    protected $table = 'installment_payment';
 
-    protected $fillable = [
-        'installment_id',
-        'payment_id',
-        'amount_paid',
-        'status'
-    ];
+    protected $fillable = ['installment_id', 'payment_id', 'amount_paid', 'status'];
 
-    public function installment()
-    {
+    public function installment() {
         return $this->belongsTo(Installment::class);
     }
 
-    public function payment()
-    {
+    public function payment() {
         return $this->belongsTo(Payment::class);
     }
 }

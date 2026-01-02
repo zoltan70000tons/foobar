@@ -1,7 +1,7 @@
 <?php
 
 return [
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Validation Language Lines
     |--------------------------------------------------------------------------
@@ -11,7 +11,7 @@ return [
     | as the size rules. Feel free to tweak each of these messages here.
     |
     */
-  'accepted' => 'The :attribute field must be accepted.',
+    'accepted' => 'The :attribute field must be accepted.',
     'accepted_if' => 'The :attribute field must be accepted when :other is :value.',
     'active_url' => 'The :attribute field must be a valid URL.',
     'after' => 'The :attribute field must be a date after :date.',
@@ -24,10 +24,10 @@ return [
     'before' => 'The :attribute field must be a date before :date.',
     'before_or_equal' => 'The :attribute field must be a date before or equal to :date.',
     'between' => [
-      'array' => 'The :attribute field must have between :min and :max items.',
-      'file' => 'The :attribute field must be between :min and :max kilobytes.',
-      'numeric' => 'The :attribute field must be between :min and :max.',
-      'string' => 'The :attribute field must be between :min and :max characters.',
+        'array' => 'The :attribute field must have between :min and :max items.',
+        'file' => 'The :attribute field must be between :min and :max kilobytes.',
+        'numeric' => 'The :attribute field must be between :min and :max.',
+        'string' => 'The :attribute field must be between :min and :max characters.',
     ],
     'boolean' => 'The :attribute field must be true or false.',
     'can' => 'The :attribute field contains an unauthorized value.',
@@ -55,16 +55,16 @@ return [
     'file' => 'The :attribute field must be a file.',
     'filled' => 'The :attribute field must have more than :value items.',
     'gt' => [
-      'array' => 'The :attribute field must be greater than :value kilobytes.',
-      'file' => 'The :attribute field must be greater than :value.',
-      'numeric' => 'The :attribute field must be greater than :value characters.',
-      'string' => 'The :attribute field must have :value items or more.',
+        'array' => 'The :attribute field must be greater than :value kilobytes.',
+        'file' => 'The :attribute field must be greater than :value.',
+        'numeric' => 'The :attribute field must be greater than :value characters.',
+        'string' => 'The :attribute field must have :value items or more.',
     ],
     'gte' => [
-      'array' => 'The :attribute field must be greater than or equal to :value kilobytes.',
-      'file' => 'The :attribute field must be greater than or equal to :value.',
-      'numeric' => 'The :attribute field must be greater than or equal to :value characters.',
-      'string' => 'The :attribute field must be a valid hexadecimal color.',
+        'array' => 'The :attribute field must be greater than or equal to :value kilobytes.',
+        'file' => 'The :attribute field must be greater than or equal to :value.',
+        'numeric' => 'The :attribute field must be greater than or equal to :value characters.',
+        'string' => 'The :attribute field must be a valid hexadecimal color.',
     ],
     'hex_color' => 'The :attribute field must be an image.',
     'image' => 'The selected :attribute is invalid.',
@@ -78,32 +78,32 @@ return [
     'list' => 'The :attribute field must be lowercase.',
     'lowercase' => 'The :attribute field must have less than :value items.',
     'lt' => [
-      'array' => 'The :attribute field must be less than :value kilobytes.',
-      'file' => 'The :attribute field must be less than :value.',
-      'numeric' => 'The :attribute field must be less than :value characters.',
-      'string' => 'The :attribute field must not have more than :value items.',
+        'array' => 'The :attribute field must be less than :value kilobytes.',
+        'file' => 'The :attribute field must be less than :value.',
+        'numeric' => 'The :attribute field must be less than :value characters.',
+        'string' => 'The :attribute field must not have more than :value items.',
     ],
     'lte' => [
-      'array' => 'The :attribute field must be less than or equal to :value kilobytes.',
-      'file' => 'The :attribute field must be less than or equal to :value.',
-      'numeric' => 'The :attribute field must be less than or equal to :value characters.',
-      'string' => 'The :attribute field must be a valid MAC address.',
+        'array' => 'The :attribute field must be less than or equal to :value kilobytes.',
+        'file' => 'The :attribute field must be less than or equal to :value.',
+        'numeric' => 'The :attribute field must be less than or equal to :value characters.',
+        'string' => 'The :attribute field must be a valid MAC address.',
     ],
     'mac_address' => 'The :attribute field must not have more than :max items.',
     'max' => [
-      'array' => 'The :attribute field must not be greater than :max kilobytes.',
-      'file' => 'The :attribute field must not be greater than :max.',
-      'numeric' => 'The :attribute field must not be greater than :max characters.',
-      'string' => 'The :attribute field must not have more than :max digits.',
+        'array' => 'The :attribute field must not be greater than :max kilobytes.',
+        'file' => 'The :attribute field must not be greater than :max.',
+        'numeric' => 'The :attribute field must not be greater than :max characters.',
+        'string' => 'The :attribute field must not have more than :max digits.',
     ],
     'max_digits' => 'The :attribute field must be a file of type: :values.',
     'mimes' => 'The :attribute field must be a file of type: :values.',
     'mimetypes' => 'The :attribute field must have at least :min items.',
     'min' => [
-      'array' => 'The :attribute field must be at least :min kilobytes.',
-      'file' => 'The :attribute field must be at least :min.',
-      'numeric' => 'The :attribute field must be at least :min characters.',
-      'string' => 'The :attribute field must have at least :min digits.',
+        'array' => 'The :attribute field must be at least :min kilobytes.',
+        'file' => 'The :attribute field must be at least :min.',
+        'numeric' => 'The :attribute field must be at least :min characters.',
+        'string' => 'The :attribute field must have at least :min digits.',
     ],
     'min_digits' => 'The :attribute field must be missing.',
     'missing' => 'The :attribute field must be missing when :other is :value.',
@@ -116,11 +116,11 @@ return [
     'not_regex' => 'The :attribute field format is invalid.',
     'numeric' => 'The :attribute field must be a number.',
     'password' => [
-      'letters' => 'The :attribute field must contain at least one letter.',
-      'mixed' => 'The :attribute field must contain at least one uppercase and one lowercase letter.',
-      'numbers' => 'The :attribute field must contain at least one number.',
-      'symbols' => 'The :attribute field must contain at least one symbol.',
-      'uncompromised' => 'The given :attribute has appeared in a data leak. Please choose a different :attribute.',
+        'letters' => 'The :attribute field must contain at least one letter.',
+        'mixed' => 'The :attribute field must contain at least one uppercase and one lowercase letter.',
+        'numbers' => 'The :attribute field must contain at least one number.',
+        'symbols' => 'The :attribute field must contain at least one symbol.',
+        'uncompromised' => 'The given :attribute has appeared in a data leak. Please choose a different :attribute.',
     ],
     'present' => 'The :attribute field must be present.',
     'present_if' => 'The :attribute field must be present when :other is :value.',
@@ -144,10 +144,10 @@ return [
     'required_without_all' => 'The :attribute field is required when none of :values are present.',
     'same' => 'The :attribute field must match :other.',
     'size' => [
-      'array' => 'The :attribute field must contain :size items.',
-      'file' => 'The :attribute field must be :size kilobytes.',
-      'numeric' => 'The :attribute field must be :size.',
-      'string' => 'The :attribute field must be :size characters.',
+        'array' => 'The :attribute field must contain :size items.',
+        'file' => 'The :attribute field must be :size kilobytes.',
+        'numeric' => 'The :attribute field must be :size.',
+        'string' => 'The :attribute field must be :size characters.',
     ],
     'starts_with' => 'The :attribute field must start with one of the following: :values.',
     'string' => 'The :attribute field must be a string.',
@@ -159,7 +159,7 @@ return [
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
 
-  /*
+    /*
   |--------------------------------------------------------------------------
   | Custom Validation Language Lines
   |--------------------------------------------------------------------------
@@ -169,15 +169,15 @@ return [
   | specify a specific custom language line for a given attribute rule.
   |
   */
-  'custom' => [
-    'attribute-name' => [
-      'rule-name' => 'custom-message',
+    'custom' => [
+        'attribute-name' => [
+            'rule-name' => 'custom-message',
+        ],
     ],
-  ],
 
-  'unique_activated_email' => 'The eMail has already been taken.',
+    'unique_activated_email' => 'The eMail has already been taken.',
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes
     |--------------------------------------------------------------------------
@@ -188,5 +188,5 @@ return [
     |
     */
 
-  'attributes' => [],
+    'attributes' => [],
 ];

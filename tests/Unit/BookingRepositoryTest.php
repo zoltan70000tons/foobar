@@ -14,14 +14,12 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Repositories\BookingRepository;
 
-class BookingRepositoryTest extends TestCase
-{
+class BookingRepositoryTest extends TestCase {
     use RefreshDatabase;
 
     protected BookingRepository $bookingRepository;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
 
         $this->seed(\Database\Seeders\CabinTypeSeeder::class);
@@ -39,24 +37,21 @@ class BookingRepositoryTest extends TestCase
         );
     }
 
-    public function test_create_booking_without_cabin_or_temp_id_throws_exception()
-    {
+    public function test_create_booking_without_cabin_or_temp_id_throws_exception() {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('You must provide a Cabin object or a Temporary Booking ID.');
 
         $this->bookingRepository->createBooking([], [], null, null);
     }
 
-    public function test_create_booking_with_invalid_temporary_booking_id()
-    {
+    public function test_create_booking_with_invalid_temporary_booking_id() {
         $response = $this->bookingRepository->createBooking([], [], null, 999);
 
         $this->assertTrue($response['error']);
         $this->assertEquals('Temporary booking ID not found.', $response['message']);
     }
 
-    public function test_create_booking_with_valid_cabin()
-    {
+    public function test_create_booking_with_valid_cabin() {
         $cabin = Cabin::factory()->create();
         $event = Event::factory()->create();
         $user = User::factory()->create();
@@ -71,7 +66,9 @@ class BookingRepositoryTest extends TestCase
             'event_id' => $event->id,
             'customer_id' => $user->id,
             'number_of_installments' => 4,
-        ])->make()->toArray();
+        ])
+            ->make()
+            ->toArray();
         $passengerData = [
             'first_name' => 'John',
             'last_name' => 'Doe',
@@ -83,26 +80,15 @@ class BookingRepositoryTest extends TestCase
         $mockPassenger = Passenger::factory($passengerData)->make();
         $mockPassenger->id = 1;
 
-        $this->bookingRepository->passengerRepository
-            ->shouldReceive('create')
-            ->once()
-            ->andReturn($mockPassenger);
+        $this->bookingRepository->passengerRepository->shouldReceive('create')->once()->andReturn($mockPassenger);
 
-        $this->bookingRepository->paymentService
-            ->shouldReceive('createInstallments')
-            ->once();
+        $this->bookingRepository->paymentService->shouldReceive('createInstallments')->once();
 
-        $this->bookingRepository->adjustmentsRepository
-            ->shouldReceive('getAdjustmentsBySurvivorNumber')
-            ->andReturn(3);
+        $this->bookingRepository->adjustmentsRepository->shouldReceive('getAdjustmentsBySurvivorNumber')->andReturn(3);
 
-        $this->bookingRepository->adjustmentsRepository
-            ->shouldReceive('attachAdjustments')
-            ->once();
+        $this->bookingRepository->adjustmentsRepository->shouldReceive('attachAdjustments')->once();
 
-        $this->bookingRepository->paymentInfoService
-            ->shouldReceive('syncAllocatedCost')
-            ->once();
+        $this->bookingRepository->paymentInfoService->shouldReceive('syncAllocatedCost')->once();
 
         $response = $this->bookingRepository->createBooking($bookingData, $passengerData, $cabin);
 

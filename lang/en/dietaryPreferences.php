@@ -1,7 +1,7 @@
 <?php
 
 return [
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Dietary Preferences Translations
     |--------------------------------------------------------------------------
@@ -11,12 +11,12 @@ return [
     |
     */
 
-  'vegetarian' => 'Vegetarian',
-  'vegan' => 'Vegan',
-  'gluten_free' => 'Gluten-Free',
-  'nut_allergy' => 'Nut Allergy',
-  'kosher' => 'Kosher',
-  'halal' => 'Halal',
-  'lactose_intolerant' => 'Lactose Intolerant',
-  'diabetic' => 'Diabetic',
+    'vegetarian' => 'Vegetarian',
+    'vegan' => 'Vegan',
+    'gluten_free' => 'Gluten-Free',
+    'nut_allergy' => 'Nut Allergy',
+    'kosher' => 'Kosher',
+    'halal' => 'Halal',
+    'lactose_intolerant' => 'Lactose Intolerant',
+    'diabetic' => 'Diabetic',
 ];

@@ -4,21 +4,18 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class HelpersServiceProvider extends ServiceProvider
-{
+class HelpersServiceProvider extends ServiceProvider {
     /**
      * Register services.
      */
-    public function register(): void
-    {
+    public function register(): void {
         require_once app_path() . '/Helpers/helpers.php';
     }
 
     /**
      * Bootstrap services.
      */
-    public function boot(): void
-    {
+    public function boot(): void {
         //
     }
 }

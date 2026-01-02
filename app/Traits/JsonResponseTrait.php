@@ -4,8 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Http\Request;
 
-trait JsonResponseTrait
-{
+trait JsonResponseTrait {
     /**
      * Return a success response based on the request type.
      *
@@ -14,8 +13,7 @@ trait JsonResponseTrait
      * @param int $statusCode
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    protected function successResponse($data, $message = '', $statusCode = 200)
-    {
+    protected function successResponse($data, $message = '', $statusCode = 200) {
         $response = [
             'status' => 'success',
             'message' => $message,
@@ -33,8 +31,7 @@ trait JsonResponseTrait
      * @param mixed $data
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    protected function errorResponse($message, $statusCode = 400, $data = null)
-    {
+    protected function errorResponse($message, $statusCode = 400, $data = null) {
         $response = [
             'status' => 'error',
             'message' => $message,
@@ -51,8 +48,7 @@ trait JsonResponseTrait
      * @param int $statusCode
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    protected function handleResponse(array $response, int $statusCode)
-    {
+    protected function handleResponse(array $response, int $statusCode) {
         $request = request();
         if ($request instanceof Request && $request->inertia()) {
             return redirect()->back()->with('flash', $response);

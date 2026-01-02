@@ -11,19 +11,16 @@ use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
-
-class TagRepository
-{
-    public function getTagsForBooking(Booking $booking)
-    {
+class TagRepository {
+    public function getTagsForBooking(Booking $booking) {
         return $booking->tags;
     }
 
     /** supported types → model*/
     private const MAP = [
-        'booking'  => [Booking::class,  'bookings'],
-        'cabin'    => [Cabin::class,    'cabins'],
-        'user'     => [User::class,     'users'],
+        'booking' => [Booking::class, 'bookings'],
+        'cabin' => [Cabin::class, 'cabins'],
+        'user' => [User::class, 'users'],
         'customer' => [User::class, 'customers'],
     ];
 
@@ -33,8 +30,12 @@ class TagRepository
      * @param 'any'|'all' $mode        'any' = has any; 'all' = has all
      * @param int $perPage
      */
-    public function searchByTags(array $tagNames, string $type, string $mode = 'any', int $perPage = 15): LengthAwarePaginator
-    {
+    public function searchByTags(
+        array $tagNames,
+        string $type,
+        string $mode = 'any',
+        int $perPage = 15,
+    ): LengthAwarePaginator {
         $type = strtolower($type);
         $mode = strtolower($mode);
 
@@ -76,8 +77,7 @@ class TagRepository
         return $q->paginate($perPage)->withQueryString();
     }
 
-    public function attachToEntity(Tag $tag, string $entityType, string $entityId): void
-    {
+    public function attachToEntity(Tag $tag, string $entityType, string $entityId): void {
         $entityType = strtolower($entityType);
         if (!isset(self::MAP[$entityType])) {
             throw new InvalidArgumentException("Not supported Type: {$entityType}");
@@ -85,25 +85,25 @@ class TagRepository
 
         $tag->taggings()->firstOrCreate([
             'entity_type' => $entityType,
-            'entity_id'   => (string)$entityId,
+            'entity_id' => (string) $entityId,
         ]);
     }
 
-    public function detachFromEntity(Tag $tag, string $entityType, string $entityId): void
-    {
+    public function detachFromEntity(Tag $tag, string $entityType, string $entityId): void {
         $entityType = strtolower($entityType);
         if (!isset(self::MAP[$entityType])) {
             throw new InvalidArgumentException("Not supported Type: {$entityType}");
         }
 
-        $tag->taggings()->where([
-            'entity_type' => $entityType,
-            'entity_id'   => (string)$entityId,
-        ])->delete();
+        $tag->taggings()
+            ->where([
+                'entity_type' => $entityType,
+                'entity_id' => (string) $entityId,
+            ])
+            ->delete();
     }
-    
-    public function getAll(string $type = 'booking')
-    {
+
+    public function getAll(string $type = 'booking') {
         $q = Tag::query();
         if ($type !== null) {
             $type = strtolower($type);

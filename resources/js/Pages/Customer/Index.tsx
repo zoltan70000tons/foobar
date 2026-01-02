@@ -1,16 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, useForm } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { Container, Grid, Toolbar, Box, Button, Chip, Autocomplete, TextField } from '@mui/material';
-import { usePermissions } from '@/Providers/PermissionContext';
-import 'dayjs/locale/en';
-import { Permissions } from '@/enums/PermissionEnum';
-import MuiTable from '@/Components/tables/MuiTable';
+import React, { useEffect, useMemo, useState } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head, router, useForm } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { Container, Grid, Toolbar, Box, Button, Chip, Autocomplete, TextField } from "@mui/material";
+import { usePermissions } from "@/Providers/PermissionContext";
+import "dayjs/locale/en";
+import { Permissions } from "@/enums/PermissionEnum";
+import MuiTable from "@/Components/tables/MuiTable";
 // import LoadingOverlay from '@/Components/LoadingOverlay';
-import { Visibility } from '@mui/icons-material';
-import axios from 'axios';
-import { Customer } from '@/interfaces/Customer';
+import { Visibility } from "@mui/icons-material";
+import axios from "axios";
+import { Customer } from "@/interfaces/Customer";
 
 type Customers = {
   current_page: number;
@@ -26,7 +26,7 @@ type Customers = {
   prev_page_url: string | null;
   to: number;
   total: number;
-}
+};
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -42,7 +42,7 @@ const Index = ({ auth, customers, userTags }: Props) => {
   const canViewCustomerTags = hasPermission(Permissions.ViewCustomerTags);
 
   const [loading, setLoading] = useState(true);
-  const userTagAutocomleteOptions = userTags.map(item => ({
+  const userTagAutocomleteOptions = userTags.map((item) => ({
     ...item,
     label: item.name,
   }));
@@ -56,39 +56,39 @@ const Index = ({ auth, customers, userTags }: Props) => {
   const columns = useMemo(
     () => [
       {
-        header: 'eMail',
-        accessor: 'email',
+        header: "eMail",
+        accessor: "email",
         filterable: true,
         sortable: true,
-        width: '26%',
+        width: "26%",
       },
       {
-        accessor: 'first_name',
-        header: 'First Name',
+        accessor: "first_name",
+        header: "First Name",
         filterable: true,
         sortable: true,
-        width: '17%',
+        width: "17%",
       },
       {
-        accessor: 'last_name',
-        header: 'Last Name',
+        accessor: "last_name",
+        header: "Last Name",
         filterable: true,
         sortable: true,
-        width: '17%',
+        width: "17%",
       },
       {
-        accessor: 'dob',
-        header: 'Date of Birth',
+        accessor: "dob",
+        header: "Date of Birth",
         filterable: true,
         sortable: true,
-        width: '17%',
+        width: "17%",
       },
       {
-        accessor: 'survivor_number',
-        header: 'Survivor Number',
+        accessor: "survivor_number",
+        header: "Survivor Number",
         filterable: true,
         sortable: true,
-        width: '17%',
+        width: "17%",
       },
       {
         header: "Tags",
@@ -97,7 +97,7 @@ const Index = ({ auth, customers, userTags }: Props) => {
         draw: (row: Customer) => (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
             {Array.isArray(row.tags) && row.tags.length > 0 ? (
-              row.tags.map((tag: {label: string; color: string}, index: number) => {
+              row.tags.map((tag: { label: string; color: string }, index: number) => {
                 return (
                   <Chip
                     key={tag.label}
@@ -119,25 +119,25 @@ const Index = ({ auth, customers, userTags }: Props) => {
         ),
       },
       {
-        accessor: 'membership_type',
-        header: 'Membership',
+        accessor: "membership_type",
+        header: "Membership",
         filterable: true,
         sortable: true,
-        width: '13%',
+        width: "13%",
       },
       {
-        header: 'Actions',
-        accessor: 'id',
+        header: "Actions",
+        accessor: "id",
         disableFilter: true,
-        width: '13%',
+        width: "13%",
         draw: (row: Customer) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             {hasPermission(Permissions.ViewCustomers) && (
               <Visibility
                 onClick={() => {
-                  router.get(route('customers.show', { user: row.user_id }));
+                  router.get(route("customers.show", { user: row.user_id }));
                 }}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               />
             )}
           </div>
@@ -148,22 +148,22 @@ const Index = ({ auth, customers, userTags }: Props) => {
   );
 
   const handleCreate = () => {
-    get(route('customers.create', {}));
+    get(route("customers.create", {}));
   };
 
   const handleViewTags = () => {
-    get(route('tags.index', {}));
-  }
+    get(route("tags.index", {}));
+  };
 
   const fetchCustomers = async (
     page: number,
     rowsPerPage: number,
     filters: { [key: string]: string },
-    sort: { key: string; direction: 'asc' | 'desc' },
+    sort: { key: string; direction: "asc" | "desc" },
   ): Promise<{ data: Customer[]; total: number }> => {
-    console.log({selectedTags})
+    console.log({ selectedTags });
     try {
-      const response = await axios.get('/customers/paginated', {
+      const response = await axios.get("/customers/paginated", {
         params: {
           page,
           per_page: rowsPerPage,
@@ -182,13 +182,13 @@ const Index = ({ auth, customers, userTags }: Props) => {
         total: response.data?.total ?? 0,
       };
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error("Error fetching customers:", error);
       return { data: [], total: 0 };
     }
   };
 
   return (
-    <AuthenticatedLayout user={auth.user} header={'Customers'}>
+    <AuthenticatedLayout user={auth.user} header={"Customers"}>
       <Head title="Customers" />
       <Toolbar sx={{ mt: 8 }}>
         <Button variant="outlined" color="secondary" onClick={handleCreate} sx={{ mr: 2 }}>
@@ -220,7 +220,7 @@ const Index = ({ auth, customers, userTags }: Props) => {
                   value={selectedTags}
                   onChange={(event, newValue) => setSelectedTags(newValue)}
                   renderTags={(value: string[], getTagProps) =>
-                    value.map((option: {name: string; color: string}, index) => {
+                    value.map((option: { name: string; color: string }, index) => {
                       return (
                         <Chip
                           variant="outlined"

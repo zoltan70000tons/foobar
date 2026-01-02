@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  IconButton,
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Divider,
-  Typography,
-} from "@mui/material";
+import { IconButton, Box, Dialog, DialogTitle, DialogContent, Divider, Typography } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import CloseIcon from "@mui/icons-material/Close";
 import SinglePricingRowMobile from "./SinglePricingRowMobile";
@@ -20,11 +12,7 @@ type Props = {
   eventId: number;
 };
 
-export default function PricingRowsMobile({
-  data: allData,
-  eventId,
-  cabinTypeSlug,
-}: Props) {
+export default function PricingRowsMobile({ data: allData, eventId, cabinTypeSlug }: Props) {
   const data = allData.main_category.categories;
   const locale = "en";
 
@@ -46,26 +34,22 @@ export default function PricingRowsMobile({
 
   // Sorting and mapping
   const sortedData = [...data]
-  .sort((a, b) => a.display_order - b.display_order)
-  .map((rowData) => ({
-    ...rowData,
-    cabins: [...rowData.cabins].sort(
-      (a, b) => a.display_order - b.display_order
-    ),
-  }))
-  .filter((rowData) => rowData.cabins.length > 0);
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((rowData) => ({
+      ...rowData,
+      cabins: [...rowData.cabins].sort((a, b) => a.display_order - b.display_order),
+    }))
+    .filter((rowData) => rowData.cabins.length > 0);
 
   // recursive function to group data
-  function groupData (
+  function groupData(
     code: string,
     decksStatic: string,
     rowDataName: string,
     availablePrices: PriceAndCapacity[],
     cabinCategoryId: number,
     fullTitle: string,
-
-  ): MobileCabinRow[]
-  {
+  ): MobileCabinRow[] {
     const singleRowData: MobileCabinRow[] = [];
 
     availablePrices.forEach((price: PriceAndCapacity) => {
@@ -94,7 +78,6 @@ export default function PricingRowsMobile({
       const cabins = rowData.cabins;
 
       cabins.map((cabin: MobileCabinDetail) => {
-
         const code = cabin.code;
         const decksStatic = cabin.decks_static;
         const priceAndAvailability = cabin.price_and_availability;
@@ -103,17 +86,10 @@ export default function PricingRowsMobile({
 
         // if obj
         const availablePrices = (Object.values(priceAndAvailability) as PriceAndCapacity[]).filter(
-          (item: PriceAndCapacity) => item.price !== null
+          (item: PriceAndCapacity) => item.price !== null,
         );
 
-        const groupedData = groupData(
-          code,
-          decksStatic,
-          name,
-          availablePrices,
-          cabinCategoryId,
-          fullTitle
-        );
+        const groupedData = groupData(code, decksStatic, name, availablePrices, cabinCategoryId, fullTitle);
 
         result.push(groupedData);
       });
@@ -125,13 +101,9 @@ export default function PricingRowsMobile({
   const groupedCabins: MobileCabinRow[][] = dataStructure();
   const flatGroupedCabins: MobileCabinRow[] = groupedCabins.flat();
 
-  const descriptionObj =
-    selectedCabinDetail?.price_and_availability?.description;
+  const descriptionObj = selectedCabinDetail?.price_and_availability?.description;
 
-  const descriptionHTML =
-    descriptionObj?.[locale as keyof typeof descriptionObj] ??
-    descriptionObj?.en ??
-    "";
+  const descriptionHTML = descriptionObj?.[locale as keyof typeof descriptionObj] ?? descriptionObj?.en ?? "";
 
   return (
     <>
@@ -173,11 +145,7 @@ export default function PricingRowsMobile({
           },
         }}
       >
-        <DialogTitle
-          align="center"
-          id="Cabin Title"
-          sx={{ maxWidth: "400px", margin: "auto" }}
-        >
+        <DialogTitle align="center" id="Cabin Title" sx={{ maxWidth: "400px", margin: "auto" }}>
           {selectedCabinDetail?.full_title}
         </DialogTitle>
         <IconButton
@@ -204,7 +172,7 @@ export default function PricingRowsMobile({
             sx={{
               display: "flex",
               alignItems: "center",
-              flexDirection: {xs: "column", md: "row"},
+              flexDirection: { xs: "column", md: "row" },
               gap: 2,
             }}
           >

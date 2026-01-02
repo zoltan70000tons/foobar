@@ -1,13 +1,5 @@
 import React, { ChangeEvent, useState } from "react";
-import {
-  Box,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormHelperText,
-  Typography,
-} from "@mui/material";
+import { Box, FormControl, Select, MenuItem, InputLabel, FormHelperText, Typography } from "@mui/material";
 import countries from "i18n-iso-countries";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
@@ -39,14 +31,12 @@ const Country: React.FC<Props> = ({
   helperText,
   nameOfField,
   disabled = false,
-  size = '',
+  size = "",
 }) => {
   const [marginTop, setMarginTop] = useState("-7px");
   // Function to get country name based on language
   const getCountryName = (countryCode: string) => {
-    return (
-      countries.getName(countryCode, "en")
-    );
+    return countries.getName(countryCode, "en");
   };
 
   // Get all country codes
@@ -59,11 +49,7 @@ const Country: React.FC<Props> = ({
     return (
       <MenuItem key={countryCode} value={countryCode}>
         <Typography>
-          <Box
-            component={"span"}
-            className={`fi fi-${alpha2Country.toLocaleLowerCase()}`}
-            sx={{ mr: 1 }}
-          ></Box>
+          <Box component={"span"} className={`fi fi-${alpha2Country.toLocaleLowerCase()}`} sx={{ mr: 1 }}></Box>
           {getCountryName(countryCode)}
         </Typography>
       </MenuItem>
@@ -83,7 +69,9 @@ const Country: React.FC<Props> = ({
       }}
     >
       <FormControl fullWidth error={error}>
-        <InputLabel id="country-label" sx={size === 'small' ? { marginTop } : {}}>{label ? label : "Country"}</InputLabel>
+        <InputLabel id="country-label" sx={size === "small" ? { marginTop } : {}}>
+          {label ? label : "Country"}
+        </InputLabel>
         {/* <InputLabel>Country</InputLabel> */}
         <Select
           name={nameOfField}
@@ -92,7 +80,7 @@ const Country: React.FC<Props> = ({
           value={value}
           sx={{
             backgroundColor: "rgba(255, 255, 255, 0.05)",
-            ...(size === 'small' && { maxHeight: "40px" }),
+            ...(size === "small" && { maxHeight: "40px" }),
           }}
           onChange={handleChangeCountry}
           disabled={disabled}
@@ -100,16 +88,11 @@ const Country: React.FC<Props> = ({
             const alpha2 = countries.alpha3ToAlpha2(selected as string)?.toLowerCase();
             return (
               <Box display="flex" alignItems="center">
-                <Box
-                  component="span"
-                  className={`fi fi-${alpha2}`}
-                  sx={{ mr: 1 }}
-                />
+                <Box component="span" className={`fi fi-${alpha2}`} sx={{ mr: 1 }} />
                 {getCountryName(selected as string)}
               </Box>
             );
           }}
-
         >
           {CountryList}
         </Select>

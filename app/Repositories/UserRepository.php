@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\SurvivorNumber;
 
-class UserRepository
-{
-  public function getCurrentUser()
-  {
-    return Auth::user();
-  }
+class UserRepository {
+    public function getCurrentUser() {
+        return Auth::user();
+    }
 
-  /*
+    /*
   |--------------------------------------------------------------------------
   | Count users by email.
   |--------------------------------------------------------------------------
@@ -23,12 +21,13 @@ class UserRepository
   |  Used with Customers.
   |
   */
-  public function countUsersByEmail(string $email): int
-  {
-    return User::where('email', $email)->whereHas('roles', fn($query) => $query->where('name', 'Customer'))->count();
-  }
+    public function countUsersByEmail(string $email): int {
+        return User::where('email', $email)
+            ->whereHas('roles', fn($query) => $query->where('name', 'Customer'))
+            ->count();
+    }
 
-  /*
+    /*
   |--------------------------------------------------------------------------
   | Count activated users by email.
   |--------------------------------------------------------------------------
@@ -37,14 +36,13 @@ class UserRepository
   |  Used with Customers.
   |
   */
-  public function countActivatedUsersByEmail(string $email): int
-  {
-    return User::where('email', $email)
-      ->whereNotNull('email_verified_at') // Only activated users
-      ->count();
-  }
+    public function countActivatedUsersByEmail(string $email): int {
+        return User::where('email', $email)
+            ->whereNotNull('email_verified_at') // Only activated users
+            ->count();
+    }
 
-  /*
+    /*
   |--------------------------------------------------------------------------
   | Get all users with the same email.
   |--------------------------------------------------------------------------
@@ -53,12 +51,11 @@ class UserRepository
 
   |
   */
-  public function getUsersByEmail(string $email)
-  {
-    return User::where('email', $email)->whereHas('roles', fn($query) => $query->where('name', 'Customer'))->get();
-  }
+    public function getUsersByEmail(string $email) {
+        return User::where('email', $email)->whereHas('roles', fn($query) => $query->where('name', 'Customer'))->get();
+    }
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Update Duplicate Emails with Prefix
     |--------------------------------------------------------------------------
@@ -67,31 +64,28 @@ class UserRepository
     | with the same email by adding a prefix: `{original_email}+{survivor_number}`.
     |
     */
-  public function updateDuplicateEmails(string $email, string $claimedUserId)
-  {
-    DB::beginTransaction();
+    public function updateDuplicateEmails(string $email, string $claimedUserId) {
+        DB::beginTransaction();
 
-    try {
-      // Find all users with the same email (excluding the one that claimed it)
-      $duplicateUsers = User::where('email', $email)
-        ->where('id', '!=', $claimedUserId)
-        ->get();
+        try {
+            // Find all users with the same email (excluding the one that claimed it)
+            $duplicateUsers = User::where('email', $email)->where('id', '!=', $claimedUserId)->get();
 
-      foreach ($duplicateUsers as $duplicateUser) {
-        // Get the user's survivor number
-        $survivor = SurvivorNumber::where('user_id', $duplicateUser->id)->first();
-        if ($survivor) {
-          $prefixedEmail = $email . '+' . $survivor->survivor_number;
+            foreach ($duplicateUsers as $duplicateUser) {
+                // Get the user's survivor number
+                $survivor = SurvivorNumber::where('user_id', $duplicateUser->id)->first();
+                if ($survivor) {
+                    $prefixedEmail = $email . '+' . $survivor->survivor_number;
 
-          // Update user email with the prefixed version
-          $duplicateUser->update(['email' => $prefixedEmail]);
+                    // Update user email with the prefixed version
+                    $duplicateUser->update(['email' => $prefixedEmail]);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating duplicate emails: ' . $e->getMessage());
         }
-      }
-
-      DB::commit();
-    } catch (\Exception $e) {
-      DB::rollBack();
-      Log::error('Error updating duplicate emails: ' . $e->getMessage());
     }
-  }
 }

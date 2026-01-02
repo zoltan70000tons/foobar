@@ -11,69 +11,64 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 use Illuminate\Support\Facades\URL;
 
-class ActivateSurvivor extends Mailable implements ShouldQueue
-{
-  use Queueable, SerializesModels;
+class ActivateSurvivor extends Mailable implements ShouldQueue {
+    use Queueable, SerializesModels;
 
-  public $customer;
-  public $language;
-  public $survivorNumber;
-  public $activationLink;
+    public $customer;
+    public $language;
+    public $survivorNumber;
+    public $activationLink;
 
-  /**
-   * Create a new message instance.
-   */
-  public function __construct(User $customer, string $language, string $survivorNumber)
-  {
-    $this->customer = $customer;
-    $this->language = $language;
-    $this->survivorNumber = $survivorNumber;
-    $this->onQueue('emails');
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(User $customer, string $language, string $survivorNumber) {
+        $this->customer = $customer;
+        $this->language = $language;
+        $this->survivorNumber = $survivorNumber;
+        $this->onQueue('emails');
 
-    // Generate the activation (verification) link
-    $this->activationLink = URL::temporarySignedRoute('verificationApi.verify', now()->addMinutes(60), [
-      'id' => $customer->id,
-      'hash' => sha1($customer->email),
-    ]);
-  }
+        // Generate the activation (verification) link
+        $this->activationLink = URL::temporarySignedRoute('verificationApi.verify', now()->addMinutes(60), [
+            'id' => $customer->id,
+            'hash' => sha1($customer->email),
+        ]);
+    }
 
-  /**
-   * Get the message envelope.
-   */
-  public function envelope(): Envelope
-  {
-    // use MAIL_FROM_ADDRESS in .env
-    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope {
+        // use MAIL_FROM_ADDRESS in .env
+        $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(
-      from: $mailFromAddress,
-      subject: __('systemEmails.account.activation.activated', [], $this->language)
-    );
-  }
+        return new Envelope(
+            from: $mailFromAddress,
+            subject: __('systemEmails.account.activation.activated', [], $this->language),
+        );
+    }
 
-  /**
-   * Get the message content definition.
-   */
-  public function content(): Content
-  {
-    return new Content(
-      view: 'emails.activate-survivor',
-      with: [
-        'customer' => $this->customer,
-        'language' => $this->language,
-        'survivorNumber' => $this->survivorNumber,
-        'activationLink' => $this->activationLink,
-      ]
-    );
-  }
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content {
+        return new Content(
+            view: 'emails.activate-survivor',
+            with: [
+                'customer' => $this->customer,
+                'language' => $this->language,
+                'survivorNumber' => $this->survivorNumber,
+                'activationLink' => $this->activationLink,
+            ],
+        );
+    }
 
-  /**
-   * Get the attachments for the message.
-   *
-   * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-   */
-  public function attachments(): array
-  {
-    return [];
-  }
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array {
+        return [];
+    }
 }

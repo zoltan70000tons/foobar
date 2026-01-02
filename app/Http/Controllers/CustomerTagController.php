@@ -15,26 +15,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Inertia\Response as InertiaResponse;
 
-class CustomerTagController extends Controller
-{
+class CustomerTagController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
     protected CustomerTagInterface $customerRepository;
 
-    public function __construct(CustomerTagRepository $customerTagRepository)
-    {
+    public function __construct(CustomerTagRepository $customerTagRepository) {
         $this->customerTagRepository = $customerTagRepository;
     }
 
-    public function index(Request $request): InertiaResponse
-    {
+    public function index(Request $request): InertiaResponse {
         try {
-            return $this->withPermission([Permissions::ViewCustomerTags], function () {
-                return Inertia::render('CustomerTag/Index', [
-                    'tags' => $this->customerTagRepository->getAll(),
-                ]);
-            }, $request);
+            return $this->withPermission(
+                [Permissions::ViewCustomerTags],
+                function () {
+                    return Inertia::render('CustomerTag/Index', [
+                        'tags' => $this->customerTagRepository->getAll(),
+                    ]);
+                },
+                $request,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
 
@@ -42,53 +43,66 @@ class CustomerTagController extends Controller
         }
     }
 
-    public function create(): InertiaResponse
-    {
+    public function create(): InertiaResponse {
         return Inertia::render('CustomerTag/Create');
     }
 
-    public function store(CustomerTagRequest $request): RedirectResponse|Response|InertiaResponse
-    {
+    public function store(CustomerTagRequest $request): RedirectResponse|Response|InertiaResponse {
         try {
-            return $this->withPermission([Permissions::CreateCustomerTags], function ($request) {
-                $this->customerTagRepository->store($request);
+            return $this->withPermission(
+                [Permissions::CreateCustomerTags],
+                function ($request) {
+                    $this->customerTagRepository->store($request);
 
-                return redirect()->route('customer-tags.index')->with('flash', 'Customer tag created successfully.');
-            }, $request);
+                    return redirect()
+                        ->route('customer-tags.index')
+                        ->with('flash', 'Customer tag created successfully.');
+                },
+                $request,
+            );
         } catch (\Exception $e) {
             return redirect()->route('customer-tags.index')->with('error', 'Problem creating customer tag.');
         }
     }
 
-    public function edit(UserTag $userTag): InertiaResponse
-    {
+    public function edit(UserTag $userTag): InertiaResponse {
         return Inertia::render('CustomerTag/Edit', [
             'userTag' => $userTag,
         ]);
     }
 
-    public function update(CustomerTagRequest $request, UserTag $userTag)
-    {
+    public function update(CustomerTagRequest $request, UserTag $userTag) {
         try {
-            return $this->withPermission([Permissions::EditCustomerTags], function ($request, $userTag) {
-                $this->customerTagRepository->update($request, $userTag);
+            return $this->withPermission(
+                [Permissions::EditCustomerTags],
+                function ($request, $userTag) {
+                    $this->customerTagRepository->update($request, $userTag);
 
-                return redirect()->route('customer-tags.edit', $userTag->id)
-                    ->with('success', 'Customer tag updated successfully.');
-            }, $request, $userTag);
-        } catch (\Exception|\Throwable $e) {
-            return redirect()->route('customer-tags.edit', $userTag->id)->with('error', 'Problem updating customer tag.');
+                    return redirect()
+                        ->route('customer-tags.edit', $userTag->id)
+                        ->with('success', 'Customer tag updated successfully.');
+                },
+                $request,
+                $userTag,
+            );
+        } catch (\Exception | \Throwable $e) {
+            return redirect()
+                ->route('customer-tags.edit', $userTag->id)
+                ->with('error', 'Problem updating customer tag.');
         }
     }
 
-    public function show(UserTag $userTag)
-    {
+    public function show(UserTag $userTag) {
         try {
-            return $this->withPermission([Permissions::ViewCustomerTags], function ($userTag) {
-                return Inertia::render('CustomerTag/View', [
-                    'userTag' => $userTag,
-                ]);
-            }, $userTag);
+            return $this->withPermission(
+                [Permissions::ViewCustomerTags],
+                function ($userTag) {
+                    return Inertia::render('CustomerTag/View', [
+                        'userTag' => $userTag,
+                    ]);
+                },
+                $userTag,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
 
@@ -96,14 +110,19 @@ class CustomerTagController extends Controller
         }
     }
 
-    public function destroy(UserTag $userTag): RedirectResponse|Response|InertiaResponse
-    {
+    public function destroy(UserTag $userTag): RedirectResponse|Response|InertiaResponse {
         try {
-            return $this->withPermission([Permissions::DeleteCustomerTags], function ($userTag) {
-                $this->customerTagRepository->delete($userTag);
+            return $this->withPermission(
+                [Permissions::DeleteCustomerTags],
+                function ($userTag) {
+                    $this->customerTagRepository->delete($userTag);
 
-                return redirect()->route('customer-tags.index')->with('success', 'Customer tag deleted successfully.');
-            }, $userTag);
+                    return redirect()
+                        ->route('customer-tags.index')
+                        ->with('success', 'Customer tag deleted successfully.');
+                },
+                $userTag,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
 

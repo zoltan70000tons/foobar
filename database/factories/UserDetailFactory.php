@@ -9,15 +9,13 @@ use Illuminate\Support\Str;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserDetail>
  */
-class UserDetailFactory extends Factory
-{
+class UserDetailFactory extends Factory {
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'gender' => $this->faker->randomElement(['M', 'F']),
             'first_name' => fake()->firstName,

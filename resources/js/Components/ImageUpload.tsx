@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Box, BoxProps, Button, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-
+import React, { useState, useEffect } from "react";
+import { Box, BoxProps, Button, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 const UploadButton = styled(Button)({
   marginTop: 16,
 });
 
-const StyledImageBox = styled(({ imageUrl, ...other }: { imageUrl?: string } & BoxProps) => (
-  <Box {...other} />
-))(({ imageUrl }) => ({
-  width: 100,
-  height: 100,
-  border: '1px solid #ddd',
-  borderRadius: 8,
-  overflow: 'hidden',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#f5f5f5',
-  backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-}));
-
+const StyledImageBox = styled(({ imageUrl, ...other }: { imageUrl?: string } & BoxProps) => <Box {...other} />)(
+  ({ imageUrl }) => ({
+    width: 100,
+    height: 100,
+    border: "1px solid #ddd",
+    borderRadius: 8,
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+    backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }),
+);
 
 interface ImageUploadProps {
   onChange: (file: File) => void;
@@ -56,16 +53,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onChange, initialImageUrl, er
   return (
     <Box display="flex" alignItems="center">
       <StyledImageBox imageUrl={imageUrl}>
-        {!imageUrl && <Typography variant="body2" color="textSecondary">No Image</Typography>}
+        {!imageUrl && (
+          <Typography variant="body2" color="textSecondary">
+            No Image
+          </Typography>
+        )}
       </StyledImageBox>
       <Box ml={2}>
-        <Typography variant="body2" color="textSecondary">Please upload a square image, size less than 500KB</Typography>
+        <Typography variant="body2" color="textSecondary">
+          Please upload a square image, size less than 500KB
+        </Typography>
         <Typography variant="body1">Upload Image:</Typography>
         <input
           accept="image/*"
           type="file"
           id="upload-button"
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           onChange={handleFileChange}
         />
 

@@ -4,30 +4,27 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    Schema::create('email_templates', function (Blueprint $table) {
-      $table->id();
-      $table->foreignId('event_id')->nullable()->constrained('events');
-      $table->string('name', 255);
-      $table->string('subject', 255);
-      $table->text('body');
-      $table->text('placeholders')->nullable();
-      $table->string('lang', 10); // en, es, de
-      $table->timestamps();
-    });
-  }
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void {
+        Schema::create('email_templates', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('event_id')->nullable()->constrained('events');
+            $table->string('name', 255);
+            $table->string('subject', 255);
+            $table->text('body');
+            $table->text('placeholders')->nullable();
+            $table->string('lang', 10); // en, es, de
+            $table->timestamps();
+        });
+    }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('email_templates');
-  }
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void {
+        Schema::dropIfExists('email_templates');
+    }
 };

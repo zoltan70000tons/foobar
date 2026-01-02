@@ -6,8 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 
-class CleanTemporaryFiles extends Command
-{
+class CleanTemporaryFiles extends Command {
     /**
      * The name and signature of the console command.
      *
@@ -25,13 +24,11 @@ class CleanTemporaryFiles extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
-    {
+    public function handle() {
         $path = storage_path('app');
-        $files = collect(File::allFiles($path))
-            ->reject(function ($file) {
-                return str_contains($file->getPath(), 'public') || $file->getExtension() === 'csv';
-            });
+        $files = collect(File::allFiles($path))->reject(function ($file) {
+            return str_contains($file->getPath(), 'public') || $file->getExtension() === 'csv';
+        });
 
         foreach ($files as $file) {
             if (Carbon::createFromTimestamp($file->getMTime())->lessThan(now()->subDays(2))) {

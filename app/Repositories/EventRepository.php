@@ -10,31 +10,25 @@ use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\DB;
 
-class EventRepository implements EventRepositoryInterface
-{
-
+class EventRepository implements EventRepositoryInterface {
     use HandlePermissions;
     use ExceptionLogger;
     /**
      * Create a new class instance.
      */
-    public function __construct()
-    {
+    public function __construct() {
         //
     }
 
-    public function getAll()
-    {
+    public function getAll() {
         return Event::orderBy('start_date', 'desc')->get();
     }
 
-    public function find($id)
-    {
+    public function find($id) {
         return Event::find($id);
     }
 
-    public function save($data)
-    {
+    public function save($data) {
         DB::beginTransaction();
 
         try {
@@ -49,8 +43,7 @@ class EventRepository implements EventRepositoryInterface
         }
     }
 
-    public function update($data, $id)
-    {
+    public function update($data, $id) {
         DB::beginTransaction();
         try {
             $event = Event::findOrFail($id);
@@ -62,11 +55,10 @@ class EventRepository implements EventRepositoryInterface
         }
     }
 
-    public function delete($id)
-    {
+    public function delete($id) {
     }
 
-    public function listMenu(){
+    public function listMenu() {
         try {
             return Event::all();
         } catch (\Exception $e) {

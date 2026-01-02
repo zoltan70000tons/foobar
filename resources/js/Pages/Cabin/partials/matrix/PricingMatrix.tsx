@@ -40,9 +40,7 @@ export default function PricingMatrix({
         const { main_category } = item;
         const { name, categories } = main_category;
 
-        const empty = categories.every(
-          (cat) => cat.cabins.length === 0
-        );
+        const empty = categories.every((cat) => cat.cabins.length === 0);
         if (empty) return null;
 
         const image = categoryImages[name] ?? categoryImages.default;

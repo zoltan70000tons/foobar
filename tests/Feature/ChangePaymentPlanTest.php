@@ -32,23 +32,25 @@ beforeEach(function () {
         $this->passengerRepository,
         $this->adjustmentsRepository,
         $this->paymentService,
-        $this->paymentInfoService
+        $this->paymentInfoService,
     );
 });
 
 it('creates installments when converting PAY_IN_FULL to INSTALLMENTS respecting event cutoff', function () {
-
     $event = Event::first();
     $booking = Booking::where('payment_plan', 'PAY_IN_FULL')->where('event_id', 1)->first();
 
     if (!$event) {
-        throw new InvalidArgumentException('Event with ID 1 not found. Please ensure the test database has an event with ID 1.');
+        throw new InvalidArgumentException(
+            'Event with ID 1 not found. Please ensure the test database has an event with ID 1.',
+        );
     }
 
     if (!$booking) {
-        throw new InvalidArgumentException('No booking with PAY_IN_FULL found. Please ensure the test database has such a booking.');
+        throw new InvalidArgumentException(
+            'No booking with PAY_IN_FULL found. Please ensure the test database has such a booking.',
+        );
     }
-
 
     expect($booking)->not->toBeNull();
     expect($booking->payment_plan)->toBe('PAY_IN_FULL');
@@ -64,8 +66,7 @@ it('creates installments when converting PAY_IN_FULL to INSTALLMENTS respecting 
     $result = $this->bookingRepository->changePaymentPlan($booking, 'INSTALLMENTS', 5);
     expect($result['booking']->payment_plan)->toBe('INSTALLMENTS');
 
-   
-    $booking->passengers->each(function (Passenger $passenger) use ($booking, $event){
+    $booking->passengers->each(function (Passenger $passenger) use ($booking, $event) {
         $installments = Installment::where('passenger_id', $passenger->id)
             ->where('type', 'PAYMENT')
             ->orderBy('due_date')
@@ -78,9 +79,7 @@ it('creates installments when converting PAY_IN_FULL to INSTALLMENTS respecting 
 
         expect($lastDue->lte($lastAllowed))->toBeTrue();
     });
-  
 });
-
 
 it('throws if not enough time to create at least 2 installments', function () {
     Carbon::setTestNow('2025-10-31 10:00:00');
@@ -98,26 +97,36 @@ it('throws if not enough time to create at least 2 installments', function () {
 
     $bookingRepo = app(BookingRepository::class);
 
-    $closure = fn () => $bookingRepo->changePaymentPlan($booking, 'INSTALLMENTS', 3);
+    $closure = fn() => $bookingRepo->changePaymentPlan($booking, 'INSTALLMENTS', 3);
 
     expect($closure)->toThrow(InvalidArgumentException::class);
 });
 
-it('converts INSTALLMENTS to PAY_IN_FULL, attaches adjustment and removes unpaid installments except first', function () {
-    $event = Event::first();
-    $booking = Booking::where('payment_plan', 'INSTALLMENTS')->where('event_id', 1)->first();
-    expect($booking->payment_plan)->toBe('INSTALLMENTS');
+it(
+    'converts INSTALLMENTS to PAY_IN_FULL, attaches adjustment and removes unpaid installments except first',
+    function () {
+        $event = Event::first();
+        $booking = Booking::where('payment_plan', 'INSTALLMENTS')->where('event_id', 1)->first();
+        expect($booking->payment_plan)->toBe('INSTALLMENTS');
 
-    $adjustment = Adjustment::where('code' , 'PAID_IN_FULL')->first();
-    $this->adjustmentsRepository->shouldReceive('getPaidInFullId')->andReturn($adjustment->id);
-    $this->paymentInfoService->shouldReceive('syncAllocatedCost')->andReturnNull();
+        $adjustment = Adjustment::where('code', 'PAID_IN_FULL')->first();
+        $this->adjustmentsRepository->shouldReceive('getPaidInFullId')->andReturn($adjustment->id);
+        $this->paymentInfoService->shouldReceive('syncAllocatedCost')->andReturnNull();
 
-    $result = $this->bookingRepository->changePaymentPlan($booking, 'PAY_IN_FULL', null);
-    $booking->passengers->each(function (Passenger $passenger) {
-        $remaining = Installment::where('passenger_id', $passenger->id)->where('type', 'PAYMENT')->get();
-        expect($remaining->count())->toBe(1);
-    });
+        $result = $this->bookingRepository->changePaymentPlan($booking, 'PAY_IN_FULL', null);
+        $booking->passengers->each(function (Passenger $passenger) {
+            $remaining = Installment::where('passenger_id', $passenger->id)
+                ->where('type', 'PAYMENT')
+                ->get();
+            expect($remaining->count())->toBe(1);
+        });
 
-    expect($booking->adjustments()->where('adjustments.id', $adjustment->id)->exists())->toBeTrue();
-    expect($result['booking']->payment_plan)->toBe('PAY_IN_FULL');
-});
+        expect(
+            $booking
+                ->adjustments()
+                ->where('adjustments.id', $adjustment->id)
+                ->exists(),
+        )->toBeTrue();
+        expect($result['booking']->payment_plan)->toBe('PAY_IN_FULL');
+    },
+);

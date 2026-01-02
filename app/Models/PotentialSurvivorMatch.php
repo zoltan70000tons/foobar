@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PotentialSurvivorMatch extends Model
-{
+class PotentialSurvivorMatch extends Model {
     use HasFactory;
 
     protected $fillable = [
@@ -30,33 +29,25 @@ class PotentialSurvivorMatch extends Model
         'score' => 'float',
         'review_date' => 'datetime',
     ];
-    protected $appends = [
-        'passenger_name',
-        'user_name',
-    ];
+    protected $appends = ['passenger_name', 'user_name'];
 
-    public function getPassengerNameAttribute(): string
-    {
+    public function getPassengerNameAttribute(): string {
         return trim("{$this->passenger_first_name} {$this->passenger_last_name}");
     }
 
-    public function getUserNameAttribute(): string
-    {
+    public function getUserNameAttribute(): string {
         return trim("{$this->user_first_name} {$this->user_last_name}");
     }
 
-    public function passenger()
-    {
+    public function passenger() {
         return $this->belongsTo(Passenger::class);
     }
 
-    public function userDetail()
-    {
+    public function userDetail() {
         return $this->belongsTo(UserDetail::class);
     }
 
-    public function reviewer()
-    {
+    public function reviewer() {
         return $this->belongsTo(User::class, 'reviewer_id');
     }
 }

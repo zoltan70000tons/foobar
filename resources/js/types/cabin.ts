@@ -22,7 +22,7 @@ export type PriceAndCapacity = {
     es: string;
   };
   inventory: InventoryStatus;
-}
+};
 
 export type PriceAndAvailability = {
   price_capacity_2: PriceAndCapacity;
@@ -47,21 +47,21 @@ export type CabinDetail = {
   full_title: string;
   name: string;
   price_and_availability: PriceAndAvailability;
-}
+};
 
 export type CabinData = {
   cabins: CabinDetail[];
   cabin_category_id: number;
   display_order: number;
   name: string;
-}
+};
 
 export type MainCategory = {
   name: string;
   categories: CabinData[];
   display_order: number;
   max_capacity: number;
-}
+};
 
 export type CabinTypeData = {
   cabinTypeId: string;

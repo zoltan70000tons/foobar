@@ -5,16 +5,15 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class BookingAgentSession implements ShouldBroadcast
-{
+class BookingAgentSession implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets;
 
-    public function __construct(public string $agentId, public int | null $bookingId, public string | null $username) {}
+    public function __construct(public string $agentId, public int|null $bookingId, public string|null $username) {
+    }
 
     public $queue = 'reverb';
 
-    public function broadcastWith()
-    {
+    public function broadcastWith() {
         return [
             'agentId' => $this->agentId,
             'bookingId' => $this->bookingId,
@@ -22,13 +21,11 @@ class BookingAgentSession implements ShouldBroadcast
         ];
     }
 
-    public function broadcastOn()
-    {
+    public function broadcastOn() {
         return ['reverb-lock-booking'];
     }
-    
-    public function broadcastAs()
-    {
+
+    public function broadcastAs() {
         return 'ReverbLockBooking';
     }
 }

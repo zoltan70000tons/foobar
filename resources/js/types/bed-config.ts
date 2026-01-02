@@ -1,4 +1,4 @@
-export type BedConfigId = 'SEPARATED' | 'JOINED';
+export type BedConfigId = "SEPARATED" | "JOINED";
 
 export interface BedConfigOption {
   id: BedConfigId;
@@ -6,6 +6,6 @@ export interface BedConfigOption {
 }
 
 export const bedConfigOptions: BedConfigOption[] = [
-  { id: 'SEPARATED', value: 'SEPARATED' },
-  { id: 'JOINED', value: 'JOINED' },
+  { id: "SEPARATED", value: "SEPARATED" },
+  { id: "JOINED", value: "JOINED" },
 ];

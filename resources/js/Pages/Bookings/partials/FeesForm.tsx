@@ -18,9 +18,10 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  IconButton, Tooltip,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from "@mui/icons-material/Info";
 
 import { router } from "@inertiajs/react";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
@@ -51,7 +52,7 @@ export type Fee = {
 const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<
-    Pick<Fee, "type" | "amount"> & { due_date?: string; installment_id?: number, notes?: string }
+    Pick<Fee, "type" | "amount"> & { due_date?: string; installment_id?: number; notes?: string }
   >({
     type: "",
     amount: 0,
@@ -212,7 +213,9 @@ const FeesForm: React.FC<FeesFormProps> = ({ passenger, event_id, booking_id, ed
               >
                 {passenger.installments
                   .filter((install) => install.type === "PAYMENT")
-                  .sort((a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                  .sort(
+                    (a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime(),
+                  )
                   .map((inst, index) => (
                     <MenuItem key={inst.id} value={inst.id} sx={{ textTransform: "capitalize" }}>
                       {`${getOrdinalName(index + 1)} Installment - Due: ${formatDate(inst.due_date)}`}

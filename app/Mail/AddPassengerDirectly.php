@@ -12,68 +12,69 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
 
-class AddPassengerDirectly extends Mailable implements ShouldQueue
-{
-  use Queueable, SerializesModels;
+class AddPassengerDirectly extends Mailable implements ShouldQueue {
+    use Queueable, SerializesModels;
 
-  public $bookingCode;
-  public $url;
-  public $fromWho;
-  public $toWho;
-  public $event;
-  public $toWhoLang;
+    public $bookingCode;
+    public $url;
+    public $fromWho;
+    public $toWho;
+    public $event;
+    public $toWhoLang;
 
-  /**
-   * Create a new message instance.
-   */
-  public function __construct($bookingCode, $fromWho, $toWho, $event, $toWhoLang = null)
-  {
-    $this->url = config('app.frontend_url') . '/' . $toWhoLang . '/login';
+    /**
+     * Create a new message instance.
+     */
+    public function __construct($bookingCode, $fromWho, $toWho, $event, $toWhoLang = null) {
+        $this->url = config('app.frontend_url') . '/' . $toWhoLang . '/login';
 
-    $this->bookingCode = $bookingCode;
+        $this->bookingCode = $bookingCode;
 
-    $this->fromWho = $fromWho;
-    $this->toWho = $toWho;
-    $this->event = $event;
-    $this->toWhoLang = $toWhoLang ?: config('app.locale');
-    $this->locale($this->toWhoLang);
-    $this->onQueue('emails');
-  }
+        $this->fromWho = $fromWho;
+        $this->toWho = $toWho;
+        $this->event = $event;
+        $this->toWhoLang = $toWhoLang ?: config('app.locale');
+        $this->locale($this->toWhoLang);
+        $this->onQueue('emails');
+    }
 
-  /**
-   * Get the message envelope.
-   */
-  public function envelope(): Envelope
-  {
-    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope {
+        $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.invitation.request.headline', ['from' => $this->fromWho, 'event' => $this->event->name]));
-  }
+        return new Envelope(
+            from: $mailFromAddress,
+            subject: __('systemEmails.invitation.request.headline', [
+                'from' => $this->fromWho,
+                'event' => $this->event->name,
+            ]),
+        );
+    }
 
-  /**
-   * Get the message content definition.
-   */
-  public function content(): Content
-  {
-    return new Content(
-      view: 'emails.addpax-directly',
-      with: [
-        'bookingCode' => $this->bookingCode,
-        'url' => $this->url,
-        'fromWho' => $this->fromWho,
-        'toWho' => $this->toWho,
-        'event_name' => $this->event->name,
-      ]
-    );
-  }
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content {
+        return new Content(
+            view: 'emails.addpax-directly',
+            with: [
+                'bookingCode' => $this->bookingCode,
+                'url' => $this->url,
+                'fromWho' => $this->fromWho,
+                'toWho' => $this->toWho,
+                'event_name' => $this->event->name,
+            ],
+        );
+    }
 
-  /**
-   * Get the attachments for the message.
-   *
-   * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-   */
-  public function attachments(): array
-  {
-    return [];
-  }
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array {
+        return [];
+    }
 }

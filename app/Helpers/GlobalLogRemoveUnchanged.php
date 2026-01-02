@@ -2,17 +2,15 @@
 
 namespace App\Helpers;
 
-class GlobalLogRemoveUnchanged
-{
-    public static function removeUnchanged(array $before, array $after): array
-    {
+class GlobalLogRemoveUnchanged {
+    public static function removeUnchanged(array $before, array $after): array {
         $filteredBefore = [];
-        $filteredAfter  = [];
+        $filteredAfter = [];
 
         // Go through every key in either array
         foreach (array_unique(array_merge(array_keys($before), array_keys($after))) as $key) {
             $beforeVal = $before[$key] ?? null;
-            $afterVal  = $after[$key] ?? null;
+            $afterVal = $after[$key] ?? null;
 
             if (is_array($beforeVal) && is_array($afterVal)) {
                 // Recurse into nested arrays
@@ -21,16 +19,15 @@ class GlobalLogRemoveUnchanged
                 // Only keep if something actually changed inside
                 if (!empty($subBefore) || !empty($subAfter)) {
                     $filteredBefore[$key] = $subBefore;
-                    $filteredAfter[$key]  = $subAfter;
+                    $filteredAfter[$key] = $subAfter;
                 }
             } elseif ($beforeVal !== $afterVal) {
                 // Only record when value differs
                 $filteredBefore[$key] = $beforeVal;
-                $filteredAfter[$key]  = $afterVal;
+                $filteredAfter[$key] = $afterVal;
             }
         }
 
         return [$filteredBefore, $filteredAfter];
     }
-
 }

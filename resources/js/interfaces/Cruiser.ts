@@ -1,9 +1,7 @@
 export interface Cruisers {
-    data: Cruiser[];
+  data: Cruiser[];
 }
 export interface Cruiser {
-    value: string;
-    label: string;
+  value: string;
+  label: string;
 }
-
-

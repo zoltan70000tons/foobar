@@ -2,8 +2,7 @@
 
 namespace App\Enums\GlobalLog;
 
-enum LogActionBooking: string
-{
+enum LogActionBooking: string {
     case AGENT_ID_CHANGED = 'AGENT_ID_CHANGED';
     case BED_CONFIG_CHANGED = 'BED_CONFIG_CHANGED';
     case SET_EMPTY_BED = 'SET_EMPTY_BED';

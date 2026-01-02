@@ -40,14 +40,10 @@ const CabinCode = ({
       },
     }}
   >
-    <Typography sx={{ fontWeight: "bold", fontSize: "10px" }}>
-      {rowDataName}
-    </Typography>
+    <Typography sx={{ fontWeight: "bold", fontSize: "10px" }}>{rowDataName}</Typography>
 
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontWeight: "bold", fontSize: "14px" }}>
-        {cabinCode}
-      </Typography>
+      <Typography sx={{ fontWeight: "bold", fontSize: "14px" }}>{cabinCode}</Typography>
       <PhotoCamera sx={{ color: blue[600], fontSize: 16 }} />
     </Box>
   </Box>
@@ -104,11 +100,7 @@ export default function SinglePricingRowMobile({
     <>
       <Grid container>
         <Grid xs={4}>
-          <CabinCode
-            cabinCode={cabinCode}
-            rowDataName={full_title}
-            onOpenDetail={onOpenDetail}
-          />
+          <CabinCode cabinCode={cabinCode} rowDataName={full_title} onOpenDetail={onOpenDetail} />
         </Grid>
 
         <Grid xs={4}>

@@ -3,10 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         DB::table('user_details')
             ->select('id', 'avatar')
             ->orderBy('id')
@@ -25,7 +23,7 @@ return new class extends Migration
                         'badge' => [
                             'text' => \App\Models\UserDetail::DEFAULT_BADGE_TEXT,
                             'background' => \App\Models\UserDetail::DEFAULT_BADGE_BACKGROUND,
-                        ], 
+                        ],
                     ];
 
                     DB::table('user_details')
@@ -35,8 +33,6 @@ return new class extends Migration
             });
     }
 
-    public function down(): void
-    {
-        
+    public function down(): void {
     }
 };

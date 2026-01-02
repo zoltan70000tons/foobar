@@ -392,15 +392,7 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
     }
 
     if (passenger?.passenger_invitation && passenger?.passenger_invitation.length > 0) {
-
-      return (
-        <Chip
-          label="Invited"
-          size="small"
-          color="success"
-          sx={{ color: "white" }}
-        />
-      );
+      return <Chip label="Invited" size="small" color="success" sx={{ color: "white" }} />;
     }
 
     if (isSingleRoom) {
@@ -505,11 +497,10 @@ const Passengers: React.FC<PassengersProps> = ({ booking, editMode, setLoading }
                   minHeight: "140px",
                 }}
                 onClick={() =>
-                    passenger?.passenger_invitation?.length
-                      ? editMode && handleCancelPassengerInvitation(passenger)
-                      : handleEditPassenger(passenger)
+                  passenger?.passenger_invitation?.length
+                    ? editMode && handleCancelPassengerInvitation(passenger)
+                    : handleEditPassenger(passenger)
                 }
-
               >
                 {passenger.lead_passenger && !isSingleRoom && (
                   <Box sx={{ position: "absolute", top: 8, right: 8 }}>

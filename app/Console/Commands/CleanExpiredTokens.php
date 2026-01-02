@@ -6,8 +6,7 @@ use Illuminate\Console\Command;
 use Laravel\Passport\Token;
 use Laravel\Passport\RefreshToken;
 
-class CleanExpiredTokens extends Command
-{
+class CleanExpiredTokens extends Command {
     /**
      * The name and signature of the console command.
      *
@@ -25,8 +24,7 @@ class CleanExpiredTokens extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
-    {
+    public function handle() {
         $countAccess = Token::where('expires_at', '<', now())->delete();
         $countRefresh = RefreshToken::where('expires_at', '<', now())->delete();
 

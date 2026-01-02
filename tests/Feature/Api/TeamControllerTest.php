@@ -6,14 +6,11 @@ use App\Repositories\TeamRepository;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\PermissionRegistrar;
 
-
 beforeEach(function () {
     $orgId = 1;
     config(['settings.organization_id' => $orgId]);
     app(PermissionRegistrar::class)->setPermissionsTeamId($orgId);
 });
-
-
 
 it('lists the organization members when the user has permission', function () {
     config(['settings.organization_id' => 1]);
@@ -22,26 +19,16 @@ it('lists the organization members when the user has permission', function () {
     $user = User::factory()->create();
     $user->givePermissionTo(Permissions::ViewUsers->value);
 
-    $members = [
-        ['name' => 'John'],
-        ['name' => 'Jane'],
-    ];
+    $members = [['name' => 'John'], ['name' => 'Jane']];
 
     $repoMock = Mockery::mock(TeamRepository::class);
-    $repoMock->shouldReceive('getAllMembers')
-        ->once()
-        ->with(1)
-        ->andReturn($members);
+    $repoMock->shouldReceive('getAllMembers')->once()->with(1)->andReturn($members);
 
     app()->instance(TeamRepository::class, $repoMock);
 
-    $response = $this
-        ->actingAs($user)
-        ->getJson(route('team.members.list'));
+    $response = $this->actingAs($user)->getJson(route('team.members.list'));
 
-    $response
-        ->assertOk()
-        ->assertExactJson($members);
+    $response->assertOk()->assertExactJson($members);
 });
 
 it('rejects listing members when the user lacks permission', function () {
@@ -53,9 +40,7 @@ it('rejects listing members when the user lacks permission', function () {
     $repoMock = Mockery::mock(TeamRepository::class);
     app()->instance(TeamRepository::class, $repoMock);
 
-    $response = $this
-        ->actingAs($user)
-        ->getJson(route('team.members.list'));
+    $response = $this->actingAs($user)->getJson(route('team.members.list'));
     $response->assertStatus(302);
 });
 
@@ -71,11 +56,12 @@ it('updates a member’s roles and redirects with a success message', function (
 
     $payload = [
         'user_id' => Str::uuid()->toString(),
-        'roles'   => ['Admin', 'Editor'], 
+        'roles' => ['Admin', 'Editor'],
     ];
 
     $repoMock = Mockery::mock(TeamRepository::class);
-     $repoMock->shouldReceive('updateMemberRoles')
+    $repoMock
+        ->shouldReceive('updateMemberRoles')
         ->once()
         ->withArgs(function ($userId, $organizationId, $roles) use ($payload) {
             expect($userId)->toBe($payload['user_id']);
@@ -87,13 +73,9 @@ it('updates a member’s roles and redirects with a success message', function (
 
     app()->instance(TeamRepository::class, $repoMock);
 
-    $response = $this
-        ->from('/teams') 
-        ->actingAs($user)
-        ->put(route('member.updateRole'), $payload);
+    $response = $this->from('/teams')->actingAs($user)->put(route('member.updateRole'), $payload);
 
-    $response->assertRedirect('/teams')
-        ->assertSessionHas('success', 'User role updated successfully');
+    $response->assertRedirect('/teams')->assertSessionHas('success', 'User role updated successfully');
 });
 
 it('rejects updating roles when the user lacks permission', function () {
@@ -108,17 +90,15 @@ it('rejects updating roles when the user lacks permission', function () {
 
     $payload = [
         'user_id' => Str::uuid()->toString(),
-        'roles'   => ['Admin', 'Editor'], 
+        'roles' => ['Admin', 'Editor'],
     ];
 
     $repoMock = Mockery::mock(TeamRepository::class);
     app()->instance(TeamRepository::class, $repoMock);
 
-    $response = $this
-        ->actingAs($user)
-        ->put(route('member.updateRole'), $payload);
+    $response = $this->actingAs($user)->put(route('member.updateRole'), $payload);
 
-    $response->assertStatus(302); 
+    $response->assertStatus(302);
 });
 
 it('updates a member and redirects to the teams route with a message', function () {
@@ -131,25 +111,19 @@ it('updates a member and redirects to the teams route with a message', function 
     $member->assignRole('Agent');
 
     $payload = [
-        'id'    => $member->id,
-        'firstname'  => 'Caroline',
-        'lastname'  => 'Anderson',
+        'id' => $member->id,
+        'firstname' => 'Caroline',
+        'lastname' => 'Anderson',
         'gender' => 'F',
         'email' => 'new@example.com',
-
     ];
 
     $repoMock = Mockery::mock(TeamRepository::class);
-    $repoMock->shouldReceive('updateMember')
-        ->once()
-        ->with($payload)
-        ->andReturnTrue();
+    $repoMock->shouldReceive('updateMember')->once()->with($payload)->andReturnTrue();
 
     app()->instance(TeamRepository::class, $repoMock);
 
-    $response = $this
-        ->actingAs($user)
-        ->post(route('member.update'), $payload);
+    $response = $this->actingAs($user)->post(route('member.update'), $payload);
 
     $response
         ->assertRedirect(route('teams', ['slug' => '70K']))
@@ -165,29 +139,21 @@ it('returns the Inertia error view if updateMember throws an exception', functio
     $member = User::factory()->create();
     $member->assignRole('Agent');
 
-
     $payload = [
-        'id'    => $member->id,
-        'firstname'  => 'David',
-        'lastname'  => 'Smith',
+        'id' => $member->id,
+        'firstname' => 'David',
+        'lastname' => 'Smith',
         'gender' => 'M',
         'email' => 'new@example.com',
-
     ];
     $repoMock = Mockery::mock(TeamRepository::class);
-    $repoMock->shouldReceive('updateMember')
-        ->once()
-        ->with($payload)
-        ->andThrow(new Exception('Boom'));
+    $repoMock->shouldReceive('updateMember')->once()->with($payload)->andThrow(new Exception('Boom'));
 
     app()->instance(TeamRepository::class, $repoMock);
 
-    $response = $this
-        ->actingAs($user)
-        ->post(route('member.update'), $payload);
+    $response = $this->actingAs($user)->post(route('member.update'), $payload);
 
     $response->assertInertia(function (Assert $page) {
-        $page->component('Teams')
-             ->where('errors', 'Boom');
+        $page->component('Teams')->where('errors', 'Boom');
     });
 });

@@ -4,8 +4,7 @@ namespace App\Traits;
 
 use Exception;
 
-trait BookingHandler
-{
+trait BookingHandler {
     /**
      * Create a new booking using the booking repository.
      *
@@ -15,16 +14,15 @@ trait BookingHandler
      * @param array $reservationId Reservation id on temporary table.)
      * @return mixed The result of the booking creation process (success or error)
      */
-    public function  createBooking(array $bookingData, $passengerData,$cabin = null, $reservationId)
-    {
+    public function createBooking(array $bookingData, $passengerData, $cabin = null, $reservationId) {
         try {
             // Validate required fields
             if (empty($data)) {
-                throw new Exception("Booking data is required.");
+                throw new Exception('Booking data is required.');
             }
 
             if (!$cabin) {
-                throw new Exception("Valid cabin is required.");
+                throw new Exception('Valid cabin is required.');
             }
 
             // Call the repository to create the booking

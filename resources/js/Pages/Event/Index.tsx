@@ -43,11 +43,7 @@ const Index = ({ auth, events }: PageProps) => {
                     height: "100%",
                   }}
                 >
-                   <CardActionArea
-                    component={Link}
-                    href={route("events.create")}
-                    sx={{ flex: 1 }}
-                  >
+                  <CardActionArea component={Link} href={route("events.create")} sx={{ flex: 1 }}>
                     <CardContent
                       sx={{
                         display: "flex",
@@ -57,16 +53,12 @@ const Index = ({ auth, events }: PageProps) => {
                         height: "100%",
                       }}
                     >
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        sx={{ display: "flex", alignItems: "center" }}
-                      >
+                      <Typography variant="h6" component="div" sx={{ display: "flex", alignItems: "center" }}>
                         <AddCircleIcon sx={{ mr: 1 }} />
                         New Event
                       </Typography>
                     </CardContent>
-                  </CardActionArea> 
+                  </CardActionArea>
                 </Card>
               </Grid>
             )}
@@ -80,28 +72,21 @@ const Index = ({ auth, events }: PageProps) => {
                     height: "100%",
                   }}
                 >
-                  <CardActionArea
-                    component={Link}
-                    href={route("events.show", event.id)}
-                    sx={{ flex: 1 }}
-                  >
+                  <CardActionArea component={Link} href={route("events.show", event.id)} sx={{ flex: 1 }}>
                     <Grid container>
                       <Grid item xs={12} sm={4}>
                         {event.image && (
                           <CardMedia
-                            style={{height:'170px'}}
+                            style={{ height: "170px" }}
                             component="img"
-                            sx={{ width: '100%'}}
+                            sx={{ width: "100%" }}
                             image={event.image}
                             alt={event.name}
                           />
                         )}
                       </Grid>
                       <Grid item xs={12} sm={8}>
-                        <CardHeader
-                          sx={{ fontSize: "0.8rem" }}
-                          subheader={dayjs(event.start_date).format("LL")}
-                        />
+                        <CardHeader sx={{ fontSize: "0.8rem" }} subheader={dayjs(event.start_date).format("LL")} />
                         <CardContent sx={{ mt: 0, pt: 0 }}>
                           <Typography gutterBottom variant="h6" component="div">
                             {event.name}
@@ -127,7 +112,7 @@ const Index = ({ auth, events }: PageProps) => {
                             marginTop: "auto",
                           }}
                         >
-                          <Chip size="small" label={event.status}  style={{textTransform: "capitalize"}}/>
+                          <Chip size="small" label={event.status} style={{ textTransform: "capitalize" }} />
                         </CardActions>
                       </Grid>
                     </Grid>

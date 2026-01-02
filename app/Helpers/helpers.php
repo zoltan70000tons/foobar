@@ -3,7 +3,7 @@
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
-if (! function_exists('generateSlug')) {
+if (!function_exists('generateSlug')) {
     /**
      * Generate a URL friendly "slug" from a given string.
      *
@@ -11,13 +11,12 @@ if (! function_exists('generateSlug')) {
      * @param  string  $separator
      * @return string
      */
-    function generateSlug($string, $separator = '-')
-    {
+    function generateSlug($string, $separator = '-') {
         return Str::slug($string, $separator);
     }
 }
 
-if (! function_exists('sanitizeInput')) {
+if (!function_exists('sanitizeInput')) {
     /**
      * Sanitize input fields by removing unwanted characters.
      *
@@ -25,7 +24,7 @@ if (! function_exists('sanitizeInput')) {
      * @param  array|null  $allowedTags
      * @return string
      */
-    if (! function_exists('sanitizeInput')) {
+    if (!function_exists('sanitizeInput')) {
         /**
          * Sanitize input fields by removing unwanted characters.
          *
@@ -33,25 +32,24 @@ if (! function_exists('sanitizeInput')) {
          * @param  array|null  $allowedTags
          * @return string
          */
-        function sanitizeInput($input, $allowedTags = null)
-        {
+        function sanitizeInput($input, $allowedTags = null) {
             // Predefined dangerous characters to remove if no allowedTags are specified
             $dangerousCharacters = [
-                "'",       // Single quote
-                '"',       // Double quote
-                ';',       // Semicolon
-                '<',       // Less than
-                '>',       // Greater than
-                '\\',      // Backslash
-                '/',       // Forward slash
-                '`',       // Backtick
-                '--',      // SQL comments
-                '#',       // MySQL comments
-                '%',       // Wildcard
-                '*',       // SQL wildcard
-                '=',       // Equals
+                "'", // Single quote
+                '"', // Double quote
+                ';', // Semicolon
+                '<', // Less than
+                '>', // Greater than
+                '\\', // Backslash
+                '/', // Forward slash
+                '`', // Backtick
+                '--', // SQL comments
+                '#', // MySQL comments
+                '%', // Wildcard
+                '*', // SQL wildcard
+                '=', // Equals
                 '(',
-                ')',  // Parentheses
+                ')', // Parentheses
             ];
 
             // If allowedTags are specified, strip all other tags
@@ -77,7 +75,6 @@ if (! function_exists('sanitizeInput')) {
     }
 }
 
-
 if (!function_exists('formatCurrency')) {
     /**
      * Format currency amount based on language.
@@ -88,8 +85,7 @@ if (!function_exists('formatCurrency')) {
      * @param bool $hideDecimals
      * @return string
      */
-    function formatCurrency($amount, $hideCurrency = false, $lang = 'en', $hideDecimals = false): string
-    {
+    function formatCurrency($amount, $hideCurrency = false, $lang = 'en', $hideDecimals = false): string {
         if (!is_numeric($amount)) {
             return '';
         }
@@ -108,7 +104,8 @@ if (!function_exists('formatCurrency')) {
                 $thousand = ',';
                 $currency = $hideCurrency ? '' : 'USD ';
                 break;
-            default: // 'en'
+            default:
+                // 'en'
                 $decimal = '.';
                 $thousand = ',';
                 $currency = $hideCurrency ? '' : 'USD ';
@@ -123,40 +120,39 @@ if (!function_exists('formatCurrency')) {
 }
 
 if (!function_exists('formatDate')) {
-    function formatDate($date, $fullMonth = false, $hideYear = false)
-    {
-        if (empty($date)) return null;
+    function formatDate($date, $fullMonth = false, $hideYear = false) {
+        if (empty($date)) {
+            return null;
+        }
         $format = ($fullMonth ? 'F' : 'M') . ' d' . ($hideYear ? '' : ', Y');
         return Carbon::parse($date)->format($format);
     }
 }
 
 if (!function_exists('formatFeeName')) {
-    function formatFeeName($string)
-    {
+    function formatFeeName($string) {
         return ucwords(strtolower(str_replace('_', ' ', $string)));
     }
 }
 
 if (!function_exists('capitalizeWords')) {
-    function capitalizeWords(string $text): string
-    {
+    function capitalizeWords(string $text): string {
         return ucwords(strtolower($text));
     }
 }
 
-
 if (!function_exists('getPassengerOrderLabel')) {
-    function getPassengerOrderLabel(int $order, string $lang = 'en', string $format = 'number'): string
-    {
-        if ($order < 1) return '';
+    function getPassengerOrderLabel(int $order, string $lang = 'en', string $format = 'number'): string {
+        if ($order < 1) {
+            return '';
+        }
 
         $lang = in_array($lang, ['en', 'es', 'de']) ? $lang : 'en';
         app()->setLocale($lang);
         $lead = __('passengers.lead');
-        $ordinals  = __('passengers.ordinals');
-        $suffix    = __('passengers.suffix');
-        $fallback  = __('passengers.fallback');
+        $ordinals = __('passengers.ordinals');
+        $suffix = __('passengers.suffix');
+        $fallback = __('passengers.fallback');
 
         $numSuffixGenerators = [
             'en' => fn($n) => match ($n % 100) {
@@ -165,8 +161,8 @@ if (!function_exists('getPassengerOrderLabel')) {
                     1 => 'st',
                     2 => 'nd',
                     3 => 'rd',
-                    default => 'th'
-                }
+                    default => 'th',
+                },
             },
             'es' => fn($n) => '°',
             'de' => fn($n) => '.',

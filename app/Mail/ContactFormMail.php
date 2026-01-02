@@ -7,21 +7,17 @@ use Illuminate\Contract\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ContactFormMail extends Mailable
-{
+class ContactFormMail extends Mailable {
     use Queueable, SerializesModels;
 
     public $data;
 
-    public function __construct($data)
-    {
+    public function __construct($data) {
         $this->data = $data;
     }
 
-    public function build()
-    {
-        $trailling = $this->subject('New  Contact Form Submission')
-                    ->view('emails.contact-form');
-                    dd($trailling);
+    public function build() {
+        $trailling = $this->subject('New  Contact Form Submission')->view('emails.contact-form');
+        dd($trailling);
     }
 }

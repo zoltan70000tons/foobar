@@ -26,10 +26,9 @@ use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewUserRegistered;
 use App\Notifications\CustomerRecoverAccount;
 
-class CustomerRegisteredController extends Controller
-{
-  use StringNormalization;
-  /*
+class CustomerRegisteredController extends Controller {
+    use StringNormalization;
+    /*
   |--------------------------------------------------------------------------
   |  Store new customer
   |--------------------------------------------------------------------------
@@ -37,89 +36,90 @@ class CustomerRegisteredController extends Controller
   |  This method is responsible for storing a new customer.
   |
   */
-  public function store(Request $request): JsonResponse
-  {
-    // set language
-    $language = $request->language;
-    App::setLocale($language);
+    public function store(Request $request): JsonResponse {
+        // set language
+        $language = $request->language;
+        App::setLocale($language);
 
-    $request->validate([
-      'name' => ['required', 'string', 'max:255'],
-      'middlename' => ['nullable', 'string', 'max:255'],
-      'surname' => ['required', 'string', 'max:255'],
-      'date_of_birth' => ['required', 'date'],
-      'country' => ['required', 'string', 'max:255'],
-      'gender' => ['required', 'string', 'max:255'],
-      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
-      'password' => ['required', 'confirmed', Rules\Password::defaults()],
-    ]);
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'middlename' => ['nullable', 'string', 'max:255'],
+            'surname' => ['required', 'string', 'max:255'],
+            'date_of_birth' => ['required', 'date'],
+            'country' => ['required', 'string', 'max:255'],
+            'gender' => ['required', 'string', 'max:255'],
+            'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
 
-    // make sure email is lowercase
-    $email = strtolower($request->email);
-    $request->merge(['email' => $email]);
+        // make sure email is lowercase
+        $email = strtolower($request->email);
+        $request->merge(['email' => $email]);
 
-    DB::beginTransaction();
+        DB::beginTransaction();
 
-    try {
-      // Create the user
-      $user = User::create([
-        'email' => $request->email,
-        'password' => Hash::make($request->string('password')),
-      ]);
+        try {
+            // Create the user
+            $user = User::create([
+                'email' => $request->email,
+                'password' => Hash::make($request->string('password')),
+            ]);
 
-      // Create the user details
-      $user->detail()->create([
-        'first_name' => $request->name,
-        'middle_name' => $request->middlename,
-        'last_name' => $request->surname,
-        'dob' => $request->date_of_birth,
-        'gender' => $request->gender,
-        'language' => $language,
-        'citizenship' => $request->country,
-      ]);
+            // Create the user details
+            $user->detail()->create([
+                'first_name' => $request->name,
+                'middle_name' => $request->middlename,
+                'last_name' => $request->surname,
+                'dob' => $request->date_of_birth,
+                'gender' => $request->gender,
+                'language' => $language,
+                'citizenship' => $request->country,
+            ]);
 
-      // Assign the customer role
-      setPermissionsTeamId(1);
-      $user->assignRole('Customer');
+            // Assign the customer role
+            setPermissionsTeamId(1);
+            $user->assignRole('Customer');
 
-      //Log::info('User data', ['user' => $user->load('detail')]);
+            //Log::info('User data', ['user' => $user->load('detail')]);
 
-      // Generate a unique numeric survivor number and store it
-      $survivorNumber = CustomerHelper::generateSurvivorNumber();
-      SurvivorNumber::create([
-        'user_id' => $user->id,
-        'survivor_number' => $survivorNumber,
-      ]);
+            // Generate a unique numeric survivor number and store it
+            $survivorNumber = CustomerHelper::generateSurvivorNumber();
+            SurvivorNumber::create([
+                'user_id' => $user->id,
+                'survivor_number' => $survivorNumber,
+            ]);
 
-      // Trigger event for user registration
-      event(new Registered($user));
+            // Trigger event for user registration
+            event(new Registered($user));
 
-      DB::commit();
+            DB::commit();
 
-      try {
-        Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(new NewUserRegistered($user));
-      } catch (\Exception $e) {
-        // Optionally log the failure so you know something went wrong
-        Log::warning('Slack notification failed: ' . $e->getMessage());
-      }
+            try {
+                Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+                    new NewUserRegistered($user),
+                );
+            } catch (\Exception $e) {
+                // Optionally log the failure so you know something went wrong
+                Log::warning('Slack notification failed: ' . $e->getMessage());
+            }
 
-      // Send a welcome email to the customer
-      $this->sendWelcomeEmail($user, $language, $survivorNumber);
+            // Send a welcome email to the customer
+            $this->sendWelcomeEmail($user, $language, $survivorNumber);
 
-      return response()->json(
-        [
-          'message' => __('auth.account_created'),
-        ],
-        204
-      );
-    } catch (\Exception $e) {
-      DB::rollBack();
-      Log::error('User registration failed: ' . $e->getMessage());
-      return response()->json(['message' => 'User registration failed'], 500);
+            return response()->json(
+                [
+                    'message' => __('auth.account_created'),
+                ],
+                204,
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('User registration failed: ' . $e->getMessage());
+            return response()->json(['message' => 'User registration failed'], 500);
+        }
     }
-  }
 
-  /*
+    /*
   |--------------------------------------------------------------------------
   |  Store survivor user
   |--------------------------------------------------------------------------
@@ -130,89 +130,87 @@ class CustomerRegisteredController extends Controller
   |  and if it does, we update the user's email and password.
   |
   */
-  public function storeUserSurvivor(Request $request): JsonResponse
-  {
-    // Set language
-    $language = $request->language;
-    App::setLocale($language);
+    public function storeUserSurvivor(Request $request): JsonResponse {
+        // Set language
+        $language = $request->language;
+        App::setLocale($language);
 
-    $request->validate([
-      'survivor_number' => ['required', 'string', 'max:9'],
-      'name' => ['required', 'string', 'max:255'],
-      'last_name' => ['required', 'string', 'max:255'],
-      'date_of_birth' => ['required', 'date'],
-      'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
-      'password' => ['required', 'confirmed', Rules\Password::defaults()],
-    ]);
+        $request->validate([
+            'survivor_number' => ['required', 'string', 'max:9'],
+            'name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'date_of_birth' => ['required', 'date'],
+            'email' => ['unique:users', 'required', 'string', 'lowercase', 'email', 'max:255'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
 
-    // Normalize inputs
-    $survivorNumber = $request->survivor_number;
-    $inputFirstName = $this->normalizeString($request->name);
-    $inputLastName = $this->normalizeString($request->last_name);
-    $inputDob = $request->date_of_birth;
+        // Normalize inputs
+        $survivorNumber = $request->survivor_number;
+        $inputFirstName = $this->normalizeString($request->name);
+        $inputLastName = $this->normalizeString($request->last_name);
+        $inputDob = $request->date_of_birth;
 
-    // Fetch survivor
-    $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
+        // Fetch survivor
+        $survivor = SurvivorNumber::where('survivor_number', $survivorNumber)->first();
 
-    if (!$survivor) {
-      return response()->json(['message' => __('feedback.survivor_number_not_found')], 404);
+        if (!$survivor) {
+            return response()->json(['message' => __('feedback.survivor_number_not_found')], 404);
+        }
+
+        // Fetch user details
+        $userDetail = UserDetail::where('user_id', $survivor->user_id)->first();
+
+        if (!$userDetail) {
+            return response()->json(['message' => 'User details not found.'], 404);
+        }
+
+        // Normalize stored values
+        $storedFirstName = $this->normalizeString($userDetail->first_name);
+        $storedLastName = $this->normalizeString($userDetail->last_name);
+        $storedDob = $userDetail->dob;
+
+        // Check similarity instead of strict equality
+        $nameSimilarity = $this->isSimilar($inputFirstName, $storedFirstName);
+        $lastNameSimilarity = $this->isSimilar($inputLastName, $storedLastName);
+
+        if ($storedDob !== $inputDob || !$nameSimilarity || !$lastNameSimilarity) {
+            return response()->json(
+                [
+                    'message' => __('feedback.not_matching_info'),
+                ],
+                404,
+            );
+        }
+
+        // Update user credentials
+        $user = User::find($survivor->user_id);
+
+        if ($user->email !== null) {
+            return response()->json(['message' => __('feedback.account_already_activated')], 400);
+        }
+
+        $user->update([
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Send a welcome email to the customer
+        try {
+            Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
+                new CustomerRecoverAccount($user),
+            );
+        } catch (\Exception $e) {
+            // Optionally log the failure so you know something went wrong
+            Log::warning('Slack notification failed: ' . $e->getMessage());
+        }
+
+        // Send welcome email
+        $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);
+
+        return response()->json(['message' => __('feedback.account_activation_success')], 200);
     }
 
-    // Fetch user details
-    $userDetail = UserDetail::where('user_id', $survivor->user_id)->first();
-
-    if (!$userDetail) {
-      return response()->json(['message' => 'User details not found.'], 404);
-    }
-
-    // Normalize stored values
-    $storedFirstName = $this->normalizeString($userDetail->first_name);
-    $storedLastName = $this->normalizeString($userDetail->last_name);
-    $storedDob = $userDetail->dob;
-
-    // Check similarity instead of strict equality
-    $nameSimilarity = $this->isSimilar($inputFirstName, $storedFirstName);
-    $lastNameSimilarity = $this->isSimilar($inputLastName, $storedLastName);
-
-    if ($storedDob !== $inputDob || !$nameSimilarity || !$lastNameSimilarity) {
-      return response()->json(
-        [
-          'message' =>
-          __('feedback.not_matching_info')
-        ],
-        404
-      );
-    }
-
-    // Update user credentials
-    $user = User::find($survivor->user_id);
-
-    if ($user->email !== null) {
-      return response()->json(['message' => __("feedback.account_already_activated")], 400);
-    }
-
-    $user->update([
-      'email' => $request->email,
-      'password' => Hash::make($request->password),
-    ]);
-
-    // Send a welcome email to the customer
-    try {
-      Notification::route('slack', env('SLACK_BOOKING_ENGINE_NOTIFICATIONS'))->notify(
-        new CustomerRecoverAccount($user)
-      );
-    } catch (\Exception $e) {
-      // Optionally log the failure so you know something went wrong
-      Log::warning('Slack notification failed: ' . $e->getMessage());
-    }
-
-    // Send welcome email
-    $this->sendActivateSurvivorEmail($user, $language, $survivorNumber);
-
-    return response()->json(['message' => __("feedback.account_activation_success")], 200);
-  }
-
-  /*
+    /*
   |--------------------------------------------------------------------------
   | Send welcome email NEW USER
   |--------------------------------------------------------------------------
@@ -220,18 +218,17 @@ class CustomerRegisteredController extends Controller
   |  This email is send to the user after registration.
   |
   */
-  protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void
-  {
-    try {
-      $user->load('detail');
-      $email = $user->email;
-      Mail::to($email)->locale($language)->queue(new CustomerRegistered($user, $language, $survivorNumber));
-    } catch (\Exception $e) {
-      Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+    protected function sendWelcomeEmail(User $user, string $language, string $survivorNumber): void {
+        try {
+            $user->load('detail');
+            $email = $user->email;
+            Mail::to($email)->locale($language)->queue(new CustomerRegistered($user, $language, $survivorNumber));
+        } catch (\Exception $e) {
+            Log::error('Failed to send welcome email to user ID ' . $user->id . ': ' . $e->getMessage());
+        }
     }
-  }
 
-  /*
+    /*
   |--------------------------------------------------------------------------
   | Send welcome email ACTIVATE SURVIVOR USER
   |--------------------------------------------------------------------------
@@ -239,15 +236,14 @@ class CustomerRegisteredController extends Controller
   |  This email is send, to confirm email address and activate the survivor.
   |
   */
-  protected function sendActivateSurvivorEmail(User $user, string $language, string $survivorNumber): void
-  {
-    try {
-      $email = $user->email;
-      $user->load('detail');
+    protected function sendActivateSurvivorEmail(User $user, string $language, string $survivorNumber): void {
+        try {
+            $email = $user->email;
+            $user->load('detail');
 
-      Mail::to($email)->locale($language)->queue(new ActivateSurvivor($user, $language, $survivorNumber));
-    } catch (\Exception $e) {
-      Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());
+            Mail::to($email)->locale($language)->queue(new ActivateSurvivor($user, $language, $survivorNumber));
+        } catch (\Exception $e) {
+            Log::error('Failed to send activate survivor email to user ID ' . $user->id . ': ' . $e->getMessage());
+        }
     }
-  }
 }

@@ -14,23 +14,18 @@ use Faker\Generator;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class RolesSeeder extends Seeder
-{
+class RolesSeeder extends Seeder {
     protected $faker;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->faker = $this->withFaker();
     }
 
-    protected function withFaker()
-    {
+    protected function withFaker() {
         return Container::getInstance()->make(Generator::class);
     }
 
-    public function run(): void
-    {
-
+    public function run(): void {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         foreach (Roles::cases() as $role) {
@@ -41,8 +36,8 @@ class RolesSeeder extends Seeder
                     'team_id' => 1,
                     'name' => $roleName,
                     'guard_name' => 'web',
-                    'system' => 1
-                ]
+                    'system' => 1,
+                ],
             );
         }
 
@@ -52,8 +47,8 @@ class RolesSeeder extends Seeder
                 [
                     'created_at' => now(),
                     'updated_at' => now(),
-                    'system' => 1
-                ]
+                    'system' => 1,
+                ],
             );
         }
 
@@ -61,8 +56,8 @@ class RolesSeeder extends Seeder
         $adminRole = Role::where('name', 'Admin')->first();
         $agentRole = Role::where('name', 'Agent')->first();
         $permissionNames = DB::table('permissions')->pluck('name')->toArray();
-       // dd($permissionNames);
-        
+        // dd($permissionNames);
+
         // Assign *all permissions* to SuperAdmin using syncPermissions
         $superAdminRole->syncPermissions($permissionNames);
 
@@ -76,10 +71,10 @@ class RolesSeeder extends Seeder
                 'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', $password)),
                 'created_at' => now(),
                 'updated_at' => now(),
-                'organization_id' => env('ORGANIZATION_ID', 1)
-            ]
+                'organization_id' => env('ORGANIZATION_ID', 1),
+            ],
         );
-        
+
         $adminId = User::firstOrCreate(
             ['username' => 'admin'],
             [
@@ -88,8 +83,8 @@ class RolesSeeder extends Seeder
                 'password' => Hash::make(env('ADMIN_PASSWORD', $password)),
                 'created_at' => now(),
                 'updated_at' => now(),
-                'organization_id' => env('ORGANIZATION_ID', 1)
-            ]
+                'organization_id' => env('ORGANIZATION_ID', 1),
+            ],
         );
 
         $agentId = User::firstOrCreate(
@@ -100,33 +95,42 @@ class RolesSeeder extends Seeder
                 'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', $password)),
                 'created_at' => now(),
                 'updated_at' => now(),
-                'organization_id' => env('ORGANIZATION_ID', 1)
-            ]
+                'organization_id' => env('ORGANIZATION_ID', 1),
+            ],
         );
 
-        DB::table('model_has_roles')->updateOrInsert([
-            'role_id' => $superAdminRole->id,
-            'model_type' => User::class,
-            'model_id' => $superAdminId->id,
-        ], [
-            'team_id' => env('ORGANIZATION_ID', 1)
-        ]);
-        
-        DB::table('model_has_roles')->updateOrInsert([
-            'role_id' => $adminRole->id,
-            'model_type' => User::class,
-            'model_id' => $adminId->id,
-        ], [
-            'team_id' => env('ORGANIZATION_ID', 1)
-        ]);
+        DB::table('model_has_roles')->updateOrInsert(
+            [
+                'role_id' => $superAdminRole->id,
+                'model_type' => User::class,
+                'model_id' => $superAdminId->id,
+            ],
+            [
+                'team_id' => env('ORGANIZATION_ID', 1),
+            ],
+        );
 
-        DB::table('model_has_roles')->updateOrInsert([
-            'role_id' => $agentRole->id,
-            'model_type' => User::class,
-            'model_id' => $agentId->id,
-        ], [
-            'team_id' => env('ORGANIZATION_ID', 1)
-        ]);
+        DB::table('model_has_roles')->updateOrInsert(
+            [
+                'role_id' => $adminRole->id,
+                'model_type' => User::class,
+                'model_id' => $adminId->id,
+            ],
+            [
+                'team_id' => env('ORGANIZATION_ID', 1),
+            ],
+        );
+
+        DB::table('model_has_roles')->updateOrInsert(
+            [
+                'role_id' => $agentRole->id,
+                'model_type' => User::class,
+                'model_id' => $agentId->id,
+            ],
+            [
+                'team_id' => env('ORGANIZATION_ID', 1),
+            ],
+        );
 
         //specific permissions for other roles
 
@@ -141,8 +145,8 @@ class RolesSeeder extends Seeder
             Permissions::EditCustomers,
             Permissions::DeleteCustomers,
             Permissions::ViewEvents,
-            // Permissions::CreateEvents, 
-            // Permissions::EditEvents, 
+            // Permissions::CreateEvents,
+            // Permissions::EditEvents,
             // Permissions::DeleteEvents,
             Permissions::ViewCabins,
             Permissions::CreateCabins,
@@ -157,12 +161,12 @@ class RolesSeeder extends Seeder
             Permissions::EditTaxes,
             Permissions::DeleteTaxes,
             Permissions::ViewRoles,
-            Permissions::CreateRoles, 
-            Permissions::EditRoles, 
+            Permissions::CreateRoles,
+            Permissions::EditRoles,
             Permissions::DeleteRoles,
             Permissions::ViewPermissions,
-            Permissions::CreatePermissions, 
-            Permissions::EditPermissions, 
+            Permissions::CreatePermissions,
+            Permissions::EditPermissions,
             Permissions::DeletePermissions,
             Permissions::AssignPermissions,
             Permissions::RevokePermissions,
@@ -208,28 +212,28 @@ class RolesSeeder extends Seeder
             Permissions::EditCustomers,
             Permissions::DeleteCustomers,
             Permissions::ViewEvents,
-            // Permissions::CreateEvents, 
-            // Permissions::EditEvents, 
+            // Permissions::CreateEvents,
+            // Permissions::EditEvents,
             // Permissions::DeleteEvents,
             Permissions::ViewCabins,
-            Permissions::CreateCabins, 
-            Permissions::EditCabins, 
+            Permissions::CreateCabins,
+            Permissions::EditCabins,
             Permissions::DeleteCabins,
             Permissions::ViewCabinCategories,
-            Permissions::CreateCabinCategories, 
-            Permissions::EditCabinCategories, 
+            Permissions::CreateCabinCategories,
+            Permissions::EditCabinCategories,
             Permissions::DeleteCabinCategories,
             Permissions::ViewTaxes,
             Permissions::CreateTaxes,
             Permissions::EditTaxes,
             Permissions::DeleteTaxes,
             // Permissions::ViewRoles,
-            // Permissions::CreateRoles, 
-            // Permissions::EditRoles, 
+            // Permissions::CreateRoles,
+            // Permissions::EditRoles,
             // Permissions::DeleteRoles,
             // Permissions::ViewPermissions,
-            // Permissions::CreatePermissions, 
-            // Permissions::EditPermissions, 
+            // Permissions::CreatePermissions,
+            // Permissions::EditPermissions,
             // Permissions::DeletePermissions,
             // Permissions::AssignPermissions,
             // Permissions::RevokePermissions,
@@ -257,10 +261,11 @@ class RolesSeeder extends Seeder
             Permissions::DeletePassengerDiscounts,
             Permissions::CreatePassengerOnboardCredit,
             Permissions::DeletePassengerOnboardCredit,
-            Permissions::ViewTags
+            Permissions::ViewTags,
         ]);
 
-        $this->assignToRole(Roles::Admin, [ //Superadmin
+        $this->assignToRole(Roles::Admin, [
+            //Superadmin
             Permissions::ViewDashboard,
             Permissions::ViewUsers,
             Permissions::CreateUsers,
@@ -288,13 +293,13 @@ class RolesSeeder extends Seeder
             Permissions::EditTaxes,
             Permissions::DeleteTaxes,
             Permissions::ViewRoles,
-            Permissions::CreateRoles, 
-            Permissions::EditRoles, 
+            Permissions::CreateRoles,
+            Permissions::EditRoles,
             Permissions::DeleteRoles,
             Permissions::ExportRoles,
             Permissions::ViewPermissions,
-            Permissions::CreatePermissions, 
-            Permissions::EditPermissions, 
+            Permissions::CreatePermissions,
+            Permissions::EditPermissions,
             Permissions::DeletePermissions,
             Permissions::AssignPermissions,
             Permissions::RevokePermissions,
@@ -331,7 +336,8 @@ class RolesSeeder extends Seeder
             Permissions::EditInstallments,
         ]);
 
-        $this->assignToRole(Roles::Owner, [ // Superadmin
+        $this->assignToRole(Roles::Owner, [
+            // Superadmin
             Permissions::ViewDashboard,
             Permissions::ViewUsers,
             Permissions::CreateUsers,
@@ -358,13 +364,13 @@ class RolesSeeder extends Seeder
             Permissions::EditTaxes,
             Permissions::DeleteTaxes,
             Permissions::ViewRoles,
-            Permissions::CreateRoles, 
-            Permissions::EditRoles, 
+            Permissions::CreateRoles,
+            Permissions::EditRoles,
             Permissions::DeleteRoles,
             Permissions::ExportRoles,
             Permissions::ViewPermissions,
-            Permissions::CreatePermissions, 
-            Permissions::EditPermissions, 
+            Permissions::CreatePermissions,
+            Permissions::EditPermissions,
             Permissions::DeletePermissions,
             Permissions::AssignPermissions,
             Permissions::RevokePermissions,
@@ -400,7 +406,8 @@ class RolesSeeder extends Seeder
             Permissions::EditInstallments,
         ]);
 
-        $this->assignToRole(Roles::Trainee, [  // Only View Access
+        $this->assignToRole(Roles::Trainee, [
+            // Only View Access
             Permissions::ViewDashboard,
             Permissions::ViewUsers,
             // Permissions::CreateUsers,
@@ -427,12 +434,12 @@ class RolesSeeder extends Seeder
             // Permissions::EditTaxes,
             // Permissions::DeleteTaxes,
             Permissions::ViewRoles,
-            // Permissions::CreateRoles, 
-            // Permissions::EditRoles, 
+            // Permissions::CreateRoles,
+            // Permissions::EditRoles,
             // Permissions::DeleteRoles,
             Permissions::ViewPermissions,
-            // Permissions::CreatePermissions, 
-            // Permissions::EditPermissions, 
+            // Permissions::CreatePermissions,
+            // Permissions::EditPermissions,
             // Permissions::DeletePermissions,
             // Permissions::AssignPermissions,
             // Permissions::RevokePermissions,
@@ -460,21 +467,19 @@ class RolesSeeder extends Seeder
             // Permissions::DeletePassengerDiscounts,
             // Permissions::CreatePassengerOnboardCredit,
             // Permissions::DeletePassengerOnboardCredit
-            Permissions::ViewTags
+            Permissions::ViewTags,
         ]);
     }
 
-
-    private function assignToRole($roleEnum, $permissions)
-    {
+    private function assignToRole($roleEnum, $permissions) {
         $role = Role::where('name', $roleEnum->value)->first();
-    
+
         if (!$role) {
             return;
         }
-    
+
         $permissionNames = array_map(fn($permission) => $permission->value, $permissions);
-    
+
         // Now safely sync the permissions
         $role->syncPermissions($permissionNames);
     }

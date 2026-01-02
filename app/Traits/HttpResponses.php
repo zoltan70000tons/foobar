@@ -2,8 +2,7 @@
 
 namespace App\Traits;
 
-trait HttpResponses
-{
+trait HttpResponses {
     /**
      * Return a new JSON response for a successful request.
      *
@@ -11,8 +10,7 @@ trait HttpResponses
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function successResponse($data, $status = 200)
-    {
+    public function successResponse($data, $status = 200) {
         return response()->json($data, $status);
     }
 
@@ -23,8 +21,7 @@ trait HttpResponses
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function errorResponse($message, $status)
-    {
+    public function errorResponse($message, $status) {
         return response()->json(['error' => $message, 'status' => $status], $status);
     }
 }

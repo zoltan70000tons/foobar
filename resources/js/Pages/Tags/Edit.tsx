@@ -1,22 +1,11 @@
-import React from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { router } from '@inertiajs/react';
-import {
-  Container,
-  Paper,
-  Grid,
-  Toolbar,
-  TextField,
-  Box,
-  Button,
-  Chip,
-  Rating,
-  Typography,
-} from '@mui/material';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
+import React from "react";
+import { Head, useForm, usePage } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { router } from "@inertiajs/react";
+import { Container, Paper, Grid, Toolbar, TextField, Box, Button, Chip, Rating, Typography } from "@mui/material";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
 import { ColorPicker, useColor } from "react-color-palette";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
@@ -26,7 +15,7 @@ type Tag = {
   color: string;
   type: string;
   priority: number;
-}
+};
 
 type PageProps = {
   tag: Tag;
@@ -38,9 +27,9 @@ const Edit = ({ auth, errors }: PageProps) => {
   const { showSnackbar } = useSnackbar();
 
   const { data, setData, head, processing } = useForm({
-    name: tag.name || '',
-    description: tag.description || '',
-    color: tag.color || '',
+    name: tag.name || "",
+    description: tag.description || "",
+    color: tag.color || "",
     priority: tag.priority || 0,
   });
 
@@ -56,8 +45,8 @@ const Edit = ({ auth, errors }: PageProps) => {
 
   const handleBack = () => {
     router.visit(route("customer-tags.show", tag.id), {
-      only: ['tag'],
-    })
+      only: ["tag"],
+    });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -67,24 +56,24 @@ const Edit = ({ auth, errors }: PageProps) => {
     for (const key in data) {
       formData.append(key, data[key]);
     }
-    formData.append('_method', 'PUT');
-    formData.append('color', color.hex);
+    formData.append("_method", "PUT");
+    formData.append("color", color.hex);
 
     router.post(`/tags/${tag.id}`, formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        showSnackbar('Tag edited successfully', 'success');
+        showSnackbar("Tag edited successfully", "success");
       },
       onError: (errors) => {
-        const errorMessages = Object.values(errors).join('\n');
-        showSnackbar(`Error editing tag\n${errorMessages}`, 'error');
+        const errorMessages = Object.values(errors).join("\n");
+        showSnackbar(`Error editing tag\n${errorMessages}`, "error");
       },
       onFinish: () => {},
     });
   };
 
   return (
-    <AuthenticatedLayout user={auth.user} header={'Tags'}>
+    <AuthenticatedLayout user={auth.user} header={"Tags"}>
       <Head title="Edit Tag" />
       <Toolbar sx={{ mt: 8, mb: 4 }}>
         <Button variant="outlined" color="secondary" onClick={handleBack}>
@@ -97,15 +86,15 @@ const Edit = ({ auth, errors }: PageProps) => {
             <Paper
               sx={{
                 p: 2,
-                display: 'flex',
-                flexDirection: 'column',
+                display: "flex",
+                flexDirection: "column",
                 minHeight: 240,
-                width: '100%',
+                width: "100%",
               }}
             >
               <h1>Edit Customer Tag</h1>
               <form onSubmit={handleSubmit} encType="multipart/form-data">
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: "100%" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <TextField
@@ -113,7 +102,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Name"
                         variant="outlined"
                         value={data.name}
-                        name={'name'}
+                        name={"name"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -123,7 +112,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Description"
                         variant="outlined"
                         value={data.description}
-                        name={'description'}
+                        name={"description"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -136,7 +125,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                           const clampedValue = Math.max(0, Math.min(10, newValue ?? 0));
                           handleChange({
                             target: {
-                              name: 'priority',
+                              name: "priority",
                               value: clampedValue,
                             },
                           });
@@ -150,17 +139,16 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Color"
                         variant="outlined"
                         value={color.hex}
-                        name={'color'}
+                        name={"color"}
                         onChange={handleChange}
                         disabled
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
-                      <ColorPicker width={456} height={228}
-                                   color={color} onChange={setColor} hideHSV dark />
+                    <Grid item xs={6}>
+                      <ColorPicker width={456} height={228} color={color} onChange={setColor} hideHSV dark />
                     </Grid>
-                    <Grid item xs={ 6 }>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                    <Grid item xs={6}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                         <span>Preview:</span>
                         <Chip
                           label={data.name}
@@ -178,7 +166,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                 </Box>
                 <Box sx={{ mt: 4 }}>
                   <Button variant="contained" color="primary" fullWidth type="submit" disabled={processing}>
-                    {processing ? 'Submitting...' : 'Submit'}
+                    {processing ? "Submitting..." : "Submit"}
                   </Button>
                 </Box>
               </form>

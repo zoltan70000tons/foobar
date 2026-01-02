@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { router } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import { Container, Grid, Box } from '@mui/material';
-import { usePermissions } from '@/Providers/PermissionContext';
-import 'dayjs/locale/en';
-import { Permissions } from '@/enums/PermissionEnum';
-import MuiTable from '@/Components/tables/MuiTable';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import { Visibility } from '@mui/icons-material';
+import React, { useEffect, useMemo, useState } from "react";
+import { router } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import { Container, Grid, Box } from "@mui/material";
+import { usePermissions } from "@/Providers/PermissionContext";
+import "dayjs/locale/en";
+import { Permissions } from "@/enums/PermissionEnum";
+import MuiTable from "@/Components/tables/MuiTable";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import { Visibility } from "@mui/icons-material";
 
 const Index = ({ auth, bookings }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -23,41 +23,41 @@ const Index = ({ auth, bookings }: PageProps) => {
   const columns = useMemo(
     () => [
       {
-        header: 'Event Name',
-        accessor: 'event_name',
+        header: "Event Name",
+        accessor: "event_name",
         filterable: true,
         sortable: true,
       },
       {
-        accessor: 'booking_code',
-        header: 'Booking Code',
+        accessor: "booking_code",
+        header: "Booking Code",
         filterable: true,
         sortable: true,
       },
       {
-        accessor: 'cabin_type',
-        header: 'Cabin Type',
+        accessor: "cabin_type",
+        header: "Cabin Type",
         filterable: true,
         sortable: true,
       },
       {
-        accessor: 'category_full_title',
-        header: 'Category Full Title (Custom attribute in Category Model)',
+        accessor: "category_full_title",
+        header: "Category Full Title (Custom attribute in Category Model)",
         filterable: true,
         sortable: true,
       },
       {
-        header: 'Actions',
-        accessor: 'id',
+        header: "Actions",
+        accessor: "id",
         disableFilter: true,
         draw: (row) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             {hasPermission(Permissions.ViewBookings) && (
               <Visibility
                 onClick={() => {
-                  router.get(route('bookings.show', { id: row.event_id, booking_code: row.booking_code }));
+                  router.get(route("bookings.show", { id: row.event_id, booking_code: row.booking_code }));
                 }}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               />
             )}
           </div>

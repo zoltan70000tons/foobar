@@ -132,7 +132,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   const [isSingleRoom, setIsSingleRoom] = useState(false);
   const [fetching, setIsFetching] = useState(false);
   const [availableDecks, setAvailableDecks] = useState([]);
-  
 
   const paymentPlanOptions = [
     {
@@ -231,11 +230,11 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   }, [activeStep, cabinType, cabinCategory, cabinNumber, passenger, paymentPlan, numberOfInstallments, bedConfig]);
 
   useEffect(() => {
-  if (createdCustomer) {
-    fillPassengerFromUser(createdCustomer);
-    showSnackbar("New customer created and selected.", "success");
-  }
-}, [createdCustomer]);
+    if (createdCustomer) {
+      fillPassengerFromUser(createdCustomer);
+      showSnackbar("New customer created and selected.", "success");
+    }
+  }, [createdCustomer]);
 
   useEffect(() => {
     if (!cabinType) return;
@@ -299,7 +298,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
 
   const fillPassengerFromUser = (user) => {
     if (!user) return;
-    const valid = validateGenders(); 
+    const valid = validateGenders();
     if (!valid) return;
 
     setSelectedUser(user);
@@ -761,18 +760,17 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
                 </Grid>
               )}
               <Grid item xs={12} md={3}>
-                 <FormControl fullWidth>
+                <FormControl fullWidth>
                   <Autocomplete
-                      fullWidth
-                      options={bedConfigOptions}
-                      getOptionLabel={(option) => `${option.value}`}
-                      value={bedConfig}
-                      onChange={(event, newValue) => setBedConfig(newValue)}
-                      renderInput={(params) => <TextField {...params} label="Bed Configuration" />}
-                      sx={{ mb: 2 }}
-                    />
-
-                 </FormControl>
+                    fullWidth
+                    options={bedConfigOptions}
+                    getOptionLabel={(option) => `${option.value}`}
+                    value={bedConfig}
+                    onChange={(event, newValue) => setBedConfig(newValue)}
+                    renderInput={(params) => <TextField {...params} label="Bed Configuration" />}
+                    sx={{ mb: 2 }}
+                  />
+                </FormControl>
               </Grid>
             </Grid>
           </Box>

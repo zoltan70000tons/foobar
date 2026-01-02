@@ -43,11 +43,7 @@ type ContactDetailsProps = {
   disabledByDesign: boolean;
 };
 
-export default function SpecialRequest({
-  passenger,
-  onChange,
-  disabledByDesign,
-}: ContactDetailsProps) {
+export default function SpecialRequest({ passenger, onChange, disabledByDesign }: ContactDetailsProps) {
   const options = [
     { label: "Wheelchair", value: "wheelchair_assistance" },
     {
@@ -74,9 +70,7 @@ export default function SpecialRequest({
     }
   }, [passenger]);
 
-  const handleCheckboxChange = (key: keyof typeof specialOptions) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleCheckboxChange = (key: keyof typeof specialOptions) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const updatedValue = e.target.checked;
     const updatedOptions = {
       ...specialOptions,
@@ -99,13 +93,13 @@ export default function SpecialRequest({
       ? passenger.dietary_preferences
       : typeof passenger.dietary_preferences === "string"
         ? (() => {
-          try {
-            const parsed = JSON.parse(passenger.dietary_preferences);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        })()
+            try {
+              const parsed = JSON.parse(passenger.dietary_preferences);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              return [];
+            }
+          })()
         : [];
 
     const ITEM_HEIGHT = 48;
@@ -119,42 +113,44 @@ export default function SpecialRequest({
         },
       },
     };
-    dietarySelect = <>
-      <InputLabel id="info-select-label">Please select dietary preferences</InputLabel>
-      <Select
-        labelId="dietary-options-select-label"
-        id="dietaryPreferences"
-        name="dietaryPreferences"
-        label="Dietary Options"
-        multiple={true}
-        value={selectValue}
-        fullWidth
-        onChange={(e) => onChange("dietary_preferences", e.target.value)}
-        sx={{
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-        }}
-        input={<OutlinedInput label="" />}
-        renderValue={(selected) => (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-            {(selected).map((value) => (
-              <Chip key={value} label={DietaryOptionsLabels[value]} size="small" />
-            ))}
-          </Box>
-        )}
-        MenuProps={MenuProps}
-      >
-        {Object.values(DietaryOptions).map((option) => {
-          const arraySelected: string[] = selectValue ?? [];
+    dietarySelect = (
+      <>
+        <InputLabel id="info-select-label">Please select dietary preferences</InputLabel>
+        <Select
+          labelId="dietary-options-select-label"
+          id="dietaryPreferences"
+          name="dietaryPreferences"
+          label="Dietary Options"
+          multiple={true}
+          value={selectValue}
+          fullWidth
+          onChange={(e) => onChange("dietary_preferences", e.target.value)}
+          sx={{
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+          }}
+          input={<OutlinedInput label="" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip key={value} label={DietaryOptionsLabels[value]} size="small" />
+              ))}
+            </Box>
+          )}
+          MenuProps={MenuProps}
+        >
+          {Object.values(DietaryOptions).map((option) => {
+            const arraySelected: string[] = selectValue ?? [];
 
-          return (
-            <MenuItem key={option} value={option}>
-              <Checkbox checked={arraySelected.includes(option)} />
-              <ListItemText primary={DietaryOptionsLabels[option]} />
-            </MenuItem>
-          );
-        })}
-      </Select>
-    </>
+            return (
+              <MenuItem key={option} value={option}>
+                <Checkbox checked={arraySelected.includes(option)} />
+                <ListItemText primary={DietaryOptionsLabels[option]} />
+              </MenuItem>
+            );
+          })}
+        </Select>
+      </>
+    );
   }
 
   return (

@@ -1,23 +1,28 @@
 import React, { useState, useMemo } from "react";
-import {
-  Drawer,
-  Box,
-  Typography,
-  IconButton,
-  TextField,
-  Button,
-  Badge,
-  Divider,
-  Grid,
-  Stack,
-} from "@mui/material";
+import { Drawer, Box, Typography, IconButton, TextField, Button, Badge, Divider, Grid, Stack } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import HistoryList from "./HistoryList";
 
-type Actor = { username: string; };
+type Actor = { username: string };
 type Logs = {
-  action: string; actor: Actor; actor_id: string; actor_type: string, message: string, status: string, payment_plan: string, cabin_number: string, cabin_status: string, bed_config: string, is_single_occupancy: boolean, booking_request_id: string;
-  created_at: string; description: string; id: string; related_id: string; related_type: string, booking_code: string;
+  action: string;
+  actor: Actor;
+  actor_id: string;
+  actor_type: string;
+  message: string;
+  status: string;
+  payment_plan: string;
+  cabin_number: string;
+  cabin_status: string;
+  bed_config: string;
+  is_single_occupancy: boolean;
+  booking_request_id: string;
+  created_at: string;
+  description: string;
+  id: string;
+  related_id: string;
+  related_type: string;
+  booking_code: string;
 };
 type BookingSidebarProps = {
   isOpen: boolean;
@@ -26,9 +31,7 @@ type BookingSidebarProps = {
   onAddComment: (comment: string) => void;
 };
 
-const BookingSidebar: React.FC<BookingSidebarProps> = ({
-  isOpen, toggleSidebar, history, onAddComment,
-}) => {
+const BookingSidebar: React.FC<BookingSidebarProps> = ({ isOpen, toggleSidebar, history, onAddComment }) => {
   const [newComment, setNewComment] = useState("");
 
   const { comments, logs } = useMemo(() => {
@@ -50,7 +53,7 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
       onClose={toggleSidebar}
       PaperProps={{
         sx: {
-          width: { xs: "100vw", sm: 700 },     
+          width: { xs: "100vw", sm: 700 },
           maxWidth: 700,
         },
       }}
@@ -68,7 +71,9 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Typography variant="h6" sx={{ m: 0 }}>Booking History</Typography>
+            <Typography variant="h6" sx={{ m: 0 }}>
+              Booking History
+            </Typography>
             <IconButton onClick={toggleSidebar} size="small">
               <CloseIcon />
             </IconButton>
@@ -85,13 +90,13 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
                   height: "100%",
                   border: (t) => `1px solid ${t.palette.divider}`,
                   borderRadius: 2,
-                  overflow: "hidden", 
+                  overflow: "hidden",
                 }}
               >
                 <Box
                   sx={{
                     position: "sticky",
-                    top: 0, 
+                    top: 0,
                     zIndex: 1,
                     bgcolor: "grey.900",
                     color: "common.white",
@@ -99,7 +104,13 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
                     py: 1,
                   }}
                 >
-                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ pr: 1.3 }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ pr: 1.3 }}
+                  >
                     <Typography variant="subtitle1" sx={{ m: 0, fontWeight: 700 }}>
                       Comments
                     </Typography>
@@ -118,12 +129,7 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
                     multiline
                     rows={3}
                   />
-                  <Button
-                    variant="contained"
-                    sx={{ mt: 1 }}
-                    onClick={handleAddComment}
-                    disabled={!newComment.trim()}
-                  >
+                  <Button variant="contained" sx={{ mt: 1 }} onClick={handleAddComment} disabled={!newComment.trim()}>
                     Add Comment
                   </Button>
                 </Box>
@@ -135,7 +141,6 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
                 </Box>
               </Box>
             </Grid>
-
 
             <Grid item xs={12} md={6} sx={{ height: "100%" }}>
               <Box
@@ -157,14 +162,20 @@ const BookingSidebar: React.FC<BookingSidebarProps> = ({
                     color: "common.white",
                     px: 1.5,
                     py: 1,
-                    mt: { xs: '-16px' }
+                    mt: { xs: "-16px" },
                   }}
                 >
-                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ pr: 1.2 }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ pr: 1.2 }}
+                  >
                     <Typography variant="subtitle1" sx={{ m: 0, fontWeight: 700 }}>
                       Logs
                     </Typography>
-                    <Badge color="warning" badgeContent={logs.length}  />
+                    <Badge color="warning" badgeContent={logs.length} />
                   </Stack>
                 </Box>
 

@@ -6,8 +6,7 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use App\Models\User;
 
-interface CustomerInterface
-{
+interface CustomerInterface {
     function getAll();
 
     function find($id);

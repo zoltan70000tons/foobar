@@ -10,13 +10,7 @@ interface CustomLinkProps {
   [key: string]: any;
 }
 
-const CustomLink = ({
-  type = "link",
-  href,
-  children,
-  variant = "text",
-  ...props
-}: CustomLinkProps) => {
+const CustomLink = ({ type = "link", href, children, variant = "text", ...props }: CustomLinkProps) => {
   const [isExternal, setIsExternal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -40,11 +34,7 @@ const CustomLink = ({
 
   if (type === "button") {
     return (
-      <Button
-        {...commonProps}
-        variant={variant}
-        sx={{ color: "inherit", margin: 0 }}
-      >
+      <Button {...commonProps} variant={variant} sx={{ color: "inherit", margin: 0 }}>
         {children}
       </Button>
     );

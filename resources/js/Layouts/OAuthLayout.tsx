@@ -1,10 +1,10 @@
-import React from 'react';
-import { Box, Typography, Toolbar, Stack, AppBar, CssBaseline } from '@mui/material';
-import Logo from '../Components/Logo';
-import Footer from '@/Pages/OAuth/components/Footer';
-import themeClient from '@/Theme/themeClient';
+import React from "react";
+import { Box, Typography, Toolbar, Stack, AppBar, CssBaseline } from "@mui/material";
+import Logo from "../Components/Logo";
+import Footer from "@/Pages/OAuth/components/Footer";
+import themeClient from "@/Theme/themeClient";
 import { styled, ThemeProvider } from "@mui/material/styles";
-import TopNavigation from '@/Pages/OAuth/components/TopNavigation';
+import TopNavigation from "@/Pages/OAuth/components/TopNavigation";
 
 interface Props {
   children: React.ReactNode;
@@ -13,7 +13,6 @@ interface Props {
 const defaultTheme = themeClient;
 
 const OAuthLayout: React.FC<Props> = ({ children }) => {
-
   // get language param from url
   const urlParams = new URLSearchParams(window.location.search);
   const language = urlParams.get("language") || "en";
@@ -36,7 +35,12 @@ const OAuthLayout: React.FC<Props> = ({ children }) => {
             zIndex: 1002,
           }}
         >
-          <Stack direction="row" spacing={5} alignItems="center" sx={{ width: '100%', justifyContent: 'space-between' }}>
+          <Stack
+            direction="row"
+            spacing={5}
+            alignItems="center"
+            sx={{ width: "100%", justifyContent: "space-between" }}
+          >
             <Logo language={language} />
             <TopNavigation language={language} />
           </Stack>
@@ -44,17 +48,17 @@ const OAuthLayout: React.FC<Props> = ({ children }) => {
       </AppBar>
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#121212',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          backgroundColor: "#121212",
         }}
       >
         {children}
       </Box>
-      <Footer language={language}/>
+      <Footer language={language} />
     </ThemeProvider>
   );
 };

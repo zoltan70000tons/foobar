@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CabinSpec extends Model
-{
+class CabinSpec extends Model {
     use HasFactory;
 
     protected $table = 'cabin_specs';
@@ -35,13 +34,11 @@ class CabinSpec extends Model
     protected $appends = ['is_shared_cabin_number'];
 
     // Relations
-    public function cabins()
-    {
+    public function cabins() {
         return $this->hasMany(Cabin::class, 'cabin_spec_id');
     }
 
-    public function connectingCabin()
-    {
+    public function connectingCabin() {
         return $this->belongsTo(CabinSpec::class, 'connects_with');
     }
 
@@ -49,8 +46,7 @@ class CabinSpec extends Model
      * Get the 'is_shared_cabin_number' attribute.
      * @return bool
      */
-    public function getIsSharedCabinNumberAttribute(): bool
-    {
+    public function getIsSharedCabinNumberAttribute(): bool {
         if ($this->relationLoaded('cabins')) {
             return $this->cabins->count() > 1;
         }

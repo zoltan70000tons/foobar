@@ -8,26 +8,20 @@ use App\Traits\ExceptionLogger;
 use App\Traits\HandlePermissions;
 use Inertia\Inertia;
 
-class MenuController extends Controller
-{
+class MenuController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
     protected EventRepositoryInterface $eventRepository;
 
-    public function __construct(EventRepository $eventRepository)
-    {
+    public function __construct(EventRepository $eventRepository) {
         $this->eventRepository = $eventRepository;
     }
-    public function index()
-    {
-       
+    public function index() {
     }
 
-    public function getEvents()
-    {
+    public function getEvents() {
         $events = $this->eventRepository->listMenu();
         return response()->json($events);
     }
-
 }

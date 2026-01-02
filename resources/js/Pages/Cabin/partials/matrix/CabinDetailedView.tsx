@@ -1,13 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  alpha,
-  Box,
-  CircularProgress,
-  Typography,
-  Tab,
-  Tabs,
-  Grid
-} from "@mui/material";
+import { alpha, Box, CircularProgress, Typography, Tab, Tabs, Grid } from "@mui/material";
 import { red, blue } from "@mui/material/colors";
 import IframeComponent from "./IframeComponent";
 import ImageComponent from "./ImageComponent";
@@ -25,7 +17,6 @@ interface TabPanelProps {
 }
 
 function TabPanel({ children, value, index }: TabPanelProps) {
-
   return (
     <div
       role="tabpanel"
@@ -33,18 +24,14 @@ function TabPanel({ children, value, index }: TabPanelProps) {
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
     >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
 }
 
 // Main Component
 export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProps) {
-  const locale = 'en';
+  const locale = "en";
 
   const [tabValue, setTabValue] = useState<number | null>(null);
   const [configs, setConfigs] = useState<PriceAndCapacity[]>([]);
@@ -78,7 +65,7 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
   }, []);
 
   // Show loading spinner
-  if(isLoading) {
+  if (isLoading) {
     return (
       <Box
         sx={{
@@ -111,9 +98,7 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
             align="center"
             variant="body2"
             dangerouslySetInnerHTML={{
-              __html:
-                config.description?.[locale as keyof typeof config.description] ||
-                "",
+              __html: config.description?.[locale as keyof typeof config.description] || "",
             }}
             sx={{ m: "10px auto 20px" }}
           />
@@ -146,7 +131,7 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
 
   return (
     <Box>
-      <Box sx={{ width: '100%', typography: 'body1' }}>
+      <Box sx={{ width: "100%", typography: "body1" }}>
         <Tabs
           value={tabValue}
           onChange={handleChange}
@@ -176,11 +161,7 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
           ))}
         </Tabs>
         {configs.map((config) => (
-          <TabPanel
-            key={config.capacity}
-            value={tabValue ?? 0}
-            index={config.capacity}
-          >
+          <TabPanel key={config.capacity} value={tabValue ?? 0} index={config.capacity}>
             {renderBody(config)}
           </TabPanel>
         ))}
@@ -202,4 +183,4 @@ export default function CabinDetailedView({ cabinDetail }: CabinDetailedViewProp
       </Box>
     </Box>
   );
-};
+}

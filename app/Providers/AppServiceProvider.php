@@ -33,51 +33,47 @@ use Laravel\Passport\Passport;
 use App\Models\Passport\Client;
 use App\Observers\CustomerObserver;
 
-class AppServiceProvider extends ServiceProvider
-{
-  /**
-   * Register any application services.
-   */
-  public function register(): void
-  {
-    //
-  }
+class AppServiceProvider extends ServiceProvider {
+    /**
+     * Register any application services.
+     */
+    public function register(): void {
+        //
+    }
 
-  /**
-   * Bootstrap any application services.
-   */
-  public function boot(): void
-  {
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void {
+        Passport::useClientModel(Client::class);
+        Passport::authorizationView('auth.oauth.authorize');
+        Passport::tokensExpireIn(now()->addMinutes(20));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
 
-    Passport::useClientModel(Client::class);
-    Passport::authorizationView('auth.oauth.authorize');
-    Passport::tokensExpireIn(now()->addMinutes(20));
-    Passport::refreshTokensExpireIn(now()->addDays(30));
+        // Define a gate to authorize access to the Pulse dashboard
+        Gate::define('viewPulse', function (User $user): bool {
+            return $user->hasRole('SuperAdmin');
+        });
 
-    // Define a gate to authorize access to the Pulse dashboard
-    Gate::define('viewPulse', function (User $user): bool {
-      return $user->hasRole('SuperAdmin');
-    });
+        Cabin::observe(CabinObserver::class);
+        CabinSpec::observe(CabinSpecsObserver::class);
+        Booking::observe(BookingObserver::class);
+        Customer::observe(CustomerObserver::class);
+        User::observe(CustomerObserver::class);
+        Payment::observe(PaymentObserver::class);
+        Fee::observe(FeeObserver::class);
+        PassengerDiscount::observe(DiscountObserver::class);
+        BookingAgentSessions::observe(BookingAgentSessionsObserver::class);
+        OnboardCredit::observe(OnboardCreditObserver::class);
+        Passenger::observe(PassengerObserver::class);
+        PassengerInvitation::observe(PassengerInvitationObserver::class);
+        Event::observe(EventObserver::class);
 
-    Cabin::observe(CabinObserver::class);
-    CabinSpec::observe(CabinSpecsObserver::class);
-    Booking::observe(BookingObserver::class);
-    Customer::observe(CustomerObserver::class);
-    User::observe(CustomerObserver::class);
-    Payment::observe(PaymentObserver::class);
-    Fee::observe(FeeObserver::class);
-    PassengerDiscount::observe(DiscountObserver::class);
-    BookingAgentSessions::observe(BookingAgentSessionsObserver::class);
-    OnboardCredit::observe(OnboardCreditObserver::class);
-    Passenger::observe(PassengerObserver::class);
-    PassengerInvitation::observe(PassengerInvitationObserver::class);
-    Event::observe(EventObserver::class);
-
-    Relation::morphMap([
-      'booking'   => Booking::class,
-      'cabin'     => Cabin::class,
-      // 'user'      => User::class,
-      'customer'  => Customer::class,
-    ]);
-  }
+        Relation::morphMap([
+            'booking' => Booking::class,
+            'cabin' => Cabin::class,
+            // 'user'      => User::class,
+            'customer' => Customer::class,
+        ]);
+    }
 }

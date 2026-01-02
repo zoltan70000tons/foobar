@@ -6,22 +6,18 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class InviteUserMail extends Mailable
-{
+class InviteUserMail extends Mailable {
     use Queueable, SerializesModels;
 
     public $link;
 
-    public function __construct($link)
-    {
+    public function __construct($link) {
         $this->link = $link;
     }
 
-    public function build()
-    {
+    public function build() {
         return $this->view('emails.invite')
-                    ->with(['link' => $this->link])
-                    ->subject('70000TONS OF METAL Admin Panel Invitation');
-
+            ->with(['link' => $this->link])
+            ->subject('70000TONS OF METAL Admin Panel Invitation');
     }
 }

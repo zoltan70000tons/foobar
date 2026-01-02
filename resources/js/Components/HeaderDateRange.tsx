@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import "react-datepicker/dist/react-datepicker.css";
-import DateRangeIcon from '@mui/icons-material/DateRange';
+import DateRangeIcon from "@mui/icons-material/DateRange";
 
 export type DateRange = {
   startDate: Date | null;
@@ -31,13 +31,13 @@ export const HeaderDateRange = ({ dateRangeState, accessor, setDateRangeState }:
       [columnAccessor]: {
         startDate: start,
         endDate: end,
-      }
+      },
     }));
   };
 
   return (
     <>
-      <DateRangeIcon onClick={handleIconClick} sx={{cursor: 'pointer'}} />
+      <DateRangeIcon onClick={handleIconClick} sx={{ cursor: "pointer" }} />
       {isDatePickerVisible && (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
@@ -56,4 +56,4 @@ export const HeaderDateRange = ({ dateRangeState, accessor, setDateRangeState }:
       )}
     </>
   );
-}
+};

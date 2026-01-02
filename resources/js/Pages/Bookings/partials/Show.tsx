@@ -29,17 +29,26 @@ import BookingSidebar from "./BookingSidebar";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AdjustmentForm from "./AdjustmentForm";
 import { BookingSessionTimer } from "./BookingSessionTimer";
-import FaceIcon from '@mui/icons-material/Face';
-import '@/echo';
+import FaceIcon from "@mui/icons-material/Face";
+import "@/echo";
 import { ReverbLockBookingEvent } from "@/interfaces/ReverbLockBookingEvent";
 
-
-const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjustments, availableTags, deletedPayments, history, maxInstallmentsAllowed}: PageProps) => {
-
+const Show = ({
+  auth,
+  event,
+  booking,
+  users,
+  cabinTypes,
+  cabinCategories,
+  adjustments,
+  availableTags,
+  deletedPayments,
+  history,
+  maxInstallmentsAllowed,
+}: PageProps) => {
   dayjs.extend(localizedFormat);
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
-
 
   const propsIsLockedBy: boolean = booking.locked_by !== null;
   const propsIsLockedByMe: boolean = propsIsLockedBy && booking.locked_by?.agent_id === auth.user.id;
@@ -56,20 +65,15 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
   useEffect(() => {
-    const channel = window.Echo.channel('reverb-lock-booking');
-  
-    channel.listen('.ReverbLockBooking', ({ agentId, bookingId, username }: ReverbLockBookingEvent) => {
-      if (
-        bookingId === bookingId && 
-        username !== null &&
-        auth.user.id !== agentId
-      ) {
+    const channel = window.Echo.channel("reverb-lock-booking");
+
+    channel.listen(".ReverbLockBooking", ({ agentId, bookingId, username }: ReverbLockBookingEvent) => {
+      if (bookingId === bookingId && username !== null && auth.user.id !== agentId) {
         setIsDynamicLocked(true);
         setIsOverlayOpen(true);
         setIsLockedBy(username);
         setEditMode(false);
         setIsLockedByOther(true);
-        
       }
       if (bookingId === bookingId && username === null) {
         setIsDynamicLocked(false);
@@ -79,9 +83,9 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
         setIsLockedByOther(false);
       }
     });
-  
+
     return () => {
-      window.Echo.leave('reverb-lock-booking');
+      window.Echo.leave("reverb-lock-booking");
     };
   }, []);
 
@@ -96,7 +100,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
       showSnackbar(flash.success, "success");
     }
   }, [flash]);
-
 
   // handle edit mode change
   const handleEditChange = (e) => {
@@ -121,7 +124,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
       },
     );
   };
-
 
   // handle reassign booking
   const handleReAsssign = () => {
@@ -149,7 +151,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
   // handle sidebar toggle
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-
   // handle add comment
   const handleAddComment = (comment: string) => {
     router.post(
@@ -172,10 +173,11 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
         },
         preserveScroll: true,
         preserveState: true,
-        onFinish: () => { 
-          router.reload({ only: ['history'] });
-          setLoading(false); },
-      }
+        onFinish: () => {
+          router.reload({ only: ["history"] });
+          setLoading(false);
+        },
+      },
     );
   };
 
@@ -208,7 +210,6 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
     });
   };
 
-
   return (
     <AuthenticatedLayout user={auth.user} header={"Booking Detail"}>
       <Head title="Booking " />
@@ -228,7 +229,7 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
               justifyContent: "center",
               alignItems: "center",
             }}
-            >
+          >
             <Box
               sx={{
                 backgroundColor: "#000",
@@ -247,27 +248,29 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                 This booking is currently being edited by another agent. Please wait until they finish editing or
                 contact them for more information.
               </Typography>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setIsOverlayOpen(false)}
-                sx={{ mt: 2 }}
-              >
+              <Button variant="outlined" color="secondary" onClick={() => setIsOverlayOpen(false)} sx={{ mt: 2 }}>
                 Close
               </Button>
             </Box>
           </Box>
         )}
-        {editMode && (<BookingSessionTimer lockedAt={booking?.locked_by?.time} sessionDurationMinutes={10} eventId={event.id} bookingId={booking.id} />)}
-        <Box 
-        display="flex" 
-        justifyContent="space-between" 
-        alignItems="center"
-        sx={{
-          flexWrap: { xs: "wrap", sm: "nowrap" },
-          gap: 2,
-          mb: 2,
-        }}
+        {editMode && (
+          <BookingSessionTimer
+            lockedAt={booking?.locked_by?.time}
+            sessionDurationMinutes={10}
+            eventId={event.id}
+            bookingId={booking.id}
+          />
+        )}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{
+            flexWrap: { xs: "wrap", sm: "nowrap" },
+            gap: 2,
+            mb: 2,
+          }}
         >
           <Grid item xs={6}>
             <FormGroup>
@@ -287,27 +290,23 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={propsIsLockedByMe  && !isLockedByOther}
+                        checked={propsIsLockedByMe && !isLockedByOther}
                         onChange={handleEditChange}
                         disabled={isDynamicLocked || isLockedByOther}
                       />
                     }
-                    label={
-                      <Typography sx={{ fontSize: '1.1rem' }}>
-                        Edit Mode
-                      </Typography>
-                    }
+                    label={<Typography sx={{ fontSize: "1.1rem" }}>Edit Mode</Typography>}
                   />
                   {isLockedBy && (
                     <Box
                       sx={{
                         ml: 2,
-                        display: 'flex',
-                        alignItems: 'center',
+                        display: "flex",
+                        alignItems: "center",
                         gap: 1,
                       }}
                     >
-                      <Typography variant={'body2'}>Locked by: </Typography>
+                      <Typography variant={"body2"}>Locked by: </Typography>
                       <Chip icon={<FaceIcon />} color="warning" label={isLockedBy} />
                     </Box>
                   )}
@@ -317,22 +316,16 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
           </Grid>
 
           <Grid item xs={6} sx={{ textAlign: "right" }}>
-            <Button variant="outlined" color="secondary" onClick={handleBack} sx={{  mr: 2 }}>
+            <Button variant="outlined" color="secondary" onClick={handleBack} sx={{ mr: 2 }}>
               Back
             </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              startIcon={<CommentIcon />}
-              onClick={toggleSidebar}
-            >
+            <Button variant="outlined" color="secondary" startIcon={<CommentIcon />} onClick={toggleSidebar}>
               View Comments & Logs
             </Button>
           </Grid>
         </Box>
 
-        {isLockedByOther &&
-         booking.status !== "CANCELLED" && (
+        {isLockedByOther && booking.status !== "CANCELLED" && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Warning</AlertTitle>
             This booking request is currently being edited by another agent, so all editable fields have been disabled.
@@ -341,9 +334,9 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
               variant="outlined"
               color="secondary"
               onClick={() => handleReAsssign()}
-              sx={{ 
-                mt: 2, 
-                display: 'block',
+              sx={{
+                mt: 2,
+                display: "block",
               }}
             >
               Fetch Booking
@@ -374,4 +367,3 @@ const Show = ({ auth, event, booking, users, cabinTypes, cabinCategories, adjust
 };
 
 export default Show;
-

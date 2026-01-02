@@ -5,7 +5,7 @@ export enum LogActorType {
 }
 
 export const LogActorTypeLabel = Object.fromEntries(
-  Object.entries(LogActorType).map(([key, value]) => [key, value.charAt(0).toUpperCase() + value.slice(1)])
+  Object.entries(LogActorType).map(([key, value]) => [key, value.charAt(0).toUpperCase() + value.slice(1)]),
 ) as {
   [K in keyof typeof LogActorType]: Capitalize<(typeof LogActorType)[K]>;
 };

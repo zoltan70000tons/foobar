@@ -36,7 +36,7 @@ beforeEach(function () {
 describe('getBookableCabinByParamsTest', function () {
     it('returns a cabin that matches the given parameters', function () {
         $cabinCategorySpec = CabinCategorySpec::factory()->create([
-            'capacity' => 4
+            'capacity' => 4,
         ]);
         $cabinCategory = CabinCategory::factory([
             'cabin_category_spec_id' => $cabinCategorySpec->id,
@@ -67,17 +67,13 @@ describe('getBookableCabinByParamsTest', function () {
             ])
             ->create();
 
-        $result = app(BookingRepository::class)
-            ->getBookableCabinByParams(
-                4,
-                '3456',
-                $type->id,
-                $cabinCategory->id
-            );
+        $result = app(BookingRepository::class)->getBookableCabinByParams(4, '3456', $type->id, $cabinCategory->id);
 
         expect($result)
-            ->not()->toBeNull()
-            ->and($result->id)->toBe($cabin->id);
+            ->not()
+            ->toBeNull()
+            ->and($result->id)
+            ->toBe($cabin->id);
     });
 
     it('does not return cabins with active temporary reservations', function () {
@@ -101,16 +97,10 @@ describe('getBookableCabinByParamsTest', function () {
         TemporaryReservation::factory([
             'cabin_id' => $cabin->id,
             'user_id' => $user->id,
-            'expires_at' => now()->addHour()
+            'expires_at' => now()->addHour(),
         ])->create();
 
-        $result = app(BookingRepository::class)
-            ->getBookableCabinByParams(
-                2,
-                '2345',
-                $type->id,
-                $category->id
-            );
+        $result = app(BookingRepository::class)->getBookableCabinByParams(2, '2345', $type->id, $category->id);
 
         expect($result)->toBeNull();
     });
@@ -129,13 +119,7 @@ describe('getBookableCabinByParamsTest', function () {
             ->state(['status' => 'BOOKED']) // not in allowed list
             ->create();
 
-        $result = app(BookingRepository::class)
-            ->getBookableCabinByParams(
-                3,
-                '1234',
-                $type->id,
-                $category->id
-            );
+        $result = app(BookingRepository::class)->getBookableCabinByParams(3, '1234', $type->id, $category->id);
 
         expect($result)->toBeNull();
     });
@@ -155,13 +139,12 @@ describe('getBookableCabinByParamsTest', function () {
             ->create();
 
         // Search with wrong capacity
-        $result = app(BookingRepository::class)
-            ->getBookableCabinByParams(
-                4, // <-- mismatch
-                '9876',
-                $type->id,
-                $category->id
-            );
+        $result = app(BookingRepository::class)->getBookableCabinByParams(
+            4, // <-- mismatch
+            '9876',
+            $type->id,
+            $category->id,
+        );
 
         expect($result)->toBeNull();
     });
@@ -185,13 +168,12 @@ describe('getBookableCabinByParamsTest', function () {
             ->create();
 
         // Search with wrong category id
-        $result = app(BookingRepository::class)
-            ->getBookableCabinByParams(
-                2,
-                '8765',
-                $type->id,
-                $wrongCategory->id // <-- mismatch
-            );
+        $result = app(BookingRepository::class)->getBookableCabinByParams(
+            2,
+            '8765',
+            $type->id,
+            $wrongCategory->id, // <-- mismatch
+        );
 
         expect($result)->toBeNull();
     });

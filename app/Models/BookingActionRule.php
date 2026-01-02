@@ -6,8 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class BookingActionRule extends Model
-{
+class BookingActionRule extends Model {
     use HasUuids;
 
     protected $fillable = [
@@ -27,16 +26,14 @@ class BookingActionRule extends Model
         'fee_amount' => 'decimal:2',
     ];
 
-    public function scopeActive($query){
+    public function scopeActive($query) {
         $now = now();
         return $query
             ->where(function ($q) use ($now) {
-                $q->whereNull('applies_from_date')
-                ->orWhere('applies_from_date', '<=', $now);
+                $q->whereNull('applies_from_date')->orWhere('applies_from_date', '<=', $now);
             })
             ->where(function ($q) use ($now) {
-                $q->whereNull('applies_until_date')
-                ->orWhere('applies_until_date', '>=', $now);
+                $q->whereNull('applies_until_date')->orWhere('applies_until_date', '>=', $now);
             });
     }
-}   
+}

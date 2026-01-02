@@ -14,16 +14,11 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class InstallmentController extends Controller
-{
+class InstallmentController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
-
-    public function update(Request $request)
-    {
-
-        
+    public function update(Request $request) {
         $validator = Validator::make($request->all(), [
             'installment' => 'required|exists:installments,id',
             'due_date' => 'required|date',
@@ -65,10 +60,14 @@ class InstallmentController extends Controller
                 }
 
                 if ($newDate->gt($nextDue)) {
-                    $validator->errors()->add(
-                        'due_date',
-                        "The selected due date cannot be after the next installment's due date ({$nextDue->format('Y-m-d')})."
-                    );
+                    $validator
+                        ->errors()
+                        ->add(
+                            'due_date',
+                            "The selected due date cannot be after the next installment's due date ({$nextDue->format(
+                                'Y-m-d',
+                            )}).",
+                        );
                     return;
                 }
             }
@@ -78,9 +77,6 @@ class InstallmentController extends Controller
             Log::info('Installment due date validation failed', $validator->errors()->toArray());
             return redirect()->back()->with('error', 'Error updating due date!')->withErrors($validator)->withInput();
         }
-
-        
-       
 
         $validated = $validator->validated();
 
@@ -93,27 +89,38 @@ class InstallmentController extends Controller
             }
         }
 
-
-       try {
-           return $this->withPermission([Permissions::EditInstallments], function ($request, $validated, $bookingId) {
-              Log::info('inside with permission');
-                $installment = Installment::find($validated['installment']);
-                $oldDue = $installment ? $installment->due_date : null;
-                if ($installment) {
-                    $installment->update(['due_date' => $validated['due_date']]);
-                }
-                GlobalLogger::log(LogActionBooking::PAYMENT_SCHEDULE_UPDATED, 'booking', $bookingId, 'Payment schedule updated', [
-                    'installment_id' => $validated['installment'],
-                    'new_due_date' => Carbon::parse($validated['due_date'])->format('Y-m-d'),
-                    'old_due_date' => $oldDue,
-                    'Passenger Name' => $installment->passenger->full_name,
-                    'Passsener Order'=> $installment->passenger->passenger_order
-                ]);
-                return redirect()->back()->with('success', 'Due date updated successfully!');
-            }, $request, $validated, $bookingId);
-        } catch (\Exception $e) {;
+        try {
+            return $this->withPermission(
+                [Permissions::EditInstallments],
+                function ($request, $validated, $bookingId) {
+                    Log::info('inside with permission');
+                    $installment = Installment::find($validated['installment']);
+                    $oldDue = $installment ? $installment->due_date : null;
+                    if ($installment) {
+                        $installment->update(['due_date' => $validated['due_date']]);
+                    }
+                    GlobalLogger::log(
+                        LogActionBooking::PAYMENT_SCHEDULE_UPDATED,
+                        'booking',
+                        $bookingId,
+                        'Payment schedule updated',
+                        [
+                            'installment_id' => $validated['installment'],
+                            'new_due_date' => Carbon::parse($validated['due_date'])->format('Y-m-d'),
+                            'old_due_date' => $oldDue,
+                            'Passenger Name' => $installment->passenger->full_name,
+                            'Passsener Order' => $installment->passenger->passenger_order,
+                        ],
+                    );
+                    return redirect()->back()->with('success', 'Due date updated successfully!');
+                },
+                $request,
+                $validated,
+                $bookingId,
+            );
+        } catch (\Exception $e) {
             $this->logException($e);
-          return redirect()->back()->with('error', 'Error updating due date!');
+            return redirect()->back()->with('error', 'Error updating due date!');
         }
     }
 }

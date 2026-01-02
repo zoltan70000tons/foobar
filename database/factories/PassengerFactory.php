@@ -9,15 +9,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Passenger>
  */
-class PassengerFactory extends Factory
-{
+class PassengerFactory extends Factory {
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'booking_id' => fake()->name,
             'confirmed_booking_email' => false,

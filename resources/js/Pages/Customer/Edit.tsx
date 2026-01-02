@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { PageProps } from '@/types';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { router } from '@inertiajs/react';
+import React, { useEffect, useRef, useState } from "react";
+import { Head, useForm, usePage } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { router } from "@inertiajs/react";
 import {
   Container,
   Paper,
@@ -15,16 +15,19 @@ import {
   Select,
   MenuItem,
   Tabs,
-  Tab, FormControl, InputLabel, FormHelperText,
-} from '@mui/material';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import PhoneNumber from '@/Components/PhoneNumber';
-import Country from '@/Components/Country';
-import BookingHistory from '@/Pages/Customer/partials/BookingHistory';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
+  Tab,
+  FormControl,
+  InputLabel,
+  FormHelperText,
+} from "@mui/material";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
+import PhoneNumber from "@/Components/PhoneNumber";
+import Country from "@/Components/Country";
+import BookingHistory from "@/Pages/Customer/partials/BookingHistory";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 import iso3166 from "iso-3166-2";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
@@ -89,24 +92,24 @@ const Edit = ({ auth, errors }: PageProps) => {
   const { showSnackbar } = useSnackbar();
 
   const { data, setData, head, processing } = useForm<CustomerFormData>({
-    survivor_number: customer.survivor_number.survivor_number || '',
-    email: customer.email || '',
-    first_name: customer.detail.first_name || '',
-    last_name: customer.detail.last_name || '',
-    middle_name: customer.detail.middle_name || '',
-    gender: customer.detail.gender || '',
-    dob: customer.detail.dob || '',
-    citizenship: customer.detail.citizenship || '',
-    phone: customer.detail.phone || '',
-    address_first: customer.customer_address?.address_first || '',
-    address_second: customer.customer_address?.address_second || '',
-    city: customer.customer_address?.city || '',
-    state: customer.customer_address?.state || '',
-    postal_code: customer.customer_address?.postal_code || '',
-    country: customer.customer_address?.country || '',
-    emergency_c_name: customer.detail.emergency_c_name || '',
-    emergency_c_phone: customer.detail.emergency_c_phone || '',
-    language: customer.detail.language || '',
+    survivor_number: customer.survivor_number.survivor_number || "",
+    email: customer.email || "",
+    first_name: customer.detail.first_name || "",
+    last_name: customer.detail.last_name || "",
+    middle_name: customer.detail.middle_name || "",
+    gender: customer.detail.gender || "",
+    dob: customer.detail.dob || "",
+    citizenship: customer.detail.citizenship || "",
+    phone: customer.detail.phone || "",
+    address_first: customer.customer_address?.address_first || "",
+    address_second: customer.customer_address?.address_second || "",
+    city: customer.customer_address?.city || "",
+    state: customer.customer_address?.state || "",
+    postal_code: customer.customer_address?.postal_code || "",
+    country: customer.customer_address?.country || "",
+    emergency_c_name: customer.detail.emergency_c_name || "",
+    emergency_c_phone: customer.detail.emergency_c_phone || "",
+    language: customer.detail.language || "",
   });
 
   const selectedCountry = data.country;
@@ -147,23 +150,16 @@ const Edit = ({ auth, errors }: PageProps) => {
     setData(name as keyof TForm, value as TForm[keyof TForm]);
   };
 
-
-  const handleSelectChange = (
-    e: React.ChangeEvent<{ name?: string; value: unknown }>
-  ) => {
+  const handleSelectChange = (e: React.ChangeEvent<{ name?: string; value: unknown }>) => {
     const name = e.target.name;
     const value = e.target.value;
 
     setData("state", value as string);
   };
 
-  const handleStringChange = <TForm extends Record<string, unknown>>(
-    value: string,
-    name: keyof TForm
-  ) => {
+  const handleStringChange = <TForm extends Record<string, unknown>>(value: string, name: keyof TForm) => {
     setData(name, value as TForm[keyof TForm]);
   };
-
 
   const handleBack = () => {
     window.history.back();
@@ -176,16 +172,16 @@ const Edit = ({ auth, errors }: PageProps) => {
     for (const key in data) {
       formData.append(key, data[key]);
     }
-    formData.append('_method', 'PUT');
+    formData.append("_method", "PUT");
 
     router.post(`/customers/${customer.id}/update`, formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        showSnackbar('Customer edited successfully', 'success');
+        showSnackbar("Customer edited successfully", "success");
       },
       onError: (errors) => {
-        const errorMessages = Object.values(errors).join('\n');
-        showSnackbar(`Error editing customer\n${errorMessages}`, 'error');
+        const errorMessages = Object.values(errors).join("\n");
+        showSnackbar(`Error editing customer\n${errorMessages}`, "error");
       },
     });
   };
@@ -195,7 +191,7 @@ const Edit = ({ auth, errors }: PageProps) => {
   };
 
   return (
-    <AuthenticatedLayout user={auth.user} header={'Customers'}>
+    <AuthenticatedLayout user={auth.user} header={"Customers"}>
       <Head title="Edit Customer" />
       <Toolbar sx={{ mt: 8, mb: 4 }}>
         <Button variant="outlined" color="secondary" onClick={handleBack}>
@@ -212,15 +208,15 @@ const Edit = ({ auth, errors }: PageProps) => {
             <Paper
               sx={{
                 p: 2,
-                display: 'flex',
-                flexDirection: 'column',
+                display: "flex",
+                flexDirection: "column",
                 minHeight: 240,
-                width: '100%',
+                width: "100%",
               }}
             >
               <h1>Edit Customer</h1>
               <form onSubmit={handleSubmit} encType="multipart/form-data">
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: "100%" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <TextField
@@ -237,7 +233,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Email"
                         variant="outlined"
                         value={data.email}
-                        name={'email'}
+                        name={"email"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -247,7 +243,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="First Name"
                         variant="outlined"
                         value={data.first_name}
-                        name={'first_name'}
+                        name={"first_name"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -256,7 +252,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         fullWidth
                         label="Middle Name"
                         variant="outlined"
-                        name={'middle_name'}
+                        name={"middle_name"}
                         value={data.middle_name}
                         onChange={handleChange}
                       />
@@ -267,7 +263,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Last Name"
                         variant="outlined"
                         value={data.last_name}
-                        name={'last_name'}
+                        name={"last_name"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -277,22 +273,22 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Gender"
                         variant="outlined"
                         value={data.gender}
-                        name={'gender'}
+                        name={"gender"}
                         onChange={handleChange}
                       >
-                        <MenuItem value={'M'}>Male</MenuItem>
-                        <MenuItem value={'F'}>Female</MenuItem>
+                        <MenuItem value={"M"}>Male</MenuItem>
+                        <MenuItem value={"F"}>Female</MenuItem>
                       </Select>
                     </Grid>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <Grid item xs={6}>
                         <DatePicker
                           label="Date of Birth"
-                          sx={{ width: '100%' }}
+                          sx={{ width: "100%" }}
                           value={data.dob ? dayjs(data.dob) : null}
                           maxDate={dayjs()} // Restricts future dates
                           format="YYYY-MM-DD" // Ensures consistent formatting
-                          onChange={(e) => handleStringChange(e, 'dob')}
+                          onChange={(e) => handleStringChange(e, "dob")}
                           renderInput={(params) => <TextField {...params} fullWidth />}
                         />
                       </Grid>
@@ -303,8 +299,8 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Country"
                         variant="outlined"
                         value={data.citizenship}
-                        name={'citizenship'}
-                        onChange={(e) => handleStringChange(e, 'citizenship')}
+                        name={"citizenship"}
+                        onChange={(e) => handleStringChange(e, "citizenship")}
                       />
                     </Grid>
                   </Grid>
@@ -313,14 +309,14 @@ const Edit = ({ auth, errors }: PageProps) => {
                 <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Phone Number
                 </Typography>
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: "100%" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <PhoneNumber
-                        value={data.phone || ''}
+                        value={data.phone || ""}
                         forceDialCode={true}
-                        name={'phone'}
-                        onChange={(e) => handleStringChange(e, 'phone')}
+                        name={"phone"}
+                        onChange={(e) => handleStringChange(e, "phone")}
                       />
                     </Grid>
                   </Grid>
@@ -329,7 +325,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                 <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Address Information
                 </Typography>
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: "100%" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <TextField
@@ -337,7 +333,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Address Line 1"
                         variant="outlined"
                         value={data.address_first}
-                        name={'address_first'}
+                        name={"address_first"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -347,7 +343,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Address Line 2"
                         variant="outlined"
                         value={data.address_second}
-                        name={'address_second'}
+                        name={"address_second"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -358,12 +354,16 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="City"
                         variant="outlined"
                         value={data.city}
-                        name={'city'}
+                        name={"city"}
                         onChange={handleChange}
                       />
                     </Grid>
                     <Grid item xs={4}>
-                      <FormControl required={selectedCountry === "USA" || selectedCountry === "CAN"} fullWidth error={!!errors.state}>
+                      <FormControl
+                        required={selectedCountry === "USA" || selectedCountry === "CAN"}
+                        fullWidth
+                        error={!!errors.state}
+                      >
                         <InputLabel id="state-label">State</InputLabel>
                         <Select
                           labelId="state-label"
@@ -388,7 +388,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Zip Code"
                         variant="outlined"
                         value={data.postal_code}
-                        name={'postal_code'}
+                        name={"postal_code"}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -399,8 +399,8 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Country"
                         variant="outlined"
                         value={data.country}
-                        name={'country'}
-                        onChange={(e) => handleStringChange(e, 'country')}
+                        name={"country"}
+                        onChange={(e) => handleStringChange(e, "country")}
                       />
                     </Grid>
                   </Grid>
@@ -409,7 +409,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                 <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Emergency Contact
                 </Typography>
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: "100%" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <TextField
@@ -417,16 +417,16 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Contact Full Name"
                         variant="outlined"
                         value={data.emergency_c_name}
-                        name={'emergency_c_name'}
+                        name={"emergency_c_name"}
                         onChange={handleChange}
                       />
                     </Grid>
                     <Grid item xs={6}>
                       <PhoneNumber
-                        value={data.emergency_c_phone || ''}
+                        value={data.emergency_c_phone || ""}
                         forceDialCode={true}
-                        name={'emergency_c_phone'}
-                        onChange={(e) => handleStringChange(e, 'emergency_c_phone')}
+                        name={"emergency_c_phone"}
+                        onChange={(e) => handleStringChange(e, "emergency_c_phone")}
                       />
                     </Grid>
                   </Grid>
@@ -435,7 +435,7 @@ const Edit = ({ auth, errors }: PageProps) => {
                 <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Preferred Language
                 </Typography>
-                <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: "100%" }}>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Select
@@ -443,19 +443,19 @@ const Edit = ({ auth, errors }: PageProps) => {
                         label="Preferred Language"
                         variant="outlined"
                         value={data.language}
-                        name={'language'}
+                        name={"language"}
                         onChange={handleChange}
                       >
-                        <MenuItem value={'de'}>Deutsch</MenuItem>
-                        <MenuItem value={'en'}>English</MenuItem>
-                        <MenuItem value={'es'}>Español</MenuItem>
+                        <MenuItem value={"de"}>Deutsch</MenuItem>
+                        <MenuItem value={"en"}>English</MenuItem>
+                        <MenuItem value={"es"}>Español</MenuItem>
                       </Select>
                     </Grid>
                   </Grid>
                 </Box>
                 <Box sx={{ mt: 4 }}>
                   <Button variant="contained" color="primary" fullWidth type="submit" disabled={processing}>
-                    {processing ? 'Submitting...' : 'Submit'}
+                    {processing ? "Submitting..." : "Submit"}
                   </Button>
                 </Box>
               </form>

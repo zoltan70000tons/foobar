@@ -9,61 +9,56 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class PaymentReceived extends Mailable implements ShouldQueue
-{
-  use Queueable, SerializesModels;
+class PaymentReceived extends Mailable implements ShouldQueue {
+    use Queueable, SerializesModels;
 
-  public $passengerName;
-  public $paymentAmount;
-  public $bookingCode;
-  public $language;
-  public $locale;
+    public $passengerName;
+    public $paymentAmount;
+    public $bookingCode;
+    public $language;
+    public $locale;
 
-  /**
-   * Create a new message instance.
-   */
-  public function __construct(string $passengerName, string $paymentAmount, string $bookingCode, string $language)
-  {
-    $this->passengerName = $passengerName;
-    $this->paymentAmount = $paymentAmount;
-    $this->bookingCode = $bookingCode;
-    $this->locale = $language ?? config('app.locale');
-    $this->locale($this->locale);
-    $this->onQueue('emails');
-  }
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(string $passengerName, string $paymentAmount, string $bookingCode, string $language) {
+        $this->passengerName = $passengerName;
+        $this->paymentAmount = $paymentAmount;
+        $this->bookingCode = $bookingCode;
+        $this->locale = $language ?? config('app.locale');
+        $this->locale($this->locale);
+        $this->onQueue('emails');
+    }
 
-  /**
-   * Get the message envelope.
-   */
-  public function envelope(): Envelope
-  {
-    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope {
+        $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
 
-    return new Envelope(from: $mailFromAddress, subject: __('systemEmails.payment.received.subject'));
-  }
+        return new Envelope(from: $mailFromAddress, subject: __('systemEmails.payment.received.subject'));
+    }
 
-  /**
-   * Get the message content definition.
-   */
-  public function content(): Content
-  {
-    return new Content(
-      view: 'emails.payment-received',
-      with: [
-        'passengerName' => $this->passengerName,
-        'paymentAmount' => $this->paymentAmount,
-        'bookingCode' => $this->bookingCode,
-      ]
-    );
-  }
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content {
+        return new Content(
+            view: 'emails.payment-received',
+            with: [
+                'passengerName' => $this->passengerName,
+                'paymentAmount' => $this->paymentAmount,
+                'bookingCode' => $this->bookingCode,
+            ],
+        );
+    }
 
-  /**
-   * Get the attachments for the message.
-   *
-   * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-   */
-  public function attachments(): array
-  {
-    return [];
-  }
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array {
+        return [];
+    }
 }

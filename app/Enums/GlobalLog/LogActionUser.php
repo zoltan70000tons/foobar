@@ -2,8 +2,7 @@
 
 namespace App\Enums\GlobalLog;
 
-enum LogActionUser: string
-{
+enum LogActionUser: string {
     case LOGIN = 'LOGIN';
     case LOGOUT = 'LOGOUT';
 }

@@ -2,8 +2,7 @@
 
 namespace App\Enums;
 
-enum EventStatus: string
-{
+enum EventStatus: string {
     case PRE_SALE = 'PRE-SALE';
     case PUBLIC = 'PUBLIC';
     case CLOSED = 'CLOSED';
@@ -12,8 +11,7 @@ enum EventStatus: string
     /**
      * Labels for each status.
      */
-    public static function labels(): array
-    {
+    public static function labels(): array {
         return [
             self::PRE_SALE->value => 'PRE-SALE',
             self::PUBLIC->value => 'PUBLIC',
@@ -25,8 +23,7 @@ enum EventStatus: string
     /**
      * Get the label for a specific status.
      */
-    public function label(): string
-    {
+    public function label(): string {
         return self::labels()[$this->value] ?? 'Unknown';
     }
 }

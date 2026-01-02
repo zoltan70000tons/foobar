@@ -21,7 +21,7 @@ const UnlayerEditor = ({ onReady, options, style }) => {
   const exportHtml = () => {
     window.unlayer.exportHtml((data) => {
       const { html } = data;
-      console.log('Exported HTML:', html);
+      console.log("Exported HTML:", html);
     });
   };
 

@@ -9,10 +9,8 @@ use App\Models\Cabin;
 use App\Models\User;
 use App\Support\GlobalLogger;
 
-class BookingObserver
-{
-    public function created(Booking $booking): void
-    {
+class BookingObserver {
+    public function created(Booking $booking): void {
         GlobalLogger::log(
             LogActionBooking::BOOKING_CREATED,
             'booking',
@@ -33,13 +31,11 @@ class BookingObserver
                     'agent_id' => $booking->agent_id ?? null,
                     'cart_snapshot' => $booking->cart_snapshot ?? null,
                 ],
-            ]
+            ],
         );
     }
 
-    public function updated(Booking $booking): void
-    {
-
+    public function updated(Booking $booking): void {
         // booking_code (string)
         if ($booking->wasChanged('booking_code')) {
             GlobalLogger::log(
@@ -50,7 +46,7 @@ class BookingObserver
                 [
                     'before' => ['booking_code' => $booking->getOriginal('booking_code')],
                     'after' => ['booking_code' => $booking->booking_code],
-                ]
+                ],
             );
         }
 
@@ -64,7 +60,7 @@ class BookingObserver
                 [
                     'before' => ['booking_request_id' => $booking->getOriginal('booking_request_id')],
                     'after' => ['booking_request_id' => $booking->booking_request_id],
-                ]
+                ],
             );
         }
 
@@ -78,7 +74,7 @@ class BookingObserver
                 [
                     'before' => ['request_id' => $booking->getOriginal('request_id')],
                     'after' => ['request_id' => $booking->request_id],
-                ]
+                ],
             );
         }
 
@@ -92,7 +88,7 @@ class BookingObserver
                 [
                     'before' => ['event_id' => $booking->getOriginal('event_id')],
                     'after' => ['event_id' => $booking->event_id],
-                ]
+                ],
             );
         }
 
@@ -106,7 +102,7 @@ class BookingObserver
                 [
                     'before' => ['payment_plan' => $booking->getOriginal('payment_plan')],
                     'after' => ['payment_plan' => $booking->payment_plan],
-                ]
+                ],
             );
         }
 
@@ -120,7 +116,7 @@ class BookingObserver
                 [
                     'before' => ['customer_id' => $booking->getOriginal('customer_id')],
                     'after' => ['customer_id' => $booking->customer_id],
-                ]
+                ],
             );
         }
 
@@ -147,11 +143,13 @@ class BookingObserver
                 $action,
                 'booking',
                 $booking->id,
-                "Cabin ID {$booking->getOriginal('cabin_id')} → {$booking->cabin_id}, category code {$oldCabinCategorySpec->category_code} → {$newCabinCategorySpec->category_code}",
+                "Cabin ID {$booking->getOriginal(
+                    'cabin_id',
+                )} → {$booking->cabin_id}, category code {$oldCabinCategorySpec->category_code} → {$newCabinCategorySpec->category_code}",
                 [
                     'after' => $changeLog['after'],
                     'before' => $changeLog['before'],
-                ]
+                ],
             );
         }
 
@@ -165,7 +163,7 @@ class BookingObserver
                 [
                     'before' => ['is_single_occupancy' => $booking->getOriginal('is_single_occupancy')],
                     'after' => ['is_single_occupancy' => $booking->is_single_occupancy],
-                ]
+                ],
             );
         }
 
@@ -179,14 +177,20 @@ class BookingObserver
                 [
                     'before' => ['status' => $booking->getOriginal('status')],
                     'after' => ['status' => $booking->status],
-                ]
+                ],
             );
             // Additional log if status changed to CANCELLED
             if ($booking->status === 'CANCELLED') {
-                GlobalLogger::log(LogActionBooking::BOOKING_CANCELLED, 'booking', $booking->id, 'Booking was cancelled', [
-                    'before' => ['status' => $booking->getOriginal('status')],
-                    'after' => ['status' => $booking->status],
-                ]);
+                GlobalLogger::log(
+                    LogActionBooking::BOOKING_CANCELLED,
+                    'booking',
+                    $booking->id,
+                    'Booking was cancelled',
+                    [
+                        'before' => ['status' => $booking->getOriginal('status')],
+                        'after' => ['status' => $booking->status],
+                    ],
+                );
             }
         }
 
@@ -200,7 +204,7 @@ class BookingObserver
                 [
                     'before' => ['bed_config' => $booking->getOriginal('bed_config')],
                     'after' => ['bed_config' => $booking->bed_config],
-                ]
+                ],
             );
         }
 
@@ -208,10 +212,10 @@ class BookingObserver
         if ($booking->wasChanged('agent_id')) {
             $originalAgentId = $booking->getOriginal('agent_id');
             $originalUser = User::query()->find($originalAgentId);
-            $originalUsername = $originalUser->username ?? "";
+            $originalUsername = $originalUser->username ?? '';
             $newAgentId = $booking->agent_id;
             $newUser = User::query()->find($newAgentId);
-            $newUsername = $newUser->username ?? "";
+            $newUsername = $newUser->username ?? '';
             GlobalLogger::log(
                 LogActionBooking::AGENT_ID_CHANGED,
                 'booking',
@@ -226,13 +230,12 @@ class BookingObserver
                         'username' => $originalUsername,
                         'agent_id' => $originalAgentId,
                     ],
-                ]
+                ],
             );
         }
     }
 
-    public function deleted(Booking $booking): void
-    {
+    public function deleted(Booking $booking): void {
         GlobalLogger::log(
             LogActionBooking::BOOKING_DELETED,
             'booking',
@@ -247,17 +250,17 @@ class BookingObserver
                     'payment_plan' => $booking->getOriginal('payment_plan') ?? $booking->payment_plan,
                     'customer_id' => $booking->getOriginal('customer_id') ?? $booking->customer_id,
                     'cabin_id' => $booking->getOriginal('cabin_id') ?? $booking->cabin_id,
-                    'is_single_occupancy' => $booking->getOriginal('is_single_occupancy') ?? $booking->is_single_occupancy,
+                    'is_single_occupancy' =>
+                        $booking->getOriginal('is_single_occupancy') ?? $booking->is_single_occupancy,
                     'status' => $booking->getOriginal('status') ?? $booking->status,
                     'bed_config' => $booking->getOriginal('bed_config') ?? $booking->bed_config,
                     'agent_id' => $booking->getOriginal('agent_id') ?? ($booking->agend_id ?? null),
                 ],
-            ]
+            ],
         );
     }
 
-    public static function generateBookingChangeLog(Booking $booking): array
-    {
+    public static function generateBookingChangeLog(Booking $booking): array {
         $fieldsToTrack = [
             'booking_request_id',
             'booking_code',

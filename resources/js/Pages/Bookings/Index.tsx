@@ -29,19 +29,19 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CancelIcon from "@mui/icons-material/Cancel";
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { BookingStatusColor, BookingStatusEnum } from "@/enums/StatusEnum";
 import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete } from "@mui/material";
 import LockedByAgent from "./partials/LockedByAgent";
-import { usePage } from '@inertiajs/react'
-import '@inertiajs/core'
+import { usePage } from "@inertiajs/react";
+import "@inertiajs/core";
 
 //Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 
 // reverb
-import '@/echo';
+import "@/echo";
 import { User } from "@/interfaces/User";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Errors } from "@inertiajs/core";
@@ -85,24 +85,15 @@ type Props = PageProps & {
   tags: Tag[];
 };
 
-declare module '@inertiajs/core' {
+declare module "@inertiajs/core" {
   interface PageProps {
     flash: {
-      message?: string
-    }
+      message?: string;
+    };
   }
 }
 
-const Index = ({
-  auth,
-  event,
-  users,
-  cabinTypes,
-  cabinCategories = [],
-  errors,
-  tabIndex,
-  tags
-}: Props) => {
+const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, tabIndex, tags }: Props) => {
   const { hasPermission } = usePermissions();
   const { flash } = usePage().props;
   const { showSnackbar } = useSnackbar();
@@ -110,7 +101,7 @@ const Index = ({
   const [keyword, setKeyword] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<{ id: string, username: string }[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<{ id: string; username: string }[]>([]);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<number>(tabIndex);
   const [inputValue, setInputValue] = useState("");
@@ -126,7 +117,6 @@ const Index = ({
       setTableKey((prev) => prev + 1);
     }
   }, [shouldReload]);
-
 
   const handleOpenModal = (userId: string | null, booking_id: string | null) => {
     setSelectedBookingId(booking_id);
@@ -191,11 +181,7 @@ const Index = ({
         header: "Booking Date",
         accessor: "created_at",
         sortable: true,
-        draw: (row: Booking) => (
-          <>
-            {formatDate(row.created_at)}
-          </>
-        ),
+        draw: (row: Booking) => <>{formatDate(row.created_at)}</>,
       },
       {
         header: "Next Payment",
@@ -232,11 +218,7 @@ const Index = ({
 
           return (
             <Chip
-              label={
-                row?.longestDueDateInstallment
-                  ? formatDate(row.longestDueDateInstallment)
-                  : "No date"
-              }
+              label={row?.longestDueDateInstallment ? formatDate(row.longestDueDateInstallment) : "No date"}
               color={status}
             />
           );
@@ -260,34 +242,38 @@ const Index = ({
       {
         header: "Balance",
         accessor: "balance",
-        draw: (row: Booking) => <>{row.balance != null && row.cost != null && <>{formatCurrency(row.balance, false, false) + " / " + formatCurrency(row.cost, false, false)}</>}</>,
+        draw: (row: Booking) => (
+          <>
+            {row.balance != null && row.cost != null && (
+              <>{formatCurrency(row.balance, false, false) + " / " + formatCurrency(row.cost, false, false)}</>
+            )}
+          </>
+        ),
       },
       {
         header: "Tags",
         accessor: "Tags",
-        draw: (row: Booking) =>
-        (
+        draw: (row: Booking) => (
           <Box sx={{ display: "flex", flexFlow: "column wrap", alignItems: "flex-start", gap: 0.5 }}>
-            {
-              Array.isArray(row.tags) && row.tags.length > 0 ? (
-                row.tags.map((tag: {name: string, color: string}, index: number) => {
-                  return (
-                    <Chip
-                      key={index}
-                      label={tag.name}
-                      size="small"
-                      sx={{
-                        fontSize: "0.7rem",
-                        fontWeight: 500,
-                        backgroundColor: tag.color,
-                        color: "#fff",
-                      }}
-                    />
-                  );
-                })
-              ) : (
-                <em>No Tags</em>
-              )}
+            {Array.isArray(row.tags) && row.tags.length > 0 ? (
+              row.tags.map((tag: { name: string; color: string }, index: number) => {
+                return (
+                  <Chip
+                    key={index}
+                    label={tag.name}
+                    size="small"
+                    sx={{
+                      fontSize: "0.7rem",
+                      fontWeight: 500,
+                      backgroundColor: tag.color,
+                      color: "#fff",
+                    }}
+                  />
+                );
+              })
+            ) : (
+              <em>No Tags</em>
+            )}
           </Box>
         ),
       },
@@ -301,19 +287,19 @@ const Index = ({
           const avatar = agent?.username ? <Avatar>{agent.username[0]}</Avatar> : <PersonAddIcon />;
 
           return (
-              <Chip
-                label={label}
-                avatar={avatar}
-                size="small"
-                onClick={() => handleClick(agent?.id.toString() || '', row.booking_code)}
-                sx={{
-                  fontSize: "0.75rem",
-                  fontWeight: 500,
-                  color: agent?.detail?.avatar?.badge?.text,
-                  backgroundColor: agent?.detail?.avatar?.badge?.background,
-                  "& .MuiChip-label": { px: 1.5 },
-                }}
-              />
+            <Chip
+              label={label}
+              avatar={avatar}
+              size="small"
+              onClick={() => handleClick(agent?.id.toString() || "", row.booking_code)}
+              sx={{
+                fontSize: "0.75rem",
+                fontWeight: 500,
+                color: agent?.detail?.avatar?.badge?.text,
+                backgroundColor: agent?.detail?.avatar?.badge?.background,
+                "& .MuiChip-label": { px: 1.5 },
+              }}
+            />
           );
         },
       },
@@ -332,19 +318,12 @@ const Index = ({
               }}
             >
               {hasPermission(Permissions.ViewCabins) && (
-                <Button
-                  variant="outlined"
-                  onClick={() => handleViewClick(row)}
-                  color="primary"
-                >
+                <Button variant="outlined" onClick={() => handleViewClick(row)} color="primary">
                   <Visibility />
                 </Button>
               )}
 
-              <LockedByAgent
-                bookingId={row.id}
-                currentEditingUser={row.editingUsername}
-              />
+              <LockedByAgent bookingId={row.id} currentEditingUser={row.editingUsername} />
             </Box>
           );
         },
@@ -389,7 +368,9 @@ const Index = ({
         accesor: "passenger_allocated_cost",
         draw: (row: Passenger) => (
           <div style={{ display: "flex", gap: "10px" }}>
-            {formatCurrency(row.passenger_balance, false, false) + " / " + formatCurrency(row.passenger_allocated_cost, false, false)}
+            {formatCurrency(row.passenger_balance, false, false) +
+              " / " +
+              formatCurrency(row.passenger_allocated_cost, false, false)}
           </div>
         ),
       },
@@ -400,7 +381,11 @@ const Index = ({
           return (
             <div style={{ display: "flex", gap: "10px" }}>
               <Chip
-                label={row.installment_status.fully_paid ? "Paid" : formatDate(row.installment_status.next_installment?.due_date ?? null)}
+                label={
+                  row.installment_status.fully_paid
+                    ? "Paid"
+                    : formatDate(row.installment_status.next_installment?.due_date ?? null)
+                }
                 color={row.installment_status.fully_paid ? "success" : "error"}
                 size="small"
                 sx={{
@@ -431,7 +416,7 @@ const Index = ({
     setSearchTerm(inputValue);
   };
 
-  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => { };
+  const customFilter = (e: React.ChangeEvent<HTMLInputElement>) => {};
 
   const fetchData = useCallback(
     async (
@@ -439,12 +424,10 @@ const Index = ({
       rowsPerPage: number,
       filters: Filters,
       sort: { key?: string; direction?: string } | undefined,
-      dateRangeState: DateRangeState
+      dateRangeState: DateRangeState,
     ) => {
       try {
-        let tags = selectedTags
-          ? selectedTags.map(tag => tag.id).join(',')
-          : null;
+        let tags = selectedTags ? selectedTags.map((tag) => tag.id).join(",") : null;
         const res = await axios.get(route("bookings.data", { id: event.id }), {
           params: {
             page: page + 1,
@@ -464,7 +447,7 @@ const Index = ({
         throw err;
       }
     },
-    [event.id, searchTerm, selectedTab, selectedTags, selectedUsers, tableKey]
+    [event.id, searchTerm, selectedTab, selectedTags, selectedUsers, tableKey],
   );
 
   const bookingTabs = [
@@ -576,7 +559,6 @@ const Index = ({
                       );
                     })
                   }
-
                   renderOption={(props, option) => {
                     return (
                       <Box component="li" {...props}>
@@ -593,7 +575,6 @@ const Index = ({
                       </Box>
                     );
                   }}
-
                   renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Tags" />}
                   sx={{ minWidth: 250 }}
                 />
@@ -605,16 +586,9 @@ const Index = ({
                   getOptionLabel={(option) => option.user_name}
                   value={selectedUsers}
                   onChange={(event, newValue) => setSelectedUsers(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      placeholder="Filter by Users"
-                    />
-                  )}
+                  renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Filter by Users" />}
                   sx={{ minWidth: 250 }}
                 />
-
               </Box>
             </Grid>
             <Box sx={{ mt: "1rem;" }}>

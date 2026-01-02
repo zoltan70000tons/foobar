@@ -15,7 +15,6 @@ use Illuminate\Support\Str;
 use Tests\Support\ActsAsAgent;
 use Spatie\Permission\PermissionRegistrar;
 
-
 uses(ActsAsAgent::class);
 
 uses(DatabaseTransactions::class);
@@ -25,7 +24,7 @@ function createMonthlyInstallmentsForPassenger(
     $startDate,
     int $count,
     float $amount,
-    string $type = 'PAYMENT'
+    string $type = 'PAYMENT',
 ) {
     $start = $startDate instanceof Carbon ? $startDate->startOfDay() : Carbon::parse($startDate)->startOfDay();
 
@@ -48,8 +47,7 @@ function createMonthlyInstallmentsForPassenger(
     return $created;
 }
 
-function getCabin(): array
-{
+function getCabin(): array {
     $ct = CabinType::first() ?: CabinType::create(['cabin_type' => 'Private Cabin']);
     $cabin =
         Cabin::first() ?:
@@ -115,75 +113,77 @@ beforeEach(function () {
 });
 
 it('allows changing due date when before next installment', function () {
-  /** @var \App\Models\Booking $this->booking */
-  $passenger = $this->booking->passengers()->first();
-  $current = $passenger->installments()->orderBy('due_date')->first();
-  $next = $passenger
-    ->installments()
-    ->where('due_date', '>', $current->due_date)
-    ->orderBy('due_date')
-    ->first();
+    /** @var \App\Models\Booking $this->booking */
+    $passenger = $this->booking->passengers()->first();
+    $current = $passenger->installments()->orderBy('due_date')->first();
+    $next = $passenger
+        ->installments()
+        ->where('due_date', '>', $current->due_date)
+        ->orderBy('due_date')
+        ->first();
 
-  $newDate = Carbon::parse($next->due_date)
-    ->subDays(1)
-    ->format('Y-m-d');
+    $newDate = Carbon::parse($next->due_date)
+        ->subDays(1)
+        ->format('Y-m-d');
 
-  $response = $this->patch(action([InstallmentController::class, 'update']), [
-    'installment' => $current->id,
-    'due_date' => $newDate,
-  ]);
+    $response = $this->patch(action([InstallmentController::class, 'update']), [
+        'installment' => $current->id,
+        'due_date' => $newDate,
+    ]);
 
-  $response->assertStatus(302);
-  $response->assertSessionHasNoErrors();
-  $current->refresh();
-  $this->assertEquals(
-    $newDate,
-    $current->due_date,
-    "The due_date in DB does not match. DB: {$current->due_date} — Expected: {$newDate}"
-  );
+    $response->assertStatus(302);
+    $response->assertSessionHasNoErrors();
+    $current->refresh();
+    $this->assertEquals(
+        $newDate,
+        $current->due_date,
+        "The due_date in DB does not match. DB: {$current->due_date} — Expected: {$newDate}",
+    );
 
-  $this->assertDatabaseHas('installments', [
-    'id' => $current->id,
-    'due_date' => $newDate,
-  ]);
+    $this->assertDatabaseHas('installments', [
+        'id' => $current->id,
+        'due_date' => $newDate,
+    ]);
 });
 
 it('fails validation when new due date is after next installment', function () {
-  /** @var \App\Models\Booking $this->booking */
-  $passenger = $this->booking->passengers()->first();
-  $current = $passenger->installments()->orderBy('due_date')->first();
-  $next = $passenger
-    ->installments()
-    ->where('due_date', '>', $current->due_date)
-    ->orderBy('due_date')
-    ->first();
+    /** @var \App\Models\Booking $this->booking */
+    $passenger = $this->booking->passengers()->first();
+    $current = $passenger->installments()->orderBy('due_date')->first();
+    $next = $passenger
+        ->installments()
+        ->where('due_date', '>', $current->due_date)
+        ->orderBy('due_date')
+        ->first();
 
-  $response = $this->patch(action([InstallmentController::class, 'update']), [
-    'installment' => $current->id,
-    'due_date' => Carbon::parse($next->due_date)
-      ->addDays(5)
-      ->format('Y-m-d'),
-  ]);
+    $response = $this->patch(action([InstallmentController::class, 'update']), [
+        'installment' => $current->id,
+        'due_date' => Carbon::parse($next->due_date)
+            ->addDays(5)
+            ->format('Y-m-d'),
+    ]);
 
-  $response->assertStatus(302);
-  $response->assertSessionHasErrors('due_date');
-  $this->assertDatabaseHas('installments', [
-    'id' => $current->id,
-    'due_date' => $current->due_date,
-  ]);
+    $response->assertStatus(302);
+    $response->assertSessionHasErrors('due_date');
+    $this->assertDatabaseHas('installments', [
+        'id' => $current->id,
+        'due_date' => $current->due_date,
+    ]);
 });
 
 it('agent cannot edit an installment', function () {
-    /** @var \Tests\TestCase $this */                
-    /** @mixin \Tests\Support\ActsAsAgent */        
+    /** @var \Tests\TestCase $this */
+    /** @mixin \Tests\Support\ActsAsAgent */
     /** @var \App\Models\Booking $this->booking */
-    
+
     $this->loginAgent();
     app(PermissionRegistrar::class)->forgetCachedPermissions();
     /** @var \App\Models\Booking $this->booking */
     $passenger = $this->booking->passengers()->first();
     $current = $passenger->installments()->orderBy('due_date')->first();
-    $newDate = Carbon::parse($current->due_date)->subDays(1)->format('Y-m-d');
+    $newDate = Carbon::parse($current->due_date)
+        ->subDays(1)
+        ->format('Y-m-d');
 
     $response = $this->patch(action([InstallmentController::class, 'update']), [
         'installment' => $current->id,
@@ -198,15 +198,17 @@ it('agent cannot edit an installment', function () {
 });
 
 it('manager can edit an installment', function () {
-    /** @var \Tests\TestCase $this */                
-    /** @mixin \Tests\Support\ActsAsAgent */        
+    /** @var \Tests\TestCase $this */
+    /** @mixin \Tests\Support\ActsAsAgent */
     /** @var \App\Models\Booking $this->booking */
     app(PermissionRegistrar::class)->forgetCachedPermissions();
     $this->loginManager();
     /** @var \App\Models\Booking $this->booking */
     $passenger = $this->booking->passengers()->first();
     $current = $passenger->installments()->orderBy('due_date')->first();
-    $newDate = Carbon::parse($current->due_date)->subDays(1)->format('Y-m-d');
+    $newDate = Carbon::parse($current->due_date)
+        ->subDays(1)
+        ->format('Y-m-d');
 
     $response = $this->patch(action([InstallmentController::class, 'update']), [
         'installment' => $current->id,
@@ -217,8 +219,5 @@ it('manager can edit an installment', function () {
     $response->assertSessionHasNoErrors();
 
     $current->refresh();
-    $this->assertEquals(
-        Carbon::parse($newDate)->format('Y-m-d'),
-        Carbon::parse($current->due_date)->format('Y-m-d')
-    );
+    $this->assertEquals(Carbon::parse($newDate)->format('Y-m-d'), Carbon::parse($current->due_date)->format('Y-m-d'));
 });

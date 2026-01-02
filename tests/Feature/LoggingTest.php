@@ -12,12 +12,11 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 uses(DatabaseTransactions::class);
 
-
 it('creates a BOOKING_CREATED log automatically when booking is created', function () {
     Relation::enforceMorphMap([
         'booking' => Booking::class,
-        'user'    => User::class,
-        'cabin'   => Cabin::class,
+        'user' => User::class,
+        'cabin' => Cabin::class,
     ]);
 
     $this->seed(BookingSeeder::class);
@@ -42,16 +41,15 @@ it('creates a BOOKING_CREATED log automatically when booking is created', functi
 });
 
 it('creates a BOOKING_STATUS_CHANGED log automatically when booking status changes', function () {
-
     Relation::enforceMorphMap([
         'booking' => Booking::class,
-        'user'    => User::class,
-        'cabin'    => Cabin::class,
+        'user' => User::class,
+        'cabin' => Cabin::class,
     ]);
     $this->seed(BookingSeeder::class);
 
     $booking = Booking::first();
-    $user    = User::first();
+    $user = User::first();
 
     expect($booking)->not->toBeNull();
     expect($user)->not->toBeNull();
@@ -70,20 +68,16 @@ it('creates a BOOKING_STATUS_CHANGED log automatically when booking status chang
     expect($log->payload)->toBeArray();
 });
 
-
-
-
 it('creates a BOOKING_CANCELLED log automatically when booking is cancelled', function () {
-
     Relation::enforceMorphMap([
         'booking' => Booking::class,
-        'user'    => User::class,
-        'cabin'    => Cabin::class,
+        'user' => User::class,
+        'cabin' => Cabin::class,
     ]);
     $this->seed(BookingSeeder::class);
 
     $booking = Booking::first();
-    $user    = User::first();
+    $user = User::first();
 
     expect($booking)->not->toBeNull();
     expect($user)->not->toBeNull();

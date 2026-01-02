@@ -151,7 +151,7 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
           onChange={handleTabChange}
           indicatorColor="primary"
           textColor="primary"
-        //centered
+          //centered
         >
           <Tab label="Status" />
           <Tab label="Email Templates" />
@@ -161,7 +161,7 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
         {activeTab === 0 && (
           <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={6} >
+              <Grid item xs={12} md={6}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Grid container alignItems="center" spacing={1}>
@@ -208,7 +208,6 @@ const Status = ({ event, booking, editMode, users, availableTags }) => {
                             Nobody assigned
                           </Typography>
                         )}
-
                       </Grid>
                     </Grid>
                   </Grid>

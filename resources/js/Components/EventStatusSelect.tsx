@@ -5,11 +5,11 @@ import { MenuItem, Select, SelectChangeEvent, FormControl, InputLabel } from "@m
 const EventStatusSelect = ({
   value,
   onChange,
-  errors
+  errors,
 }: {
   value: EventStatus;
   onChange: (event: SelectChangeEvent<EventStatus>) => void;
-  errors: object
+  errors: object;
 }) => {
   return (
     <FormControl fullWidth>
@@ -35,4 +35,3 @@ const EventStatusSelect = ({
 };
 
 export default EventStatusSelect;
-

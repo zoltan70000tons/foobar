@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogActions, Avatar, DialogContent, Box, Chip, DialogTitle, Button, useTheme, Alert } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  Avatar,
+  DialogContent,
+  Box,
+  Chip,
+  DialogTitle,
+  Button,
+  useTheme,
+  Alert,
+} from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CheckIcon from "@mui/icons-material/Check";
 
@@ -74,17 +85,17 @@ const UserSelectorDialog: React.FC<UserSelectorDialogProps> = ({
                       width: 28,
                       height: 28,
                       fontSize: 12,
-                      bgcolor: isSelected ? "#2ecc71" : undefined, 
+                      bgcolor: isSelected ? "#2ecc71" : undefined,
                       color: isSelected ? "white" : "inherit",
                       animation: isSelected ? "blink 1s infinite ease-in-out" : "none",
-                        "@keyframes blink": {
+                      "@keyframes blink": {
                         "0%": { opacity: 1 },
                         "50%": { opacity: 0.4 },
                         "100%": { opacity: 1 },
-                        },
-                      }}
+                      },
+                    }}
                   >
-                    {isSelected ? <CheckIcon  sx={{fontSize: 10}}/> : (user.user_name || "A")[0]}
+                    {isSelected ? <CheckIcon sx={{ fontSize: 10 }} /> : (user.user_name || "A")[0]}
                   </Avatar>
                 }
                 onClick={() => handleChipClick(user.id)}

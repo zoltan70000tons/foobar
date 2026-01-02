@@ -10,32 +10,28 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class TemporaryReservationEvent implements ShouldBroadcast
-{
-  use Dispatchable, InteractsWithSockets, SerializesModels;
+class TemporaryReservationEvent implements ShouldBroadcast {
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
-  public $reservation;
+    public $reservation;
 
-  /**
-   * Create a new event instance.
-   */
-  public function __construct()
-  {
-    //
-  }
+    /**
+     * Create a new event instance.
+     */
+    public function __construct() {
+        //
+    }
 
-  /**
-   * Get the channels the event should broadcast on.
-   *
-   * @return array<int, \Illuminate\Broadcasting\Channel>
-   */
-  public function broadcastOn(): array
-  {
-    return [new Channel("temporary-reservations")];
-  }
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return array<int, \Illuminate\Broadcasting\Channel>
+     */
+    public function broadcastOn(): array {
+        return [new Channel('temporary-reservations')];
+    }
 
-  public function broadcastWith()
-  {
-    return [];
-  }
+    public function broadcastWith() {
+        return [];
+    }
 }

@@ -13,14 +13,13 @@ interface FormData {
 
 export default function RegisterOrganization() {
   const { flash } = usePage().props;
-  const { data, setData, post, errors, processing, recentlySuccessful } =
-    useForm<FormData>({
-      name: "",
-      user_name: "",
-      email: "",
-      password: "",
-      confirm_password: "",
-    });
+  const { data, setData, post, errors, processing, recentlySuccessful } = useForm<FormData>({
+    name: "",
+    user_name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Partial<FormData>>({});
@@ -73,27 +72,18 @@ export default function RegisterOrganization() {
     if (!data.email) newErrors.email = "Email is required.";
     if (!data.password) newErrors.password = "Password is required.";
     if (!data.confirm_password) newErrors.confirm_password = "Confirm password is required.";
-    if (data.password !== data.confirm_password)
-      newErrors.confirm_password = "Passwords do not match.";
+    if (data.password !== data.confirm_password) newErrors.confirm_password = "Passwords do not match.";
     return newErrors;
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-    >
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
       <section style={{ maxWidth: "400px" }}>
         <header>
           <h2>Create Organization</h2>
           <Divider flexItem />
           <p>Name of your organization can not be changed in the future.</p>
-          <p>
-            Your account will have administrator role, You can invite another
-            users to crew and set permissions.{" "}
-          </p>
+          <p>Your account will have administrator role, You can invite another users to crew and set permissions. </p>
           <br />
         </header>
         <form onSubmit={submit}>
@@ -162,10 +152,7 @@ export default function RegisterOrganization() {
               }}
             >
               {recentlySuccessful && (
-                <Alert
-                  icon={<CheckIcon fontSize="inherit" />}
-                  severity="success"
-                >
+                <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
                   Saved.
                 </Alert>
               )}

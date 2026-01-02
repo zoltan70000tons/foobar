@@ -1,27 +1,26 @@
-import { useEffect, FormEventHandler } from 'react';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { TextField, Button, Box, Stack } from '@mui/material';
+import { useEffect, FormEventHandler } from "react";
+import GuestLayout from "@/Layouts/GuestLayout";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { TextField, Button, Box, Stack } from "@mui/material";
 
 export default function Register() {
-
   const { data, setData, post, processing, errors, reset } = useForm({
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
   });
 
   useEffect(() => {
     return () => {
-      reset('password', 'password_confirmation');
+      reset("password", "password_confirmation");
     };
   }, []);
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    post(route('register'));
+    post(route("register"));
   };
 
   return (
@@ -36,7 +35,7 @@ export default function Register() {
             gap: "20px",
             width: "100%",
             flexWrap: "wrap",
-            maxWidth: "400px"
+            maxWidth: "400px",
           }}
         >
           <TextField
@@ -48,7 +47,7 @@ export default function Register() {
             type="text"
             name="name"
             value={data.name}
-            onChange={(e) => setData('name', e.target.value)}
+            onChange={(e) => setData("name", e.target.value)}
           />
 
           <TextField
@@ -59,7 +58,7 @@ export default function Register() {
             label="Email"
             type="email"
             value={data.email}
-            onChange={(e) => setData('email', e.target.value)}
+            onChange={(e) => setData("email", e.target.value)}
           />
           <TextField
             required
@@ -70,7 +69,7 @@ export default function Register() {
             type="password"
             value={data.password}
             autoComplete="current-password"
-            onChange={(e) => setData('password', e.target.value)}
+            onChange={(e) => setData("password", e.target.value)}
           />
 
           <TextField
@@ -82,26 +81,18 @@ export default function Register() {
             label="Password confirmation"
             type="password"
             value={data.password_confirmation}
-            onChange={(e) => setData('password_confirmation', e.target.value)}
+            onChange={(e) => setData("password_confirmation", e.target.value)}
           />
 
           <Stack
             spacing={2}
             sx={{
-              width: "100%"
+              width: "100%",
             }}
           >
-            <Link
-              href={route('login')}
-            >
-              Already registered?
-            </Link>
+            <Link href={route("login")}>Already registered?</Link>
 
-            <Button
-              variant="contained"
-              disabled={processing}
-              type="submit"
-            >
+            <Button variant="contained" disabled={processing} type="submit">
               Register
             </Button>
           </Stack>

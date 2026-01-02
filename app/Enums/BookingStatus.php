@@ -2,8 +2,7 @@
 
 namespace App\Enums;
 
-enum BookingStatus: string
-{
+enum BookingStatus: string {
     case CANCELLED = 'CANCELLED';
     case NEW = 'NEW';
     case ON_HOLD = 'ON HOLD';

@@ -5,19 +5,17 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class CustomizeSessionCookie
-{
+class CustomizeSessionCookie {
     /**
      * Adjust the session cookie name (and optionally scope) per area.
      */
-    public function handle(Request $request, Closure $next)
-    {
+    public function handle(Request $request, Closure $next) {
         // Default cookie name from config
         $defaultCookie = config('session.cookie');
 
         // OAuth pages under /oauth use a separate cookie
-          if ($request->is(['oauth', 'oauth/*'])) {
-            $cookieName = config('session.cookie_oauth', $defaultCookie.'_oauth');
+        if ($request->is(['oauth', 'oauth/*'])) {
+            $cookieName = config('session.cookie_oauth', $defaultCookie . '_oauth');
             config(['session.cookie' => $cookieName]);
 
             // Optionally scope to path and/or domain if provided
@@ -32,4 +30,3 @@ class CustomizeSessionCookie
         return $next($request);
     }
 }
-

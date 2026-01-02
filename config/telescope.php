@@ -4,7 +4,6 @@ use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Telescope Master Switch
@@ -91,10 +90,7 @@ return [
     |
     */
 
-    'middleware' => [
-        'web',
-        Authorize::class,
-    ],
+    'middleware' => ['web', Authorize::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -111,11 +107,7 @@ return [
         // 'api/*'
     ],
 
-    'ignore_paths' => [
-        'livewire*',
-        'nova-api*',
-        'pulse*',
-    ],
+    'ignore_paths' => ['livewire*', 'nova-api*', 'pulse*'],
 
     'ignore_commands' => [
         //

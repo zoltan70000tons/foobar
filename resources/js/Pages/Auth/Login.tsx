@@ -1,16 +1,16 @@
 import { FormEventHandler, useState } from "react";
 import { Link, useForm } from "@inertiajs/react";
-import { 
+import {
   FormControlLabel,
-  TextField, 
-  Button, 
-  Box, 
-  Checkbox, 
-  Stack, 
-  Alert, 
+  TextField,
+  Button,
+  Box,
+  Checkbox,
+  Stack,
+  Alert,
   Container,
   Typography,
-  alpha 
+  alpha,
 } from "@mui/material";
 import { blue } from "@mui/material/colors";
 import CheckIcon from "@mui/icons-material/Check";
@@ -88,12 +88,12 @@ export default function Login({ status, canResetPassword }: { status?: string; c
             Please enter your credentials to log in.
           </Typography>
         </Box>
-        <Box 
-          sx={{ 
-            display: "flex", 
-            flexDirection: "column", 
-            alignItems: "center", 
-            width: "100%", 
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
             gap: 4,
             backgroundColor: alpha("#fff", 0.05),
             padding: 4,
@@ -154,18 +154,20 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                 />
                 <span>Remember me</span>
               </Box> */}
-              <FormControlLabel 
+              <FormControlLabel
                 control={
-                  <Checkbox                   
+                  <Checkbox
                     name="remember"
                     checked={data.remember}
-                    onChange={(e) => setData("remember", e.target.checked)} 
-                  />} 
-                label="Remember me" 
+                    onChange={(e) => setData("remember", e.target.checked)}
+                  />
+                }
+                label="Remember me"
               />
               <Stack spacing={2} sx={{ width: "100%" }}>
                 {canResetPassword && (
-                  <Link href={route("password.request")}
+                  <Link
+                    href={route("password.request")}
                     style={{
                       textDecoration: "none",
                       color: blue[500],
@@ -177,11 +179,7 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                     Forgot your password?
                   </Link>
                 )}
-                <Button 
-                  variant="contained" 
-                  disabled={processing} 
-                  type="submit"
-                >
+                <Button variant="contained" disabled={processing} type="submit">
                   Log in
                 </Button>
               </Stack>

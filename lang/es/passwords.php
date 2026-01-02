@@ -1,7 +1,7 @@
 <?php
 
 return [
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Password Reset Language Lines
     |--------------------------------------------------------------------------
@@ -12,10 +12,10 @@ return [
     |
     */
 
-  'reset' => 'Tu contraseña ha sido restablecida.',
-  'sent' => 'Te hemos enviado un correo con el enlace para restablecer tu contraseña.',
-  'throttled' => 'Por favor espera antes de reintentarlo.',
-  'expired' => 'Este enlace para restablecer la contraseña es inválido o ha expirado.',
-  'token' => 'Este token para restablecer la contraseña es inválido.',
-  'user' => 'No podemos encontrar a ningún usuario con esa dirección de correo.',
+    'reset' => 'Tu contraseña ha sido restablecida.',
+    'sent' => 'Te hemos enviado un correo con el enlace para restablecer tu contraseña.',
+    'throttled' => 'Por favor espera antes de reintentarlo.',
+    'expired' => 'Este enlace para restablecer la contraseña es inválido o ha expirado.',
+    'token' => 'Este token para restablecer la contraseña es inválido.',
+    'user' => 'No podemos encontrar a ningún usuario con esa dirección de correo.',
 ];

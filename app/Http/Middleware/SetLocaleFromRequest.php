@@ -5,21 +5,18 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class SetLocaleFromRequest
-{
+class SetLocaleFromRequest {
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next)
-    {
+    public function handle(Request $request, Closure $next) {
         $supported = ['en', 'es', 'de'];
 
-        $locale = $request->query('language')
-            ?? $request->route('language')
-            ?? $request->session()->get('locale')
-            ?? config('app.locale');
+        $locale =
+            $request->query('language') ??
+            ($request->route('language') ?? ($request->session()->get('locale') ?? config('app.locale')));
 
-        if (! in_array($locale, $supported, true)) {
+        if (!in_array($locale, $supported, true)) {
             $locale = config('app.fallback_locale', 'en');
         }
 
@@ -32,4 +29,3 @@ class SetLocaleFromRequest
         return $next($request);
     }
 }
-

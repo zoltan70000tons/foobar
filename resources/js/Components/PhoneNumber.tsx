@@ -1,20 +1,7 @@
 import "react-international-phone/style.css";
 import React from "react";
-import {
-  BaseTextFieldProps,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-  FormControl,
-} from "@mui/material";
-import {
-  CountryIso2,
-  defaultCountries,
-  FlagImage,
-  parseCountry,
-  usePhoneInput,
-} from "react-international-phone";
+import { BaseTextFieldProps, MenuItem, Select, TextField, Typography, FormControl } from "@mui/material";
+import { CountryIso2, defaultCountries, FlagImage, parseCountry, usePhoneInput } from "react-international-phone";
 
 export interface MUIPhoneProps extends BaseTextFieldProps {
   value?: string | undefined;
@@ -23,12 +10,7 @@ export interface MUIPhoneProps extends BaseTextFieldProps {
   disabled?: boolean;
 }
 
-export default function PhoneNumber({
-  value,
-  onChange,
-  forceDialCode = true,
-  ...restProps
-}: MUIPhoneProps) {
+export default function PhoneNumber({ value, onChange, forceDialCode = true, ...restProps }: MUIPhoneProps) {
   const phoneInputProps = {
     defaultCountry: "us",
     value: value || "",
@@ -66,7 +48,7 @@ export default function PhoneNumber({
           </MenuItem>
         );
       }),
-    []
+    [],
   );
 
   return (
@@ -105,9 +87,7 @@ export default function PhoneNumber({
                 },
               }}
               sx={selectStyles}
-              renderValue={(value) => (
-                <FlagImage iso2={value} style={{ display: "flex" }} />
-              )}
+              renderValue={(value) => <FlagImage iso2={value} style={{ display: "flex" }} />}
             >
               {countryOptions}
             </Select>

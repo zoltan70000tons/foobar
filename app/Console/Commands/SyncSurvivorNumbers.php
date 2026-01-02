@@ -15,13 +15,11 @@ use App\Enums\EventStatus;
 use Carbon\Carbon;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 
-class SyncSurvivorNumbers extends Command
-{
+class SyncSurvivorNumbers extends Command {
     protected $signature = 'survivors:sync {--only-summary}';
     protected $description = 'Sync missing survivor numbers using fuzzy matching';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         if (!$this->option('only-summary')) {
             $this->info('Starting Survivor Number Sync...');
         }
@@ -59,7 +57,7 @@ class SyncSurvivorNumbers extends Command
                         $passenger->last_name,
                         $candidate->last_name,
                         $passenger->dob,
-                        $candidate->dob
+                        $candidate->dob,
                     );
 
                     if ($score > $bestScore) {
@@ -154,7 +152,7 @@ class SyncSurvivorNumbers extends Command
                                 'Automatic match prevented for %s %s — Survivor Number %s already used in this event.',
                                 $passenger->first_name,
                                 $passenger->last_name,
-                                $survivorNumber
+                                $survivorNumber,
                             ),
                             [
                                 'attempted' => [
@@ -166,7 +164,7 @@ class SyncSurvivorNumbers extends Command
                                     'score' => $bestScore,
                                 ],
                                 'eventId' => $eventId,
-                            ]
+                            ],
                         );
 
                         PotentialSurvivorMatch::create([
@@ -203,7 +201,7 @@ class SyncSurvivorNumbers extends Command
                             $passenger->first_name,
                             $passenger->last_name,
                             $bestScore,
-                            $bestMatch->survivor_number
+                            $bestMatch->survivor_number,
                         ),
                         [
                             'after' => [
@@ -223,7 +221,9 @@ class SyncSurvivorNumbers extends Command
             }
         }
 
-        $this->info("Sync completed. {$updatedCount} passengers updated. {$storedCount} stored. {$attemptedCount} checked.");
+        $this->info(
+            "Sync completed. {$updatedCount} passengers updated. {$storedCount} stored. {$attemptedCount} checked.",
+        );
 
         return CommandAlias::SUCCESS;
     }

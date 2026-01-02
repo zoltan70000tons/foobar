@@ -5,24 +5,22 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    Schema::create('carts', function (Blueprint $table) {
-      $table->id();
-      $table->uuid('user_id')->nullable()->constrained('users')->onDelete('set null');
-      $table->json('cart_data')->nullable();
-      $table->timestamps();
-    });
-  }
+    /**
+     * Run the migrations.
+     */
+    public function up(): void {
+        Schema::create('carts', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->json('cart_data')->nullable();
+            $table->timestamps();
+        });
+    }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('carts');
-  }
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void {
+        Schema::dropIfExists('carts');
+    }
 };

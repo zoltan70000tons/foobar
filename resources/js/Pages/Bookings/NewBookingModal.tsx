@@ -9,7 +9,6 @@ import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Customer } from "@/interfaces/Customer";
 import CustomerModal from "./partials/CustomerModal";
 
-
 const bookingModalStyle = {
   position: "absolute",
   top: "50%",
@@ -23,7 +22,6 @@ const bookingModalStyle = {
   maxWidth: 1200,
   p: 2,
 };
-
 
 type NewBookingModalProps = {
   cabinTypes: Array<{ id: number; name: string }>;
@@ -60,8 +58,6 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
   const openCustomerModal = () => setIsCustomerModalOpen(true);
   const closeCustomerModal = () => setIsCustomerModalOpen(false);
 
-
-
   const fetchCabinCategories = async () => {
     try {
       setLoadingCategories(true);
@@ -75,13 +71,14 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
     }
   };
 
- useEffect(() => {
+  useEffect(() => {
     if (isBookingOpen && cabinCategories.length === 0 && !loadingCategories) {
       fetchCabinCategories();
     }
   }, [isBookingOpen, eventId]);
 
-  return (<>
+  return (
+    <>
       <Button
         variant="outlined"
         color="secondary"

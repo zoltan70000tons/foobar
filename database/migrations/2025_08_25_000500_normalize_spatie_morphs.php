@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
-    public function up(): void
-    {
+    public function up(): void {
         $fqn = 'App\\Models\\User';
         $alias = 'user';
 
@@ -13,8 +12,7 @@ return new class extends Migration {
         DB::statement("UPDATE model_has_permissions SET model_type = '$alias' WHERE model_type = '$fqn'");
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         $fqn = 'App\\Models\\User';
         $alias = 'user';
 

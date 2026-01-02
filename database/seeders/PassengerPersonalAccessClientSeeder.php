@@ -6,10 +6,8 @@ use Illuminate\Database\Seeder;
 use Laravel\Passport\ClientRepository;
 use RuntimeException;
 
-class PassengerPersonalAccessClientSeeder extends Seeder
-{
-    public function run(): void
-    {
+class PassengerPersonalAccessClientSeeder extends Seeder {
+    public function run(): void {
         /** @var ClientRepository $clients */
         $clients = app(ClientRepository::class);
 
@@ -21,4 +19,3 @@ class PassengerPersonalAccessClientSeeder extends Seeder
         }
     }
 }
-

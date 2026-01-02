@@ -6,13 +6,11 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class LogsCreateYearPartitions extends Command
-{
+class LogsCreateYearPartitions extends Command {
     protected $signature = 'logs:create-year-partitions {year?}';
     protected $description = 'Create yearly sub-partitions for each logs related_type';
 
-    public function handle()
-    {
+    public function handle() {
         $year = $this->argument('year') ?? Carbon::now()->year + 1;
         $types = ['booking', 'customer', 'cabin', 'user', 'event'];
 
@@ -20,7 +18,8 @@ class LogsCreateYearPartitions extends Command
             $partitionTable = "logs_{$type}_{$year}";
 
             // Check if it already exists
-            $exists = DB::select("
+            $exists =
+                DB::select("
                 SELECT to_regclass('public.{$partitionTable}') IS NOT NULL AS exists
             ")[0]->exists ?? false;
 
@@ -30,7 +29,7 @@ class LogsCreateYearPartitions extends Command
             }
 
             $from = "{$year}-01-01";
-            $to = ($year + 1) . "-01-01";
+            $to = $year + 1 . '-01-01';
 
             $sql = "
                 CREATE TABLE IF NOT EXISTS {$partitionTable}

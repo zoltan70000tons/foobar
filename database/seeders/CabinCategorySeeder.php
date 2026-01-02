@@ -9,15 +9,13 @@ use App\Models\Cruise;
 use App\Models\Event;
 use League\Csv\Reader;
 
-class CabinCategorySeeder extends Seeder
-{
+class CabinCategorySeeder extends Seeder {
     /**
      * Run the database seeds.
      *
      * @return void
      */
-    public function run($eventId = null)
-    {
+    public function run($eventId = null) {
         // If no event ID is provided, use the first event's ID
         $eventId = $eventId ?? Event::first()->id;
         $cruiseId = Cruise::first()->id;
@@ -38,23 +36,22 @@ class CabinCategorySeeder extends Seeder
             $categoryNumber = null;
             // Determine the category number based on category_type
             switch ($record['category_type']) {
-              case 'Interior':
-                $categoryNumber = '1';
-                break;
-              case 'Ocean View':
-                $categoryNumber = '2';
-                break;
-              case 'Balcony':
-                $categoryNumber = '3';
-                break;
-              case 'Suite':
-                $categoryNumber = '4';
-                break;
-              default:
-                $categoryNumber = null; // Handle unexpected category types
-                break;
+                case 'Interior':
+                    $categoryNumber = '1';
+                    break;
+                case 'Ocean View':
+                    $categoryNumber = '2';
+                    break;
+                case 'Balcony':
+                    $categoryNumber = '3';
+                    break;
+                case 'Suite':
+                    $categoryNumber = '4';
+                    break;
+                default:
+                    $categoryNumber = null; // Handle unexpected category types
+                    break;
             }
-            
 
             // Prepare the category description array for each language
             $categoryDescription = [
@@ -65,32 +62,38 @@ class CabinCategorySeeder extends Seeder
 
             // Create or retrieve the CabinCategorySpec
             $specData = [
-                'category_type'   => $record['category_type'],
-                'category_code'   => $record['category_code'],
-                'category_name'   => $record['category_name'],
-                'capacity'        => $record['capacity'],
-                'description'     => $categoryDescription, // JSONB field
-                'images'          => $images, // JSON field
-                'iframe'          => $record['vr'],
-                'decks'           => $record['decks'],
-                'display_order'   => $record['display_order'],
-                'cruise_id'       => $cruiseId,
+                'category_type' => $record['category_type'],
+                'category_code' => $record['category_code'],
+                'category_name' => $record['category_name'],
+                'capacity' => $record['capacity'],
+                'description' => $categoryDescription, // JSONB field
+                'images' => $images, // JSON field
+                'iframe' => $record['vr'],
+                'decks' => $record['decks'],
+                'display_order' => $record['display_order'],
+                'cruise_id' => $cruiseId,
                 'category_number' => $categoryNumber,
-                'high_roller'     => $record['high_roller'] == 'TRUE' ? true : false,
+                'high_roller' => $record['high_roller'] == 'TRUE' ? true : false,
             ];
 
-            $cabinCategorySpec = CabinCategorySpec::updateOrCreate([
-                'category_code' => $record['category_code'],
-                'capacity' => $record['capacity'],
-            ], $specData);
+            $cabinCategorySpec = CabinCategorySpec::updateOrCreate(
+                [
+                    'category_code' => $record['category_code'],
+                    'capacity' => $record['capacity'],
+                ],
+                $specData,
+            );
 
             // Create the CabinCategory with the associated spec and event
-            CabinCategory::updateOrCreate([
-                'cabin_category_spec_id'  => $cabinCategorySpec->id,
-                'event_id'                => $eventId,
-            ], [
-                'price'                   => $record['price'],
-            ]);
+            CabinCategory::updateOrCreate(
+                [
+                    'cabin_category_spec_id' => $cabinCategorySpec->id,
+                    'event_id' => $eventId,
+                ],
+                [
+                    'price' => $record['price'],
+                ],
+            );
         }
     }
 }

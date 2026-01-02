@@ -1,11 +1,7 @@
 import React, { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { TagEnum } from "@/enums/TagEnum";
-import {
-  CabinStatus,
-  CabinStatusReduced,
-  CabinStatusColor,
-} from "@/enums/CabinStatus";
+import { CabinStatus, CabinStatusReduced, CabinStatusColor } from "@/enums/CabinStatus";
 import { CabinType } from "@/enums/CabinType";
 import { PageProps } from "@/types";
 import { Head, Link, router, usePage } from "@inertiajs/react";
@@ -34,17 +30,16 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions, TableCell, TableRow, TableHead, Table, TableContainer, TableBody, Stack, // Import Tab
+  DialogActions,
+  TableCell,
+  TableRow,
+  TableHead,
+  Table,
+  TableContainer,
+  TableBody,
+  Stack, // Import Tab
 } from "@mui/material";
-import {
-  CheckCircle,
-  Block,
-  HourglassEmpty,
-  Close,
-  ArrowBack,
-  Rule,
-  Visibility,
-} from "@mui/icons-material";
+import { CheckCircle, Block, HourglassEmpty, Close, ArrowBack, Rule, Visibility } from "@mui/icons-material";
 
 import NoAccessAlert from "@/Components/NoAccessAlert";
 import { Permissions } from "@/enums/PermissionEnum";
@@ -80,7 +75,7 @@ type Props = PageProps & {
       after?: unknown;
       before?: unknown;
       removed?: unknown;
-    }
+    };
   }[];
 };
 
@@ -89,34 +84,18 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
   const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
   const [cabinNumber, setCabinNumber] = useState<string>(cabin.cabin_spec.cabin_number);
-  const [cabinCategory, setCabinCategory] = useState<number>(
-    cabin.cabin_category_id
-  );
-  const [cabinType, setCabinType] = useState<number | string>(
-    cabin.cabin_type_id
-  );
+  const [cabinCategory, setCabinCategory] = useState<number>(cabin.cabin_category_id);
+  const [cabinType, setCabinType] = useState<number | string>(cabin.cabin_type_id);
   const [deck, setDeck] = useState<number>(cabin.cabin_spec.deck);
   const [location, setLocation] = useState<string>(cabin.cabin_spec.location);
-  const [connectWith, setConnectWith] = useState<string>(
-    cabin.cabin_spec.connects_with
-  );
-  const [ticketInventory, setTicketInventory] = useState<number>(
-    cabin.inventory
-  );
-  const [totalBerths, setTotalBerths] = useState<number>(
-    cabin.cabin_spec.total_berths
-  );
-  const [lowerBedType1, setLowerBedType1] = useState<string>(
-    cabin.cabin_spec.lower_bed_type_1
-  );
-  const [lowerBedType2, setLowerBedType2] = useState<string>(
-    cabin.cabin_spec.lower_bed_type_2
-  );
+  const [connectWith, setConnectWith] = useState<string>(cabin.cabin_spec.connects_with);
+  const [ticketInventory, setTicketInventory] = useState<number>(cabin.inventory);
+  const [totalBerths, setTotalBerths] = useState<number>(cabin.cabin_spec.total_berths);
+  const [lowerBedType1, setLowerBedType1] = useState<string>(cabin.cabin_spec.lower_bed_type_1);
+  const [lowerBedType2, setLowerBedType2] = useState<string>(cabin.cabin_spec.lower_bed_type_2);
   const [upperBerths, setUpperBerths] = useState<string>(cabin.cabin_spec.upper_berths);
   const [notes, setNotes] = useState<string>(cabin.notes);
-  const [internalNotes, setInternalNotes] = useState<string>(
-    cabin.internal_notes
-  );
+  const [internalNotes, setInternalNotes] = useState<string>(cabin.internal_notes);
   const [features, setFeatures] = useState({
     accessible: cabin.cabin_spec.accessible,
     balcony: cabin.cabin_spec.balcony,
@@ -143,18 +122,17 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
     }
   }, [flash]);
 
-
   useEffect(() => {
     const src = Array.isArray(cabin?.tags) ? cabin.tags : [];
     setTags(src);
-    console.log(cabin.tags)
+    console.log(cabin.tags);
     console.log(src);
     const initial: Tag[] = src
       .map((t: any) => {
-        if (typeof t === 'string') {
+        if (typeof t === "string") {
           return (availableTags ?? []).find((a: Tag) => a.id === t || a.name === t);
         }
-        if (t && typeof t === 'object') {
+        if (t && typeof t === "object") {
           return (availableTags ?? []).find((a: Tag) => a.id === t.id);
         }
         return undefined;
@@ -174,57 +152,29 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
     { value: 3, label: CabinType.SINGLE_TICKET_FEMALE },
   ];
 
-  const disableFields =
-    cabinStatus === CabinStatus.BOOKED ||
-    cabinStatus === CabinStatus.PARTIALLY_BOOKED;
+  const disableFields = cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED;
   const statusSource = disableFields ? CabinStatus : CabinStatusReduced;
 
   const statusIcons = {
-    [CabinStatus.AVAILABLE]: (
-      <CheckCircle
-        fontSize="small"
-        color={CabinStatusColor[CabinStatus.AVAILABLE]}
-      />
-    ),
-    [CabinStatus.RESERVED]: (
-      <HourglassEmpty
-        fontSize="small"
-        color={CabinStatusColor[CabinStatus.RESERVED]}
-      />
-    ),
-    [CabinStatus.BOOKED]: (
-      <Block fontSize="small" color={CabinStatusColor[CabinStatus.BOOKED]} />
-    ),
-    [CabinStatusReduced.CLOSED]: (
-      <Close fontSize="small" color={CabinStatusColor[CabinStatus.CLOSED]} />
-    ),
-    [CabinStatus.PARTIALLY_BOOKED]: (
-      <Rule
-        fontSize="small"
-        color={CabinStatusColor[CabinStatus.PARTIALLY_BOOKED]}
-      />
-    ),
+    [CabinStatus.AVAILABLE]: <CheckCircle fontSize="small" color={CabinStatusColor[CabinStatus.AVAILABLE]} />,
+    [CabinStatus.RESERVED]: <HourglassEmpty fontSize="small" color={CabinStatusColor[CabinStatus.RESERVED]} />,
+    [CabinStatus.BOOKED]: <Block fontSize="small" color={CabinStatusColor[CabinStatus.BOOKED]} />,
+    [CabinStatusReduced.CLOSED]: <Close fontSize="small" color={CabinStatusColor[CabinStatus.CLOSED]} />,
+    [CabinStatus.PARTIALLY_BOOKED]: <Rule fontSize="small" color={CabinStatusColor[CabinStatus.PARTIALLY_BOOKED]} />,
   };
 
-  const handleTagsChange = (
-    event: SyntheticEvent<Element, Event>,
-    newValue: string[]
-  ) => {
+  const handleTagsChange = (event: SyntheticEvent<Element, Event>, newValue: string[]) => {
     setSelectedTags(newValue);
   };
 
-  const handleFeatureChange = (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFeatureChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFeatures({
       ...features,
       [event.target.name]: event.target.checked,
     });
   };
 
-  const handleCabinStatusChange = (
-    event: ChangeEvent<{ value: unknown }>
-  ) => {
+  const handleCabinStatusChange = (event: ChangeEvent<{ value: unknown }>) => {
     setCabinStatus(event.target.value as CabinStatus);
   };
 
@@ -246,7 +196,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
       upper_berths: upperBerths,
       notes: notes,
       internal_notes: internalNotes,
-      tags: selectedTags.map(t => t.id),
+      tags: selectedTags.map((t) => t.id),
       features: {
         accessible: features.accessible,
         balcony: features.balcony,
@@ -255,39 +205,28 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
       ticket_inventory: ticketInventory,
     };
 
-
-    router.post(
-      route("cabins.update", { id: event.id, cabin_id: cabin.id }),
-      formData,
-      {
-        forceFormData: true,
-        onSuccess: (response) => {
-          showSnackbar("Cabin edited successfully", "success");
-          router.visit(
-            route("cabins.edit", { id: event.id, cabin_id: cabin.id }),
-            { only: ["cabins"] }
-          );
-        },
-        onError: (errors) => {
-          showSnackbar("Error editing cabin", "error");
-        },
-      }
-    );
+    router.post(route("cabins.update", { id: event.id, cabin_id: cabin.id }), formData, {
+      forceFormData: true,
+      onSuccess: (response) => {
+        showSnackbar("Cabin edited successfully", "success");
+        router.visit(route("cabins.edit", { id: event.id, cabin_id: cabin.id }), { only: ["cabins"] });
+      },
+      onError: (errors) => {
+        showSnackbar("Error editing cabin", "error");
+      },
+    });
   };
 
   const hasAnyPermission =
-    auth.permissions.includes(Permissions.ViewCabins) ||
-    auth.permissions.includes(Permissions.EditCabins);
+    auth.permissions.includes(Permissions.ViewCabins) || auth.permissions.includes(Permissions.EditCabins);
 
   const canEditFull = auth.permissions.includes(Permissions.EditFullCabins);
-  const canEditPartiallyRaw =
-    auth.permissions.includes(Permissions.EditCabins) && !canEditFull;
+  const canEditPartiallyRaw = auth.permissions.includes(Permissions.EditCabins) && !canEditFull;
 
   const allowedStatuses = [CabinStatus.AVAILABLE, CabinStatus.PARTIALLY_BOOKED];
   const canEditPartially = canEditPartiallyRaw && allowedStatuses.includes(cabinStatus);
 
   const canEdit = canEditFull || canEditPartially;
-
 
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -298,15 +237,11 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
   const FormTabContent = (
     <form onSubmit={handleSubmit}>
       <Grid container spacing={2}>
-        {(cabinStatus === CabinStatus.BOOKED ||
-          cabinStatus === CabinStatus.PARTIALLY_BOOKED) && (
-            <Grid item xs={12}>
-              <Alert severity="warning">
-                The current status of this cabin only allows editing certain
-                fields.
-              </Alert>
-            </Grid>
-          )}
+        {(cabinStatus === CabinStatus.BOOKED || cabinStatus === CabinStatus.PARTIALLY_BOOKED) && (
+          <Grid item xs={12}>
+            <Alert severity="warning">The current status of this cabin only allows editing certain fields.</Alert>
+          </Grid>
+        )}
         {/* Status Select */}
         <Grid item xs={12} md={6}>
           <Box sx={{ mb: 2 }}>
@@ -326,15 +261,9 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                         alignItems: "center",
                       }}
                     >
-                      {
-                        statusIcons[
-                        selected as keyof typeof statusSource
-                        ]}{" "}
+                      {statusIcons[selected as keyof typeof statusSource]}{" "}
                     </ListItemIcon>
-                    {
-                      statusSource[
-                      selected as keyof typeof statusSource
-                      ]}{" "}
+                    {statusSource[selected as keyof typeof statusSource]}{" "}
                   </Box>
                 )}
               >
@@ -356,15 +285,9 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                         alignItems: "center",
                       }}
                     >
-                      {
-                        statusIcons[
-                        status as keyof typeof CabinStatus
-                        ]}{" "}
+                      {statusIcons[status as keyof typeof CabinStatus]}{" "}
                     </ListItemIcon>
-                    {
-                      CabinStatus[
-                      status as keyof typeof CabinStatus
-                      ]}{" "}
+                    {CabinStatus[status as keyof typeof CabinStatus]}{" "}
                   </MenuItem>
                 ))}
               </Select>
@@ -378,19 +301,15 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
             <Autocomplete<Tag, true, false, false>
               multiple
               disableCloseOnSelect
-              options={availableTags ?? []}                
-              value={selectedTags}                         
+              options={availableTags ?? []}
+              value={selectedTags}
               onChange={(_, value) => setSelectedTags(value)}
               getOptionLabel={(o) => o.name}
               isOptionEqualToValue={(o, v) => o.id === v.id}
-              filterSelectedOptions                         
+              filterSelectedOptions
               renderOption={(props, option, { selected }) => (
                 <li {...props}>
-                  <Chip
-                    label={option.name}
-                    size="small"
-                    style={{ backgroundColor: option.color, color: '#fff' }}
-                  />
+                  <Chip label={option.name} size="small" style={{ backgroundColor: option.color, color: "#fff" }} />
                 </li>
               )}
               renderTags={(value, getTagProps) =>
@@ -400,13 +319,11 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                     label={option.name}
                     {...getTagProps({ index })}
                     size="small"
-                    style={{ backgroundColor: option.color, color: '#fff' }}
+                    style={{ backgroundColor: option.color, color: "#fff" }}
                   />
                 ))
               }
-              renderInput={(params) => (
-                <TextField {...params} label="Tags" placeholder="Add tags" />
-              )}
+              renderInput={(params) => <TextField {...params} label="Tags" placeholder="Add tags" />}
               fullWidth
             />
           </Box>
@@ -418,23 +335,16 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
               fullWidth
               readOnly={!canEditFull}
               options={categories}
-              getOptionLabel={(option) =>
-                `${option.title} - ${option.capacity_description}`
-              }
-              value={
-                categories.find((cat) => cat.id === cabinCategory) || null
-              }
+              getOptionLabel={(option) => `${option.title} - ${option.capacity_description}`}
+              value={categories.find((cat) => cat.id === cabinCategory) || null}
               onChange={(event, newValue) => {
-                setCabinCategory(newValue ? newValue.id : '');
+                setCabinCategory(newValue ? newValue.id : "");
               }}
-              renderInput={(params) => (
-                <TextField {...params} label="Cabin Category" variant="outlined" />
-              )}
+              renderInput={(params) => <TextField {...params} label="Cabin Category" variant="outlined" />}
               isOptionEqualToValue={(option, value) => option.id === value.id}
             />
           </Box>
         </Grid>
-
 
         {/* Cabin Number */}
         <Grid item xs={12} md={2}>
@@ -759,9 +669,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
         sortable: true,
         draw: (row: Cabin) => (
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="body2">
-              {row.cabin_type.cabin_type}
-            </Typography>
+            <Typography variant="body2">{row.cabin_type.cabin_type}</Typography>
           </Box>
         ),
       },
@@ -789,15 +697,13 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
         draw: (row: Cabin) => (
           <Box
             sx={{
-              display: 'flex',
-              flexWrap: 'wrap', // Allows chips to wrap to the next line if space is limited
+              display: "flex",
+              flexWrap: "wrap", // Allows chips to wrap to the next line if space is limited
               gap: 0.5, // Adds a small space between chips
             }}
           >
             {row.tags && row.tags.length > 0 ? (
-              row.tags.map((tag, index) => (
-                <Chip key={index} label={tag} variant="outlined" size="small" />
-              ))
+              row.tags.map((tag, index) => <Chip key={index} label={tag} variant="outlined" size="small" />)
             ) : (
               <Typography variant="body2" color="text.secondary">
                 No tags
@@ -816,8 +722,6 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
         accessor: "",
         disableFilter: true,
         draw: (row: Cabin) => {
-
-
           return (
             <Box
               sx={{
@@ -827,11 +731,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                 gap: 1,
               }}
             >
-              <Button
-                variant="outlined"
-                onClick={() => handleViewClick(row)}
-                color="primary"
-              >
+              <Button variant="outlined" onClick={() => handleViewClick(row)} color="primary">
                 <Visibility />
               </Button>
             </Box>
@@ -861,35 +761,27 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
       cabin_category_id: selectedCategoryForSharedCabin,
     };
 
-    router.post(
-      route("cabins.createShared", { id: event.id, cabin_id: cabin.id }),
-      updateData,
-      {
-        onSuccess: () => {
-          showSnackbar("Category updated successfully for shared cabin.", "success");
-          handleCloseCategoryDialog();
-          // Optionally, refresh cabin data to reflect the change
-          router.reload({ only: ['cabin'] });
-        },
-        onError: (errors) => {
-          console.error("Error updating shared cabin category:", errors);
-          showSnackbar("Failed to update category for shared cabin.", "error");
-        },
-      }
-    );
+    router.post(route("cabins.createShared", { id: event.id, cabin_id: cabin.id }), updateData, {
+      onSuccess: () => {
+        showSnackbar("Category updated successfully for shared cabin.", "success");
+        handleCloseCategoryDialog();
+        // Optionally, refresh cabin data to reflect the change
+        router.reload({ only: ["cabin"] });
+      },
+      onError: (errors) => {
+        console.error("Error updating shared cabin category:", errors);
+        showSnackbar("Failed to update category for shared cabin.", "error");
+      },
+    });
   };
 
   const ListTabContent = (
     <Box sx={{ p: 3 }}>
-      {auth.permissions.includes(Permissions.CreateCabins) &&
-        (<Button
-          variant="outlined"
-          color="primary"
-          onClick={handleOpenCategoryDialog}
-          sx={{ mb: 2 }}
-        >
+      {auth.permissions.includes(Permissions.CreateCabins) && (
+        <Button variant="outlined" color="primary" onClick={handleOpenCategoryDialog} sx={{ mb: 2 }}>
           Add Shared Cabin
-        </Button>)}
+        </Button>
+      )}
       <MuiTable
         columns={cabinColumns}
         data={Array.isArray(shared) ? shared : []}
@@ -911,23 +803,16 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                 fullWidth
                 disabled={!canEditFull}
                 options={categories}
-                getOptionLabel={(option) =>
-                  `${option.title} - ${option.capacity}`
-                }
-                value={
-                  categories.find((cat) => cat.id === selectedCategoryForSharedCabin) || null
-                }
+                getOptionLabel={(option) => `${option.title} - ${option.capacity}`}
+                value={categories.find((cat) => cat.id === selectedCategoryForSharedCabin) || null}
                 onChange={(event, newValue) => {
-                  setSelectedCategoryForSharedCabin(newValue ? newValue.id : '');
+                  setSelectedCategoryForSharedCabin(newValue ? newValue.id : "");
                 }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Cabin Category" variant="outlined" />
-                )}
+                renderInput={(params) => <TextField {...params} label="Cabin Category" variant="outlined" />}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
               />
             </Box>
           </Grid>
-
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseCategoryDialog}>Cancel</Button>
@@ -954,15 +839,15 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
           {logs.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5}>
-                <Typography variant="body2" color="text.secondary">No results.</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  No results.
+                </Typography>
               </TableCell>
             </TableRow>
           ) : (
             logs.map((row) => (
               <TableRow key={row.id} hover>
-                <TableCell width={240}>
-                  {dayjs(row.created_at).format("LLL")}
-                </TableCell>
+                <TableCell width={240}>{dayjs(row.created_at).format("LLL")}</TableCell>
                 <TableCell width={160}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Chip
@@ -1047,11 +932,7 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                   <Alert severity="info" sx={{ mb: 2 }}>
                     Editing this cabin will affect all shared cabins with the same cabin number.
                   </Alert>
-                  <Tabs
-                    value={currentTab}
-                    onChange={handleTabChange}
-                    aria-label="cabin details tabs"
-                  >
+                  <Tabs value={currentTab} onChange={handleTabChange} aria-label="cabin details tabs">
                     <Tab label="CABIN DETAILS" />
                     <Tab label="SHARED CABINS" />
                     <Tab label="LOGS" />
@@ -1059,15 +940,9 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                 </Box>
 
                 {/* Tab Content */}
-                {currentTab === 0 && (
-                  <Box sx={{ p: 0 }}>{FormTabContent}</Box>
-                )}
-                {currentTab === 1 && (
-                  <Box sx={{ p: 0 }}>{ListTabContent}</Box>
-                )}
-                {currentTab === 2 && (
-                  <Box sx={{ p: 0 }}>{LogsContent}</Box>
-                )}
+                {currentTab === 0 && <Box sx={{ p: 0 }}>{FormTabContent}</Box>}
+                {currentTab === 1 && <Box sx={{ p: 0 }}>{ListTabContent}</Box>}
+                {currentTab === 2 && <Box sx={{ p: 0 }}>{LogsContent}</Box>}
               </>
             ) : (
               <NoAccessAlert message="You do not have permission to access this section." />

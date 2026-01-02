@@ -1,25 +1,35 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography, alpha } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Typography,
+  alpha,
+} from "@mui/material";
 import { green, blue, red } from "@mui/material/colors";
 import { InfoRounded } from "@mui/icons-material";
 import FeeInstallmentList from "@/Components/FeeInstallmentList";
 import { getOrdinalName } from "@/Helpers/stringUtils";
 import type { InstallmentItem, InstallmentStatus, Fee, Installment } from "@/types/payments"; // Adjust the import path as needed
-import { useForm, router } from '@inertiajs/react';
+import { useForm, router } from "@inertiajs/react";
 
 // Helpers
 import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 import { Passenger } from "@/interfaces/Passenger";
 import { Booking } from "@/types/booking";
 import EditCalendarIcon from "@mui/icons-material/EditCalendar";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs from 'dayjs';
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 import { editingStateInitializer } from "@mui/x-data-grid/internals";
 import { Permissions } from "@/enums/PermissionEnum";
-import { usePermissions } from '@/Providers/PermissionContext';
-
+import { usePermissions } from "@/Providers/PermissionContext";
 
 // Define types
 type Props = {
@@ -42,7 +52,6 @@ type InstallmentPaymentProps = {
   editMode?: boolean;
 };
 
-
 // Installment payment part
 const InstallmentPayment = ({
   order,
@@ -55,12 +64,10 @@ const InstallmentPayment = ({
   perc,
   nextDue,
   onEditDate,
-  editMode
-}: InstallmentPaymentProps) => { 
+  editMode,
+}: InstallmentPaymentProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(
-  installment?.due_date ? dayjs(installment.due_date) : null
-  );
+  const [selectedDate, setSelectedDate] = useState(installment?.due_date ? dayjs(installment.due_date) : null);
   const [saving, setSaving] = useState(false);
 
   const nextDueDayjs = nextDue ? dayjs(nextDue) : null;
@@ -82,7 +89,6 @@ const InstallmentPayment = ({
     setSelectedDate(installment?.due_date ? dayjs(installment.due_date) : null);
     setOpen(false);
   };
-
 
   const handleSave = async () => {
     if (!selectedDate) return;
@@ -183,7 +189,7 @@ const InstallmentPayment = ({
               value={selectedDate}
               onChange={(newVal) => setSelectedDate(newVal)}
               maxDate={nextDueDayjs || undefined}
-              sx={{width: "100%", mt: 2}}
+              sx={{ width: "100%", mt: 2 }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -219,7 +225,7 @@ const Installments = ({
   installments,
   passengerAllocatedCost,
   installment_plan,
-  editMode
+  editMode,
 }: {
   perc: number;
   installments: Installment[];
@@ -234,11 +240,12 @@ const Installments = ({
   const installmentsLength = installments.length;
 
   const saveInstallmentDate = (inst: InstallmentItem, newDate: string) => {
-    router.patch(route("installments.update-due"), 
+    router.patch(
+      route("installments.update-due"),
       { due_date: newDate, installment: inst.installment_id },
       {
         preserveScroll: true,
-      }
+      },
     );
   };
 
@@ -259,8 +266,6 @@ const Installments = ({
       remainingPercentage = 0; // No remaining percentage
     }
   });
-
-
 
   return (
     <Box
@@ -318,7 +323,7 @@ const Installments = ({
 };
 
 // Section Percentage
-export default function SectionPercentage({ passenger, booking, installments, setIsBookingError, editMode}: Props) {
+export default function SectionPercentage({ passenger, booking, installments, setIsBookingError, editMode }: Props) {
   const paymentInstallments = installments
     .filter((inst: Installment) => inst.type === "PAYMENT")
     .sort((a: Installment, b: Installment) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
@@ -357,7 +362,8 @@ export default function SectionPercentage({ passenger, booking, installments, se
     passengerAllocatedCost,
     "passengerPercentage",
     passengerPercentageRounded,
-    "editMode", editMode
+    "editMode",
+    editMode,
   );
 
   return (

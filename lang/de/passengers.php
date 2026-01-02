@@ -1,6 +1,5 @@
 <?php
 return [
-
     'lead' => 'Hauptpassagier',
     'ordinals' => [
         2 => 'Zweiter',
@@ -16,7 +15,6 @@ return [
     'for' => 'für :title.<br />',
     'due' => 'Ihr offener Betrag beträgt:',
     'no_payment_prefix' => '<br />Bitte beachten Sie, dass wir keine Zahlung erhalten haben von',
-    'next_installment' => 'Deine Zahlung ist am :date fällig.', 
-    'due_immediately' => 'Deine nächste Ratenzahlung ist <strong>sofort fällig</strong>.'
-
+    'next_installment' => 'Deine Zahlung ist am :date fällig.',
+    'due_immediately' => 'Deine nächste Ratenzahlung ist <strong>sofort fällig</strong>.',
 ];

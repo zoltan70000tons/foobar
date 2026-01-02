@@ -18,127 +18,122 @@ use Illuminate\Support\Facades\Redirect;
 use PhpParser\Node\Stmt\TryCatch;
 use Spatie\Permission\Models\Role;
 
-class RoleController extends Controller
-{
-  use HandlePermissions;
-  use ExceptionLogger;
-  private RoleRepositoryInterface $rolesRepositoryInterface;
-  private $organizationId;
+class RoleController extends Controller {
+    use HandlePermissions;
+    use ExceptionLogger;
+    private RoleRepositoryInterface $rolesRepositoryInterface;
+    private $organizationId;
 
-  public function __construct(RoleRepository $rolesRepositoryInterface)
-  {
-    $this->rolesRepositoryInterface = $rolesRepositoryInterface;
-    $this->organizationId = config('settings.organization_id');
-  }
-
-  public function index(CreateRoleRequest $request) {}
-
-
-  public function store(CreateRoleRequest $request)
-  {
-    try {
-      return $this->withPermission(
-        [Permissions::CreateRoles],
-        function ($request) {
-          $data = $request->all();
-          return $this->rolesRepositoryInterface->create($data);
-        },
-        $request
-      );
-    } catch (\Exception $e) {
-      $this->logException($e);
-    }
-  }
-
-  public function addPermissionToRole(AddPermissionToRoleRequest $request, $data = null)
-  {
-    try {
-      return $this->withPermission(
-        [Permissions::AssignPermissions],
-        function ($request) {
-          $data = $request->all();
-          return $this->rolesRepositoryInterface->addPermissionsToRole($data['role_id'], $data['permission_id'] ?? NULL, $data ?? NULL);
-        },
-        $request
-      );
-    } catch (\Exception $e) {
-      $this->logException($e);
-    }
-  }
-
-  public function listByOrganization(ListRoleRequest $request)
-  {
-    try {
-      return $this->withPermission(
-        [Permissions::ViewRoles],
-        function ($request) {
-          $role_id = $request->role_id;
-          $user_id = $request->user_id;
-          return $this->rolesRepositoryInterface->listByOrganization($this->organizationId, $role_id, $user_id);
-        },
-        $request
-      );
-    } catch (\Exception $e) {
-      $this->logException($e);
+    public function __construct(RoleRepository $rolesRepositoryInterface) {
+        $this->rolesRepositoryInterface = $rolesRepositoryInterface;
+        $this->organizationId = config('settings.organization_id');
     }
 
-  }
-
-
-  public function update(UpdateRoleRequest $request)
-  {
-    try {
-      return $this->withPermission(
-        [Permissions::EditRoles],
-        function ($request) {
-          $fields = $request->all();
-          return $this->rolesRepositoryInterface->update($fields, $fields['id']);
-        },
-        $request
-      );
-    } catch (\Exception $e) {
-      $this->logException($e);
+    public function index(CreateRoleRequest $request) {
     }
-    
-  }
-  public function destroy(Role $role)
-  {
-   try {
-    return $this->withPermission(
-      [Permissions::DeleteRoles],
-      function ($role) {
-        $this->rolesRepositoryInterface->delete($role);
-        Redirect::route('roles.index')->with('flash', 'Role deleted successfully.');
-      },
-      $role
-    );
-   } catch (\Exception $e) {
-    $this->logException($e);
-   }
 
-  }
-
-  public function getPermissions(ListUserPermissionRequest $request)
-  {
-    try {
-      return $this->withPermission(
-        [Permissions::DeleteRoles],
-        function ($request) {
-          $fields = $request->all();
-          return $this->rolesRepositoryInterface->listByUser($fields['id']);
-        },
-        $request
-      );
-    } catch (\Exception $e) {
-      $this->logException($e);
+    public function store(CreateRoleRequest $request) {
+        try {
+            return $this->withPermission(
+                [Permissions::CreateRoles],
+                function ($request) {
+                    $data = $request->all();
+                    return $this->rolesRepositoryInterface->create($data);
+                },
+                $request,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
     }
-  }
+
+    public function addPermissionToRole(AddPermissionToRoleRequest $request, $data = null) {
+        try {
+            return $this->withPermission(
+                [Permissions::AssignPermissions],
+                function ($request) {
+                    $data = $request->all();
+                    return $this->rolesRepositoryInterface->addPermissionsToRole(
+                        $data['role_id'],
+                        $data['permission_id'] ?? null,
+                        $data ?? null,
+                    );
+                },
+                $request,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+    public function listByOrganization(ListRoleRequest $request) {
+        try {
+            return $this->withPermission(
+                [Permissions::ViewRoles],
+                function ($request) {
+                    $role_id = $request->role_id;
+                    $user_id = $request->user_id;
+                    return $this->rolesRepositoryInterface->listByOrganization(
+                        $this->organizationId,
+                        $role_id,
+                        $user_id,
+                    );
+                },
+                $request,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+    public function update(UpdateRoleRequest $request) {
+        try {
+            return $this->withPermission(
+                [Permissions::EditRoles],
+                function ($request) {
+                    $fields = $request->all();
+                    return $this->rolesRepositoryInterface->update($fields, $fields['id']);
+                },
+                $request,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+    public function destroy(Role $role) {
+        try {
+            return $this->withPermission(
+                [Permissions::DeleteRoles],
+                function ($role) {
+                    $this->rolesRepositoryInterface->delete($role);
+                    Redirect::route('roles.index')->with('flash', 'Role deleted successfully.');
+                },
+                $role,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
+
+    public function getPermissions(ListUserPermissionRequest $request) {
+        try {
+            return $this->withPermission(
+                [Permissions::DeleteRoles],
+                function ($request) {
+                    $fields = $request->all();
+                    return $this->rolesRepositoryInterface->listByUser($fields['id']);
+                },
+                $request,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+        }
+    }
 
     /**
      * Export roles as CSV
      */
-    public function export()
-    {
+    public function export() {
         $roles = Role::with('permissions')->get();
 
         $date = now()->format('Y_m_d');

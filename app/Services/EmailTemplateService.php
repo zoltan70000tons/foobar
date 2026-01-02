@@ -13,8 +13,7 @@ use Exception;
 use Log;
 use NumberToWords\NumberToWords;
 
-class EmailTemplateService
-{
+class EmailTemplateService {
     /**
      * get processed template
      *
@@ -24,11 +23,17 @@ class EmailTemplateService
      * @param array $extraData (optional)
      * @return string
      */
-    public function getProcessedTemplate(int $bookingId, int $templateId, Passenger $passenger = null, array $extraData = []): string
-    {
+    public function getProcessedTemplate(
+        int $bookingId,
+        int $templateId,
+        Passenger $passenger = null,
+        array $extraData = [],
+    ): string {
         $booking = Booking::with(['cabin.cabinSpec', 'passengers'])->find($bookingId);
         $lang = DB::table('email_templates')->where('id', $templateId)->value('lang');
-        if (!$booking) return '';
+        if (!$booking) {
+            return '';
+        }
 
         switch ($lang) {
             case 'es':
@@ -63,15 +68,13 @@ class EmailTemplateService
         return $processedBody;
     }
 
-
     /**
      * Extract placeholders from the template
      *
      * @param string $template
      * @return array
      */
-    private function extractPlaceholders(string $template): array
-    {
+    private function extractPlaceholders(string $template): array {
         preg_match_all('/\{([\w\.]+)\}/', $template, $matches);
         return $matches[1] ?? [];
     }
@@ -85,8 +88,13 @@ class EmailTemplateService
      * @param array $extraData
      * @return array
      */
-    private function fetchPlaceholderValues(array $placeholders, Booking $booking, Passenger $passenger, array $extraData = [], $lang): array
-    {
+    private function fetchPlaceholderValues(
+        array $placeholders,
+        Booking $booking,
+        Passenger $passenger,
+        array $extraData = [],
+        $lang,
+    ): array {
         // Booking and passenger details
         $CDN_URL = env('AWS_ASSETS_CDN', 'https://d24lxyxdohunaw.cloudfront.net');
         $eventLocation = $booking->event->location ?? '';
@@ -128,8 +136,8 @@ class EmailTemplateService
         $isOverdue = false;
         if (!empty($nextInstallmentDateRaw)) {
             $dueDate = \Carbon\Carbon::parse($nextInstallmentDateRaw);
-            $today   = \Carbon\Carbon::today();
-            $isOverdue = $dueDate->lt($today); 
+            $today = \Carbon\Carbon::today();
+            $isOverdue = $dueDate->lt($today);
         }
 
         // Adjust totals if on installment plan
@@ -141,61 +149,58 @@ class EmailTemplateService
             }
         }
 
-
         // Pre-format values
         $formattedGrandTotal = formatCurrency($grandTotal, true, $lang) ?? '';
         $formattedIndividualTotal = formatCurrency($individualTotal, true, $lang) ?? '';
         $formattedNextInstallmentAmount = formatCurrency($nextInstallmentAmountRaw, false, $lang) ?? '';
         $formattedNextInstallmentDate = formatDate($nextInstallmentDateRaw, false, $lang) ?? '';
         $passengerName = capitalizeWords($passenger->first_name ?? '');
-        $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true,$lang) ?? '';
+        $formatedOnboardCredit = formatCurrency($passengerOnboardCredit, true, $lang) ?? '';
         $formatRefund = formatCurrency($refunds, true, $lang) ?? '';
-        $formatedTicketPrice = formatCurrency($booking->cabin->category->price, true,$lang) ?? '';
+        $formatedTicketPrice = formatCurrency($booking->cabin->category->price, true, $lang) ?? '';
         $firstChunk = 10000;
         $firstChunkFormated = '';
         $secondChunkFormated = '';
         if ($grandTotal > $firstChunk) {
-            $firstChunkFormated = formatCurrency($firstChunk, true,$lang);
+            $firstChunkFormated = formatCurrency($firstChunk, true, $lang);
             $secondChunkFormated = formatCurrency($grandTotal - $firstChunk, true, $lang);
         }
 
-        
-
         // Map placeholder values
         $lookup = [
-            'LOGO_IMAGE_URL'         => $CDN_URL . '/logos/70K_Logo_Claim_BW_HiRes.jpg',
-            'EVENT_LOCATION'         => $eventLocation,
-            'BOOKING_CODE'           => $bookingCode,
-            'PASSENGER_NAME'         => $passengerName,
-            'GRAND_TOTAL'            => $formattedGrandTotal,
-            'INDIVIDUAL_TOTAL'       => $formattedIndividualTotal,
-            'CABIN_TYPE'             => $cabinType,
-            'PAYMENT_PLAN'           => $paymentPlan,
-            'NEXT_INSTALLMENT_DATE'  => $formattedNextInstallmentDate,
+            'LOGO_IMAGE_URL' => $CDN_URL . '/logos/70K_Logo_Claim_BW_HiRes.jpg',
+            'EVENT_LOCATION' => $eventLocation,
+            'BOOKING_CODE' => $bookingCode,
+            'PASSENGER_NAME' => $passengerName,
+            'GRAND_TOTAL' => $formattedGrandTotal,
+            'INDIVIDUAL_TOTAL' => $formattedIndividualTotal,
+            'CABIN_TYPE' => $cabinType,
+            'PAYMENT_PLAN' => $paymentPlan,
+            'NEXT_INSTALLMENT_DATE' => $formattedNextInstallmentDate,
             'NEXT_INSTALLMENT_AMOUNT' => $formattedNextInstallmentAmount,
-            'ONBOARD_CREDIT'         => $formatedOnboardCredit,
-            'CATEGORY'               => $category ?? '',
-            'REFUND'                 => $formatRefund,
-            'REFUND_IN_WORDS'       => $amountInWords,
-            'PASSENGER_ORDER'       => $order,
-            'FIRST_CHUNK'           => $firstChunkFormated,
-            'SECOND_CHUNK'          => $secondChunkFormated,
-            'CAPACITY'              => $capacity,
-            'TICKET_PRICE'          => $formatedTicketPrice,
+            'ONBOARD_CREDIT' => $formatedOnboardCredit,
+            'CATEGORY' => $category ?? '',
+            'REFUND' => $formatRefund,
+            'REFUND_IN_WORDS' => $amountInWords,
+            'PASSENGER_ORDER' => $order,
+            'FIRST_CHUNK' => $firstChunkFormated,
+            'SECOND_CHUNK' => $secondChunkFormated,
+            'CAPACITY' => $capacity,
+            'TICKET_PRICE' => $formatedTicketPrice,
         ];
-            $outs = $this->buildOutstandingPlaceholders($booking, $lang);
-            $nextInstallmentText = $isOverdue
-                ? __('passengers.due_immediately')
-                : __('passengers.next_installment', ['date' => $formattedNextInstallmentDate]);
-            
-            $lookup['OUTSTANDING_RECIPIENTS'] = $outs['OUTSTANDING_RECIPIENTS'];
-            $lookup['OUTSTANDING_PASSENGER_BREAKDOWN'] = $outs['OUTSTANDING_PASSENGER_BREAKDOWN'];
-            $lookup['NEXT_INSTALLMENT_TEXT'] = $nextInstallmentText;
+        $outs = $this->buildOutstandingPlaceholders($booking, $lang);
+        $nextInstallmentText = $isOverdue
+            ? __('passengers.due_immediately')
+            : __('passengers.next_installment', ['date' => $formattedNextInstallmentDate]);
+
+        $lookup['OUTSTANDING_RECIPIENTS'] = $outs['OUTSTANDING_RECIPIENTS'];
+        $lookup['OUTSTANDING_PASSENGER_BREAKDOWN'] = $outs['OUTSTANDING_PASSENGER_BREAKDOWN'];
+        $lookup['NEXT_INSTALLMENT_TEXT'] = $nextInstallmentText;
 
         // Build the output values
         $values = [];
         foreach ($placeholders as $placeholder) {
-            $values[$placeholder] = $lookup[$placeholder] ?? $extraData[$placeholder] ?? '';
+            $values[$placeholder] = $lookup[$placeholder] ?? ($extraData[$placeholder] ?? '');
         }
 
         return $values;
@@ -208,31 +213,50 @@ class EmailTemplateService
      * @param array $variables
      * @return string
      */
-    private function replacePlaceholders(string $template, array $variables): string
-    {
+    private function replacePlaceholders(string $template, array $variables): string {
         foreach ($variables as $key => $value) {
-            $template = str_replace("{" . $key . "}", $value, $template);
+            $template = str_replace('{' . $key . '}', $value, $template);
         }
         return $template;
     }
 
-
-    public function sendEmail(int $templateId, Booking $booking, Passenger $passenger, array $attachments = [], array $extraData = [], bool $bookingPdf = false, bool $eventImage = false, $ticketContrac = false, $emailContent = '', $subject = ''): bool
-    {
+    public function sendEmail(
+        int $templateId,
+        Booking $booking,
+        Passenger $passenger,
+        array $attachments = [],
+        array $extraData = [],
+        bool $bookingPdf = false,
+        bool $eventImage = false,
+        $ticketContrac = false,
+        $emailContent = '',
+        $subject = '',
+    ): bool {
         try {
             $to = $booking->passengers
                 ->pluck('email')
                 ->filter(fn($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
                 ->values()
                 ->toArray();
-            SendEmailJob::dispatch($templateId, $booking, $passenger, $attachments, $extraData, $bookingPdf, $eventImage, $ticketContrac, $emailContent, $subject, $to)
-                ->onQueue('emails');
+            SendEmailJob::dispatch(
+                $templateId,
+                $booking,
+                $passenger,
+                $attachments,
+                $extraData,
+                $bookingPdf,
+                $eventImage,
+                $ticketContrac,
+                $emailContent,
+                $subject,
+                $to,
+            )->onQueue('emails');
 
             GlobalLogger::log(
                 LogActionBooking::EMAIL_SENT,
                 'booking',
                 $booking->id,
-                sprintf("Email sent to %s", $passenger->email),
+                sprintf('Email sent to %s', $passenger->email),
                 [
                     'after' => [
                         'booking_id' => $booking->id,
@@ -242,60 +266,56 @@ class EmailTemplateService
                         'subject' => $subject,
                         'content' => $emailContent,
                     ],
-                ]
+                ],
             );
             return true;
         } catch (Exception $e) {
-            \Log::error("Error sending email to job: " . $e->getMessage());
+            \Log::error('Error sending email to job: ' . $e->getMessage());
             return false;
         }
     }
 
-
-
-    public function getTemplateId($language, $template)
-    {
+    public function getTemplateId($language, $template) {
         $templates = [
             'es' => [
-                '+6000'  => 61,
-                '-6000'  => 62,
+                '+6000' => 61,
+                '-6000' => 62,
                 'single' => 63,
                 'invoice' => 64,
-                'new'    => 65,
-                'comp'   => 66,
+                'new' => 65,
+                'comp' => 66,
                 'updated' => 67,
                 'thanks_payment_full' => 76,
                 'thanks_payment_inst' => 77,
             ],
             'en' => [
-                '+6000'  => 52,
-                '-6000'  => 53,
+                '+6000' => 52,
+                '-6000' => 53,
                 'single' => 54,
                 'invoice' => 55,
                 'new' => 56,
-                'comp'   => 57,
+                'comp' => 57,
                 'updated' => 58,
-                'thanks_payment_full'  => 51,
-                'thanks_payment_inst'  => 50,
+                'thanks_payment_full' => 51,
+                'thanks_payment_inst' => 50,
             ],
             'de' => [
-                '+6000'  => 3,
-                '-6000'  => 4,
+                '+6000' => 3,
+                '-6000' => 4,
                 'single' => 5,
                 'invoice' => 6,
-                'comp'   => 8,
+                'comp' => 8,
                 'new' => 7,
                 'updated' => 9,
                 'thanks_payment_full' => 19,
-                'thanks_payment_inst'  => 20,
+                'thanks_payment_inst' => 20,
             ],
         ];
 
         return $templates[$language][$template] ?? null;
     }
 
-    private function buildOutstandingPlaceholders(Booking $booking, string $lang): array
-    {
+    private function buildOutstandingPlaceholders(Booking $booking, string $lang): array {
         $passengers = $booking->passengers;
         $outstanding = [];
         $breakdownLines = [];
@@ -303,7 +323,6 @@ class EmailTemplateService
         $title = $event->name ?? '';
 
         foreach ($passengers as $p) {
-
             $status = $p->getInstallmentStatus();
             $next = $status['next_installment'] ?? null;
             if (!$next || ($status['fully_paid'] ?? false)) {
@@ -311,10 +330,12 @@ class EmailTemplateService
             }
 
             $amountDue = $next['amount_due'] ?? 0;
-            if ($amountDue <= 0) continue;
+            if ($amountDue <= 0) {
+                continue;
+            }
 
             $dueDate = isset($next['due_date']) ? new \DateTime($next['due_date']) : null;
-            $today   = new \DateTime('today');
+            $today = new \DateTime('today');
 
             if ($dueDate === null || $dueDate > $today) {
                 continue;
@@ -328,7 +349,7 @@ class EmailTemplateService
             }
 
             $outstanding[] = $name;
-            $formatted = 'USD '.formatCurrency($amountDue, true, $lang);
+            $formatted = 'USD ' . formatCurrency($amountDue, true, $lang);
             $dueLabel = __('passengers.due');
             $breakdownLines[] = "{$name}, {$dueLabel} {$formatted}";
         }
@@ -352,13 +373,12 @@ class EmailTemplateService
         $for = __('passengers.for', ['title' => $title]);
 
         $recipientsOutput = "{$prefix} {$recipientText} {$for}.";
-        $breakdownLines =implode("<br>", $breakdownLines);
-        $breakdownLines = $breakdownLines.'<br /><br />';
+        $breakdownLines = implode('<br>', $breakdownLines);
+        $breakdownLines = $breakdownLines . '<br /><br />';
 
         return [
             'OUTSTANDING_RECIPIENTS' => $recipientsOutput,
             'OUTSTANDING_PASSENGER_BREAKDOWN' => $breakdownLines,
         ];
     }
-
 }

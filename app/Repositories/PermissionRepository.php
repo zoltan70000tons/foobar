@@ -11,22 +11,19 @@ use Illuminate\Support\Facades\Redirect;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class PermissionRepository implements PermissionRepositoryInterface
-{
+class PermissionRepository implements PermissionRepositoryInterface {
     use JsonResponseTrait;
 
     protected $organizationId;
     /**
      * Create a new class instance.
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->organizationId = config('settings.organization_id');
         setPermissionsTeamId($this->organizationId);
     }
 
-    public function getAll()
-    {
+    public function getAll() {
         try {
             $data = Permission::all();
             return $this->successResponse($data, 'Permissions listed successfully');
@@ -35,10 +32,10 @@ class PermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function find($id) {}
+    public function find($id) {
+    }
 
-    public function create($data)
-    {
+    public function create($data) {
         try {
             $data['guard_name'] = 'web';
             $permission = Permission::create($data);
@@ -53,26 +50,24 @@ class PermissionRepository implements PermissionRepositoryInterface
         $permission->update($data);
     }
 
-    public function delete($permission)
-    {
+    public function delete($permission) {
         try {
             $permission->delete();
         } catch (\Exception $e) {
-           // dd($e->getMessage());
+            // dd($e->getMessage());
         }
     }
 
-    public function findByUser($id)
-    {
+    public function findByUser($id) {
         $user = User::find($id)->first();
         $permissionNames = $user->getPermissionNames();
         return $permissionNames;
     }
 
-    public function findByRole($id) {}
+    public function findByRole($id) {
+    }
 
-    public function findbyOrganization($id, $role_id = null)
-    {
+    public function findbyOrganization($id, $role_id = null) {
         try {
             if ($role_id) {
                 $role = Role::with('permissions')

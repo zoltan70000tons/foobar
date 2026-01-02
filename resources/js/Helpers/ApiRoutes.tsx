@@ -1,9 +1,7 @@
-
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiRoutes = {
-  //Team 
+  //Team
   getTeamUrl: `${API_BASE_URL}/organization/getTeam`,
   sendInvitationsUrl: `${API_BASE_URL}/team/send-invitations`,
 

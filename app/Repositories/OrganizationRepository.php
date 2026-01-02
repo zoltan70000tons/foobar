@@ -11,19 +11,15 @@ use App\Traits\JsonResponseTrait;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
-class OrganizationRepository implements OrganizationRepositoryInterface
-{
+class OrganizationRepository implements OrganizationRepositoryInterface {
     use JsonResponseTrait;
     /**
      * Create a new class instance.
      */
-    public function __construct()
-    {
-
+    public function __construct() {
     }
 
-    public function getAll()
-    {
+    public function getAll() {
         try {
             $organizations = Organization::all();
             return $this->successResponse($organizations, 'Organizations listed successfully');
@@ -32,18 +28,16 @@ class OrganizationRepository implements OrganizationRepositoryInterface
         }
     }
 
-    public function find($id)
-    {
+    public function find($id) {
     }
 
-    public function save($data)
-    {
+    public function save($data) {
         DB::beginTransaction();
         try {
             $user = new User();
             $user->name = $data['user_name'];
             $user->email = $data['email'];
-            $user->password = bcrypt('password'); 
+            $user->password = bcrypt('password');
             $user->save();
 
             $org = new Organization();
@@ -59,7 +53,7 @@ class OrganizationRepository implements OrganizationRepositoryInterface
             Role::create(['name' => 'Customer', 'team_id' => $org->id, 'system' => true]);
             $org->users()->attach($user->id);
             setPermissionsTeamId($org->id);
-            $role = Role::findByName('Admin','web');
+            $role = Role::findByName('Admin', 'web');
             $user->assignRole($role);
 
             DB::commit();
@@ -70,12 +64,9 @@ class OrganizationRepository implements OrganizationRepositoryInterface
         }
     }
 
-    public function update($data, $id)
-    {
-        
+    public function update($data, $id) {
     }
 
-    public function delete($id)
-    {
+    public function delete($id) {
     }
 }

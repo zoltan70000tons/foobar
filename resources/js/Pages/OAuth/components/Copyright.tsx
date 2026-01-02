@@ -15,20 +15,14 @@ export default function Copyright() {
       }}
     >
       <Typography variant="body2" sx={{ lineHeight: 1.8, color: grey[200] }}>
-        UMCruises International Ltd. Suite 205A Saffrey Square, Bank Lane and
-        Bay Street, Nassau, BAHAMAS
+        UMCruises International Ltd. Suite 205A Saffrey Square, Bank Lane and Bay Street, Nassau, BAHAMAS
         <br />
         All charges by credit card will be made on behalf of:
         <br />
-        UMCruises UK LLP, Lower Ground Floor, 19-20 Berners Street, London, W1T
-        3NW, UNITED KINGDOM
+        UMCruises UK LLP, Lower Ground Floor, 19-20 Berners Street, London, W1T 3NW, UNITED KINGDOM
       </Typography>
-      <Typography
-        variant="body2"
-        sx={{ lineHeight: 1.8, mt: 2, color: grey[200] }}
-      >
-        &copy; {year} UMCruises International Ltd. &amp; UMCruises UK LLP. All
-        Rights Reserved.
+      <Typography variant="body2" sx={{ lineHeight: 1.8, mt: 2, color: grey[200] }}>
+        &copy; {year} UMCruises International Ltd. &amp; UMCruises UK LLP. All Rights Reserved.
       </Typography>
     </Box>
   );

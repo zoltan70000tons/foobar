@@ -9,23 +9,19 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Throwable;
 
-class CustomerTagRepository implements CustomerTagInterface
-{
+class CustomerTagRepository implements CustomerTagInterface {
     /**
      * @return Collection|UserTag[]
      */
-    function getAll(): Collection
-    {
+    function getAll(): Collection {
         return UserTag::all();
     }
 
-    function find($id)
-    {
+    function find($id) {
         return UserTag::find($id);
     }
 
-    function save(array $data): ?UserTag
-    {
+    function save(array $data): ?UserTag {
         return new UserTag();
     }
 
@@ -33,8 +29,7 @@ class CustomerTagRepository implements CustomerTagInterface
      * @param CustomerTagRequest $request
      * @param UserTag $userTag
      */
-    function update(CustomerTagRequest $request, UserTag $userTag): void
-    {
+    function update(CustomerTagRequest $request, UserTag $userTag): void {
         try {
             if ($request->filled('name')) {
                 $userTag->name = $request->input('name');
@@ -58,8 +53,7 @@ class CustomerTagRepository implements CustomerTagInterface
      * @param CustomerTagRequest $request
      * @throws Throwable
      */
-    function store(CustomerTagRequest $request)
-    {
+    function store(CustomerTagRequest $request) {
         try {
             $userTag = new UserTag();
             $userTag->name = $request->input('name');
@@ -71,8 +65,7 @@ class CustomerTagRepository implements CustomerTagInterface
         }
     }
 
-    function delete(UserTag $userTag): void
-    {
+    function delete(UserTag $userTag): void {
         $userTag->delete();
     }
 }

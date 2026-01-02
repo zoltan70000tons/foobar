@@ -29,7 +29,6 @@ import { Cruisers } from "@/interfaces/Cruiser";
 import { Event } from "@/interfaces/Event";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 
-
 type Props = PageProps & {
   auth: AuthProps;
   event: Event;
@@ -38,15 +37,7 @@ type Props = PageProps & {
   errors: Errors;
 };
 
-
-const Edit = ({
-  auth,
-  event,
-  cruisers,
-  cabin_category,
-  errors,
-}: Props & { tab: string;}) => {
-  
+const Edit = ({ auth, event, cruisers, cabin_category, errors }: Props & { tab: string }) => {
   const { flash } = usePage().props as { message?: string; success?: boolean; error?: boolean };
 
   const { data, setData, post, processing } = useForm({
@@ -67,31 +58,26 @@ const Edit = ({
     path: string;
     date: string;
   }
-  
+
   const { showSnackbar } = useSnackbar();
-  const [images, setImages] = useState<Image[]>(
-    Array.isArray(cabin_category.images) ? cabin_category.images : []
-  );
+  const [images, setImages] = useState<Image[]>(Array.isArray(cabin_category.images) ? cabin_category.images : []);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   useEffect(() => {
     if (flash.message) {
       if (flash.success) {
-        showSnackbar(flash.message, 'success');
+        showSnackbar(flash.message, "success");
       } else if (flash.error) {
-        showSnackbar(flash.message, 'error');
+        showSnackbar(flash.message, "error");
       }
     }
-  }, [flash])
+  }, [flash]);
 
   const handleFilesChange = (files: string[]) => {
     setUploadedFiles(files);
   };
 
-  const handleInputChange = (
-    e: React.FormEvent<HTMLFormElement> | string,
-    value?: string
-  ) => {
+  const handleInputChange = (e: React.FormEvent<HTMLFormElement> | string, value?: string) => {
     let name: string;
 
     if (typeof e === "string") {
@@ -104,9 +90,7 @@ const Edit = ({
     }
   };
 
-  const handleCategoryTypeChange = (
-    event: SelectChangeEvent<CategoryTypes>
-  ) => {
+  const handleCategoryTypeChange = (event: SelectChangeEvent<CategoryTypes>) => {
     setData("category_type", event.target.value);
   };
 
@@ -127,9 +111,7 @@ const Edit = ({
     });
 
     const imagePathsSet = new Set((images || []).map((image) => image.path));
-    const missingImages = (cabin_category.images || []).filter(
-      (image) => !imagePathsSet.has(image.path)
-    );
+    const missingImages = (cabin_category.images || []).filter((image) => !imagePathsSet.has(image.path));
 
     missingImages.forEach((image) => {
       formData.append("remove[]", image.path);
@@ -247,11 +229,7 @@ const Edit = ({
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ mb: 2 }}>
-                    <CategoryTypeSelect
-                      onChange={handleCategoryTypeChange}
-                      error={errors}
-                      value={data.category_type}
-                    />
+                    <CategoryTypeSelect onChange={handleCategoryTypeChange} error={errors} value={data.category_type} />
                   </Box>
                   <Box sx={{ mb: 2 }}>
                     <TextField
@@ -284,11 +262,7 @@ const Edit = ({
 
               <Grid item xs={12} sx={{ mb: 2 }}>
                 <Accordion>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                  >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                     Image Gallery
                   </AccordionSummary>
                   <AccordionDetails>
@@ -304,12 +278,7 @@ const Edit = ({
                 </Grid>
                 <Grid item xs={12}>
                   <Box sx={{ mb: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      type="submit"
-                    >
+                    <Button variant="contained" color="primary" fullWidth type="submit">
                       Submit
                     </Button>
                   </Box>

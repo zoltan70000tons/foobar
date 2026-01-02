@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-class TeamRepository implements TeamRepositoryInterface
-{
-
+class TeamRepository implements TeamRepositoryInterface {
     use JsonResponseTrait;
 
     protected $organizationId;
@@ -24,30 +22,28 @@ class TeamRepository implements TeamRepositoryInterface
     /**
      * Create a new class instance.
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->organizationId = config('settings.organization_id');
         setPermissionsTeamId($this->organizationId);
     }
 
-    public function getAllMembers($org_id, $team = null)
-    {
+    public function getAllMembers($org_id, $team = null) {
         setPermissionsTeamId($org_id);
         $org = Organization::find($org_id);
         if ($org) {
             $members = User::with(['detail', 'roles'])
                 ->where('organization_id', $this->organizationId)
-                ->whereNotIn('username', ['SuperAdmin','admin', 'system'])
+                ->whereNotIn('username', ['SuperAdmin', 'admin', 'system'])
                 ->whereDoesntHave('roles', function ($query) {
                     $query->where('name', 'Customer');
                 })
                 ->get();
-    
+
             $result = $members->map(function ($user) use ($org) {
                 $firstName = $user->detail->first_name ?? ''; // Default to an empty string if null
-                $lastName = $user->detail->last_name ?? '';  // Default to an empty string if null
-                $fullName = trim("$firstName $lastName");    // Combine and trim
-    
+                $lastName = $user->detail->last_name ?? ''; // Default to an empty string if null
+                $fullName = trim("$firstName $lastName"); // Combine and trim
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -66,12 +62,11 @@ class TeamRepository implements TeamRepositoryInterface
         }
         return null;
     }
-    
 
-    public function findMember($team, $id) {}
+    public function findMember($team, $id) {
+    }
 
-    public function updateMemberRoles($user_id, $org_id, $roles)
-    {
+    public function updateMemberRoles($user_id, $org_id, $roles) {
         try {
             $currentUser = Auth::user();
             if (count($roles) > 1) {
@@ -80,14 +75,13 @@ class TeamRepository implements TeamRepositoryInterface
             setPermissionsTeamId($org_id);
             $user = User::find($user_id);
             $user->syncRoles($roles);
-           // return $this->successResponse($roles, 'Roles updated successfully');
+            // return $this->successResponse($roles, 'Roles updated successfully');
         } catch (\Exception $ex) {
             return $this->errorResponse($ex->getMessage());
         }
     }
 
-    public function inviteMember($data)
-    {
+    public function inviteMember($data) {
         try {
             $email = $data['email'];
             $role = $data['role'];
@@ -97,11 +91,14 @@ class TeamRepository implements TeamRepositoryInterface
                     'username' => $email,
                     'email' => $email,
                     'password' => Hash::make(Str::password()),
-                    'organization_id' => $this->organizationId
+                    'organization_id' => $this->organizationId,
                 ]);
                 $roles[] = $role;
                 $user->syncRoles($roles);
-                $url = URL::temporarySignedRoute('organization.join', now()->addWeek(), ['user' => $user->id, 'org' => $this->organizationId]);
+                $url = URL::temporarySignedRoute('organization.join', now()->addWeek(), [
+                    'user' => $user->id,
+                    'org' => $this->organizationId,
+                ]);
                 Mail::to($email)->send(new \App\Mail\InviteUserMail($url));
             }
             return true;
@@ -110,29 +107,25 @@ class TeamRepository implements TeamRepositoryInterface
         }
     }
 
-    public function updateMember($data)
-    {
+    public function updateMember($data) {
         try {
             $email = $data['email'];
             $user = User::where('email', $email)->first();
             if ($user) {
                 $user_id = $user->id;
-                $detailsData = /*array_filter(*/[
+                $detailsData = /*array_filter(*/ [
                     'user_id' => $user_id,
                     'first_name' => $data['firstname'] ?? null,
                     'last_name' => $data['lastname'] ?? null,
                     'middle_name' => $data['middlename'] ?? null,
                     'gender' => $data['gender'] ?? null,
                     'phone' => $data['phone_number'] ?? null,
-                ]/*, function ($value) {
+                ] /*, function ($value) {
                     return !is_null($value) && $value !== '';
                 })*/;
 
                 if (!empty($detailsData)) {
-                    UserDetail::updateOrCreate(
-                        ['user_id' => $user_id],
-                        $detailsData
-                    );
+                    UserDetail::updateOrCreate(['user_id' => $user_id], $detailsData);
                     return Redirect::back()->with('success', 'Member details updated successfully.');
                 } else {
                     return Redirect::back()->with('info', 'No data provided for update.');

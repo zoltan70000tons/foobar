@@ -5,8 +5,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
     //php artisan logs:create-year-partitions 2026 - example to generate the 2026 year
-    public function up(): void
-    {
+    public function up(): void {
         DB::statement("
             CREATE TABLE logs (
                 id UUID NOT NULL,
@@ -24,8 +23,7 @@ return new class extends Migration {
         ");
     }
 
-    public function down(): void
-    {
-        DB::statement("DROP TABLE IF EXISTS logs CASCADE");
+    public function down(): void {
+        DB::statement('DROP TABLE IF EXISTS logs CASCADE');
     }
 };

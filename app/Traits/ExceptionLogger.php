@@ -5,23 +5,19 @@ namespace App\Traits;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-trait ExceptionLogger
-{
+trait ExceptionLogger {
     protected $logChannel = 'daily';
     protected $logLevel;
 
-    public function setLogChannel(string $channel)
-    {
+    public function setLogChannel(string $channel) {
         $this->logChannel = $channel;
     }
 
-    public function setLogLevel(string $level)
-    {
+    public function setLogLevel(string $level) {
         $this->logLevel = $level;
     }
 
-    protected function logException(Exception $exception)
-    {
+    protected function logException(Exception $exception) {
         $logLevel = $this->logLevel ?? config('settings.log_level', 'error');
 
         if ($this->shouldLog($logLevel, $this->getSeverity())) {
@@ -32,7 +28,8 @@ trait ExceptionLogger
             $exceptionType = get_class($exception);
             $message = $exception->getMessage();
 
-            $formattedMessage = "\n\tNew Exception: $message\n" .
+            $formattedMessage =
+                "\n\tNew Exception: $message\n" .
                 "\tType: $exceptionType\n" .
                 "\tFile: $file\n" .
                 "\tLine: $line\n" .
@@ -43,8 +40,7 @@ trait ExceptionLogger
         }
     }
 
-    private function shouldLog($logLevel, $severity)
-    {
+    private function shouldLog($logLevel, $severity) {
         $levels = [
             'debug' => 0,
             'info' => 1,
@@ -59,13 +55,11 @@ trait ExceptionLogger
         return $levels[$severity] >= $levels[$logLevel];
     }
 
-    protected function getSeverity(): string
-    {
+    protected function getSeverity(): string {
         return property_exists($this, 'severity') ? $this->severity : 'error';
     }
 
-    public function executeWithLogging(callable $callback, string $customErrorMessage = null)
-    {
+    public function executeWithLogging(callable $callback, string $customErrorMessage = null) {
         try {
             return $callback();
         } catch (Exception $exception) {

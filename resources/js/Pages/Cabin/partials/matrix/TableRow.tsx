@@ -1,12 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
-export default function TableRow({
-  firstCol,
-  secondCol,
-}: {
-  firstCol: string;
-  secondCol: string;
-}) {
+export default function TableRow({ firstCol, secondCol }: { firstCol: string; secondCol: string }) {
   return (
     <Box
       sx={{

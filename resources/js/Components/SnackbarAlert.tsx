@@ -1,9 +1,9 @@
-import React from 'react';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
-import Slide from '@mui/material/Slide';
-import { CheckCircle, Error, Info, Warning } from '@mui/icons-material';
-import { Box, Typography } from '@mui/material';
+import React from "react";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import Slide from "@mui/material/Slide";
+import { CheckCircle, Error, Info, Warning } from "@mui/icons-material";
+import { Box, Typography } from "@mui/material";
 
 const icons = {
   success: <CheckCircle fontSize="inherit" />,
@@ -14,10 +14,10 @@ const icons = {
 
 interface SnackAlertProps {
   message: string;
-  severity?: 'success' | 'error' | 'warning' | 'info';
+  severity?: "success" | "error" | "warning" | "info";
   open: boolean;
-  vertical?: 'top' | 'bottom';
-  horizontal?: 'left' | 'center' | 'right';
+  vertical?: "top" | "bottom";
+  horizontal?: "left" | "center" | "right";
   onClose: () => void;
 }
 
@@ -27,12 +27,12 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props,
 
 const SnackbarAlert: React.FC<SnackAlertProps> = ({
   message,
-  severity = 'success',
+  severity = "success",
   open,
   snackbarKey,
   onClose,
-  vertical = 'top',
-  horizontal = 'center',
+  vertical = "top",
+  horizontal = "center",
 }) => {
   return (
     <Snackbar
@@ -48,9 +48,9 @@ const SnackbarAlert: React.FC<SnackAlertProps> = ({
         severity={severity}
         icon={icons[severity]}
         sx={{
-          width: '100%',
-          bgcolor: 'background.paper',
-          color: 'text.primary',
+          width: "100%",
+          bgcolor: "background.paper",
+          color: "text.primary",
           borderRadius: 3,
           boxShadow: 3,
           px: 2,
@@ -58,7 +58,7 @@ const SnackbarAlert: React.FC<SnackAlertProps> = ({
         }}
       >
         <Box>
-          {message.split('\n').map((line, index) => (
+          {message.split("\n").map((line, index) => (
             <Typography key={index} variant="body2" sx={{ lineHeight: 1.6 }}>
               {line}
             </Typography>

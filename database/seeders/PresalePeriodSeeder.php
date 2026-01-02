@@ -10,8 +10,7 @@ use App\Models\MembershipType;
 use Illuminate\Container\Container;
 use Faker\Generator;
 
-class PresalePeriodSeeder extends Seeder
-{
+class PresalePeriodSeeder extends Seeder {
     /**
      * The current Faker instance.
      *
@@ -24,8 +23,7 @@ class PresalePeriodSeeder extends Seeder
      *
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->faker = $this->withFaker();
     }
 
@@ -34,15 +32,13 @@ class PresalePeriodSeeder extends Seeder
      *
      * @return \Faker\Generator
      */
-    protected function withFaker()
-    {
+    protected function withFaker() {
         return Container::getInstance()->make(Generator::class);
     }
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         // Fetch the ID of the first event
         $eventId = Event::first()->id;
 
@@ -51,7 +47,7 @@ class PresalePeriodSeeder extends Seeder
 
         // Initial presale period start date
         $initialPresaleStartDate = Carbon::create(2025, 1, 1);
-        
+
         // Presale end date (same for all)
         $presaleEndDate = Carbon::create(2026, 1, 30);
 

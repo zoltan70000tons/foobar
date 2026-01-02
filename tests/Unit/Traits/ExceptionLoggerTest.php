@@ -9,7 +9,7 @@ beforeEach(function () {
     $this->setLogChannel('testing');
     $this->setLogLevel('error');
 
-    // Setting file for 
+    // Setting file for
     $this->logFile = storage_path('logs/testing.log');
 
     if (file_exists($this->logFile)) {

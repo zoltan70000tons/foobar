@@ -9,17 +9,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Traits\HandlePermissions;
 
-class TagsController extends Controller
-{
+class TagsController extends Controller {
     use HandlePermissions;
     protected EventRepository $eventRepository;
 
-    public function __construct(EventRepository $eventRepository)
-    {
+    public function __construct(EventRepository $eventRepository) {
         $this->eventRepository = $eventRepository;
     }
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         return $this->withPermission(
             [Permissions::ViewTags],
             function () use ($request) {
@@ -28,12 +25,11 @@ class TagsController extends Controller
                     'tags' => $tags,
                 ]);
             },
-            $request
+            $request,
         );
     }
 
-    public function show(Tag $tag)
-    {
+    public function show(Tag $tag) {
         return $this->withPermission(
             [Permissions::ViewTags],
             function () use ($tag) {
@@ -41,12 +37,11 @@ class TagsController extends Controller
                     'tag' => $tag,
                 ]);
             },
-            $tag
+            $tag,
         );
     }
 
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         return $this->withPermission(
             [Permissions::ViewTags],
             function () use ($request) {
@@ -55,19 +50,18 @@ class TagsController extends Controller
                 $tagTypesTransformed = array_map(
                     fn($name, $value) => ['name' => $name, 'value' => $value],
                     array_keys($tagTypes),
-                    $tagTypes
+                    $tagTypes,
                 );
                 return Inertia::render('Tags/Create', [
                     'events' => $events,
                     'tagTypes' => $tagTypesTransformed,
                 ]);
             },
-            $request
+            $request,
         );
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'color' => ['required', 'string', 'max:7'],
@@ -84,9 +78,7 @@ class TagsController extends Controller
                 'description' => $validated['description'],
                 'priority' => $validated['priority'],
             ]);
-            return redirect()
-                ->route('tags.index')
-                ->with('flash', 'Tag created successfully.');
+            return redirect()->route('tags.index')->with('flash', 'Tag created successfully.');
         } catch (\Throwable $th) {
             return redirect()
                 ->route('tags.index')
@@ -94,8 +86,7 @@ class TagsController extends Controller
         }
     }
 
-    public function edit(Tag $tag)
-    {
+    public function edit(Tag $tag) {
         return $this->withPermission(
             [Permissions::EditTags],
             function () use ($tag) {
@@ -103,12 +94,11 @@ class TagsController extends Controller
                     'tag' => $tag,
                 ]);
             },
-            $tag
+            $tag,
         );
     }
 
-    public function update(Request $request, Tag $tag)
-    {
+    public function update(Request $request, Tag $tag) {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'color' => ['required', 'string', 'max:7'],
@@ -118,13 +108,10 @@ class TagsController extends Controller
 
         $tag->update($validated);
 
-        return redirect()
-            ->route('tags.index')
-            ->with('flash', 'Tag updated successfully.');
+        return redirect()->route('tags.index')->with('flash', 'Tag updated successfully.');
     }
 
-    public function destroy(Tag $tag)
-    {
+    public function destroy(Tag $tag) {
         $tag->delete();
         return redirect()->route('tags.index')->with('flash', 'Tag deleted successfully.');
     }

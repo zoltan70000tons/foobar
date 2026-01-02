@@ -8,16 +8,14 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use App\Events\BookingAgentSession;
 
-class ClearOldBookingSessions implements ShouldQueue
-{
+class ClearOldBookingSessions implements ShouldQueue {
     use Queueable;
     protected int $expirationMinutes;
 
     /**
      * Create a new job instance.
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->expirationMinutes = config('settings.session_expiration_minutes', 10);
         $this->onQueue('cleaning');
     }
@@ -25,20 +23,13 @@ class ClearOldBookingSessions implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
-    {
+    public function handle(): void {
         $expiredTime = now()->subMinutes($this->expirationMinutes);
 
-        $deleted = BookingAgentSessions::query()
-            ->where('time', '<', $expiredTime)
-            ->delete();
+        $deleted = BookingAgentSessions::query()->where('time', '<', $expiredTime)->delete();
 
         if ($deleted > 0) {
-            broadcast(new BookingAgentSession(
-                agentId: "",
-                bookingId: null,
-                username: null
-            ));
+            broadcast(new BookingAgentSession(agentId: '', bookingId: null, username: null));
         }
 
         //logger()->info("ClearOldBookingSessions: Deleted {$deleted} expired booking session(s).");

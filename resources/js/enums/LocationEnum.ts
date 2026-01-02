@@ -1,6 +1,5 @@
 export enum LocationEnum {
-    AF = "AF", 
-    MS = "MS", 
-    FW = "FW"
-  }
-  
+  AF = "AF",
+  MS = "MS",
+  FW = "FW",
+}

@@ -7,10 +7,8 @@ use App\Models\Passenger;
 use App\Support\GlobalLogger;
 use Illuminate\Support\Carbon;
 
-class PassengerObserver
-{
-    public function updated(Passenger $passenger): void
-    {
+class PassengerObserver {
+    public function updated(Passenger $passenger): void {
         $changes = $passenger->getChanges();
         if (empty($changes)) {
             return; // nothing changed
@@ -19,22 +17,14 @@ class PassengerObserver
         $original = $passenger->getOriginal();
 
         if ($this->emptySeatChanged($original, $passenger)) {
-            $action = $passenger->empty_seat
-                ? LogActionBooking::SET_EMPTY_BED
-                : LogActionBooking::UNSET_EMPTY_BED;
+            $action = $passenger->empty_seat ? LogActionBooking::SET_EMPTY_BED : LogActionBooking::UNSET_EMPTY_BED;
 
             $description = $passenger->empty_seat ? 'Set empty bed' : 'Unset empty bed';
 
-            GlobalLogger::log(
-                $action,
-                'booking',
-                $passenger->booking_id,
-                $description,
-                [
-                    'before' => ['empty_seat' => $original['empty_seat']],
-                    'after'  => ['empty_seat' => $passenger->empty_seat],
-                ]
-            );
+            GlobalLogger::log($action, 'booking', $passenger->booking_id, $description, [
+                'before' => ['empty_seat' => $original['empty_seat']],
+                'after' => ['empty_seat' => $passenger->empty_seat],
+            ]);
 
             return;
         }
@@ -63,9 +53,7 @@ class PassengerObserver
         }
 
         // Passenger Changed (core identity fields changed)
-        if (
-            $this->fieldsChanged($changes, ['first_name', 'last_name', 'dob'])
-        ) {
+        if ($this->fieldsChanged($changes, ['first_name', 'last_name', 'dob'])) {
             $this->logChanged($passenger, $original);
             $this->resetSurvivorSyncAttempts($passenger);
             return;
@@ -85,18 +73,15 @@ class PassengerObserver
         $this->resetSurvivorSyncAttempts($passenger);
     }
 
-    private function emptySeatChanged(array $original, Passenger $passenger): bool
-    {
+    private function emptySeatChanged(array $original, Passenger $passenger): bool {
         return ($original['empty_seat'] ?? false) !== (bool) $passenger->empty_seat;
     }
 
-    private function fieldsChanged(array $changes, array $fields): bool
-    {
+    private function fieldsChanged(array $changes, array $fields): bool {
         return !empty(array_intersect(array_keys($changes), $fields));
     }
 
-    private function logAdded(Passenger $passenger, array $original): void
-    {
+    private function logAdded(Passenger $passenger, array $original): void {
         GlobalLogger::log(
             LogActionBooking::PASSENGER_ADDED,
             'booking',
@@ -105,14 +90,13 @@ class PassengerObserver
                 'Passenger added: %s %s (%s)',
                 $passenger->first_name,
                 $passenger->last_name,
-                Carbon::parse($passenger->dob)->toDateString()
+                Carbon::parse($passenger->dob)->toDateString(),
             ),
-            ['before' => $original, 'after' => $passenger->getChanges()]
+            ['before' => $original, 'after' => $passenger->getChanges()],
         );
     }
 
-    private function logChanged(Passenger $passenger, array $original): void
-    {
+    private function logChanged(Passenger $passenger, array $original): void {
         GlobalLogger::log(
             LogActionBooking::PASSENGER_CHANGED,
             'booking',
@@ -121,15 +105,13 @@ class PassengerObserver
                 'Passenger identity changed: %s %s (%s)',
                 $passenger->first_name,
                 $passenger->last_name,
-                Carbon::parse($passenger->dob)->toDateString()
+                Carbon::parse($passenger->dob)->toDateString(),
             ),
-            ['before' => $original, 'after' => $passenger->getChanges()]
+            ['before' => $original, 'after' => $passenger->getChanges()],
         );
     }
 
-
-    private function logUpdated(Passenger $passenger, array $original, array $changes): void
-    {
+    private function logUpdated(Passenger $passenger, array $original, array $changes): void {
         $changedFields = implode(', ', array_keys($changes));
 
         GlobalLogger::log(
@@ -137,21 +119,18 @@ class PassengerObserver
             'booking',
             $passenger->booking_id,
             "Passenger updated: {$changedFields}",
-            ['before' => $original, 'after' => $passenger->getChanges()]
+            ['before' => $original, 'after' => $passenger->getChanges()],
         );
     }
 
-    private function resetSurvivorSyncAttempts(Passenger $passenger): void
-    {
+    private function resetSurvivorSyncAttempts(Passenger $passenger): void {
         // Reset sync attempts if name or DOB changed and passenger has no survivor number
         if (
             is_null($passenger->getOriginal('survivor_number')) &&
             $passenger->getOriginal('survivor_sync_attempts') !== 0 &&
-            (
-                $passenger->first_name !== $passenger->getOriginal('first_name') ||
+            ($passenger->first_name !== $passenger->getOriginal('first_name') ||
                 $passenger->last_name !== $passenger->getOriginal('last_name') ||
-                $passenger->dob !== $passenger->getOriginal('dob')
-            )
+                $passenger->dob !== $passenger->getOriginal('dob'))
         ) {
             $passenger->updateQuietly(['survivor_sync_attempts' => 0]);
         }

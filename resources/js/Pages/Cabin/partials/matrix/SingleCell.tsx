@@ -9,18 +9,10 @@ type Props = {
   eventId: number;
   singlePrice: CabinPriceType;
   cabinCategoryType: string;
-  onOpenModal?: (
-    fullTitle: string,
-    price: string,
-    cabinCode: string,
-    singlePrice: CabinPriceType
-  ) => void;
+  onOpenModal?: (fullTitle: string, price: string, cabinCode: string, singlePrice: CabinPriceType) => void;
 };
 
-export default function SingleCell({
-  isMobile = false,
-  singlePrice,
-}: Props) {
+export default function SingleCell({ isMobile = false, singlePrice }: Props) {
   const { price, inventory } = singlePrice;
 
   const numericPrice = Number(price);
@@ -44,7 +36,7 @@ export default function SingleCell({
     );
   }
 
-  if ((inventory.AVAILABLE + inventory.PARTIALLY_BOOKED <= 0) && inventory.RESERVED <= 0) {
+  if (inventory.AVAILABLE + inventory.PARTIALLY_BOOKED <= 0 && inventory.RESERVED <= 0) {
     return (
       <Box sx={baseStyles}>
         <Typography
@@ -76,9 +68,7 @@ export default function SingleCell({
           padding: "5px",
         }}
       >
-        <Box sx={{ fontSize: "12px", lineHeight: "16px" }}>
-          {renderInventory(inventory)}
-        </Box>
+        <Box sx={{ fontSize: "12px", lineHeight: "16px" }}>{renderInventory(inventory)}</Box>
       </Box>
     </Box>
   );
