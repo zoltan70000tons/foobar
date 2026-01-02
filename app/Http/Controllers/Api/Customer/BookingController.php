@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Enums\ErrorCode;
+use App\Exceptions\ApiException;
 use App\Helpers\ErrorResponse;
 use App\Http\Resources\BookingResource;
 use App\Http\Resources\BookingInvitationResource;
@@ -154,6 +155,11 @@ class BookingController extends Controller
       // Call to booking repository method
       $result = $this->bookingRepository->createBooking($bookingData, $passengerData, null, $reservationId);
 
+      // Check if repository returned an error
+      if (isset($result['error']) && $result['error'] === true) {
+        return ErrorResponse::error($result['message'], ErrorCode::UNKNOWN_ERROR, 500);
+      }
+
       // Get cart variables for client response
       $totalPrice = $validated['cart']['price_total'];
       $cabinTitle = $validated['cart']['cabin_title'];
@@ -225,9 +231,19 @@ class BookingController extends Controller
         ],
         201
       );
+    } catch (ApiException $e) {
+      return ErrorResponse::error(
+        $e->getMessage(),
+        $e->getErrorCode(),
+        $e->getHttpStatusCode()
+      );
     } catch (\Exception $e) {
-      dd($e->getMessage());
-      return ErrorResponse::error($e->getMessage(), ErrorCode::UNKNOWN_ERROR, 500);
+      // Log unexpected errors
+      Log::error('Unexpected error in booking creation: ' . $e->getMessage(), [
+        'exception' => $e,
+        'trace' => $e->getTraceAsString(),
+      ]);
+      return ErrorResponse::error("Unexpected error in booking creation", ErrorCode::UNKNOWN_ERROR, 500);
     }
   }
 

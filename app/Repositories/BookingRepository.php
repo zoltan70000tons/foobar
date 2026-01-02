@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Enums\GlobalLog\LogActionBooking;
+use App\Exceptions\ApiException;
 use App\Helpers\InstallmentHelper;
 use App\Interfaces\BookingInterface;
 use App\Interfaces\PassengerInterface;
@@ -558,6 +559,9 @@ class BookingRepository implements BookingInterface
       Log::info($booking);
       Log::info($passenger);
       throw new \Exception('Error creating booking.');
+    } catch (ApiException $e) {
+      FacadesDB::rollBack();
+      throw $e;
     } catch (\Exception $e) {
       Log::error($e->getMessage());
       FacadesDB::rollBack();
@@ -702,7 +706,7 @@ class BookingRepository implements BookingInterface
 
           if ($allowedMax < 2) {
             throw new InvalidArgumentException(
-              'Not enough time to create at least 2 installments before event cutoff (one week before start).'
+              'Not enough time to create at least 2 installments.'
             );
           }
 

@@ -5,6 +5,21 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/815) - 2026-01-01
+
+### Added
+
+- `ApiException` class for standardized error handling across the entire application
+- `NOT_ENOUGH_TIME_TO_CREATE_INSTALLMENTS` error code to ErrorCode enum
+
+### Changed
+
+- Proper error response for installment validation failures in PaymentService
+- Updated `PaymentService` to throw `ApiException` with specific error codes instead of generic exceptions
+
+### Fixed
+- Fixed "Undefined array key 'booking'" error when exceptions occurred during booking creation
+
 ## [1.9.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/804)- 2025-12-31
 
 ### Added

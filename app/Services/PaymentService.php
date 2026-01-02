@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ErrorCode;
+use App\Exceptions\ApiException;
 use App\Models\Installment;
 use App\Models\Passenger;
 use App\Models\Payment;
@@ -34,12 +36,12 @@ class PaymentService
 
     $passenger = Passenger::find($passengerId);
     if (!$passenger) {
-      throw new \InvalidArgumentException('Passenger not found');
+      throw new ApiException('Passenger not found', ErrorCode::PASSENGER_NOT_FOUND, 404);
     }
 
     $booking = $passenger->booking;
     if (!$booking || !$booking->event || !$booking->event->start_date) {
-      throw new \InvalidArgumentException('Associated booking or event start date not found');
+      throw new ApiException('Associated booking or event start date not found', ErrorCode::BOOKING_NOT_FOUND, 404);
     }
 
     $baseDate = Carbon::now();
@@ -63,7 +65,11 @@ class PaymentService
 
     // Ensure at least 2 installments are possible
     if ($allowedMax < 2 && $numberOfInstallments >= 2) {
-      throw new \InvalidArgumentException("Not enough time to $numberOfInstallments installments before event cutoff (one week before start).");
+      throw new ApiException(
+        "Not enough time to create $numberOfInstallments installments.",
+        ErrorCode::NOT_ENOUGH_TIME_TO_CREATE_INSTALLMENTS,
+        400
+      );
     }
 
     $count = min($numberOfInstallments, $allowedMax);
@@ -167,14 +173,11 @@ class PaymentService
   {
     try {
       $passenger = Passenger::find($passengerId);
-     // dd($passenger);
       if (!$passenger) {
         return response()->json(['success' => false, 'message' => 'Passenger not found'], 404);
       }
       return $passenger->paymentInfo;
-     
     } catch (Exception $e) {
-      dd($e->getMessage());
       Log::error("Error fetching installments: " . $e->getMessage());
       return ['success' => false, 'message' => 'Failed to fetch installments'];
     }
