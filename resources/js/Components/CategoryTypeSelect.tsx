@@ -1,24 +1,17 @@
 import React from "react";
 import { CategoryTypes, CategoryTypeLabels } from "@/enums/CategoryTypeEnum";
-import {
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  FormControl,
-  InputLabel,
-  FormHelperText,
-} from "@mui/material";
+import { MenuItem, Select, SelectChangeEvent, FormControl, InputLabel, FormHelperText } from "@mui/material";
 
 const CategoryTypeSelect = ({
   value,
   onChange,
   error,
-  disabled = false
+  disabled = false,
 }: {
   value: CategoryTypes;
   onChange: (event: SelectChangeEvent<CategoryTypes>) => void;
   error: { category_type?: string };
-  disabled?: boolean
+  disabled?: boolean;
 }) => {
   return (
     <FormControl fullWidth error={Boolean(error.category_type)}>
@@ -38,9 +31,7 @@ const CategoryTypeSelect = ({
           </MenuItem>
         ))}
       </Select>
-      {error.category_type && (
-        <FormHelperText>{error.category_type}</FormHelperText>
-      )}
+      {error.category_type && <FormHelperText>{error.category_type}</FormHelperText>}
     </FormControl>
   );
 };

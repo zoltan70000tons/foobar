@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -9,17 +9,27 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid, Divider, TableContainer, Table, Paper, TableHead, TableRow, TableCell, TableBody, IconButton, Tooltip,
-} from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
+  Grid,
+  Divider,
+  TableContainer,
+  Table,
+  Paper,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
 
-import { router } from '@inertiajs/react';
-import { sanitizeInput } from '@/Helpers/inputSanitizer';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import { router } from "@inertiajs/react";
+import { sanitizeInput } from "@/Helpers/inputSanitizer";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import { formatCurrency, formatDate } from "@/Helpers/stringUtils";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 import { Delete } from "@mui/icons-material";
@@ -34,9 +44,12 @@ type DiscountFormProps = {
 
 const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, booking_id, editMode }) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<
-    Pick<Discount, 'type' | 'amount' | 'operation'> & { notes?: string }
-  >({ type: '', amount: 0, operation: '', notes: '' });
+  const [formData, setFormData] = useState<Pick<Discount, "type" | "amount" | "operation"> & { notes?: string }>({
+    type: "",
+    amount: 0,
+    operation: "",
+    notes: "",
+  });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -49,7 +62,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
     console.log(e.target);
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : value,
+      [name]: name === "amount" ? parseFloat(value) : value,
     }));
     console.log(formData);
   };
@@ -65,7 +78,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.type || formData.amount <= 0) {
-      showSnackbar('Please fill in all fields correctly.', 'error');
+      showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
 
@@ -73,7 +86,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
 
     // Send form data to the server using the router
     router.post(
-      route('manual.discount', {
+      route("manual.discount", {
         event_id: event_id,
         booking_id: booking_id,
       }),
@@ -82,20 +95,20 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
         amount: formData.amount,
         type: formData.type,
         operation: formData.operation,
-        notes: formData.notes ?? '',
+        notes: formData.notes ?? "",
       },
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ type: '', amount: 0, operation: '', notes: '' });
+          setFormData({ type: "", amount: 0, operation: "", notes: "" });
           setOpen(false);
-          showSnackbar('Discount created successfully', 'success');
-          router.reload({ only: ['user'] });
+          showSnackbar("Discount created successfully", "success");
+          router.reload({ only: ["user"] });
         },
         onError: (errors) => {
           // Log or display errors if needed
-          console.error('Validation errors:', errors);
-          showSnackbar('Failed to save discount. Please check your inputs.', 'error');
+          console.error("Validation errors:", errors);
+          showSnackbar("Failed to save discount. Please check your inputs.", "error");
         },
         onFinish: () => {
           setLoading(false);
@@ -135,7 +148,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
       <Button
         fullWidth
         variant="outlined"
-        sx={{ color: 'white', borderColor: 'gray' }}
+        sx={{ color: "white", borderColor: "gray" }}
         onClick={handleOpen}
         disabled={!editMode}
         startIcon={<LocalOfferIcon />}
@@ -238,9 +251,7 @@ const DiscountForm: React.FC<DiscountFormProps> = ({ passenger, event_id, bookin
                         </Tooltip>
                       </TableCell>
                       <TableCell>{discount.operation}</TableCell>
-                      <TableCell>
-                        {formatCurrency(discount.amount)}
-                      </TableCell>
+                      <TableCell>{formatCurrency(discount.amount)}</TableCell>
                       <TableCell>{formatDate(discount.created_at)}</TableCell>
                       <TableCell>
                         {canDeletePassengerDiscounts && (

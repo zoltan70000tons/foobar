@@ -10,123 +10,162 @@ use Illuminate\Support\Facades\Concurrency;
 use App\Enums\StatusCabin;
 use App\Models\TemporaryReservation;
 
+class PricingMatrixController extends Controller {
+    protected $cabinType;
+    protected $cabinCategory;
 
-class PricingMatrixController extends Controller
-{
-  protected $cabinType;
-  protected $cabinCategory;
-
-  /**
-   * Constructor to inject dependencies.
-   */
-  public function __construct(CabinType $cabinType, CabinCategory $cabinCategory)
-  {
-    $this->cabinType = $cabinType;
-    $this->cabinCategory = $cabinCategory;
-  }
-
-  /**
-   * Show cabins grouped by ticket type.
-   */
-  public function show($eventId, $cabinTypeId)
-  {
-      $source = request()->get('pricing_matrix_call_source');
-      $needToListInventory = $source === 'backend';
-
-    if (!$eventId || !$cabinTypeId) {
-      return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
+    /**
+     * Constructor to inject dependencies.
+     */
+    public function __construct(CabinType $cabinType, CabinCategory $cabinCategory) {
+        $this->cabinType = $cabinType;
+        $this->cabinCategory = $cabinCategory;
     }
 
-    // \DB::enableQueryLog();
-    // Fetch categories with cabins and specs based on ticket type
-    $categories = CabinCategory::where('event_id', $eventId)
-      ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
-      ->get();
+    /**
+     * Show cabins grouped by ticket type.
+     */
+    public function show($eventId, $cabinTypeId) {
+        $source = request()->get('pricing_matrix_call_source');
+        $needToListInventory = $source === 'backend';
 
-    if (!$categories->count()) {
-      return response()->json(['message' => 'No categories found'], 404);
+        if (!$eventId || !$cabinTypeId) {
+            return response()->json(['message' => 'Event ID and Cabin Type ID are required'], 400);
+        }
+
+        // \DB::enableQueryLog();
+        // Fetch categories with cabins and specs based on ticket type
+        $categories = CabinCategory::where('event_id', $eventId)
+            ->with(['cabins' => fn($query) => $query->where('cabin_type_id', $cabinTypeId)->with('cabinSpec'), 'spec'])
+            ->get();
+
+        if (!$categories->count()) {
+            return response()->json(['message' => 'No categories found'], 404);
+        }
+
+        $reservationsCabinNumbers = TemporaryReservation::whereHas('cabin', function ($query) use ($cabinTypeId) {
+            $query->where('cabin_type_id', $cabinTypeId);
+        })
+            ->pluck('cabin_number')
+            ->toArray();
+
+        // Group categories by type, sort, and select the first for each type
+        $groupedCategories = $categories
+            ->groupBy(fn($category) => $category->category_type)
+            ->map(fn($group) => $group->sortBy(fn($category) => $category->displayOrder)->first())
+            ->sortBy(fn($category) => $category->displayOrder);
+
+        if ($needToListInventory) {
+            $tempReservations = TemporaryReservation::all();
+        } else {
+            $tempReservations = collect();
+        }
+
+        // Format categories for response
+        $formattedCategories = $groupedCategories->map(
+            fn($category) => $this->formatCategory(
+                $category,
+                $categories,
+                $cabinTypeId,
+                $reservationsCabinNumbers,
+                $tempReservations,
+                $needToListInventory,
+            ),
+        );
+
+        return response()->json($formattedCategories->values());
     }
 
-    $reservationsCabinNumbers = TemporaryReservation::whereHas('cabin', function ($query) use ($cabinTypeId) {
-      $query->where('cabin_type_id', $cabinTypeId);
-    })
-      ->pluck('cabin_number')
-      ->toArray();
+    /**
+     * Format a category for response.
+     */
+    protected function formatCategory(
+        $category,
+        $categories,
+        $cabinTypeId,
+        $reservationsCabinNumbers,
+        $tempReservations,
+        $needToListInventory = false,
+    ) {
+        $categorySpec = $category->spec;
 
-    // Group categories by type, sort, and select the first for each type
-    $groupedCategories = $categories
-      ->groupBy(fn($category) => $category->category_type)
-      ->map(fn($group) => $group->sortBy(fn($category) => $category->displayOrder)->first())
-      ->sortBy(fn($category) => $category->displayOrder);
+        // Determine max capacity
+        $maxCapacity =
+            $cabinTypeId !== '1'
+                ? 4 // Single Ticket max capacity
+                : ($categorySpec->category_type === 'Suite'
+                    ? 8
+                    : 6); // Private Cabin max capacity
 
-    if ($needToListInventory) {
-        $tempReservations = TemporaryReservation::all();
-    } else {
-        $tempReservations = collect();
+        return [
+            'main_category' => [
+                'name' => $categorySpec->category_type,
+                'display_order' => $categorySpec->display_order,
+                'max_capacity' => $maxCapacity,
+                'categories' => $this->getCategories(
+                    $categorySpec->category_type,
+                    $categories,
+                    $cabinTypeId,
+                    $reservationsCabinNumbers,
+                    $tempReservations,
+                    $needToListInventory,
+                ),
+            ],
+        ];
     }
 
-    // Format categories for response
-    $formattedCategories = $groupedCategories->map(
-      fn($category) => $this->formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers,
-          $tempReservations, $needToListInventory)
-    );
+    /**
+     * Get categories based on category type.
+     */
+    public function getCategories(
+        $categoryType,
+        $categories,
+        $cabinTypeId,
+        $reservationsCabinNumbers,
+        $tempReservations,
+        $needToListInventory,
+    ) {
+        // Filter, group, and sort categories by category type
+        return $categories
+            ->where('category_type', $categoryType)
+            ->sortBy('display_order')
+            ->unique('category_name')
+            ->map(
+                fn($category) => $this->formatFilteredCategory(
+                    $category,
+                    $categories,
+                    $cabinTypeId,
+                    $reservationsCabinNumbers,
+                    $tempReservations,
+                    $needToListInventory,
+                ),
+            )
+            ->values(); // Reset collection keys
+    }
 
-    return response()->json($formattedCategories->values());
-  }
-
-  /**
-   * Format a category for response.
-   */
-  protected function formatCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers,
-                                    $tempReservations, $needToListInventory = false)
-  {
-    $categorySpec = $category->spec;
-
-    // Determine max capacity
-    $maxCapacity =
-      $cabinTypeId !== '1'
-        ? 4 // Single Ticket max capacity
-        : ($categorySpec->category_type === 'Suite'
-          ? 8
-          : 6); // Private Cabin max capacity
-
-    return [
-      'main_category' => [
-        'name' => $categorySpec->category_type,
-        'display_order' => $categorySpec->display_order,
-        'max_capacity' => $maxCapacity,
-        'categories' => $this->getCategories($categorySpec->category_type, $categories, $cabinTypeId,
-            $reservationsCabinNumbers, $tempReservations, $needToListInventory),
-      ],
-    ];
-  }
-
-  /**
-   * Get categories based on category type.
-   */
-  public function getCategories($categoryType, $categories, $cabinTypeId, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
-  {
-    // Filter, group, and sort categories by category type
-    return $categories
-      ->where('category_type', $categoryType)
-      ->sortBy('display_order')
-      ->unique('category_name')
-      ->map(fn($category) => $this->formatFilteredCategory($category, $categories, $cabinTypeId,
-          $reservationsCabinNumbers, $tempReservations, $needToListInventory))
-      ->values(); // Reset collection keys
-  }
-
-  /**
-   * Format a filtered category for response.
-   */
-  protected function formatFilteredCategory($category, $categories, $cabinTypeId, $reservationsCabinNumbers, $tempReservations, $needToListInventory)
-  {
-    return [
-      'name' => $category->category_name,
-      'cabin_category_id' => $category->id,
-      'display_order' => $category->display_order,
-      'cabins' => MatrixHelper::getUniqueCategories($categories, $category->category_name, $cabinTypeId,
-          $reservationsCabinNumbers, $tempReservations, $needToListInventory),
-    ];
-  }
+    /**
+     * Format a filtered category for response.
+     */
+    protected function formatFilteredCategory(
+        $category,
+        $categories,
+        $cabinTypeId,
+        $reservationsCabinNumbers,
+        $tempReservations,
+        $needToListInventory,
+    ) {
+        return [
+            'name' => $category->category_name,
+            'cabin_category_id' => $category->id,
+            'display_order' => $category->display_order,
+            'cabins' => MatrixHelper::getUniqueCategories(
+                $categories,
+                $category->category_name,
+                $cabinTypeId,
+                $reservationsCabinNumbers,
+                $tempReservations,
+                $needToListInventory,
+            ),
+        ];
+    }
 }

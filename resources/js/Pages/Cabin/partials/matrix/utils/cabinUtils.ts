@@ -2,10 +2,7 @@ import { CabinPriceType, PriceAndAvailability } from "@/types/cabin";
 
 export const CAPACITIES = [2, 3, 4, 5, 6, 7, 8];
 
-export function extractCabinPrices(
-  priceAndAvailability: PriceAndAvailability,
-  cabinCode: string
-): CabinPriceType[] {
+export function extractCabinPrices(priceAndAvailability: PriceAndAvailability, cabinCode: string): CabinPriceType[] {
   return CAPACITIES.map((capacity) => {
     const key = `price_capacity_${capacity}` as keyof PriceAndAvailability;
     const data = priceAndAvailability[key];

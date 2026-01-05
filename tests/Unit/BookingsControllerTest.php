@@ -22,12 +22,10 @@ use App\Http\Controllers\BookingsController;
 use Mockery;
 use Spatie\Permission\PermissionRegistrar;
 
-class BookingsControllerTest extends TestCase
-{
+class BookingsControllerTest extends TestCase {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
 
         $this->seed(\Database\Seeders\CabinTypeSeeder::class);
@@ -49,19 +47,17 @@ class BookingsControllerTest extends TestCase
             $this->cabinRepository,
             $this->cabinCategoryRepository,
             $this->adjustmentsRepository,
-            $this->paymentInfoService
+            $this->paymentInfoService,
         );
     }
 
-    public function tearDown(): void
-    {
+    public function tearDown(): void {
         Mockery::close();
         parent::tearDown();
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('invalidFieldDataProvider')]
-    public function test_store_fails_validation_for_invalid_input(string $field, mixed $invalidValue)
-    {
+    public function test_store_fails_validation_for_invalid_input(string $field, mixed $invalidValue) {
         $this->expectException(ValidationException::class);
 
         $eventId = 123;
@@ -70,28 +66,23 @@ class BookingsControllerTest extends TestCase
         // Support nested fields like 'passenger.email'
         data_set($requestData, $field, $invalidValue);
 
-        $request = \Illuminate\Http\Request::create(
-            "/events/{$eventId}/bookings/createManual",
-            'POST',
-            $requestData
+        $request = \Illuminate\Http\Request::create("/events/{$eventId}/bookings/createManual", 'POST', $requestData);
+
+        $request->setRouteResolver(
+            fn() => new class ($eventId) {
+                public function __construct(private $eventId) {
+                }
+
+                public function parameter($key) {
+                    return $key === 'id' ? $this->eventId : null;
+                }
+            },
         );
-
-        $request->setRouteResolver(fn() => new class($eventId) {
-            public function __construct(private $eventId)
-            {
-            }
-
-            public function parameter($key)
-            {
-                return $key === 'id' ? $this->eventId : null;
-            }
-        });
 
         $this->controller->store($request);
     }
 
-    public static function invalidFieldDataProvider(): array
-    {
+    public static function invalidFieldDataProvider(): array {
         return [
             //cabin_number
             'cabin_number = null' => ['cabin_number', null],
@@ -397,8 +388,7 @@ class BookingsControllerTest extends TestCase
         ];
     }
 
-    private function getValidRequestData()
-    {
+    private function getValidRequestData() {
         $cabinSpec = CabinSpec::query()->first();
         if (!$cabinSpec) {
             $cabinSpec = CabinSpec::factory()->create();
@@ -447,8 +437,7 @@ class BookingsControllerTest extends TestCase
         ];
     }
 
-    public function test_store_succeeds_on_valid_input_with_installments()
-    {
+    public function test_store_succeeds_on_valid_input_with_installments() {
         $cruise = Cruise::factory()->create();
         $org = Organization::factory()->create();
         $event = Event::factory(['organization_id' => $org->id])->create();
@@ -463,7 +452,7 @@ class BookingsControllerTest extends TestCase
         $cabinTypeId = $cabinType->id;
 
         do {
-            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+            $cabinNumber = (string) random_int(1000, 99999); // Adjust range if needed
         } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
 
         $cabinSpec = CabinSpec::factory([
@@ -487,7 +476,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 4,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 69,
             'cruise_id' => $cruise->id,
@@ -517,15 +506,14 @@ class BookingsControllerTest extends TestCase
 
         $requestData = $this->getValidRequestData();
         $requestData['passenger']['id'] = $user->id;
-        $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
+        $requestData['passenger']['survivor_number'] = (string) $survivorNumber->survivor_number;
         $requestData['cabin_number'] = $cabinNumber;
         $requestData['cabin_category_id'] = $cabinCategory->id;
 
         // Create a real request instance
         $this->post("/events/{$event->id}/bookings/createManual", $requestData);
 
-        $cabinSpec = CabinSpec::where('cabin_number', $requestData['cabin_number'])
-            ->firstOrFail();
+        $cabinSpec = CabinSpec::where('cabin_number', $requestData['cabin_number'])->firstOrFail();
 
         // Assert DB side-effect
         $this->assertDatabaseHas('bookings', [
@@ -546,7 +534,7 @@ class BookingsControllerTest extends TestCase
         $this->assertDatabaseHas('passengers', [
             'booking_id' => $booking->id,
             'lead_passenger' => true,
-            'survivor_number' => (string)$survivorNumber->survivor_number,
+            'survivor_number' => (string) $survivorNumber->survivor_number,
             'payment_method' => $requestData['passenger']['payment_method'],
             'gender' => $requestData['passenger']['gender'],
             'first_name' => strtoupper($requestData['passenger']['first_name']),
@@ -573,8 +561,7 @@ class BookingsControllerTest extends TestCase
         ]);
     }
 
-    public function test_store_succeeds_on_valid_input_with_paid_in_full()
-    {
+    public function test_store_succeeds_on_valid_input_with_paid_in_full() {
         $cruise = Cruise::factory()->create();
         $org = Organization::factory()->create();
         $event = Event::factory(['organization_id' => $org->id])->create();
@@ -589,7 +576,7 @@ class BookingsControllerTest extends TestCase
         $cabinTypeId = $cabinType->id;
 
         do {
-            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+            $cabinNumber = (string) random_int(1000, 99999); // Adjust range if needed
         } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
 
         $cabinSpec = CabinSpec::factory([
@@ -613,7 +600,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 4,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 69,
             'cruise_id' => $cruise->id,
@@ -645,7 +632,7 @@ class BookingsControllerTest extends TestCase
         $requestData['payment_plan'] = 'PAY_IN_FULL';
         $requestData['number_of_installments'] = 1;
         $requestData['passenger']['id'] = $user->id;
-        $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
+        $requestData['passenger']['survivor_number'] = (string) $survivorNumber->survivor_number;
         $requestData['cabin_number'] = $cabinNumber;
         $requestData['cabin_category_id'] = $cabinCategory->id;
         //$requestData['passenger']['single_t_agreement'] = true;
@@ -672,7 +659,7 @@ class BookingsControllerTest extends TestCase
         $this->assertDatabaseHas('passengers', [
             'booking_id' => $booking->id,
             'lead_passenger' => true,
-            'survivor_number' => (string)$survivorNumber->survivor_number,
+            'survivor_number' => (string) $survivorNumber->survivor_number,
             'payment_method' => $requestData['passenger']['payment_method'],
             'gender' => $requestData['passenger']['gender'],
             'first_name' => strtoupper($requestData['passenger']['first_name']),
@@ -699,8 +686,7 @@ class BookingsControllerTest extends TestCase
         ]);
     }
 
-    public function test_store_books_the_correct_capacity_cabin_when_shared_exists()
-    {
+    public function test_store_books_the_correct_capacity_cabin_when_shared_exists() {
         $cruise = Cruise::factory()->create();
         $org = Organization::factory()->create();
         $event = Event::factory(['organization_id' => $org->id])->create();
@@ -715,7 +701,7 @@ class BookingsControllerTest extends TestCase
         $cabinTypeId = $cabinType->id;
 
         do {
-            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+            $cabinNumber = (string) random_int(1000, 99999); // Adjust range if needed
         } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
 
         app(PermissionRegistrar::class)->setPermissionsTeamId(1);
@@ -744,7 +730,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 4,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 69,
             'cruise_id' => $cruise->id,
@@ -757,7 +743,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 5,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 70,
             'cruise_id' => $cruise->id,
@@ -770,7 +756,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 6,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 71,
             'cruise_id' => $cruise->id,
@@ -783,7 +769,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 7,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 72,
             'cruise_id' => $cruise->id,
@@ -796,7 +782,7 @@ class BookingsControllerTest extends TestCase
             'capacity' => 8,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 73,
             'cruise_id' => $cruise->id,
@@ -879,15 +865,14 @@ class BookingsControllerTest extends TestCase
         $requestData['payment_plan'] = 'PAY_IN_FULL';
         $requestData['number_of_installments'] = 1;
         $requestData['passenger']['id'] = $user->id;
-        $requestData['passenger']['survivor_number'] = (string)$survivorNumber->survivor_number;
+        $requestData['passenger']['survivor_number'] = (string) $survivorNumber->survivor_number;
         $requestData['cabin_number'] = $cabinNumber;
         $requestData['cabin_category_id'] = $cabinCategory8->id;
 
         // Create a real request instance
         $this->post("/events/{$event->id}/bookings/createManual", $requestData);
 
-        $cabinSpec = CabinSpec::where('cabin_number', $requestData['cabin_number'])
-            ->firstOrFail();
+        $cabinSpec = CabinSpec::where('cabin_number', $requestData['cabin_number'])->firstOrFail();
 
         // Assert DB side-effect
         $this->assertDatabaseHas('bookings', [
@@ -908,7 +893,7 @@ class BookingsControllerTest extends TestCase
         $this->assertDatabaseHas('passengers', [
             'booking_id' => $booking->id,
             'lead_passenger' => true,
-            'survivor_number' => (string)$survivorNumber->survivor_number,
+            'survivor_number' => (string) $survivorNumber->survivor_number,
             'payment_method' => $requestData['passenger']['payment_method'],
             'gender' => $requestData['passenger']['gender'],
             'first_name' => strtoupper($requestData['passenger']['first_name']),

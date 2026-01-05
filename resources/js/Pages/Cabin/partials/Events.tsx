@@ -2,12 +2,7 @@ import React from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import {
-  Container,
-  Toolbar,
-  useTheme,
-  Alert,
-} from "@mui/material";
+import { Container, Toolbar, useTheme, Alert } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
@@ -23,7 +18,7 @@ type Props = PageProps & {
 
 const Events = ({ auth, events }: Props) => {
   const { hasPermission } = usePermissions();
-  const theme = useTheme(); 
+  const theme = useTheme();
   dayjs.extend(localizedFormat);
 
   return (
@@ -31,11 +26,9 @@ const Events = ({ auth, events }: Props) => {
       <Head title="Events" />
       <Toolbar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Alert severity="info">To continue, please select an event.</Alert>
-      <br/>
-        {hasPermission(Permissions.ViewEvents) && (
-          <EventSelector events={events} url="/cabins" />
-        )}
+        <Alert severity="info">To continue, please select an event.</Alert>
+        <br />
+        {hasPermission(Permissions.ViewEvents) && <EventSelector events={events} url="/cabins" />}
       </Container>
     </AuthenticatedLayout>
   );

@@ -77,7 +77,8 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
     }
   }, [isBookingOpen, cabinCategories.length, loadingCategories, fetchCabinCategories]);
 
-  return (<>
+  return (
+    <>
       <Button
         variant="outlined"
         color="secondary"

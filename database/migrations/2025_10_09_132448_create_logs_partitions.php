@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
-    public function up(): void
-    {
+    public function up(): void {
         //extend when needed
         $types = ['booking', 'customer', 'cabin', 'user', 'event'];
         foreach ($types as $type) {
@@ -30,8 +29,7 @@ return new class extends Migration {
         }
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         //extend when needed
         $types = ['booking', 'customer', 'cabin', 'user', 'event'];
         foreach ($types as $type) {

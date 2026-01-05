@@ -1,16 +1,6 @@
 <?php
 
-use App\Models\{
-    Booking,
-    Cabin,
-    CabinCategory,
-    CabinCategorySpec,
-    CabinType,
-    Event,
-    Organization,
-    Passenger,
-    User
-};
+use App\Models\{Booking, Cabin, CabinCategory, CabinCategorySpec, CabinType, Event, Organization, Passenger, User};
 use App\Repositories\PassengerRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -144,8 +134,17 @@ describe('Create function', function () {
 
         $this->passengerRepository->create($passengerData, $booking);
 
-        expect(Passenger::where('booking_id', $booking->id)->where('lead_passenger', true)->where('email', $user->email)->exists())->toBeTrue();
-        expect(Passenger::where('booking_id', $booking->id)->where('lead_passenger', false)->count())->toBe(3);
+        expect(
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', true)
+                ->where('email', $user->email)
+                ->exists(),
+        )->toBeTrue();
+        expect(
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count(),
+        )->toBe(3);
     });
 
     test('fill one passenger seat with installments', function () {
@@ -154,7 +153,11 @@ describe('Create function', function () {
 
         $this->passengerRepository->fillAditionalSeats(1, $booking->id, 4000, 'CREDIT_CARD', 4);
 
-        expect(Passenger::where('booking_id', $booking->id)->where('lead_passenger', false)->count())->toBe(1);
+        expect(
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count(),
+        )->toBe(1);
     });
 
     test('fill one passenger seat with paid in full', function () {
@@ -163,7 +166,11 @@ describe('Create function', function () {
 
         $this->passengerRepository->fillAditionalSeats(1, $booking->id, 4000, 'CREDIT_CARD', false);
 
-        expect(Passenger::where('booking_id', $booking->id)->where('lead_passenger', false)->count())->toBe(1);
+        expect(
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count(),
+        )->toBe(1);
     });
 
     test('fill three passenger seats with paid in full', function () {
@@ -172,11 +179,14 @@ describe('Create function', function () {
 
         $this->passengerRepository->fillAditionalSeats(3, $booking->id, 4000, 'CREDIT_CARD', 4);
 
-        expect(Passenger::where('booking_id', $booking->id)->where('lead_passenger', false)->count())->toBe(3);
+        expect(
+            Passenger::where('booking_id', $booking->id)
+                ->where('lead_passenger', false)
+                ->count(),
+        )->toBe(3);
     });
 
-    function createBookingWithCabin(int $capacity): Booking
-    {
+    function createBookingWithCabin(int $capacity): Booking {
         $org = Organization::factory()->create();
         $event = Event::factory(['organization_id' => $org->id])->create();
         $user = User::factory(['organization_id' => $org->id])->create();

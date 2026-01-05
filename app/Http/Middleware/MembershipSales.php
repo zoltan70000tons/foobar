@@ -11,53 +11,50 @@ use Illuminate\Support\Facades\App;
 use App\Traits\MembershipAccess;
 use App\Models\Event;
 
-class MembershipSales
-{
-  use MembershipAccess;
+class MembershipSales {
+    use MembershipAccess;
 
-  public function handle(Request $request, Closure $next): Response
-  {
-    $language = $request->query('language', 'en');
-    $eventId = $request->route('eventId') 
-      ?? $request->route('event_id')
-      ?? $request->get('eventId') 
-      ?? $request->get('event_id') 
-      ?? $request->query('eventId')
-      ?? $request->query('event_id')
-      ?? null;
-   
-    App::setLocale($language);
+    public function handle(Request $request, Closure $next): Response {
+        $language = $request->query('language', 'en');
+        $eventId =
+            $request->route('eventId') ??
+            ($request->route('event_id') ??
+                ($request->get('eventId') ??
+                    ($request->get('event_id') ??
+                        ($request->query('eventId') ?? ($request->query('event_id') ?? null)))));
 
-    // check if the Auth
-    $user = Auth::check() ? Auth::user() : null;
-    $customer = $user && $user->hasRole('Customer') ? $user : null;
+        App::setLocale($language);
 
-    //Log::info("Customer: " . json_encode($customer));
+        // check if the Auth
+        $user = Auth::check() ? Auth::user() : null;
+        $customer = $user && $user->hasRole('Customer') ? $user : null;
 
-    $membership = null;
+        //Log::info("Customer: " . json_encode($customer));
 
-    if ($customer) {
-      $membership = $customer->membershipTypes->first() ?? null;
+        $membership = null;
+
+        if ($customer) {
+            $membership = $customer->membershipTypes->first() ?? null;
+        }
+
+        $access = $this->checkMembershipAccess($membership, null, $eventId);
+
+        if ($access['status'] === false) {
+            return response()->json(
+                [
+                    'purchase_access' => $access['status'],
+                    'access_message' => $access['message'] ?? null,
+                ],
+                403,
+            );
+        }
+
+        // Attach access information to the request
+        $request->merge([
+            'purchase_access' => $access['status'],
+            'access_message' => $access['message'] ?? null,
+        ]);
+
+        return $next($request);
     }
-
-    $access = $this->checkMembershipAccess($membership, null, $eventId);
-
-    if ($access['status'] === false) {
-      return response()->json(
-        [
-          'purchase_access' => $access['status'],
-          'access_message' => $access['message'] ?? null,
-        ],
-        403
-      );
-    }
-
-    // Attach access information to the request
-    $request->merge([
-      'purchase_access' => $access['status'],
-      'access_message' => $access['message'] ?? null,
-    ]);
-
-    return $next($request);
-  }
 }

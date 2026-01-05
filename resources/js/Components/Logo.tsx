@@ -1,5 +1,4 @@
 export default function Logo({ language }: { language: string }) {
-
   const frontURL = import.meta.env.VITE_FRONTEND_URL;
 
   return (

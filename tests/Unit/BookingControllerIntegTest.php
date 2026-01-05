@@ -4,7 +4,8 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Repositories\BookingRepository;
 use App\Repositories\CustomerBookingRepository;
 use App\Services\CustomerBookingService;
-use App\Models\{Booking,
+use App\Models\{
+    Booking,
     Cabin,
     CabinCategory,
     CabinCategorySpec,
@@ -20,7 +21,8 @@ use App\Models\{Booking,
     SurvivorNumber,
     TemporaryReservation,
     User,
-    UserDetail};
+    UserDetail,
+};
 use App\Repositories\PassengerRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,12 +74,11 @@ describe('store', function () {
                 'model_id' => $user->id,
                 'team_id' => 1,
             ],
-            []
+            [],
         );
 
-
         do {
-            $cabinNumber = (string)random_int(1000, 99999); // Adjust range if needed
+            $cabinNumber = (string) random_int(1000, 99999); // Adjust range if needed
         } while (CabinSpec::where('cabin_number', $cabinNumber)->exists());
 
         $cabinSpec = CabinSpec::factory([
@@ -104,7 +105,7 @@ describe('store', function () {
             'capacity' => 4,
             'description' => '{"MOCK"}',
             'iframe' => 'MOCK_IFRAME',
-            'images' => ["MOCK.gif"],
+            'images' => ['MOCK.gif'],
             'decks' => '8, 9',
             'display_order' => 69,
             'cruise_id' => $cruise->id,
@@ -169,8 +170,10 @@ describe('store', function () {
 
         $validData = getBaseBookingControllerIntegValidData($overrides);
 
-        $response = $this->withSession(['reserved_cabin_id' => $tempReservation->id])
-            ->postJson('/api/booking-init', $validData);
+        $response = $this->withSession(['reserved_cabin_id' => $tempReservation->id])->postJson(
+            '/api/booking-init',
+            $validData,
+        );
 
         expect($response->getStatusCode())->toBe(201);
         expect($response->getData(true))->toMatchArray(['message' => 'Booking created successfully.']);
@@ -185,7 +188,7 @@ describe('store', function () {
 
         $lastPassenger = Passenger::latest('created_at')->first();
         expect($lastPassenger->booking_id)->toBe($lastBooking->id);
-        expect($lastPassenger->survivor_number)->toBe((string)$survivorNumber->survivor_number);
+        expect($lastPassenger->survivor_number)->toBe((string) $survivorNumber->survivor_number);
         expect($lastPassenger->lead_passenger)->toBeTrue();
         expect($lastPassenger->payment_method)->toBe($validData['payment_method']);
         expect($lastPassenger->address_first)->toBe($validData['address_line_1']);
@@ -193,8 +196,7 @@ describe('store', function () {
         expect($lastPassenger->city)->toBe($validData['city']);
     });
 
-    function getBaseBookingControllerIntegValidData($params = []): array
-    {
+    function getBaseBookingControllerIntegValidData($params = []): array {
         $base = [
             'language' => 'en',
             'event_id' => '1',

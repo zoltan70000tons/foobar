@@ -27,7 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import ReceiptIcon from '@mui/icons-material/Receipt';
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import UnlayerEditor from "@/Components/UnlayerEditor";
@@ -86,7 +86,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
   const { showSnackbar } = useSnackbar();
 
   const handleLangChange = (value: string) => {
-   setLang(value.toLowerCase().trim());
+    setLang(value.toLowerCase().trim());
   };
 
   const fetchTemplates = useCallback(async () => {
@@ -120,12 +120,12 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       setIsSending(false);
     }
     if (window.unlayer) {
-    try {
-      window.unlayer.loadDesign({ body: { rows: [] } });
-    } catch (e) {
-      console.debug("unlayer reset failed", e);
+      try {
+        window.unlayer.loadDesign({ body: { rows: [] } });
+      } catch (e) {
+        console.debug("unlayer reset failed", e);
+      }
     }
-  }
   }, [lang]);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
   const attachDefaultFiles = async () => {
     await handleInsertPDF();
     await handleInsertImg();
-    
+
     if (booking.passengers[0].payment_method === "BANK_TRANSFER") {
       await handleInsertInvoice();
     }
@@ -226,7 +226,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
       setIsLoading(false);
     }
   };
-  
+
   const handleInsertInvoice = async () => {
     setIsLoading(true);
     try {
@@ -287,7 +287,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
         const data = await response.json();
         if (data.success) {
           showSnackbar("Email sent successfully!", "success");
-         // setAttachments([]);
+          // setAttachments([]);
         } else {
           showSnackbar("Failed to send email.", "error");
           throw new Error("Failed to send email.");
@@ -316,17 +316,17 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
         {/* Language Selector */}
         <Grid item xs={12} md={1}>
           <Select
-              size="small"
-              value={lang}
-              onChange={(e) => handleLangChange(e.target.value)}
-              fullWidth
-              disabled={canSendEmail}
-            >
-              {LANGUAGES.map((language) => (
-                <MenuItem key={language} value={language}>
-                  {language.toUpperCase()}
-                </MenuItem>
-              ))}
+            size="small"
+            value={lang}
+            onChange={(e) => handleLangChange(e.target.value)}
+            fullWidth
+            disabled={canSendEmail}
+          >
+            {LANGUAGES.map((language) => (
+              <MenuItem key={language} value={language}>
+                {language.toUpperCase()}
+              </MenuItem>
+            ))}
           </Select>
         </Grid>
 
@@ -335,34 +335,33 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
           {isSending ? (
             <CircularProgress />
           ) : (
-             <Autocomplete
-                size="small"
-                disabled={canSendEmail}
-                options={templates}
-                value={selectedTemplate}
-                inputValue={templateInputValue}
-                onInputChange={(e, newInput) => setTemplateInputValue(newInput)}
-                onChange={(event, newValue) => {
-                  setSelectedTemplate(newValue);
-                  if (newValue) {
-                    setSubject(newValue.subject + " " + booking.booking_code);
-                    setTemplateInputValue(newValue.name);
-                  } else {
-                    setSubject("");
-                  }
-                }}
-                getOptionLabel={(option) => option?.name || ""}
-                isOptionEqualToValue={(option, value) => option?.id === value?.id}
-                clearOnEscape
-                renderOption={(props, option) => (
-                  <li {...props} style={{ display: "flex", alignItems: "center" }}>
-                    {option.priority === 1 && <span style={{ marginRight: 6 }}>⭐</span>}
-                    {option.name}
-                  </li>
-                )}
-                renderInput={(params) => <TextField {...params} label="Select an email template" fullWidth />}
-              />
-
+            <Autocomplete
+              size="small"
+              disabled={canSendEmail}
+              options={templates}
+              value={selectedTemplate}
+              inputValue={templateInputValue}
+              onInputChange={(e, newInput) => setTemplateInputValue(newInput)}
+              onChange={(event, newValue) => {
+                setSelectedTemplate(newValue);
+                if (newValue) {
+                  setSubject(newValue.subject + " " + booking.booking_code);
+                  setTemplateInputValue(newValue.name);
+                } else {
+                  setSubject("");
+                }
+              }}
+              getOptionLabel={(option) => option?.name || ""}
+              isOptionEqualToValue={(option, value) => option?.id === value?.id}
+              clearOnEscape
+              renderOption={(props, option) => (
+                <li {...props} style={{ display: "flex", alignItems: "center" }}>
+                  {option.priority === 1 && <span style={{ marginRight: 6 }}>⭐</span>}
+                  {option.name}
+                </li>
+              )}
+              renderInput={(params) => <TextField {...params} label="Select an email template" fullWidth />}
+            />
           )}
         </Grid>
         <Grid item xs={4}>
@@ -534,7 +533,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({ booking, edit
                   </IconButton>
                 </Tooltip>
               )}
-              
+
               <Tooltip title="Attach Other files">
                 <IconButton onClick={() => fileInputRef.current?.click()}>
                   <AttachFileIcon />

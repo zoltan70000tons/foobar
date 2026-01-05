@@ -4,25 +4,25 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    Schema::table('payments', function (Blueprint $table) {
-      $table->boolean('splitAmount')->default(false)->comment('Indicates if the payment amount is split between multiple passengers.');
-    });
-  }
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void {
+        Schema::table('payments', function (Blueprint $table) {
+            $table
+                ->boolean('splitAmount')
+                ->default(false)
+                ->comment('Indicates if the payment amount is split between multiple passengers.');
+        });
+    }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::table('payments', function (Blueprint $table) {
-      $table->dropColumn('splitAmount');
-    });
-  }
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void {
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropColumn('splitAmount');
+        });
+    }
 };

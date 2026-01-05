@@ -3,17 +3,7 @@ import { Head, useForm, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { router } from "@inertiajs/react";
-import {
-  Container,
-  Paper,
-  Grid,
-  Toolbar,
-  TextField,
-  Box,
-  Button,
-  Typography,
-  SelectChangeEvent,
-} from "@mui/material";
+import { Container, Paper, Grid, Toolbar, TextField, Box, Button, Typography, SelectChangeEvent } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -39,12 +29,11 @@ const Create = ({ auth, errors }: PageProps) => {
 
   const { showSnackbar } = useSnackbar();
 
-  const handleDateChange =
-    (field: "start_date" | "end_date") => (newValue: Dayjs | null) => {
-      setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
-    };
+  const handleDateChange = (field: "start_date" | "end_date") => (newValue: Dayjs | null) => {
+    setData(field, newValue ? newValue.format("YYYY/MM/DD") : null);
+  };
 
-  const handlePeriodDateChange = (index: number, field: 'start_date' | 'end_date') => (newValue: Dayjs | null) => {
+  const handlePeriodDateChange = (index: number, field: "start_date" | "end_date") => (newValue: Dayjs | null) => {
     setData((prevData) => {
       const updated = [...prevData.membership_presale_periods];
 
@@ -57,16 +46,14 @@ const Create = ({ auth, errors }: PageProps) => {
       }
 
       updated[index].presale_period[field] = newValue
-        ? newValue//.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
+        ? newValue //.tz('America/New_York', true).format('YYYY-MM-DDTHH:mm:ss')
         : null;
 
       return { ...prevData, membership_presale_periods: updated };
     });
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setData(e.target.name, e.target.value);
   };
 
@@ -81,11 +68,7 @@ const Create = ({ auth, errors }: PageProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (
-      data.start_date &&
-      data.end_date &&
-      new Date(data.start_date).getTime() > new Date(data.end_date).getTime()
-    ) {
+    if (data.start_date && data.end_date && new Date(data.start_date).getTime() > new Date(data.end_date).getTime()) {
       alert("The end date cannot be earlier than the start date.");
       return;
     }
@@ -98,17 +81,17 @@ const Create = ({ auth, errors }: PageProps) => {
         const now = new Date();
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-          alert('Please enter valid start and end dates.');
+          alert("Please enter valid start and end dates.");
           return;
         }
 
         if (start < now || end < now) {
-          alert('Start and end dates cannot be in the past.');
+          alert("Start and end dates cannot be in the past.");
           return;
         }
 
         if (start >= end) {
-          alert('The Pre-Sale end date cannot be earlier than the start date.');
+          alert("The Pre-Sale end date cannot be earlier than the start date.");
           return;
         }
       }
@@ -116,7 +99,7 @@ const Create = ({ auth, errors }: PageProps) => {
 
     const formData = new FormData();
     for (const key in data) {
-      if (key === 'membership_presale_periods') {
+      if (key === "membership_presale_periods") {
         formData.append(key, JSON.stringify(data[key]));
       } else {
         formData.append(key, data[key]);
@@ -204,9 +187,7 @@ const Create = ({ auth, errors }: PageProps) => {
                         value={data.start_date ? dayjs(data.start_date) : null}
                         disablePast
                         onChange={handleDateChange("start_date")}
-                        renderInput={(params) => (
-                          <TextField {...params} fullWidth />
-                        )}
+                        renderInput={(params) => <TextField {...params} fullWidth />}
                         error={Boolean(errors.start_date)}
                         helperText={errors.start_date}
                       />
@@ -218,9 +199,7 @@ const Create = ({ auth, errors }: PageProps) => {
                         value={data.end_date ? dayjs(data.end_date) : null}
                         disablePast
                         onChange={handleDateChange("end_date")}
-                        renderInput={(params) => (
-                          <TextField {...params} fullWidth />
-                        )}
+                        renderInput={(params) => <TextField {...params} fullWidth />}
                         error={Boolean(errors.end_date)}
                         helperText={errors.end_date}
                       />
@@ -250,22 +229,15 @@ const Create = ({ auth, errors }: PageProps) => {
               </Box>
 
               <Box sx={{ mt: 4 }}>
-                <EventStatusSelect
-                  value={data.status}
-                  onChange={handleStatusChange}
-                  errors={errors}
-                />
+                <EventStatusSelect value={data.status} onChange={handleStatusChange} errors={errors} />
               </Box>
 
-              {(data.membership_presale_periods && data.membership_presale_periods.length > 0) && (
+              {data.membership_presale_periods && data.membership_presale_periods.length > 0 && (
                 <>
-                  <Typography
-                    variant="body2"
-                    sx={{ display: 'inline-flex', alignItems: 'center', mt: 4 }}
-                  >
+                  <Typography variant="body2" sx={{ display: "inline-flex", alignItems: "center", mt: 4 }}>
                     Pre-Sale Periods (Time must be in EST)
                   </Typography>
-                  <Grid container item xs={12} spacing={2} sx={{mt: 0}}>
+                  <Grid container item xs={12} spacing={2} sx={{ mt: 0 }}>
                     {data.membership_presale_periods.map((item, index) => {
                       return (
                         <React.Fragment key={item.membership_type.id}>
@@ -284,16 +256,10 @@ const Create = ({ auth, errors }: PageProps) => {
                                 label="Start Date"
                                 sx={{ width: "100%" }}
                                 disablePast
-                                onChange={handlePeriodDateChange(index, 'start_date')}
-                                value={
-                                  item.presale_period?.start_date ? dayjs(item.presale_period.start_date) : null
-                                }
+                                onChange={handlePeriodDateChange(index, "start_date")}
+                                value={item.presale_period?.start_date ? dayjs(item.presale_period.start_date) : null}
                                 renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    fullWidth
-                                    InputProps={{ readOnly: true }}
-                                  />
+                                  <TextField {...params} fullWidth InputProps={{ readOnly: true }} />
                                 )}
                               />
                             </LocalizationProvider>
@@ -304,16 +270,10 @@ const Create = ({ auth, errors }: PageProps) => {
                                 label="End Date"
                                 sx={{ width: "100%" }}
                                 disablePast
-                                onChange={handlePeriodDateChange(index, 'end_date')}
-                                value={
-                                  item.presale_period?.end_date ? dayjs(item.presale_period.end_date) : null
-                                }
+                                onChange={handlePeriodDateChange(index, "end_date")}
+                                value={item.presale_period?.end_date ? dayjs(item.presale_period.end_date) : null}
                                 renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    fullWidth
-                                    InputProps={{ readOnly: true }}
-                                  />
+                                  <TextField {...params} fullWidth InputProps={{ readOnly: true }} />
                                 )}
                               />
                             </LocalizationProvider>
@@ -326,13 +286,7 @@ const Create = ({ auth, errors }: PageProps) => {
               )}
 
               <Box sx={{ mt: 4 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  type="submit"
-                  disabled={processing}
-                >
+                <Button variant="contained" color="primary" fullWidth type="submit" disabled={processing}>
                   {processing ? "Submitting..." : "Submit"}
                 </Button>
               </Box>

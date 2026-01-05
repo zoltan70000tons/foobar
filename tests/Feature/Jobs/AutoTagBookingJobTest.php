@@ -7,43 +7,40 @@ namespace App\Jobs;
 // Dummy/spies for the helper functions (createTag, attachTag, removeTag).
 // Since these are in the same namespace as the Job, PHP will use them
 // instead of the global ones during tests.
-class _TagDummy
-{
-    public function __construct(public string $id) {}
+class _TagDummy {
+    public function __construct(public string $id) {
+    }
 }
 
-final class _HelpersSpy
-{
+final class _HelpersSpy {
     public static array $attachTagCalls = [];
     public static array $removeTagCalls = [];
     public static array $createTagCalls = [];
-    public static function reset(): void
-    {
+    public static function reset(): void {
         self::$attachTagCalls = [];
         self::$removeTagCalls = [];
         self::$createTagCalls = [];
     }
 }
 
-function attachTag($model, string $name, string $type, ?string $color = null, ?string $description = null)
-{
+function attachTag($model, string $name, string $type, ?string $color = null, ?string $description = null) {
     _HelpersSpy::$attachTagCalls[] = compact('model', 'name', 'type', 'color', 'description');
     return new _TagDummy('missing-info-tag-id');
 }
 
-function removeTag($model, string $name, string $type)
-{
+function removeTag($model, string $name, string $type) {
     _HelpersSpy::$removeTagCalls[] = compact('model', 'name', 'type');
     return true;
 }
 
-function createTag(string $name, string $type, ?string $color = null, ?string $description = null)
-{
+function createTag(string $name, string $type, ?string $color = null, ?string $description = null) {
     _HelpersSpy::$createTagCalls[] = compact('name', 'type', 'color', 'description');
-    return new _TagDummy(match (strtoupper($name)) {
-        'OVERDUE'     => 'overdue-tag-id',
-        default       => 'tag-id-' . strtolower($name),
-    });
+    return new _TagDummy(
+        match (strtoupper($name)) {
+            'OVERDUE' => 'overdue-tag-id',
+            default => 'tag-id-' . strtolower($name),
+        },
+    );
 }
 
 namespace Tests\Feature\Jobs;
@@ -67,36 +64,31 @@ beforeEach(function () {
 /**
  * Helpers to build fake passengers/cabin objects
  */
-function makePassenger(array $attrs): object
-{
-    return new class($attrs) {
+function makePassenger(array $attrs): object {
+    return new class ($attrs) {
         public $first_name;
         public $last_name;
         public $dob;
         public $empty_seat;
         private $status;
-        public function __construct($a)
-        {
+        public function __construct($a) {
             $this->first_name = $a['first_name'] ?? 'John';
-            $this->last_name  = $a['last_name']  ?? 'Doe';
-            $this->dob        = $a['dob']        ?? '1990-01-01';
+            $this->last_name = $a['last_name'] ?? 'Doe';
+            $this->dob = $a['dob'] ?? '1990-01-01';
             $this->empty_seat = $a['empty_seat'] ?? false;
-            $this->status     = $a['installment_status'] ?? [];
+            $this->status = $a['installment_status'] ?? [];
         }
-        public function getInstallmentStatus()
-        {
+        public function getInstallmentStatus() {
             return $this->status;
         }
     };
 }
 
-function makeCabin(int $cabinTypeId): object
-{
-    return new class($cabinTypeId) {
+function makeCabin(int $cabinTypeId): object {
+    return new class ($cabinTypeId) {
         public $cabinType;
-        public function __construct($id)
-        {
-            $this->cabinType = (object)['id' => $id];
+        public function __construct($id) {
+            $this->cabinType = (object) ['id' => $id];
         }
     };
 }
@@ -112,7 +104,8 @@ it('attaches OVERDUE tag when an installment is more than 48h overdue', function
     $booking->cabin = makeCabin(1);
     $booking->tags = [];
 
-    $booking->shouldReceive('attachTags')
+    $booking
+        ->shouldReceive('attachTags')
         ->once()
         ->with(['overdue-tag-id']);
     $booking->shouldReceive('detachTags')->never();
@@ -131,7 +124,8 @@ it('detaches OVERDUE tag when installments are not overdue', function () {
     $booking->cabin = makeCabin(1);
     $booking->tags = [];
 
-    $booking->shouldReceive('detachTags')
+    $booking
+        ->shouldReceive('detachTags')
         ->once()
         ->with(['overdue-tag-id']);
     $booking->shouldReceive('attachTags')->never();
@@ -142,8 +136,8 @@ it('detaches OVERDUE tag when installments are not overdue', function () {
 it('adds MISSING INFO tag when passenger lacks info in a private cabin with occupied seat', function () {
     $p1 = makePassenger([
         'first_name' => '',
-        'last_name'  => 'Perez',
-        'dob'        => '1995-02-02',
+        'last_name' => 'Perez',
+        'dob' => '1995-02-02',
         'empty_seat' => false,
     ]);
 
@@ -153,7 +147,6 @@ it('adds MISSING INFO tag when passenger lacks info in a private cabin with occu
     $booking->tags = [];
     $booking->shouldReceive('attachTags')->zeroOrMoreTimes()->andReturnNull();
     $booking->shouldReceive('detachTags')->zeroOrMoreTimes()->andReturn(0);
-
 
     (new AutoTagBookingJob($booking))->handle();
 
@@ -167,8 +160,8 @@ it('adds MISSING INFO tag when passenger lacks info in a private cabin with occu
 it('removes MISSING INFO tag when passenger is missing info but seat is not occupied', function () {
     $p1 = makePassenger([
         'first_name' => '',
-        'last_name'  => 'Perez',
-        'dob'        => '1995-02-02',
+        'last_name' => 'Perez',
+        'dob' => '1995-02-02',
         'empty_seat' => true, // seat is empty -> should not trigger
     ]);
 
@@ -178,7 +171,6 @@ it('removes MISSING INFO tag when passenger is missing info but seat is not occu
     $booking->tags = [];
     $booking->shouldReceive('attachTags')->zeroOrMoreTimes()->andReturnNull();
     $booking->shouldReceive('detachTags')->zeroOrMoreTimes()->andReturn(0);
-
 
     (new AutoTagBookingJob($booking))->handle();
 

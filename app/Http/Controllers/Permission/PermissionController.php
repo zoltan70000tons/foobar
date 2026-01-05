@@ -12,36 +12,28 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 
-class PermissionController extends Controller
-{
+class PermissionController extends Controller {
     private PermissionRepositoryInterface $permissionRepositoryInterface;
 
-    public function __construct(PermissionRepository $permissionRepositoryInterface)
-    {
+    public function __construct(PermissionRepository $permissionRepositoryInterface) {
         $this->permissionRepositoryInterface = $permissionRepositoryInterface;
     }
 
-    public function index()
-    {
+    public function index() {
         return $this->permissionRepositoryInterface->getAll();
     }
 
-    public function store(CreatePermissionRequest $request)
-    {
+    public function store(CreatePermissionRequest $request) {
         $data = $request->all();
         return $this->permissionRepositoryInterface->create($data);
     }
 
-
-
-    public function destroy(Permission $permission)
-    {
-      $this->permissionRepositoryInterface->delete($permission);
-      //Redirect::route('permissions.index')->with('flash', 'Permission updated successfully.');
+    public function destroy(Permission $permission) {
+        $this->permissionRepositoryInterface->delete($permission);
+        //Redirect::route('permissions.index')->with('flash', 'Permission updated successfully.');
     }
 
-    public function update(Request $request, Permission $permission)
-    {
+    public function update(Request $request, Permission $permission) {
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
@@ -51,11 +43,9 @@ class PermissionController extends Controller
         //Redirect::route('permissions.index')->with('success', 'Permission updated successfully.');
     }
 
-
-    public function listByOrganization(ListPermissionRequest $request)
-    {
-      $id = $request->id;
-      $role_id = $request->role_id;
-      return $this->permissionRepositoryInterface->findbyOrganization($id,$role_id);
+    public function listByOrganization(ListPermissionRequest $request) {
+        $id = $request->id;
+        $role_id = $request->role_id;
+        return $this->permissionRepositoryInterface->findbyOrganization($id, $role_id);
     }
 }

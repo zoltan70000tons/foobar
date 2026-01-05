@@ -1,18 +1,16 @@
 <?php
- 
+
 namespace Database\Seeders;
- 
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
- 
-class MembershipTypeSeeder extends Seeder
-{
+
+class MembershipTypeSeeder extends Seeder {
     /**
      * Run the database seeders.
      */
-    public function run(): void
-    {
+    public function run(): void {
         // Black Survivors
         DB::table('membership_types')->insert([
             'name' => 'Black',
@@ -20,7 +18,7 @@ class MembershipTypeSeeder extends Seeder
             'discount_value' => '10',
             'created_at' => Carbon::now(),
         ]);
-        
+
         // Gold+ Survivors
         DB::table('membership_types')->insert([
             'name' => 'Gold+',
@@ -28,7 +26,7 @@ class MembershipTypeSeeder extends Seeder
             'discount_value' => '10',
             'created_at' => Carbon::now(),
         ]);
-        
+
         // Gold Survivors
         DB::table('membership_types')->insert([
             'name' => 'Gold',
@@ -36,7 +34,7 @@ class MembershipTypeSeeder extends Seeder
             'discount_value' => '10',
             'created_at' => Carbon::now(),
         ]);
-        
+
         // Silver+ Survivors
         DB::table('membership_types')->insert([
             'name' => 'Silver+',
@@ -44,7 +42,7 @@ class MembershipTypeSeeder extends Seeder
             'discount_value' => '5',
             'created_at' => Carbon::now(),
         ]);
-        
+
         // Silver Survivors
         DB::table('membership_types')->insert([
             'name' => 'Silver',

@@ -50,13 +50,7 @@ const TableTitle = ({
           mr: 2,
         }}
       >
-        <img
-          src={imgByCat}
-          alt={categoryName}
-          width={imageSize}
-          height={imageSize}
-          style={{ objectFit: "cover" }}
-        />
+        <img src={imgByCat} alt={categoryName} width={imageSize} height={imageSize} style={{ objectFit: "cover" }} />
       </Box>
 
       <Typography fontSize={isSticky ? 14 : 16} fontWeight={600}>
@@ -66,21 +60,13 @@ const TableTitle = ({
   );
 };
 
-export default function PricingTable({
-  imgByCat,
-  categoryName,
-  data,
-  eventId,
-  cabinTypeSlug,
-}: PricingTableProps) {
+export default function PricingTable({ imgByCat, categoryName, data, eventId, cabinTypeSlug }: PricingTableProps) {
   const theme = useTheme();
   const { main_category } = data;
   const { max_capacity, name } = main_category;
 
   const [isSticky, setSticky] = useState(false);
-  const isMobile = useMediaQuery(
-    `(max-width:${theme.breakpoints.values.md}px)`
-  );
+  const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.md}px)`);
 
   const stickyProps = {
     topOffset: isMobile ? -70 : -40,
@@ -94,18 +80,10 @@ export default function PricingTable({
 
   const renderHeader = () => (
     <>
-      <TableTitle
-        imgByCat={imgByCat}
-        categoryName={categoryName}
-        isSticky={isSticky}
-        isMobile={isMobile}
-      />
+      <TableTitle imgByCat={imgByCat} categoryName={categoryName} isSticky={isSticky} isMobile={isMobile} />
 
       {isMobile ? (
-        <PricingHeaderMobile
-          maxCapacity={max_capacity}
-          mainCategoryName={name}
-        />
+        <PricingHeaderMobile maxCapacity={max_capacity} mainCategoryName={name} />
       ) : (
         <PricingHeader maxCapacity={max_capacity} />
       )}

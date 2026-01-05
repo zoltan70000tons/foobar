@@ -12,84 +12,85 @@ use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\DB;
 use App\Services\PaymentInfoService;
 
-class OnboardCreditController extends Controller
-{
+class OnboardCreditController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
 
-    public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService)
-    {
+    public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService) {
         $this->passengerRepository = $passengerRepository;
         $this->paymentInfoService = $paymentInfoService;
     }
 
-    public function store(Request $request)
-    {
-        return $this->withPermission([Permissions::CreatePassengerOnboardCredit], function ($request) {
-            DB::beginTransaction();
+    public function store(Request $request) {
+        return $this->withPermission(
+            [Permissions::CreatePassengerOnboardCredit],
+            function ($request) {
+                DB::beginTransaction();
 
-            try {
-                $validated = $request->validate([
-                    'passenger_id' => 'required|exists:passengers,id',
-                    'amount' => 'required|numeric|min:0.01',
-                    'reason' => 'required|string|max:255',
+                try {
+                    $validated = $request->validate([
+                        'passenger_id' => 'required|exists:passengers,id',
+                        'amount' => 'required|numeric|min:0.01',
+                        'reason' => 'required|string|max:255',
+                    ]);
+                    OnboardCredit::create($validated);
 
-                ]);
-                OnboardCredit::create($validated);
+                    DB::commit();
 
-                DB::commit();
+                    return redirect()->back()->with('success', 'Onboard Credit added successfully!');
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->logException($e);
 
-                return redirect()->back()->with('success', 'Onboard Credit added successfully!');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $this->logException($e);
-
-                return redirect()->back()->with('error', 'Error creating onboard credit!');
-            }
-        }, $request);
+                    return redirect()->back()->with('error', 'Error creating onboard credit!');
+                }
+            },
+            $request,
+        );
     }
 
-    public function delete(Request $request)
-    {
-        return $this->withPermission([Permissions::DeletePassengerOnboardCredit], function ($request) {
-            DB::beginTransaction();
-            try {
-                $booking_id = $request->route('booking_id');
-                $event_id = $request->route('event_id');
-                $validated = $request->validate([
-                    'onboard_credit_id' => 'required|exists:onboard_credit,id',
-                    'passenger_id' => 'required|exists:passengers,id',
-                ]);
-                $booking = Booking::where('id', $booking_id)
-                    ->where('event_id', $event_id)
-                    ->first();
+    public function delete(Request $request) {
+        return $this->withPermission(
+            [Permissions::DeletePassengerOnboardCredit],
+            function ($request) {
+                DB::beginTransaction();
+                try {
+                    $booking_id = $request->route('booking_id');
+                    $event_id = $request->route('event_id');
+                    $validated = $request->validate([
+                        'onboard_credit_id' => 'required|exists:onboard_credit,id',
+                        'passenger_id' => 'required|exists:passengers,id',
+                    ]);
+                    $booking = Booking::where('id', $booking_id)->where('event_id', $event_id)->first();
 
-                if (!$booking) {
-                    return redirect()->back()->with('error', 'Booking not found.');
+                    if (!$booking) {
+                        return redirect()->back()->with('error', 'Booking not found.');
+                    }
+
+                    $onboardCredit = OnboardCredit::where('id', $validated['onboard_credit_id'])
+                        ->where('passenger_id', $validated['passenger_id'])
+                        ->first();
+
+                    if (!$onboardCredit) {
+                        return redirect()->back()->with('error', 'Onboard credit not found.');
+                    }
+
+                    $onboardCredit->delete();
+
+                    DB::commit();
+
+                    return redirect()->back()->with('success', 'Onboard credit deleted successfully!');
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->logException($e);
+
+                    return redirect()->back()->with('error', 'Failed to delete onboard credit!');
                 }
-
-                $onboardCredit = OnboardCredit::where('id', $validated['onboard_credit_id'])
-                    ->where('passenger_id', $validated['passenger_id'])
-                    ->first();
-
-                if (!$onboardCredit) {
-                    return redirect()->back()->with('error', 'Onboard credit not found.');
-                }
-
-                $onboardCredit->delete();
-
-                DB::commit();
-
-                return redirect()->back()->with('success', 'Onboard credit deleted successfully!');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $this->logException($e);
-
-                return redirect()->back()->with('error', 'Failed to delete onboard credit!');
-            }
-        }, $request);
+            },
+            $request,
+        );
     }
 }

@@ -1,5 +1,5 @@
 <?php
 
 return [
-  'payment_success' => 'Payment processed successfully',
+    'payment_success' => 'Payment processed successfully',
 ];

@@ -6,10 +6,8 @@ use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-trait ActsAsAgent
-{
-    public function loginAgent(?User $user = null): User
-    {
+trait ActsAsAgent {
+    public function loginAgent(?User $user = null): User {
         app(PermissionRegistrar::class)->setPermissionsTeamId(1);
         $user ??= User::factory()->create();
         $agentRole = Role::where('name', 'Agent')->firstOrFail();
@@ -19,8 +17,7 @@ trait ActsAsAgent
         return $user;
     }
 
-    public function loginManager(?User $user = null): User
-    {
+    public function loginManager(?User $user = null): User {
         app(PermissionRegistrar::class)->setPermissionsTeamId(1);
         $user ??= User::factory()->create();
         $adminRole = Role::where('name', 'Manager')->firstOrFail();

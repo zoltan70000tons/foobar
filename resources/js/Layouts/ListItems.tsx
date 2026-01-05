@@ -9,7 +9,7 @@ import {
   Person as PersonIcon,
   DirectionsBoat as EventIcon,
   History as HistoryIcon,
-  JoinInner as JoinInnerIcon
+  JoinInner as JoinInnerIcon,
 } from "@mui/icons-material";
 import SellIcon from "@mui/icons-material/Sell";
 import { Link, router, usePage } from "@inertiajs/react";

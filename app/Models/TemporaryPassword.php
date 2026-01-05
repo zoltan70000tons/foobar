@@ -4,8 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TemporaryPassword extends Model
-{
+class TemporaryPassword extends Model {
     protected $fillable = ['customer_id', 'generated_by', 'temporary_password', 'expires_at'];
 
     protected $casts = [
@@ -13,13 +12,11 @@ class TemporaryPassword extends Model
         'used_at' => 'datetime',
     ];
 
-    public function customer()
-    {
+    public function customer() {
         return $this->belongsTo(User::class, 'customer_id');
     }
 
-    public function generatedBy()
-    {
+    public function generatedBy() {
         return $this->belongsTo(User::class, 'generated_by');
     }
 }

@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head, router, usePage } from "@inertiajs/react";
 import {
   Box,
   Container,
@@ -17,28 +17,28 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-} from '@mui/material';
-import MuiTable from '@/Components/tables/MuiTable';
-import { CabinStatus, CabinStatusColor, CabinStatusReduced } from '@/enums/CabinStatus';
-import { CabinCategory } from '@/interfaces/CabinCategory';
-import { Visibility, Edit, Delete } from '@mui/icons-material';
-import { Permissions } from '@/enums/PermissionEnum';
-import { usePermissions } from '@/Providers/PermissionContext';
-import apiRoutes from '@/Helpers/ApiRoutes';
-import type { Errors } from '@inertiajs/core';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import AddIcon from '@mui/icons-material/Add';
-import { Event } from '@/interfaces/Event';
-import { Cabin } from '@/interfaces/Cabin';
-import type { PageProps } from '@/types';
-import { CabinSubRow } from '@/interfaces/CabinSubRow';
-import { StatusTooltip } from '@/Components/StatusToolTip';
-import TagToolTip from '@/Components/TagToolTip';
-import axios from 'axios';
-import { Link, useRemember } from '@inertiajs/react';
+} from "@mui/material";
+import MuiTable from "@/Components/tables/MuiTable";
+import { CabinStatus, CabinStatusColor, CabinStatusReduced } from "@/enums/CabinStatus";
+import { CabinCategory } from "@/interfaces/CabinCategory";
+import { Visibility, Edit, Delete } from "@mui/icons-material";
+import { Permissions } from "@/enums/PermissionEnum";
+import { usePermissions } from "@/Providers/PermissionContext";
+import apiRoutes from "@/Helpers/ApiRoutes";
+import type { Errors } from "@inertiajs/core";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import AddIcon from "@mui/icons-material/Add";
+import { Event } from "@/interfaces/Event";
+import { Cabin } from "@/interfaces/Cabin";
+import type { PageProps } from "@/types";
+import { CabinSubRow } from "@/interfaces/CabinSubRow";
+import { StatusTooltip } from "@/Components/StatusToolTip";
+import TagToolTip from "@/Components/TagToolTip";
+import axios from "axios";
+import { Link, useRemember } from "@inertiajs/react";
 import { TicketTypeData } from "@/Pages/Cabin/partials/matrix/TicketTypeData";
 
-type Tag = { id: string; name: string; color: string; description: string; priority: number; };
+type Tag = { id: string; name: string; color: string; description: string; priority: number };
 
 type Props = PageProps & {
   auth: AuthProps;
@@ -51,11 +51,11 @@ type Props = PageProps & {
 };
 
 const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
-  const [selectedTab, setSelectedTab] = useRemember(0, 'cabins:selectedTab');
+  const [selectedTab, setSelectedTab] = useRemember(0, "cabins:selectedTab");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setSelectedTab(parseInt(params.get('tab') || String(selectedTab), 10));
+    setSelectedTab(parseInt(params.get("tab") || String(selectedTab), 10));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -70,18 +70,18 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   useEffect(() => {
     if (flash.message) {
       if (flash.success) {
-        showSnackbar(flash.message, 'success');
+        showSnackbar(flash.message, "success");
       } else {
-        showSnackbar(flash.message, 'error');
+        showSnackbar(flash.message, "error");
       }
     }
-  }, [flash])
+  }, [flash]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
 
     const params = new URLSearchParams(window.location.search);
-    params.set('tab', String(newValue));
+    params.set("tab", String(newValue));
     const newUrl = `${window.location.pathname}?${params.toString()}`;
 
     router.get(
@@ -91,33 +91,33 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         preserveState: true,
         preserveScroll: true,
         replace: true,
-      }
+      },
     );
   };
 
   const columns = useMemo(
     () => [
       {
-        header: 'Category Code',
-        accessor: 'category_code',
+        header: "Category Code",
+        accessor: "category_code",
         filterable: true,
         sortable: true,
       },
       {
-        header: 'Name',
-        accessor: 'title',
+        header: "Name",
+        accessor: "title",
         filterable: true,
         sortable: true,
       },
       {
-        header: 'Price',
-        accessor: 'price',
+        header: "Price",
+        accessor: "price",
         filterable: false,
         sortable: true,
       },
       {
-        header: 'Availability',
-        accessor: 'availability',
+        header: "Availability",
+        accessor: "availability",
         sortable: true,
         filterable: false,
       },
@@ -128,12 +128,12 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   const subColumns = useMemo(
     () => [
       {
-        accessor: 'cabin_number',
-        header: 'Number',
+        accessor: "cabin_number",
+        header: "Number",
         filterable: true,
         sortable: true,
         draw: (row: Cabin) => (
-          <Typography variant="body2" sx={{ fontWeight: '500' }}>
+          <Typography variant="body2" sx={{ fontWeight: "500" }}>
             {row.cabin_number}
             {row && row.is_shared_cabin_number && (
               <Chip
@@ -142,10 +142,10 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                 color="warning"
                 sx={{
                   ml: 1,
-                  bgcolor: '#ff9800',
-                  color: '#fff',
-                  fontSize: '0.75em',
-                  height: '20px',
+                  bgcolor: "#ff9800",
+                  color: "#fff",
+                  fontSize: "0.75em",
+                  height: "20px",
                 }}
               />
             )}
@@ -153,24 +153,24 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         ),
       },
       {
-        accessor: 'cabin_type',
-        header: 'Type',
+        accessor: "cabin_type",
+        header: "Type",
         sortable: true,
         filterable: true,
       },
       {
-        accessor: 'deck',
-        header: 'Deck',
+        accessor: "deck",
+        header: "Deck",
         sortable: true,
         filterable: true,
       },
       {
-        accessor: 'cabin_status',
-        header: 'Filter Status',
+        accessor: "cabin_status",
+        header: "Filter Status",
         filterable: true,
         sortable: true,
-        width: '150px',
-        filterType: 'select',
+        width: "150px",
+        filterType: "select",
         filterOptions: Object.values(CabinStatus),
         draw: (row: CabinSubRow) => (
           <>
@@ -186,9 +186,9 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                 }
                 color={CabinStatusColor[row.cabin_status]}
                 sx={{
-                  margin: 'auto',
-                  fontSize: '0.7rem',
-                  fontWeight: '600',
+                  margin: "auto",
+                  fontSize: "0.7rem",
+                  fontWeight: "600",
                 }}
               />
             </StatusTooltip>
@@ -198,8 +198,8 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                 color="warning.main"
                 sx={{
                   mt: 0.5,
-                  fontSize: '0.7rem',
-                  fontWeight: '500',
+                  fontSize: "0.7rem",
+                  fontWeight: "500",
                 }}
               >
                 Booking in Progress
@@ -209,19 +209,22 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         ),
       },
       {
-        accessor: 'cabin_tags',
-        header: 'Filter Tags',
+        accessor: "cabin_tags",
+        header: "Filter Tags",
         filterable: true,
-        filterType: 'select',
+        filterType: "select",
         filterOptions: tags ? tags.map((tag: any) => tag.name) : [],
         filterFunction: (cellValue: any, filterValue: string) => {
-          const norm = (v: unknown) => String(v ?? "").toLowerCase().trim();
-          const names = Array.isArray(cellValue) ? cellValue.map(t => norm(t?.name)) : [];
+          const norm = (v: unknown) =>
+            String(v ?? "")
+              .toLowerCase()
+              .trim();
+          const names = Array.isArray(cellValue) ? cellValue.map((t) => norm(t?.name)) : [];
           return names.includes(norm(filterValue));
         },
         draw: (subRow: CabinSubRow) => {
           return (
-            <Box sx={{ display: 'inline-flex', gap: 0.5 }}>
+            <Box sx={{ display: "inline-flex", gap: 0.5 }}>
               {Array.isArray(subRow.cabin_tags) && subRow.cabin_tags.length > 0 ? (
                 subRow.cabin_tags.map((tag: Tag) => (
                   <TagToolTip description={tag.description} title={tag.name} key={tag.id} label={tag.name}>
@@ -229,8 +232,8 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                       key={tag.id}
                       label={tag.name}
                       size="small"
-                      style={{ backgroundColor: tag.color, color: '#fff' }}
-                      sx={{ margin: 'auto', fontSize: '0.7rem', fontWeight: '400' }}
+                      style={{ backgroundColor: tag.color, color: "#fff" }}
+                      sx={{ margin: "auto", fontSize: "0.7rem", fontWeight: "400" }}
                     />
                   </TagToolTip>
                 ))
@@ -239,19 +242,18 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
               )}
             </Box>
           );
-        }
+        },
       },
       {
-        header: 'Actions',
-        accessor: 'category_code',
+        header: "Actions",
+        accessor: "category_code",
         disableFilter: true,
         draw: (row: Cabin) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             {auth.permissions.includes(Permissions.ViewCabins) && (
-              <Link href={route('cabins.edit', { id: event.id, cabin_id: row.id })}>
-                <Visibility style={{ cursor: 'pointer', fill: 'white' }} />
+              <Link href={route("cabins.edit", { id: event.id, cabin_id: row.id })}>
+                <Visibility style={{ cursor: "pointer", fill: "white" }} />
               </Link>
-
             )}
           </div>
         ),
@@ -262,69 +264,68 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
 
   // cabin categories
   const handleEditClick = (row: CabinCategory) => {
-    router.get(route('cabinCategory.edit', { id: row.event_id, catId: row.id }));
+    router.get(route("cabinCategory.edit", { id: row.event_id, catId: row.id }));
   };
   const handleViewClick = (row: CabinCategory) => {
-    router.get(route('cabinCategory.show', { id: row.event_id, catId: row.id }));
+    router.get(route("cabinCategory.show", { id: row.event_id, catId: row.id }));
   };
   const handleDeleteClick = (row: CabinCategory) => {
-    router.delete(route('cabinCategory.destroy', { id: row.event_id, catId: row.id }));
+    router.delete(route("cabinCategory.destroy", { id: row.event_id, catId: row.id }));
   };
-
 
   const categoriesColumns = useMemo(
     () => [
       {
-        header: 'Id',
-        accessor: 'id',
+        header: "Id",
+        accessor: "id",
       },
       {
-        header: 'Category Type',
-        accessor: 'category_type',
+        header: "Category Type",
+        accessor: "category_type",
       },
       {
-        header: 'Category Code',
-        accessor: 'category_code',
+        header: "Category Code",
+        accessor: "category_code",
       },
       {
-        header: 'Category Name',
-        accessor: 'category_name',
+        header: "Category Name",
+        accessor: "category_name",
       },
       {
-        header: 'Capacity',
-        accessor: 'capacity',
+        header: "Capacity",
+        accessor: "capacity",
       },
       {
-        header: 'Price',
-        accessor: 'price',
+        header: "Price",
+        accessor: "price",
       },
       {
-        header: 'Display Order',
-        accessor: 'display_order',
+        header: "Display Order",
+        accessor: "display_order",
       },
       {
-        header: 'Cruise ID',
-        accessor: 'cruise_id',
+        header: "Cruise ID",
+        accessor: "cruise_id",
       },
       {
-        header: 'Event ID',
-        accessor: 'event_id',
+        header: "Event ID",
+        accessor: "event_id",
       },
 
       {
-        header: 'Actions',
-        accessor: '',
+        header: "Actions",
+        accessor: "",
         disableFilter: true,
         draw: (row: CabinCategory) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             {auth.permissions.includes(Permissions.ViewCabinCategories) && (
-              <Visibility onClick={() => handleViewClick(row)} style={{ cursor: 'pointer' }} />
+              <Visibility onClick={() => handleViewClick(row)} style={{ cursor: "pointer" }} />
             )}
             {auth.permissions.includes(Permissions.EditCabinCategories) && (
-              <Edit onClick={() => handleEditClick(row)} style={{ cursor: 'pointer' }} />
+              <Edit onClick={() => handleEditClick(row)} style={{ cursor: "pointer" }} />
             )}
             {auth.permissions.includes(Permissions.DeleteCabinCategories) && (
-              <Delete onClick={() => handleDeleteClick(row)} style={{ cursor: 'pointer' }} />
+              <Delete onClick={() => handleDeleteClick(row)} style={{ cursor: "pointer" }} />
             )}
           </div>
         ),
@@ -335,21 +336,23 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
 
   const manageTags = async (rows: Cabin[], tags: string[]) => {
     try {
-      router.post(route('cabins.addTag', { id: event.id }), { tags, rows }, {
-        onSuccess: () => {
-          setTableTick(t => t + 1); 
-          showSnackbar('Tags edited successfully', 'success');
+      router.post(
+        route("cabins.addTag", { id: event.id }),
+        { tags, rows },
+        {
+          onSuccess: () => {
+            setTableTick((t) => t + 1);
+            showSnackbar("Tags edited successfully", "success");
+          },
+          onError: () => showSnackbar("Error updating Tags", "error"),
+          preserveScroll: true,
         },
-        onError: () => showSnackbar('Error updating Tags', 'error'),
-        preserveScroll: true,
-      });
-
+      );
     } catch (error) {
-      console.error('Error adding tags:', error);
-      showSnackbar('Error updating tags', 'error');
+      console.error("Error adding tags:", error);
+      showSnackbar("Error updating tags", "error");
     }
   };
-
 
   const manageStatus = (rows: Cabin, status: string) => {
     const hasInvalidStatus = rows.some(
@@ -362,16 +365,17 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
 
     const rowIds = rows.map((row: Cabin) => row.id);
 
-    router.post(route('cabins.updateStatus', { id: event.id }),
+    router.post(
+      route("cabins.updateStatus", { id: event.id }),
       { status, rows: rowIds },
       {
         onSuccess: () => {
-          setTableTick(t => t + 1); 
-          showSnackbar('Status edited successfully', 'success');
+          setTableTick((t) => t + 1);
+          showSnackbar("Status edited successfully", "success");
         },
-        onError: () => showSnackbar('Error updating status', 'error'),
+        onError: () => showSnackbar("Error updating status", "error"),
         preserveScroll: true,
-      }
+      },
     );
   };
 
@@ -386,10 +390,9 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
       rowsPerPage: number,
       filters: Filters,
       sort: { key?: string; direction?: string } | undefined,
-      dateRangeState: null
+      dateRangeState: null,
     ) => {
       try {
-
         const res = await axios.get(route("cabins.getData", { id: event.id }), {
           params: {
             page: page + 1,
@@ -409,12 +412,11 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
         throw err;
       }
     },
-    [event.id]
+    [event.id],
   );
 
-
   return (
-    <AuthenticatedLayout user={auth.user} header={'Cabins'}>
+    <AuthenticatedLayout user={auth.user} header={"Cabins"}>
       <Head title="Cabins" />
       <Toolbar sx={{ mt: 8 }}>
         <IconButton edge="start" color="inherit" aria-label="menu">
@@ -434,20 +436,22 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                 <Tab label="MANAGE CATEGORIES" />
                 <Tab label="MATRIX" />
               </Tabs>
-              <Box sx={{ display: selectedTab === 0 ? 'block' : 'none', mt: 2 }}>
+              <Box sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}>
                 {cabins ? (
                   <div>
-                    {auth.permissions.includes(Permissions.ViewCabinCategories) && (<Button
-                      variant="outlined"
-                      color="primary"
-                      startIcon={<AddIcon />}
-                      sx={{ mb: 2, ml: 'auto' }}
-                      onClick={() => {
-                        router.get(route('cabins.create', { id: event.id }));
-                      }}
-                    >
-                      Create Cabin
-                    </Button>)}
+                    {auth.permissions.includes(Permissions.ViewCabinCategories) && (
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<AddIcon />}
+                        sx={{ mb: 2, ml: "auto" }}
+                        onClick={() => {
+                          router.get(route("cabins.create", { id: event.id }));
+                        }}
+                      >
+                        Create Cabin
+                      </Button>
+                    )}
                     <MuiTable
                       columns={columns}
                       data={cabins}
@@ -478,7 +482,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                   <DialogTitle id="alert-dialog-title">Non Editable Rows</DialogTitle>
                   <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                      Some cabins cannot be processed due to their current status: <strong>{CabinStatus.BOOKED}</strong>{' '}
+                      Some cabins cannot be processed due to their current status: <strong>{CabinStatus.BOOKED}</strong>{" "}
                       or <strong>{CabinStatus.PARTIALLY_BOOKED}</strong>. Please check and try again.
                     </DialogContentText>
                   </DialogContent>
@@ -490,18 +494,18 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                 </Dialog>
               </Box>
 
-              <Box sx={{ display: selectedTab === 1 ? 'block' : 'none', mt: 2 }}>
+              <Box sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}>
                 <MuiTable columns={categoriesColumns} data={categories} />
               </Box>
 
-              <Box sx={{ display: selectedTab === 2 ? 'block' : 'none', mt: 2 }}>
+              <Box sx={{ display: selectedTab === 2 ? "block" : "none", mt: 2 }}>
                 <Box
                   sx={{
                     mt: 6,
                     px: { xs: 0, lg: 3 },
                   }}
                 >
-                  <TicketTypeData eventId={event.id} cabinType={'private-cabin'} />
+                  <TicketTypeData eventId={event.id} cabinType={"private-cabin"} />
                 </Box>
               </Box>
             </Box>

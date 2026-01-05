@@ -11,20 +11,14 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $reason
  * @property int $passenger_id
  */
-class OnboardCredit extends Model
-{
-  use HasApiTokens, HasFactory;
+class OnboardCredit extends Model {
+    use HasApiTokens, HasFactory;
 
-  protected $table = 'onboard_credit';
+    protected $table = 'onboard_credit';
 
-  protected $fillable = [
-    'amount',
-    'reason',
-    'passenger_id',
-  ];
+    protected $fillable = ['amount', 'reason', 'passenger_id'];
 
-  public function passenger()
-  {
-    return $this->belongsTo(Passenger::class, 'passenger_id');
-  }
+    public function passenger() {
+        return $this->belongsTo(Passenger::class, 'passenger_id');
+    }
 }

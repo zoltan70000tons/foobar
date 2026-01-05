@@ -1,9 +1,7 @@
 <?php
 
 return [
-
-
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Event Language Lines ES
     |--------------------------------------------------------------------------
@@ -14,6 +12,5 @@ return [
     |
     */
 
-  'no_event_found' => 'No se encontraron eventos',
-
+    'no_event_found' => 'No se encontraron eventos',
 ];

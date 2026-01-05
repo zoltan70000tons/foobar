@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  IconButton,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogActions,
-  Button,
-  DialogTitle,
-  DialogContent,
-} from "@mui/material";
+import { IconButton, Menu, MenuItem, Dialog, DialogActions, Button, DialogTitle, DialogContent } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ViewMember from "./ViewMember";
 import { usePermissions } from "@/Providers/PermissionContext";
@@ -16,7 +7,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { User } from "@/interfaces/User";
 
 interface ActionMenuProps {
-  params:{
+  params: {
     row: User;
   };
   onUpdate: () => void;
@@ -50,20 +41,10 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params, onUpdate }) => {
     <>
       {hasPermission(Permissions.ViewUsers) && (
         <>
-          <IconButton
-            aria-label="more"
-            aria-controls="long-menu"
-            aria-haspopup="true"
-            onClick={handleMenuOpen}
-          >
+          <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleMenuOpen}>
             <MoreVertIcon />
           </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose} 
-          >
+          <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleMenuClose}>
             <MenuItem onClick={handleView}>View</MenuItem>
           </Menu>
         </>
@@ -72,20 +53,16 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ params, onUpdate }) => {
       <Dialog
         maxWidth="xl"
         open={openViewModal}
-        onClose={handleCloseViewModal} 
+        onClose={handleCloseViewModal}
         aria-labelledby="view-dialog-title"
         aria-describedby="view-dialog-description"
       >
         <DialogTitle>Edit User Details</DialogTitle>
         <DialogContent>
-          <ViewMember selectedUser={selectedUser} onUpdate={onUpdate}/>
+          <ViewMember selectedUser={selectedUser} onUpdate={onUpdate} />
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseViewModal}
-            color="primary"
-            variant="contained"
-          >
+          <Button onClick={handleCloseViewModal} color="primary" variant="contained">
             Close
           </Button>
         </DialogActions>

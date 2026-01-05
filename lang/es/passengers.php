@@ -1,6 +1,5 @@
 <?php
 return [
-
     'lead' => 'Pasajero Principal',
     'ordinals' => [
         2 => 'Segundo',
@@ -17,6 +16,5 @@ return [
     'due' => 'tu monto pendiente es:',
     'no_payment_prefix' => '<br />Ten en cuenta que no hemos recibido pago de',
     'next_installment' => 'Tu próximo pago a plazos vence el :date.',
-    'due_immediately' => 'Tu próximo pago a plazos debe <strong>pagarse inmediatamente</strong>.'
-
+    'due_immediately' => 'Tu próximo pago a plazos debe <strong>pagarse inmediatamente</strong>.',
 ];

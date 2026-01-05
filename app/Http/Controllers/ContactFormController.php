@@ -6,11 +6,9 @@ use App\Mail\ContactFormMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
-class ContactFormController extends Controller
-{
-    public function submit(Request $request)
-    {
-        $contactMail = env("MAIL_TO");
+class ContactFormController extends Controller {
+    public function submit(Request $request) {
+        $contactMail = env('MAIL_TO');
         $data = $request->validate([
             'fullName' => 'required|string',
             'email' => 'required|email',
@@ -20,8 +18,7 @@ class ContactFormController extends Controller
         ]);
         try {
             $response = Mail::send('emails.contact-form', ['data' => $data], function ($message) {
-                $message->to('nicanor@70000tons.com')
-                        ->subject('New Contact Form Submission');
+                $message->to('nicanor@70000tons.com')->subject('New Contact Form Submission');
             });
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to send email. Please try again later.'], 500);

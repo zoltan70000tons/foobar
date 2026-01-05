@@ -13,8 +13,8 @@ import { extractCabinPrices } from "./utils/cabinUtils";
 
 export type SelectedCabinDetail = CabinDetail &
   Partial<CabinPriceType> & {
-  cabin_category_type: string;
-};
+    cabin_category_type: string;
+  };
 
 type Props = {
   rowDataLength: number;
@@ -34,29 +34,20 @@ export default function SinglePricingRow({
   onOpenDetail,
 }: Props) {
   const [openModal, setOpenModal] = useState(false);
-  const [selectedCabinDetail, setSelectedCabinDetail] =
-    useState<SelectedCabinDetail | null>(null);
+  const [selectedCabinDetail, setSelectedCabinDetail] = useState<SelectedCabinDetail | null>(null);
 
   const cabinCode = cabin.code;
   const cabinDecks = cabin.decks_static;
 
-  const cabinPrices: CabinPriceType[] = extractCabinPrices(
-    cabin.price_and_availability,
-    cabinCode
-  );
+  const cabinPrices: CabinPriceType[] = extractCabinPrices(cabin.price_and_availability, cabinCode);
 
-  const handleModalOpen = (
-    _fullTitle: string,
-    _price: string,
-    _cabinCode: string,
-    singlePrice: CabinPriceType
-  ) => {
+  const handleModalOpen = (_fullTitle: string, _price: string, _cabinCode: string, singlePrice: CabinPriceType) => {
     setSelectedCabinDetail({
       ...cabin,
       ...singlePrice,
       cabin_category_type: cabinCategoryType,
     });
-    alert('OPENING');
+    alert("OPENING");
     setOpenModal(true);
   };
 

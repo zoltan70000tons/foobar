@@ -9,7 +9,7 @@ const HtmlEditor = () => {
       <Typography variant="h4" gutterBottom>
         HTML Editor & Previewer
       </Typography>
-      
+
       <Grid container spacing={3}>
         {/* Editor */}
         <Grid item xs={12} md={6}>

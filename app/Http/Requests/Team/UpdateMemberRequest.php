@@ -10,14 +10,12 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
-class UpdateMemberRequest extends FormRequest
-{
+class UpdateMemberRequest extends FormRequest {
     use JsonResponseTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
+    public function authorize(): bool {
         return true;
     }
 
@@ -26,8 +24,7 @@ class UpdateMemberRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'firstname' => ['required', 'string', new NoForbiddenCharacters()],
             'lastname' => ['required', 'string', new NoForbiddenCharacters()],

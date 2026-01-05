@@ -8,12 +8,11 @@ use Inertia\Inertia;
 use App\Models\Log as LogModel;
 use Illuminate\Support\Facades\DB;
 
-class LogsController extends Controller
-{
-    public function __construct() {}
+class LogsController extends Controller {
+    public function __construct() {
+    }
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $type = $request->filled('type') ? (string) $request->string('type') : null;
         $action = $request->filled('action') ? $request->array('action') : [];
         $from = $request->date('from');
@@ -32,7 +31,7 @@ class LogsController extends Controller
         $page = $request->get('page');
 
         $q = LogModel::query()
-            ->latest('logs.created_at') 
+            ->latest('logs.created_at')
             ->when($type, fn($qb) => $qb->where('logs.related_type', $type))
             ->when(!empty($action), fn($qb) => $qb->whereIn('logs.action', $action))
             ->when($from, fn($qb) => $qb->where('logs.created_at', '>=', $from->copy()->startOfDay()))
@@ -41,22 +40,23 @@ class LogsController extends Controller
             ->when($agentName, fn($qb) => $qb->where('users.username', 'ILIKE', "%{$agentName}%"))
             ->when($actorType, fn($qb) => $qb->whereIn('logs.actor_type', $actorType));
 
-        $logs = $q->select(
-            'logs.id',
-            'logs.created_at',
-            'logs.actor_type',
-            'logs.actor_id',
-            'users.username as actor_username',
-            'users.email as actor_email',
-            'logs.action',
-            'logs.description',
-            'logs.related_type',
-            'logs.related_id',
-            'logs.payload',
-            'bookings.booking_code',
-            'bookings.event_id',
-            'cabin_specs.cabin_number',
-        )
+        $logs = $q
+            ->select(
+                'logs.id',
+                'logs.created_at',
+                'logs.actor_type',
+                'logs.actor_id',
+                'users.username as actor_username',
+                'users.email as actor_email',
+                'logs.action',
+                'logs.description',
+                'logs.related_type',
+                'logs.related_id',
+                'logs.payload',
+                'bookings.booking_code',
+                'bookings.event_id',
+                'cabin_specs.cabin_number',
+            )
             ->leftJoin('users', 'users.id', '=', 'logs.actor_id')
             ->leftJoin('bookings', function ($join) {
                 $join->on('logs.related_id', '=', DB::raw('bookings.id::text'));

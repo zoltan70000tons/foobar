@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Typography,
-  IconButton,
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  alpha,
-  Divider,
-} from "@mui/material";
+import { Typography, IconButton, Box, Dialog, DialogTitle, DialogContent, alpha, Divider } from "@mui/material";
 import SinglePricingRow from "./SinglePricingRow";
 import { grey } from "@mui/material/colors";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,11 +11,7 @@ type Props = {
   eventId: number;
 };
 
-export default function PricingRows({
-  data: allData,
-  eventId,
-  cabinTypeSlug,
-}: Props) {
+export default function PricingRows({ data: allData, eventId, cabinTypeSlug }: Props) {
   const data = allData.main_category.categories;
   const maxCapacity = allData.main_category.max_capacity;
 
@@ -46,14 +33,12 @@ export default function PricingRows({
 
   // Sorting and mapping
   const sortedData = [...data]
-  .sort((a, b) => a.display_order - b.display_order)
-  .map((rowData) => ({
-    ...rowData,
-    cabins: [...rowData.cabins].sort(
-      (a, b) => a.display_order - b.display_order
-    ),
-  }))
-  .filter((rowData) => rowData.cabins.length > 0);
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((rowData) => ({
+      ...rowData,
+      cabins: [...rowData.cabins].sort((a, b) => a.display_order - b.display_order),
+    }))
+    .filter((rowData) => rowData.cabins.length > 0);
 
   return (
     <>
@@ -116,16 +101,12 @@ export default function PricingRows({
               width: "100%",
               borderRadius: "10px",
               background: grey[900],
-              border: `1px solid ${grey[700]}`
+              border: `1px solid ${grey[700]}`,
             },
           },
         }}
       >
-        <DialogTitle
-          align="center"
-          id="Cabin Title"
-          sx={{ maxWidth: "400px", margin: "auto" }}
-        >
+        <DialogTitle align="center" id="Cabin Title" sx={{ maxWidth: "400px", margin: "auto" }}>
           {selectedCabinDetail?.full_title}
         </DialogTitle>
         <IconButton
@@ -140,9 +121,7 @@ export default function PricingRows({
           <CloseIcon />
         </IconButton>
         <Divider />
-        <DialogContent>
-          {selectedCabinDetail && <CabinDetailedView cabinDetail={selectedCabinDetail} />}
-        </DialogContent>
+        <DialogContent>{selectedCabinDetail && <CabinDetailedView cabinDetail={selectedCabinDetail} />}</DialogContent>
       </Dialog>
     </>
   );

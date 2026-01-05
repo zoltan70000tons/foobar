@@ -5,9 +5,109 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/816) - 2026-01-01
+
+### Changed
+
+- Standarized Repo format
+
+## [1.9.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/814) - 2026-01-01
+
+### Fixed
+
+- Validate event ID in EventController
+
+## [1.9.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/814) - 2026-01-01
+
+### Added
+
+- `ApiException` class for standardized error handling across the entire application
+- `NOT_ENOUGH_TIME_TO_CREATE_INSTALLMENTS` error code to ErrorCode enum
+
+### Changed
+
+- Proper error response for installment validation failures in PaymentService
+- Updated `PaymentService` to throw `ApiException` with specific error codes instead of generic exceptions
+
+### Fixed
+
+- Fixed "Undefined array key 'booking'" error when exceptions occurred during booking creation
+
+## [1.9.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/804)- 2025-12-31
+
+### Added
+
+- Booking Action Rules endpoint to retrieve rules by event and action code
+- Support for action rules including blocking behavior and additional fees
+- Validation logic to determine when an action requires confirmation
+
+## [1.8.6](https://github.com/70000TONS-IT/booking-engine-admin/pull/813) - 2025-12-29
+
+### Added
+
+- validate reset password token
+
+### Changed
+
+- Reset password form received correct param
+
+## [1.8.5](https://github.com/70000TONS-IT/booking-engine-admin/pull/812) - 2025-12-26
+
+### Fixed
+
+- Undefined key issue in BookingsController when creating bookings
+- Validation for installment count in PaymentService to account for Pay in Full
+
+### Removed
+
+- Legacy booking log write operations from BookingsController (writeOnBooking method calls and interface/repository implementation)
+
+## [1.8.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/808/) - 2025-12-26
+
+### Added
+
+- Booking Action Rules endpoint to retrieve rules by event and action code
+- Support for action rules including blocking behavior and additional fees
+- Fee-related fields in action rules response (fee_amount, fee_currency)
+- Validation logic to determine when an action requires confirmation
+
+### Changed
+
+- Standardized action rule response structure for frontend consumption
+- Improved rule evaluation logic to ensure consistent behavior across actions
+
+## [1.8.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/803) - 2025-12-19
+
+### Added
+
+- Password visibility toggle and input field icons to authentication login form
+- Icons to action buttons in passenger edit modal with descriptive tooltips
+
+### Changed
+
+- Reorganized action buttons in edit passenger modal to top header with better layout and tooltips
+
+### Fixed
+
+- Incorrect JavaScript condition checks for empty objects in SplitPaymentModal and SplitPaymentModal2 (changed from `=== {}` to `Object.keys().length === 0`)
+- Guest Authentication error message now uses translated feedback key for passenger not found errors
+- Button URLs in navigation menu for "Check Booking" and "Make Payment" routes
+
+## [1.8.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/798) - 2025-12-18
+
+### Added
+
+- Introduce resources for api responses.
+- Data masker for specific field types
+
+### Changed
+
+- Removed unnecesery fields from response, removed duplicates
+
 ## [1.8.0](https://github.com/70000TONS-IT/booking-engine-admin/pull/783) - 2025-12-15
 
 ### Added
+
 - Cabin inventory matrix tab in the Cabin menu to check cabin inventory
 
 ## [1.7.7](https://github.com/70000TONS-IT/booking-engine-admin/pull/801) - 2025-12-16

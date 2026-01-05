@@ -29,7 +29,6 @@ import { Cruiser, Cruisers } from "@/interfaces/Cruiser";
 import { Event } from "@/interfaces/Event";
 import { CategoryTypes } from "@/enums/CategoryTypeEnum";
 
-
 type Props = PageProps & {
   auth: AuthProps;
   event: Event;
@@ -38,13 +37,7 @@ type Props = PageProps & {
   errors: Errors;
 };
 
-const View = ({
-  auth,
-  event,
-  cruisers,
-  cabin_category,
-  errors,
-}: Props) => {
+const View = ({ auth, event, cruisers, cabin_category, errors }: Props) => {
   const { data, setData, post, processing } = useForm({
     category_name: cabin_category.category_name,
     category_code: cabin_category.category_code,
@@ -57,8 +50,8 @@ const View = ({
     cruise: cabin_category.spec.cruise_id,
   });
 
-  const category = (Object.entries(CategoryTypes).find(([_, v]) => v === data.category_type)?.[1] ?? CategoryTypes.INTERIOR);
-
+  const category =
+    Object.entries(CategoryTypes).find(([_, v]) => v === data.category_type)?.[1] ?? CategoryTypes.INTERIOR;
 
   interface Image {
     name: string;
@@ -68,17 +61,15 @@ const View = ({
   }
 
   const { hasPermission } = usePermissions();
-  const [images, setImages] = useState<Image[]>(
-    Array.isArray(cabin_category.images) ? cabin_category.images : []
-  );
+  const [images, setImages] = useState<Image[]>(Array.isArray(cabin_category.images) ? cabin_category.images : []);
 
-  const handleInputChange = () => { }
-  const handleCategoryTypeChange = () => { }
-  const handleCruiserChange = () => { }
-  const onDelete = () => { }
+  const handleInputChange = () => {};
+  const handleCategoryTypeChange = () => {};
+  const handleCruiserChange = () => {};
+  const onDelete = () => {};
   const handleBack = () => {
     window.history.back();
-  }
+  };
 
   const handleEdit = () => {
     router.get(route("cabinCategory.edit", { id: event.id, catId: cabin_category.id }));
@@ -240,11 +231,7 @@ const View = ({
 
               <Grid item xs={12} sx={{ mb: 2 }}>
                 <Accordion>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                  >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                     Image Gallery
                   </AccordionSummary>
                   <AccordionDetails>
@@ -297,17 +284,20 @@ const View = ({
                       <ArrowBack />
                     </IconButton>
                   </Tooltip>
-                  {hasPermission(Permissions.EditCabinCategories) && (<Tooltip title="Edit">
-                    <IconButton color="primary" onClick={handleEdit}>
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>)}
-                  {hasPermission(Permissions.DeleteCabinCategories) && (<Tooltip title="Delete">
-                    <IconButton color="error" onClick={handleDelete}>
-                      <Delete />
-                    </IconButton>
-                  </Tooltip>)}
-
+                  {hasPermission(Permissions.EditCabinCategories) && (
+                    <Tooltip title="Edit">
+                      <IconButton color="primary" onClick={handleEdit}>
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {hasPermission(Permissions.DeleteCabinCategories) && (
+                    <Tooltip title="Delete">
+                      <IconButton color="error" onClick={handleDelete}>
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </div>
               </Box>
             </form>

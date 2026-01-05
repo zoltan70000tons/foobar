@@ -1,11 +1,16 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-import { PageProps } from '@/types';
-import { TextField, Button, Box, Stack, Alert } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
+import { Link, useForm, usePage } from "@inertiajs/react";
+import { FormEventHandler } from "react";
+import { PageProps } from "@/types";
+import { TextField, Button, Box, Stack, Alert } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
 
-export default function UpdateProfileInformation({ mustVerifyEmail, status }: { mustVerifyEmail: boolean, status?: string }) {
-
+export default function UpdateProfileInformation({
+  mustVerifyEmail,
+  status,
+}: {
+  mustVerifyEmail: boolean;
+  status?: string;
+}) {
   const user = usePage<PageProps>().props.auth.user;
 
   const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
@@ -16,7 +21,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: { 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    patch(route('profile.update'));
+    patch(route("profile.update"));
   };
 
   return (
@@ -24,9 +29,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: { 
       <header>
         <h2>Profile Information</h2>
 
-        <p>
-          Update your account's profile information and email address.
-        </p>
+        <p>Update your account's profile information and email address.</p>
       </header>
       <form onSubmit={submit}>
         <Box
@@ -36,7 +39,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: { 
             gap: "20px",
             width: "100%",
             flexWrap: "wrap",
-            maxWidth: "400px"
+            maxWidth: "400px",
           }}
         >
           <TextField
@@ -46,7 +49,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: { 
             type="text"
             name="name"
             value={data.name}
-            onChange={(e) => setData('name', e.target.value)}
+            onChange={(e) => setData("name", e.target.value)}
           />
           <TextField
             fullWidth
@@ -55,41 +58,36 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status }: { 
             type="email"
             name="email"
             value={data.email}
-            onChange={(e) => setData('email', e.target.value)}
+            onChange={(e) => setData("email", e.target.value)}
           />
           {mustVerifyEmail && user.email_verified_at === null && (
             <div>
               <p>
                 Your email address is unverified.
-                <Link
-                  href={route('verification.send')}
-                  method="post"
-                  as="button"
-                >
+                <Link href={route("verification.send")} method="post" as="button">
                   Click here to re-send the verification email.
                 </Link>
               </p>
 
-              {status === 'verification-link-sent' && (
+              {status === "verification-link-sent" && (
                 <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
                   A new verification link has been sent to your email address.
                 </Alert>
               )}
-
             </div>
           )}
           <Stack
             sx={{
-              width: "100%"
+              width: "100%",
             }}
           >
-            {recentlySuccessful && <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">Saved.</Alert>}
+            {recentlySuccessful && (
+              <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
+                Saved.
+              </Alert>
+            )}
 
-            <Button
-              variant="contained"
-              disabled={processing}
-              type="submit"
-            >
+            <Button variant="contained" disabled={processing} type="submit">
               Save
             </Button>
           </Stack>

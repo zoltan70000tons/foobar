@@ -9,7 +9,7 @@ export type OAuthTranslations = {
     Legal: FooterGroup;
     Contact: FooterGroup;
   };
-}
+};
 
 declare module "@inertiajs/react" {
   interface PageProps {

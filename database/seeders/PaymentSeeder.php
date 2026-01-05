@@ -14,8 +14,7 @@ use Faker\Generator;
 use Carbon\Carbon;
 use Ramsey\Uuid\Type\Decimal;
 
-class PaymentSeeder extends Seeder
-{
+class PaymentSeeder extends Seeder {
     /**
      * The current Faker instance.
      *
@@ -27,8 +26,7 @@ class PaymentSeeder extends Seeder
     /**
      * Create a new seeder instance.
      */
-    public function __construct(PaymentService $paymentService)
-    {
+    public function __construct(PaymentService $paymentService) {
         $this->faker = $this->withFaker();
         $this->paymentService = $paymentService;
     }
@@ -36,16 +34,14 @@ class PaymentSeeder extends Seeder
     /**
      * Get a new Faker instance.
      */
-    protected function withFaker()
-    {
+    protected function withFaker() {
         return Container::getInstance()->make(Generator::class);
     }
 
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         $bookings = Booking::with('passengers.installments')->get(); // Eager load passengers and installments
 
         foreach ($bookings as $booking) {
@@ -75,18 +71,16 @@ class PaymentSeeder extends Seeder
     /**
      * Create a payment for an installment.
      */
-    private function makePayment(int $passengerId, $amount): float
-    {
-
-       $response = $this->paymentService->processPayment([
+    private function makePayment(int $passengerId, $amount): float {
+        $response = $this->paymentService->processPayment([
             'passenger_id' => $passengerId,
             'BIP_ID' => $this->faker->uuid(),
             'amount' => $amount,
-            'type' =>'PAYMENT',
+            'type' => 'PAYMENT',
             'source' => 'SYSTEM',
             'transaction_date' => Carbon::now(),
         ]);
-    
+
         if ($response['success']) {
             return $response['payment']['amount'];
         } else {
@@ -97,12 +91,9 @@ class PaymentSeeder extends Seeder
     /**
      * Create a full payment for a booking.
      */
-    private function makeFullPayment($passenger, $booking): void
-    {
+    private function makeFullPayment($passenger, $booking): void {
         $paymentType = rand(1, 100) <= 20 ? 'REFUND' : 'PAYMENT';
-        $paymentAmount = rand(1, 100) <= 70 
-        ? $booking->cabin->category->price 
-        : 0; 
+        $paymentAmount = rand(1, 100) <= 70 ? $booking->cabin->category->price : 0;
         $response = $this->paymentService->processPayment([
             'passenger_id' => $passenger->id,
             'BIP_ID' => $this->faker->uuid(),
@@ -112,20 +103,17 @@ class PaymentSeeder extends Seeder
             'transaction_date' => Carbon::now(),
         ]);
 
-       // dd($response);
+        // dd($response);
 
         if ($response['success']) {
-            if($response['payment']->type == 'REFUND'){
+            if ($response['payment']->type == 'REFUND') {
                 $passenger->passenger_balance = $paymentAmount - $response['payment']->amount;
-            }else{
+            } else {
                 $passenger->passenger_balance = $paymentAmount;
             }
             $passenger->save();
         } else {
             throw new \Exception($response['message']);
         }
-
-        
-        
     }
 }

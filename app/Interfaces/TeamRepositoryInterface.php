@@ -2,8 +2,7 @@
 
 namespace App\Interfaces;
 
-interface TeamRepositoryInterface
-{
+interface TeamRepositoryInterface {
     function getAllMembers($organization, $team = null);
     function findMember($team, $id);
     function updateMemberRoles($user_id, $org_id, $roles);

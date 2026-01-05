@@ -19,10 +19,7 @@ export default function PrivateCabin({
 
   return (
     <>
-      <TableRow
-        firstCol="single_after_tax"
-        secondCol={localNumberFormat(singleTotal)}
-      />
+      <TableRow firstCol="single_after_tax" secondCol={localNumberFormat(singleTotal)} />
       <Divider />
       <TableRow firstCol="capacity" secondCol={String(capacity)} />
       <Divider />
@@ -34,9 +31,7 @@ export default function PrivateCabin({
           py: 1.5,
         }}
       >
-        <Typography sx={{ fontWeight: "bold", textDecoration: "underline" }}>
-          subTotal
-        </Typography>
+        <Typography sx={{ fontWeight: "bold", textDecoration: "underline" }}>subTotal</Typography>
 
         <Typography sx={{ fontWeight: "bold", textAlign: "right" }}>
           {localNumberFormat(total, locale)}

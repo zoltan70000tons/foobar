@@ -22,7 +22,7 @@ type MembershipType = {
   name: string;
   discount_value: string;
   booking_number_requirement: number;
-}
+};
 
 type PresalePeriods = {
   id: string;
@@ -31,7 +31,7 @@ type PresalePeriods = {
   membership_type: MembershipType;
   start_date: string;
   end_date: string;
-}
+};
 
 export type EventType = {
   id: number;
@@ -47,4 +47,4 @@ export type EventType = {
   start_date: string;
   status: string;
   url: string;
-}
+};

@@ -11,7 +11,6 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
  * @property \App\Models\Booking $booking
  */
 
-abstract class TestCase extends BaseTestCase
-{
-  //
+abstract class TestCase extends BaseTestCase {
+    //
 }

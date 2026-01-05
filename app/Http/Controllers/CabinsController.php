@@ -25,8 +25,7 @@ use App\Rules\CabinNumberIsAvailable;
 use DB;
 use Log;
 
-class CabinsController extends Controller
-{
+class CabinsController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
@@ -34,62 +33,71 @@ class CabinsController extends Controller
     protected EventRepositoryInterface $eventRepository;
     protected CabinCategoryInterface $cabinCategoryRepository;
 
-    public function __construct(CabinRepository $cabinRepository, EventRepository $eventRepository, CabinCategoryRepository $cabinCategoryRepository)
-    {
+    public function __construct(
+        CabinRepository $cabinRepository,
+        EventRepository $eventRepository,
+        CabinCategoryRepository $cabinCategoryRepository,
+    ) {
         $this->cabinRepository = $cabinRepository;
         $this->eventRepository = $eventRepository;
         $this->cabinCategoryRepository = $cabinCategoryRepository;
     }
 
-    public function index()
-    {
+    public function index() {
         try {
-            return $this->withPermission([Permissions::ViewCabins], function () {
-                $event_id = request()->route('id');
+            return $this->withPermission(
+                [Permissions::ViewCabins],
+                function () {
+                    $event_id = request()->route('id');
 
-                if ($event_id == 'all') {
-                    $events = $this->eventRepository->getAll();
-                    return Inertia::render('Cabin/partials/Events', [
-                        'events' => $events,
-                    ]);
-                }
+                    if ($event_id == 'all') {
+                        $events = $this->eventRepository->getAll();
+                        return Inertia::render('Cabin/partials/Events', [
+                            'events' => $events,
+                        ]);
+                    }
 
-                if (is_numeric($event_id)) {
-                    $event = $this->eventRepository->find($event_id);
-                    $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
-                    $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
-                    $tags = Tag::type('cabin')->get();
-                    return Inertia::render('Cabin/Index', [
-                        'cabins' => $cabins,
-                        'categories' => $categories,
-                        'event' => $event,
-                        'tags' => $tags,
-                    ]);
-                }
-            }, null);
+                    if (is_numeric($event_id)) {
+                        $event = $this->eventRepository->find($event_id);
+                        $cabins = $this->cabinRepository->getCategoriesAndCabins($event_id);
+                        $categories = $this->cabinCategoryRepository->getCategoriesByEvent($event_id);
+                        $tags = Tag::type('cabin')->get();
+                        return Inertia::render('Cabin/Index', [
+                            'cabins' => $cabins,
+                            'categories' => $categories,
+                            'event' => $event,
+                            'tags' => $tags,
+                        ]);
+                    }
+                },
+                null,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function create()
-    {
+    public function create() {
         try {
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
-            return $this->withPermission([Permissions::CreateCabins], function ($event, $cabinCategories) {
-                return Inertia::render('Cabin/Create', [
-                    'event' => $event,
-                    'categories' => $cabinCategories,
-                ]);
-            }, $event, $cabinCategories);
+            return $this->withPermission(
+                [Permissions::CreateCabins],
+                function ($event, $cabinCategories) {
+                    return Inertia::render('Cabin/Create', [
+                        'event' => $event,
+                        'categories' => $cabinCategories,
+                    ]);
+                },
+                $event,
+                $cabinCategories,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function checkIfExists(Request $request)
-    {
+    public function checkIfExists(Request $request) {
         $rules = [
             'cabin_number' => 'required|numeric',
             'event_id' => 'required|numeric',
@@ -112,16 +120,11 @@ class CabinsController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $event_id = $request->route('id');
         $rules = [
             'status' => 'required|string|max:255',
-            'cabin_number' => [
-                'required',
-                'numeric',
-                new CabinNumberIsAvailable(),
-            ],
+            'cabin_number' => ['required', 'numeric', new CabinNumberIsAvailable()],
             'cabin_category_id' => 'required|numeric',
             'cabin_type_id' => 'required|numeric',
             'deck' => 'required|numeric',
@@ -141,77 +144,86 @@ class CabinsController extends Controller
         ];
         $validated = $request->validate($rules);
         try {
+            return $this->withPermission(
+                [Permissions::CreateCabins],
+                function ($event_id, $validated) {
+                    //Arr::forget($validated, 'inventory');
+                    $cabin = null;
+                    $sanitized = Arr::map($validated, function ($value, $key) {
+                        if (is_array($value)) {
+                            return $value;
+                        }
+                        if (is_string($value)) {
+                            return strip_tags(trim($value));
+                        }
 
-            return $this->withPermission([Permissions::CreateCabins], function ($event_id, $validated) {
-                //Arr::forget($validated, 'inventory');
-                $cabin = null;
-                $sanitized = Arr::map($validated, function ($value, $key) {
-                    if (is_array($value)) {
                         return $value;
+                    });
+                    $cabin = $this->cabinRepository->save($sanitized);
+                    if (!$cabin) {
+                        return redirect()->back()->with('error', 'Failed to create cabin. Please try again.');
                     }
-                    if (is_string($value)) {
-                        return strip_tags(trim($value));
-                    }
-
-                    return $value;
-                });
-                $cabin = $this->cabinRepository->save($sanitized);
-                if (!$cabin) {
-                    return redirect()->back()->with('error', 'Failed to create cabin. Please try again.');
-                }
-                return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])->with('message', 'Cabin created successfully.')
-                    ->with('success', true);
-            }, $event_id, $validated);
+                    return redirect()
+                        ->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])
+                        ->with('message', 'Cabin created successfully.')
+                        ->with('success', true);
+                },
+                $event_id,
+                $validated,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function edit(Request $request)
-    {
+    public function edit(Request $request) {
         try {
             $cabin = $this->cabinRepository->find($request->cabin_id);
             $event = $this->eventRepository->find(request()->route('id'));
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             $availableTags = Tag::type('cabin')->get();
-            $logs = LogModel::query()->select(
-                'logs.id',
-                'logs.created_at',
-                'logs.actor_type',
-                'logs.actor_id',
-                'users.username as actor_username',
-                'logs.action',
-                'logs.description',
-                'logs.related_type',
-                'logs.related_id',
-            )
+            $logs = LogModel::query()
+                ->select(
+                    'logs.id',
+                    'logs.created_at',
+                    'logs.actor_type',
+                    'logs.actor_id',
+                    'users.username as actor_username',
+                    'logs.action',
+                    'logs.description',
+                    'logs.related_type',
+                    'logs.related_id',
+                )
                 ->leftJoin('users', 'users.id', '=', 'logs.actor_id')
                 ->where('related_type', '=', 'cabin')
                 ->where('related_id', '=', $cabin->id)
                 ->get();
 
-            return $this->withPermission([
-                Permissions::EditCabins,
-                Permissions::ViewCabins
-            ], function ($event, $cabin, $cabinCategories, $availableTags, $logs) {
-                $shared = $this->cabinRepository->getSharedCabins($event->id, $cabin->cabin_spec_id);
-                return Inertia::render('Cabin/Edit', [
-                    'cabin' => $cabin,
-                    'event' => $event,
-                    'categories' => $cabinCategories,
-                    'shared' => $shared,
-                    'availableTags' => $availableTags,
-                    'logs' => $logs,
-                ]);
-            }, $event, $cabin, $cabinCategories, $availableTags, $logs);
+            return $this->withPermission(
+                [Permissions::EditCabins, Permissions::ViewCabins],
+                function ($event, $cabin, $cabinCategories, $availableTags, $logs) {
+                    $shared = $this->cabinRepository->getSharedCabins($event->id, $cabin->cabin_spec_id);
+                    return Inertia::render('Cabin/Edit', [
+                        'cabin' => $cabin,
+                        'event' => $event,
+                        'categories' => $cabinCategories,
+                        'shared' => $shared,
+                        'availableTags' => $availableTags,
+                        'logs' => $logs,
+                    ]);
+                },
+                $event,
+                $cabin,
+                $cabinCategories,
+                $availableTags,
+                $logs,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function update(Request $request)
-    {
-
+    public function update(Request $request) {
         try {
             $cabin_id = $request->route('cabin_id');
             $event_id = $request->route('id');
@@ -242,52 +254,64 @@ class CabinsController extends Controller
             ];
             $validated = $request->validate($rules);
 
-            return $this->withPermission([Permissions::EditCabins], function ($event_id, $cabin_id, $validated) {
-                Arr::forget($validated, 'inventory');
-                $sanitized = Arr::map($validated, function ($value, $key) {
-                    if (is_array($value)) {
+            return $this->withPermission(
+                [Permissions::EditCabins],
+                function ($event_id, $cabin_id, $validated) {
+                    Arr::forget($validated, 'inventory');
+                    $sanitized = Arr::map($validated, function ($value, $key) {
+                        if (is_array($value)) {
+                            return $value;
+                        }
+                        if (is_string($value)) {
+                            return strip_tags(trim($value));
+                        }
+
                         return $value;
-                    }
-                    if (is_string($value)) {
-                        return strip_tags(trim($value));
-                    }
-
-                    return $value;
-                });
-                $this->cabinRepository->update($sanitized, $cabin_id);
-                return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin_id])
-                    ->with('success', 'Cabin updated successfully.');
-            }, $event_id, $cabin_id, $validated);
+                    });
+                    $this->cabinRepository->update($sanitized, $cabin_id);
+                    return redirect()
+                        ->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin_id])
+                        ->with('success', 'Cabin updated successfully.');
+                },
+                $event_id,
+                $cabin_id,
+                $validated,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function show(Cabin $cabin)
-    {
+    public function show(Cabin $cabin) {
         try {
-            return $this->withPermission([Permissions::ViewCabins], function ($cabin) {
-                return Inertia::render('Cabins/View', ['cabin' => $cabin]);
-            }, $cabin);
+            return $this->withPermission(
+                [Permissions::ViewCabins],
+                function ($cabin) {
+                    return Inertia::render('Cabins/View', ['cabin' => $cabin]);
+                },
+                $cabin,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function destroy(Cabin $cabin)
-    {
+    public function destroy(Cabin $cabin) {
         try {
-            return $this->withPermission([Permissions::DeleteCabins], function ($cabin) {
-                $cabin->delete();
-                return redirect()->route('cabins.index')->with('success', 'Cabin deleted successfully.');
-            }, $cabin);
+            return $this->withPermission(
+                [Permissions::DeleteCabins],
+                function ($cabin) {
+                    $cabin->delete();
+                    return redirect()->route('cabins.index')->with('success', 'Cabin deleted successfully.');
+                },
+                $cabin,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
         }
     }
 
-    public function addTag(Request $request)
-    {
+    public function addTag(Request $request) {
         try {
             $validatedData = $request->validate([
                 'rows' => 'required|array|min:1',
@@ -302,83 +326,93 @@ class CabinsController extends Controller
             foreach ($cabins as $cabin) {
                 $beforeTagIds = $cabin->tags()->pluck('tags.id')->all();
 
-                $tag = Tag::type('cabin')
-                    ->whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $tags))
-                    ->get();
+                $tag = Tag::type('cabin')->whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $tags))->get();
                 $cabin->tags()->sync($tag);
 
-                $afterTagIds  = $cabin->tags()->pluck('tags.id')->all();
-                $addedIds     = array_values(array_diff($afterTagIds, $beforeTagIds));
-                $removedIds   = array_values(array_diff($beforeTagIds, $afterTagIds));
+                $afterTagIds = $cabin->tags()->pluck('tags.id')->all();
+                $addedIds = array_values(array_diff($afterTagIds, $beforeTagIds));
+                $removedIds = array_values(array_diff($beforeTagIds, $afterTagIds));
 
                 if ($addedIds || $removedIds) {
-                    $addedNames   = $addedIds   ? Tag::whereIn('id', $addedIds)->pluck('name', 'id')   : collect();
+                    $addedNames = $addedIds ? Tag::whereIn('id', $addedIds)->pluck('name', 'id') : collect();
                     $removedNames = $removedIds ? Tag::whereIn('id', $removedIds)->pluck('name', 'id') : collect();
 
                     GlobalLogger::log(
                         LogActionCabin::TAG_UPDATED,
                         'cabin',
-                        (string)$cabin->id,
-                        trim(sprintf(
-                            'Tags updated%s%s',
-                            $addedIds   ? ' — added: ' . implode(', ', $addedNames->values()->all()) : '',
-                            $removedIds ? ' — removed: ' . implode(', ', $removedNames->values()->all()) : ''
-                        )),
+                        (string) $cabin->id,
+                        trim(
+                            sprintf(
+                                'Tags updated%s%s',
+                                $addedIds ? ' — added: ' . implode(', ', $addedNames->values()->all()) : '',
+                                $removedIds ? ' — removed: ' . implode(', ', $removedNames->values()->all()) : '',
+                            ),
+                        ),
                         [
-                            'before'  => $beforeTagIds,
-                            'after'   => $afterTagIds,
-                            'added'   => $addedNames,
+                            'before' => $beforeTagIds,
+                            'after' => $afterTagIds,
+                            'added' => $addedNames,
                             'removed' => $removedNames,
-                        ]
+                        ],
                     );
                 }
             }
 
-            return redirect()->back()->with([
-                'message' => 'Tags updated successfully!',
-                'success' => true,
-            ]);
-        } catch (\Exception $e) {
-            $this->logException($e);
-            return redirect()->back()->with([
-                'message' => 'Error updating tags',
-                'success' => false,
-            ]);
-        }
-    }
-
-    public function updateStatus(Request $request)
-    {
-        try {
-            return $this->withPermission([Permissions::EditCabins], function ($request) {
-                $validatedData = $request->validate([
-                    'rows' => 'required|array|min:1',
-                    'status' => 'required|string',
-                ]);
-                $status = $validatedData['status'];
-                $cabinIds = $validatedData['rows'];
-                $cabins = Cabin::whereIn('id', $cabinIds)->get();
-                foreach ($cabins as $cabin) {
-                    $cabin->status = $status;
-                    $cabin->save();
-                }
-
-                return redirect()->back()->with([
-                    'message' => 'Status updated successfully!',
+            return redirect()
+                ->back()
+                ->with([
+                    'message' => 'Tags updated successfully!',
                     'success' => true,
                 ]);
-            }, $request);
         } catch (\Exception $e) {
             $this->logException($e);
-            return redirect()->back()->with([
-                'message' => 'Error updating status',
-                'success' => false,
-            ]);
+            return redirect()
+                ->back()
+                ->with([
+                    'message' => 'Error updating tags',
+                    'success' => false,
+                ]);
         }
     }
 
-    public function createShared(Request $request)
-    {
+    public function updateStatus(Request $request) {
+        try {
+            return $this->withPermission(
+                [Permissions::EditCabins],
+                function ($request) {
+                    $validatedData = $request->validate([
+                        'rows' => 'required|array|min:1',
+                        'status' => 'required|string',
+                    ]);
+                    $status = $validatedData['status'];
+                    $cabinIds = $validatedData['rows'];
+                    $cabins = Cabin::whereIn('id', $cabinIds)->get();
+                    foreach ($cabins as $cabin) {
+                        $cabin->status = $status;
+                        $cabin->save();
+                    }
+
+                    return redirect()
+                        ->back()
+                        ->with([
+                            'message' => 'Status updated successfully!',
+                            'success' => true,
+                        ]);
+                },
+                $request,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+            return redirect()
+                ->back()
+                ->with([
+                    'message' => 'Error updating status',
+                    'success' => false,
+                ]);
+        }
+    }
+
+    public function createShared(Request $request) {
         try {
             $event_id = $request->route('id');
             $rules = [
@@ -390,12 +424,10 @@ class CabinsController extends Controller
             if (!$cabin) {
                 return redirect()->route('cabins.index')->with('error', 'Cabin not found.');
             }
-            $shared = $this->cabinRepository->createShared(
-                $cabin->id,
-                $validated['cabin_category_id']
-            );
+            $shared = $this->cabinRepository->createShared($cabin->id, $validated['cabin_category_id']);
             // dd($shared);
-            return redirect()->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])
+            return redirect()
+                ->route('cabins.edit', ['id' => $event_id, 'cabin_id' => $cabin->id])
                 ->with('success', 'Shared cabin created successfully.');
             // return $this->withPermission([Permissions::CreateCabins], function ($event_id, $cabin, $sharedCabins) {
             //     return Inertia::render('Cabin/CreateShared', [
@@ -409,9 +441,7 @@ class CabinsController extends Controller
         }
     }
 
-
-     public function getData()
-    {
+    public function getData() {
         try {
             $eventId = request()->route('id');
             $perPage = request()->query('per_page', 10);

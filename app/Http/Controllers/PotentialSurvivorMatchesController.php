@@ -19,20 +19,22 @@ use Inertia\Response as InertiaResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
-class PotentialSurvivorMatchesController extends Controller
-{
+class PotentialSurvivorMatchesController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         try {
-            return $this->withPermission([Permissions::ViewCustomers], function () {
-                return Inertia::render('PotentialSurvivorMatches/Index', [
-                    'potentialMatches' => PotentialSurvivorMatch::all(),
-                    'statuses' => ['in_progress', 'resolved'],
-                ]);
-            }, $request);
+            return $this->withPermission(
+                [Permissions::ViewCustomers],
+                function () {
+                    return Inertia::render('PotentialSurvivorMatches/Index', [
+                        'potentialMatches' => PotentialSurvivorMatch::all(),
+                        'statuses' => ['in_progress', 'resolved'],
+                    ]);
+                },
+                $request,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
 
@@ -40,8 +42,7 @@ class PotentialSurvivorMatchesController extends Controller
         }
     }
 
-    public function getPaginated(Request $request): LengthAwarePaginator
-    {
+    public function getPaginated(Request $request): LengthAwarePaginator {
         $page = $request->get('page');
         //Adding 1 to $page, since frontend starts to index it from 0, and Laravel expects it from 1
         $page++;
@@ -75,13 +76,10 @@ class PotentialSurvivorMatchesController extends Controller
             }
         }
 
-        return $baseQuery
-            ->orderBy($sortBy, $sortDir)
-            ->paginate($perPage, ['*'], 'page', $page);
+        return $baseQuery->orderBy($sortBy, $sortDir)->paginate($perPage, ['*'], 'page', $page);
     }
 
-    public function update(int $id)
-    {
+    public function update(int $id) {
         try {
             $reviewer = Auth::user();
 
@@ -100,16 +98,16 @@ class PotentialSurvivorMatchesController extends Controller
             $potentialSurvivorMatch->status = 'approved';
             $potentialSurvivorMatch->save();
 
-            return redirect()->route('matches.index')
-                ->with('success', 'Match updated successfully.');
-        } catch (\Exception|\Throwable $e) {
+            return redirect()->route('matches.index')->with('success', 'Match updated successfully.');
+        } catch (\Exception | \Throwable $e) {
             $this->logException($e);
-            return redirect()->route('matches.show', ['id' => $id])->with('error', 'Problem updating potential match.');
+            return redirect()
+                ->route('matches.show', ['id' => $id])
+                ->with('error', 'Problem updating potential match.');
         }
     }
 
-    public function resolve(int $id)
-    {
+    public function resolve(int $id) {
         try {
             $reviewer = Auth::user();
 
@@ -120,47 +118,51 @@ class PotentialSurvivorMatchesController extends Controller
             $potentialSurvivorMatch->status = 'resolved';
             $potentialSurvivorMatch->save();
 
-            return redirect()->route('matches.index')
-                ->with('success', 'Match resolved successfully.');
-        } catch (\Exception|\Throwable $e) {
+            return redirect()->route('matches.index')->with('success', 'Match resolved successfully.');
+        } catch (\Exception | \Throwable $e) {
             $this->logException($e);
-            return redirect()->route('matches.show', ['id' => $id])->with('error', 'Problem resolving double booking.');
+            return redirect()
+                ->route('matches.show', ['id' => $id])
+                ->with('error', 'Problem resolving double booking.');
         }
     }
 
-    public function show(int $id): RedirectResponse|Response|InertiaResponse
-    {
+    public function show(int $id): RedirectResponse|Response|InertiaResponse {
         try {
-            return $this->withPermission([Permissions::ViewCustomers], function ($id) {
-                $potentialSurvivorMatch = PotentialSurvivorMatch::find($id);
-                $passenger = $potentialSurvivorMatch->passenger;
+            return $this->withPermission(
+                [Permissions::ViewCustomers],
+                function ($id) {
+                    $potentialSurvivorMatch = PotentialSurvivorMatch::find($id);
+                    $passenger = $potentialSurvivorMatch->passenger;
 
-                $otherPassenger = null;
-                if ($potentialSurvivorMatch->type === 'double_booking') {
-                    $userDetail = $potentialSurvivorMatch->userDetail;
-                    $otherUser = $userDetail->user;
-                    $otherSurvivorNumber = $otherUser->survivorNumber;
-                    $otherPassenger = Passenger::query()
-                        ->where('survivor_number', $otherSurvivorNumber->survivor_number)
-                        ->with([
-                            'booking' => function ($q) {
-                                $q->where('status', '!=', 'CANCELLED')
-                                    ->whereHas('event', function ($q2) {
-                                        $q2->where('status', '!=', 'CLOSED');
-                                    })
-                                    ->with('event');
-                            },
-                        ])
-                        ->first();
-                }
+                    $otherPassenger = null;
+                    if ($potentialSurvivorMatch->type === 'double_booking') {
+                        $userDetail = $potentialSurvivorMatch->userDetail;
+                        $otherUser = $userDetail->user;
+                        $otherSurvivorNumber = $otherUser->survivorNumber;
+                        $otherPassenger = Passenger::query()
+                            ->where('survivor_number', $otherSurvivorNumber->survivor_number)
+                            ->with([
+                                'booking' => function ($q) {
+                                    $q->where('status', '!=', 'CANCELLED')
+                                        ->whereHas('event', function ($q2) {
+                                            $q2->where('status', '!=', 'CLOSED');
+                                        })
+                                        ->with('event');
+                                },
+                            ])
+                            ->first();
+                    }
 
-                return Inertia::render('PotentialSurvivorMatches/View', [
-                    'potentialMatch' => $potentialSurvivorMatch,
-                    'booking' => $passenger->booking,
-                    'event' => $passenger->booking->event,
-                    'otherPassenger' => $otherPassenger,
-                ]);
-            }, $id);
+                    return Inertia::render('PotentialSurvivorMatches/View', [
+                        'potentialMatch' => $potentialSurvivorMatch,
+                        'booking' => $passenger->booking,
+                        'event' => $passenger->booking->event,
+                        'otherPassenger' => $otherPassenger,
+                    ]);
+                },
+                $id,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
 
@@ -168,33 +170,35 @@ class PotentialSurvivorMatchesController extends Controller
         }
     }
 
-    public function destroy(int $id): RedirectResponse|Response|InertiaResponse
-    {
+    public function destroy(int $id): RedirectResponse|Response|InertiaResponse {
         try {
-            return $this->withPermission([Permissions::DeleteCustomers], function ($id) {
-                $reviewer = Auth::user();
-                $potentialSurvivorMatch = PotentialSurvivorMatch::find($id);
-                $passenger = $potentialSurvivorMatch->passenger;
+            return $this->withPermission(
+                [Permissions::DeleteCustomers],
+                function ($id) {
+                    $reviewer = Auth::user();
+                    $potentialSurvivorMatch = PotentialSurvivorMatch::find($id);
+                    $passenger = $potentialSurvivorMatch->passenger;
 
-                $passenger->survivor_sync_attempts = 3;
-                $passenger->save();
+                    $passenger->survivor_sync_attempts = 3;
+                    $passenger->save();
 
-                $potentialSurvivorMatch->status = 'rejected';
-                $potentialSurvivorMatch->review_date = Carbon::now();
-                $potentialSurvivorMatch->updated_at = Carbon::now();
-                $potentialSurvivorMatch->reviewer_id = $reviewer->id;
-                $potentialSurvivorMatch->save();
+                    $potentialSurvivorMatch->status = 'rejected';
+                    $potentialSurvivorMatch->review_date = Carbon::now();
+                    $potentialSurvivorMatch->updated_at = Carbon::now();
+                    $potentialSurvivorMatch->reviewer_id = $reviewer->id;
+                    $potentialSurvivorMatch->save();
 
-                return redirect()->route('matches.index')->with('success', 'Potential match deleted successfully.');
-            }, $id);
+                    return redirect()->route('matches.index')->with('success', 'Potential match deleted successfully.');
+                },
+                $id,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
             return redirect()->route('matches.index')->with('error', 'Something went wrong.');
         }
     }
 
-    public function syncSurvivors()
-    {
+    public function syncSurvivors() {
         $exitCode = Artisan::call('survivors:sync --only-summary');
         $output = Artisan::output();
 

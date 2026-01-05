@@ -13,8 +13,7 @@ test('example', function () {
 /**
  * @test
  */
-function it_visit_page_of_cabins(): void
-{
+function it_visit_page_of_cabins(): void {
     $user = User::factory()->create();
     $this->actingAs($user);
     $response = $this->get('/cabins');

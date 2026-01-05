@@ -1,17 +1,11 @@
 import { Box, Typography } from "@mui/material";
 
-export default function PricingHeaderMobile({
-  maxCapacity,
-}: {
-  maxCapacity: number;
-}) {
+export default function PricingHeaderMobile({ maxCapacity }: { maxCapacity: number }) {
   // head data
   let headData: string[] = ["Category", "Info", "Price"];
 
   // trim the head data based on the max capacity
-  headData = headData
-  .slice(0, maxCapacity + 1)
-  .map((key) => key);
+  headData = headData.slice(0, maxCapacity + 1).map((key) => key);
 
   return (
     <>

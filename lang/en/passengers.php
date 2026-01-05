@@ -1,6 +1,5 @@
 <?php
 return [
-
     'lead' => 'Lead Passenger',
     'ordinals' => [
         2 => 'Second',
@@ -17,5 +16,5 @@ return [
     'due' => 'your total amount due is:',
     'no_payment_prefix' => '<br />Please note that we have not received payment from',
     'next_installment' => 'Your next installment payment is due on :date.',
-    'due_immediately' => 'Your next installment payment is <strong>due immediately</strong>.'
+    'due_immediately' => 'Your next installment payment is <strong>due immediately</strong>.',
 ];

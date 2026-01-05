@@ -8,20 +8,15 @@ interface CustomSelectProps {
   onChange: (event: React.ChangeEvent<{ value: unknown }>) => void;
   dis?: boolean;
   error?: string;
-  options: { value: string | number, label: string }[];
+  options: { value: string | number; label: string }[];
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({ name, value, title, onChange, dis, error, options }) => {
   return (
     <Box>
-      <FormControl fullWidth variant="outlined"  error={!!error} disabled={dis}>
+      <FormControl fullWidth variant="outlined" error={!!error} disabled={dis}>
         <InputLabel>{title}</InputLabel>
-        <Select
-          name={name}
-          value={value}
-          onChange={onChange}
-          label={title}
-        >
+        <Select name={name} value={value} onChange={onChange} label={title}>
           {options.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}

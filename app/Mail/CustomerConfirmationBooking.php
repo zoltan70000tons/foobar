@@ -14,218 +14,237 @@ use Illuminate\Support\Str;
 use DateTime;
 use IntlDateFormatter;
 
-class CustomerConfirmationBooking extends Mailable implements ShouldQueue
-{
-  use Queueable, SerializesModels;
+class CustomerConfirmationBooking extends Mailable implements ShouldQueue {
+    use Queueable, SerializesModels;
 
-  public $booking;
-  public $cart;
-  public $installments;
-  public $language;
-  public $event;
+    public $booking;
+    public $cart;
+    public $installments;
+    public $language;
+    public $event;
 
-
-  public function __construct(Booking $booking, array $cart, array $installments, string $language, $event)
-  {
-    $this->booking = $booking;
-    $this->cart = $cart;
-    $this->installments = $installments;
-    $this->language = $language;
-    $this->event = $event;
-    $this->onQueue('emails');
-  }
-
-  // PREPARE DATA FOR TEMPLATE
-  private function prepareDataForTemplate()
-  {
-    $booking = $this->booking;
-    $cabin = $booking->cabin ?? null;
-    $category = $cabin->category ?? null;
-    $adjustments = $booking->adjustments ?? null;
-    $passenger =
-      collect($booking->passengers)->firstWhere('lead_passenger', true) ?? collect($booking->passengers)->first();
-
-    return (object) [
-      'passenger' => (object) [
-        'first_name' => $passenger->first_name ?? 'N/A',
-        'middle_name' => $passenger->middle_name ?? 'N/A',
-        'last_name' => $passenger->last_name ?? 'N/A',
-        'email' => $passenger->email ?? 'N/A',
-        'gender' => $passenger->gender ?? 'N/A',
-        'date_of_birth' => $this->getLocalizedDate($passenger->dob, $this->language) ?? 'N/A',
-        'citizenship' => $passenger->citizenship ?? 'N/A',
-        'address_line_1' => $passenger->address_first ?? 'N/A',
-        'address_line_2' => $passenger->address_second ?? 'N/A',
-        'city' => $passenger->city ?? 'N/A',
-        'state' => $passenger->state ?? 'N/A',
-        'postal_code' => $passenger->postal_code ?? 'N/A',
-        'country' => $passenger->country ?? 'N/A',
-        'phone_number' => $passenger->phone ?? 'N/A',
-        'emergency_contact_name' => $passenger->emergency_c_name ?? 'N/A',
-        'emergency_phone_number' => $passenger->emergency_c_phone ?? 'N/A',
-        'special_request' => $passenger->special_request ?? 'N/A',
-        'survivor_referal_number' => $passenger->referral_details ?? 'N/A',
-        'how_did_you_hear_about_us' => $passenger->hear_about ?? 'N/A',
-        'newsletter' => $passenger->newsletter == true ? 'YES' : 'NO',
-        'receive_partner_information' => $passenger->travel_info == true ? 'YES' : 'NO',
-        'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
-        'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
-        'dietary_preferences' => $this->formatDietaryPreferences($passenger->dietary_preferences ?? []),
-      ],
-      'booking' => (object) [
-        'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
-        'cabin_category' => $category->title ?? 'N/A',
-        'form_of_payment' => $passenger->payment_method == 'CREDIT_CARD' ? 'Credit Card' : 'Bank Transfer',
-        'bed_config' => $booking->bed_config,
-        'official_ticket_price_per_person' => formatCurrency($this->cart['cabin_price'] ?? 0, false, $this->language, false),
-        'pay_in_full_discount' => isset($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
-          ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
-          : 0,
-        'choose_your_cabin' => formatCurrency($adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0, false, $this->language, false),
-        'survivor_discount' => $this->event->status !== 'PUBLIC' ? $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'MEMBERSHIP_'))?->value : 0,
-        'carbon_offset' =>
-        formatCurrency($adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0, false, $this->language, false),
-        'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
-          $this->cart['cabin_price'],
-          $this->cart['price_save']
-        ),
-        'taxes_and_fees_per_person' => formatCurrency($this->cart['tax'] ?? 0, false, $this->language, false),
-        'single_traveler_surcharge' => $adjustments->where('code', 'SINGLE_TICKET_FEE')->first()->value ?? 'N/A',
-        'total_ticket_price' => formatCurrency($passenger->passenger_allocated_cost ?? 0, false, $this->language, false),
-        'number_of_passengers' => $this->cart['cabin_type'] === 'private-cabin' ? $this->cart['cabin_capacity'] : 1,
-        'grand_total_booking_price' => formatCurrency($this->cart['price_total'] ?? 0, false, $this->language, false),
-        'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
-        'payment_schedule_installments' => !empty($this->installments)
-          ? collect($this->installments)
-          ->map(
-            fn($installment) => [
-              'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
-              'amount' => formatCurrency($installment['amount'], false, $this->language, false),
-            ]
-          )
-          ->toArray()
-          : 'N/A',
-        'todays_date' => $this->getLocalizedDate(now(), $this->language),
-        'booking_request_id' => $booking->booking_request_id ?? 'N/A',
-      ],
-    ];
-  }
-
-  // BOOKING TYPE
-  private function getBookingType($bookingType)
-  {
-    if ($bookingType == 'single-male') {
-      return 'Single Male';
-    } elseif ($bookingType == 'single-female') {
-      return 'Single Female';
-    } else {
-      return 'Private Cabin';
-    }
-  }
-
-  // CALCULATE NET TICKET PRICE
-  private function calculateNetTicketPrice($cabinPrice, $save)
-  {
-    // Convert all inputs to the correct types
-    $cabinPrice = (float) $cabinPrice;
-    $save = (float) $save;
-
-    $netPrice = $cabinPrice - $save;
-
-    return formatCurrency($netPrice, false, $this->language, false);
-  }
-
-  // FORMAT DIETARY PREFERENCES
-  private function formatDietaryPreferences($dietaryPreferences)
-  {
-    if (empty($dietaryPreferences) || !is_array($dietaryPreferences)) {
-      return 'N/A';
+    public function __construct(Booking $booking, array $cart, array $installments, string $language, $event) {
+        $this->booking = $booking;
+        $this->cart = $cart;
+        $this->installments = $installments;
+        $this->language = $language;
+        $this->event = $event;
+        $this->onQueue('emails');
     }
 
-    $dietaryLabels = [
-      'vegetarian' => __('dietaryPreferences.vegetarian'),
-      'vegan' => __('dietaryPreferences.vegan'),
-      'gluten_free' => __('dietaryPreferences.gluten_free'),
-      'nut_allergy' => __('dietaryPreferences.nut_allergy'),
-      'kosher' => __('dietaryPreferences.kosher'),
-      'halal' => __('dietaryPreferences.halal'),
-      'lactose_intolerant' => __('dietaryPreferences.lactose_intolerant'),
-      'diabetic' => __('dietaryPreferences.diabetic'),
-    ];
+    // PREPARE DATA FOR TEMPLATE
+    private function prepareDataForTemplate() {
+        $booking = $this->booking;
+        $cabin = $booking->cabin ?? null;
+        $category = $cabin->category ?? null;
+        $adjustments = $booking->adjustments ?? null;
+        $passenger =
+            collect($booking->passengers)->firstWhere('lead_passenger', true) ?? collect($booking->passengers)->first();
 
-    $formattedPreferences = [];
-    foreach ($dietaryPreferences as $preference) {
-      if (isset($dietaryLabels[$preference])) {
-        $formattedPreferences[] = $dietaryLabels[$preference];
-      }
+        return (object) [
+            'passenger' => (object) [
+                'first_name' => $passenger->first_name ?? 'N/A',
+                'middle_name' => $passenger->middle_name ?? 'N/A',
+                'last_name' => $passenger->last_name ?? 'N/A',
+                'email' => $passenger->email ?? 'N/A',
+                'gender' => $passenger->gender ?? 'N/A',
+                'date_of_birth' => $this->getLocalizedDate($passenger->dob, $this->language) ?? 'N/A',
+                'citizenship' => $passenger->citizenship ?? 'N/A',
+                'address_line_1' => $passenger->address_first ?? 'N/A',
+                'address_line_2' => $passenger->address_second ?? 'N/A',
+                'city' => $passenger->city ?? 'N/A',
+                'state' => $passenger->state ?? 'N/A',
+                'postal_code' => $passenger->postal_code ?? 'N/A',
+                'country' => $passenger->country ?? 'N/A',
+                'phone_number' => $passenger->phone ?? 'N/A',
+                'emergency_contact_name' => $passenger->emergency_c_name ?? 'N/A',
+                'emergency_phone_number' => $passenger->emergency_c_phone ?? 'N/A',
+                'special_request' => $passenger->special_request ?? 'N/A',
+                'survivor_referal_number' => $passenger->referral_details ?? 'N/A',
+                'how_did_you_hear_about_us' => $passenger->hear_about ?? 'N/A',
+                'newsletter' => $passenger->newsletter == true ? 'YES' : 'NO',
+                'receive_partner_information' => $passenger->travel_info == true ? 'YES' : 'NO',
+                'accept_bed_configuration' => $passenger->cabin_conf_accp ? 'YES' : 'N/A',
+                'accept_terms' => $passenger->terms_n_cons ? 'YES' : 'N/A',
+                'dietary_preferences' => $this->formatDietaryPreferences($passenger->dietary_preferences ?? []),
+            ],
+            'booking' => (object) [
+                'booking_type' => $this->getBookingType($this->cart['cabin_type']) ?? 'N/A',
+                'cabin_category' => $category->title ?? 'N/A',
+                'form_of_payment' => $passenger->payment_method == 'CREDIT_CARD' ? 'Credit Card' : 'Bank Transfer',
+                'bed_config' => $booking->bed_config,
+                'official_ticket_price_per_person' => formatCurrency(
+                    $this->cart['cabin_price'] ?? 0,
+                    false,
+                    $this->language,
+                    false,
+                ),
+                'pay_in_full_discount' => isset($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
+                    ? intval($adjustments->where('code', 'PAID_IN_FULL')->first()->value)
+                    : 0,
+                'choose_your_cabin' => formatCurrency(
+                    $adjustments->where('code', 'CHOOSE_YOUR_CABIN')->first()->value ?? 0,
+                    false,
+                    $this->language,
+                    false,
+                ),
+                'survivor_discount' =>
+                    $this->event->status !== 'PUBLIC'
+                        ? $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'MEMBERSHIP_'))?->value
+                        : 0,
+                'carbon_offset' => formatCurrency(
+                    $adjustments->firstWhere(fn($item) => Str::startsWith($item->code, 'CARBON_OFFSET'))?->value ?? 0,
+                    false,
+                    $this->language,
+                    false,
+                ),
+                'net_ticket_price_per_person' => $this->calculateNetTicketPrice(
+                    $this->cart['cabin_price'],
+                    $this->cart['price_save'],
+                ),
+                'taxes_and_fees_per_person' => formatCurrency($this->cart['tax'] ?? 0, false, $this->language, false),
+                'single_traveler_surcharge' =>
+                    $adjustments->where('code', 'SINGLE_TICKET_FEE')->first()->value ?? 'N/A',
+                'total_ticket_price' => formatCurrency(
+                    $passenger->passenger_allocated_cost ?? 0,
+                    false,
+                    $this->language,
+                    false,
+                ),
+                'number_of_passengers' =>
+                    $this->cart['cabin_type'] === 'private-cabin' ? $this->cart['cabin_capacity'] : 1,
+                'grand_total_booking_price' => formatCurrency(
+                    $this->cart['price_total'] ?? 0,
+                    false,
+                    $this->language,
+                    false,
+                ),
+                'payment_schedule' => empty($this->installments) ? 'PAID IN FULL' : 'N/A',
+                'payment_schedule_installments' => !empty($this->installments)
+                    ? collect($this->installments)
+                        ->map(
+                            fn($installment) => [
+                                'due_date' => $this->getLocalizedDate($installment['due_date'], $this->language),
+                                'amount' => formatCurrency($installment['amount'], false, $this->language, false),
+                            ],
+                        )
+                        ->toArray()
+                    : 'N/A',
+                'todays_date' => $this->getLocalizedDate(now(), $this->language),
+                'booking_request_id' => $booking->booking_request_id ?? 'N/A',
+            ],
+        ];
     }
 
-    return !empty($formattedPreferences) ? implode(', ', $formattedPreferences) : 'N/A';
-  }
-
-  // GET LOCALIZED DATE
-  private function getLocalizedDate($dateInput, $locale = 'en')
-  {
-    // Map short locales to full ICU locales
-    $localeMap = [
-      'en' => 'en_US',
-      'de' => 'de_DE',
-      'es' => 'es_ES',
-    ];
-
-    $icuLocale = $localeMap[$locale] ?? 'en_US';
-
-    // Convert string to DateTime if needed
-    if (!($dateInput instanceof DateTime)) {
-      $dateInput = new DateTime($dateInput);
+    // BOOKING TYPE
+    private function getBookingType($bookingType) {
+        if ($bookingType == 'single-male') {
+            return 'Single Male';
+        } elseif ($bookingType == 'single-female') {
+            return 'Single Female';
+        } else {
+            return 'Private Cabin';
+        }
     }
 
-    // Create a formatter
-    $formatter = new IntlDateFormatter(
-      $icuLocale,
-      IntlDateFormatter::LONG,
-      IntlDateFormatter::NONE,
-      $dateInput->getTimezone()
-    );
+    // CALCULATE NET TICKET PRICE
+    private function calculateNetTicketPrice($cabinPrice, $save) {
+        // Convert all inputs to the correct types
+        $cabinPrice = (float) $cabinPrice;
+        $save = (float) $save;
 
-    return $formatter->format($dateInput);
-  }
+        $netPrice = $cabinPrice - $save;
 
-  // envelope
-  public function envelope(): Envelope
-  {
-    App::setLocale($this->language);
-    $data = $this->prepareDataForTemplate();
+        return formatCurrency($netPrice, false, $this->language, false);
+    }
 
+    // FORMAT DIETARY PREFERENCES
+    private function formatDietaryPreferences($dietaryPreferences) {
+        if (empty($dietaryPreferences) || !is_array($dietaryPreferences)) {
+            return 'N/A';
+        }
 
-    \Log::info('Envelope ----> data: ' . json_encode($data));
+        $dietaryLabels = [
+            'vegetarian' => __('dietaryPreferences.vegetarian'),
+            'vegan' => __('dietaryPreferences.vegan'),
+            'gluten_free' => __('dietaryPreferences.gluten_free'),
+            'nut_allergy' => __('dietaryPreferences.nut_allergy'),
+            'kosher' => __('dietaryPreferences.kosher'),
+            'halal' => __('dietaryPreferences.halal'),
+            'lactose_intolerant' => __('dietaryPreferences.lactose_intolerant'),
+            'diabetic' => __('dietaryPreferences.diabetic'),
+        ];
 
-    $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
-    $bccEmailAddress = env('MAIL_BCC');
+        $formattedPreferences = [];
+        foreach ($dietaryPreferences as $preference) {
+            if (isset($dietaryLabels[$preference])) {
+                $formattedPreferences[] = $dietaryLabels[$preference];
+            }
+        }
 
-    return new Envelope(
-      from: $mailFromAddress,
-      subject: "{$data->passenger->first_name}, " . __('confirmationBooking.cbe_subject') . " {$this->event->name}!",
-      cc: [],
-      bcc: [$bccEmailAddress]
-    );
-  }
+        return !empty($formattedPreferences) ? implode(', ', $formattedPreferences) : 'N/A';
+    }
 
-  public function content(): Content
-  {
-    App::setLocale($this->language);
+    // GET LOCALIZED DATE
+    private function getLocalizedDate($dateInput, $locale = 'en') {
+        // Map short locales to full ICU locales
+        $localeMap = [
+            'en' => 'en_US',
+            'de' => 'de_DE',
+            'es' => 'es_ES',
+        ];
 
-    return new Content(
-      view: 'emails.customer-confirmation-booking',
-      with: [
-        'bookingResult' => $this->prepareDataForTemplate(),
-        'language' => $this->language,
-      ]
-    );
-  }
+        $icuLocale = $localeMap[$locale] ?? 'en_US';
 
-  public function attachments(): array
-  {
-    return [];
-  }
+        // Convert string to DateTime if needed
+        if (!($dateInput instanceof DateTime)) {
+            $dateInput = new DateTime($dateInput);
+        }
+
+        // Create a formatter
+        $formatter = new IntlDateFormatter(
+            $icuLocale,
+            IntlDateFormatter::LONG,
+            IntlDateFormatter::NONE,
+            $dateInput->getTimezone(),
+        );
+
+        return $formatter->format($dateInput);
+    }
+
+    // envelope
+    public function envelope(): Envelope {
+        App::setLocale($this->language);
+        $data = $this->prepareDataForTemplate();
+
+        \Log::info('Envelope ----> data: ' . json_encode($data));
+
+        $mailFromAddress = env('SMTP_SYSTEM_EMAIL_ADDRESS');
+        $bccEmailAddress = env('MAIL_BCC');
+
+        return new Envelope(
+            from: $mailFromAddress,
+            subject: "{$data->passenger->first_name}, " .
+                __('confirmationBooking.cbe_subject') .
+                " {$this->event->name}!",
+            cc: [],
+            bcc: [$bccEmailAddress],
+        );
+    }
+
+    public function content(): Content {
+        App::setLocale($this->language);
+
+        return new Content(
+            view: 'emails.customer-confirmation-booking',
+            with: [
+                'bookingResult' => $this->prepareDataForTemplate(),
+                'language' => $this->language,
+            ],
+        );
+    }
+
+    public function attachments(): array {
+        return [];
+    }
 }

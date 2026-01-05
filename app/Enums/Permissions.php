@@ -2,8 +2,7 @@
 
 namespace App\Enums;
 
-enum Permissions: string
-{
+enum Permissions: string {
     case ViewDashboard = 'View Dashboard';
 
     // Manage Users
@@ -57,26 +56,24 @@ enum Permissions: string
     case DeletePermissions = 'Delete Permissions';
     case AssignPermissions = 'Assign Permissions';
     case RevokePermissions = 'Revoke Permissions';
-    
+
     // Manage bookings
 
     case ViewBookings = 'View Bookings';
     case CreateBookings = 'Create Bookings';
     case EditBookings = 'Edit Bookings';
     case DeleteBookings = 'Delete Bookings';
-    case EditCabinInventory = "Edit Cabin Inventory";
-    case EditPassengers = "Edit Passengers";
-    case ResetSeat = "Reset Seat";
-    case InterceptBookings = "Intercept Bookings";
-
+    case EditCabinInventory = 'Edit Cabin Inventory';
+    case EditPassengers = 'Edit Passengers';
+    case ResetSeat = 'Reset Seat';
+    case InterceptBookings = 'Intercept Bookings';
 
     //Manage fees
-    
+
     case ViewFees = 'View Fees';
     case CreateFees = 'Create Fees';
     case EditFees = 'Edit Fees';
     case DeleteFees = 'Delete Fees';
-
 
     //Manage Adjustments
     case ViewAdjustments = 'View Adjustments';
@@ -84,7 +81,6 @@ enum Permissions: string
     case EditAdjustments = 'Edit Adjustments';
     case DeleteAdjustments = 'Delete Adjustments';
 
-    
     //Manage Payments
     case ViewPayments = 'View Payments';
     case CreatePayments = 'Create Payments';
@@ -114,7 +110,7 @@ enum Permissions: string
     case DeleteTags = 'Delete Tags';
 
     //Logs
-    case ViewLogs = "View Logs";
+    case ViewLogs = 'View Logs';
 
     //Installments
     case EditInstallments = 'Edit Installments';

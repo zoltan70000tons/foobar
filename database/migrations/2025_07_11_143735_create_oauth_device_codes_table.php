@@ -4,13 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+    public function up(): void {
         Schema::create('oauth_device_codes', function (Blueprint $table) {
             $table->char('id', 80)->primary();
             $table->foreignUuid('user_id')->nullable()->index();
@@ -27,16 +25,14 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('oauth_device_codes');
     }
 
     /**
      * Get the migration connection name.
      */
-    public function getConnection(): ?string
-    {
+    public function getConnection(): ?string {
         return $this->connection ?? config('passport.connection');
     }
 };

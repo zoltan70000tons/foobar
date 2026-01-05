@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Head, usePage } from "@inertiajs/react";
-import { TextField, Button, Box, Container, Typography, Alert } from "@mui/material";
+import { TextField, Button, Box, Container, Typography, Alert, IconButton, InputAdornment } from "@mui/material";
+import { Visibility, VisibilityOff, AccountCircle, Key } from "@mui/icons-material";
 import OAuthLayout from "@/Layouts/OAuthLayout";
 import Axios from "axios";
 import SurvivorLogin from "@/Pages/OAuth/components/SurvivorLogin";
@@ -35,6 +36,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -109,7 +111,7 @@ export default function Login() {
                 "Invalid request or time expired, please refresh the page and try again."}
             </Alert>
           )}
-          {reset === "true" && (
+          {reset === "success" && (
             <Alert
               severity="success"
               sx={{
@@ -159,16 +161,37 @@ export default function Login() {
               onChange={(e) => handleChange("identifier", e.target.value)}
               error={!!errors.identifier}
               helperText={errors.identifier}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccountCircle sx={{ color: "text.secondary", opacity: 0.6 }} />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               label={tAuth?.password ?? "Password"}
-              type="password"
+              type={showPassword ? "text" : "password"}
               fullWidth
               margin="normal"
               value={form.password}
               onChange={(e) => handleChange("password", e.target.value)}
               error={!!errors.password}
               helperText={errors.password}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Key sx={{ color: "text.secondary", opacity: 0.6 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton aria-label="toggle password visibility" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button type="submit" fullWidth variant="contained" disabled={loading} sx={{ mt: 2 }}>
               {loading ? (tAuth?.login ?? "Sign In") : (tAuth?.login ?? "Sign In")}

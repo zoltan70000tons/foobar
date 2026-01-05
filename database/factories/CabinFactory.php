@@ -11,15 +11,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Cabin>
  */
-class CabinFactory extends Factory
-{
+class CabinFactory extends Factory {
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
-    {
+    public function definition(): array {
         return [
             'cabin_type_id' => CabinType::inRandomOrder()->first()?->id ?? CabinType::factory(),
             'cabin_category_id' => CabinCategory::factory(),

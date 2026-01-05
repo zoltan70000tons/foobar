@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -9,17 +9,26 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid, Paper, Divider, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, IconButton,
-} from '@mui/material';
+  Grid,
+  Paper,
+  Divider,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+} from "@mui/material";
 
-import { router } from '@inertiajs/react';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
+import { router } from "@inertiajs/react";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 import { Passenger } from "@/Pages/Bookings/partials/Payment";
 
@@ -39,7 +48,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
   const [open, setOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [creditIdToDelete, setCreditIdToDelete] = useState(null);
-  const [formData, setFormData] = useState<OnboardCreditFormData>({ reason: '', amount: 0 });
+  const [formData, setFormData] = useState<OnboardCreditFormData>({ reason: "", amount: 0 });
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const { hasPermission } = usePermissions();
@@ -51,7 +60,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
 
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : value,
+      [name]: name === "amount" ? parseFloat(value) : value,
     }));
   };
 
@@ -61,7 +70,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.reason || formData.amount <= 0) {
-      showSnackbar('Please fill in all fields correctly.', 'error');
+      showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
 
@@ -69,7 +78,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
 
     // Send form data to the server using the router
     router.post(
-      route('manual.onboard-credit', {
+      route("manual.onboard-credit", {
         event_id: event_id,
         booking_id: booking_id,
       }),
@@ -81,15 +90,15 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
       {
         onSuccess: () => {
           // Reset form and close dialog only on success
-          setFormData({ reason: '', amount: 0 });
+          setFormData({ reason: "", amount: 0 });
           setOpen(false);
-          showSnackbar('Onboard credit created successfully', 'success');
-          router.reload({ only: ['user'] });
+          showSnackbar("Onboard credit created successfully", "success");
+          router.reload({ only: ["user"] });
         },
         onError: (errors) => {
           // Log or display errors if needed
-          console.error('Validation errors:', errors);
-          showSnackbar('Failed to save onboard credit. Please check your inputs.', 'error');
+          console.error("Validation errors:", errors);
+          showSnackbar("Failed to save onboard credit. Please check your inputs.", "error");
         },
         onFinish: () => {
           setLoading(false);
@@ -134,7 +143,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
       <Button
         fullWidth
         variant="outlined"
-        sx={{ color: 'white', borderColor: 'gray' }}
+        sx={{ color: "white", borderColor: "gray" }}
         onClick={handleOpen}
         disabled={!editMode}
         startIcon={<AccountBalanceWalletIcon />}
@@ -206,9 +215,7 @@ const OnboardCreditForm: React.FC<OnboardCreditFormProps> = ({ passenger, event_
                   {onboardCredit.map((credit) => (
                     <TableRow key={credit.id}>
                       <TableCell>{credit.reason}</TableCell>
-                      <TableCell>
-                        {formatCurrency(credit.amount)}
-                      </TableCell>
+                      <TableCell>{formatCurrency(credit.amount)}</TableCell>
                       <TableCell>{formatDate(credit.created_at)}</TableCell>
                       <TableCell>
                         {canDeleteOnboardCredit && (

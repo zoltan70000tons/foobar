@@ -12,8 +12,8 @@ export enum BookingStatusEnum {
 }
 
 export const BookingStatusColor: { [key in BookingStatusEnum]: string } = {
-  [BookingStatusEnum.NEW]: "#66bb6a",       
-  [BookingStatusEnum.ON_HOLD]: "#ffa726",   
-  [BookingStatusEnum.UPLOADED]: "#42a5f5",  
+  [BookingStatusEnum.NEW]: "#66bb6a",
+  [BookingStatusEnum.ON_HOLD]: "#ffa726",
+  [BookingStatusEnum.UPLOADED]: "#42a5f5",
   [BookingStatusEnum.CANCELLED]: "#ef5350",
 };

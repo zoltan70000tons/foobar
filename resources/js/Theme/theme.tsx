@@ -25,7 +25,7 @@ const theme = createTheme({
     background: {
       default: "#0b0b0b",
       paper: "#0e0e0eff",
-    }
+    },
   },
   components: {
     ...inputOverrides,

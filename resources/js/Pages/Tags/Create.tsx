@@ -23,7 +23,7 @@ import "react-color-palette/dist/css/rcp.css";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
-  console.log('Events:', events);
+  console.log("Events:", events);
   const { hasPermission } = usePermissions();
   const { data, setData, post, processing } = useForm({
     name: "",
@@ -36,7 +36,7 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
   const { showSnackbar } = useSnackbar();
 
   const handleChange = <TForm extends Record<string, any>>(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -50,119 +50,121 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
     for (const key in data) {
       formData.append(key, data[key]);
     }
-    formData.append('color', color.hex);
+    formData.append("color", color.hex);
 
     router.post(route("tags.store"), formData, {
       forceFormData: true,
       onSuccess: (response) => {
-        showSnackbar('Tag created successfully', 'success');
+        showSnackbar("Tag created successfully", "success");
       },
       onError: (errors) => {
         const errorMessages = Object.values(errors).join("\n");
-        showSnackbar(`Error creating tag\n${ errorMessages }`, 'error');
+        showSnackbar(`Error creating tag\n${errorMessages}`, "error");
       },
     });
   };
 
   const handleBack = () => {
     router.visit(route("tags.index"), {
-      only: ['userTags'],
-    })
-  }
+      only: ["userTags"],
+    });
+  };
 
   return (
-    <AuthenticatedLayout user={ auth.user } header={ "Tags" }>
-      <Head title="Create Tag"/>
-      <Toolbar sx={ { mt: 8 } }>
-        <Button variant="outlined" color="secondary" onClick={ handleBack }>
+    <AuthenticatedLayout user={auth.user} header={"Tags"}>
+      <Head title="Create Tag" />
+      <Toolbar sx={{ mt: 8 }}>
+        <Button variant="outlined" color="secondary" onClick={handleBack}>
           Back
         </Button>
       </Toolbar>
-      <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
-        <Grid container spacing={ 3 }>
-          { hasPermission(Permissions.CreateTags) && (<Paper
-              sx={ {
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Grid container spacing={3}>
+          {hasPermission(Permissions.CreateTags) && (
+            <Paper
+              sx={{
                 p: 2,
                 display: "flex",
                 flexDirection: "column",
                 minHeight: 240,
                 width: "100%",
-              } }
+              }}
             >
               <h1>Create Tag</h1>
-              <form onSubmit={ handleSubmit } encType="multipart/form-data">
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 }>
+              <form onSubmit={handleSubmit} encType="multipart/form-data">
+                <Box sx={{ width: "100%" }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
                       <Autocomplete
                         disablePortal
-                        options={ events }
-                        getOptionLabel={ (option) => option.name }
-                        onChange={ (event, value) => {
-                          console.log('Selected event:', value);
+                        options={events}
+                        getOptionLabel={(option) => option.name}
+                        onChange={(event, value) => {
+                          console.log("Selected event:", value);
                           setData("event_id", value ? value.id : "");
-                        } }
-                        renderInput={ (params) => (
+                        }}
+                        renderInput={(params) => (
                           <TextField
-                            { ...params }
+                            {...params}
                             label="Event"
                             variant="outlined"
-                            name={ "event_id" }
+                            name={"event_id"}
                             //value={ data.event_id }
                             //onChange={ handleChange }
                           />
-                        ) }
+                        )}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
-                    <Autocomplete
+                    <Grid item xs={6}>
+                      <Autocomplete
                         disablePortal
-                        options={ tagTypes }
-                        getOptionLabel={ (option) => option.name }
-                        onChange={ (event, value) => {
-                          console.log('Selected tag type:', value);
-                          setData("entity", value ? value.value: "");
-                        } }
-                        renderInput={ (params) => (
+                        options={tagTypes}
+                        getOptionLabel={(option) => option.name}
+                        onChange={(event, value) => {
+                          console.log("Selected tag type:", value);
+                          setData("entity", value ? value.value : "");
+                        }}
+                        renderInput={(params) => (
                           <TextField
-                            { ...params }
+                            {...params}
                             label="Tag for"
                             variant="outlined"
-                            name={ "entity" }
+                            name={"entity"}
                             //value={ data.event_id }
                             //onChange={ handleChange }
                           />
-                        ) }
-                      /></Grid>
-                    <Grid item xs={ 6 }>
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Name"
                         variant="outlined"
-                        value={ data.name }
-                        name={ "name" }
-                        onChange={ handleChange }
+                        value={data.name}
+                        name={"name"}
+                        onChange={handleChange}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Description"
                         variant="outlined"
-                        value={ data.description }
-                        name={ "description" }
-                        onChange={ handleChange }
+                        value={data.description}
+                        name={"description"}
+                        onChange={handleChange}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Color"
                         variant="outlined"
-                        value={ color.hex }
-                        name={ "color" }
+                        value={color.hex}
+                        name={"color"}
                         disabled
-                        onChange={ handleChange }
+                        onChange={handleChange}
                       />
                     </Grid>
                     <Grid item xs={6}>
@@ -174,7 +176,7 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
                           const clampedValue = Math.max(0, Math.min(10, newValue ?? 0));
                           handleChange({
                             target: {
-                              name: 'priority',
+                              name: "priority",
                               value: clampedValue,
                             },
                           });
@@ -182,8 +184,8 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
                         max={10}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                    <Grid item xs={6}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                         <span>Preview:</span>
                         <Chip
                           label={data.name}
@@ -197,26 +199,19 @@ const Create = ({ auth, errors, events, tagTypes }: PageProps) => {
                         />
                       </div>
                     </Grid>
-                    <Grid item xs={ 6 }>
-                      <ColorPicker width={456} height={228}
-                                   color={color} onChange={setColor} hideHSV dark />
+                    <Grid item xs={6}>
+                      <ColorPicker width={456} height={228} color={color} onChange={setColor} hideHSV dark />
                     </Grid>
                   </Grid>
                 </Box>
-                <Box sx={ { mt: 4 } }>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    type="submit"
-                    disabled={ processing }
-                  >
-                    { processing ? "Submitting..." : "Submit" }
+                <Box sx={{ mt: 4 }}>
+                  <Button variant="contained" color="primary" fullWidth type="submit" disabled={processing}>
+                    {processing ? "Submitting..." : "Submit"}
                   </Button>
                 </Box>
               </form>
             </Paper>
-          ) }
+          )}
         </Grid>
       </Container>
     </AuthenticatedLayout>

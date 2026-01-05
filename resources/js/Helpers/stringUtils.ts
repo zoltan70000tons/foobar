@@ -24,13 +24,11 @@ export function handleize(str: string): string {
 export function formatCurrency(
   number: number | string,
   hideDecimals: boolean = false,
-  fullCurrency: boolean = true
+  fullCurrency: boolean = true,
 ): string {
   const value = typeof number === "string" ? parseFloat(number) : number;
 
-  const options: Intl.NumberFormatOptions = hideDecimals
-    ? {}
-    : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+  const options: Intl.NumberFormatOptions = hideDecimals ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
   const formatted = new Intl.NumberFormat("en-US", options).format(value);
 
@@ -47,7 +45,7 @@ export function formatDate(date: string | Date | null): string {
   if (typeof date !== "string" && !(date instanceof Date)) {
     return ""; // Return empty string if date is null or undefined
   }
-  
+
   let parsedDate: Date;
 
   if (typeof date === "string") {
@@ -73,7 +71,6 @@ export function formatDate(date: string | Date | null): string {
   }).format(parsedDate);
 }
 
-
 /**
  * Converts a number to its ordinal name (e.g., 1 -> "first", 2 -> "second").
  *
@@ -82,26 +79,26 @@ export function formatDate(date: string | Date | null): string {
  */
 export function getOrdinalName(n: number): string {
   const ordinals: { [key: number]: string } = {
-    1: 'first',
-    2: 'second',
-    3: 'third',
-    4: 'fourth',
-    5: 'fifth',
-    6: 'sixth',
-    7: 'seventh',
-    8: 'eighth',
-    9: 'ninth',
-    10: 'tenth',
-    11: 'eleventh',
-    12: 'twelfth',
-    13: 'thirteenth',
-    14: 'fourteenth',
-    15: 'fifteenth',
-    16: 'sixteenth',
-    17: 'seventeenth',
-    18: 'eighteenth',
-    19: 'nineteenth',
-    20: 'twentieth',
+    1: "first",
+    2: "second",
+    3: "third",
+    4: "fourth",
+    5: "fifth",
+    6: "sixth",
+    7: "seventh",
+    8: "eighth",
+    9: "ninth",
+    10: "tenth",
+    11: "eleventh",
+    12: "twelfth",
+    13: "thirteenth",
+    14: "fourteenth",
+    15: "fifteenth",
+    16: "sixteenth",
+    17: "seventeenth",
+    18: "eighteenth",
+    19: "nineteenth",
+    20: "twentieth",
   };
 
   if (ordinals[n]) {
@@ -113,14 +110,14 @@ export function getOrdinalName(n: number): string {
     const units = n % 10;
 
     const tensWord: { [key: number]: string } = {
-      20: 'twentieth',
-      30: 'thirtieth',
-      40: 'fortieth',
-      50: 'fiftieth',
-      60: 'sixtieth',
-      70: 'seventieth',
-      80: 'eightieth',
-      90: 'ninetieth',
+      20: "twentieth",
+      30: "thirtieth",
+      40: "fortieth",
+      50: "fiftieth",
+      60: "sixtieth",
+      70: "seventieth",
+      80: "eightieth",
+      90: "ninetieth",
     };
 
     const unitWord = ordinals[units] ?? `${units}th`;
@@ -128,10 +125,9 @@ export function getOrdinalName(n: number): string {
     if (units === 0) {
       return tensWord[tens] || `${tens}th`;
     } else {
-      return `${tensWord[tens]?.replace('ieth', 'y') || `${tens}`} ${unitWord}`;
+      return `${tensWord[tens]?.replace("ieth", "y") || `${tens}`} ${unitWord}`;
     }
   }
 
   return `${n}th`;
 }
-

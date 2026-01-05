@@ -2,8 +2,7 @@
 
 namespace App\Enums\GlobalLog;
 
-enum LogActionCabin: string
-{
+enum LogActionCabin: string {
     case INVENTORY_CHANGED = 'INVENTORY_CHANGED';
     case STATUS_CHANGED = 'STATUS_CHANGED';
     case CATEGORY_CHANGED = 'CATEGORY_CHANGED';

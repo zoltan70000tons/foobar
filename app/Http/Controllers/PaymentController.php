@@ -21,8 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Services\PaymentInfoService;
 
-class PaymentController extends Controller
-{
+class PaymentController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
@@ -30,155 +29,163 @@ class PaymentController extends Controller
     protected PaymentInfoService $paymentInfoService;
 
     protected PaymentService $paymentService;
-    public function __construct(PassengerRepository $passengerRepository, PaymentService $paymentService, PaymentInfoService $paymentInfoService)
-    {
+    public function __construct(
+        PassengerRepository $passengerRepository,
+        PaymentService $paymentService,
+        PaymentInfoService $paymentInfoService,
+    ) {
         $this->passengerRepository = $passengerRepository;
         $this->paymentService = $paymentService;
-        $this->paymentInfoService =$paymentInfoService;
+        $this->paymentInfoService = $paymentInfoService;
     }
 
-    public function store(Request $request): Response|RedirectResponse
-    {
-        return $this->withPermission([Permissions::CreateFees], function ($request) {
-            DB::beginTransaction();
+    public function store(Request $request): Response|RedirectResponse {
+        return $this->withPermission(
+            [Permissions::CreateFees],
+            function ($request) {
+                DB::beginTransaction();
 
-            try {
-                $booking_id = $request->route('booking_id');
-                $event_id = $request->route('event_id');
-                $validator = Validator::make($request->all(), [
-                    'passenger_id' => 'required|exists:passengers,id',
-                    'BIP_ID' => 'required|string|max:50',
-                    'amount' => 'required|numeric|min:0.01',
-                    'type' => 'required|in:PAYMENT,REFUND',
-                    'notes' => 'nullable|string|max:255',
-                    'transaction_date' => 'required|date'
-                ]);
+                try {
+                    $booking_id = $request->route('booking_id');
+                    $event_id = $request->route('event_id');
+                    $validator = Validator::make($request->all(), [
+                        'passenger_id' => 'required|exists:passengers,id',
+                        'BIP_ID' => 'required|string|max:50',
+                        'amount' => 'required|numeric|min:0.01',
+                        'type' => 'required|in:PAYMENT,REFUND',
+                        'notes' => 'nullable|string|max:255',
+                        'transaction_date' => 'required|date',
+                    ]);
 
-                if ($validator->fails()) {
-                    if ($validator->errors()->has('BIP_ID')) {
-                        throw new InvalidBipIdException();
+                    if ($validator->fails()) {
+                        if ($validator->errors()->has('BIP_ID')) {
+                            throw new InvalidBipIdException();
+                        }
                     }
-                }
-                $validated = $validator->validated();
-                $validated['source'] = 'MANUAL';
-                Payment::create($validated);
-                $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
-
-                DB::commit();
-
-                $type = PaymentType::from($validated['type']);
-
-                return redirect()->back()->with('success', $type->getLabel() . ' added successfully!');
-            } catch (InvalidBipIdException $e) {
-                DB::rollBack();
-                $this->logException($e);
-
-                return $e->render($request);
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $this->logException($e);
-
-                return redirect()->back()->with('error', 'Error creating payment!');
-            }
-        }, $request);
-    }
-
-    public function delete(Request $request): Response|RedirectResponse
-    {
-        return $this->withPermission([Permissions::DeletePayments], function ($request) {
-            DB::beginTransaction();
-
-            try {
-                $booking_id = $request->route('booking_id');
-                $event_id = $request->route('event_id');
-                $validated = $request->validate([
-                    'payment_id' => 'required|exists:payments,id',
-                    'passenger_id' => 'required|exists:passengers,id',
-                ]);
-                $booking = Booking::where('id', $booking_id)
-                    ->where('event_id', $event_id)
-                    ->first();
-                if (!$booking) {
-                    return redirect()->back()->with('error', 'Booking not found.');
-                }
-                $payment = Payment::where('id', $validated['payment_id'])
-                    ->where('passenger_id', $validated['passenger_id'])
-                    ->first();
-                if (!$payment) {
-                    return redirect()->back()->with('error', 'Payment not found.');
-                }
-                $amount = $payment->amount;
-                $type = $payment->type;
-
-                $splitAmount = $payment->splitAmount;
-                if ($splitAmount) {
-                    $transactionId = $payment->BIP_ID;
-
-                    $payments = Payment::query()
-                        ->where("BIP_ID", "=", $transactionId)
-                        ->get();
-
-                    $totalAmount = 0;
-
-                    foreach ($payments as $payment) {
-                        $passengerId = $payment->passenger_id;
-                        $amount = $payment->amount;
-
-                        $totalAmount += $amount;
-
-                        $payment->delete();
-                        $this->paymentInfoService->syncBalance($passengerId, $booking_id, $event_id);
-                    }
+                    $validated = $validator->validated();
+                    $validated['source'] = 'MANUAL';
+                    Payment::create($validated);
+                    $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
 
                     DB::commit();
-                } else {
-                    if ($payment->type === "TRANSFER") {
-                        $paymentTransfer = PaymentTransfer::query()
-                            ->where(function ($query) use ($payment) {
-                                $query->where('payment_id_from', $payment->id)
-                                    ->orWhere('payment_id_to', $payment->id);
-                            })
-                            ->first();
 
-                        if ($paymentTransfer) {
-                            $otherPaymentId = $paymentTransfer->payment_id_from === $payment->id
-                                ? $paymentTransfer->payment_id_to
-                                : $paymentTransfer->payment_id_from;
+                    $type = PaymentType::from($validated['type']);
 
-                            $transferredPayment = Payment::find($otherPaymentId);
+                    return redirect()
+                        ->back()
+                        ->with('success', $type->getLabel() . ' added successfully!');
+                } catch (InvalidBipIdException $e) {
+                    DB::rollBack();
+                    $this->logException($e);
 
-                            $passengerIdFrom = $paymentTransfer->passenger_id_from;
-                            $passengerIdTo = $paymentTransfer->passenger_id_to;
+                    return $e->render($request);
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->logException($e);
+
+                    return redirect()->back()->with('error', 'Error creating payment!');
+                }
+            },
+            $request,
+        );
+    }
+
+    public function delete(Request $request): Response|RedirectResponse {
+        return $this->withPermission(
+            [Permissions::DeletePayments],
+            function ($request) {
+                DB::beginTransaction();
+
+                try {
+                    $booking_id = $request->route('booking_id');
+                    $event_id = $request->route('event_id');
+                    $validated = $request->validate([
+                        'payment_id' => 'required|exists:payments,id',
+                        'passenger_id' => 'required|exists:passengers,id',
+                    ]);
+                    $booking = Booking::where('id', $booking_id)->where('event_id', $event_id)->first();
+                    if (!$booking) {
+                        return redirect()->back()->with('error', 'Booking not found.');
+                    }
+                    $payment = Payment::where('id', $validated['payment_id'])
+                        ->where('passenger_id', $validated['passenger_id'])
+                        ->first();
+                    if (!$payment) {
+                        return redirect()->back()->with('error', 'Payment not found.');
+                    }
+                    $amount = $payment->amount;
+                    $type = $payment->type;
+
+                    $splitAmount = $payment->splitAmount;
+                    if ($splitAmount) {
+                        $transactionId = $payment->BIP_ID;
+
+                        $payments = Payment::query()->where('BIP_ID', '=', $transactionId)->get();
+
+                        $totalAmount = 0;
+
+                        foreach ($payments as $payment) {
+                            $passengerId = $payment->passenger_id;
+                            $amount = $payment->amount;
+
+                            $totalAmount += $amount;
 
                             $payment->delete();
-                            $transferredPayment->delete();
-                            $paymentTransfer->delete();
+                            $this->paymentInfoService->syncBalance($passengerId, $booking_id, $event_id);
+                        }
 
-                            $this->paymentInfoService->syncBalance($passengerIdFrom, $booking_id, $event_id);
-                            $this->paymentInfoService->syncBalance($passengerIdTo, $booking_id, $event_id);
+                        DB::commit();
+                    } else {
+                        if ($payment->type === 'TRANSFER') {
+                            $paymentTransfer = PaymentTransfer::query()
+                                ->where(function ($query) use ($payment) {
+                                    $query
+                                        ->where('payment_id_from', $payment->id)
+                                        ->orWhere('payment_id_to', $payment->id);
+                                })
+                                ->first();
+
+                            if ($paymentTransfer) {
+                                $otherPaymentId =
+                                    $paymentTransfer->payment_id_from === $payment->id
+                                        ? $paymentTransfer->payment_id_to
+                                        : $paymentTransfer->payment_id_from;
+
+                                $transferredPayment = Payment::find($otherPaymentId);
+
+                                $passengerIdFrom = $paymentTransfer->passenger_id_from;
+                                $passengerIdTo = $paymentTransfer->passenger_id_to;
+
+                                $payment->delete();
+                                $transferredPayment->delete();
+                                $paymentTransfer->delete();
+
+                                $this->paymentInfoService->syncBalance($passengerIdFrom, $booking_id, $event_id);
+                                $this->paymentInfoService->syncBalance($passengerIdTo, $booking_id, $event_id);
+
+                                DB::commit();
+                            }
+                        } else {
+                            $payment->delete();
+                            $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
 
                             DB::commit();
                         }
-                    } else {
-                        $payment->delete();
-                        $this->paymentInfoService->syncBalance($validated['passenger_id'], $booking_id, $event_id);
-
-                        DB::commit();
                     }
+
+                    return redirect()->back()->with('success', 'Payment deleted successfully!');
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->logException($e);
+
+                    return redirect()->back()->with('error', 'Error deleting payment!');
                 }
-
-                return redirect()->back()->with('success', 'Payment deleted successfully!');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $this->logException($e);
-
-                return redirect()->back()->with('error', 'Error deleting payment!');
-            }
-        }, $request);
+            },
+            $request,
+        );
     }
 
-    public function createPayment(Request $request)
-    {
+    public function createPayment(Request $request) {
         dd($this->paymentService->getInstallmentsWithStatus(1));
         //$response = $this->paymentService->processPayment($request->all());
         //return response()->json($response, $response['success'] ? 201 : 400);

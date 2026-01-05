@@ -7,8 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use Spatie\Permission\Traits\HasPermissions;
 
-trait HandlePermissions
-{
+trait HandlePermissions {
     /**
      * Check permissions and execute a callback if authorized.
      *
@@ -17,8 +16,7 @@ trait HandlePermissions
      * @param mixed ...$params Additional parameters to pass to the callback
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
      */
-    protected function withPermission(array $permissions, callable $callback, ...$params)
-    {
+    protected function withPermission(array $permissions, callable $callback, ...$params) {
         $user = Auth::user();
 
         // Check if the user has any of the permissions

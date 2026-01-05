@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 use Inertia\Inertia;
 
-
-class NotAllowedController extends Controller
-{
-    public function index()
-    {
-         return Inertia::render('NotAllowed/Index', []);
+class NotAllowedController extends Controller {
+    public function index() {
+        return Inertia::render('NotAllowed/Index', []);
     }
 }

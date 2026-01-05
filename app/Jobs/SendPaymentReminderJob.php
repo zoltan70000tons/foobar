@@ -19,8 +19,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Services\PDFService;
 
-class SendPaymentReminderJob implements ShouldQueue
-{
+class SendPaymentReminderJob implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected int $bookingId;
@@ -29,15 +28,13 @@ class SendPaymentReminderJob implements ShouldQueue
 
     protected ?Carbon $now = null;
 
-    public function __construct(int $bookingId, ?Carbon $now = null)
-    {
+    public function __construct(int $bookingId, ?Carbon $now = null) {
         $this->bookingId = $bookingId;
         $this->now = $now ? $now->copy()->timezone($this->tz) : null;
         $this->onQueue('payment-reminder');
     }
 
-    public function handle(): void
-    {
+    public function handle(): void {
         $booking = Booking::with('passengers')->find($this->bookingId);
         if (!$booking) {
             Log::warning("Booking {$this->bookingId} not found. Skipping reminders.");
@@ -52,9 +49,11 @@ class SendPaymentReminderJob implements ShouldQueue
 
         foreach ($booking->passengers as $passenger) {
             $status = $passenger->getInstallmentStatus();
-            $next   = $status['next_installment'] ?? null;
-            $fullyPaid = (bool)($status['fully_paid'] ?? false);
-            Log::info("Passenger #{$passenger->id} next installment: " . json_encode($next) . ", fullyPaid={$fullyPaid}");
+            $next = $status['next_installment'] ?? null;
+            $fullyPaid = (bool) ($status['fully_paid'] ?? false);
+            Log::info(
+                "Passenger #{$passenger->id} next installment: " . json_encode($next) . ", fullyPaid={$fullyPaid}",
+            );
 
             if (!$next || empty($next['due_date']) || $fullyPaid) {
                 continue;
@@ -77,11 +76,13 @@ class SendPaymentReminderJob implements ShouldQueue
 
             $templateId = $this->resolveTemplateId($booking, $passenger);
             if (!$templateId) {
-                Log::error("No template for passenger #{$passenger->id} (lang={$passenger->language}, method={$passenger->payment_method}).");
+                Log::error(
+                    "No template for passenger #{$passenger->id} (lang={$passenger->language}, method={$passenger->payment_method}).",
+                );
                 continue;
             }
 
-            $locale = $passenger->language ?? $booking->language ?? Config::get('app.locale', 'en');
+            $locale = $passenger->language ?? ($booking->language ?? Config::get('app.locale', 'en'));
             app()->setLocale($locale);
 
             $installmentId = $next['installment_id'] ?? null;
@@ -98,20 +99,13 @@ class SendPaymentReminderJob implements ShouldQueue
             }
 
             try {
-                $content = $emailService->getProcessedTemplate(
-                    $booking->id,
-                    $templateId,
-                    $passenger,
-                    [
-                        'installment_due_date' => $dueDate->isoFormat('LL'),
-                        'booking_code' => $booking->booking_code ?? '',
-                        'payment_link' => $booking->payment_link ?? null,
-                    ]
-                );
+                $content = $emailService->getProcessedTemplate($booking->id, $templateId, $passenger, [
+                    'installment_due_date' => $dueDate->isoFormat('LL'),
+                    'booking_code' => $booking->booking_code ?? '',
+                    'payment_link' => $booking->payment_link ?? null,
+                ]);
 
-                $subject = DB::table('email_templates')
-                    ->where('id', $templateId)
-                    ->value('subject');
+                $subject = DB::table('email_templates')->where('id', $templateId)->value('subject');
 
                 if (!$subject) {
                     if ($installmentId) {
@@ -131,18 +125,15 @@ class SendPaymentReminderJob implements ShouldQueue
                     continue;
                 }
                 $pdfBinary = null;
-                $pdfName   = null;
+                $pdfName = null;
 
                 if ($booking->payment_method === 'BANK_TRANSFER') {
                     Log::info("Generating invoice PDF for booking #{$booking->id}, passenger #{$passenger->id}.");
                     $pdfBinary = $pdfService->generateInvoicePDF($booking, $passenger->language ?? 'en');
-                    $pdfName   = "Invoice_{$booking->booking_code}.pdf";
+                    $pdfName = "Invoice_{$booking->booking_code}.pdf";
                 }
                 Mail::send([], [], function ($m) use ($to, $subject, $content, $pdfBinary, $pdfName) {
-                    $m->to($to)
-                        ->bcc(env('MAIL_BCC'))
-                        ->subject($subject)
-                        ->html($content);
+                    $m->to($to)->bcc(env('MAIL_BCC'))->subject($subject)->html($content);
                     if ($pdfBinary instanceof \Barryvdh\DomPDF\PDF) {
                         $m->attachData($pdfBinary->output(), $pdfName, ['mime' => 'application/pdf']);
                     }
@@ -162,19 +153,22 @@ class SendPaymentReminderJob implements ShouldQueue
                     ],
                 );
 
-                Log::info("Reminder sent to {$to} (booking #{$booking->id}, passenger #{$passenger->id}, tpl {$templateId}).");
+                Log::info(
+                    "Reminder sent to {$to} (booking #{$booking->id}, passenger #{$passenger->id}, tpl {$templateId}).",
+                );
             } catch (\Throwable $e) {
                 if ($installmentId) {
                     Installment::where('id', $installmentId)->update(['last_reminder_sent_at' => null]);
                 }
-                Log::error("Error sending reminder (booking #{$booking->id}, passenger #{$passenger->id}): {$e->getMessage()}");
+                Log::error(
+                    "Error sending reminder (booking #{$booking->id}, passenger #{$passenger->id}): {$e->getMessage()}",
+                );
             }
         }
     }
 
-    protected function resolveTemplateId($booking, Passenger $passenger): ?int
-    {
-        $payment_method = strtoupper((string)$passenger->payment_method); // CREDIT_CARD | BANK_TRANSFER
+    protected function resolveTemplateId($booking, Passenger $passenger): ?int {
+        $payment_method = strtoupper((string) $passenger->payment_method); // CREDIT_CARD | BANK_TRANSFER
         $lang = $passenger->language ?? Config::get('app.locale');
 
         $map = [

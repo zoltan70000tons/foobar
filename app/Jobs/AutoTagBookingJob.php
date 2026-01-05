@@ -13,33 +13,29 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Helpers\TagHelper;
 
-class AutoTagBookingJob implements ShouldQueue
-{
+class AutoTagBookingJob implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected Booking $booking;
     protected Carbon $now;
 
-    public function __construct(Booking $booking)
-    {
+    public function __construct(Booking $booking) {
         $this->booking = $booking;
         $this->now = Carbon::now('America/Los_Angeles');
         $this->onQueue('auto-tagging');
     }
 
-    public function handle(): void
-    {
+    public function handle(): void {
         $this->handleOverdueTag();
         $this->handleMissingInfoTag();
     }
 
-    protected function handleOverdueTag(): void
-    {
+    protected function handleOverdueTag(): void {
         $isOverdue = false;
 
         foreach ($this->booking->passengers as $passenger) {
             $installmentStatus = $passenger->getInstallmentStatus();
-            $nextInstallment   = $installmentStatus['next_installment'] ?? null;
+            $nextInstallment = $installmentStatus['next_installment'] ?? null;
 
             if (!$nextInstallment || empty($nextInstallment['due_date'])) {
                 continue;
@@ -60,7 +56,7 @@ class AutoTagBookingJob implements ShouldQueue
                     'OVERDUE',
                     'BOOKING',
                     '#FF0000',
-                    'Overdue installments > 48h past due'
+                    'Overdue installments > 48h past due',
                 );
                 GlobalLogger::log(
                     LogActionBooking::SYSTEM_ADDED_OVERDUE_TAG,
@@ -81,13 +77,12 @@ class AutoTagBookingJob implements ShouldQueue
         }
     }
 
-    protected function handleMissingInfoTag(): void
-    {
+    protected function handleMissingInfoTag(): void {
         $missingInfo = false;
 
         foreach ($this->booking->passengers as $passenger) {
             $isPrivateCabin = (int) $this->booking->cabin->cabinType->id === 1;
-            $isSeatOccupied = ($passenger->empty_seat === false);
+            $isSeatOccupied = $passenger->empty_seat === false;
 
             if (
                 (empty($passenger->first_name) || empty($passenger->last_name) || empty($passenger->dob)) &&
@@ -106,7 +101,7 @@ class AutoTagBookingJob implements ShouldQueue
                     'MISSING PAX',
                     'BOOKING',
                     '#FFA500',
-                    'Indicates passengers with missing information.'
+                    'Indicates passengers with missing information.',
                 );
                 GlobalLogger::log(
                     LogActionBooking::SYSTEM_ADDED_MISSING_PAX_TAG,

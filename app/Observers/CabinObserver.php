@@ -6,10 +6,8 @@ use App\Enums\GlobalLog\LogActionCabin;
 use App\Models\Cabin;
 use App\Support\GlobalLogger;
 
-class CabinObserver
-{
-    public function updated(Cabin $cabin): void
-    {
+class CabinObserver {
+    public function updated(Cabin $cabin): void {
         // helpers
         $map = [
             'AVAILABLE' => 'PUBLICLY AVAILABLE',
@@ -17,7 +15,7 @@ class CabinObserver
         ];
 
         $statusBefore = $map[$cabin->getRawOriginal('status')] ?? $cabin->getRawOriginal('status');
-        $statusAfter  = $map[$cabin->status?->value ?? null] ?? ($cabin->status?->value ?? null);
+        $statusAfter = $map[$cabin->status?->value ?? null] ?? ($cabin->status?->value ?? null);
 
         // inventory
         if ($cabin->wasChanged('inventory')) {
@@ -27,12 +25,16 @@ class CabinObserver
                 LogActionCabin::INVENTORY_CHANGED,
                 'cabin',
                 $cabin->id,
-                sprintf('Inventory %s → %s, category code: %s', $cabin->getRawOriginal('inventory'),
-                    $cabin->inventory, $categorySpec->category_code),
+                sprintf(
+                    'Inventory %s → %s, category code: %s',
+                    $cabin->getRawOriginal('inventory'),
+                    $cabin->inventory,
+                    $categorySpec->category_code,
+                ),
                 [
                     'before' => ['inventory' => $cabin->getRawOriginal('inventory')],
-                    'after'  => ['inventory'  => (int) $cabin->inventory],
-                ]
+                    'after' => ['inventory' => (int) $cabin->inventory],
+                ],
             );
         }
 
@@ -45,8 +47,8 @@ class CabinObserver
                 sprintf('%s → %s', $statusBefore, $statusAfter),
                 [
                     'before' => ['status' => $statusBefore],
-                    'after'  => ['status' => $statusAfter],
-                ]
+                    'after' => ['status' => $statusAfter],
+                ],
             );
         }
 
@@ -59,8 +61,8 @@ class CabinObserver
                 sprintf('Category %s → %s', $cabin->getRawOriginal('cabin_category_id'), $cabin->cabin_category_id),
                 [
                     'before' => ['cabin_category_id' => $cabin->getRawOriginal('cabin_category_id')],
-                    'after'  => ['cabin_category_id' => $cabin->cabin_category_id],
-                ]
+                    'after' => ['cabin_category_id' => $cabin->cabin_category_id],
+                ],
             );
         }
 
@@ -73,8 +75,8 @@ class CabinObserver
                 sprintf('TYPE %s → %s', $cabin->getRawOriginal('cabin_type_id'), $cabin->cabin_type_id),
                 [
                     'before' => ['cabin_type_id' => $cabin->getRawOriginal('cabin_type_id')],
-                    'after'  => ['cabin_type_id' => $cabin->cabin_type_id],
-                ]
+                    'after' => ['cabin_type_id' => $cabin->cabin_type_id],
+                ],
             );
         }
 
@@ -83,8 +85,7 @@ class CabinObserver
             $originalNotes = $cabin->getRawOriginal('notes');
             $newNotes = $cabin->notes;
 
-            if (($originalNotes === '' || $originalNotes === null)
-                && ($newNotes === '' || $newNotes === null)) {
+            if (($originalNotes === '' || $originalNotes === null) && ($newNotes === '' || $newNotes === null)) {
                 return;
             }
 
@@ -92,16 +93,10 @@ class CabinObserver
                 return;
             }
 
-            GlobalLogger::log(
-                LogActionCabin::NOTES_UPDATED,
-                'cabin',
-                $cabin->id,
-                'Notes updated',
-                [
-                    'before' => ['notes' => $originalNotes],
-                    'after'  => ['notes' => $newNotes],
-                ]
-            );
+            GlobalLogger::log(LogActionCabin::NOTES_UPDATED, 'cabin', $cabin->id, 'Notes updated', [
+                'before' => ['notes' => $originalNotes],
+                'after' => ['notes' => $newNotes],
+            ]);
         }
 
         // internal notes
@@ -109,8 +104,10 @@ class CabinObserver
             $originalInternalNotes = $cabin->getRawOriginal('notes');
             $newInternalNotes = $cabin->notes;
 
-            if (($originalInternalNotes === '' || $originalInternalNotes === null)
-                && ($newInternalNotes === '' || $newInternalNotes === null)) {
+            if (
+                ($originalInternalNotes === '' || $originalInternalNotes === null) &&
+                ($newInternalNotes === '' || $newInternalNotes === null)
+            ) {
                 return;
             }
 
@@ -118,16 +115,10 @@ class CabinObserver
                 return;
             }
 
-            GlobalLogger::log(
-                LogActionCabin::INTERNAL_NOTES_UPDATED,
-                'cabin',
-                $cabin->id,
-                'Internal Notes Updated',
-                [
-                    'before' => ['internal_notes' => $originalInternalNotes],
-                    'after'  => ['internal_notes' => $newInternalNotes],
-                ]
-            );
+            GlobalLogger::log(LogActionCabin::INTERNAL_NOTES_UPDATED, 'cabin', $cabin->id, 'Internal Notes Updated', [
+                'before' => ['internal_notes' => $originalInternalNotes],
+                'after' => ['internal_notes' => $newInternalNotes],
+            ]);
         }
     }
 }

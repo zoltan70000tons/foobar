@@ -6,13 +6,11 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserDetail;
 
-class FixUserDetailsAvatar extends Command
-{
+class FixUserDetailsAvatar extends Command {
     protected $signature = 'users:fix-avatars {--chunk=100}';
     protected $description = 'Normalize only malformed avatar entries in user_details.';
 
-    public function handle(): int
-    {
+    public function handle(): int {
         $chunkSize = (int) $this->option('chunk');
 
         DB::table('user_details')
@@ -21,9 +19,7 @@ class FixUserDetailsAvatar extends Command
             ->chunkById($chunkSize, function ($rows) {
                 foreach ($rows as $row) {
                     $raw = $row->avatar;
-                    $isJsonLike = is_string($raw)
-                        && strlen($raw) > 1
-                        && ($raw[0] === '{' || $raw[0] === '[');
+                    $isJsonLike = is_string($raw) && strlen($raw) > 1 && ($raw[0] === '{' || $raw[0] === '[');
 
                     if ($isJsonLike) {
                         $decoded = json_decode($raw, true);
@@ -33,7 +29,7 @@ class FixUserDetailsAvatar extends Command
                             array_key_exists('image', $decoded) &&
                             array_key_exists('badge', $decoded)
                         ) {
-                            continue; 
+                            continue;
                         }
                     }
                     $payload = [

@@ -1,19 +1,10 @@
 import { Box, TextField } from "@mui/material";
 
-const CustomInput: React.FC<CustomInputProps> = ({
-  name,
-  value,
-  title,
-  onChange,
-  dis,
-  error,
-}) => {
-
+const CustomInput: React.FC<CustomInputProps> = ({ name, value, title, onChange, dis, error }) => {
   const sanitizeInput = (input: string) => {
     const dangerousPattern = /['";<>\\\/`&{}[\]()=|%+*^$#@!]/g;
     return input.replace(dangerousPattern, "");
   };
-
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const sanitizedValue = sanitizeInput(event.target.value);
@@ -38,7 +29,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
         error={!!error}
         helperText={error}
         variant="outlined"
-       // size="small"
+        // size="small"
       />
     </Box>
   );

@@ -6,10 +6,8 @@ use App\Enums\GlobalLog\LogActionBooking;
 use App\Models\BookingAgentSessions;
 use App\Support\GlobalLogger;
 
-class BookingAgentSessionsObserver
-{
-    public function created(BookingAgentSessions $bookingAgentSessions): void
-    {
+class BookingAgentSessionsObserver {
+    public function created(BookingAgentSessions $bookingAgentSessions): void {
         GlobalLogger::log(
             LogActionBooking::AGENT_SESSION_CREATED,
             'booking',
@@ -20,12 +18,11 @@ class BookingAgentSessionsObserver
                     'booking_id' => $bookingAgentSessions->booking_id,
                     'booking_agent_sessions_id' => $bookingAgentSessions->id,
                 ],
-            ]
+            ],
         );
     }
 
-    public function updated(BookingAgentSessions $bookingAgentSessions): void
-    {
+    public function updated(BookingAgentSessions $bookingAgentSessions): void {
         GlobalLogger::log(
             LogActionBooking::AGENT_SESSION_UPDATED,
             'booking',
@@ -36,12 +33,11 @@ class BookingAgentSessionsObserver
                     'booking_id' => $bookingAgentSessions->booking_id,
                     'booking_agent_sessions_id' => $bookingAgentSessions->id,
                 ],
-            ]
+            ],
         );
     }
 
-    public function deleted(BookingAgentSessions $bookingAgentSessions): void
-    {
+    public function deleted(BookingAgentSessions $bookingAgentSessions): void {
         GlobalLogger::log(
             LogActionBooking::AGENT_SESSION_DELETED,
             'booking',
@@ -52,7 +48,7 @@ class BookingAgentSessionsObserver
                     'booking_id' => $bookingAgentSessions->booking_id,
                     'booking_agent_sessions_id' => $bookingAgentSessions->id,
                 ],
-            ]
+            ],
         );
     }
 }

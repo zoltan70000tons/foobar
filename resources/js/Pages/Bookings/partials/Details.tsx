@@ -22,17 +22,17 @@ import {
   Select,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import UpgradeIcon from '@mui/icons-material/Upgrade';
+import UpgradeIcon from "@mui/icons-material/Upgrade";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import axios from "axios";
 import { router } from "@inertiajs/react";
 import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import PinIcon from '@mui/icons-material/Pin';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import ClearIcon from '@mui/icons-material/Clear'
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import PinIcon from "@mui/icons-material/Pin";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import ClearIcon from "@mui/icons-material/Clear";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
 import {
   DateRange as DateRangeIcon,
@@ -82,13 +82,10 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission(Permissions.EditBookings);
 
-
   useEffect(() => {
     if (booking?.cabin) {
       setCabinType(cabinTypes.find((type) => type.id === booking.cabin.cabin_type_id) || null);
-      setCabinCategory(
-        cabinCategories.find((category) => category.id === booking.cabin.cabin_category_id) || null
-      );
+      setCabinCategory(cabinCategories.find((category) => category.id === booking.cabin.cabin_category_id) || null);
       setCabinNumber(booking.cabin.cabin_number);
     }
   }, [booking, cabinTypes, cabinCategories]);
@@ -98,7 +95,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
   }, [cabinCategory, selectedDeck, onlyBalcony, selectedLocation, onlyAccessible, advancedFilters]);
 
   useEffect(() => {
-    console.log('Available cabins updated:', availableCabins);
+    console.log("Available cabins updated:", availableCabins);
   }, [availableCabins]);
 
   const statusPriority = {
@@ -106,12 +103,14 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
     AVAILABLE: 2,
   };
 
-  const isInstallments = booking?.payment_plan === 'INSTALLMENTS';
-  const currentPlanLabel = isInstallments ? 'Installments' : 'Paid in Full';
-  const nextPlanLabel = isInstallments ? 'Paid in Full' : 'Installments';
-  const maxAllowed = isInstallments ? 0 : maxInstallmentsAllowed ?? 0;
+  const isInstallments = booking?.payment_plan === "INSTALLMENTS";
+  const currentPlanLabel = isInstallments ? "Installments" : "Paid in Full";
+  const nextPlanLabel = isInstallments ? "Paid in Full" : "Installments";
+  const maxAllowed = isInstallments ? 0 : (maxInstallmentsAllowed ?? 0);
   const bookingCreatedAt = booking?.created_at ? new Date(booking.created_at) : null;
-  const bookingAgeDays = bookingCreatedAt ? Math.floor((Date.now() - bookingCreatedAt.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const bookingAgeDays = bookingCreatedAt
+    ? Math.floor((Date.now() - bookingCreatedAt.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
   const bookingOlderThanWeek = bookingAgeDays > 7;
   console.log(bookingCreatedAt, bookingAgeDays, bookingOlderThanWeek);
 
@@ -129,17 +128,16 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
         },
       });
       if (response?.data?.error) {
-        showSnackbar(response.data.error, 'error');
+        showSnackbar(response.data.error, "error");
       }
       const decks = Array.isArray(response?.data?.cabins)
-        ? [...new Set(response.data.cabins.map(cabin => cabin.deck))]
+        ? [...new Set(response.data.cabins.map((cabin) => cabin.deck))]
         : [];
       setAvailableCabins(response?.data?.cabins);
       setAvailableDecks(decks);
-
     } catch (error) {
       if (error.response?.data?.error) {
-        showSnackbar(error.response.data.error, 'error');
+        showSnackbar(error.response.data.error, "error");
       }
       //showSnackbar("Error fetching available cabins!", "error");
       console.error("Error fetching available cabins:", error);
@@ -167,7 +165,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
       });
 
       if (response?.data?.error) {
-        showSnackbar(response.data.error, 'error');
+        showSnackbar(response.data.error, "error");
       }
       /*const decks = Array.isArray(response?.data?.cabins)
         ? [...new Set(response.data.cabins.map(cabin => cabin.deck))]
@@ -178,7 +176,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
       setCabinsToUpgradeTo(response?.data?.cabins);
     } catch (error) {
       if (error.response?.data?.error) {
-        showSnackbar(error.response.data.error, 'error');
+        showSnackbar(error.response.data.error, "error");
       }
       //showSnackbar("Error fetching available cabins!", "error");
       console.error("Error fetching available cabins:", error);
@@ -202,7 +200,7 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
     if (cabinType && cabinCategory) {
       fetchCabinsToUpgradeTo();
     }
-  }
+  };
 
   const handleClose = () => {
     setOpen(false);
@@ -236,14 +234,13 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
           showSnackbar("Cabin updated successfully!", "success");
         },
         onError: (errors) => {
-
           showSnackbar("Error updating cabin!", "error");
           console.error(errors);
         },
         onFinish: () => {
           setLoading(false);
-        }
-      }
+        },
+      },
     );
   };
 
@@ -269,14 +266,13 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
           showSnackbar("Cabin upgraded successfully!", "success");
         },
         onError: (errors) => {
-
           showSnackbar("Error upgrading cabin!", "error");
           console.error(errors);
         },
         onFinish: () => {
           setLoading(false);
-        }
-      }
+        },
+      },
     );
   };
 
@@ -284,33 +280,29 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
     setSwitchPlanOpen(true);
     // reset selection when opening
     setSelectedInstallments(null);
-  }
+  };
 
   const handleConfirmSwitchPlan = () => {
     setSwitchingPlan(true);
     const payload = {
-      payment_plan: isInstallments ? 'PAY_IN_FULL' : 'INSTALLMENTS',
+      payment_plan: isInstallments ? "PAY_IN_FULL" : "INSTALLMENTS",
       booking_id: booking.id,
       number_of_installments: isInstallments ? null : selectedInstallments,
     };
 
-    router.post(
-      route("bookings.switchPaymentPlan", { booking_id: booking.id, event_id: event.id }),
-      payload,
-      {
-        onSuccess: () => {
-          setSwitchPlanOpen(false);
-          showSnackbar(`Payment plan changed to ${nextPlanLabel}`, "success");
-        },
-        onError: (errors) => {
-          console.error(errors);
-          showSnackbar("Error switching payment plan", "error");
-        },
-        onFinish: () => {
-          setSwitchingPlan(false);
-        }
-      }
-    );
+    router.post(route("bookings.switchPaymentPlan", { booking_id: booking.id, event_id: event.id }), payload, {
+      onSuccess: () => {
+        setSwitchPlanOpen(false);
+        showSnackbar(`Payment plan changed to ${nextPlanLabel}`, "success");
+      },
+      onError: (errors) => {
+        console.error(errors);
+        showSnackbar("Error switching payment plan", "error");
+      },
+      onFinish: () => {
+        setSwitchingPlan(false);
+      },
+    });
   };
 
   const handleBedConfigChange = (value) => {
@@ -319,17 +311,21 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
   const handleBedConfigUpdate = () => {
     if (!bedConfig) return;
     setLoading(true);
-    router.put(route('bookings.update-bed-config', booking.id), { bed_config: bedConfig }, {
-      onSuccess: () => {
-        setLoading(false);
+    router.put(
+      route("bookings.update-bed-config", booking.id),
+      { bed_config: bedConfig },
+      {
+        onSuccess: () => {
+          setLoading(false);
+        },
+        onError: () => {
+          setLoading(false);
+        },
+        onFinish: () => {
+          setLoading(false);
+        },
       },
-      onError: () => {
-        setLoading(false);
-      },
-      onFinish: () => {
-        setLoading(false);
-      },
-    });
+    );
   };
 
   return (

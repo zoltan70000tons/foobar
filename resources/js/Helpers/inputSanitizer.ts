@@ -7,6 +7,6 @@
  * @returns {string} - The sanitized string.
  */
 export const sanitizeInput = (input) => {
-    const dangerousPattern = /['";<>\\\/`&{}[\]()=|%+*^$#@!]/g;
-    return input.replace(dangerousPattern, "");
+  const dangerousPattern = /['";<>\\\/`&{}[\]()=|%+*^$#@!]/g;
+  return input.replace(dangerousPattern, "");
 };

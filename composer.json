@@ -16,6 +16,7 @@
     "kwn/number-to-words": "^2.11",
     "laravel/framework": "^11.9",
     "laravel/horizon": "^5.31",
+    "laravel/nightwatch": "^1.21",
     "laravel/passport": "^13.0",
     "laravel/pulse": "^1.2",
     "laravel/reverb": "^1.4",

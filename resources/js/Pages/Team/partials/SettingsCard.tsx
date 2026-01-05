@@ -11,7 +11,7 @@ import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Permissions } from "@/enums/PermissionEnum";
 import PhoneNumber from "@/Components/PhoneNumber";
 import { User } from "@/interfaces/User";
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
 interface SettingsCardProps {
   user: User;
@@ -40,19 +40,24 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
   const { data, setData, post, processing } = useForm<TForm>({
     id: user.id,
     email: user.email,
-    phone_number: user?.detail?.phone || '',
-    pass: '',
-    survivor_number: user.survivor_number || '',
-    lastname: user?.detail?.last_name || '',
-    middlename: user?.detail?.middle_name || '',
-    username: user.username || '',
-    firstname: user?.detail?.first_name || '',
-    gender: user?.detail?.gender || ''
+    phone_number: user?.detail?.phone || "",
+    pass: "",
+    survivor_number: user.survivor_number || "",
+    lastname: user?.detail?.last_name || "",
+    middlename: user?.detail?.middle_name || "",
+    username: user.username || "",
+    firstname: user?.detail?.first_name || "",
+    gender: user?.detail?.gender || "",
   });
 
   const canEdit = hasPermission(Permissions.EditUsers);
 
-  const { data: colorData, setData: setColorData, put: putColor, processing: processingColor } = useForm({
+  const {
+    data: colorData,
+    setData: setColorData,
+    put: putColor,
+    processing: processingColor,
+  } = useForm({
     badge: {
       text: user?.detail?.avatar?.badge?.text || "#FFFFFF",
       background: user?.detail?.avatar?.badge?.background || "#007BFF",
@@ -64,13 +69,12 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
     putColor(route("users.avatar.update", user.id), {
       preserveScroll: true,
       onSuccess: () => {
-      showSnackbar("Colors updated!", "success");
-      fetchData();
-    },onError: () => showSnackbar("Error saving colors", "error"),
+        showSnackbar("Colors updated!", "success");
+        fetchData();
+      },
+      onError: () => showSnackbar("Error saving colors", "error"),
     });
   };
-
-
 
   const handleUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -78,7 +82,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
   };
 
   const handleChangePhone = (value: string) => {
-    setData('phone_number', value)
+    setData("phone_number", value);
   };
 
   const [tabValue, setTabValue] = useState("one");
@@ -90,32 +94,39 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (canEdit) {
-      post(route('member.update', user.id), {
+      post(route("member.update", user.id), {
         onSuccess: () => {
           showSnackbar("User updated successfully", "success");
           fetchData();
         },
         onError: () => {
-          showSnackbar('Error updating user', "error");
+          showSnackbar("Error updating user", "error");
         },
       });
     }
   };
 
   const handleGenderChange = (value: object) => {
-    setData('gender', value.target.value);
-  }
+    setData("gender", value.target.value);
+  };
   return (
-    <Card variant="outlined" sx={{ marginTop: '0.02rem', borderRadius: 0, height: "99.9%", width: "100%", background: "#383838", border: "2px solid grey", borderLeft: { xs: '2px solid grey', md: 'none' }, marginBottom: "1rem" }}>
-      <Tabs
-        value={tabValue}
-        onChange={handleTabChange}
-        textColor="secondary"
-        indicatorColor="secondary"
-      >
+    <Card
+      variant="outlined"
+      sx={{
+        marginTop: "0.02rem",
+        borderRadius: 0,
+        height: "99.9%",
+        width: "100%",
+        background: "#383838",
+        border: "2px solid grey",
+        borderLeft: { xs: "2px solid grey", md: "none" },
+        marginBottom: "1rem",
+      }}
+    >
+      <Tabs value={tabValue} onChange={handleTabChange} textColor="secondary" indicatorColor="secondary">
         <Tab value="one" label="Account" />
         <Tab value="two" label="Manage Role" />
-        {canEdit && (<Tab value="three" label="Styling" />)}
+        {canEdit && <Tab value="three" label="Styling" />}
       </Tabs>
       <Divider />
 
@@ -124,7 +135,6 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
           <CardContent sx={{ p: 3, maxHeight: { md: "40vh" }, textAlign: { xs: "center", md: "start" } }}>
             <FormControl fullWidth>
               <Grid container spacing={3}>
-
                 {/* First row */}
                 <Grid item xs={12} md={4}>
                   <CustomInput
@@ -161,8 +171,9 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
 
                 <Grid item xs={12} md={4}>
                   <Box>
-                    <PhoneNumber value={data?.phone_number || ""}
-                      sx={{ width: '100%', maxHeight: '20px' }}
+                    <PhoneNumber
+                      value={data?.phone_number || ""}
+                      sx={{ width: "100%", maxHeight: "20px" }}
                       onChange={(value) => handleChangePhone(value)}
                       forceDialCode={true}
                       error={errors.phone_number}
@@ -189,10 +200,9 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
                     title="Gender"
                     onChange={handleGenderChange}
                     options={[
-                      { value: '', label: '-' },
-                      { value: 'M', label: 'Male' },
-                      { value: 'F', label: 'Female' },
-
+                      { value: "", label: "-" },
+                      { value: "M", label: "Male" },
+                      { value: "F", label: "Female" },
                     ]}
                     dis={!canEdit}
                     error={errors.gender}
@@ -261,7 +271,6 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
               </Box>
             </Box>
 
-
             <Box sx={{ display: "inline-flex", gap: 0.5 }}>
               <Chip
                 label={user.user_name || "Agent Name"}
@@ -275,26 +284,19 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ user, onUpdate }) => {
                   "& .MuiChip-label": { px: 1.5 },
                 }}
               />
-
-
             </Box>
 
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 3, alignSelf: "flex-start" }}
-              onClick={handleSave}
-            >
+            <Button variant="contained" color="primary" sx={{ mt: 3, alignSelf: "flex-start" }} onClick={handleSave}>
               Save Colors
             </Button>
-            <p style={{ visibility: "hidden" }}>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Veniam dicta fugit adipisci quisquam sed soluta quo, dolor dolores quasi eveniet animi beatae ducimus, itaque est doloribus pariatur cupiditate atque? Sit?</p>
+            <p style={{ visibility: "hidden" }}>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Veniam dicta fugit adipisci quisquam sed soluta
+              quo, dolor dolores quasi eveniet animi beatae ducimus, itaque est doloribus pariatur cupiditate atque?
+              Sit?
+            </p>
           </Box>
         </CardContent>
       )}
-
-
-
-
     </Card>
   );
 };

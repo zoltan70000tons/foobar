@@ -7,19 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class UserHasTag extends Model
-{
+class UserHasTag extends Model {
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['user_id', 'tag_id'];
 
-    public function tag(): BelongsTo
-    {
+    public function tag(): BelongsTo {
         return $this->belongsTo(UserTag::class, 'tag_id');
     }
 
-    public function user(): BelongsTo
-    {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
     }
 }

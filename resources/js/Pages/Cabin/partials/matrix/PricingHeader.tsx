@@ -1,11 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { fixedHeight } from "@/Pages/Cabin/partials/matrix/constants";
 
-export default function PricingHeader({
-  maxCapacity,
-}: {
-  maxCapacity: number;
-}) {
+export default function PricingHeader({ maxCapacity }: { maxCapacity: number }) {
   // head data
   let headData: string[] = [
     "Category",
@@ -20,9 +16,7 @@ export default function PricingHeader({
   ];
 
   // trim the head data based on the max capacity
-  headData = headData
-  .slice(0, maxCapacity + 1)
-  .map((key) => key);
+  headData = headData.slice(0, maxCapacity + 1).map((key) => key);
 
   return (
     <Box

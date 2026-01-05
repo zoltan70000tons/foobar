@@ -21,13 +21,13 @@ export const TicketTypeData = ({ eventId, cabinType }) => {
     setLoading(true);
 
     axios
-    .get(route("show.cabin-matrix", { eventId, cabinTypeId: tabValue }))
-    .then((res) => {
-      if (!cancelled) setPricing(res.data);
-    })
-    .finally(() => {
-      if (!cancelled) setLoading(false);
-    });
+      .get(route("show.cabin-matrix", { eventId, cabinTypeId: tabValue }))
+      .then((res) => {
+        if (!cancelled) setPricing(res.data);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
       cancelled = true;
@@ -40,12 +40,7 @@ export const TicketTypeData = ({ eventId, cabinType }) => {
 
   return (
     <>
-      <Tabs
-        value={tabValue}
-        onChange={handleChange}
-        centered
-        sx={{ minWidth: "300px" }}
-      >
+      <Tabs value={tabValue} onChange={handleChange} centered sx={{ minWidth: "300px" }}>
         {tabItems.map((item) => (
           <Tab
             key={item.value}

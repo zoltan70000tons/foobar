@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import { NumericFormat } from 'react-number-format';
+import React, { useState } from "react";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import { NumericFormat } from "react-number-format";
 
 type FormatInputProps = {
   name: string;
@@ -11,9 +11,9 @@ type FormatInputProps = {
   prefix?: string;
   onChange: (name: string, value: string) => void;
   decimalScale?: number;
-  error: Object | null
-  disabled: boolean,
-  val?: string
+  error: Object | null;
+  disabled: boolean;
+  val?: string;
 };
 
 const FormatInput: React.FC<FormatInputProps> = ({
@@ -25,8 +25,8 @@ const FormatInput: React.FC<FormatInputProps> = ({
   onChange,
   decimalScale = 2,
   error,
-  disabled= false,
-  val='0'
+  disabled = false,
+  val = "0",
 }) => {
   const [value, setValue] = useState<string>(val);
   console.log(value);

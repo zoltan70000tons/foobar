@@ -4,28 +4,25 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    if (!Schema::hasTable('cabin_types')) {
-      Schema::create('cabin_types', function (Blueprint $table) {
-        $table->id();
-        $table->string('cabin_type', 50);
-        $table->string('cabin_type_description', 255)->nullable();
-        $table->timestamps();
-      });
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void {
+        if (!Schema::hasTable('cabin_types')) {
+            Schema::create('cabin_types', function (Blueprint $table) {
+                $table->id();
+                $table->string('cabin_type', 50);
+                $table->string('cabin_type_description', 255)->nullable();
+                $table->timestamps();
+            });
+        }
     }
-  }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('cabin_types');
-  }
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void {
+        Schema::dropIfExists('cabin_types');
+    }
 };

@@ -2,11 +2,11 @@
 
 export enum TagEnum {
   NEW = "NEW",
-  STAFF = "STAFF", 
-  ARTIST = "ARTISTS", 
-  PRESS = "PRESS", 
+  STAFF = "STAFF",
+  ARTIST = "ARTISTS",
+  PRESS = "PRESS",
   UNUSABLE = "UNUSABLE",
-  NON_REV = "NON-REV", 
+  NON_REV = "NON-REV",
   POTENTIAL_NOSE = "POTENTIAL NOISE",
   NOT_ASSIGNED = "NOT ASSIGNED",
   ASSIGNED = "ASSIGNED",
@@ -18,13 +18,13 @@ export enum TagEnum {
 }
 
 // I dont know if we are using it anohter, place but not in booking detail REMOVE ??
-export enum BookingTagEnum { 
-  NOT_ASSIGNE = "NOT ASSIGNED", 
-  NEW = "NEW", 
-  OVERDUE = "OVERDUE", 
+export enum BookingTagEnum {
+  NOT_ASSIGNE = "NOT ASSIGNED",
+  NEW = "NEW",
+  OVERDUE = "OVERDUE",
   MISSING_INFO = "MISSING INFO",
-  PAID = "PAID", 
-  IN_MANIFEST = "IN MANIFEST"
+  PAID = "PAID",
+  IN_MANIFEST = "IN MANIFEST",
 }
 
 // Tag styles for TagEnum

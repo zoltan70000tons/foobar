@@ -49,20 +49,20 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
   const [comments, setComments] = useState(customer.comments || []);
 
   const handleEdit = () => {
-    get(route('customers.edit', { user: customer.id }));
-  }
+    get(route("customers.edit", { user: customer.id }));
+  };
 
   const handleBack = () => {
     //window.history.back(); //Keeps ordering and filtering, does not reload when data changed on EDIT
     router.visit(route("customers.index"), {
-      only: ['users'],
-    })
-  }
+      only: ["users"],
+    });
+  };
 
   const handleDelete = () => {
-    const confirmed = window.confirm('Are you sure you want to delete this customer?');
+    const confirmed = window.confirm("Are you sure you want to delete this customer?");
     if (confirmed) {
-      destroy(route('customers.destroy', { user: customer.id }));
+      destroy(route("customers.destroy", { user: customer.id }));
     }
   };
 
@@ -95,18 +95,18 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
   };
 
   return (
-    <AuthenticatedLayout user={ auth.user } header={ "Customers" }>
-      <Head title="View Customer"/>
-      <Toolbar 
-        sx={{ 
+    <AuthenticatedLayout user={auth.user} header={"Customers"}>
+      <Head title="View Customer" />
+      <Toolbar
+        sx={{
           mt: 8,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          gap: 2, 
+          flexDirection: "row",
+          justifyContent: "space-between",
+          gap: 2,
         }}
       >
         <Box>
-          <Button variant="outlined" color="secondary" onClick={ handleBack }>
+          <Button variant="outlined" color="secondary" onClick={handleBack}>
             Back
           </Button>
           <Button
@@ -119,14 +119,10 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
             View Comments & Logs
           </Button>
         </Box>
-        <TemporaryPassword 
-          customer={customer}
-          isTemporaryPassword={isTemporaryPassword}
-        />
-        
+        <TemporaryPassword customer={customer} isTemporaryPassword={isTemporaryPassword} />
       </Toolbar>
 
-      <Paper variant="outlined" sx={{ p: 2, backgroundColor: '#1c1c1c', mb: 4 }}>
+      <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1c1c1c", mb: 4 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={6}>
             <Grid container mt={2}>
@@ -136,267 +132,257 @@ const View = ({ auth, customer, bookings, availableTags, isTemporaryPassword }: 
         </Grid>
       </Paper>
 
-      <Container maxWidth="lg" sx={ { mt: 4, mb: 4 } }>
-        <Grid container spacing={ 3 }>
-          <Tabs
-            value={ selectedTab }
-            onChange={ handleTabChange }
-            aria-label="customer data and related bookings"
-          >
-            <Tab label="CUSTOMER DATA"/>
-            <Tab label="BOOKING HISTORY"/>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Grid container spacing={3}>
+          <Tabs value={selectedTab} onChange={handleTabChange} aria-label="customer data and related bookings">
+            <Tab label="CUSTOMER DATA" />
+            <Tab label="BOOKING HISTORY" />
           </Tabs>
-          { (hasPermission(Permissions.ViewCustomers) && selectedTab === 0) && (
+          {hasPermission(Permissions.ViewCustomers) && selectedTab === 0 && (
             <>
               <Paper
-                sx={ {
+                sx={{
                   p: 2,
                   display: "flex",
                   flexDirection: "column",
                   minHeight: 240,
                   width: "100%",
-                } }
+                }}
               >
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 } sx={ { mr: 2 } }>
+                <Box sx={{ width: "100%" }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6} sx={{ mr: 2 }}>
                       <TextField
                         fullWidth
                         label="Survivor Number"
                         variant="outlined"
-                        value={ customer.survivor_number.survivor_number }
+                        value={customer.survivor_number.survivor_number}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="First Name"
                         variant="outlined"
-                        value={ customer.detail.first_name }
+                        value={customer.detail.first_name}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Middle Name"
                         variant="outlined"
-                        value={ customer.detail.middle_name }
+                        value={customer.detail.middle_name}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Last Name"
                         variant="outlined"
-                        value={ customer.detail.last_name }
+                        value={customer.detail.last_name}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         select
                         disabled
                         fullWidth
                         label="Gender"
                         variant="outlined"
-                        value={ customer.detail.gender }
+                        value={customer.detail.gender}
                       >
-                        <MenuItem value={ "M" }>Male</MenuItem>
-                        <MenuItem value={ "F" }>Female</MenuItem>
+                        <MenuItem value={"M"}>Male</MenuItem>
+                        <MenuItem value={"F"}>Female</MenuItem>
                       </TextField>
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Box sx={ { width: "100%", mt: 2, mb: 2 } }>
-                  <Grid container spacing={ 2 }>
+                <Box sx={{ width: "100%", mt: 2, mb: 2 }}>
+                  <Grid container spacing={2}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <Grid item xs={ 6 }>
+                      <Grid item xs={6}>
                         <DatePicker
                           label="Date of Birth"
                           sx={{ width: "100%" }}
                           value={customer.detail.dob ? dayjs(customer.detail.dob) : null}
                           maxDate={dayjs()} // Restricts future dates
                           format="YYYY-MM-DD" // Ensures consistent formatting
-                          renderInput={(params) => (
-                            <TextField {...params} fullWidth />
-                          )}
+                          renderInput={(params) => <TextField {...params} fullWidth />}
                           disabled
                         />
                       </Grid>
                     </LocalizationProvider>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <Country
                         fullWidth
                         label="Citizenship"
                         variant="outlined"
-                        value={ customer.detail.citizenship }
+                        value={customer.detail.citizenship}
                         disabled
                       />
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Phone Number
                 </Typography>
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 }>
-                      <PhoneNumber
-                        value={ customer.detail.phone || "" }
-                        forceDialCode={ true }
-                        disabled
-                      />
+                <Box sx={{ width: "100%" }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <PhoneNumber value={customer.detail.phone || ""} forceDialCode={true} disabled />
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Address Information
                 </Typography>
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 }>
+                <Box sx={{ width: "100%" }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Address Line 1"
                         variant="outlined"
-                        value={ customer?.customer_address?.address_first }
+                        value={customer?.customer_address?.address_first}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Address Line 2"
                         variant="outlined"
-                        value={ customer?.customer_address?.address_second }
+                        value={customer?.customer_address?.address_second}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
 
-                    <Grid item xs={ 4 }>
+                    <Grid item xs={4}>
                       <TextField
                         fullWidth
                         label="City"
                         variant="outlined"
-                        value={ customer?.customer_address?.city }
+                        value={customer?.customer_address?.city}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 4 }>
+                    <Grid item xs={4}>
                       <TextField
                         fullWidth
                         label="State"
                         variant="outlined"
-                        value={ customer?.customer_address?.state }
+                        value={customer?.customer_address?.state}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 4 }>
+                    <Grid item xs={4}>
                       <TextField
                         fullWidth
                         label="Zip Code"
                         variant="outlined"
-                        value={ customer?.customer_address?.postal_code }
+                        value={customer?.customer_address?.postal_code}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
 
-                    <Grid item xs={ 12 }>
+                    <Grid item xs={12}>
                       <Country
                         fullWidth
                         label="Country"
                         variant="outlined"
-                        value={ customer?.customer_address?.country }
+                        value={customer?.customer_address?.country}
                         disabled
                       />
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Emergency Contact
                 </Typography>
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 }>
+                <Box sx={{ width: "100%" }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
                       <TextField
                         fullWidth
                         label="Contact Full Name"
                         variant="outlined"
-                        value={ customer?.detail?.emergency_c_name }
+                        value={customer?.detail?.emergency_c_name}
                         InputProps={{ readOnly: true }}
                       />
                     </Grid>
-                    <Grid item xs={ 6 }>
-                      <PhoneNumber
-                        value={ customer?.detail?.emergency_c_phone || "" }
-                        forceDialCode={ true }
-                        disabled
-                      />
+                    <Grid item xs={6}>
+                      <PhoneNumber value={customer?.detail?.emergency_c_phone || ""} forceDialCode={true} disabled />
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Typography variant="h6" sx={ { mt: 2, mb: 2 } }>
+                <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
                   Preferred Language
                 </Typography>
-                <Box sx={ { width: "100%" } }>
-                  <Grid container spacing={ 2 }>
-                    <Grid item xs={ 6 }>
+                <Box sx={{ width: "100%" }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
                       <TextField
                         select
                         disabled
                         fullWidth
                         label="Preferred Language"
                         variant="outlined"
-                        value={ customer.detail.language }
+                        value={customer.detail.language}
                       >
-                        <MenuItem value={ "de" }>Deutsch</MenuItem>
-                        <MenuItem value={ "en" }>English</MenuItem>
-                        <MenuItem value={ "es" }>Español</MenuItem>
+                        <MenuItem value={"de"}>Deutsch</MenuItem>
+                        <MenuItem value={"en"}>English</MenuItem>
+                        <MenuItem value={"es"}>Español</MenuItem>
                       </TextField>
                     </Grid>
                   </Grid>
                 </Box>
 
-                <Box sx={ { mt: 4 } }>
+                <Box sx={{ mt: 4 }}>
                   <div
-                    style={ {
+                    style={{
                       display: "flex",
                       justifyContent: "flex-end",
                       gap: "8px",
-                    } }
+                    }}
                   >
                     <Tooltip title="Back">
-                      <IconButton color="primary" onClick={ handleBack }>
-                        <ArrowBack/>
+                      <IconButton color="primary" onClick={handleBack}>
+                        <ArrowBack />
                       </IconButton>
                     </Tooltip>
-                    { hasPermission(Permissions.EditCustomers) && (<Tooltip title="Edit">
-                      <IconButton color="primary" onClick={ handleEdit }>
-                        <Edit/>
-                      </IconButton>
-                    </Tooltip>) }
-                    { hasPermission(Permissions.DeleteCustomers) && (<Tooltip title="Delete">
-                      <IconButton color="error" onClick={ handleDelete }>
-                        <Delete/>
-                      </IconButton>
-                    </Tooltip>) }
+                    {hasPermission(Permissions.EditCustomers) && (
+                      <Tooltip title="Edit">
+                        <IconButton color="primary" onClick={handleEdit}>
+                          <Edit />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {hasPermission(Permissions.DeleteCustomers) && (
+                      <Tooltip title="Delete">
+                        <IconButton color="error" onClick={handleDelete}>
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </div>
                 </Box>
               </Paper>
             </>
-          ) }
+          )}
 
-          { (hasPermission(Permissions.ViewBookings) && selectedTab === 1) && (
-            <BookingHistory auth={ auth } bookings={ bookings }/>
-          ) }
+          {hasPermission(Permissions.ViewBookings) && selectedTab === 1 && (
+            <BookingHistory auth={auth} bookings={bookings} />
+          )}
         </Grid>
         <CustomerSidebar
           isOpen={isSidebarOpen}

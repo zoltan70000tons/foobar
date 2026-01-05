@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import apiRoutes from '@/Helpers/ApiRoutes';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import apiRoutes from "@/Helpers/ApiRoutes";
 
 interface User {
   id: number;
@@ -20,7 +20,7 @@ export const useTeamData = () => {
       const response = await axios.get<User[]>(apiRoutes.getTeamUrl, { params: { org_id: 1 } });
       setRows(response.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }

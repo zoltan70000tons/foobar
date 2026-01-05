@@ -24,7 +24,6 @@ import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Event } from "@/interfaces/Event";
 import { Cruisers } from "@/interfaces/Cruiser";
 
-
 type Props = PageProps & {
   auth: AuthProps;
   event: Event;
@@ -33,12 +32,7 @@ type Props = PageProps & {
   errors: Errors;
 };
 
-const Create = ({
-  auth,
-  event,
-  cruisers,
-  errors,
-}: Props) => {
+const Create = ({ auth, event, cruisers, errors }: Props) => {
   const { data, setData, post, processing } = useForm({
     category_name: "",
     category_code: "",
@@ -48,7 +42,7 @@ const Create = ({
     category_type: "",
     display_order: "",
     event_id: event.id,
-    cruise: ""
+    cruise: "",
   });
 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -57,22 +51,16 @@ const Create = ({
     setUploadedFiles(files);
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setData(name as keyof typeof data, value);
   };
 
-  const handleCategoryTypeChange = (
-    event: SelectChangeEvent<CategoryTypes>
-  ) => {
+  const handleCategoryTypeChange = (event: SelectChangeEvent<CategoryTypes>) => {
     setData("category_type", event.target.value);
   };
 
-  const handleCruiserChange = (
-    event: SelectChangeEvent<{ value: string }>
-  ) => {
+  const handleCruiserChange = (event: SelectChangeEvent<{ value: string }>) => {
     const value = event.target.value;
     setData("cruise", typeof value === "string" ? value : value.value);
   };
@@ -196,7 +184,7 @@ const Create = ({
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 2 }} >
+                  <Box sx={{ mb: 2 }}>
                     <TextField
                       name="description"
                       label="Description"
@@ -254,12 +242,7 @@ const Create = ({
                 </Grid>
                 <Grid item xs={12}>
                   <Box sx={{ mb: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      type="submit"
-                    >
+                    <Button variant="contained" color="primary" fullWidth type="submit">
                       Submit
                     </Button>
                   </Box>

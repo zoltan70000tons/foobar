@@ -1,119 +1,115 @@
 export enum Permissions {
-    ViewDashboard = "View Dashboard",
+  ViewDashboard = "View Dashboard",
 
-    // Manage Users
-    ViewUsers = "View Users",
-    CreateUsers = "Create Users",
-    EditUsers = "Edit Users",
-    DeleteUsers = "Delete Users",
+  // Manage Users
+  ViewUsers = "View Users",
+  CreateUsers = "Create Users",
+  EditUsers = "Edit Users",
+  DeleteUsers = "Delete Users",
 
-    // Manage Customers
-    ViewCustomers = "View Customers",
-    CreateCustomers = "Create Customers",
-    EditCustomers = "Edit Customers",
-    DeleteCustomers = "Delete Customers",
+  // Manage Customers
+  ViewCustomers = "View Customers",
+  CreateCustomers = "Create Customers",
+  EditCustomers = "Edit Customers",
+  DeleteCustomers = "Delete Customers",
 
-    // Manage Events
-    ViewEvents = "View Events",
-    CreateEvents = "Create Events",
-    EditEvents = "Edit Events",
-    DeleteEvents = "Delete Events",
+  // Manage Events
+  ViewEvents = "View Events",
+  CreateEvents = "Create Events",
+  EditEvents = "Edit Events",
+  DeleteEvents = "Delete Events",
 
-    // Manage Cabins
-    ViewCabins = "View Cabins",
-    CreateCabins = "Create Cabins",
-    EditCabins = "Edit Cabins",
-    EditFullCabins = "Edit Full Cabins",
-    DeleteCabins = "Delete Cabins",
+  // Manage Cabins
+  ViewCabins = "View Cabins",
+  CreateCabins = "Create Cabins",
+  EditCabins = "Edit Cabins",
+  EditFullCabins = "Edit Full Cabins",
+  DeleteCabins = "Delete Cabins",
 
-    // Manage Cabin Categories
-    ViewCabinCategories = "View Cabin Categories",
-    CreateCabinCategories = "Create Cabin Categories",
-    EditCabinCategories = "Edit Cabin Categories",
-    DeleteCabinCategories = "Delete Cabin Categories",
+  // Manage Cabin Categories
+  ViewCabinCategories = "View Cabin Categories",
+  CreateCabinCategories = "Create Cabin Categories",
+  EditCabinCategories = "Edit Cabin Categories",
+  DeleteCabinCategories = "Delete Cabin Categories",
 
-    // Manage Bookings
-    ViewBookings = "View Bookings",
-    CreateBookings = "Create Bookings",
-    EditBookings = "Edit Bookings",
-    DeleteBookings = "Delete Bookings",
-    InterceptBookings = "Intercept Bookings",
+  // Manage Bookings
+  ViewBookings = "View Bookings",
+  CreateBookings = "Create Bookings",
+  EditBookings = "Edit Bookings",
+  DeleteBookings = "Delete Bookings",
+  InterceptBookings = "Intercept Bookings",
 
-    // Manage Taxes
-    ViewTaxes = "View Taxes",
-    CreateTaxes = "Create Taxes",
-    EditTaxes = "Edit Taxes",
-    DeleteTaxes = "Delete Taxes",
+  // Manage Taxes
+  ViewTaxes = "View Taxes",
+  CreateTaxes = "Create Taxes",
+  EditTaxes = "Edit Taxes",
+  DeleteTaxes = "Delete Taxes",
 
-    // Manage Roles
-    ViewRoles = "View Roles",
-    CreateRoles = "Create Roles",
-    EditRoles = "Edit Roles",
-    DeleteRoles = "Delete Roles",
-    ExportRoles = "Export Roles",
+  // Manage Roles
+  ViewRoles = "View Roles",
+  CreateRoles = "Create Roles",
+  EditRoles = "Edit Roles",
+  DeleteRoles = "Delete Roles",
+  ExportRoles = "Export Roles",
 
-    // Manage Permissions
-    ViewPermissions = "View Permissions",
-    CreatePermissions = "Create Permissions",
-    EditPermissions = "Edit Permissions",
-    DeletePermissions = "Delete Permissions",
-    AssignPermissions = "Assign Permissions",
-    RevokePermissions = "Revoke Permissions",
+  // Manage Permissions
+  ViewPermissions = "View Permissions",
+  CreatePermissions = "Create Permissions",
+  EditPermissions = "Edit Permissions",
+  DeletePermissions = "Delete Permissions",
+  AssignPermissions = "Assign Permissions",
+  RevokePermissions = "Revoke Permissions",
 
-    //Manage Inventory
-    EditCabinInventory = "Edit Cabin Inventory",
-    EditPassengers = "Edit Passengers",
-    ResetSeat = "Reset Seat",
+  //Manage Inventory
+  EditCabinInventory = "Edit Cabin Inventory",
+  EditPassengers = "Edit Passengers",
+  ResetSeat = "Reset Seat",
 
+  //Manage fees
+  ViewFees = "View Fees",
+  CreateFees = "Create Fees",
+  EditFees = "Edit Fees",
+  DeleteFees = "Delete Fees",
 
-    //Manage fees
-    ViewFees = 'View Fees',
-    CreateFees = 'Create Fees',
-    EditFees = 'Edit Fees',
-    DeleteFees = 'Delete Fees',
+  //Manage Adjustments
+  ViewAdjustments = "View Adjustments",
+  CreateAdjustments = "Create Adjustments",
+  EditAdjustments = "Edit Adjustments",
+  DeleteAdjustments = "Delete Adjustments",
 
+  //Manage Payments
+  ViewPayments = "View Payments",
+  CreatePayments = "Create Payments",
+  EditPayments = "Edit Payments",
+  DeletePayments = "Delete Payments",
 
-    //Manage Adjustments
-    ViewAdjustments = 'View Adjustments',
-    CreateAdjustments = 'Create Adjustments',
-    EditAdjustments = 'Edit Adjustments',
-    DeleteAdjustments = 'Delete Adjustments',
+  CreatePassengerDiscounts = "Create Passenger Discounts",
+  DeletePassengerDiscounts = "Delete Passenger Discounts",
 
-    //Manage Payments
-    ViewPayments = 'View Payments',
-    CreatePayments = 'Create Payments',
-    EditPayments = 'Edit Payments',
-    DeletePayments = 'Delete Payments',
+  CreatePassengerOnboardCredit = "Create Passenger Onboard Credit",
+  DeletePassengerOnboardCredit = "Delete Passenger Onboard Credit",
 
-    
-    CreatePassengerDiscounts = 'Create Passenger Discounts',
-    DeletePassengerDiscounts = 'Delete Passenger Discounts',
+  // Emails
 
+  SendEmails = "Send Emails",
 
-    CreatePassengerOnboardCredit = 'Create Passenger Onboard Credit',
-    DeletePassengerOnboardCredit = 'Delete Passenger Onboard Credit',
+  // Manage Customers
+  ViewCustomerTags = "View Customer Tags",
+  CreateCustomerTags = "Create Customer Tags",
+  EditCustomerTags = "Edit Customer Tags",
+  DeleteCustomerTags = "Delete Customer Tags",
 
-    // Emails
+  //Tags
 
-    SendEmails = 'Send Emails',
+  ViewTags = "View Tags",
+  CreateTags = "Create Tags",
+  EditTags = "Edit Tags",
+  DeleteTags = "Delete Tags",
 
-    // Manage Customers
-    ViewCustomerTags = "View Customer Tags",
-    CreateCustomerTags = "Create Customer Tags",
-    EditCustomerTags = "Edit Customer Tags",
-    DeleteCustomerTags = "Delete Customer Tags",
+  //Logs
+  ViewLogs = "View Logs",
 
-    //Tags
+  //Installments
 
-    ViewTags = "View Tags",
-    CreateTags = "Create Tags",
-    EditTags = "Edit Tags",
-    DeleteTags = "Delete Tags",
-
-    //Logs
-    ViewLogs = "View Logs",
-
-    //Installments
-
-    EditInstallments = "Edit Installments",
+  EditInstallments = "Edit Installments",
 }

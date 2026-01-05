@@ -5,8 +5,7 @@ namespace App\Interfaces;
 use App\Http\Requests\CustomerTagRequest;
 use App\Models\UserTag;
 
-interface CustomerTagInterface
-{
+interface CustomerTagInterface {
     function getAll();
 
     function find($id);

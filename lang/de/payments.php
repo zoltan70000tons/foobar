@@ -1,5 +1,5 @@
 <?php
 
 return [
-  'payment_success' => 'Zahlung erfolgreich bearbeitet.',
+    'payment_success' => 'Zahlung erfolgreich bearbeitet.',
 ];

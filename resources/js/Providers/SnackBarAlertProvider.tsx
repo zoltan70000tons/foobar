@@ -15,9 +15,12 @@ export const SnackbarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     snackbarKey: 0,
   });
 
-  const showSnackbar = useCallback((message: string, severity: "success" | "error" | "warning" | "info" = "success") => {
-    setSnackbar({ open: true, message, severity, snackbarKey: new Date().getTime() });
-  }, []);
+  const showSnackbar = useCallback(
+    (message: string, severity: "success" | "error" | "warning" | "info" = "success") => {
+      setSnackbar({ open: true, message, severity, snackbarKey: new Date().getTime() });
+    },
+    [],
+  );
 
   const closeSnackbar = useCallback(() => {
     setSnackbar((prev) => ({ ...prev, open: false }));

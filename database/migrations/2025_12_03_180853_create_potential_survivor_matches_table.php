@@ -4,13 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+    public function up(): void {
         Schema::create('potential_survivor_matches', function (Blueprint $table) {
             $table->id();
 
@@ -28,10 +26,10 @@ return new class extends Migration
 
             // Matching metadata
             $table->float('score'); // final score 0-100
-            $table->enum('status', ['in_progress', 'reviewed', 'approved', 'rejected', 'resolved'])
+            $table
+                ->enum('status', ['in_progress', 'reviewed', 'approved', 'rejected', 'resolved'])
                 ->default('in_progress');
-            $table->enum('type', ['match', 'double_booking'])
-                ->default('match');
+            $table->enum('type', ['match', 'double_booking'])->default('match');
             $table->timestamp('review_date')->nullable();
             $table->uuid('reviewer_id')->nullable();
 
@@ -45,8 +43,7 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('potential_survivor_matches');
     }
 };

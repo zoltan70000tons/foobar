@@ -8,14 +8,12 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class ListOrganizationRequest extends FormRequest
-{
+class ListOrganizationRequest extends FormRequest {
     use JsonResponseTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
+    public function authorize(): bool {
         return true;
     }
 
@@ -24,19 +22,17 @@ class ListOrganizationRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'name' => 'required|string|max:30|unique:organizations,name',
             'user_name' => 'required|string|max:30',
             'email' => 'required|string',
             'password' => 'required|string',
-            'terms'  => 'nullable|boolean',
+            'terms' => 'nullable|boolean',
         ];
     }
 
-    public function failedValidation(Validator $validator)
-    {
+    public function failedValidation(Validator $validator) {
         return $this->errorResponse('Failed to list organization', 500, $validator->errors());
     }
 }

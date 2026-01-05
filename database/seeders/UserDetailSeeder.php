@@ -8,8 +8,7 @@ use Faker\Generator;
 use App\Models\User;
 use App\Models\UserDetail;
 
-class UserDetailSeeder extends Seeder
-{
+class UserDetailSeeder extends Seeder {
     /**
      * The current Faker instance.
      *
@@ -22,8 +21,7 @@ class UserDetailSeeder extends Seeder
      *
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->faker = $this->withFaker();
     }
 
@@ -32,16 +30,14 @@ class UserDetailSeeder extends Seeder
      *
      * @return \Faker\Generator
      */
-    protected function withFaker()
-    {
+    protected function withFaker() {
         return Container::getInstance()->make(Generator::class);
     }
 
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         // Ensure permissions cache is cleared
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
@@ -54,14 +50,14 @@ class UserDetailSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'gender' => $this->faker->randomElement(['male', 'female', 'other']),
-                    'first_name' =>  'TEST ' . strtoupper($this->faker->firstName),
+                    'first_name' => 'TEST ' . strtoupper($this->faker->firstName),
                     'middle_name' => strtoupper($this->faker->optional()->firstName),
                     'last_name' => strtoupper($this->faker->lastName),
-                    'phone' => $this->faker->e164PhoneNumber() ,
+                    'phone' => $this->faker->e164PhoneNumber(),
                     'avatar' => $this->faker->imageUrl(300, 300, 'people', true, 'Avatar'),
                     'emergency_c_name' => $this->faker->name,
-                    'emergency_c_phone' => $this->faker->e164PhoneNumber() ,
-                ]
+                    'emergency_c_phone' => $this->faker->e164PhoneNumber(),
+                ],
             );
         }
     }

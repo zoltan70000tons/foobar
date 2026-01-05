@@ -15,14 +15,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @property User[] $users
  */
-class UserTag extends Model
-{
+class UserTag extends Model {
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['name', 'description', 'color'];
 
-    public function users(): BelongsToMany
-    {
+    public function users(): BelongsToMany {
         return $this->belongsToMany(User::class, 'user_has_tags', 'tag_id', 'user_id');
     }
 }

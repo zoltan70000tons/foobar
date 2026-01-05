@@ -11,28 +11,22 @@ export function localNumberFormat(
   number: number | string,
   locale: string = "en",
   hideDecimals: boolean = false,
-  fullCurrency: boolean = true
+  fullCurrency: boolean = true,
 ): string {
   // Use English format locale for "es"
   const overrideLocale = locale === "es" ? "en" : locale;
 
-  const options: Intl.NumberFormatOptions = hideDecimals
-    ? {}
-    : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+  const options: Intl.NumberFormatOptions = hideDecimals ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
   if (fullCurrency) {
     return (
       "USD " +
-      new Intl.NumberFormat(overrideLocale, options).format(
-        typeof number === "string" ? parseFloat(number) : number
-      )
+      new Intl.NumberFormat(overrideLocale, options).format(typeof number === "string" ? parseFloat(number) : number)
     );
   }
 
   return "$".concat(
-    new Intl.NumberFormat(overrideLocale, options).format(
-      typeof number === "string" ? parseFloat(number) : number
-    )
+    new Intl.NumberFormat(overrideLocale, options).format(typeof number === "string" ? parseFloat(number) : number),
   );
 }
 
@@ -44,10 +38,7 @@ export function localNumberFormat(
  * @returns The formatted date string.
  */
 
-export function localDateFormat(
-  date: string | Date,
-  locale: string = "en"
-): string {
+export function localDateFormat(date: string | Date, locale: string = "en"): string {
   let parsedDate: Date;
 
   if (typeof date === "string") {

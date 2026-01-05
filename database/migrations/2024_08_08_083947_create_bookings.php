@@ -5,32 +5,30 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-  /**
-   * Run the migrations.
-   */
-  public function up()
-  {
-    Schema::create('bookings', function (Blueprint $table) {
-      $table->id();
-      $table->string('booking_request_id')->unique(); // Booking request ID
-      $table->string('booking_code')->unique(); // Unique booking code e.g. Cabin Number + Random String
-      $table->foreignId('event_id')->constrained('events'); // References events table
-      $table->uuid('customer_id')->references('id')->on('users')->onDelete('cascade'); // References users table
-      $table->enum('payment_plan', ['PAY_IN_FULL', 'INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
-      $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
-      $table->boolean('is_single_occupancy')->default(false); // Indicates if booking is for single occupancy
-      $table->enum('bed_config', ['SEPARATED', 'JOINED'])->default('SEPARATED'); // Enum for bed configuration
-      $table->uuid('agent_id')->nullable()->references('id')->on('users'); // References users table for agent tracking
-      $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'])->default('NEW');
-      $table->timestamps(); // created_at and updated_at timestamps
-    });
-  }
+    /**
+     * Run the migrations.
+     */
+    public function up() {
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id();
+            $table->string('booking_request_id')->unique(); // Booking request ID
+            $table->string('booking_code')->unique(); // Unique booking code e.g. Cabin Number + Random String
+            $table->foreignId('event_id')->constrained('events'); // References events table
+            $table->uuid('customer_id')->references('id')->on('users')->onDelete('cascade'); // References users table
+            $table->enum('payment_plan', ['PAY_IN_FULL', 'INSTALLMENTS'])->default('PAY_IN_FULL'); // Enum for payment plan
+            $table->foreignId('cabin_id')->constrained('cabins'); // References cabins table
+            $table->boolean('is_single_occupancy')->default(false); // Indicates if booking is for single occupancy
+            $table->enum('bed_config', ['SEPARATED', 'JOINED'])->default('SEPARATED'); // Enum for bed configuration
+            $table->uuid('agent_id')->nullable()->references('id')->on('users'); // References users table for agent tracking
+            $table->enum('status', ['NEW', 'ON HOLD', 'UPLOADED', 'CANCELLED'])->default('NEW');
+            $table->timestamps(); // created_at and updated_at timestamps
+        });
+    }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('bookings');
-  }
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void {
+        Schema::dropIfExists('bookings');
+    }
 };

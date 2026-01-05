@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -20,15 +20,15 @@ import {
   TableBody,
   IconButton,
   Select,
-} from '@mui/material';
+} from "@mui/material";
 
-import { router } from '@inertiajs/react';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import LoadingOverlay from '@/Components/LoadingOverlay';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import { formatDate , formatCurrency } from "@/Helpers/stringUtils";
+import { router } from "@inertiajs/react";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
+import LoadingOverlay from "@/Components/LoadingOverlay";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
+import { formatDate, formatCurrency } from "@/Helpers/stringUtils";
 import { Delete } from "@mui/icons-material";
 import Payment, { Booking, Passenger } from "@/Pages/Bookings/partials/Payment";
 
@@ -46,7 +46,7 @@ type CreatePaymentTransferRequest = {
   passenger_id: number;
   amount: number;
   transfer_to_passenger: number;
-}
+};
 
 export type PaymentTransfer = {
   id: number;
@@ -55,12 +55,13 @@ export type PaymentTransfer = {
   passenger_id_to: number;
   payment_id_from: number;
   payment_id_to: number;
-}
+};
 
 const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, booking, editMode }) => {
   const passengers: Passenger[] = booking.passengers;
   const openedPassenger = passenger;
-  const otherPassengers: Passenger[] = passengers.filter((pax: Passenger) => pax.id != openedPassenger.id)
+  const otherPassengers: Passenger[] = passengers
+    .filter((pax: Passenger) => pax.id != openedPassenger.id)
     .sort((a, b) => a.passenger_order - b.passenger_order);
 
   const [selectedPassengerId, setSelectedPassengerId] = useState(otherPassengers?.[0].id);
@@ -70,7 +71,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
   const [manualTransfers, setManualTransfers] = useState<Payment[]>([]);
 
   useEffect(() => {
-    const transfers = openedPassenger.payments.filter((payment) => payment.type === 'TRANSFER')
+    const transfers = openedPassenger.payments.filter((payment) => payment.type === "TRANSFER");
     setManualTransfers(transfers);
   }, [openedPassenger]);
 
@@ -93,16 +94,16 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
     } else {
       return parseFloat(number.toFixed(2)).toString();
     }
-  }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      const newValue = name === 'amount' ? parseFloat(value) : value;
+      const newValue = name === "amount" ? parseFloat(value) : value;
       return {
         ...prev,
-        [name]: name === 'amount' ? Math.min(newValue as number, transferableBalance) : newValue, // Limit value to transferableBalance
+        [name]: name === "amount" ? Math.min(newValue as number, transferableBalance) : newValue, // Limit value to transferableBalance
       };
     });
   };
@@ -113,7 +114,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPassengerId || formData.amount <= 0) {
-      showSnackbar('Please fill in all fields correctly.', 'error');
+      showSnackbar("Please fill in all fields correctly.", "error");
       return;
     }
 
@@ -121,7 +122,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
 
     // Send form data to the server using the router
     router.post(
-      route('manual.payment-transfer', {
+      route("manual.payment-transfer", {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
@@ -135,13 +136,13 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
           // Reset form and close dialog only on success
           setFormData({ amount: 0 });
           setOpen(false);
-          showSnackbar('Payment transferred successfully', 'success');
-          router.reload({ only: ['user'] });
+          showSnackbar("Payment transferred successfully", "success");
+          router.reload({ only: ["user"] });
         },
         onError: (errors) => {
           // Log or display errors if needed
-          console.error('Validation errors:', errors);
-          showSnackbar('Failed to save payment transfer. Please check your inputs.', 'error');
+          console.error("Validation errors:", errors);
+          showSnackbar("Failed to save payment transfer. Please check your inputs.", "error");
         },
         onFinish: () => {
           setLoading(false);
@@ -160,7 +161,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
 
     setLoading(true);
     router.post(
-      route('delete.payment-transfer', {
+      route("delete.payment-transfer", {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
@@ -170,7 +171,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
       {
         onSuccess: () => {
           showSnackbar("Payment transfer deleted successfully.", "success");
-          router.reload({ only: ['passenger', 'booking'] });
+          router.reload({ only: ["passenger", "booking"] });
         },
         onError: () => {
           showSnackbar("Could not delete payment transfer.", "error");
@@ -189,7 +190,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
       <Button
         fullWidth
         variant="outlined"
-        sx={{ color: 'white', borderColor: 'gray' }}
+        sx={{ color: "white", borderColor: "gray" }}
         onClick={handleOpen}
         disabled={!editMode}
         startIcon={<CompareArrowsIcon />}
@@ -201,9 +202,7 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <Box component="form" onSubmit={handleSubmit}>
-              <Typography variant="div">
-                Transferable amount: {decimalFormatter(transferableBalance)}
-              </Typography>
+              <Typography variant="div">Transferable amount: {decimalFormatter(transferableBalance)}</Typography>
               <TextField
                 label="Amount"
                 name="amount"
@@ -269,15 +268,20 @@ const PaymentTransferForm: React.FC<PaymentTransferFormProps> = ({ passenger, bo
                 </TableHead>
                 <TableBody>
                   {manualTransfers.map((transfer) => {
-                    const manualTransfer: PaymentTransfer = transfer.payment_transfer_from ?? transfer.payment_transfer_to!;
+                    const manualTransfer: PaymentTransfer =
+                      transfer.payment_transfer_from ?? transfer.payment_transfer_to!;
 
                     return (
                       <TableRow key={transfer.id}>
-                        <TableCell>{booking.passengers.find(passenger => passenger.id === manualTransfer.passenger_id_from)?.full_name || 'Unknown'}</TableCell>
-                        <TableCell>{booking.passengers.find(passenger => passenger.id === manualTransfer.passenger_id_to)?.full_name || 'Unknown'}</TableCell>
                         <TableCell>
-                          {formatCurrency(transfer.amount)}
+                          {booking.passengers.find((passenger) => passenger.id === manualTransfer.passenger_id_from)
+                            ?.full_name || "Unknown"}
                         </TableCell>
+                        <TableCell>
+                          {booking.passengers.find((passenger) => passenger.id === manualTransfer.passenger_id_to)
+                            ?.full_name || "Unknown"}
+                        </TableCell>
+                        <TableCell>{formatCurrency(transfer.amount)}</TableCell>
                         <TableCell>{formatDate(transfer.created_at)}</TableCell>
                         <TableCell>
                           {canDeleteTransfer && (

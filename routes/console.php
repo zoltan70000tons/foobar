@@ -12,10 +12,10 @@ use App\Models\PassengerToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
 Artisan::command('inspire', function () {
-  $this->comment(Inspiring::quote());
+    $this->comment(Inspiring::quote());
 })
-  ->purpose('Display an inspiring quote')
-  ->hourly();
+    ->purpose('Display an inspiring quote')
+    ->hourly();
 
 /**
  * -------- SCHEDULE TASKS --------
@@ -24,36 +24,32 @@ Artisan::command('inspire', function () {
  */
 // Delete expired temporary reservations
 Schedule::call(function () {
-  TemporaryReservation::where('expires_at', '<', Carbon::now())->delete();
+    TemporaryReservation::where('expires_at', '<', Carbon::now())->delete();
 })->everyFiveMinutes();
 
 // Delete passenger invitations after 72 hours
 Schedule::call(function () {
-  PassengerInvitation::where('created_at', '<', Carbon::now()->subHours(72))->delete();
+    PassengerInvitation::where('created_at', '<', Carbon::now()->subHours(72))->delete();
 })->everyFourHours();
 
 Schedule::command('telescope:prune')->daily();
 
 Schedule::job(new ClearOldBookingSessions())->everyMinute();
 
-
 // Delete temporary passwords after 20 minutes
 Schedule::call(function () {
-  TemporaryPassword::where('expires_at', '<', Carbon::now())->delete();
+    TemporaryPassword::where('expires_at', '<', Carbon::now())->delete();
 })->everyTenMinutes();
 
 // Delete personal access tokens after 24 hours
 Schedule::call(function () {
-  PersonalAccessToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
+    PersonalAccessToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
 })->everyOddHour();
 
 // Delete passenger tokens after 24 hours
 Schedule::call(function () {
-  PassengerToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
+    PassengerToken::where('created_at', '<', Carbon::now()->subHours(24))->delete();
 })->everyOddHour();
-
-// Clean up expired payment legacy engine tokens
-Schedule::command('app:clean-expired-payment-legacy-engine-tokens')->dailyAt('00:00')->timezone('America/Los_Angeles');
 
 // Autotag bookings with OVERDUE and MISSING_INFO tags
 Schedule::command('bookings:dispatch-tags')->dailyAt('00:00')->timezone('America/Los_Angeles');
@@ -69,7 +65,4 @@ Schedule::command('logs:create-year-partitions')
     ->withoutOverlapping()
     ->runInBackground();
 
-Schedule::command('survivors:sync')
-    ->dailyAt("02:00")
-    ->withoutOverlapping()
-    ->runInBackground();
+Schedule::command('survivors:sync')->dailyAt('02:00')->withoutOverlapping()->runInBackground();

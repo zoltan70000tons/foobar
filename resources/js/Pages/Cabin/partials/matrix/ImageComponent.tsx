@@ -1,8 +1,7 @@
 import { Box } from "@mui/material";
 
 const CDN_IMAGE_PATH = `fckMeSideways`;
-const CABIN_CONFIG_PATH =
-  "70k-booking-engine/booking-client/cabin-configurations";
+const CABIN_CONFIG_PATH = "70k-booking-engine/booking-client/cabin-configurations";
 
 type Props = {
   images: string[] | null | undefined;

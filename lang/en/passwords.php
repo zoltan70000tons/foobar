@@ -1,7 +1,7 @@
 <?php
 
 return [
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Password Reset Language Lines
     |--------------------------------------------------------------------------
@@ -12,10 +12,10 @@ return [
     |
     */
 
-  'reset' => 'Your password has been reset.',
-  'sent' => 'We have eMailed your password reset link.',
-  'throttled' => 'Please wait before retrying.',
-  'expired' => 'This password reset link is invalid or has expired.',
-  'token' => 'This password reset token is invalid.',
-  'user' => 'We can\'t find a user with that eMail address.',
+    'reset' => 'Your password has been reset.',
+    'sent' => 'We have eMailed your password reset link.',
+    'throttled' => 'Please wait before retrying.',
+    'expired' => 'This password reset link is invalid or has expired.',
+    'token' => 'This password reset token is invalid.',
+    'user' => 'We can\'t find a user with that eMail address.',
 ];

@@ -18,29 +18,29 @@ beforeEach(function () {
 
 it('returns only customers matching by email or name', function () {
     $authUser = User::factory()->create();
-    $this->actingAs($authUser); 
+    $this->actingAs($authUser);
 
     $customer = User::factory()->create(['email' => 'john.doe@example.com']);
     $customer->assignRole(Role::findByName('Customer', 'web'));
 
     UserDetail::factory()->create([
-        'user_id'    => $customer->id,
+        'user_id' => $customer->id,
         'first_name' => 'JOHN',
-        'last_name'  => 'DOE',
-        'citizenship'       => 'Santiago',
+        'last_name' => 'DOE',
+        'citizenship' => 'Santiago',
     ]);
 
     SurvivorNumber::factory()->create([
-        'user_id'         => $customer->id,
+        'user_id' => $customer->id,
         'survivor_number' => '12345678',
     ]);
 
     $admin = User::factory()->create(['email' => 'dave@example.com']);
     $admin->assignRole(Role::findByName('Admin', 'web'));
     UserDetail::factory()->create([
-        'user_id'    => $admin->id,
+        'user_id' => $admin->id,
         'first_name' => 'DAVE',
-        'last_name'  => 'SMITH',
+        'last_name' => 'SMITH',
     ]);
 
     $res = $this->getJson('passengers/search?query=john')->assertOk();

@@ -14,91 +14,93 @@ use App\Traits\HandlePermissions;
 use Illuminate\Support\Facades\DB;
 use App\Services\PaymentInfoService;
 
-class FeeController extends Controller
-{
+class FeeController extends Controller {
     use HandlePermissions;
     use ExceptionLogger;
 
     protected PassengerRepository $passengerRepository;
     protected PaymentInfoService $paymentInfoService;
 
-    public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService)
-    {
+    public function __construct(PassengerRepository $passengerRepository, PaymentInfoService $paymentInfoService) {
         $this->passengerRepository = $passengerRepository;
         $this->paymentInfoService = $paymentInfoService;
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         try {
-            return $this->withPermission([Permissions::CreateFees], function ($request) {
-                $booking_id = $request->route('booking_id');
+            return $this->withPermission(
+                [Permissions::CreateFees],
+                function ($request) {
+                    $booking_id = $request->route('booking_id');
 
-                $validated = $request->validate([
-                    'passenger_id' => 'required|exists:passengers,id',
-                    'amount' => 'required|numeric|min:0.01',
-                    'type' => 'required|string|max:255',
-                    'due_date' => 'nullable|date',
-                    'notes' => 'nullable|string|max:150',
-                ]);
+                    $validated = $request->validate([
+                        'passenger_id' => 'required|exists:passengers,id',
+                        'amount' => 'required|numeric|min:0.01',
+                        'type' => 'required|string|max:255',
+                        'due_date' => 'nullable|date',
+                        'notes' => 'nullable|string|max:150',
+                    ]);
 
-                DB::transaction(function () use ($validated, $request, $booking_id) {
-                    $fee = new Fee($validated);
-                    $fee->temp_due_date = $request->input('due_date');
-                    $fee->save();
+                    DB::transaction(function () use ($validated, $request, $booking_id) {
+                        $fee = new Fee($validated);
+                        $fee->temp_due_date = $request->input('due_date');
+                        $fee->save();
 
-                    // Defer sync until after all DB changes (fee + installment) are committed
-                    DB::afterCommit(function () use ($booking_id) {
-                        $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
+                        // Defer sync until after all DB changes (fee + installment) are committed
+                        DB::afterCommit(function () use ($booking_id) {
+                            $this->paymentInfoService->syncAllocatedCost(Booking::find($booking_id));
+                        });
                     });
-                });
 
-                return redirect()->back()->with('success', 'Fee added successfully!');
-            }, $request);
+                    return redirect()->back()->with('success', 'Fee added successfully!');
+                },
+                $request,
+            );
         } catch (\Exception $e) {
             $this->logException($e);
             return redirect()->back()->with('error', 'Error creating fee!');
         }
     }
 
-    public function delete(Request $request)
-    {
-        return $this->withPermission([Permissions::DeleteFees], function ($request) {
-            DB::beginTransaction();
-            try {
-                $booking_id = $request->route('booking_id');
-                $event_id = $request->route('event_id');
-                $validated = $request->validate([
-                    'fee_id' => 'required|exists:fees,id',
-                    'passenger_id' => 'required|exists:passengers,id',
-                ]);
-                $booking = Booking::where('id', $booking_id)
-                    ->where('event_id', $event_id)
-                    ->first();
-                if (!$booking) {
-                    return redirect()->back()->with('error', 'Booking not found.');
+    public function delete(Request $request) {
+        return $this->withPermission(
+            [Permissions::DeleteFees],
+            function ($request) {
+                DB::beginTransaction();
+                try {
+                    $booking_id = $request->route('booking_id');
+                    $event_id = $request->route('event_id');
+                    $validated = $request->validate([
+                        'fee_id' => 'required|exists:fees,id',
+                        'passenger_id' => 'required|exists:passengers,id',
+                    ]);
+                    $booking = Booking::where('id', $booking_id)->where('event_id', $event_id)->first();
+                    if (!$booking) {
+                        return redirect()->back()->with('error', 'Booking not found.');
+                    }
+                    $fee = Fee::where('id', $validated['fee_id'])
+                        ->where('passenger_id', $validated['passenger_id'])
+                        ->first();
+                    if (!$fee) {
+                        return redirect()->back()->with('error', 'Fee not found.');
+                    }
+
+                    $installment = Installment::where('fee_id', $fee->id)->first();
+                    $installment->delete();
+                    $fee->delete();
+                    $this->paymentInfoService->syncAllocatedCost($booking);
+
+                    DB::commit();
+
+                    return redirect()->back()->with('success', 'Fee deleted successfully!');
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->logException($e);
+
+                    return redirect()->back()->with('error', 'Error deleting fee!');
                 }
-                $fee = Fee::where('id', $validated['fee_id'])
-                    ->where('passenger_id', $validated['passenger_id'])
-                    ->first();
-                if (!$fee) {
-                    return redirect()->back()->with('error', 'Fee not found.');
-                }
-
-                $installment = Installment::where('fee_id', $fee->id)->first();
-                $installment->delete();
-                $fee->delete();
-                $this->paymentInfoService->syncAllocatedCost($booking);
-
-                DB::commit();
-
-                return redirect()->back()->with('success', 'Fee deleted successfully!');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $this->logException($e);
-
-                return redirect()->back()->with('error', 'Error deleting fee!');
-            }
-        }, $request);
+            },
+            $request,
+        );
     }
 }

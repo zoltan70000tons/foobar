@@ -26,12 +26,8 @@ const darkTheme = createTheme({
 });
 
 export default function Navbar({ auth }: PageProps<{}>) {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
-  );
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -53,9 +49,7 @@ export default function Navbar({ auth }: PageProps<{}>) {
       <AppBar position="static" color="primary" enableColorOnDark>
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            <DirectionsBoatIcon
-              sx={{ display: { xs: "none", md: "flex" }, mr: 1 }}
-            />
+            <DirectionsBoatIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
             <Typography
               variant="h6"
               noWrap
@@ -104,20 +98,13 @@ export default function Navbar({ auth }: PageProps<{}>) {
                 }}
               >
                 {pages.map((page) => (
-                  <MenuItem
-                    key={page}
-                    onClick={handleCloseNavMenu}
-                    component={Link}
-                    href={`/${page.toLowerCase()}`}
-                  >
+                  <MenuItem key={page} onClick={handleCloseNavMenu} component={Link} href={`/${page.toLowerCase()}`}>
                     <Typography textAlign="center">{page}</Typography>
                   </MenuItem>
                 ))}
               </Menu>
             </Box>
-            <DirectionsBoatIcon
-              sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}
-            />
+            <DirectionsBoatIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
             <Typography
               variant="h5"
               noWrap

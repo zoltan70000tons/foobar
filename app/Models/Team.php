@@ -4,12 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Team extends Model
-{
+class Team extends Model {
     protected $fillable = ['name'];
 
-    public function users()
-    {
+    public function users() {
         return $this->belongsToMany(User::class, 'team_user', 'team_id', 'user_id');
     }
 }

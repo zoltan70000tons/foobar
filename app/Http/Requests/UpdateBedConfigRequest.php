@@ -4,15 +4,12 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBedConfigRequest extends FormRequest
-{
-    public function authorize()
-    {
+class UpdateBedConfigRequest extends FormRequest {
+    public function authorize() {
         return true;
     }
 
-    public function rules()
-    {
+    public function rules() {
         $allowed = ['SEPARATED', 'JOINED'];
 
         return [
@@ -20,8 +17,7 @@ class UpdateBedConfigRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
+    public function messages() {
         return [
             'bed_config.required' => 'Bed config required.',
             'bed_config.in' => 'Invalid bed config.',

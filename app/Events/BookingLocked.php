@@ -6,8 +6,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\Channel;
 
-class BookingLocked
-{
+class BookingLocked {
     use Dispatchable, SerializesModels;
 
     public $bookingId;
@@ -15,13 +14,11 @@ class BookingLocked
     /**
      * Create a new event instance.
      */
-    public function __construct(int $bookingId)
-    {
+    public function __construct(int $bookingId) {
         $this->bookingId = $bookingId;
     }
 
-    public function broadcastOn()
-    {
+    public function broadcastOn() {
         return new Channel('bookings-locked');
     }
 }

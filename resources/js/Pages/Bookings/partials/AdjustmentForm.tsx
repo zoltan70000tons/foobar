@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -19,17 +19,17 @@ import {
   Select,
   FormControl,
   InputLabel,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DiscountOutlined from '@mui/icons-material/DiscountOutlined';
-import AddOutlined from '@mui/icons-material/AddOutlined';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { router, usePage } from '@inertiajs/react';
-import { useSnackbar } from '@/Providers/SnackBarAlertProvider';
-import { usePermissions } from '@/Providers/PermissionContext';
-import { Permissions } from '@/enums/PermissionEnum';
-import LoadingOverlay from '@/Components/LoadingOverlay';
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import DiscountOutlined from "@mui/icons-material/DiscountOutlined";
+import AddOutlined from "@mui/icons-material/AddOutlined";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { router, usePage } from "@inertiajs/react";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { usePermissions } from "@/Providers/PermissionContext";
+import { Permissions } from "@/enums/PermissionEnum";
+import LoadingOverlay from "@/Components/LoadingOverlay";
 
 type AdjustmentFormProps = {
   booking: Booking;
@@ -45,18 +45,18 @@ type Booking = {
 
 type AdjustmentData = {
   id?: number;
-  type: 'DISCOUNT' | 'ADDON';
-  operation: 'FIXED' | 'PERCENTAGE';
+  type: "DISCOUNT" | "ADDON";
+  operation: "FIXED" | "PERCENTAGE";
   value: number;
   code: string;
   system: boolean;
 };
 
 const defaultFormData: AdjustmentData = {
-  type: 'DISCOUNT',
-  operation: 'FIXED',
+  type: "DISCOUNT",
+  operation: "FIXED",
   value: 0,
-  code: '',
+  code: "",
 };
 
 const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list }) => {
@@ -68,11 +68,11 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
   // Conditionally show the snackbar based on the flash message data
   useEffect(() => {
     if (successMessage) {
-      showSnackbar(successMessage, 'success');
+      showSnackbar(successMessage, "success");
     }
 
     if (errorMessage) {
-      showSnackbar(errorMessage, 'error');
+      showSnackbar(errorMessage, "error");
     }
   }, [successMessage, errorMessage]);
 
@@ -80,7 +80,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
   const [adjustments, setAdjustments] = useState<AdjustmentData[]>(booking.adjustments || []);
   const [open, setOpen] = useState(false);
   const [currentEditingId, setCurrentEditingId] = useState<number | null>(null);
-  const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<number | 'new'>('new');
+  const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<number | "new">("new");
   const [notAllowedEdition, setNotAllowedEdition] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -98,15 +98,15 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'value' ? parseFloat(value) : value,
+      [name]: name === "value" ? parseFloat(value) : value,
     }));
   };
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const selectedId = event.target.value as number | 'new';
+    const selectedId = event.target.value as number | "new";
     setSelectedAdjustmentId(selectedId);
 
-    if (selectedId === 'new') {
+    if (selectedId === "new") {
       setFormData(defaultFormData);
       setNotAllowedEdition(false);
     } else {
@@ -123,7 +123,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
   const resetForm = () => {
     setFormData(defaultFormData);
     setCurrentEditingId(null);
-    setSelectedAdjustmentId('new');
+    setSelectedAdjustmentId("new");
   };
 
   const handleOpen = () => {
@@ -145,7 +145,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     setLoading(true);
 
     router.post(
-      route('bookings.deleteAdjustment', {
+      route("bookings.deleteAdjustment", {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
@@ -162,7 +162,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     setLoading(true);
 
     router.post(
-      route('bookings.createAdjustment', {
+      route("bookings.createAdjustment", {
         event_id: booking.event_id,
         booking_id: booking.id,
         selected_adjustment_id: selectedAdjustmentId,
@@ -180,7 +180,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
     setLoading(true);
 
     router.post(
-      route('bookings.updateAdjustment', {
+      route("bookings.updateAdjustment", {
         event_id: booking.event_id,
         booking_id: booking.id,
       }),
@@ -196,7 +196,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.value <= 0) {
-      showSnackbar('Value must be greater than 0.', 'error');
+      showSnackbar("Value must be greater than 0.", "error");
       return;
     }
     if (currentEditingId) {
@@ -213,7 +213,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
       <Typography variant="h5" mb={2}>
         Adjustments
       </Typography>
-      <Paper variant="outlined" sx={{ p: 2, mb: 4, backgroundColor: '#1c1c1c' }}>
+      <Paper variant="outlined" sx={{ p: 2, mb: 4, backgroundColor: "#1c1c1c" }}>
         {adjustments.length > 0 ? (
           <List>
             {adjustments.map((adjustment) => (
@@ -221,14 +221,16 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                 key={adjustment.id}
                 secondaryAction={
                   <>
-                    {(!adjustment?.system) && (<IconButton
-                      edge="end"
-                      aria-label="edit"
-                      onClick={() => handleEdit(adjustment.id!)}
-                      disabled={!canEditAdjustment || !editMode}
-                    >
-                      <EditIcon />
-                    </IconButton>)}
+                    {!adjustment?.system && (
+                      <IconButton
+                        edge="end"
+                        aria-label="edit"
+                        onClick={() => handleEdit(adjustment.id!)}
+                        disabled={!canEditAdjustment || !editMode}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    )}
                     <IconButton
                       edge="end"
                       aria-label="delete"
@@ -241,7 +243,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                 }
               >
                 <ListItemIcon>
-                  {adjustment.type === 'DISCOUNT' ? (
+                  {adjustment.type === "DISCOUNT" ? (
                     <DiscountOutlined color="primary" />
                   ) : (
                     <AddOutlined color="secondary" />
@@ -249,7 +251,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
                 </ListItemIcon>
                 <ListItemText
                   primary={`${adjustment.type} (${adjustment.code})`}
-                  secondary={`Value: ${adjustment.value} ${adjustment.operation === 'PERCENTAGE' ? '%' : ''}`}
+                  secondary={`Value: ${adjustment.value} ${adjustment.operation === "PERCENTAGE" ? "%" : ""}`}
                 />
               </ListItem>
             ))}
@@ -270,7 +272,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
       </Paper>
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{currentEditingId ? 'Edit Adjustment' : 'Create Adjustment'}</DialogTitle>
+        <DialogTitle>{currentEditingId ? "Edit Adjustment" : "Create Adjustment"}</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>
             <InputLabel id="adjustment-select-label">Select an Adjustment Or Create New</InputLabel>
@@ -347,7 +349,7 @@ const AdjustmentForm: React.FC<AdjustmentFormProps> = ({ booking, editMode, list
             Cancel
           </Button>
           <Button variant="contained" onClick={handleSubmit} color="primary">
-            {currentEditingId ? 'Update Adjustment' : 'Save Adjustment'}
+            {currentEditingId ? "Update Adjustment" : "Save Adjustment"}
           </Button>
         </DialogActions>
       </Dialog>

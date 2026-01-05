@@ -2,8 +2,7 @@
 
 namespace App\Enums\GlobalLog;
 
-enum LogActionCustomer: string
-{
+enum LogActionCustomer: string {
     case CUSTOMER_CREATED = 'CUSTOMER_CREATED';
     case CUSTOMER_UPDATED = 'CUSTOMER_UPDATED';
     case CUSTOMER_DELETED = 'CUSTOMER_DELETED';

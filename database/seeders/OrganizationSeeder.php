@@ -10,10 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Faker\Generator;
 
-
-class OrganizationSeeder extends Seeder
-{
-
+class OrganizationSeeder extends Seeder {
     /**
      * The current Faker instance.
      *
@@ -26,8 +23,7 @@ class OrganizationSeeder extends Seeder
      *
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->faker = $this->withFaker();
     }
 
@@ -36,19 +32,17 @@ class OrganizationSeeder extends Seeder
      *
      * @return \Faker\Generator
      */
-    protected function withFaker()
-    {
+    protected function withFaker() {
         return Container::getInstance()->make(Generator::class);
     }
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         DB::table('organizations')->insert([
             'name' => '70000TONS OF METAL',
             'created_at' => $this->faker->dateTime($max = 'now'),
-            'updated_at' => $this->faker->dateTime($max = 'now')
+            'updated_at' => $this->faker->dateTime($max = 'now'),
         ]);
     }
 }

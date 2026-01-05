@@ -17,12 +17,11 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use BackedEnum;
 
-final class GlobalLogger
-{
+final class GlobalLogger {
     /**
      * Insert a global log entry. If inside a transaction, defers the insert until commit.
      *
-     * @param  string                 $action        
+     * @param  string                 $action
      * @param  'booking'|'customer'|'cabin' $relatedType Related object type
      * @param  string|int             $relatedId     object ID (stored as string)
      * @param  string                 $description   Description for humans
@@ -41,13 +40,13 @@ final class GlobalLogger
         array $payload = [],
         ?string $actorId = null,
         ?string $actorType = null,
-        ?DateTimeInterface $createdAt = null
+        ?DateTimeInterface $createdAt = null,
     ): ?Log {
         $relatedType = strtolower($relatedType);
 
         self::assertValidAction($action, $relatedType);
 
-        $actorId   = $actorId ?? optional(Auth::user())->id;
+        $actorId = $actorId ?? optional(Auth::user())->id;
         $actorType = $actorType ?? ($actorId ? 'agent' : 'system');
 
         if ($actorId) {
@@ -59,18 +58,18 @@ final class GlobalLogger
         }
 
         $attrs = [
-            'id'           => (string) Str::uuid(),
-            'action'       => $action->value, // store string in DB
-            'actor_type'   => $actorType,
-            'actor_id'     => $actorId,
+            'id' => (string) Str::uuid(),
+            'action' => $action->value, // store string in DB
+            'actor_type' => $actorType,
+            'actor_id' => $actorId,
             'related_type' => $relatedType,
-            'related_id'   => (string) $relatedId,
-            'description'  => $description,
-            'payload'      => $payload ?: null,
-            'created_at'   => $createdAt ?? now(),
+            'related_id' => (string) $relatedId,
+            'description' => $description,
+            'payload' => $payload ?: null,
+            'created_at' => $createdAt ?? now(),
         ];
 
-    // ...existing code...
+        // ...existing code...
         $insert = function () use ($attrs): ?Log {
             try {
                 return Log::create($attrs);
@@ -90,7 +89,7 @@ final class GlobalLogger
             return null;
         }
 
-    // ...existing code...
+        // ...existing code...
         return $insert();
     }
 
@@ -100,7 +99,7 @@ final class GlobalLogger
         string $description,
         array $payload = [],
         ?string $actorId = null,
-        ?DateTimeInterface $createdAt = null
+        ?DateTimeInterface $createdAt = null,
     ): ?Log {
         return self::log($action->value, 'cabin', $cabinId, $description, $payload, $actorId, null, $createdAt);
     }
@@ -111,7 +110,7 @@ final class GlobalLogger
         string $description,
         array $payload = [],
         ?string $actorId = null,
-        ?DateTimeInterface $createdAt = null
+        ?DateTimeInterface $createdAt = null,
     ): ?Log {
         return self::log($action->value, 'booking', $bookingId, $description, $payload, $actorId, null, $createdAt);
     }
@@ -122,7 +121,7 @@ final class GlobalLogger
         string $description,
         array $payload = [],
         ?string $actorId = null,
-        ?DateTimeInterface $createdAt = null
+        ?DateTimeInterface $createdAt = null,
     ): ?Log {
         return self::log($action->value, 'customer', $customerId, $description, $payload, $actorId, null, $createdAt);
     }
@@ -133,7 +132,7 @@ final class GlobalLogger
         string $description,
         array $payload = [],
         ?string $actorId = null,
-        ?DateTimeInterface $createdAt = null
+        ?DateTimeInterface $createdAt = null,
     ): ?Log {
         return self::log($action->value, 'user', $userId, $description, $payload, $actorId, null, $createdAt);
     }
@@ -144,7 +143,7 @@ final class GlobalLogger
         string $description,
         array $payload = [],
         ?string $actorId = null,
-        ?DateTimeInterface $createdAt = null
+        ?DateTimeInterface $createdAt = null,
     ): ?Log {
         return self::log($action->value, 'event', $eventId, $description, $payload, $actorId, null, $createdAt);
     }
@@ -152,8 +151,7 @@ final class GlobalLogger
     /**
      * Returns the allowed actions for a given related type from config/log_actions.php.
      */
-    public static function allowedActionsFor(string $relatedType): array
-    {
+    public static function allowedActionsFor(string $relatedType): array {
         return match (strtolower($relatedType)) {
             'cabin' => array_map(fn($case) => $case->value, LogActionCabin::cases()),
             'booking' => array_map(fn($case) => $case->value, LogActionBooking::cases()),
@@ -167,13 +165,12 @@ final class GlobalLogger
     /**
      * Throws InvalidArgumentException if $action is not in config/log_actions.php for $relatedType.
      */
-    private static function assertValidAction(BackedEnum $action, string $relatedType): void
-    {
+    private static function assertValidAction(BackedEnum $action, string $relatedType): void {
         $allowed = self::allowedActionsFor($relatedType);
 
         if ($allowed && !in_array($action->value, $allowed, true)) {
             throw new InvalidArgumentException(
-                "Invalid action '{$action->value}' for type '{$relatedType}'. Allowed: " . implode(', ', $allowed)
+                "Invalid action '{$action->value}' for type '{$relatedType}'. Allowed: " . implode(', ', $allowed),
             );
         }
     }

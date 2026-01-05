@@ -82,7 +82,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
   useEffect(() => {
     setLocalPaymentHistory(paymentHistory);
-  }, [paymentHistory])
+  }, [paymentHistory]);
 
   const { showSnackbar } = useSnackbar();
 
@@ -170,9 +170,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       },
       {
         onSuccess: (res) => {
-          setLocalPaymentHistory(prevHistory =>
-            prevHistory.filter(payment => payment.id !== selectedPaymentId)
-          );
+          setLocalPaymentHistory((prevHistory) => prevHistory.filter((payment) => payment.id !== selectedPaymentId));
 
           setDeletedPayments(res?.props?.deletedPayments);
 
@@ -196,7 +194,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" >
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
         <DialogTitle>Payments and Refunds</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
@@ -341,7 +339,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 <Warning />
               </IconButton>
               <Typography>
-                The payment you are about to delete is part of a split payment. Deleting this payment will result in deleting all that share the same Transaction ID!
+                The payment you are about to delete is part of a split payment. Deleting this payment will result in
+                deleting all that share the same Transaction ID!
               </Typography>
             </Box>
           )}

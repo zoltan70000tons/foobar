@@ -6,10 +6,8 @@ use App\Models\Booking;
 use Illuminate\Support\Carbon;
 use function PHPUnit\Framework\isArray;
 
-class InstallmentHelper
-{
-    public static function getFirstUnpaidInstallmentForBooking(Booking $booking): string|null
-    {
+class InstallmentHelper {
+    public static function getFirstUnpaidInstallmentForBooking(Booking $booking): string|null {
         $longestDueDateInstallment = [];
 
         foreach ($booking->passengers as $passenger) {
@@ -19,10 +17,7 @@ class InstallmentHelper
             }
         }
 
-        $oldestDate = collect($longestDueDateInstallment)
-            ->map(fn($date) => Carbon::parse($date))
-            ->sort()
-            ->first();
+        $oldestDate = collect($longestDueDateInstallment)->map(fn($date) => Carbon::parse($date))->sort()->first();
 
         return $oldestDate?->toDateString();
     }
@@ -37,8 +32,7 @@ class InstallmentHelper
      * installments, the base date will be the first installment due_date.
      * Otherwise the base date will be booking.created_at.
      */
-    public static function maxInstallmentsAllowed(Booking $booking, ?int $passengerId = null): int
-    {
+    public static function maxInstallmentsAllowed(Booking $booking, ?int $passengerId = null): int {
         $baseDate = Carbon::parse($booking->created_at);
 
         if ($passengerId) {
