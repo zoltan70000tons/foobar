@@ -6,6 +6,9 @@ import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import "@fontsource/roboto";
 
+import { Provider as ReduxProvider } from "react-redux";
+import { store } from "@/store";
+
 import { PermissionsProvider } from "../js/Providers/PermissionContext";
 import { SnackbarProvider } from "./Providers/SnackBarAlertProvider";
 import EnvironmentBar from "./Components/EnvironmentBar";
@@ -20,12 +23,14 @@ createInertiaApp({
     const auth: any = props.initialPage.props.auth;
 
     root.render(
-      <SnackbarProvider>
-        {/* <EnvironmentBar environment={appEnv} /> */}
-        <PermissionsProvider auth={auth}>
-          <App {...props} />
-        </PermissionsProvider>
-      </SnackbarProvider>,
+      <ReduxProvider store={store}>
+        <SnackbarProvider>
+          {/* <EnvironmentBar environment={appEnv} /> */}
+          <PermissionsProvider auth={auth}>
+            <App {...props} />
+          </PermissionsProvider>
+        </SnackbarProvider>
+      </ReduxProvider>,
     );
   },
   progress: {

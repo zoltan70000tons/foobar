@@ -1,6 +1,6 @@
 import { Autocomplete, Box, Chip, TextField } from "@mui/material";
-import { useAvailableCabins } from "@/hooks/useAvailableCabins";
-import { useBookingActions } from "@/hooks/useBookingActions";
+import { useAvailableCabins } from "@/Hooks/booking/useAvailableCabins";
+import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { useAppSelector } from "@/store/hooks";
 
 export default function CabinSelector() {
