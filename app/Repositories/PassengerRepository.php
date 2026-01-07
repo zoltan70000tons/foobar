@@ -17,115 +17,103 @@ class PassengerRepository implements PassengerInterface {
     public function __construct(PaymentService $paymentService) {
         $this->paymentService = $paymentService;
     }
-    public function create($data, Booking $booking): Passenger|bool {
+
+    /**
+     * Create lead passenger and additional seats for a booking
+     *
+     * @param array $data Passenger data
+     * @param Booking $booking The booking instance
+     * @return Passenger[] Array of created Passenger models
+     */
+    public function create(array $data, Booking $booking): array {
         Log::info('PassengerRepository::create', ['data' => $data]);
 
-        try {
-            // Get authenticated user
-            $user = Auth::user();
-            if (!$user) {
-                Log::info('No user');
-                return false;
-            }
-            \Log::info('User: ' . $user->id);
-
-            $userDetails = $user->detail;
-
-            \Log::info('User Details: ' . $userDetails);
-
-            $cabin = $booking->cabin;
-            $cabinType = $cabin->cabinType->id;
-            Log::info('cabin type = ' . $cabinType);
-
-            $allocatedCost = $data['passenger_allocated_cost'] ?? 0;
-            $paymentMethod = $data['payment_method'] ?? 'CREDIT_CARD';
-
-            $passengerData = [
-                'booking_id' => $booking->id,
-                'confirmed_booking_email' => false,
-                'lead_passenger' => $data['lead_passenger'] ?? false,
-                'survivor_number' => $data['survivor_number'] ?? ($user->survivorNumber->survivor_number ?? null),
-                'gender' => $data['gender'] ?? ($userDetails->gender ?? null),
-                'first_name' => $data['first_name'] ?? ($userDetails->first_name ?? null),
-                'middle_name' => $data['middle_name'] ?? ($userDetails->middle_name ?? null),
-                'last_name' => $data['last_name'] ?? ($userDetails->last_name ?? null),
-                'dob' => $data['dob'] ?? ($userDetails->dob ?? null),
-                'citizenship' => $data['citizenship'] ?? ($userDetails->citizenship ?? null),
-                'payment_method' => $paymentMethod,
-                'address_first' => $data['address_first'] ?? null,
-                'address_second' => $data['address_second'] ?? null,
-                'city' => $data['city'] ?? null,
-                'state' => $data['state'] ?? null,
-                'postal_code' => $data['postal_code'] ?? null,
-                'country' => $data['country'] ?? null,
-                'email' => $data['email'] ?? null,
-                'phone' => $data['phone'] ?? null,
-                'emergency_c_name' => $data['emergency_c_name'] ?? null,
-                'emergency_c_phone' => $data['emergency_c_phone'] ?? null,
-                'special_request' => $data['special_request'] ?? null,
-                'special_options' => $data['special_options'] ?? null,
-                'dietary_preferences' => $data['dietary_preferences'] ?? null,
-                'newsletter' => $data['newsletter'] ?? false,
-                'travel_info' => $data['travel_info'] ?? null,
-                'hear_about' => $data['hear_about'] ?? null,
-                // 'referral_details' => $data['referral_details'] ?? null,
-                'terms_n_cons' => $data['terms_n_cons'] ?? null,
-                'cabin_conf_accp' => $data['cabin_conf_accp'] ?? null,
-                'single_t_agreement' => $data['single_t_agreement'] ?? null,
-                'passenger_allocated_cost' => $allocatedCost,
-                'passenger_order' => 1,
-                'passenger_balance' => 0,
-                'was_on_board' => false,
-                //'language' => $data['language'] ?? 'en',
-            ];
-
-            $leadPassenger = Passenger::create($passengerData);
-
-            if ($data['email']) {
-                $customer = User::query()
-                    ->where('email', '=', $data['email'])
-                    ->first();
-                if ($customer) {
-                    UserLog::create([
-                        'customer_id' => $customer->id,
-                        'author_id' => $user->id,
-                        'action' => 'User assigned to booking as Lead Passenger',
-                        'description' => 'Booking id: ' . $booking->id,
-                    ]);
-                }
-            }
-
-            $availableSeats = $booking->cabin->category->capacity - 1;
-            if ($cabinType == 2 || $cabinType == 3) {
-                $availableSeats = 0;
-            }
-
-            if ($availableSeats > 0) {
-                $installments = false;
-                if (is_numeric($data['number_of_installments']) && $data['number_of_installments'] >= 1) {
-                    //here we have to enable installments
-                    $installments = $data['number_of_installments'];
-                    // $this->paymentService->createInstallments($passId, $installments);
-                }
-                $result = $this->fillAditionalSeats(
-                    $availableSeats,
-                    $booking->id,
-                    $allocatedCost,
-                    $paymentMethod,
-                    $installments,
-                );
-                if (!$result) {
-                    throw new \Exception('Error creating seats.');
-                }
-            }
-
-            Log::info('Passenger Data: ' . json_encode($passengerData));
-            return $leadPassenger;
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            Log::info('PassengerRepository@create: ' . $e->getMessage());
-            return false;
+        // Auth is mandatory – repository cannot proceed without it
+        $user = Auth::user();
+        if (!$user) {
+            throw new \RuntimeException('Authenticated user not found.');
         }
+
+        $userDetails = $user->detail;
+        $cabin = $booking->cabin;
+        $cabinType = $cabin->cabinType->id;
+
+        $allocatedCost = $data['passenger_allocated_cost'] ?? 0;
+        $paymentMethod = $data['payment_method'] ?? 'CREDIT_CARD';
+
+        $passengerData = [
+            'booking_id' => $booking->id,
+            'confirmed_booking_email' => false,
+            'lead_passenger' => $data['lead_passenger'] ?? false,
+            'survivor_number' => $data['survivor_number'] ?? ($user->survivorNumber->survivor_number ?? null),
+            'gender' => $data['gender'] ?? ($userDetails->gender ?? null),
+            'first_name' => $data['first_name'] ?? ($userDetails->first_name ?? null),
+            'middle_name' => $data['middle_name'] ?? ($userDetails->middle_name ?? null),
+            'last_name' => $data['last_name'] ?? ($userDetails->last_name ?? null),
+            'dob' => $data['dob'] ?? ($userDetails->dob ?? null),
+            'citizenship' => $data['citizenship'] ?? ($userDetails->citizenship ?? null),
+            'payment_method' => $paymentMethod,
+            'address_first' => $data['address_first'] ?? null,
+            'address_second' => $data['address_second'] ?? null,
+            'city' => $data['city'] ?? null,
+            'state' => $data['state'] ?? null,
+            'postal_code' => $data['postal_code'] ?? null,
+            'country' => $data['country'] ?? null,
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'emergency_c_name' => $data['emergency_c_name'] ?? null,
+            'emergency_c_phone' => $data['emergency_c_phone'] ?? null,
+            'special_request' => $data['special_request'] ?? null,
+            'special_options' => $data['special_options'] ?? null,
+            'dietary_preferences' => $data['dietary_preferences'] ?? null,
+            'newsletter' => $data['newsletter'] ?? false,
+            'travel_info' => $data['travel_info'] ?? null,
+            'hear_about' => $data['hear_about'] ?? null,
+            'terms_n_cons' => $data['terms_n_cons'] ?? null,
+            'cabin_conf_accp' => $data['cabin_conf_accp'] ?? null,
+            'single_t_agreement' => $data['single_t_agreement'] ?? null,
+            'passenger_allocated_cost' => $allocatedCost,
+            'passenger_order' => 1,
+            'passenger_balance' => 0,
+            'was_on_board' => false,
+        ];
+
+        $leadPassenger = Passenger::create($passengerData);
+
+        if (!$leadPassenger) {
+            throw new \RuntimeException('Failed to create lead passenger.');
+        }
+
+        $availableSeats = $booking->cabin->category->capacity - 1;
+        if ($cabinType === 2 || $cabinType === 3) {
+            $availableSeats = 0;
+        }
+
+        // Define number of installments for all passengers in the booking
+        $installments = $data['number_of_installments'];
+
+        // Create installments for lead passenger
+        $this->paymentService->createInstallments($leadPassenger->id, $installments);
+
+        $allPassengers = [$leadPassenger];
+
+        if ($availableSeats > 0) {
+            $additionalPassengers = $this->fillAditionalSeats(
+                $availableSeats,
+                $booking->id,
+                $allocatedCost,
+                $paymentMethod,
+                $installments,
+            );
+
+            if (!is_array($additionalPassengers)) {
+                throw new \RuntimeException('Failed to create additional passengers.');
+            }
+
+            $allPassengers = array_merge($allPassengers, $additionalPassengers);
+        }
+
+        return $allPassengers;
     }
 
     public function find(int $event_id, $passenger_id, $booking_id): bool|Passenger {
@@ -143,15 +131,20 @@ class PassengerRepository implements PassengerInterface {
         }
     }
 
-    public function fillAditionalSeats(
-        $seats,
-        $bookingId,
-        $allocatedCost,
-        $paymentMethod,
-        $installments = false,
-    ): bool {
+    /**
+     * Fill additional seats for a booking
+     *
+     * @param int $seats Number of additional seats to create
+     * @param int $bookingId The booking ID
+     * @param float $allocatedCost Cost allocated per passenger
+     * @param string $paymentMethod Payment method
+     * @param int|false $installments Number of installments
+     * @return Passenger[]|false Array of created Passenger models or false on failure
+     */
+    public function fillAditionalSeats($seats, $bookingId, $allocatedCost, $paymentMethod, $installments): array|bool {
         try {
             $currentMaxOrder = Passenger::where('booking_id', $bookingId)->max('passenger_order') ?? 1;
+            $createdPassengers = [];
 
             for ($i = 0; $i < $seats; $i++) {
                 $additionalPassengerData = [
@@ -190,11 +183,11 @@ class PassengerRepository implements PassengerInterface {
                 ];
                 Log::info('Passenger Data (Additional): ' . json_encode($additionalPassengerData));
                 $seat = Passenger::create($additionalPassengerData);
-                if (is_numeric($installments) && $installments >= 1) {
-                    $this->paymentService->createInstallments($seat->id, $installments);
-                }
+
+                $this->paymentService->createInstallments($seat->id, $installments);
+                $createdPassengers[] = $seat;
             }
-            return true;
+            return $createdPassengers;
         } catch (\Exception $e) {
             Log::error('Error filling additional seats: ' . $e->getMessage());
             return false;

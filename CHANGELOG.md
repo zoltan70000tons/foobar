@@ -5,6 +5,20 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/820) - 2026-01-05
+
+### Changed
+
+- Refactored `PassengerRepository::create()` to return an array of all created passengers instead of just the lead passenger
+- Refactored `PassengerRepository::fillAditionalSeats()` to return an array of created passengers instead of a boolean
+- Moved installment creation logic from `BookingRepository` to `PassengerRepository` for better separation of concerns
+- Ensured all passengers (lead and additional seats) have installments created consistently
+
+### Fixed
+
+- Issue where the booking was being created even if the pax and installment creation failed
+- Ensured minimum of 1 installment is created even when payment plan is PAY_IN_FULL
+
 ## [1.9.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/816) - 2026-01-01
 
 ### Changed
