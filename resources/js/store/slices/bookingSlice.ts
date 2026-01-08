@@ -234,6 +234,7 @@ const bookingSlice = createSlice({
     },
 
     setTabValue(state, action: PayloadAction<number>) {
+      console.log(action, typeof action.payload)
       state.tabValue = action.payload;
     },
 

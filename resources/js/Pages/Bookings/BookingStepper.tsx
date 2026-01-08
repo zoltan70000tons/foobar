@@ -254,6 +254,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
         {activeStep === 1 && (
           <BookingStepperStepOne />
         )}
+
         {activeStep === 2 && (
           <Box sx={{ mt: 4 }}>
             <Grid item xs={12}>

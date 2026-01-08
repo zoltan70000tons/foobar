@@ -9,9 +9,9 @@ import {
   TableContainer,
   TableRow,
   Tabs,
+  Tab,
   Typography
 } from "@mui/material";
-import { Tab } from "@mui/icons-material";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectBooking } from "@/store/slices/selectors";
@@ -101,15 +101,15 @@ export const BookingStepperStepFour = () => {
       </Typography>
       <Tabs
         value={tabValue}
-        onChange={setTabValue}
+        onChange={(e) => setTabValue(e.target.getAttribute('tabindex'))}
         indicatorColor="primary"
         textColor="primary"
         sx={{ mb: 2 }}
         aria-label="Booking Details Tabs"
       >
-        <Tab label="Cabin Details" />
-        <Tab label="Lead Passenger" />
-        <Tab label="Payment Info" />
+        <Tab label="Cabin Details" tabindex={0} />
+        <Tab label="Lead Passenger" tabindex={1} />
+        <Tab label="Payment Info" tabindex={2} />
       </Tabs>
 
       {/* Tab Panel for Cabin Details */}
