@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scheduled Job to run cabin inventory integrity check at 01:00 PST
 - Integrity check button in cabin management UI to run manually
 
+## [1.9.6] 2026-01-08
+
+### Changed
+
+- Email template cabin-inventory-integrity-report with white background color inline
+
 ## [1.9.5] 2026-01-07(https://github.com/70000TONS-IT/booking-engine-admin/pull/825)
 
 ### Changed

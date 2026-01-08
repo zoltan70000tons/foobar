@@ -91,7 +91,10 @@
     }
   </style>
 
-  <div class="inventory-report-container">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="background-color: #ffffff; color: #000000;">
+    <tr>
+      <td style="background-color: #ffffff; color: #000000;">
+        <div class="inventory-report-container" style="background-color: #ffffff; color: #000000;">
     <h2>Cabin Inventory Integrity Report</h2>
     <p>Generated at: {{ $report['run_at'] ?? 'N/A' }}</p>
     <p>
@@ -148,7 +151,10 @@
         </table>
       @endforeach
     @endif
-  </div>
+        </div>
+      </td>
+    </tr>
+  </table>
 @endsection
 
 @section('regards')
