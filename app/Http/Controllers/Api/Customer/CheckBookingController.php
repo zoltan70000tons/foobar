@@ -74,6 +74,7 @@ class CheckBookingController extends Controller {
                 'passenger_balance',
                 'lead_passenger',
                 'passenger_order',
+                'installment_status',
             ],
             // here we pass param to use data masker for first_name with 'full' strategy
             'limited_sanitize' => [
