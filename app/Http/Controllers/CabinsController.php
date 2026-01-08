@@ -15,6 +15,7 @@ use App\Models\Tag;
 use App\Repositories\CabinCategoryRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
+use App\Services\CabinInventoryIntegrityService;
 use App\Support\GlobalLogger;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -308,6 +309,54 @@ class CabinsController extends Controller {
             );
         } catch (\Exception $e) {
             $this->logException($e);
+        }
+    }
+
+    /**
+     | --------------------------------------------------------------------------
+     | CABIN INVENTORY INTEGRITY CHECK
+     | --------------------------------------------------------------------------
+     |
+     | This function runs the cabin inventory integrity check
+     | and sends the report via email.
+     | if manual run, add global log with action CABIN_INVENTORY_CHECK_TRIGGERED
+     |
+     | @param Request $request
+     | @param CabinInventoryIntegrityService $service
+     |
+     */
+    public function runIntegrityCheck(Request $request, CabinInventoryIntegrityService $service) {
+        // request id will be use to add for global log
+        $reqEventId = (string) $request->route('id') ?? '';
+
+        try {
+            return $this->withPermission(
+                [Permissions::EditCabinInventory],
+                function () use ($service, $reqEventId) {
+                    $report = $service->run();
+                    $emailSent = $service->sendReport($report);
+
+                    // GlobalLogger::log(
+                    //     LogActionCabin::CABIN_INVENTORY_CHECK_TRIGGERED,
+                    //     'event',
+                    //     $reqEventId,
+                    //     'Cabin inventory integrity check was manually triggered.',
+                    //     [
+                    //         'email_sent' => $emailSent,
+                    //         'issues_found' => count($report['issues']),
+                    //     ],
+                    // );
+
+                    return response()->json([
+                        'report' => $report,
+                        'email_sent' => $emailSent,
+                    ]);
+                },
+                null,
+            );
+        } catch (\Exception $e) {
+            $this->logException($e);
+            return response()->json(['message' => 'Failed to run integrity check.'], 500);
         }
     }
 

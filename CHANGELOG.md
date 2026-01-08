@@ -5,7 +5,21 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.5] 2026-01-07
+## [1.10.0] 2026-01-07(https://github.com/70000TONS-IT/booking-engine-admin/pull/824)
+
+### Added
+
+- `CabinInventoryIntegrityService` to validate cabin inventory integrity with validation rules covering private and single-ticket cabin scenarios
+- `CabinInventoryIntegrityCheck` console command for running integrity checks and sending daily reports
+- `CabinInventoryIntegrityReport` mailable for emailing integrity reports with issues grouped by event
+- Email template for cabin inventory integrity reports with formatted issue tables
+- `CABIN_INVENTORY_INTEGRITY_REPORT_RECIPIENTS` environment variable for configuring report recipients
+- `runIntegrityCheck()` method in `CabinsController` to handle manual integrity check requests
+- `CABIN_INVENTORY_CHECK_TRIGGERED` log action to `LogActionCabin` enum
+- Scheduled Job to run cabin inventory integrity check at 01:00 PST
+- Integrity check button in cabin management UI to run manually
+
+## [1.9.5] 2026-01-07(https://github.com/70000TONS-IT/booking-engine-admin/pull/825)
 
 ### Changed
 
