@@ -5,6 +5,7 @@ export interface Cabin {
   id: number;
   cabin_type_id: number;
   cabin_category_id: number;
+  cabin_number: string;
   cabin_type: CabinType;
   cabin_category: CabinCategory;
   inventory: number;

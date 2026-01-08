@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, Link } from "@inertiajs/react";
 import {
   Box,
   Container,
@@ -16,6 +16,7 @@ import {
   TextField,
   InputAdornment,
 } from "@mui/material";
+import { blue } from "@mui/material/colors";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Person } from "@mui/icons-material";
 import MuiTable from "@/Components/tables/MuiTable";
@@ -234,10 +235,17 @@ const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, t
         sortable: true,
       },
       {
-        header: "Type",
+        header: "Type / Number",
         accessor: "cabinType",
         sortable: true,
-        draw: (row: Booking) => <>{row.cabin?.cabin_type?.cabin_type}</>,
+        draw: (row: Booking) => (
+          <Box component={"span"} sx={{ "& a": { color: blue[200] } }}>
+            {row.cabin?.cabin_type?.cabin_type} /{" "}
+            <Link href={route("cabins.edit", { id: event.id, cabin_id: row.cabin?.id })}>
+              {row.cabin?.cabin_number}
+            </Link>
+          </Box>
+        ),
       },
       {
         header: "Balance",

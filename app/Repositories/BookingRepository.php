@@ -14,6 +14,7 @@ use App\Traits\CabinFilter;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 use App\Models\Cabin;
 use App\Models\Comment;
@@ -282,6 +283,23 @@ class BookingRepository implements BookingInterface {
         return Booking::find($id);
     }
 
+    /**
+     * ----------------------------------------------------------
+     * Find bookings by cabin id
+     * - get all bookings related to the event_id and cabin_id
+     * ----------------------------------------------------------
+     * @param int $event_id
+     * @param string $cabin_id
+     *
+     * @return Collection
+     */
+    function findByCabinId(int $event_id, int $cabin_id): Collection {
+        return Booking::with(['cabin', 'cabin.cabinType'])
+            ->where('event_id', $event_id)
+            ->where('cabin_id', $cabin_id)
+            ->get();
+    }
+
     function findByCode($code) {
         $booking = Booking::with([
             'cabin',
@@ -530,10 +548,9 @@ class BookingRepository implements BookingInterface {
             // Create Passenger Entries
             $passenger = null;
             if ($passengerData) {
-                // All Passengers must have at least 1 installment if payment plan is PAY_IN_FULL 
-                $passengerData['number_of_installments'] = $bookingData['payment_plan'] === 'INSTALLMENTS'
-                    ? $bookingData['number_of_installments']
-                    : 1;
+                // All Passengers must have at least 1 installment if payment plan is PAY_IN_FULL
+                $passengerData['number_of_installments'] =
+                    $bookingData['payment_plan'] === 'INSTALLMENTS' ? $bookingData['number_of_installments'] : 1;
                 $passenger = $this->passengerRepository->create($passengerData, $booking);
             }
 
