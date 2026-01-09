@@ -5,6 +5,12 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/821) - 2026-01-08
+
+### Added
+- Potential survivor matches button tooltips
+- Fix for the constant re-render
+
 ## [1.10.0] 2026-01-07(https://github.com/70000TONS-IT/booking-engine-admin/pull/824)
 
 ### Added
