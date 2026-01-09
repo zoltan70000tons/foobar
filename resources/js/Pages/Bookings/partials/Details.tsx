@@ -414,9 +414,9 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                     label: "Cabin Number",
                     value: (
                       <Box component={"span"} sx={{ "& a": { color: blue[200] } }}>
-                        {booking.cabin?.cabin_number ? (
+                        {booking.cabin?.cabin_spec?.cabin_number ? (
                           <Link href={route("cabins.edit", { id: event.id, cabin_id: booking.cabin?.id })}>
-                            {booking.cabin?.cabin_number}
+                            {booking.cabin?.cabin_spec?.cabin_number}
                           </Link>
                         ) : (
                           "-"

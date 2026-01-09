@@ -5,7 +5,6 @@ export interface Cabin {
   id: number;
   cabin_type_id: number;
   cabin_category_id: number;
-  cabin_number: string;
   cabin_type: CabinType;
   cabin_category: CabinCategory;
   inventory: number;
@@ -20,7 +19,7 @@ export interface Cabin {
   internal_notes: string;
 }
 
-interface CabinSpec {
+export interface CabinSpec {
   lower_bed_type_1: string;
   lower_bed_type_2: string;
   upper_berths: string;
