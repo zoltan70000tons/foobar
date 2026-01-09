@@ -230,19 +230,26 @@ const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, t
         accessor: "booking_code",
         draw: (row: Booking) => {
           const code = row.booking_code || "";
-          const match = code.match(/^(\d+)/);
+          const cabinNumber = row.cabin?.cabin_spec?.cabin_number;
 
-          if (!match || !row.cabin?.id) {
+          if (!cabinNumber || !row.cabin?.id) {
             return code;
           }
 
-          const cabinNumber = match[1];
-          const remainder = code.slice(cabinNumber.length);
+          const matchIndex = code.indexOf(cabinNumber);
+
+          if (matchIndex < 0) {
+            return code;
+          }
+
+          const before = code.slice(0, matchIndex);
+          const after = code.slice(matchIndex + cabinNumber.length);
 
           return (
             <Box component={"span"} sx={{ "& a": { color: blue[200] } }}>
+              {before}
               <Link href={route("cabins.edit", { id: event.id, cabin_id: row.cabin.id })}>{cabinNumber}</Link>
-              {remainder}
+              {after}
             </Box>
           );
         },
