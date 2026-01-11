@@ -91,64 +91,70 @@
     }
   </style>
 
-  <div class="inventory-report-container">
-    <h2>Cabin Inventory Integrity Report</h2>
-    <p>Generated at: {{ $report['run_at'] ?? 'N/A' }}</p>
-    <p>
-      Events checked: {{ $report['summary']['events_checked'] ?? 0 }},
-      Cabins checked: {{ $report['summary']['cabins_checked'] ?? 0 }},
-      Issues found: {{ $report['summary']['issues_count'] ?? 0 }}
-    </p>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="background-color: #ffffff; color: #000000;">
+    <tr>
+      <td style="background-color: #ffffff; color: #000000;">
+        <div class="inventory-report-container" style="background-color: #ffffff; color: #000000;">
+          <h2>Cabin Inventory Integrity Report</h2>
+          <p style="color: #000000;">Generated at: {{ $report['run_at'] ?? 'N/A' }}</p>
+          <p style="color: #000000;">
+            Events checked: {{ $report['summary']['events_checked'] ?? 0 }},
+            Cabins checked: {{ $report['summary']['cabins_checked'] ?? 0 }},
+            Issues found: {{ $report['summary']['issues_count'] ?? 0 }}
+          </p>
 
-    @if (!empty($report['message']))
-      <p>{{ $report['message'] }}</p>
-    @endif
+          @if (!empty($report['message']))
+            <p style="color: #000000;">{{ $report['message'] }}</p>
+          @endif
 
-    @if (($report['summary']['issues_count'] ?? 0) === 0)
-      <p>No integrity issues were detected.</p>
-    @else
-      @php
-        $issuesByEvent = collect($report['issues'] ?? [])->groupBy('event_id');
-      @endphp
+          @if (($report['summary']['issues_count'] ?? 0) === 0)
+            <p style="color: #000000;">No integrity issues were detected.</p>
+          @else
+            @php
+              $issuesByEvent = collect($report['issues'] ?? [])->groupBy('event_id');
+            @endphp
 
-      @foreach ($issuesByEvent as $eventId => $issues)
-        @php
-          $firstIssue = $issues->first();
-          $eventName = is_array($firstIssue) ? ($firstIssue['event_name'] ?? 'Unknown Event') : 'Unknown Event';
-          $eventStatus = is_array($firstIssue) ? ($firstIssue['event_status'] ?? 'N/A') : 'N/A';
-        @endphp
-        <h3>{{ $eventName }} ({{ $eventStatus }})</h3>
-        <table class="table-bordered">
-          <thead>
-            <tr>
-              <th>Cabin (cat code, capacity, number and ID)</th>
-              <th>Status</th>
-              <th>Type</th>
-              <th>Category</th>
-              <th>Inventory</th>
-              <th>Bookings</th>
-              <th>Passengers</th>
-              <th>Message</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach ($issues as $issue)
-              <tr>
-                <td>{{ $issue['cabin_number'] && $issue['cabin_id'] ? $issue['category_code'] . ' / ' . $issue['capacity_name'] . ' / ' . $issue['cabin_number'] . ' (ID: ' . $issue['cabin_id'] . ')' : 'N/A' }}</td>
-                <td>{{ $issue['cabin_status'] ?? 'N/A' }}</td>
-                <td>{{ $issue['cabin_type'] ?? 'N/A' }}</td>
-                <td>{{ $issue['category_code'] ?? 'N/A' }}</td>
-                <td>{{ $issue['inventory'] ?? 'N/A' }}</td>
-                <td>{{ $issue['booking_count'] ?? 'N/A' }}</td>
-                <td>{{ $issue['passenger_count'] ?? 'N/A' }}</td>
-                <td>{{ $issue['message'] ?? 'N/A' }}</td>
-              </tr>
+            @foreach ($issuesByEvent as $eventId => $issues)
+              @php
+                $firstIssue = $issues->first();
+                $eventName = is_array($firstIssue) ? ($firstIssue['event_name'] ?? 'Unknown Event') : 'Unknown Event';
+                $eventStatus = is_array($firstIssue) ? ($firstIssue['event_status'] ?? 'N/A') : 'N/A';
+              @endphp
+              <h3>{{ $eventName }} ({{ $eventStatus }})</h3>
+              <table class="table-bordered">
+                <thead>
+                  <tr>
+                    <th>Cabin (cat code, capacity, number and ID)</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Inventory</th>
+                    <th>Bookings</th>
+                    <th>Passengers</th>
+                    <th>Message</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($issues as $issue)
+                    <tr>
+                      <td>{{ $issue['cabin_number'] && $issue['cabin_id'] ? $issue['category_code'] . ' / ' . $issue['capacity_name'] . ' / ' . $issue['cabin_number'] . ' (ID: ' . $issue['cabin_id'] . ')' : 'N/A' }}</td>
+                      <td>{{ $issue['cabin_status'] ?? 'N/A' }}</td>
+                      <td>{{ $issue['cabin_type'] ?? 'N/A' }}</td>
+                      <td>{{ $issue['category_code'] ?? 'N/A' }}</td>
+                      <td>{{ $issue['inventory'] ?? 'N/A' }}</td>
+                      <td>{{ $issue['booking_count'] ?? 'N/A' }}</td>
+                      <td>{{ $issue['passenger_count'] ?? 'N/A' }}</td>
+                      <td>{{ $issue['message'] ?? 'N/A' }}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
             @endforeach
-          </tbody>
-        </table>
-      @endforeach
-    @endif
-  </div>
+          @endif
+        </div>
+      </td>
+    </tr>
+  </table>
 @endsection
 
 @section('regards')
