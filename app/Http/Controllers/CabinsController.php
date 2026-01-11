@@ -185,9 +185,7 @@ class CabinsController extends Controller {
         try {
             $cabin = $this->cabinRepository->find($request->cabin_id);
             $event = $this->eventRepository->find(request()->route('id'));
-            $relatedBookings = $this->bookingRepository->findByCabinId($event->id, $cabin->id);
-
-            \Log::info('Related Bookings: ', ['bookings' => $relatedBookings]);
+            $relatedBookings = $this->bookingRepository->findByCabinId($cabin->id);
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             $availableTags = Tag::type('cabin')->get();
             $logs = LogModel::query()
