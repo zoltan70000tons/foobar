@@ -228,6 +228,31 @@ const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, t
       {
         header: "Booking Code",
         accessor: "booking_code",
+        draw: (row: Booking) => {
+          const code = row.booking_code || "";
+          const cabinNumber = row.cabin?.cabin_spec?.cabin_number;
+
+          if (!cabinNumber || !row.cabin?.id) {
+            return code;
+          }
+
+          const matchIndex = code.indexOf(cabinNumber);
+
+          if (matchIndex < 0) {
+            return code;
+          }
+
+          const before = code.slice(0, matchIndex);
+          const after = code.slice(matchIndex + cabinNumber.length);
+
+          return (
+            <Box component={"span"} sx={{ "& a": { color: blue[200] } }}>
+              {before}
+              <Link href={route("cabins.edit", { id: event.id, cabin_id: row.cabin.id })}>{cabinNumber}</Link>
+              {after}
+            </Box>
+          );
+        },
       },
       {
         header: "Lead Passenger",
@@ -235,17 +260,10 @@ const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, t
         sortable: true,
       },
       {
-        header: "Type / Number",
+        header: "Type",
         accessor: "cabinType",
         sortable: true,
-        draw: (row: Booking) => (
-          <Box component={"span"} sx={{ "& a": { color: blue[200] } }}>
-            {row.cabin?.cabin_type?.cabin_type} /{" "}
-            <Link href={route("cabins.edit", { id: event.id, cabin_id: row.cabin?.id })}>
-              {row.cabin?.cabin_number}
-            </Link>
-          </Box>
-        ),
+        draw: (row: Booking) => <>{row.cabin?.cabin_type?.cabin_type} </>,
       },
       {
         header: "Balance",
