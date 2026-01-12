@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import { Container, Grid, Toolbar, Box, Button, Autocomplete, TextField } from "@mui/material";
+import { Container, Grid, Toolbar, Box, Button, Autocomplete, TextField, Tooltip } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import "dayjs/locale/en";
 import { Permissions } from "@/enums/PermissionEnum";
@@ -11,7 +11,6 @@ import { Visibility, Check, Close, Beenhere } from "@mui/icons-material";
 import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import type { AxiosResponse } from "axios";
-import NewBookingModal from "@/Pages/Bookings/NewBookingModal";
 
 enum PotentialSurvivorMatchesTypes {
   "match" = "Match",
@@ -132,36 +131,42 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
               <Box sx={{ display: "flex", gap: "4px" }}>
                 <div style={{ display: "flex", gap: "10px" }}>
                   {hasPermission(Permissions.ViewCustomers) && (
-                    <Visibility
-                      onClick={() => {
-                        router.get(route("matches.show", { id: row.id }));
-                      }}
-                      style={{ cursor: "pointer" }}
-                    />
+                    <Tooltip title="Open details">
+                      <Visibility
+                        onClick={() => {
+                          router.get(route("matches.show", { id: row.id }));
+                        }}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </Tooltip>
                   )}
                 </div>
                 {row.type === "match" && (
                   <>
                     <div>
                       {hasPermission(Permissions.EditCustomers) && (
-                        <Check
-                          color="success"
-                          onClick={() => {
-                            router.put(route("matches.update", { id: row.id }));
-                          }}
-                          style={{ cursor: "pointer" }}
-                        />
+                        <Tooltip title="Accepting this will add the Survivor Number to this passenger.">
+                          <Check
+                            color="success"
+                            onClick={() => {
+                              router.put(route("matches.update", { id: row.id }));
+                            }}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </Tooltip>
                       )}
                     </div>
                     <div>
-                      {hasPermission(Permissions.DeleteCustomers) && (
-                        <Close
-                          color="error"
-                          onClick={() => {
-                            router.delete(route("matches.destroy", { id: row.id }));
-                          }}
-                          style={{ cursor: "pointer" }}
-                        />
+                      { hasPermission(Permissions.DeleteCustomers) && (
+                        <Tooltip title="This action will mark this case as dismissed and will not show up in the future.">
+                          <Close
+                            color="error"
+                            onClick={() => {
+                              router.delete(route("matches.destroy", { id: row.id }));
+                            }}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </Tooltip>
                       )}
                     </div>
                   </>
@@ -169,13 +174,15 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
                 {row.type === "double_booking" && (
                   <div>
                     {hasPermission(Permissions.EditCustomers) && (
-                      <Beenhere
-                        color="success"
-                        onClick={() => {
-                          router.put(route("matches.resolve", { id: row.id }));
-                        }}
-                        style={{ cursor: "pointer" }}
-                      />
+                      <Tooltip title="This case will be marked as solved and ignored in the future.">
+                        <Beenhere
+                          color="success"
+                          onClick={() => {
+                            router.put(route("matches.resolve", { id: row.id }));
+                          }}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </Tooltip>
                     )}
                   </div>
                 )}
@@ -185,12 +192,14 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
               <Box sx={{ display: "flex", gap: "4px" }}>
                 <div style={{ display: "flex", gap: "10px" }}>
                   {hasPermission(Permissions.ViewCustomers) && (
-                    <Visibility
-                      onClick={() => {
-                        router.get(route("matches.show", { id: row.id }));
-                      }}
-                      style={{ cursor: "pointer" }}
-                    />
+                    <Tooltip title="Check resolved item's details">
+                      <Visibility
+                        onClick={() => {
+                          router.get(route("matches.show", { id: row.id }));
+                        }}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </Tooltip>
                   )}
                 </div>
               </Box>
@@ -202,36 +211,38 @@ const Index = ({ auth, potentialMatches, statuses }: Props) => {
     [],
   );
 
-  const fetchPotentialMatches = async (
-    page: number,
-    rowsPerPage: number,
-    filters: { [key: string]: string },
-    sort: { key: string; direction: "asc" | "desc" },
-  ): Promise<{ data: PotentialSurvivorMatches[]; total: number }> => {
-    try {
-      const response = await axios.get("/potential-survivor-matches/paginated", {
-        params: {
-          page,
-          per_page: rowsPerPage,
-          sort_by: sort.key,
-          sort_direction: sort.direction,
-          filters: JSON.stringify(filters),
-          statuses: selectedStatuses,
-        },
-        paramsSerializer: (params: Record<string, string>) => {
-          return new URLSearchParams(params as Record<string, string>).toString();
-        },
-      });
+  const fetchPotentialMatches = useCallback(
+    async (
+      page: number,
+      rowsPerPage: number,
+      filters: { [key: string]: string },
+      sort: { key: string; direction: "asc" | "desc" },
+    ): Promise<{ data: PotentialSurvivorMatches[]; total: number }> => {
+      try {
+        const response = await axios.get("/potential-survivor-matches/paginated", {
+          params: {
+            page,
+            per_page: rowsPerPage,
+            sort_by: sort.key,
+            sort_direction: sort.direction,
+            filters: JSON.stringify(filters),
+            statuses: selectedStatuses,
+          },
+          paramsSerializer: (params) =>
+            new URLSearchParams(params as Record<string, string>).toString(),
+        });
 
-      return {
-        data: response.data?.data ?? [],
-        total: response.data?.total ?? 0,
-      };
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-      return { data: [], total: 0 };
-    }
-  };
+        return {
+          data: response.data?.data ?? [],
+          total: response.data?.total ?? 0,
+        };
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+        return { data: [], total: 0 };
+      }
+    },
+    [selectedStatuses],
+  );
 
   const handleManualSync = async () => {
     showSnackbar("Sync started successfully", "success");

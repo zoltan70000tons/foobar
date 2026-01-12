@@ -530,19 +530,14 @@ class BookingRepository implements BookingInterface {
             // Create Passenger Entries
             $passenger = null;
             if ($passengerData) {
-                $passengerData['number_of_installments'] = $bookingData['number_of_installments'] ?? null;
+                // All Passengers must have at least 1 installment if payment plan is PAY_IN_FULL 
+                $passengerData['number_of_installments'] = $bookingData['payment_plan'] === 'INSTALLMENTS'
+                    ? $bookingData['number_of_installments']
+                    : 1;
                 $passenger = $this->passengerRepository->create($passengerData, $booking);
             }
 
-            // Create Installment Entries
-            if ($passenger && $bookingData['number_of_installments'] >= 1) {
-                $passId = $passenger->id;
-                $installments = (int) $bookingData['number_of_installments'];
-
-                $this->paymentService->createInstallments($passId, $installments);
-            }
-
-            if ($booking) {
+            if ($booking && is_array($passenger)) {
                 if ($temporaryBookingId) {
                     TemporaryReservation::find($temporaryBookingId)?->delete();
                 }

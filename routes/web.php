@@ -117,6 +117,9 @@ Route::middleware(['auth', 'electron_auth'])->group(function () {
         'cabins.createShared',
     );
     Route::get('/events/{id}/cabins/getData', [CabinsController::class, 'getData'])->name('cabins.getData');
+    Route::post('/events/{id}/cabins/integrity-check', [CabinsController::class, 'runIntegrityCheck'])->name(
+        'cabins.integrity-check',
+    );
 
     //Cabin categories
     Route::get('/events/{id}/cabins/categories/{catId}/show', [CabinCategoriesController::class, 'show'])->name(

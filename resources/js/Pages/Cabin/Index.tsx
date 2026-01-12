@@ -23,8 +23,6 @@ import { CabinStatus, CabinStatusColor, CabinStatusReduced } from "@/enums/Cabin
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Visibility, Edit, Delete } from "@mui/icons-material";
 import { Permissions } from "@/enums/PermissionEnum";
-import { usePermissions } from "@/Providers/PermissionContext";
-import apiRoutes from "@/Helpers/ApiRoutes";
 import type { Errors } from "@inertiajs/core";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import AddIcon from "@mui/icons-material/Add";
@@ -37,6 +35,7 @@ import TagToolTip from "@/Components/TagToolTip";
 import axios from "axios";
 import { Link, useRemember } from "@inertiajs/react";
 import { TicketTypeData } from "@/Pages/Cabin/partials/matrix/TicketTypeData";
+import CabinInventoryIntegrity from "@/Pages/Cabin/partials/CabinInventoryIntegrity";
 
 type Tag = { id: string; name: string; color: string; description: string; priority: number };
 
@@ -60,7 +59,6 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
   }, []);
 
   const [openDialog, setOpenDialog] = useState(false);
-
   const { showSnackbar } = useSnackbar();
 
   const { flash } = usePage<PageProps>().props;
@@ -439,19 +437,24 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
               <Box sx={{ display: selectedTab === 0 ? "block" : "none", mt: 2 }}>
                 {cabins ? (
                   <div>
-                    {auth.permissions.includes(Permissions.ViewCabinCategories) && (
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<AddIcon />}
-                        sx={{ mb: 2, ml: "auto" }}
-                        onClick={() => {
-                          router.get(route("cabins.create", { id: event.id }));
-                        }}
-                      >
-                        Create Cabin
-                      </Button>
-                    )}
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                      {auth.permissions.includes(Permissions.ViewCabinCategories) && (
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<AddIcon />}
+                          onClick={() => {
+                            router.get(route("cabins.create", { id: event.id }));
+                          }}
+                        >
+                          Create Cabin
+                        </Button>
+                      )}
+                      <CabinInventoryIntegrity
+                        eventId={event.id}
+                        canRun={auth.permissions.includes(Permissions.EditCabinInventory)}
+                      />
+                    </Box>
                     <MuiTable
                       columns={columns}
                       data={cabins}
@@ -492,6 +495,7 @@ const Index = ({ auth, event, categories, cabins, errors, tags }: Props) => {
                     </Button>
                   </DialogActions>
                 </Dialog>
+
               </Box>
 
               <Box sx={{ display: selectedTab === 1 ? "block" : "none", mt: 2 }}>

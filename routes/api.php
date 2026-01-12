@@ -56,6 +56,7 @@ Route::get('/email/verify/{id}/{hash}', [CustomerEmailVerificationController::cl
 
 // ---- EVENTS ----
 Route::get('/events', [EventController::class, 'show']);
+Route::get('/events/{id}', [EventController::class, 'showOne']);
 
 // ---- ADJUSTMENTS ----
 Route::get('/events/{id}/adjustments', [AdjustmentsController::class, 'show']);
@@ -88,8 +89,6 @@ Route::post('/cabins/upgrade', [CabinController::class, 'showUpgrades']);
 
 // --- GET SINGLE CATEGORY ---
 Route::get('/cabins/category/{categoryId}', [CabinController::class, 'showCategory']);
-
-Route::get('/events/{id}', [EventController::class, 'showOne']);
 
 Route::middleware([
     'auth:api',

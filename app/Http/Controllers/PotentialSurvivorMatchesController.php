@@ -52,31 +52,79 @@ class PotentialSurvivorMatchesController extends Controller {
         $filters = json_decode($request->get('filters'), true) ?? [];
         $selectedStatuses = $request->get('statuses');
 
-        $baseQuery = PotentialSurvivorMatch::query();
+        $baseQuery = PotentialSurvivorMatch::query()
+            ->select('*')
+            ->selectRaw("passenger_first_name || ' ' || passenger_last_name AS passenger_name")
+            ->selectRaw("user_first_name || ' ' || user_last_name AS user_name");
         if ($selectedStatuses) {
-            $baseQuery = $baseQuery->whereIn('status', explode(',', $selectedStatuses));
+            if (!is_array($selectedStatuses)) {
+                $selectedStatuses = explode(',', $selectedStatuses);
+            }
+            $baseQuery = $baseQuery->whereIn('status', $selectedStatuses);
         }
         foreach ($filters as $key => $value) {
             if ($key === 'passenger_dob') {
-                $baseQuery->whereRaw("TO_CHAR(passenger_dob, 'YYYY-MM-DD') ILIKE ?", ["%{$value}%"]);
-            } elseif ($key === 'user_dob') {
-                $baseQuery->whereRaw("TO_CHAR(user_dob, 'YYYY-MM-DD') ILIKE ?", ["%{$value}%"]);
-            } else {
-                $columnMap = [
-                    'passenger_first_name' => 'passenger_first_name',
-                    'passenger_last_name' => 'passenger_last_name',
-                    'passenger_dob' => 'passenger_dob',
-                    'user_first_name' => 'user_first_name',
-                    'user_last_name' => 'user_last_name',
-                    'user_dob' => 'user_dob',
-                ];
-                if (isset($columnMap[$key])) {
-                    $baseQuery->whereRaw("{$columnMap[$key]} ILIKE ?", ["%{$value}%"]);
-                }
+                $baseQuery->whereRaw(
+                    "TO_CHAR(passenger_dob, 'YYYY-MM-DD') ILIKE ?",
+                    ["%{$value}%"]
+                );
+                continue;
+            }
+
+            if ($key === 'user_dob') {
+                $baseQuery->whereRaw(
+                    "TO_CHAR(user_dob, 'YYYY-MM-DD') ILIKE ?",
+                    ["%{$value}%"]
+                );
+                continue;
+            }
+
+            if ($key === 'passenger_name') {
+                $baseQuery->whereRaw(
+                    "(passenger_first_name || ' ' || passenger_last_name) ILIKE ?",
+                    ["%{$value}%"]
+                );
+                continue;
+            }
+
+            if ($key === 'user_name') {
+                $baseQuery->whereRaw(
+                    "(user_first_name || ' ' || user_last_name) ILIKE ?",
+                    ["%{$value}%"]
+                );
+                continue;
+            }
+
+            $columnMap = [
+                'passenger_first_name' => 'passenger_first_name',
+                'passenger_last_name'  => 'passenger_last_name',
+                'user_first_name'      => 'user_first_name',
+                'user_last_name'       => 'user_last_name',
+            ];
+
+            if (isset($columnMap[$key])) {
+                $baseQuery->whereRaw(
+                    "{$columnMap[$key]} ILIKE ?",
+                    ["%{$value}%"]
+                );
             }
         }
 
-        return $baseQuery->orderBy($sortBy, $sortDir)->paginate($perPage, ['*'], 'page', $page);
+        $sortableColumns = [
+            'score'            => 'score',
+            'status'           => 'status',
+            'type'             => 'type',
+            'passenger_name'   => 'passenger_name',
+            'user_name'        => 'user_name',
+            'passenger_dob'    => 'passenger_dob',
+            'user_dob'         => 'user_dob',
+        ];
+
+        $sortColumn = $sortableColumns[$sortBy] ?? 'score';
+
+        $baseQuery->orderBy($sortColumn, $sortDir);
+
+        return $baseQuery->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function update(int $id) {

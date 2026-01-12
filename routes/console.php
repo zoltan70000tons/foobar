@@ -66,3 +66,10 @@ Schedule::command('logs:create-year-partitions')
     ->runInBackground();
 
 Schedule::command('survivors:sync')->dailyAt('02:00')->withoutOverlapping()->runInBackground();
+
+// Cabin inventory integrity report
+Schedule::command('cabins:inventory-integrity')
+    ->dailyAt('01:00')
+    ->timezone('America/Los_Angeles')
+    ->withoutOverlapping()
+    ->runInBackground();

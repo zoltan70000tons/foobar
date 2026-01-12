@@ -38,7 +38,6 @@ class EventController extends Controller {
 
         // return events if exist
         return response()->json([
-            // 'events' => $events,
             'events' => new EventResource($events),
         ]);
     }
@@ -52,7 +51,7 @@ class EventController extends Controller {
         App::setLocale($language);
 
         if ($id === null || $id === '' || !is_numeric($id)) {
-            return ErrorResponse::error(__('event.no_event_found'), ErrorCode::EVENT_NOT_FOUND, 404);
+            return ErrorResponse::error(__('event.no_event_found'), ErrorCode::EVENT_NOT_FOUND, 400);
         }
 
         // Retrieve the event with adjustments and presale periods
@@ -77,7 +76,7 @@ class EventController extends Controller {
 
         // Check event status
         if (!in_array($event->status, ['PRE-SALE', 'PUBLIC'])) {
-            return ErrorResponse::error(__('event.no_event_found'), ErrorCode::EVENT_NOT_FOUND, 404);
+            return ErrorResponse::error(__('event.no_event_found'), ErrorCode::ACCESS_DENIED, 403);
         }
 
         // check if the Auth
@@ -97,7 +96,6 @@ class EventController extends Controller {
         return response()->json([
             'status' => 200,
             'event_status' => $event->status,
-            // 'event' => $event,
             'event' => new EventResource($event),
             'purchase_access' => $access['status'],
             'access_message' => $access['message'] ?? null,
