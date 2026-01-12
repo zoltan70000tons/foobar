@@ -14,6 +14,7 @@ use App\Traits\CabinFilter;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 use App\Models\Cabin;
 use App\Models\Comment;
@@ -280,6 +281,21 @@ class BookingRepository implements BookingInterface {
 
     function find($id) {
         return Booking::find($id);
+    }
+
+    /**
+     * ----------------------------------------------------------
+     * Find bookings by cabin id
+     * - get all bookings related to the cabin_id
+     * ----------------------------------------------------------
+     * @param string $cabin_id
+     *
+     * @return Collection
+     */
+    function findByCabinId(int $cabin_id): Collection {
+        return Booking::with(['cabin', 'cabin.cabinType'])
+            ->where('cabin_id', $cabin_id)
+            ->get();
     }
 
     function findByCode($code) {

@@ -37,7 +37,9 @@ import {
   Table,
   TableContainer,
   TableBody,
-  Stack, // Import Tab
+  Stack,
+  List,
+  ListItem, // Import Tab
 } from "@mui/material";
 import { CheckCircle, Block, HourglassEmpty, Close, ArrowBack, Rule, Visibility } from "@mui/icons-material";
 
@@ -46,6 +48,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import MuiTable from "@/Components/tables/MuiTable";
 import { Cabin } from "@/interfaces/Cabin";
+import { Booking } from "@/types/booking";
 import { CabinCategory } from "@/interfaces/CabinCategory";
 import { Errors } from "@inertiajs/core";
 import { Event } from "@/interfaces/Event";
@@ -57,6 +60,7 @@ type Props = PageProps & {
   cabin: Cabin;
   event: Event;
   categories: CabinCategory[];
+  relatedBookings: Booking[];
   tab: string;
   errors: Errors;
   shared: boolean;
@@ -79,7 +83,7 @@ type Props = PageProps & {
   }[];
 };
 
-const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, logs }: Props) => {
+const Edit = ({ auth, cabin, relatedBookings, event, categories, errors, shared, availableTags, logs }: Props) => {
   const [tags, setTags] = useState<any[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(cabin.tags || []);
   const [cabinStatus, setCabinStatus] = useState<string>(cabin.status);
@@ -926,7 +930,6 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                 <Typography variant="h5" sx={{ mb: 3 }}>
                   Cabins / {cabin.cabin_spec.cabin_number}
                 </Typography>
-
                 {/* Tabs for Form and List */}
                 <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
                   <Alert severity="info" sx={{ mb: 2 }}>
@@ -938,7 +941,28 @@ const Edit = ({ auth, cabin, event, categories, errors, shared, availableTags, l
                     <Tab label="LOGS" />
                   </Tabs>
                 </Box>
-
+                <Box>
+                  {/* if cabin is booked add id of booking with Link */}
+                  {(cabin.status === CabinStatus.BOOKED || cabin.status === CabinStatus.PARTIALLY_BOOKED) &&
+                    relatedBookings.length > 0 && (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        This cabin is currently booked.
+                        <List>
+                          {relatedBookings.map((booking) => (
+                            <ListItem key={booking.id} disablePadding>
+                              Booking ID:
+                              <Link
+                                href={route("bookings.show", { id: event.id, booking_code: booking.booking_code })}
+                                style={{ color: "#fff", marginLeft: 8 }}
+                              >
+                                {booking.booking_code}
+                              </Link>
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Alert>
+                    )}
+                </Box>
                 {/* Tab Content */}
                 {currentTab === 0 && <Box sx={{ p: 0 }}>{FormTabContent}</Box>}
                 {currentTab === 1 && <Box sx={{ p: 0 }}>{ListTabContent}</Box>}
