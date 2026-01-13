@@ -23,15 +23,12 @@ import { selectBooking } from "@/store/slices/selectors";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { useValidateGenders } from "@/Hooks/booking/useValidateGenders";
 import { BookingUser } from "@/interfaces/User";
+import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 
 export const BookingStepperStepOne = () => {
+  const { showSnackbar } = useSnackbar();
+
   const {
-    setStep,
-    nextStep,
-    prevStep,
-    setCabinTypes,
-    setCabinCategories,
-    resetBooking,
     setLoading,
     setPassenger,
     setPassengerField,
@@ -39,16 +36,10 @@ export const BookingStepperStepOne = () => {
   } = useBookingActions();
 
   const {
-    step: activeStep,
     cabinCategory,
     cabinType,
     paymentPlan,
-    cabinNumber,
-    bedConfig,
-    installments: numberOfInstallments,
     isSingleRoom,
-    carbonOffset,
-    youChooseYourCabin,
     passenger,
     loading,
     createdCustomer,
@@ -102,7 +93,7 @@ export const BookingStepperStepOne = () => {
   useEffect(() => {
     if (createdCustomer) {
       fillPassengerFromUser(createdCustomer);
-      //showSnackbar("New customer created and selected.", "success");
+      showSnackbar("New customer created and selected.", "success");
     }
   }, [createdCustomer]);
 
@@ -130,7 +121,7 @@ export const BookingStepperStepOne = () => {
   const handlePrefill = () => {
     if (!selectedUser) return;
     if (selectedUser.has_booking) {
-      //showSnackbar("User already has a booking for the same event!", "error");
+      showSnackbar("User already has a booking for the same event!", "error");
       return;
     }
     fillPassengerFromUser(selectedUser);

@@ -120,7 +120,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     validateGenders,
   ]);
 
-  const [createLoader, setCreateLoader] = useState(false);
+  const loading = useAppSelector((s) => s.booking.loading);
 
   const handleClose = () => {
     resetBooking();
@@ -140,7 +140,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   };
 
   const handleSubmit = async () => {
-    setCreateLoader(true);
     const result = await dispatch(submitBooking());
 
     if (submitBooking.fulfilled.match(result)) {
@@ -153,7 +152,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     if (submitBooking.rejected.match(result)) {
       showSnackbar(result.payload as string, "error");
     }
-    setCreateLoader(false);
   };
 
   return (
@@ -200,7 +198,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
               onClick={handleSubmit}
               variant="outlined"
               color="success"
-              loading={createLoader}
+              loading={loading}
               loadingPosition="start"
             >
               Create Booking
@@ -212,7 +210,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
           )}
         </Box>
       </Box>
-      <LoadingOverlay open={createLoader} />
+      <LoadingOverlay open={loading} />
     </Box>
   );
 };

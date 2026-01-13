@@ -20,7 +20,7 @@ export const submitBooking = createAsyncThunk<
       passenger,
     } = booking;
 
-    if (!cabinCategory || !cabinNumber || !passenger.first_name || !passenger.email) {
+    if (!cabinCategory || !cabinNumber || !passenger.first_name || !passenger.email || !booking.eventId) {
       return rejectWithValue("Please fill all required fields!");
     }
 
@@ -51,10 +51,11 @@ export const submitBooking = createAsyncThunk<
         route("bookings.createManual", { id: booking.eventId }),
         payload
       );
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ||
-        "Failed to create booking. Please try again.";
+    } catch (err: unknown) {
+      let message = "Failed to create booking. Please try again.";
+      if (axios.isAxiosError(err)) {
+        message = err.response?.data?.message || message;
+      }
 
       return rejectWithValue(message);
     }

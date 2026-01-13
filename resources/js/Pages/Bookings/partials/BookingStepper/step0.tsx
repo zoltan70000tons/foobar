@@ -147,8 +147,7 @@ export const BookingStepperStepZero = () => {
               onChange={() => {
                 const next = !advancedFilters;
                 setAdvancedFilters(next);
-                if (next) {
-                } else {
+                if (!next) {
                   setSelectedDeck(null);
                   setAvailableCabins([]);
                   setSelectedLocation(null);

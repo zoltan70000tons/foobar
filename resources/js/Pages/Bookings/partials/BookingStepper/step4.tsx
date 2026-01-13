@@ -24,7 +24,13 @@ export type PriceCalc = {
   totalPassenger: number;
 };
 
-const TabPanel = ({ children, value, index }) => {
+interface TabPanelProps {
+  children: React.ReactNode;
+  value: number;
+  index: number;
+}
+
+const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
   return (
     <div role="tabpanel" hidden={value !== index}>
       {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
@@ -44,13 +50,17 @@ export const BookingStepperStepFour = () => {
     paymentPlan,
     cabinNumber,
     installments: numberOfInstallments,
-    carbonOffset,
-    youChooseYourCabin,
     passenger,
     loading,
     tabValue,
-    priceCalc
+    priceCalc,
+    addons,
   } = useAppSelector(selectBooking);
+
+  const {
+    carbonOffset,
+    youChooseYourCabin,
+  } = addons;
 
   const priceCalcPayload = React.useMemo(() => {
     if (!cabinType || !cabinCategory || !paymentPlan) return null;
@@ -156,7 +166,7 @@ export const BookingStepperStepFour = () => {
                     </TableCell>
                     <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
                   </TableRow>
-                  {priceCalc?.totalPassenger && (
+                  {priceCalc?.totalPassenger != null && (
                     <TableRow>
                       <TableCell>
                         <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
@@ -164,7 +174,7 @@ export const BookingStepperStepFour = () => {
                       <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
                     </TableRow>
                   )}
-                  {priceCalc?.total && (
+                  {priceCalc?.total != null && (
                     <TableRow>
                       <TableCell>
                         <strong>Total with Tax After Discounts and Add-Ons:</strong>
@@ -242,7 +252,7 @@ export const BookingStepperStepFour = () => {
                 <TableCell>
                   <strong>Payment Plan:</strong>
                 </TableCell>
-                <TableCell>{paymentPlan.value}</TableCell>
+                <TableCell>{paymentPlan?.value}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
