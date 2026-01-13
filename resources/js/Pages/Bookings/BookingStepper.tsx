@@ -37,7 +37,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   eventId,
 }) => {
   const {
-    setStep,
     nextStep,
     prevStep,
     setCabinTypes,
@@ -56,7 +55,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     setCabinCategories(cabinCategories);
     setCreatedCustomer(createdCustomer);
     setEventId(eventId);
-  }, [cabinTypes, cabinCategories]);
+  }, [cabinTypes, cabinCategories, createdCustomer, eventId, setCabinTypes, setCabinCategories, setCreatedCustomer, setEventId]);
 
   const {
     step: activeStep,
@@ -67,18 +66,16 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     bedConfig,
     installments: numberOfInstallments,
     isSingleRoom,
-    carbonOffset,
-    youChooseYourCabin,
     passenger,
   } = useAppSelector(selectBooking);
 
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { selectedUser } = useAppSelector(selectBooking);
   const validateGenders = useValidateGenders({ cabinType, selectedUser });
 
   const validateStep = () => {
     switch (activeStep) {
       case 0:
-        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && cabinNumber && bedConfig;
+        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && bedConfig;
         if (paymentPlan?.value === "INSTALLMENTS") {
           rule = rule && numberOfInstallments;
         }
@@ -119,6 +116,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     paymentPlan,
     numberOfInstallments,
     bedConfig,
+    isSingleRoom,
+    validateGenders,
   ]);
 
   const [createLoader, setCreateLoader] = useState(false);
@@ -141,11 +140,12 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   };
 
   const handleSubmit = async () => {
+    setCreateLoader(true);
     const result = await dispatch(submitBooking());
 
     if (submitBooking.fulfilled.match(result)) {
       showSnackbar("Booking created successfully!", "success");
-      dispatch(resetBooking());
+      resetBooking();
       onBookingCreated?.();
       handleClose();
     }
@@ -153,6 +153,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     if (submitBooking.rejected.match(result)) {
       showSnackbar(result.payload as string, "error");
     }
+    setCreateLoader(false);
   };
 
   return (

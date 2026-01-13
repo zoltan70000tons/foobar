@@ -16,12 +16,9 @@ import {
   TextField,
   ToggleButton
 } from "@mui/material";
-import axios from "axios";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
-//import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-//const { showSnackbar } = useSnackbar();
 
 const paymentPlanOptions = [
   {
@@ -39,7 +36,6 @@ export const BookingStepperStepZero = () => {
   const {
     setCabinType,
     setCabinCategory,
-    setCabinNumber,
     setAvailableDecks,
     setAvailableCabins,
     setPaymentPlan,
@@ -66,7 +62,6 @@ export const BookingStepperStepZero = () => {
   const numberOfInstallments = useAppSelector((s) => s.booking.installments);
 
   const [filteredCategories, setFilteredCategories] = useState([]);
-  const [fetching, setIsFetching] = useState<boolean>(false);
   const cabinTypeRef = useRef(null);
 
   useEffect(() => {
@@ -87,46 +82,6 @@ export const BookingStepperStepZero = () => {
       accessible: onlyAccessible,
     }));
   }, [cabinType, cabinCategory, selectedDeck, selectedLocation, onlyAccessible, advancedFilters]);
-
-  /*const fetchAvailableCabins = async () => {
-    if (!cabinType || !cabinCategory) {
-      return;
-    }
-    try {
-      setIsFetching(true);
-      const response = await axios.get(route("cabins.available"), {
-        params: {
-          type_id: cabinType?.id,
-          category_id: cabinCategory?.id,
-          deck: selectedDeck,
-          location: selectedLocation,
-          accessible: onlyAccessible,
-        },
-      });
-
-      setIsFetching(false);
-      if (response?.data?.error) {
-        //showSnackbar(response.data.error, "error");
-      }
-      if (response?.data?.cabins.length === 0) {
-        //showSnackbar("No available cabins match your selection.", "error");
-      }
-      const decks = Array.isArray(response?.data?.cabins)
-        ? [...new Set(response.data.cabins.map((cabin) => cabin.deck))].map(Number).sort((a, b) => a - b)
-        : [];
-
-      setCabinNumber(null);
-      setAvailableCabins(response?.data?.cabins || []);
-      setAvailableDecks(decks);
-    } catch (error) {
-      //showSnackbar(error.response.data.error, "error");
-      console.error("Error fetching available cabins:", error);
-      setAvailableCabins([]);
-      setIsFetching(false);
-
-      setCabinCategory(null);
-    }
-  };*/
 
   useEffect(() => {
     if (!cabinType) return;
@@ -177,7 +132,7 @@ export const BookingStepperStepZero = () => {
               }}
               renderInput={(params) => <TextField {...params} label="Cabin Category" disabled={!cabinType} />}
               sx={{ mb: 2 }}
-              loading={fetching}
+              loading={loading}
               loadingText="Loading categories..."
               disabled={!cabinType}
             />

@@ -101,15 +101,15 @@ export const BookingStepperStepFour = () => {
       </Typography>
       <Tabs
         value={tabValue}
-        onChange={(e) => setTabValue(e.target.getAttribute('tabindex'))}
+        onChange={(_, newValue) => setTabValue(newValue)}
         indicatorColor="primary"
         textColor="primary"
         sx={{ mb: 2 }}
         aria-label="Booking Details Tabs"
       >
-        <Tab label="Cabin Details" tabindex={0} />
-        <Tab label="Lead Passenger" tabindex={1} />
-        <Tab label="Payment Info" tabindex={2} />
+        <Tab label="Cabin Details" />
+        <Tab label="Lead Passenger" />
+        <Tab label="Payment Info" />
       </Tabs>
 
       {/* Tab Panel for Cabin Details */}
@@ -122,58 +122,62 @@ export const BookingStepperStepFour = () => {
       )}
       {!loading && (
         <TabPanel value={tabValue} index={0}>
-          <TableContainer component={Paper} elevation={3}>
-            <Table size="small">
-              <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <strong>Type:</strong>
-                  </TableCell>
-                  <TableCell>{cabinType.cabin_type}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <strong>Category:</strong>
-                  </TableCell>
-                  <TableCell>{cabinCategory.title}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <strong>Cabin Number:</strong>
-                  </TableCell>
-                  <TableCell>{cabinNumber}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <strong>Capacity:</strong>
-                  </TableCell>
-                  <TableCell>{cabinCategory.spec.capacity}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <strong>Price Per Person Before Calculations:</strong>
-                  </TableCell>
-                  <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
-                </TableRow>
-                {priceCalc?.totalPassenger && (
+          {cabinType && cabinCategory ? (
+            <TableContainer component={Paper} elevation={3}>
+              <Table size="small">
+                <TableBody>
                   <TableRow>
                     <TableCell>
-                      <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
+                      <strong>Type:</strong>
                     </TableCell>
-                    <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
+                    <TableCell>{cabinType.cabin_type}</TableCell>
                   </TableRow>
-                )}
-                {priceCalc?.total && (
                   <TableRow>
                     <TableCell>
-                      <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                      <strong>Category:</strong>
                     </TableCell>
-                    <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                    <TableCell>{cabinCategory.title}</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Cabin Number:</strong>
+                    </TableCell>
+                    <TableCell>{cabinNumber}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Capacity:</strong>
+                    </TableCell>
+                    <TableCell>{cabinCategory.spec.capacity}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Price Per Person Before Calculations:</strong>
+                    </TableCell>
+                    <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
+                  </TableRow>
+                  {priceCalc?.totalPassenger && (
+                    <TableRow>
+                      <TableCell>
+                        <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
+                      </TableCell>
+                      <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
+                    </TableRow>
+                  )}
+                  {priceCalc?.total && (
+                    <TableRow>
+                      <TableCell>
+                        <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                      </TableCell>
+                      <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography color="error">Unable to load cabin details</Typography>
+          )}
         </TabPanel>
       )}
 

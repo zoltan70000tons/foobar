@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 import { RootState } from "@/store";
 
 export const submitBooking = createAsyncThunk<
@@ -19,7 +20,7 @@ export const submitBooking = createAsyncThunk<
       passenger,
     } = booking;
 
-    if (!cabinNumber || !passenger.first_name || !passenger.email) {
+    if (!cabinCategory || !cabinNumber || !passenger.first_name || !passenger.email) {
       return rejectWithValue("Please fill all required fields!");
     }
 
