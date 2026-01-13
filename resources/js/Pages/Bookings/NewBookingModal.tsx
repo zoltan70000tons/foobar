@@ -115,6 +115,7 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
               setIsCreateCustomerVisible={setIsCreateCustomerVisible}
               onBookingCreated={onBookingCreated}
               createdCustomer={createdCustomer}
+              eventId={eventId}
             />
             <Box
               sx={{

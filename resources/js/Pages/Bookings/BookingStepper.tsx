@@ -24,6 +24,7 @@ type BookingStepperProps = {
   setIsCreateCustomerVisible: (visible: boolean) => void;
   onBookingCreated: () => void;
   createdCustomer: Customer | null;
+  eventId: number;
 };
 
 const BookingStepper: React.FC<BookingStepperProps> = ({
@@ -33,6 +34,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   setIsCreateCustomerVisible,
   onBookingCreated,
   createdCustomer,
+  eventId,
 }) => {
   const {
     setStep,
@@ -43,6 +45,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     resetBooking,
     setPassengerField,
     setCreatedCustomer,
+    setEventId,
   } = useBookingActions();
   const dispatch = useAppDispatch();
 
@@ -52,6 +55,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     setCabinTypes(cabinTypes);
     setCabinCategories(cabinCategories);
     setCreatedCustomer(createdCustomer);
+    setEventId(eventId);
   }, [cabinTypes, cabinCategories]);
 
   const {

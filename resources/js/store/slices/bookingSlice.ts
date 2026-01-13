@@ -24,6 +24,7 @@ type BookingState = {
   availableDecks: Nullable<number[]>;
   onlyAccessible: boolean;
   advancedFilters: boolean;
+  eventId: number | null;
 
   paymentPlan: Nullable<string>;
   installments: any | null;
@@ -95,6 +96,7 @@ const initialState: BookingState = {
   availableDecks: null,
   onlyAccessible: false,
   advancedFilters: false,
+  eventId: null,
 
   paymentPlan: null,
   installments: null,
@@ -242,6 +244,10 @@ const bookingSlice = createSlice({
     setPriceCalc(state, action: PayloadAction<Nullable<PriceCalc>>) {
       state.priceCalc = action.payload;
     },
+
+    setEventId(state, action: PayloadAction<number>) {
+      state.eventId = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -320,6 +326,7 @@ export const {
   setSelectedUser,
   setTabValue,
   setPriceCalc,
+  setEventId,
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;

@@ -47,7 +47,7 @@ export const submitBooking = createAsyncThunk<
 
     try {
       await axios.post(
-        route("bookings.createManual", { id: 1 }),
+        route("bookings.createManual", { id: booking.eventId }),
         payload
       );
     } catch (err: any) {

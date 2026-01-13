@@ -27,6 +27,7 @@ import {
   setSelectedUser,
   setTabValue,
   setPriceCalc,
+  setEventId,
 } from "@/store/slices/bookingSlice";
 import { CabinType } from "@/types/cabin";
 import { Passenger } from "@/interfaces/Passenger";
@@ -63,6 +64,7 @@ export function useBookingActions() {
     resetBooking: () => dispatch(resetBooking()),
     setLoading: (payload: boolean) => dispatch(setLoading(payload)),
     setCreatedCustomer: (payload: any) => dispatch(setCreatedCustomer(payload)),
+    setEventId: (payload: any) => dispatch(setEventId(payload)),
     setSelectedUser: (payload: any) => dispatch(setSelectedUser(payload)),
     setTabValue: (payload: number) => dispatch(setTabValue(payload)),
     setPriceCalc: (payload: Nullable<PriceCalc>) => dispatch(setPriceCalc(payload)),
