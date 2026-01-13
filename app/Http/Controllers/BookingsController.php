@@ -373,13 +373,10 @@ class BookingsController extends Controller {
                 ]);
         } catch (Exception $e) {
             $this->logException($e);
-            dd($e->getMessage());
-            return redirect()
-                ->back()
-                ->with('flash', [
-                    'message' => 'Error creating booking.',
-                    'success' => false,
-                ]);
+
+            return response()->json([
+                'message' => "Error creating booking:\n{$e->getMessage()}",
+            ], 500);
         }
     }
 

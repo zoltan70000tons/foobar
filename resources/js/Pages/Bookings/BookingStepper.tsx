@@ -1,19 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Box,
-  Button,
-  Stepper,
-  Step,
-  StepLabel,
-  Grid,
-} from "@mui/material";
+import { Box, Button, Grid, Step, StepLabel, Stepper, } from "@mui/material";
 
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { router } from "@inertiajs/react";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
-import { CabinType as CabinTypeType} from "@/types/cabin";
+import { CabinType as CabinTypeType } from "@/types/cabin";
 import { Customer } from "@/interfaces/Customer";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
@@ -89,18 +81,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
 
         return !!rule;
       case 1:
-        console.log(passenger.first_name ,
-          passenger.last_name ,
-          passenger.address_first ,
-          passenger.city ,
-          passenger.country ,
-          passenger.email ,
-          passenger.dob ,
-          passenger.gender ,
-          passenger.payment_method ,
-          passenger.terms_n_cons ,
-          (isSingleRoom ? passenger.single_t_agreement : true));
-        const foo = (
+        return (
           !!(
             passenger.first_name &&
             passenger.last_name &&
@@ -115,7 +96,6 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
             (isSingleRoom ? passenger.single_t_agreement : true)
           ) && validateGenders(true)
         );
-        return foo;
       case 2:
         return true;
       case 3:

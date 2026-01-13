@@ -51,14 +51,11 @@ export const submitBooking = createAsyncThunk<
         payload
       );
     } catch (err: any) {
-      const errors = err?.response?.data?.errors;
       const message =
-        errors &&
-        Object.values(errors).flat().find(Boolean);
+        err?.response?.data?.message ||
+        "Failed to create booking. Please try again.";
 
-      return rejectWithValue(
-        message || "Failed to create booking. Please try again."
-      );
+      return rejectWithValue(message);
     }
   }
 );
