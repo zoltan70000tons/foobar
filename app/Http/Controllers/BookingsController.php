@@ -373,6 +373,7 @@ class BookingsController extends Controller {
                 ]);
         } catch (Exception $e) {
             $this->logException($e);
+            dd($e->getMessage());
             return redirect()
                 ->back()
                 ->with('flash', [

@@ -15,7 +15,7 @@ import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
 import { CabinType as CabinTypeType} from "@/types/cabin";
 import { Customer } from "@/interfaces/Customer";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { BookingStepperStepOne } from "@/Pages/Bookings/partials/BookingStepper/step1";
 import { BookingStepperStepZero } from "@/Pages/Bookings/partials/BookingStepper/step0";
@@ -23,6 +23,7 @@ import { BookingStepperStepThree } from "@/Pages/Bookings/partials/BookingSteppe
 import { BookingStepperStepFour } from "@/Pages/Bookings/partials/BookingStepper/step4";
 import { selectBooking } from "@/store/slices/selectors";
 import { useValidateGenders } from "@/Hooks/booking/useValidateGenders";
+import { submitBooking } from "@/store/thunks/submitBooking";
 
 type BookingStepperProps = {
   cabinTypes: CabinTypeType[];
@@ -51,6 +52,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     setPassengerField,
     setCreatedCustomer,
   } = useBookingActions();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!cabinCategories?.length) return;
@@ -154,86 +156,19 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
     setPassengerField(field, value);
   };
 
-  const handleSubmit = () => {
-    const { capacity, cabin_category_spec_id, id: cabinCategoryId } = cabinCategory;
+  const handleSubmit = async () => {
+    const result = await dispatch(submitBooking());
 
-    const payload = {
-      cabin_number: cabinNumber,
-      cabin_capacity: capacity,
-      cabin_category_id: cabinCategoryId,
-      cabin_category_spec_id: cabin_category_spec_id,
-      payment_plan: paymentPlan.value,
-      number_of_installments: numberOfInstallments?.value,
-      bed_configuration: bedConfig?.value,
-      carbon_offset: carbonOffset,
-      you_choose_your_cabin: youChooseYourCabin,
-      passenger: {
-        id: passenger.id,
-        first_name: passenger.first_name,
-        middle_name: passenger.middle_name,
-        last_name: passenger.last_name,
-        dob: passenger.dob,
-        gender: passenger.gender,
-        citizenship: passenger.citizenship,
-        survivor_number: passenger.survivor_number,
-        email: passenger.email,
-        phone: passenger.phone,
-        address_first: passenger.address_first,
-        address_second: passenger.address_second,
-        city: passenger.city,
-        state: passenger.state,
-        postal_code: passenger.postal_code,
-        country: passenger.country,
-        emergency_c_name: passenger.emergency_c_name,
-        emergency_c_phone: passenger.emergency_c_phone,
-        payment_method: passenger.payment_method,
-        special_request: passenger.special_request,
-        special_options: passenger.special_options,
-        dietary_preferences: passenger.dietary_preferences,
-        lead_passenger: passenger.lead_passenger,
-        travel_info: passenger.travel_info,
-        terms_n_cons: true,
-        single_t_agreement: passenger.single_t_agreement,
-        newsletter: passenger.newsletter,
-        passenger_allocated_cost: passenger.passenger_allocated_cost,
-        passenger_balance: passenger.passenger_balance,
-      },
-    };
-
-    if (!payload.cabin_number || !payload.passenger.first_name || !payload.passenger.email) {
-      showSnackbar("Please fill all required fields!", "error");
-      return;
+    if (submitBooking.fulfilled.match(result)) {
+      showSnackbar("Booking created successfully!", "success");
+      dispatch(resetBooking());
+      onBookingCreated?.();
+      handleClose();
     }
 
-    setCreateLoader(true);
-
-    router.post(route("bookings.createManual", { id: 1 }), payload, {
-      onSuccess: () => {
-        showSnackbar("Booking created successfully!", "success");
-        setStep(0);
-        if (onBookingCreated) onBookingCreated();
-        handleClose();
-      },
-      onError: (errors) => {
-        console.error("Error creating booking:", errors);
-
-        // Extract meaningful error messages
-        const errorMessages = Object.values(errors)
-          .flat()
-          .filter((msg) => msg?.trim()); // Remove empty values
-        const errorMessage = errorMessages.length ? errorMessages[0] : "";
-
-        // Conditionally add line breaks only if there's a meaningful error
-        const message = errorMessage
-          ? `Failed to create booking. Please try again.\n\n${errorMessage}`
-          : "Failed to create booking. Please try again.";
-
-        showSnackbar(message, "error");
-      },
-      onFinish: () => {
-        setCreateLoader(false);
-      },
-    });
+    if (submitBooking.rejected.match(result)) {
+      showSnackbar(result.payload as string, "error");
+    }
   };
 
   return (

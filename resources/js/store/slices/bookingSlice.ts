@@ -6,6 +6,7 @@ import { Nullable } from "@/interfaces/utils";
 import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
 import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
+import { submitBooking } from "@/store/thunks/submitBooking";
 
 type NullableObj<T> = {
   [K in keyof T]: T[K] | null;
@@ -273,6 +274,17 @@ const bookingSlice = createSlice({
       state.priceCalc = action.payload.priceCalc ?? null;
     })
     .addCase(fetchBookingFinalPrice.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? "Unknown error";
+    })
+    .addCase(submitBooking.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(submitBooking.fulfilled, (state) => {
+      state.loading = false;
+    })
+    .addCase(submitBooking.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? "Unknown error";
     });
