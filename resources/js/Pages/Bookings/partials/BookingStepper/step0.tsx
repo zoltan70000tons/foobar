@@ -108,7 +108,7 @@ export const BookingStepperStepZero = () => {
           <FormControl fullWidth sx={{ mt: 2 }}>
             <Autocomplete
               fullWidth
-              options={cabinTypes}
+              options={cabinTypes ?? []}
               getOptionLabel={(option) => option.cabin_type}
               value={cabinType}
               onChange={(event, newValue) => setCabinType(newValue)}

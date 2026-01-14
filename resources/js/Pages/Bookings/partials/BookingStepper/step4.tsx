@@ -156,6 +156,14 @@ export const BookingStepperStepFour = () => {
                     <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
                   </TableRow>
                 )}
+                {priceCalc?.total != null && (
+                  <TableRow>
+                    <TableCell>
+                      <strong>Total with Tax After Discounts and Add-Ons:</strong>
+                    </TableCell>
+                    <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
