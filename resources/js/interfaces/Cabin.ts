@@ -19,7 +19,7 @@ export interface Cabin {
   internal_notes: string;
 }
 
-interface CabinSpec {
+export interface CabinSpec {
   lower_bed_type_1: string;
   lower_bed_type_2: string;
   upper_berths: string;

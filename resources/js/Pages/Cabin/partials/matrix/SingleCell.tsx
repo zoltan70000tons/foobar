@@ -36,7 +36,7 @@ export default function SingleCell({ isMobile = false, singlePrice }: Props) {
     );
   }
 
-  if (inventory.AVAILABLE + inventory.PARTIALLY_BOOKED <= 0 && inventory.RESERVED <= 0) {
+  if (inventory.AVAILABLE + inventory.PARTIALLY_BOOKED === 0 && inventory.RESERVED === 0 && inventory.IP === 0) {
     return (
       <Box sx={baseStyles}>
         <Typography

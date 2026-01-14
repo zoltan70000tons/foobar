@@ -8,6 +8,7 @@ use App\Models\Cabin;
 use App\Models\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Enums\BookingStatus;
 
 /**
  * ----------------------------------------------
@@ -96,20 +97,27 @@ class CabinInventoryIntegrityService {
 
         $issues = [];
         $eventIssues = 0;
+        $cabinsChecked = 0;
 
-        foreach ($cabins as $cabin) {
-            $eventIssues += $this->checkCabin($issues, $event, $cabin, $bookingsByCabin->get($cabin->id, collect()));
+        $cabinsGrouped = $cabins->groupBy(fn($cabin) => $cabin->cabin_spec_id . ':' . $cabin->event_id);
+
+        foreach ($cabinsGrouped as $group) {
+            $cabin = $group->first();
+            $groupBookings = $group->flatMap(fn($item) => $bookingsByCabin->get($item->id, collect()))->values();
+
+            $eventIssues += $this->checkCabin($issues, $event, $cabin, $groupBookings);
+            $cabinsChecked++;
         }
 
         return [
-            'cabins_checked' => $cabins->count(),
+            'cabins_checked' => $cabinsChecked,
             'issues_count' => $eventIssues,
             'issues' => $issues,
             'meta' => [
                 'event_id' => $event->id,
                 'event_name' => $event->name,
                 'event_status' => $event->status,
-                'cabins_checked' => $cabins->count(),
+                'cabins_checked' => $cabinsChecked,
                 'issues_count' => $eventIssues,
             ],
         ];
@@ -120,12 +128,12 @@ class CabinInventoryIntegrityService {
     protected function checkCabin(array &$issues, Event $event, Cabin $cabin, $bookings): int {
         $capacity = $cabin->category->spec->capacity;
 
-        [$bookingCount, $passengerCount, $bookingIds] = $this->buildBookingContext($bookings);
+        [$bookingCount, $passengerCount, $bookingIds, $bookingStatuses] = $this->buildBookingContext($bookings);
 
         $status = $this->normalizeStatus($cabin->status);
         $inventory = (int) ($cabin->inventory ?? 0);
 
-        $this->generalInventoryChecks(
+        $generalIssues = $this->generalInventoryChecks(
             $issues,
             $event,
             $cabin,
@@ -135,34 +143,39 @@ class CabinInventoryIntegrityService {
             $bookingCount,
             $passengerCount,
             $bookingIds,
+            $bookingStatuses,
         );
 
         if ($this->isSingleCabin($cabin)) {
-            return $this->validateSingleCabin(
-                $issues,
-                $event,
-                $cabin,
-                $status,
-                $capacity,
-                $inventory,
-                $bookingCount,
-                $passengerCount,
-                $bookingIds,
-            );
+            return $generalIssues +
+                $this->validateSingleCabin(
+                    $issues,
+                    $event,
+                    $cabin,
+                    $status,
+                    $capacity,
+                    $inventory,
+                    $bookingCount,
+                    $bookingStatuses,
+                    $passengerCount,
+                    $bookingIds,
+                );
         }
 
         if ($this->isPrivateCabin($cabin)) {
-            return $this->validatePrivateCabin(
-                $issues,
-                $event,
-                $cabin,
-                $status,
-                $capacity,
-                $inventory,
-                $bookingCount,
-                $passengerCount,
-                $bookingIds,
-            );
+            return $generalIssues +
+                $this->validatePrivateCabin(
+                    $issues,
+                    $event,
+                    $cabin,
+                    $status,
+                    $capacity,
+                    $inventory,
+                    $bookingCount,
+                    $bookingStatuses,
+                    $passengerCount,
+                    $bookingIds,
+                );
         }
 
         $this->addIssue(
@@ -175,10 +188,11 @@ class CabinInventoryIntegrityService {
                 'booking_count' => $bookingCount,
                 'passenger_count' => $passengerCount,
                 'booking_ids' => $bookingIds,
+                'booking_statuses' => $bookingStatuses,
             ],
         );
 
-        return 1;
+        return $generalIssues + 1;
     }
 
     // Validate private cabin rules
@@ -190,6 +204,7 @@ class CabinInventoryIntegrityService {
         int $capacity,
         int $inventory,
         int $bookingCount,
+        array $bookingStatuses,
         int $passengerCount,
         array $bookingIds,
     ): int {
@@ -202,7 +217,7 @@ class CabinInventoryIntegrityService {
                 $cabin,
                 'private.status.partially_booked',
                 'Private cabin status must never be PARTIALLY_BOOKED.',
-                compact('bookingCount', 'passengerCount', 'bookingIds'),
+                compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
             );
             $added++;
         }
@@ -215,7 +230,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'private.available.bookings',
                     'Private cabin is AVAILABLE/RESERVED but has active bookings.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -227,21 +242,21 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'private.available.inventory',
                     'Private cabin is AVAILABLE/RESERVED but inventory is not 1.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
         }
 
         if ($status === 'BOOKED') {
-            if ($bookingCount !== 1) {
+            if (empty(array_intersect($bookingStatuses, [BookingStatus::CANCELLED->value])) && $bookingCount !== 1) {
                 $this->addIssue(
                     $issues,
                     $event,
                     $cabin,
                     'private.booked.booking_count',
                     'Private cabin is BOOKED but booking count is: ' . $bookingCount . ' instead of 1.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -253,7 +268,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'private.booked.inventory',
                     'Private cabin is BOOKED but inventory is not 0.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -265,7 +280,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'private.booked.passengers',
                     'Private cabin is BOOKED but passenger count does not match capacity.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -283,6 +298,7 @@ class CabinInventoryIntegrityService {
         int $capacity,
         int $inventory,
         int $bookingCount,
+        array $bookingStatuses,
         int $passengerCount,
         array $bookingIds,
     ): int {
@@ -297,7 +313,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.available.bookings',
                     'Single ticket cabin is AVAILABLE/RESERVED but has active bookings.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -309,7 +325,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.available.inventory',
                     'Single ticket cabin is AVAILABLE/RESERVED but inventory does not equal capacity.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -324,7 +340,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.booked.booking_count',
                     'Single ticket cabin is BOOKED but booking count does not match capacity.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -336,7 +352,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.booked.inventory',
                     'Single ticket cabin is BOOKED but inventory is not 0.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -348,7 +364,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.booked.passengers',
                     'Single ticket cabin is BOOKED but passenger count does not match capacity.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -361,7 +377,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'general.single.one.entries',
                     'For single ticket cabins, passenger entries must match current inventory logic (1 pax per ticket sold).',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -379,7 +395,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.partially_booked.status',
                     'Single ticket cabin is PARTIALLY_BOOKED but booking count is invalid.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -397,7 +413,7 @@ class CabinInventoryIntegrityService {
                         ', actual inventory: ' .
                         $inventory .
                         '.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -409,7 +425,7 @@ class CabinInventoryIntegrityService {
                     $cabin,
                     'single.partially_booked.passengers',
                     'Passenger count does not match booking count.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
+                    compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
                 );
                 $added++;
             }
@@ -429,7 +445,10 @@ class CabinInventoryIntegrityService {
         int $bookingCount,
         int $passengerCount,
         array $bookingIds,
-    ): void {
+        array $bookingStatuses,
+    ): int {
+        $added = 0;
+
         // Inventory should not be negative
         if ($inventory < 0) {
             $this->addIssue(
@@ -438,8 +457,9 @@ class CabinInventoryIntegrityService {
                 $cabin,
                 'general.inventory.negative',
                 'Cabin inventory is negative.',
-                compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
+                compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
             );
+            $added++;
         }
 
         // Inventory should not exceed capacity
@@ -450,8 +470,9 @@ class CabinInventoryIntegrityService {
                 $cabin,
                 'general.inventory.greater',
                 'Cabin inventory is greater than cabin category capacity.',
-                compact('inventory', 'capacity', 'bookingCount', 'passengerCount', 'bookingIds'),
+                compact('inventory', 'capacity', 'bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
             );
+            $added++;
         }
 
         // cabins with status CLOSED must not have any bookings linked
@@ -462,9 +483,12 @@ class CabinInventoryIntegrityService {
                 $cabin,
                 'general.cabins.closed',
                 'Cabins with status CLOSED must not have any bookings linked.',
-                compact('bookingCount', 'passengerCount', 'bookingIds'),
+                compact('bookingCount', 'passengerCount', 'bookingIds', 'bookingStatuses'),
             );
+            $added++;
         }
+
+        return $added;
     }
 
     // -------------- HELPERS --------------
@@ -493,7 +517,23 @@ class CabinInventoryIntegrityService {
 
     // Build booking context array
     protected function buildBookingContext($bookings): array {
-        return [$bookings->count(), $bookings->sum('passengers_count'), $bookings->pluck('id')->all()];
+        $bookingStatuses = $bookings
+            ->pluck('status')
+            ->map(function ($status) {
+                $normalized = trim($this->normalizeStatus($status));
+                return $normalized === '' ? null : strtoupper($normalized);
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return [
+            $bookings->count(),
+            $bookings->sum('passengers_count'),
+            $bookings->pluck('id')->all(),
+            $bookingStatuses,
+        ];
     }
 
     // Check if cabin is single ticket

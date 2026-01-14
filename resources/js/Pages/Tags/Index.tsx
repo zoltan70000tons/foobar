@@ -2,13 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router, useForm } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import { Container, Grid, Toolbar, Box, Button, Chip } from "@mui/material";
+import { Container, Grid, Toolbar, Box, Button, Chip, Rating } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import "dayjs/locale/en";
 import { Permissions } from "@/enums/PermissionEnum";
 import MuiTable from "@/Components/tables/MuiTable";
 import { Visibility } from "@mui/icons-material";
-import axios from "axios";
 
 const Index = ({ auth, tags }: PageProps) => {
   const { hasPermission } = usePermissions();
@@ -60,7 +59,7 @@ const Index = ({ auth, tags }: PageProps) => {
         header: "Priority",
         accessor: "priority",
         sortable: true,
-        //width: '17%',
+        draw: (row) => <Rating value={row.priority} max={10} readOnly size="small" />,
       },
       {
         header: "Actions",
@@ -88,36 +87,6 @@ const Index = ({ auth, tags }: PageProps) => {
     get(route("tags.create", {}));
   };
 
-  const fetchCustomerTags = async (
-    page: number,
-    rowsPerPage: number,
-    filters: { [key: string]: string },
-    sort: { key: string; direction: "asc" | "desc" },
-  ): Promise<{ data: any[]; total: number }> => {
-    try {
-      const response = await axios.get("/tags/paginated", {
-        params: {
-          page,
-          per_page: rowsPerPage,
-          sort_by: sort.key,
-          sort_direction: sort.direction,
-          filters: JSON.stringify(filters),
-        },
-        paramsSerializer: (params) => {
-          return new URLSearchParams(params as any).toString();
-        },
-      });
-
-      return {
-        data: response.data?.data ?? [],
-        total: response.data?.total ?? 0,
-      };
-    } catch (error) {
-      console.error("Error fetching tags:", error);
-      return { data: [], total: 0 };
-    }
-  };
-
   return (
     <AuthenticatedLayout user={auth.user} header={"Tags"}>
       <Head title="Tags" />
@@ -132,19 +101,7 @@ const Index = ({ auth, tags }: PageProps) => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Box>
-              <Box>
-                {tags ? (
-                  <MuiTable
-                    columns={columns}
-                    data={tags}
-                    showCheckBox={false}
-                    //serverSidePagination={true}
-                    //fetchData={fetchCustomerTags}
-                  />
-                ) : (
-                  <></>
-                )}
-              </Box>
+              <Box>{tags ? <MuiTable columns={columns} data={tags} showCheckBox={false} /> : <></>}</Box>
             </Box>
           </Grid>
         </Grid>

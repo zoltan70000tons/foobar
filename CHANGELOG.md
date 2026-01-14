@@ -5,15 +5,45 @@ All notable changes to the Backend and SPA Admin will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.10.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/822) - 2026-01-05
+## [1.10.4](https://github.com/70000TONS-IT/booking-engine-admin/pull/822) - 2026-01-05
 
 ### Changed
 
 - Refactored Booking Stepper
 
+## [1.10.3](https://github.com/70000TONS-IT/booking-engine-admin/pull/831) - 2026-01-13
+
+### Added
+
+- Formatted updated_at field for shared cabins
+- Capacity description to shared cabins table
+- Default formatter configuration for Blade files
+
+### Changed
+
+- State and Country Fields order in customer creation form
+- Tag Priority display to MUI Star Rating component in Tag table
+
+### Removed
+
+- Sticky header functionality from PricingTable component
+
+### Fixed
+
+- Fixed inventory check condition in SingleCell component to properly handle IP status
+- Fixed duplicate content in seat-reset-notification email template
+
+## [1.10.2](https://github.com/70000TONS-IT/booking-engine-admin/pull/821) - 2026-01-10
+
+### Added
+
+- Cabin number in bookings as the link
+- Migration to add `event_id` in cabins table
+
 ## [1.10.1](https://github.com/70000TONS-IT/booking-engine-admin/pull/821) - 2026-01-08
 
 ### Added
+
 - Potential survivor matches button tooltips
 - Fix for the constant re-render
 

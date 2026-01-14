@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, Link } from "@inertiajs/react";
 import {
   Box,
   Container,
@@ -15,13 +15,15 @@ import {
   Avatar,
   TextField,
   InputAdornment,
+  Tooltip,
 } from "@mui/material";
+import { blue } from "@mui/material/colors";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import { Person } from "@mui/icons-material";
 import MuiTable from "@/Components/tables/MuiTable";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
-import { Visibility, Clear } from "@mui/icons-material";
+import { Visibility, Clear, MeetingRoom } from "@mui/icons-material";
 import UserSelectorModal from "@/Components/UserSelectorModal";
 import NewBookingModal from "./NewBookingModal";
 import { PageProps } from "@/types";
@@ -237,7 +239,7 @@ const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, t
         header: "Type",
         accessor: "cabinType",
         sortable: true,
-        draw: (row: Booking) => <>{row.cabin?.cabin_type?.cabin_type}</>,
+        draw: (row: Booking) => <>{row.cabin?.cabin_type?.cabin_type} </>,
       },
       {
         header: "Balance",
@@ -318,9 +320,25 @@ const Index = ({ auth, event, users, cabinTypes, cabinCategories = [], errors, t
               }}
             >
               {hasPermission(Permissions.ViewCabins) && (
-                <Button variant="outlined" onClick={() => handleViewClick(row)} color="primary">
-                  <Visibility />
-                </Button>
+                <Tooltip title="View Booking" placement="right">
+                  <Button variant="outlined" onClick={() => handleViewClick(row)} color="primary">
+                    <Visibility />
+                  </Button>
+                </Tooltip>
+              )}
+
+              {row.cabin?.id && (
+                <Tooltip title="View Cabin" placement="right">
+                  <Button
+                    variant="outlined"
+                    component={Link}
+                    href={route("cabins.edit", { id: event.id, cabin_id: row.cabin.id })}
+                    target="_blank"
+                    color="secondary"
+                  >
+                    <MeetingRoom />
+                  </Button>
+                </Tooltip>
               )}
 
               <LockedByAgent bookingId={row.id} currentEditingUser={row.editingUsername} />

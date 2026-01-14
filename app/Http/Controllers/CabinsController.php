@@ -13,6 +13,7 @@ use App\Models\CabinSpec;
 use App\Models\Log as LogModel;
 use App\Models\Tag;
 use App\Repositories\CabinCategoryRepository;
+use App\Repositories\BookingRepository;
 use App\Repositories\CabinRepository;
 use App\Repositories\EventRepository;
 use App\Services\CabinInventoryIntegrityService;
@@ -33,15 +34,18 @@ class CabinsController extends Controller {
     protected CabinInterface $cabinRepository;
     protected EventRepositoryInterface $eventRepository;
     protected CabinCategoryInterface $cabinCategoryRepository;
+    protected BookingRepository $bookingRepository;
 
     public function __construct(
         CabinRepository $cabinRepository,
         EventRepository $eventRepository,
         CabinCategoryRepository $cabinCategoryRepository,
+        BookingRepository $bookingRepository,
     ) {
         $this->cabinRepository = $cabinRepository;
         $this->eventRepository = $eventRepository;
         $this->cabinCategoryRepository = $cabinCategoryRepository;
+        $this->bookingRepository = $bookingRepository;
     }
 
     public function index() {
@@ -181,6 +185,7 @@ class CabinsController extends Controller {
         try {
             $cabin = $this->cabinRepository->find($request->cabin_id);
             $event = $this->eventRepository->find(request()->route('id'));
+            $relatedBookings = $this->bookingRepository->findByCabinId($cabin->id);
             $cabinCategories = $this->cabinCategoryRepository->getAll();
             $availableTags = Tag::type('cabin')->get();
             $logs = LogModel::query()
@@ -202,7 +207,7 @@ class CabinsController extends Controller {
 
             return $this->withPermission(
                 [Permissions::EditCabins, Permissions::ViewCabins],
-                function ($event, $cabin, $cabinCategories, $availableTags, $logs) {
+                function ($event, $cabin, $cabinCategories, $availableTags, $logs, $relatedBookings) {
                     $shared = $this->cabinRepository->getSharedCabins($event->id, $cabin->cabin_spec_id);
                     return Inertia::render('Cabin/Edit', [
                         'cabin' => $cabin,
@@ -210,6 +215,7 @@ class CabinsController extends Controller {
                         'categories' => $cabinCategories,
                         'shared' => $shared,
                         'availableTags' => $availableTags,
+                        'relatedBookings' => $relatedBookings,
                         'logs' => $logs,
                     ]);
                 },
@@ -218,6 +224,7 @@ class CabinsController extends Controller {
                 $cabinCategories,
                 $availableTags,
                 $logs,
+                $relatedBookings,
             );
         } catch (\Exception $e) {
             $this->logException($e);

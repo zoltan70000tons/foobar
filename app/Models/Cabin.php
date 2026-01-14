@@ -19,6 +19,7 @@ class Cabin extends Model {
         'cabin_type_id',
         'cabin_category_id',
         'cabin_spec_id',
+        'event_id',
         'inventory',
         'notes',
         'internal_notes',
@@ -33,6 +34,45 @@ class Cabin extends Model {
 
     // Append custom attributes to the serialized output
     protected $appends = ['cabin_number', 'deck', 'balcony', 'obstructed_view', 'location', 'accessible'];
+
+    // ==========================
+    // Boot Method
+    // ==========================
+
+    /**
+     * Boot the model and register event listeners.
+     *
+     * This method handles two critical operations:
+     * 1. Auto-populates event_id on cabin creation for data integrity
+     * 2. Synchronizes "shared basket" cabins when one is updated
+     *
+     * Shared Basket: When the same physical cabin (cabin_spec_id) is listed
+     * in multiple categories within the same event, updating one automatically
+     * updates all others to maintain inventory consistency.
+     */
+    protected static function boot() {
+        parent::boot();
+
+        // Auto-populate event_id on creation based on category if not explicitly provided
+        static::creating(function ($cabin) {
+            if (!$cabin->event_id && $cabin->category) {
+                $cabin->event_id = $cabin->category->event_id;
+            }
+        });
+
+        // Synchronize shared basket cabins within the same event
+        // Uses composite index (cabin_spec_id, event_id) for optimal performance
+        static::updated(function ($cabin) {
+            static::where('cabin_spec_id', $cabin->cabin_spec_id)
+                ->where('event_id', $cabin->event_id)
+                ->where('id', '!=', $cabin->id)
+                ->update([
+                    'cabin_type_id' => $cabin->cabin_type_id,
+                    'inventory' => $cabin->inventory,
+                    'status' => $cabin->status,
+                ]);
+        });
+    }
 
     // ==========================
     // Relationships
@@ -157,7 +197,6 @@ class Cabin extends Model {
 
         $this->save();
     }
-
     /**
      * Release a cabin from a booking.
      *
@@ -196,18 +235,6 @@ class Cabin extends Model {
         Log::info('Cabin released: ' . json_encode($this) . ' Save result: ' . ($result ? 'success' : 'failure'));
     }
 
-    protected static function boot() {
-        parent::boot();
-        static::updated(function ($cabin) {
-            static::where('cabin_spec_id', $cabin->cabin_spec_id)
-                ->where('id', '!=', $cabin->id)
-                ->update([
-                    'cabin_type_id' => $cabin->cabin_type_id,
-                    'inventory' => $cabin->inventory,
-                    'status' => $cabin->status,
-                ]);
-        });
-    }
 
     public function getTaggingKeyAttribute(): string {
         return (string) $this->getAttribute($this->getKeyName());
