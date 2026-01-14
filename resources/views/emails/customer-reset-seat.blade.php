@@ -20,7 +20,7 @@ This template is used to send information about the reset seat to the customer.
     <p>Hi {{ $passengerEmail }},</p>
     <p>{{ __('systemEmails.seat_reset_notification')}}</p>
     <p>{{ __('systemEmails.seat_reset_questions')}}</p>
-@endsection
+<p>&nbsp;</p>
     <p>{{ __('systemEmails.common.greeting.hello', ['name' => $passengerEmail]) }}</p>
     <p>{{ __('systemEmails.seat.reset.intro') }}</p>
     <p>{{ __('systemEmails.seat.reset.questions') }}</p>

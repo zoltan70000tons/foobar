@@ -663,7 +663,7 @@ const Edit = ({ auth, cabin, relatedBookings, event, categories, errors, shared,
         sortable: true,
         draw: (row: Cabin) => (
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="body2">{row.category.title}</Typography>
+            <Typography variant="body2">{`${row.category.title} - ${row.category.capacity_description}`}</Typography>
           </Box>
         ),
       },
@@ -717,8 +717,8 @@ const Edit = ({ auth, cabin, relatedBookings, event, categories, errors, shared,
         ),
       },
       {
-        header: "Created At",
-        accessor: "formatted_created_at",
+        header: "Last Updated",
+        accessor: "formatted_updated_at",
         sortable: true,
       },
       {
