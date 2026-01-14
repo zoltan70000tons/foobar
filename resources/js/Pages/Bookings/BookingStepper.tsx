@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Box, Button, Grid, Step, StepLabel, Stepper, } from "@mui/material";
 
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
 import LoadingOverlay from "@/Components/LoadingOverlay";
 import { LoadingButton } from "@mui/lab";
 import SpecialRequest from "@/Pages/Bookings/partials/SpecialRequest";
-import { CabinType as CabinTypeType } from "@/types/cabin";
+import { CabinCategory, CabinType as CabinTypeType } from "@/types/cabin";
 import { Customer } from "@/interfaces/Customer";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
@@ -16,10 +16,11 @@ import { BookingStepperStepFour } from "@/Pages/Bookings/partials/BookingStepper
 import { selectBooking } from "@/store/slices/selectors";
 import { useValidateGenders } from "@/Hooks/booking/useValidateGenders";
 import { submitBooking } from "@/store/thunks/submitBooking";
+import { UnknownAction } from "@reduxjs/toolkit";
 
 type BookingStepperProps = {
   cabinTypes: CabinTypeType[];
-  cabinCategories: any[];
+  cabinCategories: CabinCategory[];
   close: () => void;
   setIsCreateCustomerVisible: (visible: boolean) => void;
   onBookingCreated: () => void;
@@ -142,7 +143,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   };
 
   const handleSubmit = async () => {
-    const result = await dispatch(submitBooking());
+    const result = await dispatch(submitBooking() as UnknownAction);
 
     if (submitBooking.fulfilled.match(result)) {
       showSnackbar("Booking created successfully!", "success");

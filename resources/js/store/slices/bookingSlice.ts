@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Passenger } from "@/interfaces/Passenger";
 import { Customer } from "@/interfaces/Customer";
-import { CabinType } from "@/types/cabin";
+import { CabinCategory, CabinType } from "@/types/cabin";
 import { Nullable } from "@/interfaces/utils";
 import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
 import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 import { submitBooking } from "@/store/thunks/submitBooking";
+import { BookingUser, User } from "@/interfaces/User";
+import { Cabin } from "@/interfaces/Cabin";
 
 type NullableObj<T> = {
   [K in keyof T]: T[K] | null;
@@ -17,8 +19,8 @@ type InitPassenger = NullableObj<Passenger>;
 type BookingState = {
   step: number;
 
-  cabinType: Nullable<any>;
-  cabinCategory: Nullable<any>;
+  cabinType: Nullable<CabinType>;
+  cabinCategory: Nullable<CabinCategory>;
   cabinNumber: Nullable<string>;
   isSingleRoom: boolean;
   availableDecks: Nullable<number[]>;
@@ -27,14 +29,14 @@ type BookingState = {
   eventId: number | null;
 
   paymentPlan: Nullable<string>;
-  installments: any | null;
-  bedConfig: any | null;
-  deck: any | null;
-  location: any | null;
+  installments: { id: number; value: number } | null;
+  bedConfig: { id: string; value: string } | null;
+  deck: number | null;
+  location: string | null;
 
   passenger: InitPassenger;
   createdCustomer: Customer | null;
-  selectedUser: any | null;
+  selectedUser: BookingUser | null;
 
   addons: {
     carbonOffset: boolean;
@@ -42,7 +44,7 @@ type BookingState = {
   };
 
   cabinTypes: CabinType[] | null;
-  cabinCategories: any[] | null;
+  cabinCategories: CabinCategory[] | null;
   availableCabins: any[] | null,
 
   loading: boolean;
@@ -147,19 +149,19 @@ export const bookingSlice = createSlice({
       state.paymentPlan = action.payload;
     },
 
-    setBedConfig(state, action: PayloadAction<any>) {
+    setBedConfig(state, action: PayloadAction<{ id: string; value: string } | null>) {
       state.bedConfig = action.payload;
     },
 
-    setSelectedDeck(state, action: PayloadAction<any>) {
+    setSelectedDeck(state, action: PayloadAction<number | null>) {
       state.deck = action.payload;
     },
 
-    setSelectedLocation(state, action: PayloadAction<any>) {
+    setSelectedLocation(state, action: PayloadAction<string | null>) {
       state.location = action.payload;
     },
 
-    setNumberOfInstallments(state, action: PayloadAction<any | null>) {
+    setNumberOfInstallments(state, action: PayloadAction<{ id: number; value: number } | null>) {
       state.installments = action.payload;
     },
 
@@ -175,11 +177,11 @@ export const bookingSlice = createSlice({
       state.cabinType = action.payload;
     },
 
-    setCabinCategories(state, action: PayloadAction<any[] | null>) {
+    setCabinCategories(state, action: PayloadAction<CabinCategory[] | null>) {
       state.cabinCategories = action.payload;
     },
 
-    setCabinCategory(state, action: PayloadAction<any | null>) {
+    setCabinCategory(state, action: PayloadAction<CabinCategory | null>) {
       state.cabinCategory = action.payload;
     },
 
@@ -217,7 +219,7 @@ export const bookingSlice = createSlice({
       state,
       action: PayloadAction<{ field: string; value: any }>
     ) {
-      (state.passenger as any)[action.payload.field] = action.payload.value;
+      (state.passenger as Passenger)[action.payload.field] = action.payload.value;
     },
 
     setCreatedCustomer(state, action) {
@@ -237,7 +239,6 @@ export const bookingSlice = createSlice({
     },
 
     setTabValue(state, action: PayloadAction<number>) {
-      console.log(action, typeof action.payload)
       state.tabValue = action.payload;
     },
 
@@ -298,7 +299,6 @@ export const bookingSlice = createSlice({
 });
 
 export const {
-  resetBooking,
   setLoading,
 } = bookingSlice.actions;
 

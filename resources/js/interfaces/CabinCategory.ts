@@ -14,7 +14,7 @@ export interface CabinCategory {
   images: string;
 }
 
-interface CategorySpec {
+export interface CategorySpec {
   id: number;
   category_type: string;
   category_code: string;

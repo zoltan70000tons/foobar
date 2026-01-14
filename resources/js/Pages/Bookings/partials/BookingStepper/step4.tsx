@@ -2,7 +2,6 @@ import { formatCurrency } from "@/Helpers/stringUtils";
 import React, { useEffect } from "react";
 import {
   Box,
-  CircularProgress,
   Paper,
   Table,
   TableBody, TableCell,
@@ -17,6 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectBooking } from "@/store/slices/selectors";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 import CellValue from "@/Helpers/CellValue";
+import { UnknownAction } from "@reduxjs/toolkit";
 
 export type PriceCalc = {
   extras: number;
@@ -75,7 +75,7 @@ export const BookingStepperStepFour = () => {
   } = addons;
 
   const priceCalcPayload = React.useMemo(() => {
-    if (!cabinType || !cabinCategory || !paymentPlan) return null;
+    if (!cabinType || !cabinCategory || !paymentPlan || !passenger) return null;
 
     return {
       event_id: cabinCategory.event_id,
@@ -113,7 +113,7 @@ export const BookingStepperStepFour = () => {
   useEffect(() => {
     if (!priceCalcPayload) return;
 
-    dispatch(fetchBookingFinalPrice(priceCalcPayload) as any);
+    dispatch(fetchBookingFinalPrice(priceCalcPayload) as UnknownAction);
   }, [dispatch, priceCalcPayload]);
 
   return (
@@ -166,56 +166,60 @@ export const BookingStepperStepFour = () => {
 
       {/* Tab Panel for Lead Passenger */}
       <TabPanel value={tabValue} index={1}>
-        <TableContainer component={Paper} elevation={3}>
-          <Table size="small">
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <strong>Name:</strong>
-                </TableCell>
-                <TableCell>
-                  {passenger.first_name} {passenger.last_name}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Email:</strong>
-                </TableCell>
-                <TableCell>{passenger.email}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Phone:</strong>
-                </TableCell>
-                <TableCell>{passenger.phone}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Gender:</strong>
-                </TableCell>
-                <TableCell>{passenger.gender}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Address 1:</strong>
-                </TableCell>
-                <TableCell>{passenger.address_first}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>City:</strong>
-                </TableCell>
-                <TableCell>{passenger.city}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Country:</strong>
-                </TableCell>
-                <TableCell>{passenger.country}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {passenger ? (
+          <TableContainer component={Paper} elevation={3}>
+            <Table size="small">
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <strong>Name:</strong>
+                  </TableCell>
+                  <TableCell>
+                    {passenger.first_name} {passenger.last_name}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Email:</strong>
+                  </TableCell>
+                  <TableCell>{passenger.email}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Phone:</strong>
+                  </TableCell>
+                  <TableCell>{passenger.phone}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Gender:</strong>
+                  </TableCell>
+                  <TableCell>{passenger.gender}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Address 1:</strong>
+                  </TableCell>
+                  <TableCell>{passenger.address_first}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>City:</strong>
+                  </TableCell>
+                  <TableCell>{passenger.city}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Country:</strong>
+                  </TableCell>
+                  <TableCell>{passenger.country}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography color="error">No passenger selected</Typography>
+        )}
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         <TableContainer component={Paper} elevation={3}>

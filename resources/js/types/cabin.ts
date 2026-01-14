@@ -1,3 +1,6 @@
+import { Cabin } from "@/interfaces/Cabin";
+import { CategorySpec } from "@/interfaces/CabinCategory";
+
 export type InventoryStatus = {
   AVAILABLE: number;
   RESERVED: number;
@@ -120,4 +123,28 @@ export type CabinType = {
   cabin_type_description: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+export type CabinCategory = {
+  cabin_category_spec_id: number;
+  cabins: Cabin[];
+  capacity: number;
+  capacity_description: string;
+  category_code: string;
+  category_name: string;
+  category_number: string;
+  category_type: string;
+  created_at: string;
+  decks: string;
+  description: {de: string; en: string; es: string};
+  display_order: number;
+  event_id: number;
+  high_roller: boolean;
+  id: number;
+  iframe: string;
+  images: string[];
+  price: string;
+  spec: CategorySpec;
+  title: string;
+  updated_at: string;
 }

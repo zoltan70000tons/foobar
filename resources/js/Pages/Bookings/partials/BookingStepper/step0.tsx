@@ -19,6 +19,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
+import { UnknownAction } from "@reduxjs/toolkit";
 
 const paymentPlanOptions = [
   {
@@ -80,11 +81,11 @@ export const BookingStepperStepZero = () => {
       deck: selectedDeck ?? null,
       location: selectedLocation ?? null,
       accessible: onlyAccessible,
-    }));
+    }) as UnknownAction);
   }, [cabinType, cabinCategory, selectedDeck, selectedLocation, onlyAccessible, advancedFilters]);
 
   useEffect(() => {
-    if (!cabinType) return;
+    if (!cabinType || !cabinCategories) return;
     const filteredCategories = cabinCategories.filter((category) =>
       category.cabins.some((cabin) => {
         const matchesType = cabin.cabin_type?.id === cabinType.id;

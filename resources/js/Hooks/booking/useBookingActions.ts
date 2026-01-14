@@ -1,5 +1,4 @@
 import { useAppDispatch } from "@/store/hooks";
-import { resetBooking } from "@/store/slices/bookingSlice";
 import { bookingSlice } from "@/store/slices/bookingSlice";
 import { CabinType } from "@/types/cabin";
 import { Passenger } from "@/interfaces/Passenger";
@@ -34,7 +33,7 @@ export function useBookingActions() {
       dispatch(actions.setPassengerField({ field, value })),
     toggleAddon: (addon: "carbonOffset" | "youChooseYourCabin") =>
       dispatch(actions.toggleAddon(addon)),
-    resetBooking: () => dispatch(resetBooking()),
+    resetBooking: () => dispatch(actions.resetBooking()),
     setLoading: (payload: boolean) => dispatch(actions.setLoading(payload)),
     setCreatedCustomer: (payload: any) => dispatch(actions.setCreatedCustomer(payload)),
     setEventId: (payload: any) => dispatch(actions.setEventId(payload)),
