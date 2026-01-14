@@ -7,10 +7,10 @@ export interface Passenger {
   passenger_order: number;
   booking_id: number;
   full_name: string;
-  email: string;
+  email: string | null;
   passenger_balance: number;
   passenger_allocated_cost: number;
-  installment_status: InstallmentStatus;
+  installment_status?: InstallmentStatus;
   first_name: string,
   middle_name?: Nullable<string>,
   last_name: string,

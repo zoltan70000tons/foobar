@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { Cabin } from "@/interfaces/Cabin";
 
-// Define the payload you need to pass
 interface FetchAvailableCabinsParams {
   type_id: number | null;
   category_id: number | null;
@@ -10,11 +10,10 @@ interface FetchAvailableCabinsParams {
   accessible: boolean;
 }
 
-// Async thunk
 export const fetchAvailableCabins = createAsyncThunk<
-  any[], // Return type (fulfilled payload)
-  FetchAvailableCabinsParams, // Argument type
-  { rejectValue: string } // rejectWithValue type
+  Cabin[],
+  FetchAvailableCabinsParams,
+  { rejectValue: string }
   >(
   "booking/fetchAvailableCabins",
   async (params, { rejectWithValue }) => {

@@ -49,7 +49,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!cabinCategories?.length) return;
+    if (!cabinTypes.length && !cabinCategories?.length) return;
 
     setCabinTypes(cabinTypes);
     setCabinCategories(cabinCategories);
@@ -94,6 +94,8 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
             passenger.gender &&
             passenger.payment_method &&
             passenger.terms_n_cons &&
+            passenger.emergency_c_phone &&
+            passenger.emergency_c_name &&
             (isSingleRoom ? passenger.single_t_agreement : true)
           ) && validateGenders(true)
         );

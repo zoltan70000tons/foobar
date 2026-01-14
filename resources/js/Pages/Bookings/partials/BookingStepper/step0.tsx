@@ -113,6 +113,7 @@ export const BookingStepperStepZero = () => {
               onChange={(event, newValue) => setCabinType(newValue)}
               renderInput={(params) => <TextField {...params} label="Cabin Type" inputRef={cabinTypeRef} />}
               sx={{ mb: 2 }}
+              disabled={!cabinTypes || cabinTypes.length === 0}
             />
           </FormControl>
         </Grid>
@@ -132,9 +133,8 @@ export const BookingStepperStepZero = () => {
               }}
               renderInput={(params) => <TextField {...params} label="Cabin Category" disabled={!cabinType} />}
               sx={{ mb: 2 }}
-              loading={loading}
               loadingText="Loading categories..."
-              disabled={!cabinType}
+              loading={loading || !cabinType || filteredCategories.length === 0}
             />
           </FormControl>
         </Grid>

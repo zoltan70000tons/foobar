@@ -16,6 +16,7 @@ import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectBooking } from "@/store/slices/selectors";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
+import CellValue from "@/Helpers/CellValue";
 
 export type PriceCalc = {
   extras: number;
@@ -56,6 +57,17 @@ export const BookingStepperStepFour = () => {
     priceCalc,
     addons,
   } = useAppSelector(selectBooking);
+
+  const rows = [
+    { label: "Type", value: cabinType?.cabin_type },
+    { label: "Category", value: cabinCategory?.title },
+    { label: "Cabin Number", value: cabinNumber },
+    { label: "Capacity", value: cabinCategory?.spec?.capacity },
+    {
+      label: "Price Per Person Before Calculations",
+      value: formatCurrency(cabinCategory?.price),
+    },
+  ];
 
   const {
     carbonOffset,
@@ -101,7 +113,7 @@ export const BookingStepperStepFour = () => {
   useEffect(() => {
     if (!priceCalcPayload) return;
 
-    dispatch(fetchBookingFinalPrice(priceCalcPayload));
+    dispatch(fetchBookingFinalPrice(priceCalcPayload) as any);
   }, [dispatch, priceCalcPayload]);
 
   return (
@@ -122,74 +134,35 @@ export const BookingStepperStepFour = () => {
         <Tab label="Payment Info" />
       </Tabs>
 
-      {/* Tab Panel for Cabin Details */}
-      {loading && (
-        <CircularProgress
-          color="inherit"
-          size={40}
-          style={{ position: "absolute", inset: "50%", marginLeft: "-20px" }}
-        />
-      )}
-      {!loading && (
-        <TabPanel value={tabValue} index={0}>
-          {cabinType && cabinCategory ? (
-            <TableContainer component={Paper} elevation={3}>
-              <Table size="small">
-                <TableBody>
+      <TabPanel value={tabValue} index={0}>
+        {cabinType && cabinCategory ? (
+          <TableContainer component={Paper} elevation={3}>
+            <Table size="small">
+              <TableBody>
+                {rows.map((row) => (
+                  <TableRow key={row.label}>
+                    <TableCell>
+                      <strong>{row.label}:</strong>
+                    </TableCell>
+                    <CellValue loading={loading}>{row.value}</CellValue>
+                  </TableRow>
+                ))}
+
+                {priceCalc?.totalPassenger != null && (
                   <TableRow>
                     <TableCell>
-                      <strong>Type:</strong>
+                      <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
                     </TableCell>
-                    <TableCell>{cabinType.cabin_type}</TableCell>
+                    <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <strong>Category:</strong>
-                    </TableCell>
-                    <TableCell>{cabinCategory.title}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <strong>Cabin Number:</strong>
-                    </TableCell>
-                    <TableCell>{cabinNumber}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <strong>Capacity:</strong>
-                    </TableCell>
-                    <TableCell>{cabinCategory.spec.capacity}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>
-                      <strong>Price Per Person Before Calculations:</strong>
-                    </TableCell>
-                    <TableCell>{formatCurrency(cabinCategory.price)}</TableCell>
-                  </TableRow>
-                  {priceCalc?.totalPassenger != null && (
-                    <TableRow>
-                      <TableCell>
-                        <strong>Price per Person with Tax after Discount and Add-Ons:</strong>
-                      </TableCell>
-                      <TableCell>{formatCurrency(priceCalc.totalPassenger)}</TableCell>
-                    </TableRow>
-                  )}
-                  {priceCalc?.total != null && (
-                    <TableRow>
-                      <TableCell>
-                        <strong>Total with Tax After Discounts and Add-Ons:</strong>
-                      </TableCell>
-                      <TableCell>{formatCurrency(priceCalc.total)}</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <Typography color="error">Unable to load cabin details</Typography>
-          )}
-        </TabPanel>
-      )}
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography color="error">Unable to load cabin details</Typography>
+        )}
+      </TabPanel>
 
       {/* Tab Panel for Lead Passenger */}
       <TabPanel value={tabValue} index={1}>

@@ -1,34 +1,6 @@
 import { useAppDispatch } from "@/store/hooks";
-import {
-  setStep,
-  nextStep,
-  prevStep,
-  setCabin,
-  setCabinType,
-  setCabinCategory,
-  setPassengerField,
-  toggleAddon,
-  resetBooking,
-  setCabinTypes,
-  setCabinCategories,
-  setCabinNumber,
-  setAvailableDecks,
-  setAvailableCabins,
-  setPaymentPlan,
-  setBedConfig,
-  setPassenger,
-  setOnlyAccessible,
-  setSelectedLocation,
-  setSelectedDeck,
-  setNumberOfInstallments,
-  setAdvancedFilters,
-  setLoading,
-  setCreatedCustomer,
-  setSelectedUser,
-  setTabValue,
-  setPriceCalc,
-  setEventId,
-} from "@/store/slices/bookingSlice";
+import { resetBooking } from "@/store/slices/bookingSlice";
+import { bookingSlice } from "@/store/slices/bookingSlice";
 import { CabinType } from "@/types/cabin";
 import { Passenger } from "@/interfaces/Passenger";
 import { Nullable } from "@/interfaces/utils";
@@ -36,37 +8,38 @@ import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
 
 export function useBookingActions() {
   const dispatch = useAppDispatch();
+  const actions = bookingSlice.actions;
 
   return {
-    setStep: (step: number) => dispatch(setStep(step)),
-    nextStep: () => dispatch(nextStep()),
-    prevStep: () => dispatch(prevStep()),
-    setPaymentPlan: (paymentPlan: string) => dispatch(setPaymentPlan(paymentPlan)),
-    setBedConfig: (bedConfig: any) => dispatch(setBedConfig(bedConfig)),
-    setSelectedLocation: (location: any) => dispatch(setSelectedLocation(location)),
-    setSelectedDeck: (deck: any) => dispatch(setSelectedDeck(deck)),
-    setNumberOfInstallments: (payload: any) => dispatch(setNumberOfInstallments(payload)),
-    setCabin: (payload: any) => dispatch(setCabin(payload)),
-    setCabinTypes: (payload: CabinType[]) => dispatch(setCabinTypes(payload)),
-    setCabinType: (payload: CabinType | null) => dispatch(setCabinType(payload)),
-    setCabinCategories: (payload: any[] | null) => dispatch(setCabinCategories(payload)),
-    setCabinCategory: (payload: any | null) => dispatch(setCabinCategory(payload)),
-    setCabinNumber: (payload: string | null) => dispatch(setCabinNumber(payload)),
-    setOnlyAccessible: (payload: boolean) => dispatch(setOnlyAccessible(payload)),
-    setAdvancedFilters: (payload: boolean) => dispatch(setAdvancedFilters(payload)),
-    setAvailableDecks: (payload: number[] | null) => dispatch(setAvailableDecks(payload)),
-    setAvailableCabins: (payload: any[] | null) => dispatch(setAvailableCabins(payload)),
-    setPassenger: (payload: Nullable<Passenger>) => dispatch(setPassenger(payload)),
+    setStep: (step: number) => dispatch(actions.setStep(step)),
+    nextStep: () => dispatch(actions.nextStep()),
+    prevStep: () => dispatch(actions.prevStep()),
+    setPaymentPlan: (paymentPlan: string) => dispatch(actions.setPaymentPlan(paymentPlan)),
+    setBedConfig: (bedConfig: any) => dispatch(actions.setBedConfig(bedConfig)),
+    setSelectedLocation: (location: any) => dispatch(actions.setSelectedLocation(location)),
+    setSelectedDeck: (deck: any) => dispatch(actions.setSelectedDeck(deck)),
+    setNumberOfInstallments: (payload: any) => dispatch(actions.setNumberOfInstallments(payload)),
+    setCabin: (payload: any) => dispatch(actions.setCabin(payload)),
+    setCabinTypes: (payload: CabinType[]) => dispatch(actions.setCabinTypes(payload)),
+    setCabinType: (payload: CabinType | null) => dispatch(actions.setCabinType(payload)),
+    setCabinCategories: (payload: any[] | null) => dispatch(actions.setCabinCategories(payload)),
+    setCabinCategory: (payload: any | null) => dispatch(actions.setCabinCategory(payload)),
+    setCabinNumber: (payload: string | undefined) => dispatch(actions.setCabinNumber(payload)),
+    setOnlyAccessible: (payload: boolean) => dispatch(actions.setOnlyAccessible(payload)),
+    setAdvancedFilters: (payload: boolean) => dispatch(actions.setAdvancedFilters(payload)),
+    setAvailableDecks: (payload: number[] | undefined) => dispatch(actions.setAvailableDecks(payload)),
+    setAvailableCabins: (payload: any[] | undefined) => dispatch(actions.setAvailableCabins(payload)),
+    setPassenger: (payload: Nullable<Passenger>) => dispatch(actions.setPassenger(payload)),
     setPassengerField: (field: string, value: any) =>
-      dispatch(setPassengerField({ field, value })),
+      dispatch(actions.setPassengerField({ field, value })),
     toggleAddon: (addon: "carbonOffset" | "youChooseYourCabin") =>
-      dispatch(toggleAddon(addon)),
+      dispatch(actions.toggleAddon(addon)),
     resetBooking: () => dispatch(resetBooking()),
-    setLoading: (payload: boolean) => dispatch(setLoading(payload)),
-    setCreatedCustomer: (payload: any) => dispatch(setCreatedCustomer(payload)),
-    setEventId: (payload: any) => dispatch(setEventId(payload)),
-    setSelectedUser: (payload: any) => dispatch(setSelectedUser(payload)),
-    setTabValue: (payload: number) => dispatch(setTabValue(payload)),
-    setPriceCalc: (payload: Nullable<PriceCalc>) => dispatch(setPriceCalc(payload)),
+    setLoading: (payload: boolean) => dispatch(actions.setLoading(payload)),
+    setCreatedCustomer: (payload: any) => dispatch(actions.setCreatedCustomer(payload)),
+    setEventId: (payload: any) => dispatch(actions.setEventId(payload)),
+    setSelectedUser: (payload: any) => dispatch(actions.setSelectedUser(payload)),
+    setTabValue: (payload: number) => dispatch(actions.setTabValue(payload)),
+    setPriceCalc: (payload: Nullable<PriceCalc>) => dispatch(actions.setPriceCalc(payload)),
   };
 }

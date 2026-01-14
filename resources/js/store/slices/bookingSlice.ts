@@ -125,7 +125,7 @@ const initialState: BookingState = {
   priceCalc: null,
 };
 
-const bookingSlice = createSlice({
+export const bookingSlice = createSlice({
   name: "booking",
   initialState,
   reducers: {
@@ -255,7 +255,7 @@ const bookingSlice = createSlice({
       state.loading = true;
       state.error = null;
     })
-    .addCase(fetchAvailableCabins.fulfilled, (state, action: PayloadAction<any[]>) => {
+    .addCase(fetchAvailableCabins.fulfilled, (state, action) => {
       const cabins = action.payload?.cabins;
       const decks = Array.isArray(cabins)
         ? [...new Set(cabins.map((cabin) => cabin.deck))].map(Number).sort((a, b) => a - b)
@@ -299,34 +299,7 @@ const bookingSlice = createSlice({
 
 export const {
   resetBooking,
-  setStep,
-  nextStep,
-  prevStep,
-  setPaymentPlan,
-  setBedConfig,
-  setCabin,
-  setCabinTypes,
-  setCabinType,
-  setCabinCategories,
-  setCabinCategory,
-  setPassenger,
-  setPassengerField,
-  setCabinNumber,
-  setCreatedCustomer,
-  toggleAddon,
-  setAvailableDecks,
-  setAvailableCabins,
-  setOnlyAccessible,
-  setSelectedLocation,
-  setSelectedDeck,
-  setNumberOfInstallments,
-  setAdvancedFilters,
-  resetCabinSelection,
   setLoading,
-  setSelectedUser,
-  setTabValue,
-  setPriceCalc,
-  setEventId,
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;
