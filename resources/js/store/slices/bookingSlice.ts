@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, Draft, PayloadAction } from "@reduxjs/toolkit";
 import { Passenger } from "@/interfaces/Passenger";
 import { Customer } from "@/interfaces/Customer";
 import { CabinCategory, CabinType } from "@/types/cabin";
@@ -7,7 +7,7 @@ import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
 import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 import { submitBooking } from "@/store/thunks/submitBooking";
-import { BookingUser, User } from "@/interfaces/User";
+import { BookingUser } from "@/interfaces/User";
 import { Cabin } from "@/interfaces/Cabin";
 
 type NullableObj<T> = {
@@ -45,7 +45,7 @@ type BookingState = {
 
   cabinTypes: CabinType[] | null;
   cabinCategories: CabinCategory[] | null;
-  availableCabins: any[] | null,
+  availableCabins: Cabin[] | null,
 
   loading: boolean;
   error: any | null;
@@ -127,7 +127,7 @@ const initialState: BookingState = {
   priceCalc: null,
 };
 
-export const bookingSlice = createSlice({
+export const bookingSlice = createSlice<BookingState>({
   name: "booking",
   initialState,
   reducers: {
@@ -257,12 +257,12 @@ export const bookingSlice = createSlice({
       state.error = null;
     })
     .addCase(fetchAvailableCabins.fulfilled, (state, action) => {
-      const cabins = action.payload?.cabins;
+      const cabins = action.payload.cabins;
       const decks = Array.isArray(cabins)
         ? [...new Set(cabins.map((cabin) => cabin.deck))].map(Number).sort((a, b) => a - b)
         : [];
       state.loading = false;
-      state.availableCabins = cabins;
+      state.availableCabins = cabins as unknown as Draft<Cabin>[];
       state.availableDecks = decks;
       state.cabinNumber = null;
     })

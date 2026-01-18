@@ -17,6 +17,7 @@ export interface Cabin {
   is_reserved: boolean;
   cabin_spec: CabinSpec;
   internal_notes: string;
+  deck: number | null;
 }
 
 export interface CabinSpec {

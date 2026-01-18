@@ -202,7 +202,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
               variant="outlined"
               color="success"
               loading={loading}
-              loadingPosition="start"
+              loadingPosition="center"
             >
               Create Booking
             </LoadingButton>

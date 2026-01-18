@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
 
 type FetchBookingFinalPriceParams = {
   event_id: number;
@@ -25,7 +26,7 @@ type FetchBookingFinalPriceParams = {
 }
 
 interface BookingFinalPriceResponse {
-  priceCalc?: any;
+  priceCalc?: PriceCalc;
   error?: string;
 }
 
@@ -45,7 +46,7 @@ export const fetchBookingFinalPrice = createAsyncThunk<
       );
 
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return rejectWithValue(
         error.response?.data?.error || "Couldn't get booking final price"
       );

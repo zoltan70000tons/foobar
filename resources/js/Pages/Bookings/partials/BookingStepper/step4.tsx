@@ -243,7 +243,7 @@ export const BookingStepperStepFour = () => {
                 <TableCell>
                   <strong>Payment Method:</strong>
                 </TableCell>
-                <TableCell>{passenger.payment_method}</TableCell>
+                <TableCell>{passenger?.payment_method}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>

@@ -59,7 +59,6 @@ export default function SpecialRequest({ passenger, onChange, disabledByDesign }
     wheelchair_assistance: false,
   });
 
-  // Sync with passenger.special_options
   useEffect(() => {
     if (passenger?.special_options) {
       setSpecialOptions({
@@ -83,9 +82,6 @@ export default function SpecialRequest({ passenger, onChange, disabledByDesign }
 
   const otherSelected = specialOptions.other;
   const dietarySelected = specialOptions.dietary_restrictions;
-
-  console.log("Other Selected:", otherSelected);
-  console.log("Dietary Restrictions Selected:", dietarySelected);
 
   let dietarySelect = <></>;
   if (dietarySelected) {

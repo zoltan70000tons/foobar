@@ -5,7 +5,7 @@ import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
 import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { CabinCategory } from "@/interfaces/CabinCategory";
+import { CabinCategory } from "@/types/cabin";
 import { Customer } from "@/interfaces/Customer";
 import CustomerModal from "./partials/CustomerModal";
 import { CabinType } from "@/types/cabin";

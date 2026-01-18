@@ -10,8 +10,12 @@ interface FetchAvailableCabinsParams {
   accessible: boolean;
 }
 
+interface FetchAvailableCabinsResponse {
+  cabins: Cabin[];
+}
+
 export const fetchAvailableCabins = createAsyncThunk<
-  Cabin[],
+  FetchAvailableCabinsResponse,
   FetchAvailableCabinsParams,
   { rejectValue: string }
   >(
