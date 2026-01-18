@@ -18,13 +18,6 @@ import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 import CellValue from "@/Helpers/CellValue";
 import { UnknownAction } from "@reduxjs/toolkit";
 
-export type PriceCalc = {
-  extras: number;
-  save: string;
-  total: number;
-  totalPassenger: number;
-};
-
 interface TabPanelProps {
   children: React.ReactNode;
   value: number;

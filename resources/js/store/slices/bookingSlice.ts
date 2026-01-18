@@ -4,11 +4,11 @@ import { Customer } from "@/interfaces/Customer";
 import { CabinCategory, CabinType } from "@/types/cabin";
 import { Nullable } from "@/interfaces/utils";
 import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
-import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 import { submitBooking } from "@/store/thunks/submitBooking";
 import { BookingUser } from "@/interfaces/User";
 import { Cabin } from "@/interfaces/Cabin";
+import { PriceCalc } from "@/types/booking";
 
 type NullableObj<T> = {
   [K in keyof T]: T[K] | null;
@@ -217,9 +217,9 @@ export const bookingSlice = createSlice<BookingState>({
 
     setPassengerField(
       state,
-      action: PayloadAction<{ field: string; value: any }>
+      action: PayloadAction<{ field: keyof InitPassenger; value: InitPassenger[keyof InitPassenger] }>
     ) {
-      (state.passenger as Passenger)[action.payload.field] = action.payload.value;
+      state.passenger[action.payload.field] = action.payload.value;
     },
 
     setCreatedCustomer(state, action) {

@@ -6,7 +6,7 @@ import { CabinType, CabinCategory } from "@/types/cabin";
 import { Passenger } from "@/interfaces/Passenger";
 import { BookingUser } from "@/interfaces/User";
 import { Customer } from "@/interfaces/Customer";
-import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
+import { PriceCalc } from "@/types/booking";
 
 const mockDispatch = jest.fn();
 

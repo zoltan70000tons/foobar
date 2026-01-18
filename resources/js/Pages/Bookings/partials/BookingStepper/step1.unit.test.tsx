@@ -56,6 +56,10 @@ const mockUser = {
 };
 
 describe("BookingStepperStepOne", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("renders lead passenger form", () => {
     renderWithProviders(<BookingStepperStepOne />, {
       preloadedState: { booking: baseBookingState },

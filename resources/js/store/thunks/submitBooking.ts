@@ -20,7 +20,7 @@ export const submitBooking = createAsyncThunk<
       passenger,
     } = booking;
 
-    if (!cabinCategory || !cabinNumber || !passenger.first_name || !passenger.email || !booking.eventId) {
+    if (!cabinCategory || !cabinNumber || !passenger?.first_name || !passenger?.email || !booking.eventId) {
       return rejectWithValue("Please fill all required fields!");
     }
 

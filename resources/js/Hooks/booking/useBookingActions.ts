@@ -3,7 +3,7 @@ import { bookingSlice } from "@/store/slices/bookingSlice";
 import { CabinCategory, CabinType } from "@/types/cabin";
 import { Passenger } from "@/interfaces/Passenger";
 import { Nullable } from "@/interfaces/utils";
-import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
+import { PriceCalc } from "@/types/booking";
 import { BookingUser } from "@/interfaces/User";
 import { Customer } from "@/interfaces/Customer";
 

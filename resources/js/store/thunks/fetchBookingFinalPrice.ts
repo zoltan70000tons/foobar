@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
+import { PriceCalc } from "@/types/booking";
 
 type FetchBookingFinalPriceParams = {
   event_id: number;

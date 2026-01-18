@@ -1,8 +1,9 @@
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, type EnhancedStore } from "@reduxjs/toolkit";
 import bookingReducer from "@/store/slices/bookingSlice";
+import type { RootState } from "@/store";
 
 export function renderWithProviders(
   ui: React.ReactElement,
@@ -15,8 +16,8 @@ export function renderWithProviders(
       preloadedState,
     }),
   }: {
-    preloadedState?: any;
-    store?: any;
+    preloadedState?: Partial<RootState>;
+    store?: EnhancedStore;
   } = {}
 ) {
   return {

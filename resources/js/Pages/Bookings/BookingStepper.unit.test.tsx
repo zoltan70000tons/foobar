@@ -102,6 +102,10 @@ const baseBookingState = {
 };
 
 describe("BookingStepper", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("initializes booking data on mount", () => {
     renderWithProviders(<BookingStepper {...baseProps} />, {
       preloadedState: { booking: baseBookingState },
