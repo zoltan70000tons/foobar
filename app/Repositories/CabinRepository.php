@@ -230,9 +230,9 @@ class CabinRepository implements CabinInterface {
                 'id' => $category->id,
                 'category_type' => $category->category_type,
                 'category_code' =>
-                    $category->spec?->category_code !== null
-                        ? "{$category->spec?->category_code}_{$category->capacity}"
-                        : null,
+                $category->spec?->category_code !== null
+                    ? "{$category->spec?->category_code}_{$category->capacity}"
+                    : null,
                 'category_name' => $category->spec?->category_name,
                 'price' => $category->price,
                 'availability' => "{$category->available_cabins}/{$category->total_cabins}",
@@ -251,9 +251,9 @@ class CabinRepository implements CabinInterface {
                         'cabin_status' => $cabin->status,
                         'is_reserved' => $cabin->temporaryReservations->isNotEmpty(),
                         'ticket_inventory' =>
-                            $cabin->cabinType?->id !== 1
-                                ? "{$cabin->inventory} / {$category->capacity}"
-                                : $cabin->inventory,
+                        $cabin->cabinType?->id !== 1
+                            ? "{$cabin->inventory} / {$category->capacity}"
+                            : $cabin->inventory,
                         'cabin_type' => $cabin->cabinType?->cabin_type,
                         'is_shared_cabin_number' => $cabin->cabinSpec?->is_shared_cabin_number,
                         'cabin_tags' => $cabin->tags,
@@ -297,6 +297,7 @@ class CabinRepository implements CabinInterface {
         $formattedCabins = $cabins->map(function ($cabin) {
             if ($cabin->created_at instanceof Carbon) {
                 $cabin->formatted_created_at = $cabin->created_at->format('Y-m-d H:i:s');
+                $cabin->formatted_updated_at = $cabin->updated_at->format('Y-m-d H:i:s');
             }
             return $cabin;
         });

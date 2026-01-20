@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import Sticky from "react-sticky-el";
 
 import PricingHeaderMobile from "./PricingHeaderMobile";
 import PricingRowsMobile from "./PricingRowsMobile";
@@ -65,22 +63,11 @@ export default function PricingTable({ imgByCat, categoryName, data, eventId, ca
   const { main_category } = data;
   const { max_capacity, name } = main_category;
 
-  const [isSticky, setSticky] = useState(false);
   const isMobile = useMediaQuery(`(max-width:${theme.breakpoints.values.md}px)`);
-
-  const stickyProps = {
-    topOffset: isMobile ? -70 : -40,
-    boundaryElement: ".pricing-table-container",
-    onFixedToggle: (fixed: boolean) => setSticky(fixed),
-    stickyStyle: {
-      zIndex: 2,
-      backgroundColor: "#191919",
-    },
-  };
 
   const renderHeader = () => (
     <>
-      <TableTitle imgByCat={imgByCat} categoryName={categoryName} isSticky={isSticky} isMobile={isMobile} />
+      <TableTitle imgByCat={imgByCat} categoryName={categoryName} isSticky={false} isMobile={isMobile} />
 
       {isMobile ? (
         <PricingHeaderMobile maxCapacity={max_capacity} mainCategoryName={name} />
@@ -92,7 +79,7 @@ export default function PricingTable({ imgByCat, categoryName, data, eventId, ca
 
   return (
     <Box className="pricing-table-container" sx={{ position: "relative", mx: "auto" }}>
-      <Sticky {...stickyProps}>{renderHeader()}</Sticky>
+      {renderHeader()}
 
       {isMobile ? (
         <PricingRowsMobile data={data} eventId={eventId} cabinTypeSlug={cabinTypeSlug} />

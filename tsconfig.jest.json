@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "jsx": "react-jsx",
+    "noEmit": false,
+    "paths": {
+      "@/store/*": [
+        "./resources/js/store/*"
+      ],
+      "@/enums/*": [
+        "./resources/js/enums/*"
+      ],
+      "@/Providers/*": [
+        "./resources/js/Providers/*"
+      ],
+      "@/*": [
+        "./resources/js/*"
+      ],
+      "@/src/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": ["src", "**/*.test.tsx", "**/*.test.ts"]
+}

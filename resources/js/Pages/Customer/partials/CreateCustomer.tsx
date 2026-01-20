@@ -278,7 +278,7 @@ export default function CreateCustomer({ isCloseBtn, handleClose, setCreatedCust
                   <Grid item xs={6}>
                     <Country
                       fullWidth
-                      label="Country"
+                      label="Citizenship"
                       variant="outlined"
                       value={data.citizenship}
                       name={"citizenship"}
@@ -330,17 +330,18 @@ export default function CreateCustomer({ isCloseBtn, handleClose, setCreatedCust
                     />
                   </Grid>
 
-                  <Grid item xs={4}>
-                    <TextField
+                  <Grid item xs={6}>
+                    <Country
                       fullWidth
-                      label="City"
+                      label="Country"
                       variant="outlined"
-                      value={data.city}
-                      name={"city"}
-                      onChange={handleChange}
+                      value={data.country}
+                      name={"country"}
+                      onChange={(e) => handleStringChange(e, "country")}
                     />
                   </Grid>
-                  <Grid item xs={4}>
+
+                  <Grid item xs={6}>
                     <FormControl
                       required={selectedCountry === "USA" || selectedCountry === "CAN"}
                       fullWidth
@@ -364,7 +365,19 @@ export default function CreateCustomer({ isCloseBtn, handleClose, setCreatedCust
                       <FormHelperText>{errors.state}</FormHelperText>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={4}>
+
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="City"
+                      variant="outlined"
+                      value={data.city}
+                      name={"city"}
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={6}>
                     <TextField
                       fullWidth
                       label="Zip Code"
@@ -372,17 +385,6 @@ export default function CreateCustomer({ isCloseBtn, handleClose, setCreatedCust
                       value={data.postal_code}
                       name={"postal_code"}
                       onChange={handleChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Country
-                      fullWidth
-                      label="Country"
-                      variant="outlined"
-                      value={data.country}
-                      name={"country"}
-                      onChange={(e) => handleStringChange(e, "country")}
                     />
                   </Grid>
                 </Grid>
@@ -422,7 +424,6 @@ export default function CreateCustomer({ isCloseBtn, handleClose, setCreatedCust
                   <Grid item xs={6}>
                     <Select
                       fullWidth
-                      label="Preferred Language"
                       variant="outlined"
                       value={data.language}
                       name={"language"}

@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Box } from "@mui/material";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button, Modal, Box } from "@mui/material";
 import { usePermissions } from "@/Providers/PermissionContext";
 import { Permissions } from "@/enums/PermissionEnum";
 import BookingStepper from "./BookingStepper";
 import axios from "axios";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
-import { CabinCategory } from "@/interfaces/CabinCategory";
+import { CabinCategory } from "@/types/cabin";
 import { Customer } from "@/interfaces/Customer";
 import CustomerModal from "./partials/CustomerModal";
+import { CabinType } from "@/types/cabin";
 
 const bookingModalStyle = {
   position: "absolute",
@@ -24,73 +25,78 @@ const bookingModalStyle = {
 };
 
 type NewBookingModalProps = {
-  cabinTypes: Array<{ id: number; name: string }>;
-  eventId: number | string;
+  cabinTypes: CabinType[];
+  eventId: number;
   cabinCategories?: CabinCategory[];
   onBookingCreated: () => void;
 };
+
+type FetchCabinCategoriesResponse = {
+  data: {
+    cabinCategories: CabinCategory[];
+  };
+}
 
 const NewBookingModal: React.FC<NewBookingModalProps> = ({
   cabinTypes,
   cabinCategories: initialCabinCategories = [],
   eventId,
   onBookingCreated,
-}) => {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+}: NewBookingModalProps) => {
   const { hasPermission } = usePermissions();
   const canCreateBooking = hasPermission(Permissions.CreateBookings);
-  const [isCreateCustomerVisible, setIsCreateCustomerVisible] = useState(false);
-  const [cabinCategories, setCabinCategories] = useState<CabinCategory[]>(initialCabinCategories);
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState<boolean>(false);
-  const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
-  const [loadingCategories, setLoadingCategories] = useState(false);
   const { showSnackbar } = useSnackbar();
-  const [createdCustomer, setCreatedCustomer] = useState<Customer | null>(null);
-  const handleCustomerCreated = (customer: Customer) => {
-    console.log(customer);
-    setCreatedCustomer(customer);
-    closeCustomerModal();
-  };
-  const openBookingModal = () => setIsBookingOpen(true);
-  const closeBookingModal = () => setIsBookingOpen(false);
-  const openCustomerModal = () => setIsCustomerModalOpen(true);
-  const closeCustomerModal = () => setIsCustomerModalOpen(false);
 
-  const fetchCabinCategories = async () => {
+  const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState<boolean>(false);
+  const [isCreateCustomerVisible, setIsCreateCustomerVisible] = useState(false);
+  const [cabinCategories, setCabinCategories] = useState<CabinCategory[]>(
+    initialCabinCategories ?? []
+  );
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [createdCustomer, setCreatedCustomer] = useState<Customer | null>(null);
+
+  const handleCustomerCreated = (customer: Customer) => {
+    setCreatedCustomer(customer);
+    setIsCustomerModalOpen(false);
+  };
+
+  const fetchCabinCategories = useCallback(async () => {
     try {
       setLoadingCategories(true);
-      const response = await axios.get(route("bookings.cabinCategories", { id: eventId }));
-      setCabinCategories(response?.data?.cabinCategories || []);
+      const { data: cabinCategoriesData } = await axios.get<{ cabinCategories: CabinCategory[] }>(
+        route("bookings.cabinCategories", { id: eventId })
+      );
+
+      setCabinCategories(cabinCategoriesData?.cabinCategories ?? []);
     } catch (error) {
-      console.error("Error loading cabin categories", error);
+      console.error(error);
       showSnackbar("Unable to load cabin categories. Please try again.", "error");
     } finally {
       setLoadingCategories(false);
     }
-  };
+  }, [eventId, showSnackbar]);
 
   useEffect(() => {
     if (isBookingOpen && cabinCategories.length === 0 && !loadingCategories) {
-      fetchCabinCategories();
+      void fetchCabinCategories();
     }
-  }, [isBookingOpen, eventId]);
+  }, [isBookingOpen, cabinCategories.length, loadingCategories, fetchCabinCategories]);
 
   return (
     <>
       <Button
         variant="outlined"
         color="secondary"
-        onClick={openBookingModal}
+        onClick={() => setIsBookingOpen(true)}
         disabled={!canCreateBooking}
-        style={{ height: "40px" }}
+        sx={{ height: 40 }}
       >
         New Booking
       </Button>
       <Modal
         open={isBookingOpen}
-        onClose={closeBookingModal}
+        onClose={() => setIsBookingOpen(false)}
         aria-labelledby="parent-modal-title"
         aria-describedby="parent-modal-description"
         sx={{
@@ -111,10 +117,11 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
             <BookingStepper
               cabinTypes={cabinTypes}
               cabinCategories={cabinCategories}
-              close={closeBookingModal}
+              close={() => setIsBookingOpen(false)}
               setIsCreateCustomerVisible={setIsCreateCustomerVisible}
               onBookingCreated={onBookingCreated}
               createdCustomer={createdCustomer}
+              eventId={eventId}
             />
             <Box
               sx={{
@@ -126,12 +133,12 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
               {isCreateCustomerVisible && (
                 <CustomerModal
                   open={isCustomerModalOpen}
-                  onOpen={openCustomerModal}
-                  onClose={closeCustomerModal}
+                  onOpen={() => setIsCustomerModalOpen(true)}
+                  onClose={() => setIsCustomerModalOpen(false)}
                   onCustomerCreated={handleCustomerCreated}
                 />
               )}
-              <Button onClick={closeBookingModal} variant="outlined" color="secondary">
+              <Button onClick={() => setIsBookingOpen(false)} variant="outlined" color="secondary">
                 Cancel
               </Button>
             </Box>

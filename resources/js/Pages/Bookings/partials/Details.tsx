@@ -25,7 +25,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import axios from "axios";
-import { router } from "@inertiajs/react";
+import { router, Link } from "@inertiajs/react";
 import { LocationEnum } from "@/enums/LocationEnum";
 import { DeckEnum } from "@/enums/DeckEnum";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
@@ -33,6 +33,7 @@ import PinIcon from "@mui/icons-material/Pin";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ClearIcon from "@mui/icons-material/Clear";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import { blue } from "@mui/material/colors";
 
 import {
   DateRange as DateRangeIcon,
@@ -411,7 +412,17 @@ const Detail = ({ event, booking, editMode, cabinTypes, cabinCategories, maxInst
                   {
                     icon: <PinIcon fontSize="small" />,
                     label: "Cabin Number",
-                    value: booking?.cabin?.cabin_number || "-",
+                    value: (
+                      <Box component={"span"} sx={{ "& a": { color: blue[200] } }}>
+                        {booking.cabin?.cabin_spec?.cabin_number ? (
+                          <Link href={route("cabins.edit", { id: event.id, cabin_id: booking.cabin?.id })}>
+                            {booking.cabin?.cabin_spec?.cabin_number}
+                          </Link>
+                        ) : (
+                          "-"
+                        )}
+                      </Box>
+                    ),
                   },
                   {
                     icon: <VisibilityIcon fontSize="small" />,

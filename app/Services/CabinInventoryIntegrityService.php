@@ -6,6 +6,10 @@ use App\Mail\CabinInventoryIntegrityReport;
 use App\Models\Booking;
 use App\Models\Cabin;
 use App\Models\Event;
+use App\Services\CabinInventoryIntegrity\CabinRuleRegistry;
+use App\Services\CabinInventoryIntegrity\Context\CabinIntegrityContext;
+use App\Services\CabinInventoryIntegrity\Context\GroupIntegrityContext;
+use App\Services\CabinInventoryIntegrity\Rules\RuleResult;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -14,40 +18,22 @@ use Illuminate\Support\Facades\Mail;
  * Cabin Inventory Integrity Service
  * ----------------------------------------------
  *
- * RULES:
- * 1. cabin.type.unknown - Cabin type is not recognized for integrity checks. ( type probably is always defined, this is more for throw error)
- *
- * 2. private.status.partially_booked - Private cabin status must never be PARTIALLY_BOOKED. ( this is not sinlge ticket)
- * 3. private.available.bookings - Private cabin is AVAILABLE/RESERVED but has active bookings.
- * 4. private.available.inventory - Private cabin is AVAILABLE/RESERVED but inventory is not 1.
- * 5. private.booked.booking_count - Private cabin is BOOKED but booking count is not 1.
- * 6. private.booked.inventory - Private cabin is BOOKED but inventory is not 0.
- * 7. private.booked.passengers - Private cabin is BOOKED but passenger count does not match capacity.
- *
- * 8. single.available.bookings - Single ticket cabin is AVAILABLE/RESERVED but has active bookings.
- * 9. single.available.inventory - Single ticket cabin is AVAILABLE/RESERVED but inventory does not equal capacity.
- * 10. single.booked.booking_count - Single ticket cabin is BOOKED but booking count does not match capacity.
- * 11. single.booked.inventory - Single ticket cabin is BOOKED but inventory is not 0.
- * 12. single.booked.passengers - Single ticket cabin is BOOKED but passenger count does not match capacity.
- * 13. single.partially_booked.status - Single ticket cabin is PARTIALLY_BOOKED but booking count is invalid.
- * 14. single.partially_booked.inventory - Single ticket cabin inventory does not match capacity
- *   minus bookings.
- * 15. single.partially_booked.passengers - Passenger count does not match booking count.
- *
- * 16. general.inventory.negative - Cabin inventory is negative.
- * 17. general.inventory.greater - Cabin inventory is greater than cabin category capacity.
- * 18. general.single.one.entries - For single ticket, passenger entries must match current invoentory logic. 1 pax per ticket sold.
- * 19. general.cabins.closed - Cabins with status CLOSED must not have any bookings linked.
- *
+ * This service checks the integrity of cabin inventory data for events.
+ * It applies a set of predefined rules to identify inconsistencies
  * ----------------------------------------------
  *
  */
-
 class CabinInventoryIntegrityService {
     private const ACTIVE_EVENT_STATUSES = ['PUBLIC', 'PRE-SALE'];
     // private const IS_CANCELLED_STATUSES = ['CANCELLED'];
 
-    // Run integrity checks for cabins
+    private CabinRuleRegistry $rules;
+
+    public function __construct(CabinRuleRegistry $rules) {
+        $this->rules = $rules;
+    }
+
+    // Run integrity checks for all active events or a specific event
     public function run(?int $eventId = null): array {
         $events = $this->getActiveEvents($eventId);
         $report = $this->initReport();
@@ -70,7 +56,7 @@ class CabinInventoryIntegrityService {
         return $report;
     }
 
-    // Send the report via email
+    // Send integrity report via email
     public function sendReport(array $report): bool {
         $recipients = $this->getRecipients();
 
@@ -88,383 +74,147 @@ class CabinInventoryIntegrityService {
         }
     }
 
-    // Event-level logic
-    // For each event we get cabins and bookings and check each cabin
+    // Check integrity for a single event
     protected function checkEvent(Event $event): array {
         $cabins = $this->getEventCabins($event);
         $bookingsByCabin = $this->getBookingsGroupedByCabin($cabins);
 
         $issues = [];
         $eventIssues = 0;
+        $cabinsChecked = 0;
 
-        foreach ($cabins as $cabin) {
-            $eventIssues += $this->checkCabin($issues, $event, $cabin, $bookingsByCabin->get($cabin->id, collect()));
+        $cabinsGrouped = $cabins->groupBy(fn($cabin) => $cabin->cabin_spec_id . ':' . $cabin->event_id);
+
+        foreach ($cabinsGrouped as $group) {
+            $cabin = $group->first();
+            $groupBookings = $group->flatMap(fn($item) => $bookingsByCabin->get($item->id, collect()))->values();
+
+            $eventIssues += $this->applyGroupRules($issues, $event, $group, $bookingsByCabin);
+            $eventIssues += $this->applyCabinRules($issues, $event, $cabin, $groupBookings);
+            $cabinsChecked++;
         }
 
         return [
-            'cabins_checked' => $cabins->count(),
+            'cabins_checked' => $cabinsChecked,
             'issues_count' => $eventIssues,
             'issues' => $issues,
             'meta' => [
                 'event_id' => $event->id,
                 'event_name' => $event->name,
                 'event_status' => $event->status,
-                'cabins_checked' => $cabins->count(),
+                'cabins_checked' => $cabinsChecked,
                 'issues_count' => $eventIssues,
             ],
         ];
     }
 
-    // Cabin-level logic
-    // It mean that for each cabin we check all the rules and return number of issues found
-    protected function checkCabin(array &$issues, Event $event, Cabin $cabin, $bookings): int {
-        $capacity = $cabin->category->spec->capacity;
-
-        [$bookingCount, $passengerCount, $bookingIds] = $this->buildBookingContext($bookings);
-
-        $status = $this->normalizeStatus($cabin->status);
-        $inventory = (int) ($cabin->inventory ?? 0);
-
-        $this->generalInventoryChecks(
-            $issues,
-            $event,
-            $cabin,
-            $status,
-            $capacity,
-            $inventory,
-            $bookingCount,
-            $passengerCount,
-            $bookingIds,
-        );
-
-        if ($this->isSingleCabin($cabin)) {
-            return $this->validateSingleCabin(
-                $issues,
-                $event,
-                $cabin,
-                $status,
-                $capacity,
-                $inventory,
-                $bookingCount,
-                $passengerCount,
-                $bookingIds,
-            );
-        }
-
-        if ($this->isPrivateCabin($cabin)) {
-            return $this->validatePrivateCabin(
-                $issues,
-                $event,
-                $cabin,
-                $status,
-                $capacity,
-                $inventory,
-                $bookingCount,
-                $passengerCount,
-                $bookingIds,
-            );
-        }
-
-        $this->addIssue(
-            $issues,
-            $event,
-            $cabin,
-            'cabin.type.unknown',
-            'Cabin type is not recognized for integrity checks.',
-            [
-                'booking_count' => $bookingCount,
-                'passenger_count' => $passengerCount,
-                'booking_ids' => $bookingIds,
-            ],
-        );
-
-        return 1;
-    }
-
-    // Validate private cabin rules
-    protected function validatePrivateCabin(
-        array &$issues,
-        Event $event,
-        Cabin $cabin,
-        string $status,
-        int $capacity,
-        int $inventory,
-        int $bookingCount,
-        int $passengerCount,
-        array $bookingIds,
-    ): int {
+    // Apply cabin-level integrity checks
+    protected function applyCabinRules(array &$issues, Event $event, Cabin $cabin, $bookings): int {
+        $context = $this->buildCabinContext($event, $cabin, $bookings);
         $added = 0;
 
-        if ($status === 'PARTIALLY_BOOKED') {
-            $this->addIssue(
-                $issues,
-                $event,
-                $cabin,
-                'private.status.partially_booked',
-                'Private cabin status must never be PARTIALLY_BOOKED.',
-                compact('bookingCount', 'passengerCount', 'bookingIds'),
-            );
+        // General rules
+        foreach ($this->rules->general() as $rule) {
+            $added += $this->applyRuleResults($issues, $event, $cabin, $rule->check($context));
+        }
+
+        if ($context->isSingleCabin) {
+            foreach ($this->rules->single() as $rule) {
+                $added += $this->applyRuleResults($issues, $event, $cabin, $rule->check($context));
+            }
+
+            return $added;
+        }
+
+        if ($context->isPrivateCabin) {
+            foreach ($this->rules->private() as $rule) {
+                $added += $this->applyRuleResults($issues, $event, $cabin, $rule->check($context));
+            }
+
+            return $added;
+        }
+
+        return $added +
+            $this->applyRuleResults($issues, $event, $cabin, $this->rules->unknownCabinType()->check($context));
+    }
+
+    // Apply group-level integrity checks
+    protected function applyGroupRules(array &$issues, Event $event, $group, $bookingsByCabin): int {
+        $context = $this->buildGroupContext($event, $group, $bookingsByCabin);
+        $added = 0;
+
+        foreach ($this->rules->group() as $rule) {
+            $added += $this->applyRuleResults($issues, $event, $context->referenceCabin, $rule->check($context));
+        }
+
+        return $added;
+    }
+
+    // Apply rule results to issues list
+    protected function applyRuleResults(array &$issues, Event $event, Cabin $cabin, array $results): int {
+        $added = 0;
+
+        foreach ($results as $result) {
+            $this->addIssue($issues, $event, $cabin, $result->rule, $result->message, $result->context);
             $added++;
         }
 
-        if (in_array($status, ['AVAILABLE', 'RESERVED'], true)) {
-            if ($bookingCount !== 0) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'private.available.bookings',
-                    'Private cabin is AVAILABLE/RESERVED but has active bookings.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($inventory !== 1) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'private.available.inventory',
-                    'Private cabin is AVAILABLE/RESERVED but inventory is not 1.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-        }
-
-        if ($status === 'BOOKED') {
-            if ($bookingCount !== 1) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'private.booked.booking_count',
-                    'Private cabin is BOOKED but booking count is: ' . $bookingCount . ' instead of 1.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($inventory !== 0) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'private.booked.inventory',
-                    'Private cabin is BOOKED but inventory is not 0.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($passengerCount !== $capacity) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'private.booked.passengers',
-                    'Private cabin is BOOKED but passenger count does not match capacity.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-        }
-
         return $added;
     }
 
-    // Validate single ticket cabin rules
-    protected function validateSingleCabin(
-        array &$issues,
-        Event $event,
-        Cabin $cabin,
-        string $status,
-        int $capacity,
-        int $inventory,
-        int $bookingCount,
-        int $passengerCount,
-        array $bookingIds,
-    ): int {
-        $added = 0;
+    // Build cabin context for rules
+    protected function buildCabinContext(Event $event, Cabin $cabin, $bookings): CabinIntegrityContext {
+        $capacity = $cabin->category->spec->capacity;
+        [$bookingCount, $passengerCount, $bookingIds, $bookingStatuses] = $this->buildBookingContext($bookings);
 
-        // Check AVAILABLE/RESERVED status
-        if (in_array($status, ['AVAILABLE', 'RESERVED'], true)) {
-            if ($bookingCount !== 0) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.available.bookings',
-                    'Single ticket cabin is AVAILABLE/RESERVED but has active bookings.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($inventory !== $capacity) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.available.inventory',
-                    'Single ticket cabin is AVAILABLE/RESERVED but inventory does not equal capacity.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-        }
-
-        // Check BOOKED status
-        if ($status === 'BOOKED') {
-            if ($bookingCount !== $capacity) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.booked.booking_count',
-                    'Single ticket cabin is BOOKED but booking count does not match capacity.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($inventory !== 0) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.booked.inventory',
-                    'Single ticket cabin is BOOKED but inventory is not 0.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($passengerCount !== $capacity) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.booked.passengers',
-                    'Single ticket cabin is BOOKED but passenger count does not match capacity.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            // passenger entries must match current inventory logic. 1 pax per ticket sold.
-            if ($passengerCount + $inventory !== $capacity) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'general.single.one.entries',
-                    'For single ticket cabins, passenger entries must match current inventory logic (1 pax per ticket sold).',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-        }
-
-        if ($status === 'PARTIALLY_BOOKED') {
-            // Inventory must equal (capacity - number of bookings).
-            $expectedInventory = $capacity - $bookingCount;
-
-            // Booking count must be greater than 0 and less than capacity.
-            if ($bookingCount === 0 || $bookingCount === $capacity) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.partially_booked.status',
-                    'Single ticket cabin is PARTIALLY_BOOKED but booking count is invalid.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($inventory !== $expectedInventory) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.partially_booked.inventory',
-                    'Single ticket cabin inventory does not match capacity minus bookings. Number of bookings: ' .
-                        $bookingCount .
-                        ', expected inventory: ' .
-                        $expectedInventory .
-                        ', actual inventory: ' .
-                        $inventory .
-                        '.',
-                    compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-
-            if ($passengerCount !== $bookingCount) {
-                $this->addIssue(
-                    $issues,
-                    $event,
-                    $cabin,
-                    'single.partially_booked.passengers',
-                    'Passenger count does not match booking count.',
-                    compact('bookingCount', 'passengerCount', 'bookingIds'),
-                );
-                $added++;
-            }
-        }
-
-        return $added;
+        return new CabinIntegrityContext(
+            event: $event,
+            cabin: $cabin,
+            capacity: $capacity,
+            status: $this->normalizeStatus($cabin->status),
+            inventory: (int) ($cabin->inventory ?? 0),
+            bookingCount: $bookingCount,
+            passengerCount: $passengerCount,
+            bookingIds: $bookingIds,
+            bookingStatuses: $bookingStatuses,
+            isSingleCabin: $this->isSingleCabin($cabin),
+            isPrivateCabin: $this->isPrivateCabin($cabin),
+        );
     }
 
-    // General inventory checks applicable to all cabin types
-    protected function generalInventoryChecks(
-        array &$issues,
-        Event $event,
-        Cabin $cabin,
-        string $status,
-        int $capacity,
-        int $inventory,
-        int $bookingCount,
-        int $passengerCount,
-        array $bookingIds,
-    ): void {
-        // Inventory should not be negative
-        if ($inventory < 0) {
-            $this->addIssue(
-                $issues,
-                $event,
-                $cabin,
-                'general.inventory.negative',
-                'Cabin inventory is negative.',
-                compact('inventory', 'bookingCount', 'passengerCount', 'bookingIds'),
-            );
-        }
+    // Build group context for rules
+    protected function buildGroupContext(Event $event, $group, $bookingsByCabin): GroupIntegrityContext {
+        $cabins = $group->values();
+        $referenceCabin = $cabins->first();
 
-        // Inventory should not exceed capacity
-        if ($inventory > $capacity) {
-            $this->addIssue(
-                $issues,
-                $event,
-                $cabin,
-                'general.inventory.greater',
-                'Cabin inventory is greater than cabin category capacity.',
-                compact('inventory', 'capacity', 'bookingCount', 'passengerCount', 'bookingIds'),
-            );
-        }
+        $statusByCabin = $cabins
+            ->mapWithKeys(function ($cabin) {
+                return [$cabin->id => $this->normalizeStatus($cabin->status)];
+            })
+            ->all();
 
-        // cabins with status CLOSED must not have any bookings linked
-        if ($status === 'CLOSED' && $bookingCount > 0) {
-            $this->addIssue(
-                $issues,
-                $event,
-                $cabin,
-                'general.cabins.closed',
-                'Cabins with status CLOSED must not have any bookings linked.',
-                compact('bookingCount', 'passengerCount', 'bookingIds'),
-            );
-        }
+        $inventoryByCabin = $cabins
+            ->mapWithKeys(function ($cabin) {
+                return [$cabin->id => (int) ($cabin->inventory ?? 0)];
+            })
+            ->all();
+
+        $bookingCountsByCabin = $cabins
+            ->mapWithKeys(function ($cabin) use ($bookingsByCabin) {
+                return [$cabin->id => $bookingsByCabin->get($cabin->id, collect())->count()];
+            })
+            ->all();
+
+        return new GroupIntegrityContext(
+            event: $event,
+            cabins: $cabins,
+            referenceCabin: $referenceCabin,
+            referenceStatus: $statusByCabin[$referenceCabin->id] ?? '',
+            referenceInventory: $inventoryByCabin[$referenceCabin->id] ?? 0,
+            statusByCabin: $statusByCabin,
+            inventoryByCabin: $inventoryByCabin,
+            bookingCountsByCabin: $bookingCountsByCabin,
+        );
     }
 
     // -------------- HELPERS --------------
@@ -493,7 +243,23 @@ class CabinInventoryIntegrityService {
 
     // Build booking context array
     protected function buildBookingContext($bookings): array {
-        return [$bookings->count(), $bookings->sum('passengers_count'), $bookings->pluck('id')->all()];
+        $bookingStatuses = $bookings
+            ->pluck('status')
+            ->map(function ($status) {
+                $normalized = trim($this->normalizeStatus($status));
+                return $normalized === '' ? null : strtoupper($normalized);
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return [
+            $bookings->count(),
+            $bookings->sum('passengers_count'),
+            $bookings->pluck('id')->all(),
+            $bookingStatuses,
+        ];
     }
 
     // Check if cabin is single ticket

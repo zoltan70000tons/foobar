@@ -16,3 +16,10 @@ export type Booking = {
   agent: User | null;
   editingUsername: string;
 };
+
+export type PriceCalc = {
+  extras: number;
+  save: string;
+  total: number;
+  totalPassenger: number;
+};
