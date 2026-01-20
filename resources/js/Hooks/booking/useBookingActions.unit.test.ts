@@ -17,12 +17,12 @@ describe("useBookingActions", () => {
     mockDispatch.mockClear();
   });
 
-  it("dispatches step actions", () => {
+  it("dispatches step actions", async () => {
     const { result } = renderHook(() => useBookingActions());
 
-    act(() => result.current.setStep(2));
-    act(() => result.current.nextStep());
-    act(() => result.current.prevStep());
+    await act(() => result.current.setStep(2));
+    await act(() => result.current.nextStep());
+    await act(() => result.current.prevStep());
 
     expect(mockDispatch).toHaveBeenNthCalledWith(
       1,
@@ -38,11 +38,11 @@ describe("useBookingActions", () => {
     );
   });
 
-  it("dispatches payment & installment actions", () => {
+  it("dispatches payment & installment actions", async () => {
     const { result } = renderHook(() => useBookingActions());
 
-    act(() => result.current.setPaymentPlan("monthly"));
-    act(() =>
+    await act(() => result.current.setPaymentPlan("monthly"));
+    await act(() =>
       result.current.setNumberOfInstallments({ id: 1, value: 6 })
     );
 
@@ -54,22 +54,22 @@ describe("useBookingActions", () => {
     );
   });
 
-  it("dispatches cabin-related actions", () => {
+  it("dispatches cabin-related actions", async () => {
     const { result } = renderHook(() => useBookingActions());
 
     const cabinTypes = [] as CabinType[];
     const cabinCategories = [] as CabinCategory[];
 
-    act(() => result.current.setCabin({ id: "c1" }));
-    act(() => result.current.setCabinTypes(cabinTypes));
-    act(() => result.current.setCabinType(null));
-    act(() => result.current.setCabinCategories(cabinCategories));
-    act(() => result.current.setCabinCategory(null));
-    act(() => result.current.setCabinNumber("A101"));
-    act(() => result.current.setOnlyAccessible(true));
-    act(() => result.current.setAdvancedFilters(true));
-    act(() => result.current.setAvailableDecks([1, 2]));
-    act(() => result.current.setAvailableCabins([]));
+    await act(() => result.current.setCabin({ id: "c1" }));
+    await act(() => result.current.setCabinTypes(cabinTypes));
+    await act(() => result.current.setCabinType(null));
+    await act(() => result.current.setCabinCategories(cabinCategories));
+    await act(() => result.current.setCabinCategory(null));
+    await act(() => result.current.setCabinNumber("A101"));
+    await act(() => result.current.setOnlyAccessible(true));
+    await act(() => result.current.setAdvancedFilters(true));
+    await act(() => result.current.setAvailableDecks([1, 2]));
+    await act(() => result.current.setAvailableCabins([]));
 
     expect(mockDispatch).toHaveBeenCalledWith(
       bookingSlice.actions.setCabin({ id: "c1" })
@@ -103,13 +103,13 @@ describe("useBookingActions", () => {
     );
   });
 
-  it("dispatches passenger actions", () => {
+  it("dispatches passenger actions", async () => {
     const { result } = renderHook(() => useBookingActions());
 
     const passenger = { firstName: "John" } as Passenger;
 
-    act(() => result.current.setPassenger(passenger));
-    act(() =>
+    await act(() => result.current.setPassenger(passenger));
+    await act(() =>
       result.current.setPassengerField("lastName", "Doe")
     );
 
@@ -124,11 +124,11 @@ describe("useBookingActions", () => {
     );
   });
 
-  it("dispatches addon toggles", () => {
+  it("dispatches addon toggles", async () => {
     const { result } = renderHook(() => useBookingActions());
 
-    act(() => result.current.toggleAddon("carbonOffset"));
-    act(() => result.current.toggleAddon("youChooseYourCabin"));
+    await act(() => result.current.toggleAddon("carbonOffset"));
+    await act(() => result.current.toggleAddon("youChooseYourCabin"));
 
     expect(mockDispatch).toHaveBeenCalledWith(
       bookingSlice.actions.toggleAddon("carbonOffset")
@@ -138,20 +138,20 @@ describe("useBookingActions", () => {
     );
   });
 
-  it("dispatches user, customer & misc actions", () => {
+  it("dispatches user, customer & misc actions", async () => {
     const { result } = renderHook(() => useBookingActions());
 
     const user = {} as BookingUser;
     const customer = {} as Customer;
     const priceCalc = {} as PriceCalc;
 
-    act(() => result.current.setCreatedCustomer(customer));
-    act(() => result.current.setEventId(99));
-    act(() => result.current.setSelectedUser(user));
-    act(() => result.current.setTabValue(1));
-    act(() => result.current.setPriceCalc(priceCalc));
-    act(() => result.current.setLoading(true));
-    act(() => result.current.resetBooking());
+    await act(() => result.current.setCreatedCustomer(customer));
+    await act(() => result.current.setEventId(99));
+    await act(() => result.current.setSelectedUser(user));
+    await act(() => result.current.setTabValue(1));
+    await act(() => result.current.setPriceCalc(priceCalc));
+    await act(() => result.current.setLoading(true));
+    await act(() => result.current.resetBooking());
 
     expect(mockDispatch).toHaveBeenCalledWith(
       bookingSlice.actions.setCreatedCustomer(customer)

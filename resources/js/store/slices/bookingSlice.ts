@@ -7,7 +7,7 @@ import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
 import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 import { submitBooking } from "@/store/thunks/submitBooking";
 import { BookingUser } from "@/interfaces/User";
-import { Cabin } from "@/interfaces/Cabin";
+import { BookingCabin, Cabin } from "@/interfaces/Cabin";
 import { PriceCalc } from "@/types/booking";
 
 type NullableObj<T> = {
@@ -16,7 +16,12 @@ type NullableObj<T> = {
 
 type InitPassenger = NullableObj<Passenger>;
 
-type BookingState = {
+type PassengerFieldUpdate<K extends keyof InitPassenger> = {
+  field: K;
+  value: InitPassenger[K];
+};
+
+export type BookingState = {
   step: number;
 
   cabinType: Nullable<CabinType>;
@@ -28,15 +33,15 @@ type BookingState = {
   advancedFilters: boolean;
   eventId: number | null;
 
-  paymentPlan: Nullable<string>;
+  paymentPlan: Nullable<{ id: string; value: string }>;
   installments: { id: number; value: number } | null;
   bedConfig: { id: string; value: string } | null;
   deck: number | null;
   location: string | null;
 
   passenger: InitPassenger;
-  createdCustomer: Customer | null;
-  selectedUser: BookingUser | null;
+  createdCustomer: Draft<Customer> | null;
+  selectedUser: Draft<BookingUser> | null;
 
   addons: {
     carbonOffset: boolean;
@@ -45,10 +50,10 @@ type BookingState = {
 
   cabinTypes: CabinType[] | null;
   cabinCategories: CabinCategory[] | null;
-  availableCabins: Cabin[] | null,
+  availableCabins: BookingCabin[] | null,
 
   loading: boolean;
-  error: any | null;
+  error: Error | string | null;
   tabValue: number;
 
   priceCalc: Nullable<PriceCalc>;
@@ -197,7 +202,7 @@ export const bookingSlice = createSlice<BookingState>({
       state.availableDecks = action.payload;
     },
 
-    setAvailableCabins(state, action: PayloadAction<any[]>) {
+    setAvailableCabins(state, action: PayloadAction<BookingCabin[]>) {
       state.availableCabins = action.payload;
     },
 
@@ -215,23 +220,28 @@ export const bookingSlice = createSlice<BookingState>({
       state.passenger = action.payload;
     },
 
-    setPassengerField(
-      state,
-      action: PayloadAction<{ field: keyof InitPassenger; value: InitPassenger[keyof InitPassenger] }>
+    setPassengerField<K extends keyof InitPassenger>(
+      state: Draft<BookingState>,
+      action: PayloadAction<PassengerFieldUpdate<K>>
     ) {
-      state.passenger[action.payload.field] = action.payload.value;
+      const { field, value } = action.payload;
+      state.passenger[field] = value;
     },
 
-    setCreatedCustomer(state, action) {
+    setCreatedCustomer(state: Draft<BookingState>, action: PayloadAction<Customer | null>) {
       state.createdCustomer = action.payload;
     },
 
-    setSelectedUser(state, action) {
+    setSelectedUser(state: Draft<BookingState>, action: PayloadAction<BookingUser | null>) {
       state.selectedUser = action.payload;
     },
 
-    toggleAddon(state, action: PayloadAction<"carbonOffset" | "youChooseYourCabin">) {
-      state.addons[action.payload] = !state.addons[action.payload];
+    toggleAddon(
+      state: Draft<BookingState>,
+      action: PayloadAction<"carbonOffset" | "youChooseYourCabin">
+    ) {
+      const key = action.payload;
+      state.addons[key] = !state.addons[key];
     },
 
     setLoading(state, action: PayloadAction<boolean>) {
@@ -262,13 +272,13 @@ export const bookingSlice = createSlice<BookingState>({
         ? [...new Set(cabins.map((cabin) => cabin.deck))].map(Number).sort((a, b) => a - b)
         : [];
       state.loading = false;
-      state.availableCabins = cabins as unknown as Draft<Cabin>[];
+      state.availableCabins = cabins as unknown as Draft<BookingCabin>[];
       state.availableDecks = decks;
       state.cabinNumber = null;
     })
     .addCase(fetchAvailableCabins.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload as string;
+      state.error = action.payload instanceof Error ? action.payload : new Error(String(action.payload));
       state.availableCabins = null;
       state.cabinCategory = null;
     })
@@ -282,7 +292,7 @@ export const bookingSlice = createSlice<BookingState>({
     })
     .addCase(fetchBookingFinalPrice.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload ?? "Unknown error";
+      state.error = action.payload instanceof Error ? action.payload : new Error(String(action.payload));
     })
     .addCase(submitBooking.pending, (state) => {
       state.loading = true;
@@ -293,7 +303,7 @@ export const bookingSlice = createSlice<BookingState>({
     })
     .addCase(submitBooking.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload ?? "Unknown error";
+      state.error = action.payload instanceof Error ? action.payload : new Error(String(action.payload));
     });
   },
 });

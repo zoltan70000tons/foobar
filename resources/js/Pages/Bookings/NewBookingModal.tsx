@@ -31,6 +31,12 @@ type NewBookingModalProps = {
   onBookingCreated: () => void;
 };
 
+type FetchCabinCategoriesResponse = {
+  data: {
+    cabinCategories: CabinCategory[];
+  };
+}
+
 const NewBookingModal: React.FC<NewBookingModalProps> = ({
   cabinTypes,
   cabinCategories: initialCabinCategories = [],
@@ -58,11 +64,11 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
   const fetchCabinCategories = useCallback(async () => {
     try {
       setLoadingCategories(true);
-      const { data } = await axios.get(
+      const { data: cabinCategoriesData } = await axios.get<{ cabinCategories: CabinCategory[] }>(
         route("bookings.cabinCategories", { id: eventId })
       );
 
-      setCabinCategories(data?.cabinCategories ?? []);
+      setCabinCategories(cabinCategoriesData?.cabinCategories ?? []);
     } catch (error) {
       console.error(error);
       showSnackbar("Unable to load cabin categories. Please try again.", "error");
@@ -73,7 +79,7 @@ const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
   useEffect(() => {
     if (isBookingOpen && cabinCategories.length === 0 && !loadingCategories) {
-      fetchCabinCategories();
+      void fetchCabinCategories();
     }
   }, [isBookingOpen, cabinCategories.length, loadingCategories, fetchCabinCategories]);
 

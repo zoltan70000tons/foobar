@@ -7,6 +7,7 @@ import * as actions from "@/Hooks/booking/useBookingActions";
 import * as snackbar from "@/Providers/SnackBarAlertProvider";
 import * as genderHook from "@/Hooks/booking/useValidateGenders";
 import { submitBooking } from "@/store/thunks/submitBooking";
+import { AnyAction } from "@reduxjs/toolkit";
 
 jest.mock("@/Pages/Bookings/partials/BookingStepper/step0", () => ({
   BookingStepperStepZero: () => <div>STEP 0</div>,
@@ -28,9 +29,11 @@ jest.mock("@/Pages/Bookings/partials/SpecialRequest", () => () => (
   <div>SPECIAL REQUEST</div>
 ));
 
-jest.mock("@/Components/LoadingOverlay", () => (props: any) =>
-  props.open ? <div>LOADING</div> : null
-);
+jest.mock("@/Components/LoadingOverlay", () => {
+  type LoadingOverlayProps = { open: boolean };
+
+  return ({ open }: LoadingOverlayProps) => (open ? <div>LOADING</div> : null);
+});
 
 const actionMocks = {
   nextStep: jest.fn(),
@@ -52,28 +55,43 @@ jest.spyOn(snackbar, "useSnackbar").mockReturnValue({ showSnackbar });
 jest.spyOn(genderHook, "useValidateGenders").mockReturnValue(jest.fn(() => true));
 
 jest.mock("@/store/thunks/submitBooking", () => {
-  const fulfilled = {
+  const fulfilled: AnyAction & { match: (action: unknown) => boolean } = {
     type: "booking/submit/fulfilled",
-    match: (action: any) => action.type === "booking/submit/fulfilled",
+    match: (action: unknown) =>
+      typeof action === "object" &&
+      action !== null &&
+      "type" in action &&
+      (action as { type: unknown }).type === "booking/submit/fulfilled",
   };
 
-  const rejected = {
+  const rejected: AnyAction & { match: (action: unknown) => boolean } = {
     type: "booking/submit/rejected",
-    match: (action: any) => action.type === "booking/submit/rejected",
+    match: (action: unknown) =>
+      typeof action === "object" &&
+      action !== null &&
+      "type" in action &&
+      (action as { type: unknown }).type === "booking/submit/rejected",
   };
 
-  const pending = {
+  const pending: AnyAction & { match: (action: unknown) => boolean } = {
     type: "booking/submit/pending",
-    match: (action: any) => action.type === "booking/submit/pending",
+    match: (action: unknown) =>
+      typeof action === "object" &&
+      action !== null &&
+      "type" in action &&
+      (action as { type: unknown }).type === "booking/submit/pending",
   };
 
-  const thunk = jest.fn(() => async () => fulfilled);
+  const submitBooking: jest.Mock & {
+    pending: typeof pending;
+    fulfilled: typeof fulfilled;
+    rejected: typeof rejected;
+  } = Object.assign(
+    jest.fn(() => fulfilled),
+    { pending, fulfilled, rejected }
+  );
 
-  thunk.pending = pending;
-  thunk.fulfilled = fulfilled;
-  thunk.rejected = rejected;
-
-  return { submitBooking: thunk };
+  return { submitBooking };
 });
 
 

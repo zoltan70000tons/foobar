@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { PriceCalc } from "@/types/booking";
+import { ApiErrorResponse } from "@/types/axios";
 
 type FetchBookingFinalPriceParams = {
   event_id: number;
@@ -40,16 +41,20 @@ export const fetchBookingFinalPrice = createAsyncThunk<
     try {
       const { event_id, ...queryParams } = params;
 
-      const response = await axios.get(
+      const response = await axios.get<BookingFinalPriceResponse>(
         route("bookings.getBookingFinalCost", { event: event_id }),
         { params: queryParams }
       );
 
       return response.data;
-    } catch (error: unknown) {
-      return rejectWithValue(
-        error.response?.data?.error || "Couldn't get booking final price"
-      );
+    } catch (err: unknown) {
+      let message = "Couldn't get booking final price.";
+
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        message = err.response?.data?.message ?? message;
+      }
+
+      return rejectWithValue(message);
     }
   }
 );

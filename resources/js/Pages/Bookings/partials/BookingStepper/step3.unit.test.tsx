@@ -5,6 +5,7 @@ import * as hooks from "@/Hooks/booking/useBookingActions";
 import * as redux from "@/store/hooks";
 
 import "@testing-library/jest-dom";
+import { RootState } from "@/store";
 
 const toggleAddonMock = jest.fn();
 
@@ -12,15 +13,16 @@ jest.spyOn(hooks, "useBookingActions").mockReturnValue({
   toggleAddon: toggleAddonMock,
 });
 
-jest.spyOn(redux, "useAppSelector").mockImplementation((selector: any) =>
-  selector({
-    booking: {
-      addons: {
-        carbonOffset: false,
-        youChooseYourCabin: true,
+jest.spyOn(redux, "useAppSelector").mockImplementation(
+  (selector: (state: RootState) => unknown) =>
+    selector({
+      booking: {
+        addons: {
+          carbonOffset: false,
+          youChooseYourCabin: true,
+        },
       },
-    },
-  })
+    } as RootState)
 );
 
 describe("BookingStepperStepThree", () => {
@@ -34,8 +36,8 @@ describe("BookingStepperStepThree", () => {
     expect(screen.getByLabelText("Carbon Offset")).toBeInTheDocument();
     expect(screen.getByLabelText("You Choose Your Cabin")).toBeInTheDocument();
 
-    const carbonCheckbox = screen.getByLabelText("Carbon Offset") as HTMLInputElement;
-    const cabinCheckbox = screen.getByLabelText("You Choose Your Cabin") as HTMLInputElement;
+    const carbonCheckbox = screen.getByLabelText("Carbon Offset");
+    const cabinCheckbox = screen.getByLabelText("You Choose Your Cabin");
 
     expect(carbonCheckbox.checked).toBe(false);
     expect(cabinCheckbox.checked).toBe(true);

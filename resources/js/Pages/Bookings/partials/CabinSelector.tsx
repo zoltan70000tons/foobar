@@ -2,6 +2,7 @@ import { Autocomplete, Box, Chip, TextField } from "@mui/material";
 import { useAvailableCabins } from "@/Hooks/booking/useAvailableCabins";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { useAppSelector } from "@/store/hooks";
+import { CabinStatus } from "@/enums/CabinStatus";
 
 export default function CabinSelector() {
   const { cabins, loading } = useAvailableCabins();
@@ -26,13 +27,13 @@ export default function CabinSelector() {
       renderOption={(props, option) => (
         <Box component="li" {...props} key={option.cabin_number}>
           {option.cabin_number}
-          {option.status === "RESERVED" && (
+          {option.status === CabinStatus.RESERVED && (
             <Chip sx={{ ml: 1 }} label="INTERNALLY AVAILABLE" color="warning" size="small" />
           )}
-          {option.status === "AVAILABLE" && (
+          {option.status === CabinStatus.AVAILABLE && (
             <Chip sx={{ ml: 1 }} label="PUBLICLY AVAILABLE" color="success" size="small" />
           )}
-          {option.status === "PARTIALLY_BOOKED" && (
+          {option.status === CabinStatus.PARTIALLY_BOOKED && (
             <Chip sx={{ ml: 1 }} label="PARTIALLY BOOKED" color="info" size="small" />
           )}
         </Box>

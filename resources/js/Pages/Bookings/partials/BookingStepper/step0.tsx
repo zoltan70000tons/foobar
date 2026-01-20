@@ -20,6 +20,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { fetchAvailableCabins } from "@/store/thunks/fetchAvailableCabins";
 import { UnknownAction } from "@reduxjs/toolkit";
+import { CabinStatus } from "@/enums/CabinStatus";
 
 const paymentPlanOptions = [
   {
@@ -63,13 +64,6 @@ export const BookingStepperStepZero = () => {
   const numberOfInstallments = useAppSelector((s) => s.booking.installments);
 
   const [filteredCategories, setFilteredCategories] = useState([]);
-  const cabinTypeRef = useRef(null);
-
-  useEffect(() => {
-    if (cabinTypeRef.current) {
-      cabinTypeRef.current.focus();
-    }
-  }, []);
 
   useEffect(() => {
     if (!cabinType || !cabinCategory) {
@@ -92,7 +86,7 @@ export const BookingStepperStepZero = () => {
         const status = cabin.status;
 
         const isValidStatus =
-          status === "AVAILABLE" || status === "RESERVED" || (cabinType.id !== 1 && status === "PARTIALLY_BOOKED");
+          status === CabinStatus.AVAILABLE || status === CabinStatus.RESERVED || (cabinType.id !== 1 && status === CabinStatus.PARTIALLY_BOOKED);
 
         return matchesType && isValidStatus;
       }),
@@ -107,14 +101,19 @@ export const BookingStepperStepZero = () => {
         <Grid item xs={12} md={3}>
           <FormControl fullWidth sx={{ mt: 2 }}>
             <Autocomplete
+              autoFocus
               fullWidth
               options={cabinTypes ?? []}
               getOptionLabel={(option) => option.cabin_type}
               value={cabinType}
               onChange={(event, newValue) => setCabinType(newValue)}
-              renderInput={(params) => <TextField {...params} label="Cabin Type" inputRef={cabinTypeRef} />}
-              sx={{ mb: 2 }}
-              disabled={!cabinTypes || cabinTypes.length === 0}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Cabin Type"
+                  inputRef={params.inputProps.ref}
+                />
+              )}
             />
           </FormControl>
         </Grid>

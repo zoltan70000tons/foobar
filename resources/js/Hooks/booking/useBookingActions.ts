@@ -6,6 +6,7 @@ import { Nullable } from "@/interfaces/utils";
 import { PriceCalc } from "@/types/booking";
 import { BookingUser } from "@/interfaces/User";
 import { Customer } from "@/interfaces/Customer";
+import { BookingCabin } from "@/interfaces/Cabin";
 
 export function useBookingActions() {
   const dispatch = useAppDispatch();
@@ -20,7 +21,7 @@ export function useBookingActions() {
     setSelectedLocation: (location: string | null) => dispatch(actions.setSelectedLocation(location)),
     setSelectedDeck: (deck: number | null) => dispatch(actions.setSelectedDeck(deck)),
     setNumberOfInstallments: (payload: { id: number; value: number }) => dispatch(actions.setNumberOfInstallments(payload)),
-    setCabin: (payload: any) => dispatch(actions.setCabin(payload)),
+    setCabin: (payload: BookingCabin) => dispatch(actions.setCabin(payload)),
     setCabinTypes: (payload: CabinType[]) => dispatch(actions.setCabinTypes(payload)),
     setCabinType: (payload: CabinType | null) => dispatch(actions.setCabinType(payload)),
     setCabinCategories: (payload: CabinCategory[] | null) => dispatch(actions.setCabinCategories(payload)),
@@ -29,9 +30,9 @@ export function useBookingActions() {
     setOnlyAccessible: (payload: boolean) => dispatch(actions.setOnlyAccessible(payload)),
     setAdvancedFilters: (payload: boolean) => dispatch(actions.setAdvancedFilters(payload)),
     setAvailableDecks: (payload: number[] | undefined) => dispatch(actions.setAvailableDecks(payload)),
-    setAvailableCabins: (payload: any[] | undefined) => dispatch(actions.setAvailableCabins(payload)),
+    setAvailableCabins: (payload: BookingCabin[] | undefined) => dispatch(actions.setAvailableCabins(payload)),
     setPassenger: (payload: Nullable<Passenger>) => dispatch(actions.setPassenger(payload)),
-    setPassengerField: (field: string, value: any) =>
+    setPassengerField: <K extends keyof Passenger>(field: K, value: Passenger[K]) =>
       dispatch(actions.setPassengerField({ field, value })),
     toggleAddon: (addon: "carbonOffset" | "youChooseYourCabin") =>
       dispatch(actions.toggleAddon(addon)),

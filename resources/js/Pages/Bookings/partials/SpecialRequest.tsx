@@ -80,23 +80,32 @@ export default function SpecialRequest({ passenger, onChange, disabledByDesign }
     onChange("special_options", updatedOptions);
   };
 
+  const parseStringArray = (value: unknown): string[] => {
+    if (Array.isArray(value) && value.every((v) => typeof v === "string")) {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value) as unknown;
+
+        if (Array.isArray(parsed) && parsed.every((v) => typeof v === "string")) {
+          return parsed;
+        }
+      } catch {
+        /* Prevents a hard crash */
+      }
+    }
+
+    return [];
+  };
+
   const otherSelected = specialOptions.other;
   const dietarySelected = specialOptions.dietary_restrictions;
 
   let dietarySelect = <></>;
   if (dietarySelected) {
-    const selectValue = Array.isArray(passenger.dietary_preferences)
-      ? passenger.dietary_preferences
-      : typeof passenger.dietary_preferences === "string"
-        ? (() => {
-            try {
-              const parsed = JSON.parse(passenger.dietary_preferences);
-              return Array.isArray(parsed) ? parsed : [];
-            } catch {
-              return [];
-            }
-          })()
-        : [];
+    const selectValue = parseStringArray(passenger.dietary_preferences);
 
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
@@ -127,7 +136,7 @@ export default function SpecialRequest({ passenger, onChange, disabledByDesign }
           input={<OutlinedInput label="" />}
           renderValue={(selected) => (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-              {selected.map((value) => (
+              {selected.map((value: DietaryOptions) => (
                 <Chip key={value} label={DietaryOptionsLabels[value]} size="small" />
               ))}
             </Box>

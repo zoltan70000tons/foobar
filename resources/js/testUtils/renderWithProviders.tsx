@@ -5,6 +5,8 @@ import { configureStore, type EnhancedStore } from "@reduxjs/toolkit";
 import bookingReducer from "@/store/slices/bookingSlice";
 import type { RootState } from "@/store";
 
+type TestStore = EnhancedStore<RootState>;
+
 export function renderWithProviders(
   ui: React.ReactElement,
   {
@@ -17,8 +19,8 @@ export function renderWithProviders(
     }),
   }: {
     preloadedState?: Partial<RootState>;
-    store?: EnhancedStore;
-  } = {}
+    store?: TestStore;
+  } = {},
 ) {
   return {
     store,

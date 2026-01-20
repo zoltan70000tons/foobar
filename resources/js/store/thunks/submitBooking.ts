@@ -1,6 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { RootState } from "@/store";
+import { BookingState } from "@/store/slices/bookingSlice";
+import { ApiErrorResponse } from "@/types/axios";
 
 export const submitBooking = createAsyncThunk<
   void,
@@ -9,7 +11,8 @@ export const submitBooking = createAsyncThunk<
   >(
   "booking/submit",
   async (_, { getState, rejectWithValue }) => {
-    const { booking } = getState();
+    const { booking: _booking } = getState();
+    const booking: BookingState = _booking;
     const {
       cabinCategory,
       cabinNumber,
@@ -53,8 +56,9 @@ export const submitBooking = createAsyncThunk<
       );
     } catch (err: unknown) {
       let message = "Failed to create booking. Please try again.";
-      if (axios.isAxiosError(err)) {
-        message = err.response?.data?.message || message;
+
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        message = err.response?.data?.message ?? message;
       }
 
       return rejectWithValue(message);

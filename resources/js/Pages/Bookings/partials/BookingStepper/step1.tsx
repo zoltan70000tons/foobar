@@ -24,6 +24,11 @@ import { useBookingActions } from "@/Hooks/booking/useBookingActions";
 import { useValidateGenders } from "@/Hooks/booking/useValidateGenders";
 import { BookingUser } from "@/interfaces/User";
 import { useSnackbar } from "@/Providers/SnackBarAlertProvider";
+import { Passenger } from "@/interfaces/Passenger";
+
+type SuggestionResponse = {
+  data: Passenger[];
+}
 
 export const BookingStepperStepOne = () => {
   const { showSnackbar } = useSnackbar();
@@ -91,7 +96,7 @@ export const BookingStepperStepOne = () => {
       single_t_agreement: isSingleRoom ? true : user.single_t_agreement ?? false,
       newsletter: user.newsletter ?? false,
       lead_passenger: true,
-    });
+    } as Passenger);
   };
 
   useEffect(() => {
@@ -109,7 +114,8 @@ export const BookingStepperStepOne = () => {
     const fetchSuggestions = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("/passengers/search", { params: { query: searchQuery, eventId: cabinCategory?.event_id } });
+        const response = await axios.get<SuggestionResponse>("/passengers/search", { params: { query: searchQuery, eventId: cabinCategory?.event_id } });
+
         setSuggestions(response.data);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -119,7 +125,7 @@ export const BookingStepperStepOne = () => {
       }
     };
 
-    fetchSuggestions();
+    void fetchSuggestions();
   }, [searchQuery]);
 
   const handlePrefill = () => {

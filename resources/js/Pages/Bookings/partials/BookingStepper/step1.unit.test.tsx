@@ -8,14 +8,22 @@ import * as actions from "@/Hooks/booking/useBookingActions";
 import * as snackbar from "@/Providers/SnackBarAlertProvider";
 import * as genderHook from "@/Hooks/booking/useValidateGenders";
 
+type CountryMockProps = {
+  nameOfField?: string;
+};
+
+type PhoneMockProps = {
+  name?: string;
+};
+
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-jest.mock("@/Components/Country", () => (props: any) => (
-  <input data-testid={`country-${props.name}`} />
+jest.mock("@/Components/Country", () => (props: CountryMockProps) => (
+  <input data-testid={`country-${props.nameOfField}`} />
 ));
 
-jest.mock("@/Components/PhoneNumber", () => (props: any) => (
+jest.mock("@/Components/PhoneNumber", () => (props: PhoneMockProps) => (
   <input data-testid={`phone-${props.name}`} />
 ));
 
@@ -91,14 +99,14 @@ describe("BookingStepperStepOne", () => {
 
     await user.type(input, "Joh");
 
+    const expectedParams = {
+      params: { query: "Joh", eventId: 99 },
+    };
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockedAxios.get).toHaveBeenCalledWith(
       "/passengers/search",
-      expect.objectContaining({
-        params: expect.objectContaining({
-          query: "Joh",
-          eventId: 99,
-        }),
-      })
+      expect.objectContaining(expectedParams)
     );
   });
 

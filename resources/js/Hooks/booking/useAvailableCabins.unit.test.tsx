@@ -1,18 +1,33 @@
-import { renderHook } from "@testing-library/react";
-import axios from "axios";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { renderHook, waitFor } from "@testing-library/react";
+import axios, { AxiosError } from "axios";
 import { useAvailableCabins } from "./useAvailableCabins";
 import { Provider } from "react-redux";
-import configureStore from "redux-mock-store";
+import configureStore, { MockStoreEnhanced } from "redux-mock-store";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-(global as any).route = (name: string) => `/api/${name}`;
+declare global {
+  var route: (name: string) => string;
+}
+global.route = (name: string) => `/api/${name}`;
 
 const mockStore = configureStore([]);
 
+interface BookingStateMock {
+  booking: {
+    cabinType: { id: number; name: string } | null;
+    cabinCategory: { id: number; name: string } | null;
+  };
+}
+
 describe("useAvailableCabins", () => {
-  let store: any;
+  let store: MockStoreEnhanced<BookingStateMock, {}>;
 
   beforeEach(() => {
     store = mockStore({
@@ -24,7 +39,7 @@ describe("useAvailableCabins", () => {
     jest.clearAllMocks();
   });
 
-  const wrapper = ({ children }: any) => (
+  const wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <Provider store={store}>{children}</Provider>
   );
 
@@ -36,13 +51,13 @@ describe("useAvailableCabins", () => {
 
     mockedAxios.get.mockResolvedValueOnce({ data: { cabins } });
 
-    const { result, waitForNextUpdate } = renderHook(() => useAvailableCabins(), { wrapper });
+    const { result } = renderHook(() => useAvailableCabins(), { wrapper });
 
     expect(result.current.loading).toBe(true);
     expect(result.current.cabins).toEqual([]);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.loading).toBe(false);
     expect(result.current.cabins).toEqual(cabins);
@@ -60,25 +75,24 @@ describe("useAvailableCabins", () => {
       isAxiosError: true,
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useAvailableCabins(), { wrapper });
+    const { result } = renderHook(() => useAvailableCabins(), { wrapper });
 
     expect(result.current.loading).toBe(true);
     expect(result.current.cabins).toEqual([]);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.loading).toBe(false);
     expect(result.current.cabins).toEqual([]);
     expect(result.current.error).toBe("Server error");
   });
 
-  it("does not fetch if cabinType or cabinCategory is null", async () => {
+  it("does not fetch if cabinType or cabinCategory is null", () => {
     store = mockStore({
       booking: { cabinType: null, cabinCategory: { id: 2, name: "Balcony" } },
     });
 
-    const wrapperNull = ({ children }: any) => (
+    const wrapperNull: React.FC<{ children: React.ReactNode }> = ({ children }) => (
       <Provider store={store}>{children}</Provider>
     );
 
@@ -87,18 +101,16 @@ describe("useAvailableCabins", () => {
     expect(mockedAxios.get).not.toHaveBeenCalled();
   });
 
-  it("aborts request on unmount", async () => {
-    const cabins = [{ id: 1, deck: 5, number: "501" }];
-
+  it("aborts request on unmount", () => {
     const abortMock = jest.fn();
+    class MockAbortController {
+      signal = {} as AbortSignal;
+      abort = abortMock;
+    }
     const originalAbortController = global.AbortController;
+    global.AbortController = MockAbortController as unknown as typeof AbortController;
 
-    global.AbortController = jest.fn(() => ({
-      signal: {},
-      abort: abortMock,
-    })) as any;
-
-    mockedAxios.get.mockResolvedValue({ data: { cabins } });
+    mockedAxios.get.mockResolvedValue({ data: { cabins: [] } });
 
     const { unmount } = renderHook(() => useAvailableCabins(), { wrapper });
 
@@ -108,5 +120,4 @@ describe("useAvailableCabins", () => {
 
     global.AbortController = originalAbortController;
   });
-
 });

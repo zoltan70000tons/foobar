@@ -17,6 +17,7 @@ import { selectBooking } from "@/store/slices/selectors";
 import { useValidateGenders } from "@/Hooks/booking/useValidateGenders";
 import { submitBooking } from "@/store/thunks/submitBooking";
 import { UnknownAction } from "@reduxjs/toolkit";
+import { Passenger } from "@/interfaces/Passenger";
 
 type BookingStepperProps = {
   cabinTypes: CabinTypeType[];
@@ -75,13 +76,20 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
 
   const validateStep = () => {
     switch (activeStep) {
-      case 0:
-        let rule = cabinType && cabinCategory && cabinNumber && paymentPlan && bedConfig;
+      case 0: {
+        let rule =
+          cabinType &&
+          cabinCategory &&
+          cabinNumber &&
+          paymentPlan &&
+          bedConfig;
+
         if (paymentPlan?.value === "INSTALLMENTS") {
           rule = rule && numberOfInstallments;
         }
 
         return !!rule;
+      }
       case 1:
         return (
           !!(
@@ -138,12 +146,12 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
 
   const steps = ["Select Cabin", "Passenger Details", "Special Request", "Discounts/Addons", "Confirm & Submit"];
 
-  const onChange = (field: string, value: any) => {
+  const onChange = <K extends keyof Passenger>(field: K, value: Passenger[K]) => {
     setPassengerField(field, value);
   };
 
-  const handleSubmit = async () => {
-    const result = await dispatch(submitBooking() as UnknownAction);
+  const handleSubmit = () => {
+    const result = dispatch(submitBooking() as UnknownAction);
 
     if (submitBooking.fulfilled.match(result)) {
       showSnackbar("Booking created successfully!", "success");

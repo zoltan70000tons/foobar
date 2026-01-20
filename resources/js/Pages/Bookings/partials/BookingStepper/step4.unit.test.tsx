@@ -1,10 +1,14 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { BookingStepperStepFour, PriceCalc } from "@/Pages/Bookings/partials/BookingStepper/step4";
+import React, { ReactNode } from "react";
+import { screen } from "@testing-library/react";
+import { BookingStepperStepFour } from "@/Pages/Bookings/partials/BookingStepper/step4";
 import { renderWithProviders } from "@/testUtils/renderWithProviders";
-import { fetchBookingFinalPrice } from "@/store/thunks/fetchBookingFinalPrice";
 
-jest.mock("@/Helpers/CellValue", () => ({ children }: any) => <span>{children}</span>);
+jest.mock("@/Helpers/CellValue", () => ({
+  __esModule: true,
+  default: ({ children }: { children?: ReactNode }) => (
+    <span>{children}</span>
+  ),
+}));
 
 jest.mock("@/Hooks/booking/useBookingActions", () => ({
   useBookingActions: () => ({

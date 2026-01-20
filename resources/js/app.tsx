@@ -11,21 +11,25 @@ import { store } from "@/store";
 
 import { PermissionsProvider } from "../js/Providers/PermissionContext";
 import { SnackbarProvider } from "./Providers/SnackBarAlertProvider";
-import EnvironmentBar from "./Components/EnvironmentBar";
-const appName = import.meta.env.VITE_APP_NAME || "Laravel";
-const appEnv = import.meta.env.VITE_APP_ENV || "prod";
+import { AuthProps } from "@/types/authprops";
 
-createInertiaApp({
+const appName =
+  (import.meta.env.VITE_APP_NAME as string | undefined) ?? "Laravel";
+
+void createInertiaApp({
   title: (title) => `${title} - ${appName}`,
-  resolve: (name) => resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob("./Pages/**/*.tsx")),
+  resolve: (name) =>
+    resolvePageComponent(
+      `./Pages/${name}.tsx`,
+      import.meta.glob("./Pages/**/*.tsx")
+    ),
   setup({ el, App, props }) {
     const root = createRoot(el);
-    const auth: any = props.initialPage.props.auth;
+    const auth = props.initialPage.props.auth as AuthProps;
 
     root.render(
       <ReduxProvider store={store}>
         <SnackbarProvider>
-          {/* <EnvironmentBar environment={appEnv} /> */}
           <PermissionsProvider auth={auth}>
             <App {...props} />
           </PermissionsProvider>

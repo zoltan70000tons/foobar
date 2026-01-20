@@ -116,7 +116,7 @@ export const BookingStepperStepFour = () => {
       </Typography>
       <Tabs
         value={tabValue}
-        onChange={(_, newValue) => setTabValue(newValue)}
+        onChange={(_, newValue: number) => setTabValue(newValue)}
         indicatorColor="primary"
         textColor="primary"
         sx={{ mb: 2 }}

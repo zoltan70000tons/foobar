@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { Cabin } from "@/interfaces/Cabin";
+import { BookingCabin, Cabin } from "@/interfaces/Cabin";
+import { ApiErrorResponse } from "@/types/axios";
 
 interface FetchAvailableCabinsParams {
   type_id: number | null;
@@ -11,7 +12,7 @@ interface FetchAvailableCabinsParams {
 }
 
 interface FetchAvailableCabinsResponse {
-  cabins: Cabin[];
+  cabins: BookingCabin[];
 }
 
 export const fetchAvailableCabins = createAsyncThunk<
@@ -22,10 +23,20 @@ export const fetchAvailableCabins = createAsyncThunk<
   "booking/fetchAvailableCabins",
   async (params, { rejectWithValue }) => {
     try {
-      const response = await axios.get(route("cabins.available"), { params });
+      const response = await axios.get<FetchAvailableCabinsResponse>(
+        route("cabins.available"),
+        { params }
+      );
+
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || "Something went wrong");
+    } catch (err: unknown) {
+      let message = "Something went wrong.";
+
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        message = err.response?.data?.message ?? message;
+      }
+
+      return rejectWithValue(message);
     }
   }
 );
